@@ -1,0 +1,14 @@
+# OS-generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
