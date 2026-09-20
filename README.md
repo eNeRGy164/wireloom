@@ -1,0 +1,25 @@
+# Wireloom
+
+This repository is being prepared as a starting point for future development.
+
+## Project layout
+
+```text
+.
+├── .agents/
+│   └── instructions/
+├── docs/
+│   ├── architecture/
+│   ├── requirements/
+│   ├── security/
+│   └── testing/
+├── evidence/
+├── src/
+└── tests/
+```
+
+- `.agents/` contains project-owned contributor workflow guidance.
+- `docs/` contains architecture, requirements, security, and testing documentation.
+- `evidence/` contains supporting evidence and records.
+- `src/` is reserved for production source code.
+- `tests/` is reserved for automated tests.
