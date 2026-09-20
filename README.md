@@ -2,6 +2,10 @@
 
 This repository is being prepared as a starting point for future development.
 
+## Prerequisites
+
+.NET 10.0.401 SDK or newer.
+
 ## Project layout
 
 ```text

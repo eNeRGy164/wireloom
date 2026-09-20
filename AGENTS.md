@@ -12,6 +12,8 @@ Help contributors make safe, consistent progress in this repository.
 - Keep docs, contracts, and evidence aligned with affected changes.
 - Do not add stacks, projects, or dependencies unless explicitly requested.
 - Use Markdown for new documentation and PlantUML with `.puml` source files for diagrams.
+- Use the repository-pinned .NET SDK and central package management for .NET projects.
+- Keep package versions in `Directory.Packages.props`; the source-generator package is packable while test projects should opt out.
 
 ## Guidance
 
@@ -26,3 +28,8 @@ Help contributors make safe, consistent progress in this repository.
 ## Enforcement
 
 Commit policy is documented, but no local hooks or CI enforcement are configured yet.
+
+## .NET defaults
+
+- Target `net10.0` with root namespace `Wireloom`.
+- Use `.agents/architecture-memory.yaml` as the machine-readable source for current .NET defaults.

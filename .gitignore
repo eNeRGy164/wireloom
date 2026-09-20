@@ -12,3 +12,9 @@ Desktop.ini
 .env
 .env.*
 !.env.example
+
+# dotnet development
+bin/
+obj/
+*.user
+*.suo
