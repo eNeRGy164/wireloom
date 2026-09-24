@@ -1,0 +1,6 @@
+module CorpusAggregates {
+    struct Base { long base; };
+    struct Derived : Base { string<16> derived; };
+    struct Recursive { long value; sequence<Recursive> children; };
+    struct Composed { Base base; Derived derived; };
+};

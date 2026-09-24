@@ -1,0 +1,5 @@
+module CorpusKeyBoundaries {
+    struct ArrayKey { @key long coordinates[2]; long payload; };
+    struct BoundedStringKey { @key string<12> name; long payload; };
+    struct UnboundedStringKey { @key string name; long payload; };
+};

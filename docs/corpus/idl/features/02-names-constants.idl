@@ -1,0 +1,11 @@
+module CorpusNames {
+    const long Base = 4;
+    const long Derived = (Base << 2) | 1;
+    enum State { Idle, Running, Complete };
+    module Nested { struct Point { long x; long y; }; };
+    struct KeywordRecord {
+        long event;
+        State state;
+        Nested::Point point;
+    };
+};

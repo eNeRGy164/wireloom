@@ -1,0 +1,10 @@
+#include "includes/common.idl"
+#define CORPUS_VALUE(x) ((x) + 1)
+#if defined(CORPUS_CAPTURE_DEFINE)
+const long BranchValue = CORPUS_VALUE(IncludedConstant);
+#else
+const long BranchValue = 0;
+#endif
+module CorpusPreprocessing {
+    struct Sample { IncludedType item; long value; };
+};

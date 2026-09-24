@@ -1,0 +1,5 @@
+module CorpusCollectionAliases {
+    typedef sequence<long, 3> LongSequence;
+    typedef sequence<LongSequence, 2> NestedSequence;
+    struct Sample { NestedSequence values; };
+};

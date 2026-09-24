@@ -1,0 +1,7 @@
+module CorpusUnionKeys {
+    union Identity switch(long) {
+        case 0: long number;
+        case 1: string text;
+    };
+    struct Sample { @key Identity identity; long payload; };
+};

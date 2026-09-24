@@ -1,0 +1,1 @@
+module CorpusNegativeLegacy { struct System { long value; }; };

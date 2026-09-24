@@ -1,0 +1,1 @@
+module CorpusIntegration { module Contracts { struct NamespacedMessage { boolean enabled; }; }; };

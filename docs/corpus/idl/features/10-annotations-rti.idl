@@ -1,0 +1,10 @@
+module CorpusRtiAnnotations {
+    @language_binding(PLAIN)
+    @transfer_mode(INBAND)
+    @topic struct Sample {
+        @key long id;
+        @range(min = -32, max = 31) @unit("meters") long value;
+        @resolve_name(false) string<16> text;
+        @external string<16> externalText;
+    };
+};

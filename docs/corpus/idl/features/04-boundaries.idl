@@ -1,0 +1,6 @@
+module CorpusStringBoundaries {
+    struct Sample {
+        string<8> narrow;
+        wstring<8> wide;
+    };
+};

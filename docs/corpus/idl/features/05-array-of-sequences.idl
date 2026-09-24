@@ -1,0 +1,6 @@
+module CorpusArrayOfSequences {
+    struct Sample {
+        sequence<long> values[2];
+        sequence<string<16>, 3> names[2];
+    };
+};

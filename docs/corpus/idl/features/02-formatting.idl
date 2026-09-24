@@ -1,0 +1,6 @@
+// Comments and irregular whitespace are part of the source contract.
+module CorpusFormatting
+{
+    /* block comment */
+    struct Value { string<16> text; } ;
+};

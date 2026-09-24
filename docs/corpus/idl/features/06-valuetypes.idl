@@ -1,0 +1,9 @@
+module CorpusValueTypes {
+    valuetype BaseValue {
+        public long baseValue;
+    };
+    valuetype DerivedValue : BaseValue {
+        public string<16> name;
+    };
+    struct Holder { DerivedValue value; };
+};

@@ -1,0 +1,3 @@
+module CorpusNegativeDuplicateDefault {
+    union Choice switch(long) { default: long first; default: long second; };
+};

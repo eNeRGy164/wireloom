@@ -1,0 +1,14 @@
+module CorpusExtensibility {
+    @appendable struct Appendable {
+        @id(1) long id;
+        @id(2) string<16> text;
+    };
+    @final struct Final {
+        @id(1) long id;
+        @id(2) string<16> text;
+    };
+    @mutable struct Mutable {
+        @id(1) long id;
+        @id(2) @optional long optionalValue;
+    };
+};

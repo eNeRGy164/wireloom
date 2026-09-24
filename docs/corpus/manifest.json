@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 3,
+  "corpusId": "managed-generator-feature-corpus",
+  "oracle": {
+    "product": "RTI Connext DDS",
+    "version": "7.7.0",
+    "generator": "rtiddsgen 4.7.0",
+    "capturePattern": ".tmp/oracle-capture-history/{runId}/generated",
+    "oracleLibraryPattern": "docs/corpus/oracles",
+    "captureRunId": "",
+    "correctionCaptureRunId": "",
+    "correctionCaptureRunIds": [],
+    "captureRuns": [],
+    "state": "captured-pending-review",
+    "licenseStatus": "licensee-generated; do not redistribute without review"
+  },
+  "positiveCases": [
+    { "id": "01-primitives", "theme": "primitive values", "idl": "idl/features/01-primitives.idl", "defines": [] },
+    { "id": "01-boundaries", "theme": "primitive boundaries and special values", "idl": "idl/features/01-boundaries.idl", "defines": [] },
+    { "id": "01-full-widths", "theme": "complete fixed-width primitive matrix", "idl": "idl/features/01-full-widths.idl", "defines": [] },
+    { "id": "02-names-constants", "theme": "names, constants and nested declarations", "idl": "idl/features/02-names-constants.idl", "defines": [] },
+    { "id": "02-scopes", "theme": "relative, absolute and reopened scopes", "idl": "idl/features/02-scopes.idl", "defines": [] },
+    { "id": "02-constant-expressions", "theme": "constant operators and bound expressions", "idl": "idl/features/02-constant-expressions.idl", "defines": [] },
+    { "id": "02-formatting", "theme": "comments and formatting", "idl": "idl/features/02-formatting.idl", "defines": [] },
+    { "id": "02-multiple", "theme": "multiple root declarations", "idl": "idl/features/02-multiple.idl", "defines": [] },
+    { "id": "03-enums-aliases", "theme": "enums and typedef aliases", "idl": "idl/features/03-enums-aliases.idl", "defines": [] },
+    { "id": "03-enum-values-prefix", "theme": "prefix enum values", "idl": "idl/features/03-enum-values-prefix.idl", "defines": [] },
+    { "id": "03-enum-values-explicit", "theme": "explicit and gapped enum values", "idl": "idl/features/03-enum-values-explicit.idl", "defines": [] },
+    { "id": "03-alias-aggregate", "theme": "aggregate alias chains", "idl": "idl/features/03-alias-aggregate.idl", "defines": [] },
+    { "id": "03-alias-collections", "theme": "nested collection alias chains", "idl": "idl/features/03-alias-collections.idl", "defines": [] },
+    { "id": "04-strings", "theme": "narrow and wide strings", "idl": "idl/features/04-strings.idl", "defines": [] },
+    { "id": "04-boundaries", "theme": "bounded string boundaries", "idl": "idl/features/04-boundaries.idl", "defines": [] },
+    { "id": "05-collections", "theme": "arrays and sequences", "idl": "idl/features/05-collections.idl", "defines": [] },
+    { "id": "05-shapes", "theme": "collection compositions and aliases", "idl": "idl/features/05-shapes.idl", "defines": [] },
+    { "id": "05-array-of-sequences", "theme": "arrays of sequences", "idl": "idl/features/05-array-of-sequences.idl", "defines": [], "observedOutcome": "warning/ignored" },
+    { "id": "06-aggregates", "theme": "aggregates, inheritance and recursion", "idl": "idl/features/06-aggregates.idl", "defines": [] },
+    { "id": "06-valuetypes", "theme": "valuetypes and value inheritance", "idl": "idl/features/06-valuetypes.idl", "defines": [] },
+    { "id": "06-alias-composition", "theme": "composed aliases and constants", "idl": "idl/features/06-alias-composition.idl", "defines": [] },
+    { "id": "07-unions", "theme": "default and primitive union branches", "idl": "idl/features/07-unions.idl", "defines": [] },
+    { "id": "07-union-enum", "theme": "enum discriminators and aggregate branches", "idl": "idl/features/07-union-enum.idl", "defines": [] },
+    { "id": "07-union-scoped", "theme": "scoped and collection union branches", "idl": "idl/features/07-union-scoped.idl", "defines": [] },
+    { "id": "07-union-multilabel", "theme": "multi-label unions without default", "idl": "idl/features/07-union-multilabel.idl", "defines": [] },
+    { "id": "07-union-short", "theme": "short union discriminator", "idl": "idl/features/07-union-short.idl", "defines": [] },
+    { "id": "07-union-char", "theme": "character union discriminator", "idl": "idl/features/07-union-char.idl", "defines": [] },
+    { "id": "07-union-boolean", "theme": "boolean union discriminator", "idl": "idl/features/07-union-boolean.idl", "defines": [] },
+    { "id": "07-union-aliases", "theme": "explicit enum and union alias chains", "idl": "idl/features/07-union-aliases.idl", "defines": [] },
+    { "id": "08-keys", "theme": "multiple, nested and simple keys", "idl": "idl/features/08-keys.idl", "defines": [] },
+    { "id": "08-key-nested", "theme": "nested key propagation", "idl": "idl/features/08-key-nested.idl", "defines": [] },
+    { "id": "08-key-inherited", "theme": "inherited keys", "idl": "idl/features/08-key-inherited.idl", "defines": [] },
+    { "id": "08-key-boundaries", "theme": "array and string key boundaries", "idl": "idl/features/08-key-boundaries.idl", "defines": [] },
+    { "id": "08-key-union", "theme": "union-valued keys", "idl": "idl/features/08-key-union.idl", "defines": [] },
+    { "id": "09-extensibility", "theme": "appendable optional evolution", "idl": "idl/features/09-extensibility.idl", "defines": [] },
+    { "id": "09-default", "theme": "default extensibility", "idl": "idl/features/09-default.idl", "defines": [] },
+    { "id": "09-id-gaps", "theme": "explicit member-id gaps", "idl": "idl/features/09-id-gaps.idl", "defines": [] },
+    { "id": "09-evolution-optional", "theme": "optional primitive and reference members", "idl": "idl/features/09-evolution-optional.idl", "defines": [] },
+    { "id": "09-optional-collections", "theme": "optional collection members", "idl": "idl/features/09-optional-collections.idl", "defines": [] },
+    { "id": "09-autoid-hash", "theme": "automatic hash member identifiers", "idl": "idl/features/09-autoid-hash.idl", "defines": [] },
+    { "id": "09-data-representation", "theme": "data representation annotation", "idl": "idl/features/09-data-representation.idl", "defines": [] },
+    { "id": "09-defaults-ranges", "theme": "default literals and primitive ranges", "idl": "idl/features/09-defaults-ranges.idl", "defines": [] },
+    { "id": "09-allowed-data-representation", "theme": "legacy allowed data representation annotation", "idl": "idl/features/09-allowed-data-representation.idl", "defines": [] },
+    { "id": "10-annotations", "theme": "topic, key and default annotations", "idl": "idl/features/10-annotations.idl", "defines": [] },
+    { "id": "10-annotations-extended", "theme": "nested and annotation combinations", "idl": "idl/features/10-annotations-extended.idl", "defines": [] },
+    { "id": "10-annotations-rti", "theme": "RTI generation annotations", "idl": "idl/features/10-annotations-rti.idl", "defines": [] },
+    { "id": "10-flat-data-binding", "theme": "RTI FlatData language binding", "idl": "idl/features/10-flat-data-binding.idl", "defines": [], "observedOutcome": "warning/ignored" },
+    { "id": "11-preprocessing", "theme": "include closure and command-line defines", "idl": "idl/features/11-preprocessing.idl", "defines": ["CORPUS_CAPTURE_DEFINE"] },
+    { "id": "11-conditionals", "theme": "conditional branches and undefines", "idl": "idl/features/11-conditionals.idl", "defines": [] },
+    { "id": "11-macros", "theme": "object and function macros", "idl": "idl/features/11-macros.idl", "defines": [] },
+    { "id": "11-macro-operators", "theme": "macro stringification and token pasting", "idl": "idl/features/11-macro-operators.idl", "defines": [] },
+    { "id": "11-preprocessor-advanced", "theme": "elif, continuations and advanced macros", "idl": "idl/features/11-preprocessor-advanced.idl", "defines": [] },
+    { "id": "11-include-search", "theme": "quoted and angle include resolution", "idl": "idl/features/11-include-search.idl", "defines": [] },
+    { "id": "11-comments", "theme": "comments and source preservation", "idl": "idl/features/11-comments.idl", "defines": [] }
+  ],
+  "negativeCases": [
+    { "id": "12-lexical", "theme": "unterminated lexical input", "idl": "idl/negative/12-lexical.idl" },
+    { "id": "12-duplicate-member", "theme": "duplicate semantic declaration", "idl": "idl/negative/12-duplicate-member.idl" },
+    { "id": "03-enum-values-suffix", "theme": "unsupported suffix enum values", "idl": "idl/negative/03-enum-values-suffix.idl", "observedOutcome": "rejected" },
+    { "id": "05-direct-sequence-of-sequences", "theme": "unsupported direct sequence of sequences", "idl": "idl/negative/05-direct-sequence-of-sequences.idl", "observedOutcome": "rejected" },
+    { "id": "10-topic-module", "theme": "invalid topic annotation target", "idl": "idl/negative/10-topic-module.idl", "observedOutcome": "rejected" },
+    { "id": "12-missing-include", "theme": "missing include", "idl": "idl/negative/12-missing-include.idl" },
+    { "id": "12-malformed-condition", "theme": "malformed conditional", "idl": "idl/negative/12-malformed-condition.idl" },
+    { "id": "12-unsupported-map", "theme": "unsupported IDL kind", "idl": "idl/negative/12-unsupported-map.idl" },
+    { "id": "12-invalid-annotation", "theme": "invalid annotation target", "idl": "idl/negative/12-invalid-annotation.idl" },
+    { "id": "12-unknown-annotation", "theme": "accepted or ignored custom annotation", "idl": "idl/negative/12-unknown-annotation.idl", "observedOutcome": "warning/ignored" },
+    { "id": "12-inline-nested", "theme": "known inline nested defect", "idl": "idl/negative/12-inline-nested.idl" },
+    { "id": "12-legacy-name", "theme": "legacy name ambiguity", "idl": "idl/negative/12-legacy-name.idl", "observedOutcome": "accepted" },
+    { "id": "12-missing-brace", "theme": "missing brace", "idl": "idl/negative/12-missing-brace.idl" },
+    { "id": "12-missing-semicolon", "theme": "missing semicolon", "idl": "idl/negative/12-missing-semicolon.idl" },
+    { "id": "12-unresolved-type", "theme": "unresolved type", "idl": "idl/negative/12-unresolved-type.idl" },
+    { "id": "12-zero-bound", "theme": "zero bound", "idl": "idl/negative/12-zero-bound.idl", "observedOutcome": "accepted" },
+    { "id": "12-enum-separator", "theme": "malformed enum separator", "idl": "idl/negative/12-enum-separator.idl" },
+    { "id": "12-missing-name", "theme": "missing declaration name", "idl": "idl/negative/12-missing-name.idl" },
+    { "id": "12-array-bracket", "theme": "malformed array bracket", "idl": "idl/negative/12-array-bracket.idl" },
+    { "id": "12-const-equals", "theme": "malformed constant", "idl": "idl/negative/12-const-equals.idl" },
+    { "id": "12-truncated", "theme": "truncated declaration", "idl": "idl/negative/12-truncated.idl" },
+    { "id": "12-union-without-switch", "theme": "invalid union declaration", "idl": "idl/negative/12-union-without-switch.idl" },
+    { "id": "12-include-cycle-a", "theme": "include cycle member A", "idl": "idl/negative/12-include-cycle-a.idl" },
+    { "id": "12-include-cycle-b", "theme": "include cycle member B", "idl": "idl/negative/12-include-cycle-b.idl" },
+    { "id": "12-include-cycle-root", "theme": "include cycle root", "idl": "idl/negative/12-include-cycle-root.idl" },
+    { "id": "12-malformed-preprocessor", "theme": "malformed preprocessor input", "idl": "idl/negative/12-malformed-preprocessor.idl" }
+    ,{ "id": "02-forward-declarations", "theme": "unsupported forward aggregate declarations", "idl": "idl/features/02-forward-declarations.idl", "observedOutcome": "rejected" }
+    ,{ "id": "07-union-long-long", "theme": "unsupported long long union discriminator", "idl": "idl/features/07-union-long-long.idl", "observedOutcome": "rejected" }
+    ,{ "id": "02-alias-cycle", "theme": "cyclic typedef aliases", "idl": "idl/negative/02-alias-cycle.idl" }
+    ,{ "id": "05-negative-bound", "theme": "negative collection bound", "idl": "idl/negative/05-negative-bound.idl" }
+    ,{ "id": "05-overflow-bound", "theme": "overflowing collection bound", "idl": "idl/negative/05-overflow-bound.idl" }
+    ,{ "id": "07-invalid-discriminator", "theme": "invalid union discriminator", "idl": "idl/negative/07-invalid-discriminator.idl" }
+    ,{ "id": "07-duplicate-label", "theme": "duplicate union label", "idl": "idl/negative/07-duplicate-label.idl", "observedOutcome": "accepted" }
+    ,{ "id": "07-duplicate-default", "theme": "duplicate union default", "idl": "idl/negative/07-duplicate-default.idl", "observedOutcome": "accepted" }
+    ,{ "id": "08-member-id-conflict", "theme": "conflicting explicit member IDs", "idl": "idl/negative/08-member-id-conflict.idl", "observedOutcome": "accepted" }
+    ,{ "id": "10-unsupported-annotations", "theme": "unsupported annotation forms", "idl": "idl/negative/10-unsupported-annotations.idl" }
+    ,{ "id": "10-ignored-annotations", "theme": "accepted or ignored RTI annotations", "idl": "idl/negative/10-ignored-annotations.idl", "observedOutcome": "warning/ignored" }
+    ,{ "id": "10-service-annotation", "theme": "invalid service annotation target", "idl": "idl/negative/10-service-annotation.idl" }
+    ,{ "id": "12-bitmask", "theme": "unsupported bitmask", "idl": "idl/negative/12-bitmask.idl" }
+    ,{ "id": "12-bitset", "theme": "unsupported bitset", "idl": "idl/negative/12-bitset.idl" }
+    ,{ "id": "12-fixed", "theme": "unsupported fixed type", "idl": "idl/negative/12-fixed.idl" }
+    ,{ "id": "12-any", "theme": "unsupported any type", "idl": "idl/negative/12-any.idl" }
+    ,{ "id": "12-interface", "theme": "unsupported interface and operation", "idl": "idl/negative/12-interface.idl", "observedOutcome": "warning/ignored" }
+    ,{ "id": "12-import", "theme": "unsupported IDL import", "idl": "idl/negative/12-import.idl" }
+    ,{ "id": "12-module-idl", "theme": "known module idl ambiguity", "idl": "idl/negative/12-module-idl.idl", "observedOutcome": "accepted" }
+    ,{ "id": "12-union-64bit-label", "theme": "known 64-bit union label limitation", "idl": "idl/negative/12-union-64bit-label.idl" }
+    ,{ "id": "12-unterminated-string", "theme": "unterminated string literal", "idl": "idl/negative/12-unterminated-string.idl" }
+    ,{ "id": "12-unterminated-comment", "theme": "unterminated comment", "idl": "idl/negative/12-unterminated-comment.idl" }
+    ,{ "id": "12-macro-recursion", "theme": "recursive macro expansion", "idl": "idl/negative/12-macro-recursion.idl", "observedOutcome": "accepted" }
+    ,{ "id": "12-macro-arity", "theme": "macro argument arity error", "idl": "idl/negative/12-macro-arity.idl", "observedOutcome": "warning/ignored" }
+    ,{ "id": "12-error-directive", "theme": "preprocessor error directive", "idl": "idl/negative/12-error-directive.idl" }
+    ,{ "id": "12-angle-missing", "theme": "missing angle include", "idl": "idl/negative/12-angle-missing.idl" }
+    ,{ "id": "12-included-error", "theme": "diagnostic in included file", "idl": "idl/negative/12-included-error.idl" }
+  ],
+  "integrationEntryPoints": [
+    "idl/integration/contracts/13-integration.idl",
+    "idl/integration/contracts/13-modules.idl",
+    "idl/integration/contracts/13-alias-inheritance.idl",
+    "idl/integration/collections/13-compositions.idl"
+  ],
+  "includeDirectories": ["idl", "idl/includes", "idl/integration"]
+}

@@ -1,0 +1,3 @@
+module CorpusNegativeServiceAnnotation {
+    @service("DDS") struct Sample { long value; };
+};

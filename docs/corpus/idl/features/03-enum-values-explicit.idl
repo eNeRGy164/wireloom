@@ -1,0 +1,3 @@
+module CorpusEnumValues {
+    enum Explicit { NEGATIVE = -2, ZERO = 0, GAP = 7, NEXT };
+};

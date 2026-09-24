@@ -1,0 +1,3 @@
+module CorpusEnumValuePrefix {
+    enum Annotated { @value(7) FIRST, SECOND };
+};

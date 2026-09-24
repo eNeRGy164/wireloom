@@ -1,0 +1,7 @@
+module CorpusCharUnion {
+    union Choice switch(char) {
+        case 'a': long letter;
+        case 'z': string text;
+        default: boolean other;
+    };
+};

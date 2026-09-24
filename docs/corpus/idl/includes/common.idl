@@ -1,0 +1,5 @@
+#ifndef CORPUS_COMMON_IDL
+#define CORPUS_COMMON_IDL
+const long IncludedConstant = 7;
+struct IncludedType { long value; };
+#endif

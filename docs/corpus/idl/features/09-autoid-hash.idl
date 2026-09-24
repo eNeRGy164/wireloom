@@ -1,0 +1,6 @@
+module CorpusAutoId {
+    @autoid(HASH) @appendable struct Sample {
+        @must_understand @hashid("stable_id") long id;
+        @hashid string<16> text;
+    };
+};

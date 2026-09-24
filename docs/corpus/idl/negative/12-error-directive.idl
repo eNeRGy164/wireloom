@@ -1,0 +1,2 @@
+#error CORPUS_CAPTURE_FAILURE
+module CorpusNegativeErrorDirective { struct Sample { long value; }; };

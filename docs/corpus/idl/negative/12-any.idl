@@ -1,0 +1,1 @@
+module CorpusNegativeAny { struct Sample { any value; }; };

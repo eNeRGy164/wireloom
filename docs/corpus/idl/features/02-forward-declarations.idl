@@ -1,0 +1,5 @@
+module CorpusForwardDeclarations {
+    struct Forward;
+    struct Holder { Forward value; };
+    struct Forward { long value; };
+};

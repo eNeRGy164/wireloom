@@ -1,0 +1,6 @@
+module CorpusAnnotations {
+    @topic struct Sample {
+        @key long id;
+        @default(3) long value;
+    };
+};

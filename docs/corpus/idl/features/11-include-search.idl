@@ -1,0 +1,5 @@
+#include <common.idl>
+#include "includes/common.idl"
+module CorpusIncludeSearch {
+    struct Sample { IncludedType item; long value; };
+};

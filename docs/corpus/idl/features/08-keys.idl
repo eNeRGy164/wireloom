@@ -1,0 +1,14 @@
+module CorpusKeys {
+    struct Simple {
+        @key long id;
+        string<16> name;
+    };
+    struct Identity {
+        @key long tenant;
+        @key string<16> name;
+    };
+    struct Sample {
+        @key Identity identity;
+        long payload;
+    };
+};

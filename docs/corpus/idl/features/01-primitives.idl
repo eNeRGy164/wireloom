@@ -1,0 +1,21 @@
+module CorpusPrimitives {
+    struct Sample {
+        short signed16;
+        long signed32;
+        long long signed64;
+        unsigned short unsigned16;
+        unsigned long unsigned32;
+        unsigned long long unsigned64;
+        int8 fixedInt8;
+        int64 fixedInt64;
+        uint8 fixedUint8;
+        uint64 fixedUint64;
+        octet octetValue;
+        boolean boolValue;
+        char charValue;
+        wchar wideCharValue;
+        float floatValue;
+        double doubleValue;
+        long double longDoubleValue;
+    };
+};

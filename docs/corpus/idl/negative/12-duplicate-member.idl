@@ -1,0 +1,1 @@
+module CorpusNegativeSemantics { struct Duplicate { long value; long value; }; };

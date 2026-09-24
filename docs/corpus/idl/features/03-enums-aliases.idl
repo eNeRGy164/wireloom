@@ -1,0 +1,15 @@
+module CorpusEnums {
+    enum Color { RED, GREEN, BLUE };
+    typedef long Scalar;
+    typedef sequence<Color, 3> ColorSequence;
+    typedef Scalar ScalarAlias;
+    typedef Color ColorAlias;
+    typedef ColorAlias ColorAlias2;
+    struct Record {
+        Scalar value;
+        ScalarAlias aliasValue;
+        Color color;
+        ColorAlias2 aliasColor;
+        ColorSequence colors;
+    };
+};

@@ -1,0 +1,10 @@
+module CorpusNestedKeys {
+    struct Inner {
+        @key long code;
+        long revision;
+    };
+    struct Outer {
+        @key Inner identity;
+        long payload;
+    };
+};

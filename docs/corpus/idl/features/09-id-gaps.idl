@@ -1,0 +1,6 @@
+module CorpusIdGaps {
+    @appendable struct Message {
+        @id(1) long first;
+        @id(7) long seventh;
+    };
+};

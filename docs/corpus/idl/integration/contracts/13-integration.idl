@@ -1,0 +1,2 @@
+#include "../shared/13-status.idl"
+struct CorpusIntegrationMessage { string text; };

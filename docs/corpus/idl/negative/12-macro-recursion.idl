@@ -1,0 +1,3 @@
+#define CORPUS_A CORPUS_B
+#define CORPUS_B CORPUS_A
+module CorpusNegativeMacroRecursion { struct Sample { long CORPUS_A; }; };

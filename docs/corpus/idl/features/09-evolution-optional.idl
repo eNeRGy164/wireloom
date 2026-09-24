@@ -1,0 +1,7 @@
+module CorpusOptionalEvolution {
+    @appendable struct Message {
+        @id(1) long requiredValue;
+        @id(2) @optional long optionalValue;
+        @id(3) @optional string<16> optionalText;
+    };
+};

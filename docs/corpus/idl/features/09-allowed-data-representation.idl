@@ -1,0 +1,5 @@
+module CorpusAllowedDataRepresentation {
+    @allowed_data_representation(XCDR2) @appendable struct Sample {
+        @id(1) long value;
+    };
+};

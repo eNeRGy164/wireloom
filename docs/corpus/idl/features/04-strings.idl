@@ -1,0 +1,8 @@
+module CorpusStrings {
+    struct Sample {
+        string unbounded;
+        string<8> bounded;
+        wstring wideUnbounded;
+        wstring<8> wideBounded;
+    };
+};

@@ -1,0 +1,2 @@
+#if defined(CORPUS_CAPTURE_DEFINE)
+module CorpusNegativeCondition { struct Malformed { long value; }; }

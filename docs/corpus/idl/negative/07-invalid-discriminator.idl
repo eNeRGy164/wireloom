@@ -1,0 +1,3 @@
+module CorpusNegativeDiscriminator {
+    union Choice switch(string) { case "x": long value; };
+};

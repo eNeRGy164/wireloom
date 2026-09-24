@@ -1,0 +1,10 @@
+#define CORPUS_N 2
+#if defined(CORPUS_N) && CORPUS_N == 2
+module CorpusConditionals { struct Enabled { long value; }; };
+#else
+module CorpusConditionals { struct Disabled { long value; }; };
+#endif
+#undef CORPUS_N
+#ifndef CORPUS_N
+module CorpusConditionals { struct UndefBranch { long value; }; };
+#endif

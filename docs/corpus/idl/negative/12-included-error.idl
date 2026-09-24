@@ -1,0 +1,2 @@
+#include "12-included-error-child.idl"
+module CorpusNegativeIncludedError { struct Sample { long value; }; };

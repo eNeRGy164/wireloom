@@ -1,0 +1,6 @@
+module CorpusMultiLabelUnion {
+    union Choice switch(long) {
+        case 1: case 5: long number;
+        case 2: string text;
+    };
+};

@@ -1,0 +1,2 @@
+/* unterminated comment
+module CorpusNegativeComment { struct Sample { long value; }; };

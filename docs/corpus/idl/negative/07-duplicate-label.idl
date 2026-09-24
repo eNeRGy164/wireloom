@@ -1,0 +1,3 @@
+module CorpusNegativeDuplicateLabel {
+    union Choice switch(long) { case 1: long first; case 1: long second; };
+};

@@ -1,0 +1,6 @@
+module CorpusNegativeMemberIds {
+    @mutable struct Sample {
+        @id(1) long first;
+        @id(1) long second;
+    };
+};

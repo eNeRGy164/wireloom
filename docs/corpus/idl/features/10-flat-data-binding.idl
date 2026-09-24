@@ -1,0 +1,8 @@
+@language_binding(FLAT_DATA)
+@data_representation(XCDR2)
+module CorpusFlatDataBinding {
+    @topic struct Sample {
+        long id;
+        long value;
+    };
+};

@@ -1,0 +1,10 @@
+module CorpusConstantExpressions {
+    const long Add = 2 + 3;
+    const long Shifted = (Add << 2) | 1;
+    const long Masked = (Shifted & 15) ^ 3;
+    const long Bound = Masked - 1;
+    struct Sample {
+        sequence<long, Bound> values;
+        long array[Add];
+    };
+};

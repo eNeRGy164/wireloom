@@ -1,0 +1,12 @@
+module CorpusCollections {
+    struct Item { long id; string<16> label; };
+    typedef sequence<long, 4> BoundedLongs;
+    typedef long CoordinateGrid[2][3];
+    struct Sample {
+        long values[2][3];
+        sequence<long> unbounded;
+        BoundedLongs bounded;
+        sequence<Item, 2> items;
+        CoordinateGrid grid;
+    };
+};

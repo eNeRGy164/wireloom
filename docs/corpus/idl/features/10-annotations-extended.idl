@@ -1,0 +1,7 @@
+module CorpusAnnotationVariants {
+    @topic struct Sample {
+        @key long id;
+        @default(3) long value;
+    };
+    @nested struct NestedValue { long value; };
+};

@@ -1,0 +1,1 @@
+struct ZeroBound { string<0> value; };

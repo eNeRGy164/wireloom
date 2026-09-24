@@ -1,0 +1,11 @@
+module CorpusNegativeIgnoredAnnotations {
+    //@copy(// generated comment)
+    //@verbatim("ignored text")
+    //@ignore_literal_names
+    //@try_construct
+    //@copy-cs(// generated comment)
+    //@copy-cs-declaration(// generated declaration comment)
+    struct Sample {
+        @non_serialized long value;
+    };
+};

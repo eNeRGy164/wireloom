@@ -1,0 +1,11 @@
+module CorpusIntegrationCollections {
+    struct Item { long id; string<16> label; };
+    typedef long Row[2];
+    struct Sample {
+        sequence<Item> unboundedItems;
+        sequence<Item, 2> boundedItems;
+        Item aggregateArray[2];
+        Row rows[2];
+        sequence<Row, 2> sequenceOfArrays;
+    };
+};

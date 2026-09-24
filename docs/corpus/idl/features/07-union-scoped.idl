@@ -1,0 +1,7 @@
+module CorpusScopedUnion {
+    struct Payload { long code; string<16> label; };
+    union Choice switch(long) {
+        case 10: CorpusScopedUnion::Payload qualifiedPayload;
+        case 11: sequence<long, 4> values;
+    };
+};

@@ -1,0 +1,15 @@
+module CorpusScopes {
+    const long Bound = 4;
+    module Nested {
+        struct Point { long x; long y; };
+    };
+    struct KeywordRecord {
+        long event;
+        Nested::Point relative;
+        ::CorpusScopes::Nested::Point absolute;
+        sequence<long, Bound> values;
+    };
+};
+module CorpusScopes {
+    struct Reopened { KeywordRecord value; };
+};

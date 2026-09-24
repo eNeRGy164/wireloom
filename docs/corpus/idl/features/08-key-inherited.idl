@@ -1,0 +1,10 @@
+module CorpusInheritedKeys {
+    struct Base {
+        @key long tenant;
+        long baseValue;
+    };
+    struct Derived : Base {
+        @key long localId;
+        long payload;
+    };
+};

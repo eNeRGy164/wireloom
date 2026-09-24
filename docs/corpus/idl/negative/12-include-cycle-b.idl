@@ -1,0 +1,2 @@
+#include "12-include-cycle-a.idl"
+struct CycleB { long value; };

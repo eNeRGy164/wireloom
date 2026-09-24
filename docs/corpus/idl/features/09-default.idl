@@ -1,0 +1,3 @@
+module CorpusDefaultExtensibility {
+    struct Message { long id; string<16> text; };
+};

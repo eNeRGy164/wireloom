@@ -1,0 +1,11 @@
+module CorpusAggregateComposition {
+    typedef long Identifier;
+    enum State { idle, run };
+    const long Max = 4;
+    struct Sample {
+        Identifier id;
+        State state;
+        sequence<float, Max> values;
+    };
+    struct Named { Sample sample; };
+};

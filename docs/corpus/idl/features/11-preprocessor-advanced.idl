@@ -1,0 +1,12 @@
+#define CORPUS_SUM(a, b) ((a) + (b))
+#define CORPUS_FIRST(first, ...) first
+#define CORPUS_BASE 4 \
+    + 3
+#if defined(CORPUS_ADVANCED_DEFINE)
+const long Selected = CORPUS_SUM(CORPUS_BASE, 1);
+#elif 1
+const long Selected = CORPUS_SUM(CORPUS_BASE, CORPUS_FIRST(2, 3));
+#else
+const long Selected = 0;
+#endif
+module CorpusAdvancedPreprocessor { struct Sample { long value; }; };

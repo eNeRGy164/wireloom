@@ -1,0 +1,6 @@
+module CorpusOptionalCollections {
+    @appendable struct Sample {
+        @id(1) @optional sequence<long, 4> values;
+        @id(2) @optional long items[2];
+    };
+};

@@ -1,0 +1,6 @@
+#define CORPUS_CAT(a,b) a ## b
+#define CORPUS_STR(x) #x
+module CorpusMacroOperators {
+    const string Name = CORPUS_STR(sample);
+    struct Sample { long CORPUS_CAT(fi,eld); };
+};

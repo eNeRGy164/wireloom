@@ -1,0 +1,4 @@
+module CorpusNegativeAnnotations {
+    @position(1) struct PositionValue { long value; };
+    @bit_bound(4) enum Flags { A, B };
+};

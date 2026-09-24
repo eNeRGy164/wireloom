@@ -1,0 +1,3 @@
+module CorpusEnumValueSuffix {
+    enum Annotated { FIRST @value(7), SECOND };
+};

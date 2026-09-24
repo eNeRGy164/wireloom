@@ -1,0 +1,5 @@
+@topic module CorpusTopicModule {
+    typedef long Identifier;
+    const string Greeting = "hi";
+    struct Message { @key Identifier id; };
+};

@@ -1,0 +1,5 @@
+module CorpusNegativeAliasCycle {
+    typedef AliasB AliasA;
+    typedef AliasA AliasB;
+    struct Sample { AliasA value; };
+};

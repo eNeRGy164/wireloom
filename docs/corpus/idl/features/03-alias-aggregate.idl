@@ -1,0 +1,6 @@
+module CorpusAggregateAliases {
+    struct Point { long x; long y; };
+    typedef Point PointAlias;
+    typedef PointAlias PointAlias2;
+    struct Sample { PointAlias2 point; };
+};

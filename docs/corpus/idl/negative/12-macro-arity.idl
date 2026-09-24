@@ -1,0 +1,2 @@
+#define CORPUS_PAIR(a, b) a
+const long Value = CORPUS_PAIR(1);

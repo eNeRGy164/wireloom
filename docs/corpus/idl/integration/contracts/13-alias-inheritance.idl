@@ -1,0 +1,7 @@
+@default_nested
+module CorpusIntegrationTrace {
+    typedef string<16> Producer;
+    @appendable struct Context { string<32> correlation; @optional Producer producer; };
+    @appendable struct Base { long baseValue; };
+    @appendable struct Derived : Base { string<16> state; Context traceContext; };
+};

@@ -1,0 +1,10 @@
+module CorpusUnionAliases {
+    enum Kind { Zero = 0, Ten = 10 };
+    union Choice switch(Kind) {
+        case Zero: long zero;
+        case Ten: string ten;
+    };
+    typedef Choice ChoiceAlias;
+    typedef ChoiceAlias ChoiceAlias2;
+    struct Holder { ChoiceAlias2 value; };
+};

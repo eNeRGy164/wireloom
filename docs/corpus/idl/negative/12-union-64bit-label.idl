@@ -1,0 +1,3 @@
+module CorpusNegativeWideUnionLabel {
+    union Choice switch(long long) { case 4294967296: long value; };
+};

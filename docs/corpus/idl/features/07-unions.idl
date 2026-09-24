@@ -1,0 +1,7 @@
+module CorpusUnions {
+    union Choice switch(long) {
+        case 0: long number;
+        case 1: string text;
+        default: boolean flag;
+    };
+};

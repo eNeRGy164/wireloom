@@ -1,0 +1,21 @@
+module CorpusPrimitiveBoundaries {
+    const short shortMin = -32768;
+    const short shortMax = 32767;
+    const long longMin = -2147483648;
+    const long longMax = 2147483647;
+    const long longLongMin = -9223372036854775807 - 1;
+    const long longLongMax = 9223372036854775807;
+    const int8 int8Min = -128;
+    const int8 int8Max = 127;
+    const int64 int64Min = -9223372036854775807 - 1;
+    const int64 int64Max = 9223372036854775807;
+    struct Sample {
+        short shortValue;
+        long longValue;
+        long long longLongValue;
+        int8 int8Value;
+        int64 int64Value;
+        float floatValue;
+        double doubleValue;
+    };
+};

@@ -1,0 +1,3 @@
+// @topic semantic-comment
+/* Comments must not change the generated model. */
+module CorpusComments { struct Sample { string<8> text; }; };

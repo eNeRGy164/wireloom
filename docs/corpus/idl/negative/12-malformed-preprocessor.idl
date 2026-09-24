@@ -1,0 +1,4 @@
+#include "unterminated.idl
+#wat
+#endif
+struct MalformedPreprocessor { long value; };

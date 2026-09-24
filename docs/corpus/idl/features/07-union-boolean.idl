@@ -1,0 +1,6 @@
+module CorpusBooleanUnion {
+    union Choice switch(boolean) {
+        case TRUE: long enabled;
+        case FALSE: string disabled;
+    };
+};

@@ -1,0 +1,7 @@
+module CorpusLongLongUnion {
+    union Choice switch(long long) {
+        case -7: long negative;
+        case 7: string text;
+        default: boolean other;
+    };
+};

@@ -1,0 +1,3 @@
+module CorpusUnsupportedCollectionShape {
+    struct Sample { sequence<sequence<long, 4>, 2> nestedSequences; };
+};

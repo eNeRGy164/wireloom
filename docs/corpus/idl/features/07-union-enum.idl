@@ -1,0 +1,9 @@
+module CorpusEnumUnion {
+    enum Kind { Number, Text, PayloadValue };
+    struct Payload { long code; string<16> label; };
+    union Choice switch(Kind) {
+        case Number: long number;
+        case Text: string text;
+        case PayloadValue: Payload payload;
+    };
+};

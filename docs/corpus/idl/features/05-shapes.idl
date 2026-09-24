@@ -1,0 +1,17 @@
+module CorpusCollectionShapes {
+    struct Item { long id; string<12> label; };
+    typedef long Row[3];
+    typedef sequence<long, 4> BoundedLongs;
+    typedef sequence<Row, 2> Rows;
+    typedef sequence<Item, 3> Items;
+    typedef sequence<string<32>, 4> Names;
+    struct Sample {
+        sequence<Item> unboundedItems;
+        Items boundedItems;
+        sequence<BoundedLongs, 2> nestedSequences;
+        Row rows[2];
+        sequence<Row, 2> sequenceOfArrays;
+        sequence<Rows, 2> sequenceOfArrayAliases;
+        Names names;
+    };
+};

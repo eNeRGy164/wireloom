@@ -1,0 +1,5 @@
+#define CORPUS_FIELD(value) value
+#define CORPUS_TYPE long
+module CorpusMacros {
+    struct Sample { CORPUS_TYPE CORPUS_FIELD(value); };
+};
