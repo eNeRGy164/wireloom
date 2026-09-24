@@ -1,0 +1,9 @@
+workflow: GitHubFlow/v1
+next-version: v0.1.0
+tag-prefix: '[vV]'
+branches:
+  main:
+    regex: ^(main|master)$
+    is-main-branch: true
+    label: ci
+    increment: Patch

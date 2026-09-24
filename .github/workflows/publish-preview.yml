@@ -1,0 +1,121 @@
+name: Publish preview package
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-package-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  PACKAGE_PROJECT: src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
+  TEST_PROJECT: tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj
+  ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
+
+jobs:
+  dependency-review:
+    name: Review dependency changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+
+  package:
+    name: Build and publish preview
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+
+      - name: Set up GitVersion
+        uses: gittools/actions/gitversion/setup@7417b1089e2c7de93510f1901d656ddf60bb024f # v4.7.0
+        with:
+          versionSpec: 6.8.x
+
+      - name: Calculate package version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@7417b1089e2c7de93510f1901d656ddf60bb024f # v4.7.0
+        with:
+          targetPath: ${{ github.workspace }}
+
+      - name: Restore locked dependencies
+        run: dotnet restore $env:TEST_PROJECT --locked-mode
+        shell: pwsh
+
+      - name: Test
+        run: dotnet test $env:TEST_PROJECT --no-restore --configuration Release
+        shell: pwsh
+
+      - name: Pack preview package
+        run: >-
+          dotnet pack $env:PACKAGE_PROJECT
+          --no-restore
+          --configuration Release
+          --output $env:ARTIFACTS_DIR
+          /p:Version=${{ steps.gitversion.outputs.nuGetVersionV2 }}
+          /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }}
+        shell: pwsh
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@9246b90769f852b3a8921f330c59e0b3f439d6e9 # v0.20.1
+        with:
+          path: ${{ env.ARTIFACTS_DIR }}
+          format: cyclonedx-json
+          output-file: ${{ env.ARTIFACTS_DIR }}/wireloom-dds-generator.sbom.cdx.json
+          artifact-name: wireloom-dds-generator-preview.sbom.cdx.json
+
+      - name: Attest package provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: ${{ env.ARTIFACTS_DIR }}/*.nupkg
+
+      - name: Attest SBOM
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: ${{ env.ARTIFACTS_DIR }}/*.nupkg
+          sbom-path: ${{ env.ARTIFACTS_DIR }}/wireloom-dds-generator.sbom.cdx.json
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: wireloom-dds-generator-preview-${{ steps.gitversion.outputs.nuGetVersionV2 }}
+          path: ${{ env.ARTIFACTS_DIR }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish preview to GitHub Packages
+        run: |
+          $package = Get-ChildItem -LiteralPath $env:ARTIFACTS_DIR -Filter '*.nupkg' | Select-Object -First 1
+          if ($null -eq $package) { throw 'No NuGet package was produced.' }
+          dotnet nuget push $package.FullName `
+          --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+          --api-key "${{ secrets.GITHUB_TOKEN }}"
+          --skip-duplicate
+        shell: pwsh
