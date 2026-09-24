@@ -1,0 +1,25 @@
+<Project>
+  <ItemGroup>
+    <!-- DdsIdl contains generation roots. The remaining inputs only track the
+         include graph so Roslyn invalidates when an include is edited. -->
+    <AdditionalFiles Include="@(DdsIdl)" />
+    <AdditionalFiles Include="**/*.idl" Exclude="@(DdsIdl)" Generate="false" />
+    <_DdsIdlIncludeDirectory Include="$(DdsIdlIncludeDirectories)" />
+    <_DdsIdlIncludeDirectory Include="@(DdsIdl->'%(IncludeDirectories)')" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Generate" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IncludeDirectories" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Defines" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Undefines" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Strict" />
+    <AvailableItemName Include="DdsIdl" />
+  </ItemGroup>
+
+  <Target Name="WireloomTrackIncludedIdl" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_DdsIdlIncludedFile
+        Include="%(_DdsIdlIncludeDirectory.Identity)\**\*.idl"
+        Condition="'%(_DdsIdlIncludeDirectory.Identity)' != ''" />
+      <AdditionalFiles Include="@(_DdsIdlIncludedFile)" Generate="false" />
+    </ItemGroup>
+  </Target>
+</Project>
