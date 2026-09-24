@@ -1,8 +1,3 @@
-using System;
-using System.Linq;
-using Wireloom;
-using Shouldly;
-
 namespace Wireloom.Dds.Generator.Tests;
 
 public sealed class GeneratedIdlEmissionSpecs
@@ -73,7 +68,7 @@ public sealed class GeneratedIdlEmissionSpecs
     public void EmitsOneFileScopedDocumentForEachGeneratedClass()
     {
         var documents = IdlCompiler.CompileSources(
-            [CompilerTestSupport.Input("C001-01-primitives.idl", "module OracleP01 { struct Primitive { long value; }; };" )],
+            [CompilerTestSupport.Input("C001-01-primitives.idl", "module OracleP01 { struct Primitive { long value; }; };")],
             TestContext.Current.CancellationToken);
 
         documents.Keys.ShouldBe(new[]

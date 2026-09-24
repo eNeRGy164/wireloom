@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Wireloom.Dds.Generator.Tests;
 
 internal static class CompilerTestSupport

@@ -1,6 +1,3 @@
-using Wireloom;
-using Shouldly;
-
 namespace Wireloom.Dds.Generator.Tests;
 
 public sealed class GeneratedCollectionBoundarySpecs

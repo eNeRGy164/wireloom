@@ -1,7 +1,3 @@
-using System.IO;
-using Wireloom;
-using Shouldly;
-
 namespace Wireloom.Dds.Generator.Tests;
 
 public sealed class IdlPreprocessorSpecs

@@ -1,7 +1,3 @@
-using System.Linq;
-using Wireloom;
-using Shouldly;
-
 namespace Wireloom.Dds.Generator.Tests;
 
 [Trait("Corpus", "C039")]
