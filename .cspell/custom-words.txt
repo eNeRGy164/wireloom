@@ -1,0 +1,21 @@
+# Add repository-specific words here, one per line.
+# Keep this list sorted where practical.
+appendable
+Connext
+CSpell
+DDS
+DDSG
+IDL
+keyhashes
+Meziantou
+MSBuild
+NSubstitute
+NuGet
+Roslyn
+RTI
+rtiddsgen
+Shouldly
+Testcontainers
+Wireloom
+XCDR
+Xunit

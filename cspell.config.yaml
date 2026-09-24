@@ -1,0 +1,46 @@
+version: "0.2"
+
+language: en
+
+caseSensitive: false
+
+enabledLanguageIds:
+  - markdown
+  - plaintext
+  - text
+
+patterns:
+  - name: markdown-fenced-code
+    description: Ignore fenced code blocks in Markdown files
+    pattern: >
+      (?s)(^|\n)[ \t]*`{3,}.*?\n.*?\n[ \t]*`{3,}(?=\n|$)
+
+  - name: markdown-inline-code
+    description: Ignore inline code spans in Markdown files
+    pattern: >
+      `[^`\n]+`
+
+languageSettings:
+  - languageId: markdown
+    locale: en
+    ignoreRegExpList:
+      - markdown-fenced-code
+      - markdown-inline-code
+
+dictionaryDefinitions:
+  - name: custom-words
+    path: .cspell/custom-words.txt
+    addWords: true
+
+dictionaries:
+  - custom-words
+
+ignorePaths:
+  - .cspell/**
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/.git/**"
+  - "**/*.(p|i)uml"
+  - "**/*.bpmn"
+  - "**/.dockerignore"
+  - "**/.gitignore"
