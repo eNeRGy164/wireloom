@@ -1,0 +1,124 @@
+name: Publish preview package
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-package-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  PACKAGE_PROJECT: src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
+  TEST_PROJECT: tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj
+  ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
+
+jobs:
+  dependency-review:
+    name: Review dependency changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+
+  package:
+    name: Build and publish preview
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+
+      - name: Set up GitVersion
+        uses: gittools/actions/gitversion/setup@7417b1089e2c7de93510f1901d656ddf60bb024f # v4.7.0
+        with:
+          versionSpec: 6.8.x
+
+      - name: Calculate package version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@7417b1089e2c7de93510f1901d656ddf60bb024f # v4.7.0
+        with:
+          targetPath: ${{ github.workspace }}
+
+      - name: Restore locked dependencies
+        run: dotnet restore $env:TEST_PROJECT --locked-mode
+        shell: pwsh
+
+      - name: Test
+        run: dotnet test $env:TEST_PROJECT --no-restore --configuration Release
+        shell: pwsh
+
+      - name: Pack preview package
+        run: >-
+          dotnet pack $env:PACKAGE_PROJECT
+          --no-restore
+          --configuration Release
+          --output $env:ARTIFACTS_DIR
+          /p:Version=${{ steps.gitversion.outputs.semVer }}
+          /p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
+        shell: pwsh
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@006b7ce8314066bdf1765b4500370d40fa6917a3 # v0.24.2
+        with:
+          path: ${{ env.ARTIFACTS_DIR }}
+          format: cyclonedx-json
+          output-file: ${{ env.ARTIFACTS_DIR }}/wireloom-dds-generator.sbom.cdx.json
+          artifact-name: wireloom-dds-generator-preview.sbom.cdx.json
+
+      - name: Attest package provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: ${{ env.ARTIFACTS_DIR }}/*.nupkg
+
+      - name: Attest SBOM
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: ${{ env.ARTIFACTS_DIR }}/*.nupkg
+          sbom-path: ${{ env.ARTIFACTS_DIR }}/wireloom-dds-generator.sbom.cdx.json
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: wireloom-dds-generator-preview-${{ steps.gitversion.outputs.semVer }}
+          path: ${{ env.ARTIFACTS_DIR }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish preview to GitHub Packages
+        run: |
+          $package = Get-ChildItem -LiteralPath $env:ARTIFACTS_DIR -Filter '*.nupkg' | Select-Object -First 1
+          if ($null -eq $package) { throw 'No NuGet package was produced.' }
+          $pushArguments = @(
+            $package.FullName,
+            '--source', "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json",
+            '--api-key', '${{ secrets.GITHUB_TOKEN }}',
+            '--skip-duplicate'
+          )
+          dotnet nuget push @pushArguments
+        shell: pwsh
