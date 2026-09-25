@@ -99,7 +99,7 @@ internal sealed class UnionTypeSupportEmitter
             writer.WriteLine($".WithDiscriminator(dtf.GetPrimitiveType<{declaration.DiscriminatorCSharpType}>())");
         }
 
-        writer.WriteLine(".WithExtensibility(ExtensibilityKind.Extensible)");
+        writer.WriteLine($".WithExtensibility(ExtensibilityKind.{declaration.Extensibility})");
         writer.WriteLine($".WithName(\"{idlTypeName}\")");
         writer.WriteLine(".AddMembers(members));");
         writer.Unindent();

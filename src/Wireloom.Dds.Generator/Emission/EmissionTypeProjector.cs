@@ -49,7 +49,8 @@ internal static class EmissionTypeProjector
                     branch.Labels,
                     branch.LabelValues,
                     branch.IsDefault);
-            })]);
+            })],
+            union.Extensibility);
 
     private static EmissionTypePlan ProjectType(IdlType type, string? currentNamespace) =>
         type switch

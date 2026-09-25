@@ -114,7 +114,7 @@ internal sealed class UnionBranchEmissionPlan(IdlEmissionField field, MemberEmis
     public string? Label => IsDefault ? null : Labels[0];
 }
 
-internal sealed class IdlEmissionUnion(string name, string? @namespace, string discriminatorIdlType, string discriminatorCSharpType, bool discriminatorIsEnum, IReadOnlyList<UnionBranchEmissionPlan> branches)
+internal sealed class IdlEmissionUnion(string name, string? @namespace, string discriminatorIdlType, string discriminatorCSharpType, bool discriminatorIsEnum, IReadOnlyList<UnionBranchEmissionPlan> branches, IdlExtensibilityKind extensibility)
 {
     public string Name { get; } = name;
     public string? Namespace { get; } = @namespace;
@@ -122,4 +122,5 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
     public string DiscriminatorCSharpType { get; } = discriminatorCSharpType;
     public bool DiscriminatorIsEnum { get; } = discriminatorIsEnum;
     public IReadOnlyList<UnionBranchEmissionPlan> Branches { get; } = branches;
+    public IdlExtensibilityKind Extensibility { get; } = extensibility;
 }

@@ -76,4 +76,23 @@ public sealed class UnionSpecs
         managed.ShouldContain("return _text;");
         managed.ShouldContain("public Choice(Choice? other)");
     }
+
+    [Fact]
+    public void AppendableEnumAndUnionUseExtensibleTypeSupport()
+    {
+        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("appendable.idl", """
+            module Example {
+                @appendable enum Kind { Number, Text };
+                @appendable union Choice switch(Kind) {
+                    case Number: long number;
+                    case Text: string text;
+                };
+            };
+            """)], TestContext.Current.CancellationToken);
+
+        documents["Example.Implementation.KindPlugin.g.cs"].Source
+            .ShouldContain("WithExtensibility(ExtensibilityKind.Extensible)");
+        documents["Example.Implementation.ChoicePlugin.g.cs"].Source
+            .ShouldContain("WithExtensibility(ExtensibilityKind.Extensible)");
+    }
 }

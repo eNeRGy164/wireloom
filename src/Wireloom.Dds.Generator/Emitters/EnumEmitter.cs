@@ -58,7 +58,7 @@ internal sealed class EnumEmitter
             writer.WriteLine($".AddMember(new EnumMember(\"{member.Name}\", {member.Value}))");
         }
 
-        writer.WriteLine(".WithExtensibility(ExtensibilityKind.Extensible)");
+        writer.WriteLine($".WithExtensibility(ExtensibilityKind.{declaration.Extensibility})");
         writer.WriteLine(".Create();");
         writer.Unindent();
         writer.BlankLine();

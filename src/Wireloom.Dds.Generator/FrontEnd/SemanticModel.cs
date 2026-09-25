@@ -95,11 +95,12 @@ internal sealed class IdlEnumMember(string name, int value, bool hasExplicitValu
     public bool HasExplicitValue { get; } = hasExplicitValue;
 }
 
-internal sealed class IdlEnum(string name, string? @namespace, IReadOnlyList<IdlEnumMember> members)
+internal sealed class IdlEnum(string name, string? @namespace, IReadOnlyList<IdlEnumMember> members, IdlExtensibilityKind extensibility)
 {
     public string Name { get; } = name;
     public string? Namespace { get; } = @namespace;
     public IReadOnlyList<IdlEnumMember> Members { get; } = members;
+    public IdlExtensibilityKind Extensibility { get; } = extensibility;
 }
 
 /// <summary>Raw typedef facts retained until semantic type resolution.</summary>
@@ -128,11 +129,12 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? lab
     public string? Label => IsDefault ? null : Labels[0];
 }
 
-internal sealed class IdlUnion(string name, string? @namespace, string discriminatorIdlType, bool discriminatorIsEnum, IReadOnlyList<IdlUnionBranch> branches)
+internal sealed class IdlUnion(string name, string? @namespace, string discriminatorIdlType, bool discriminatorIsEnum, IReadOnlyList<IdlUnionBranch> branches, IdlExtensibilityKind extensibility)
 {
     public string Name { get; } = name;
     public string? Namespace { get; } = @namespace;
     public string DiscriminatorIdlType { get; } = discriminatorIdlType;
     public bool DiscriminatorIsEnum { get; } = discriminatorIsEnum;
     public IReadOnlyList<IdlUnionBranch> Branches { get; } = branches;
+    public IdlExtensibilityKind Extensibility { get; } = extensibility;
 }

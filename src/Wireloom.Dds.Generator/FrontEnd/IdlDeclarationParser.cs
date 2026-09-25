@@ -219,12 +219,12 @@ internal sealed class IdlDeclarationParser
             return false;
         }
 
-        var enumName = enumDeclaration.Groups[1].Value;
+        var enumName = enumDeclaration.Groups["name"].Value;
         var qualified = Qualify(enumName, currentNamespace);
         EnsureNewName(input, baseOffset + position, qualified);
         var enumMembers = new List<IdlEnumMember>();
         var nextValue = 0L;
-        var enumBody = enumDeclaration.Groups[2];
+        var enumBody = enumDeclaration.Groups["body"];
         var rawMembers = enumBody.Value.Split(',');
         var memberOffset = 0;
 
@@ -253,7 +253,7 @@ internal sealed class IdlDeclarationParser
             nextValue = value + 1;
         }
 
-        var parsedEnum = new IdlEnum(enumName, currentNamespace, enumMembers);
+        var parsedEnum = new IdlEnum(enumName, currentNamespace, enumMembers, ParseExtensibility(enumDeclaration.Groups["extensibility"].Value));
         symbols.AddEnum(qualified, parsedEnum);
         declarationQueue.Add(new IdlEnumDeclaration(parsedEnum, Path.GetFileName(input.Path)));
 
@@ -384,13 +384,13 @@ internal sealed class IdlDeclarationParser
             return false;
         }
 
-        var unionName = unionDeclaration.Groups[1].Value;
+        var unionName = unionDeclaration.Groups["name"].Value;
         var qualified = Qualify(unionName, currentNamespace);
         EnsureNewName(input, baseOffset + position, qualified);
-        var discriminatorIdlType = NormalizeIdlType(unionDeclaration.Groups[2].Value);
+        var discriminatorIdlType = NormalizeIdlType(unionDeclaration.Groups["discriminator"].Value);
         var discriminatorQualified = ResolveTypeName(discriminatorIdlType, currentNamespace);
         var discriminatorIsEnum = symbols.TryGetEnum(discriminatorQualified, out var discriminatorEnum);
-        var unionBody = unionDeclaration.Groups[3];
+        var unionBody = unionDeclaration.Groups["body"];
         var branches = new List<IdlUnionBranch>();
         var branchNames = new HashSet<string>(StringComparer.Ordinal);
         var unionOffset = 0;
@@ -429,13 +429,21 @@ internal sealed class IdlDeclarationParser
                 currentNamespace,
                 discriminatorIdlType,
                 discriminatorIsEnum,
-                branches),
+                branches,
+                ParseExtensibility(unionDeclaration.Groups["extensibility"].Value)),
             Path.GetFileName(input.Path)));
 
         position += unionDeclaration.Length;
 
         return true;
     }
+
+    private static IdlExtensibilityKind ParseExtensibility(string annotation) => annotation.Trim() switch
+    {
+        "@final" => IdlExtensibilityKind.Final,
+        "@mutable" => IdlExtensibilityKind.Mutable,
+        _ => IdlExtensibilityKind.Extensible
+    };
 
     private (IdlUnionBranch Branch, int Length) ParseUnionBranch(
         IdlInput input,

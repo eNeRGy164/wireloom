@@ -15,13 +15,13 @@ internal static class IdlGrammar
         @"^(?:(?<extensibility>@(?:final|appendable|mutable)\s+))?struct\s+(?<name>[A-Za-z_]\w*)(?:\s*:\s*(?<base>[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*))?\s*\{(?<body>[^{}]*)\}\s*;",
         RegexOptions.Compiled);
     internal static readonly Regex UnionPattern = new(
-        @"^union\s+([A-Za-z_]\w*)\s+switch\s*\(\s*(boolean|char|short|long|unsigned\s+short|unsigned\s+long|[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*)\s*\)\s*\{([^{}]*)\}\s*;",
+        @"^(?:(?<extensibility>@appendable\s+))?union\s+(?<name>[A-Za-z_]\w*)\s+switch\s*\(\s*(?<discriminator>boolean|char|short|long|unsigned\s+short|unsigned\s+long|[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*)\s*\)\s*\{(?<body>[^{}]*)\}\s*;",
         RegexOptions.Compiled);
     internal static readonly Regex UnionBranchPattern = new(
         @"^(?:(?<labels>(?:case\s+(?:-?[0-9]+|[A-Za-z_]\w*)\s*:\s*)+)|(?<default>default\s*:\s*))(?<type>(?:sequence\s*<\s*[^>]+\s*>|(?:string|wstring)(?:\s*<\s*[0-9]+\s*>)?|unsigned\s+long\s+long|unsigned\s+short|unsigned\s+long|long\s+long|short|long|boolean|char|wchar|float|double|[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*))\s+(?<name>[A-Za-z_]\w*)\s*;",
         RegexOptions.Compiled);
     internal static readonly Regex EnumPattern = new(
-        @"^enum\s+([A-Za-z_]\w*)\s*\{([^{}]*)\}\s*;",
+        @"^(?:(?<extensibility>@appendable\s+))?enum\s+(?<name>[A-Za-z_]\w*)\s*\{(?<body>[^{}]*)\}\s*;",
         RegexOptions.Compiled);
     internal static readonly Regex TypedefPattern = new(
         @"^typedef\s+([^;]+?)\s+([A-Za-z_]\w*)\s*;",
