@@ -22,6 +22,8 @@ env:
   DOTNET_NOLOGO: true
   PACKAGE_PROJECT: src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
   TEST_PROJECT: tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj
+  PACKAGE_INTEGRATION_TEST_PROJECT: tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj
+  PACKAGE_TEST_FEED: ${{ github.workspace }}/package-test-feed
   ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
 
 jobs:
@@ -69,11 +71,31 @@ jobs:
           fi
 
       - name: Restore locked dependencies
-        run: dotnet restore $env:TEST_PROJECT --locked-mode
+        run: |
+          dotnet restore $env:PACKAGE_PROJECT --locked-mode
+          dotnet restore $env:TEST_PROJECT --locked-mode
         shell: pwsh
 
-      - name: Test
+      - name: Test generator
         run: dotnet test $env:TEST_PROJECT --no-restore --configuration Release
+        shell: pwsh
+
+      - name: Pack package for integration test
+        run: >-
+          dotnet pack $env:PACKAGE_PROJECT
+          --no-restore
+          --configuration Release
+          --output $env:PACKAGE_TEST_FEED
+          /p:Version=${{ steps.gitversion.outputs.semVer }}
+          /p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
+        shell: pwsh
+
+      - name: Restore package integration test
+        run: dotnet restore $env:PACKAGE_INTEGRATION_TEST_PROJECT --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config -p:WireloomDdsGeneratorPackageVersion=${{ steps.gitversion.outputs.semVer }}
+        shell: pwsh
+
+      - name: Test packed package
+        run: dotnet test $env:PACKAGE_INTEGRATION_TEST_PROJECT --no-restore --configuration Release
         shell: pwsh
 
       - name: Pack release package

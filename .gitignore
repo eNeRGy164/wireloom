@@ -18,3 +18,5 @@ bin/
 obj/
 *.user
 *.suo
+package-test-feed/
+coverage/

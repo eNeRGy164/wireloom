@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Wireloom.Dds.Generator.PackageIntegration</RootNamespace>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <!-- This consumer is restored only after the package-under-test is created. -->
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
+    <!-- Keep this packed-analyzer integration test isolated from stale global package contents. -->
+    <RestorePackagesPath>$(MSBuildProjectDirectory)\obj\packages</RestorePackagesPath>
+    <DdsIdlIncludeDirectories>$(MSBuildProjectDirectory)\..\..\docs\corpus\idl\integration</DdsIdlIncludeDirectories>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Intentionally no ProjectReference: this test consumes the packed analyzer. -->
+    <PackageReference Include="Wireloom.Dds.Generator" Version="$(WireloomDdsGeneratorPackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
+    <PackageReference Include="Shouldly" Version="4.3.0" />
+    <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Shouldly" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-integration.idl" />
+    <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-modules.idl" />
+    <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-alias-inheritance.idl" />
+    <DdsIdl Include="..\..\docs\corpus\idl\integration\collections\13-compositions.idl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\docs\corpus\idl\integration\shared\13-status.idl" Generate="false" />
+  </ItemGroup>
+</Project>
