@@ -32,7 +32,7 @@ public sealed class Generator : IIncrementalGenerator
     private static readonly DiagnosticDescriptor RuntimeReferenceError = new(
         "DDSG0003",
         "Compatible RTI runtime not found",
-        "A resolved Rti.ConnextDds reference with version 7.7.0 or later is required",
+        "A resolved Rti.ConnextDds reference with version 7.3.1 or later is required",
         "DDS Source Generator",
         DiagnosticSeverity.Error,
         true);
@@ -129,7 +129,7 @@ public sealed class Generator : IIncrementalGenerator
         foreach (var reference in compilation.References)
         {
             var assembly = compilation.GetAssemblyOrModuleSymbol(reference) as IAssemblySymbol;
-            if (assembly?.Identity.Name == "Rti.ConnextDds" && assembly.Identity.Version >= new Version(7, 7, 0))
+            if (assembly?.Identity.Name == "Rti.ConnextDds" && assembly.Identity.Version >= new Version(7, 3, 1))
             {
                 return true;
             }

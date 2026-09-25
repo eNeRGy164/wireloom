@@ -195,7 +195,7 @@ managed front end and the feature-level oracle approach used here.
 
 - The consumer owns the `Rti.ConnextDds` runtime reference; Wireloom does not
   bundle or transitively add the runtime.
-- A resolved RTI runtime reference of version 7.7.0 or later and C# 12 or later
+- A resolved RTI runtime reference of version 7.3.1 or later and C# 12 or later
   are required by the generator host.
 - Unsupported declarations and directives are rejected with diagnostics rather
   than silently omitted.
