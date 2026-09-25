@@ -113,7 +113,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         {
             var annotations = new Annotations(
                 TypeKind.UInt32,
-                defaultValue: new AnnotationParameterValue { Uint32Value = 0u },
+                defaultValue: new AnnotationParameterValue { Uint32Value = 0U },
                 minValue: new AnnotationParameterValue { Uint32Value = uint.MinValue },
                 maxValue: new AnnotationParameterValue { Uint32Value = uint.MaxValue },
                 unit: null);
@@ -123,7 +123,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         {
             var annotations = new Annotations(
                 TypeKind.UInt64,
-                defaultValue: new AnnotationParameterValue { Uint64Value = 0uL },
+                defaultValue: new AnnotationParameterValue { Uint64Value = 0UL },
                 minValue: new AnnotationParameterValue { Uint64Value = ulong.MinValue },
                 maxValue: new AnnotationParameterValue { Uint64Value = ulong.MaxValue },
                 unit: null);

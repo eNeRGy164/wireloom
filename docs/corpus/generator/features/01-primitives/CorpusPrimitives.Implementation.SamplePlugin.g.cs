@@ -102,7 +102,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         {
             var annotations = new Annotations(
                 TypeKind.UInt32,
-                defaultValue: new AnnotationParameterValue { Uint32Value = 0u },
+                defaultValue: new AnnotationParameterValue { Uint32Value = 0U },
                 minValue: new AnnotationParameterValue { Uint32Value = uint.MinValue },
                 maxValue: new AnnotationParameterValue { Uint32Value = uint.MaxValue },
                 unit: null);
@@ -112,7 +112,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         {
             var annotations = new Annotations(
                 TypeKind.UInt64,
-                defaultValue: new AnnotationParameterValue { Uint64Value = 0uL },
+                defaultValue: new AnnotationParameterValue { Uint64Value = 0UL },
                 minValue: new AnnotationParameterValue { Uint64Value = ulong.MinValue },
                 maxValue: new AnnotationParameterValue { Uint64Value = ulong.MaxValue },
                 unit: null);
@@ -152,7 +152,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         {
             var annotations = new Annotations(
                 TypeKind.UInt64,
-                defaultValue: new AnnotationParameterValue { Uint64Value = 0uL },
+                defaultValue: new AnnotationParameterValue { Uint64Value = 0UL },
                 minValue: new AnnotationParameterValue { Uint64Value = ulong.MinValue },
                 maxValue: new AnnotationParameterValue { Uint64Value = ulong.MaxValue },
                 unit: null);
@@ -202,7 +202,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         {
             var annotations = new Annotations(
                 TypeKind.Float32,
-                defaultValue: new AnnotationParameterValue { Float32Value = 0f },
+                defaultValue: new AnnotationParameterValue { Float32Value = 0.0F },
                 minValue: new AnnotationParameterValue { Float32Value = float.MinValue },
                 maxValue: new AnnotationParameterValue { Float32Value = float.MaxValue },
                 unit: null);
@@ -212,7 +212,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         {
             var annotations = new Annotations(
                 TypeKind.Float64,
-                defaultValue: new AnnotationParameterValue { Float64Value = 0d },
+                defaultValue: new AnnotationParameterValue { Float64Value = 0.0D },
                 minValue: new AnnotationParameterValue { Float64Value = double.MinValue },
                 maxValue: new AnnotationParameterValue { Float64Value = double.MaxValue },
                 unit: null);

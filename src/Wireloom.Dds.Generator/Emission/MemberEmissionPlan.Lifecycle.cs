@@ -42,8 +42,12 @@ internal sealed partial class MemberEmissionPlan
     {
         PrimitiveEmissionType primitive => primitive.IdlName switch
         {
-            "float" => "0F",
-            "double" => "0D",
+            "long" or "int32" => "0",
+            "long long" or "int64" => "0L",
+            "unsigned long" or "uint32" => "0U",
+            "unsigned long long" or "uint64" => "0UL",
+            "float" => "0.0F",
+            "double" => "0.0D",
             "long double" => "(LongDouble)0",
             _ => "0"
         },
