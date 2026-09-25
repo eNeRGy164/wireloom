@@ -80,7 +80,10 @@ internal sealed class IdlDeclarationParser
         var declaration = StructPattern.Match(declarations.Substring(position));
         if (!declaration.Success)
         {
-            throw new IdlException(input, baseOffset + position, "Unsupported IDL syntax; prototype supports structs and quoted includes only.");
+            var remaining = declarations[position..].TrimStart();
+            var tokenEnd = remaining.IndexOfAny([' ', '\t', '\r', '\n', '{', ';']);
+            var token = tokenEnd < 0 ? remaining : remaining[..tokenEnd];
+            throw new IdlException(input, baseOffset + position, $"Unsupported IDL syntax near '{token}'. This generator does not support that declaration or annotation.");
         }
 
         var name = declaration.Groups["name"].Value;

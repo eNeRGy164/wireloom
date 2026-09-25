@@ -228,7 +228,7 @@ internal sealed class IdlPreprocessor
                     var match = IncludePattern.Match(rest);
                     if (!match.Success)
                     {
-                        throw new IdlException(input, offset, "Malformed #include directive.");
+                        throw new IdlException(input, offset, "Malformed #include directive; expected a quoted or angle-bracket filename, for example #include \"Common.idl\".");
                     }
 
                     include(

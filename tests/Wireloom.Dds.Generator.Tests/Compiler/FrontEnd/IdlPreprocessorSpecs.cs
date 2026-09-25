@@ -3,6 +3,20 @@ namespace Wireloom.Dds.Generator.Tests;
 public sealed class IdlPreprocessorSpecs
 {
     [Fact]
+    public void ReportsThatIncludeFilenamesNeedQuotesOrAngleBrackets()
+    {
+        var input = CompilerTestSupport.Input(
+            "unquoted-include.idl",
+            "#include CommonHeader.idl\nstruct Sample { long value; };");
+
+        var exception = Should.Throw<IdlException>(() => CompilerTestSupport.Compile(input));
+
+        exception.Message.ShouldContain("expected a quoted or angle-bracket filename");
+        exception.Offset.ShouldBe(0);
+        exception.Input.Path.ShouldEndWith("unquoted-include.idl");
+    }
+
+    [Fact]
     [Trait("Corpus", "C048")]
     [Trait("Corpus", "C049")]
     [Trait("Corpus", "C050")]

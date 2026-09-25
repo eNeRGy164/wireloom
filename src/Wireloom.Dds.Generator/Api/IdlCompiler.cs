@@ -11,7 +11,7 @@ namespace Wireloom;
 public static partial class IdlCompiler
 {
     /// <summary>
-    /// Compiles IDL generation roots and their quoted include closures.
+    /// Compiles IDL generation roots and their quoted or angle-bracket include closures.
     /// </summary>
     /// <param name="inputs">
     /// All source inputs available to the compiler. Only inputs with

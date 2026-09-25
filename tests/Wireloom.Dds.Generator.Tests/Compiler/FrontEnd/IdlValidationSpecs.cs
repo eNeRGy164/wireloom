@@ -5,6 +5,7 @@ public sealed class IdlValidationSpecs
     [Theory]
     [InlineData("struct Bad { string<0> value; };", "String bound")]
     [InlineData("#error no\nstruct Bad { int32 value; };", "Preprocessor error")]
+    [InlineData("@appendable enum Kind { A };", "Unsupported IDL syntax near '@appendable'")]
     public void ReportsUnsupportedSyntaxAtItsOriginalSource(string source, string expectedDiagnostic)
     {
         var exception = Should.Throw<IdlException>(() => CompilerTestSupport.Compile(

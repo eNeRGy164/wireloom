@@ -1,7 +1,7 @@
 namespace Wireloom;
 
 /// <summary>
-/// Owns canonical IDL inputs and deterministic quoted-include traversal.
+/// Owns canonical IDL inputs and deterministic include traversal.
 /// Parsing and semantic state are deliberately supplied as a callback.
 /// </summary>
 internal sealed class IdlInputGraph
