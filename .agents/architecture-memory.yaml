@@ -1,21 +1,129 @@
 version: 1
-source:
-  skill: dotnet-bootstrap
-  resource: attachments/dotnet-defaults.yaml
-  status: standard
-repository:
-  root_namespace: Wireloom
-  target_framework: net10.0
-  sdk: 10.0.401
-  package_type: nuget
-  runtime_identifiers: []
-dotnet:
-  unit_test_framework: xunit_v3_mtp-v2
-  assertions: shouldly
-  mocking: nsubstitute
-  test_platform: microsoft_testing_platform
-  code_coverage: microsoft_testing_extensions_codecoverage
-  integration_testing: testcontainers
-  time_testing: microsoft_extensions_timeprovider_testing
-  web_ui_testing: playwright
-  value_objects: vogen
+metadata:
+  status: current
+  generated_at: 2026-09-25T14:06:07Z
+  arc42_home: docs/architecture/arc42
+  human_memory_path: docs/architecture/architecture-memory.md
+sources:
+  arc42:
+    - docs/architecture/arc42/index.md
+    - docs/architecture/arc42/01-introduction-and-goals.md
+    - docs/architecture/arc42/02-architecture-constraints.md
+    - docs/architecture/arc42/03-context-and-scope.md
+    - docs/architecture/arc42/04-solution-strategy.md
+    - docs/architecture/arc42/05-building-block-view.md
+    - docs/architecture/arc42/06-runtime-view.md
+    - docs/architecture/arc42/07-deployment-view.md
+    - docs/architecture/arc42/08-crosscutting-concepts.md
+    - docs/architecture/arc42/09-architectural-decisions.md
+    - docs/architecture/arc42/10-quality-requirements.md
+    - docs/architecture/arc42/11-risks-and-technical-debt.md
+    - docs/architecture/arc42/12-glossary.md
+  adr: []
+  contracts:
+    - docs/corpus/README.md
+    - docs/corpus/FEATURE-COVERAGE.md
+  defaults:
+    - skill: dotnet-bootstrap
+      resource: attachments/dotnet-defaults.yaml
+      status: standard
+summary:
+  goals:
+    text: Keep Connext IDL generation inside the .NET build and advance compatibility through evidence-backed cases.
+    sources:
+      - docs/architecture/arc42/01-introduction-and-goals.md
+  constraints:
+    text: The analyzer targets netstandard2.0; consumers use .NET 10, C# 12+, and an explicit RTI runtime reference of at least 7.7.0.
+    sources:
+      - docs/architecture/arc42/02-architecture-constraints.md
+  context:
+    text: Wireloom is a compile-time component between a consumer project and generated C#; it is not in the DDS data path.
+    sources:
+      - docs/architecture/arc42/03-context-and-scope.md
+  strategy:
+    text: Use a managed Roslyn pipeline with explicit roots, independent semantic modeling, and source-located diagnostics.
+    sources:
+      - docs/architecture/arc42/04-solution-strategy.md
+  building_blocks:
+    text: Separate input graph, preprocessing, parsing, resolution, emission planning, and output emitters.
+    sources:
+      - docs/architecture/arc42/05-building-block-view.md
+  runtime:
+    text: Generation occurs during consumer compilation; the generated application uses its selected RTI runtime afterward.
+    sources:
+      - docs/architecture/arc42/06-runtime-view.md
+  deployment:
+    text: The analyzer is delivered as a NuGet package and consumed on developer or CI build hosts.
+    sources:
+      - docs/architecture/arc42/07-deployment-view.md
+  cross_cutting:
+    text: Evidence vocabulary, deterministic inputs, diagnostics, test separation, and supply-chain controls apply across the system.
+    sources:
+      - docs/architecture/arc42/08-crosscutting-concepts.md
+  decisions:
+    text: Roslyn hosting, explicit roots, independent semantic modeling, explicit runtime ownership, and case-level evidence are current decisions.
+    sources:
+      - docs/architecture/arc42/09-architectural-decisions.md
+  quality:
+    text: Compatibility shape, diagnostics, package integration, maintainability, and supply-chain integrity are the primary quality goals.
+    sources:
+      - docs/architecture/arc42/10-quality-requirements.md
+  risks:
+    text: Feature coverage, runtime and C++ evidence, host qualification, and cyclic-alias handling remain open risks.
+    sources:
+      - docs/architecture/arc42/11-risks-and-technical-debt.md
+  glossary:
+    text: Connext IDL, DdsIdl root, included IDL, type-specific support, RTI oracle, and wire compatibility have project-specific meanings.
+    sources:
+      - docs/architecture/arc42/12-glossary.md
+defaults:
+  repository:
+    root_namespace:
+      value: Wireloom
+      source: brownfield-detection
+      status: detected
+    consumer_target_framework:
+      value: net10.0
+      source: chapter-2
+      status: explicit
+    generator_target_framework:
+      value: netstandard2.0
+      source: chapter-2
+      status: explicit
+    sdk:
+      value: 10.0.401
+      source: brownfield-detection
+      status: detected
+    package_type:
+      value: nuget-analyzer-source-generator
+      source: chapter-7
+      status: explicit
+    runtime_identifiers:
+      value: []
+      source: brownfield-detection
+      status: detected
+  dotnet:
+    unit_test_framework:
+      value: xunit_v3_mtp-v2
+      source: chapter-2
+      status: explicit
+    assertions:
+      value: shouldly
+      source: brownfield-detection
+      status: detected
+    test_platform:
+      value: microsoft_testing_platform
+      source: brownfield-detection
+      status: detected
+    code_coverage:
+      value: microsoft_testing_extensions_codecoverage
+      source: brownfield-detection
+      status: detected
+    package_management:
+      value: central_versions_lock_files_nuget_audit
+      source: chapter-8
+      status: explicit
+    rti_runtime_eligibility:
+      value: ">= 7.7.0"
+      source: chapter-2
+      status: explicit

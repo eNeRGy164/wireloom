@@ -174,6 +174,8 @@ kept at the generator boundary, where it supplies AdditionalFiles, compiler
 diagnostics, cancellation, and generated documents. The source layout mirrors
 these responsibilities under [`src/Wireloom.Dds.Generator`](src/Wireloom.Dds.Generator).
 
+The architecture is documented with a compact [arc42 baseline](docs/architecture/arc42/index.md).
+
 ## Repository map
 
 | Path | Purpose |

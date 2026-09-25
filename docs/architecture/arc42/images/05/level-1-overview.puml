@@ -1,0 +1,22 @@
+@startuml
+skinparam componentStyle rectangle
+
+rectangle "Consumer project" as consumer
+rectangle "MSBuild targets\nDdsIdl + include metadata" as msbuild
+rectangle "Roslyn generator\nGenerator" as generator
+rectangle "Managed compiler\npreprocessor → parser → resolver → validator" as compiler
+rectangle "Emitters\nmanaged/native/type support" as emitters
+rectangle "Generated C#\nAdditional documents" as output
+rectangle "RTI Connext DDS\nruntime" as runtime
+database "IDL corpus + RTI oracles" as corpus
+
+consumer --> msbuild : declares roots
+msbuild --> generator : AdditionalFiles
+generator --> compiler
+compiler --> emitters
+emitters --> output
+output --> consumer : compile-time types
+consumer --> runtime : explicit reference
+corpus --> compiler : compliance cases
+corpus --> emitters : oracle shape
+@enduml

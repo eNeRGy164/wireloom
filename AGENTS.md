@@ -33,3 +33,19 @@ Commit policy is documented, but no local hooks or CI enforcement are configured
 
 - Target `net10.0` with root namespace `Wireloom`.
 - Use `.agents/architecture-memory.yaml` as the machine-readable source for current .NET defaults.
+
+## Architecture guardrails
+
+Before proposing or implementing architecture-affecting changes:
+
+- Read `.agents/architecture-memory.yaml` first when it exists.
+- Open the arc42 chapters in `docs/architecture/arc42/`, linked decisions, and contracts when more detail is needed.
+- Treat the arc42 chapters and linked source documents as the source of truth; refresh the derived memory after architecture changes.
+- If a request conflicts with the architecture documentation, explain the conflict and propose a documentation, ADR, code, or combined change.
+
+## Documentation conventions
+
+- Documentation language: US English
+- Documentation format: Markdown
+- Preferred diagram tool: PlantUML
+- Store PlantUML sources under `docs/architecture/arc42/images/<chapter>/`.
