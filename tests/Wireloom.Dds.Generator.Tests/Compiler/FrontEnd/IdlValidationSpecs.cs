@@ -144,4 +144,16 @@ public sealed class IdlValidationSpecs
 
         CompilerTestSupport.Compile(input).ShouldContain("DerivedPlugin");
     }
+
+    [Fact]
+    public void AcceptsNestedAnnotationAndRetainsCSharpTypeSupport()
+    {
+        var output = CompilerTestSupport.Compile(CompilerTestSupport.Input(
+            "nested.idl",
+            "module Example { @nested struct Value { long number; }; };"));
+
+        output.ShouldContain("public partial class Value");
+        output.ShouldContain("ValueSupport");
+        output.ShouldContain("ValuePlugin");
+    }
 }

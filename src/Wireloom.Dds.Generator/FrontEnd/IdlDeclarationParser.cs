@@ -104,6 +104,7 @@ internal sealed class IdlDeclarationParser
             currentNamespace,
             fields,
             extensibility,
+            declaration.Groups["nested"].Success || declaration.Groups["nestedAfter"].Success,
             input,
             declaration.Groups["base"].Success
                 ? EscapeQualifiedIdentifier(ResolveTypeName(declaration.Groups["base"].Value, currentNamespace))
@@ -241,14 +242,21 @@ internal sealed class IdlDeclarationParser
                 throw new IdlException(input, sourceOffset, "Malformed enum member; expected an identifier, an optional prefix @value(<signed decimal>), or an explicit signed decimal value.");
             }
 
-            if (member.Groups[1].Success && member.Groups[3].Success)
+            if (member.Groups["value"].Success && member.Groups["explicit"].Success)
             {
                 throw new IdlException(input, sourceOffset, "Combined @value and explicit enum values are unsupported.");
             }
 
             var value = ParseEnumValue(input, sourceOffset, member, nextValue);
-            var hasExplicitValue = member.Groups[1].Success || member.Groups[3].Success;
-            enumMembers.Add(new IdlEnumMember(member.Groups[2].Value, value, hasExplicitValue));
+            var isDefaultLiteral = member.Groups["defaultLiteral"].Success;
+            if (isDefaultLiteral && hasDefaultLiteral)
+            {
+                throw new IdlException(input, sourceOffset, "An enum may contain at most one @default_literal.");
+            }
+
+            hasDefaultLiteral |= isDefaultLiteral;
+            var hasExplicitValue = member.Groups["value"].Success || member.Groups["explicit"].Success;
+            enumMembers.Add(new IdlEnumMember(member.Groups["name"].Value, value, hasExplicitValue, isDefaultLiteral));
 
             nextValue = value + 1;
         }
@@ -264,9 +272,9 @@ internal sealed class IdlDeclarationParser
 
     private static int ParseEnumValue(IdlInput input, int sourceOffset, Match member, long nextValue)
     {
-        if (member.Groups[3].Success || member.Groups[1].Success)
+        if (member.Groups["explicit"].Success || member.Groups["value"].Success)
         {
-            var valueText = member.Groups[3].Success ? member.Groups[3].Value : member.Groups[1].Value;
+            var valueText = member.Groups["explicit"].Success ? member.Groups["explicit"].Value : member.Groups["value"].Value;
             if (!int.TryParse(valueText, out var value))
             {
                 throw new IdlException(input, sourceOffset, "Enum value must be a signed Int32 decimal.");
@@ -430,7 +438,8 @@ internal sealed class IdlDeclarationParser
                 discriminatorIdlType,
                 discriminatorIsEnum,
                 branches,
-                ParseExtensibility(unionDeclaration.Groups["extensibility"].Value)),
+                ParseExtensibility(unionDeclaration.Groups["extensibility"].Value),
+                unionDeclaration.Groups["nested"].Success || unionDeclaration.Groups["nestedAfter"].Success),
             Path.GetFileName(input.Path)));
 
         position += unionDeclaration.Length;

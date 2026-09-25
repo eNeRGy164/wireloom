@@ -32,12 +32,13 @@ internal sealed class IdlTypedefDeclaration(IdlTypedef declaration, string sourc
     public string SourceIdlFileName { get; } = sourceIdlFileName;
 }
 
-internal sealed class IdlClassDeclaration(string name, string? @namespace, IReadOnlyList<IdlMember> fields, IdlExtensibilityKind extensibility, IdlInput sourceInput, string? baseType) : IdlDeclaration
+internal sealed class IdlClassDeclaration(string name, string? @namespace, IReadOnlyList<IdlMember> fields, IdlExtensibilityKind extensibility, bool isNested, IdlInput sourceInput, string? baseType) : IdlDeclaration
 {
     public string Name { get; } = name;
     public string? Namespace { get; } = @namespace;
     public IReadOnlyList<IdlMember> Fields { get; } = fields;
     public IdlExtensibilityKind Extensibility { get; } = extensibility;
+    public bool IsNested { get; } = isNested;
     public IdlInput SourceInput { get; } = sourceInput;
     public string SourceIdlFileName { get; } = Path.GetFileName(sourceInput.Path);
     public string? BaseType { get; } = baseType;

@@ -95,4 +95,20 @@ public sealed class UnionSpecs
         documents["Example.Implementation.ChoicePlugin.g.cs"].Source
             .ShouldContain("WithExtensibility(ExtensibilityKind.Extensible)");
     }
+
+    [Fact]
+    public void NestedAppendableUnionIsAccepted()
+    {
+        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("nested-union.idl", """
+            module Example {
+                enum Kind { Number, Text };
+                @nested @appendable union Choice switch(Kind) {
+                    case Number: long number;
+                    case Text: string text;
+                };
+            };
+            """)], TestContext.Current.CancellationToken);
+
+        documents["Example.Choice.g.cs"].Source.ShouldContain("public partial class Choice");
+    }
 }

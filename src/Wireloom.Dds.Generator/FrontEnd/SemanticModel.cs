@@ -129,7 +129,7 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? lab
     public string? Label => IsDefault ? null : Labels[0];
 }
 
-internal sealed class IdlUnion(string name, string? @namespace, string discriminatorIdlType, bool discriminatorIsEnum, IReadOnlyList<IdlUnionBranch> branches, IdlExtensibilityKind extensibility)
+internal sealed class IdlUnion(string name, string? @namespace, string discriminatorIdlType, bool discriminatorIsEnum, IReadOnlyList<IdlUnionBranch> branches, IdlExtensibilityKind extensibility, bool isNested)
 {
     public string Name { get; } = name;
     public string? Namespace { get; } = @namespace;
@@ -137,4 +137,5 @@ internal sealed class IdlUnion(string name, string? @namespace, string discrimin
     public bool DiscriminatorIsEnum { get; } = discriminatorIsEnum;
     public IReadOnlyList<IdlUnionBranch> Branches { get; } = branches;
     public IdlExtensibilityKind Extensibility { get; } = extensibility;
+    public bool IsNested { get; } = isNested;
 }

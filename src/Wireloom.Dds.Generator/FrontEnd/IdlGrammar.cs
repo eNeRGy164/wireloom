@@ -12,10 +12,10 @@ internal static class IdlGrammar
         @"^@default_nested\b\s*",
         RegexOptions.Compiled);
     internal static readonly Regex StructPattern = new(
-        @"^(?:(?<extensibility>@(?:final|appendable|mutable)\s+))?struct\s+(?<name>[A-Za-z_]\w*)(?:\s*:\s*(?<base>[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*))?\s*\{(?<body>[^{}]*)\}\s*;",
+        @"^(?:(?<nested>@nested\s+))?(?:(?<extensibility>@(?:final|appendable|mutable)\s+))?(?:(?<nestedAfter>@nested\s+))?struct\s+(?<name>[A-Za-z_]\w*)(?:\s*:\s*(?<base>[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*))?\s*\{(?<body>[^{}]*)\}\s*;",
         RegexOptions.Compiled);
     internal static readonly Regex UnionPattern = new(
-        @"^(?:(?<extensibility>@appendable\s+))?union\s+(?<name>[A-Za-z_]\w*)\s+switch\s*\(\s*(?<discriminator>boolean|char|short|long|unsigned\s+short|unsigned\s+long|[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*)\s*\)\s*\{(?<body>[^{}]*)\}\s*;",
+        @"^(?:(?<nested>@nested\s+))?(?:(?<extensibility>@appendable\s+))?(?:(?<nestedAfter>@nested\s+))?union\s+(?<name>[A-Za-z_]\w*)\s+switch\s*\(\s*(?<discriminator>boolean|char|short|long|unsigned\s+short|unsigned\s+long|[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*)\s*\)\s*\{(?<body>[^{}]*)\}\s*;",
         RegexOptions.Compiled);
     internal static readonly Regex UnionBranchPattern = new(
         @"^(?:(?<labels>(?:case\s+(?:-?[0-9]+|[A-Za-z_]\w*)\s*:\s*)+)|(?<default>default\s*:\s*))(?<type>(?:sequence\s*<\s*[^>]+\s*>|(?:string|wstring)(?:\s*<\s*[0-9]+\s*>)?|unsigned\s+long\s+long|unsigned\s+short|unsigned\s+long|long\s+long|short|long|boolean|char|wchar|float|double|[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*))\s+(?<name>[A-Za-z_]\w*)\s*;",
@@ -33,7 +33,7 @@ internal static class IdlGrammar
         @"^typedef\s+([^;]+?)\s+([A-Za-z_]\w*)\s*((?:\[[^\]]+\])+?)\s*;",
         RegexOptions.Compiled);
     internal static readonly Regex EnumMemberPattern = new(
-        @"^(?:@value\s*\(\s*(-?[0-9]+)\s*\)\s*)?([A-Za-z_]\w*)\s*(?:=\s*(-?[0-9]+))?\s*$",
+        @"^(?<defaultLiteral>@default_literal\s+)?(?:@value\s*\(\s*(?<value>-?[0-9]+)\s*\)\s*)?(?<name>[A-Za-z_]\w*)\s*(?:=\s*(?<explicit>-?[0-9]+))?\s*$",
         RegexOptions.Compiled);
     internal static readonly Regex ConstantPattern = new(
         @"^const\s+(?<type>string|wstring|long\s+double|unsigned\s+long\s+long|unsigned\s+long|unsigned\s+short|long\s+long|short|long|int8|int16|int32|int64|uint8|uint16|uint32|uint64|octet|boolean|char|wchar|float|double)\s+(?<name>[A-Za-z_]\w*)\s*=\s*(?<expression>[^;]+);",
