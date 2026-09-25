@@ -68,6 +68,16 @@ Keep fast unit tests separate from exact corpus comparisons:
 - Package and runtime integration tests should consume only the corpus cases
   relevant to their scope.
 
+Run the complete manifest-driven compliance suite with:
+
+```text
+dotnet test tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --no-restore --configuration Release
+```
+
+The package preview and release workflows restore and run this suite before
+packing. The quality workflow remains focused on the fast unit-test and
+coverage path.
+
 Use the feature index to find the exact IDL, oracle files, managed status, and
 test entry points: [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md).
 

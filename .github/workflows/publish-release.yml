@@ -22,6 +22,7 @@ env:
   DOTNET_NOLOGO: true
   PACKAGE_PROJECT: src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
   TEST_PROJECT: tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj
+  CORPUS_TEST_PROJECT: tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj
   PACKAGE_INTEGRATION_TEST_PROJECT: tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj
   PACKAGE_TEST_FEED: ${{ github.workspace }}/package-test-feed
   ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
@@ -74,10 +75,15 @@ jobs:
         run: |
           dotnet restore $env:PACKAGE_PROJECT --locked-mode
           dotnet restore $env:TEST_PROJECT --locked-mode
+          dotnet restore $env:CORPUS_TEST_PROJECT --locked-mode
         shell: pwsh
 
       - name: Test generator
         run: dotnet test $env:TEST_PROJECT --no-restore --configuration Release
+        shell: pwsh
+
+      - name: Test corpus compliance
+        run: dotnet test $env:CORPUS_TEST_PROJECT --no-restore --configuration Release
         shell: pwsh
 
       - name: Pack package for integration test

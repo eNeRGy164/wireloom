@@ -2,7 +2,7 @@
 
 This is the feature index for the managed-generator compatibility corpus. Each case has a stable `C###` tag that can be used in test names, issues, and implementation work. The numbering follows the corpus manifest: positive features first, negative probes second, and integration entry points last.
 
-The status snapshot below comes from the corpus compliance run on 2026-09-24: `dotnet test tests/CorpusCompliance/CorpusCompliance.csproj --no-restore`. It is source-generation coverage only; runtime, serialization, wire, and live DDS behavior are excluded.
+The status snapshot below comes from the corpus compliance run on 2026-09-24: `dotnet test tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --no-restore`. It is source-generation coverage only; runtime, serialization, wire, and live DDS behavior are excluded.
 
 ## Status meanings
 
@@ -143,7 +143,7 @@ RTI oracle links point to the licensee-generated C# source under `corpus/oracles
 
 ## Test usage
 
-Use the stable tag together with the case ID when referring to coverage, for example `C001 / 01-primitives`. The data-driven tests are in [CorpusComplianceSpecs.cs](../../../tests/CorpusCompliance/CorpusComplianceSpecs.cs):
+Use the stable tag together with the case ID when referring to coverage, for example `C001 / 01-primitives`. The data-driven tests are in [CorpusComplianceSpecs.cs](../../../tests/Wireloom.Dds.Generator.CorpusCompliance/CorpusComplianceSpecs.cs):
 
 - `EveryCorpusCaseMatchesItsExpectedAcceptance` exercises every positive, negative, and integration case.
 - `EveryAcceptedCorpusCasePreservesTheOracleDataContractShape` compares accepted output with the RTI C# oracle.

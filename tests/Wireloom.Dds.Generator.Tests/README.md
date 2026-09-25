@@ -11,7 +11,7 @@ also starts with the same tag so failures retain useful provenance without
 introducing a file-system dependency.
 
 The exact corpus files and their RTI-generated oracle sources are exercised by
-`tests/CorpusCompliance`. That project is the authoritative check for complete
+`tests/Wireloom.Dds.Generator.CorpusCompliance`. That project is the authoritative check for complete
 positive, negative, and integration corpus coverage; this project intentionally
 does not duplicate its manifest-driven loading or oracle comparison.
 
