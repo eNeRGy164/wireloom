@@ -23,6 +23,15 @@
           "Microsoft.Testing.Platform": "2.0.0"
         }
       },
+      "Rti.ConnextDds": {
+        "type": "Direct",
+        "requested": "[7.7.0, )",
+        "resolved": "7.7.0",
+        "contentHash": "1904NCJjqQAj8kTW374GuSDUXuCjol6XpeW+5kdhXObKNc7AGqqKEQdoPVVmmO2DuolNeYJOOnXgnlV987HJHg==",
+        "dependencies": {
+          "Rti.ConnextDds.Native": "7.7.0"
+        }
+      },
       "Shouldly": {
         "type": "Direct",
         "requested": "[4.3.0, )",
@@ -125,6 +134,11 @@
         "type": "Transitive",
         "resolved": "5.0.0",
         "contentHash": "dDoKi0PnDz31yAyETfRntsLArTlVAVzUzCIvvEDsDsucrl33Dl8pIJG06ePTJTI3tGpeyHS9Cq7Foc/s4EeKcg=="
+      },
+      "Rti.ConnextDds.Native": {
+        "type": "Transitive",
+        "resolved": "7.7.0",
+        "contentHash": "7aqV99/lJWMk6Bmddb30CLMs0rvSdtPi9EiWotnmYbzUkKXIacguZcLhhOTySQaWgaAQC2slDkAPeQJ8Y3v3Nw=="
       },
       "System.CodeDom": {
         "type": "Transitive",
