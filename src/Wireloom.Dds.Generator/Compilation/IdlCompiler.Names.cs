@@ -45,8 +45,10 @@ public static partial class IdlCompiler
     internal static string ResolveTypeName(string idlType, string? currentNamespace)
     {
         var normalized = NormalizeIdlType(idlType).Replace("::", ".");
+        var isAbsolute = normalized.StartsWith(".", StringComparison.Ordinal);
+        normalized = normalized.TrimStart('.');
 
-        if (currentNamespace is null || normalized.StartsWith(currentNamespace + ".", StringComparison.Ordinal))
+        if (isAbsolute || currentNamespace is null || normalized.StartsWith(currentNamespace + ".", StringComparison.Ordinal))
         {
             return normalized;
         }

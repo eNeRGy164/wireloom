@@ -15,6 +15,7 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "01-primitives",
         "01-full-widths",
         "02-names-constants",
+        "02-scopes",
         "02-constant-expressions",
         "02-formatting",
         "02-multiple",

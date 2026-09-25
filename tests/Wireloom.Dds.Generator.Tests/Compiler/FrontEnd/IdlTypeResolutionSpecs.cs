@@ -160,4 +160,35 @@ public sealed class IdlTypeResolutionSpecs
             )
         )).Message.ShouldContain("at most one @default_literal");
     }
+
+    [Fact]
+    public void ResolvesAbsoluteScopedStructBaseNames()
+    {
+        var documents = IdlCompiler.CompileSources([
+            new IdlInput(
+                "common.idl",
+                "module A { module B { module C { struct Header { long id; }; }; }; };",
+                generate: false),
+            CompilerTestSupport.Input(
+                "body.idl",
+                """
+                #include "common.idl"
+
+                module D {
+                    module E {
+                        module F {
+                            @topic
+                            @appendable
+                            struct Base : ::A::B::C::Header {
+                                long value;
+                            };
+                        };
+                    };
+                };
+                """)
+        ], TestContext.Current.CancellationToken);
+
+        documents["D.E.F.Base.g.cs"].Source
+            .ShouldContain("public partial class Base : A.B.C.Header");
+    }
 }
