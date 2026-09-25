@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using static Wireloom.IdlCompiler;
 
 namespace Wireloom;

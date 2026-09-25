@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Wireloom;
 
 /// <summary>Stores declaration names and lookup tables for the front end.</summary>

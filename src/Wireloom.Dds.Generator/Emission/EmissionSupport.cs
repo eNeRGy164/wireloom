@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Wireloom;
 
 public static partial class IdlCompiler

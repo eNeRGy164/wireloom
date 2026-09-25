@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Wireloom;
 
 /// <summary>Writes the repeated loop shapes used by generated fixed arrays.</summary>

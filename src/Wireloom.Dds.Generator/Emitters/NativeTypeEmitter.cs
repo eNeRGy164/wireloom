@@ -1,9 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Wireloom;
-
-using static Wireloom.IdlCompiler;
 
 /// <summary>Emits native storage and lifecycle/conversion methods for a data type.</summary>
 internal sealed class NativeTypeEmitter
