@@ -172,7 +172,7 @@ internal sealed class CollectionAliasEmitter
             writer.WriteLine("return true;");
             writer.CloseBlock();
             writer.BlankLine();
-            writer.WriteLine($"return Value.Rank == other.Value.Rank");
+            writer.WriteLine("return Value.Rank == other.Value.Rank");
             writer.Indent();
             writer.WriteLine($"&& Value.Cast<{elementReference}>().SequenceEqual(other.Value.Cast<{elementReference}>());");
             writer.Unindent();
