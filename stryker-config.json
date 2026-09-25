@@ -1,0 +1,14 @@
+{
+  "stryker-config": {
+    "project": "src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj",
+    "test-projects": [ "tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj" ],
+    "test-runner": "mtp",
+    "reporters": [ "html", "json", "progress" ],
+    "report-file-name": "mutation-report",
+    "thresholds": {
+      "high": 0,
+      "low": 0,
+      "break": 0
+    }
+  }
+}
