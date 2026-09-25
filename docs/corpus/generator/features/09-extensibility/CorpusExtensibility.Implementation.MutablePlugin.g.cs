@@ -54,16 +54,6 @@ internal class MutablePlugin : InterpretedTypePlugin<Mutable, MutableUnmanaged>
             result.SetMemberAnnotations(0, annotations);
         }
 
-        {
-            var annotations = new Annotations(
-                TypeKind.Int32,
-                defaultValue: new AnnotationParameterValue { Int32Value = 0 },
-                minValue: new AnnotationParameterValue { Int32Value = int.MinValue },
-                maxValue: new AnnotationParameterValue { Int32Value = int.MaxValue },
-                unit: null);
-            result.SetMemberAnnotations(1, annotations);
-        }
-
         return result;
     }
 }

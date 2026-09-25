@@ -35,14 +35,17 @@ internal sealed class UnionTypeSupportEmitter
         writer.WriteLine("return;");
         writer.CloseBlock();
 
-        var stringBranches = declaration.Branches.Where(branch => branch.Plan.IsString).ToArray();
-        if (stringBranches.Length > 0)
+        var destroyableBranches = declaration.Branches
+            .Select(branch => (Branch: branch, Statement: branch.Plan.BuildDestroyStatement(implementationNamespace)))
+            .Where(item => item.Statement is not null)
+            .ToArray();
+        if (destroyableBranches.Length > 0)
         {
             writer.BlankLine();
 
-            foreach (var branch in stringBranches)
+            foreach (var item in destroyableBranches)
             {
-                writer.WriteLine(branch.Plan.BuildDestroyStatement(implementationNamespace)!);
+                writer.WriteLine(item.Statement!);
             }
         }
 
@@ -141,14 +144,21 @@ internal sealed class UnionTypeSupportEmitter
     {
         writer.BlankLine();
 
-        writer.WriteXmlSummary(fromNative ? "Copies the active native union branch into a managed sample." : "Copies the active managed union branch into native storage.");
-        writer.WriteXmlParam("sample", fromNative ? "The managed sample to populate." : "The managed sample to copy.");
-        writer.WriteXmlParam("keysOnly", "Whether to copy only key members.");
-        writer.OpenBlock($"public void {(fromNative ? "FromNative" : "ToNative")}({typeName} sample, bool keysOnly = false)");
-
-        if (!fromNative)
+        if (fromNative)
         {
+            writer.WriteXmlSummary("Copies the active native union branch into a managed sample.");
+            writer.WriteXmlParam("sample", "The managed sample to populate.");
+            writer.WriteXmlParam("keysOnly", "Whether to copy only key members.");
+            writer.OpenBlock($"public void FromNative({typeName} sample, bool keysOnly = false)");
+        }
+        else
+        {
+            writer.WriteXmlSummary("Copies the active managed union branch into native storage.");
+            writer.WriteXmlParam("sample", "The managed sample to copy.");
+            writer.WriteXmlParam("keysOnly", "Whether to copy only key members.");
+            writer.OpenBlock($"public void ToNative({typeName} sample, bool keysOnly = false)");
             writer.WriteLine("_discriminator = sample.Discriminator;");
+            writer.BlankLine();
         }
 
         writer.OpenBlock("switch (_discriminator)");
@@ -164,7 +174,20 @@ internal sealed class UnionTypeSupportEmitter
 
             if (fromNative)
             {
-                writer.WriteLine(branch.Plan.BuildFromNativeStatement(false, implementationNamespace));
+                EmitManagedBranchInitialization(writer, branch);
+
+                var statement = branch.Plan.BuildFromNativeStatement(false, implementationNamespace);
+
+                if (branch.Labels.Count > 1)
+                {
+                    var valueExpression = branch.Plan.BuildFromNativeValueExpression();
+                    if (valueExpression is not null)
+                    {
+                        statement = $"sample.Set{EscapeIdentifier(branch.Field.Name)}({valueExpression}, _discriminator);";
+                    }
+                }
+
+                writer.WriteLine(statement);
             }
             else
             {
@@ -172,6 +195,7 @@ internal sealed class UnionTypeSupportEmitter
             }
 
             writer.WriteLine("break;");
+            writer.BlankLine();
             writer.Unindent();
         }
 
@@ -183,6 +207,7 @@ internal sealed class UnionTypeSupportEmitter
         {
             if (fromNative)
             {
+                EmitManagedBranchInitialization(writer, defaultBranch);
                 writer.WriteLine(defaultBranch.Plan.BuildFromNativeStatement(false, implementationNamespace));
             }
             else
@@ -195,6 +220,20 @@ internal sealed class UnionTypeSupportEmitter
         writer.Unindent();
         writer.CloseBlock();
         writer.CloseBlock();
+    }
+
+    private static void EmitManagedBranchInitialization(GeneratedSourceWriter writer, UnionBranchEmissionPlan branch)
+    {
+        var initialization = branch.Plan.ManagedDefaultInitializationStatement;
+        if (initialization is null)
+        {
+            return;
+        }
+
+        writer.OpenBlock("if (sample.Discriminator != _discriminator)");
+        writer.WriteLine($"sample.{initialization}");
+        writer.CloseBlock();
+        writer.BlankLine();
     }
 
     /// <summary>Emits default initialization for a union's native storage.</summary>

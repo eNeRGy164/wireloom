@@ -23,11 +23,6 @@ public struct HolderUnmanaged : INativeTopicType<Holder>
     /// <param name="optionalsOnly">Indicates whether only optional members should be released.</param>
     public void Destroy(bool optionalsOnly)
     {
-        if (optionalsOnly)
-        {
-            return;
-        }
-
         value.Destroy(optionalsOnly);
     }
 

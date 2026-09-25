@@ -55,26 +55,6 @@ internal class MessagePlugin : InterpretedTypePlugin<Message, MessageUnmanaged>
             result.SetMemberAnnotations(0, annotations);
         }
 
-        {
-            var annotations = new Annotations(
-                TypeKind.Int32,
-                defaultValue: new AnnotationParameterValue { Int32Value = 0 },
-                minValue: new AnnotationParameterValue { Int32Value = int.MinValue },
-                maxValue: new AnnotationParameterValue { Int32Value = int.MaxValue },
-                unit: null);
-            result.SetMemberAnnotations(1, annotations);
-        }
-
-        {
-            var annotations = new Annotations(
-                TypeKind.String,
-                defaultValue: new AnnotationParameterValue { StringValue = "" },
-                minValue: null,
-                maxValue: null,
-                unit: null);
-            result.SetMemberAnnotations(2, annotations);
-        }
-
         return result;
     }
 }

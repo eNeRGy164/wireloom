@@ -20,7 +20,12 @@ public struct ItemsUnmanaged : INativeTopicType<Items>
     /// <param name="optionalsOnly">Indicates whether only optional members should be released.</param>
     public void Destroy(bool optionalsOnly)
     {
-        Value.Destroy(optionalsOnly);
+        if (optionalsOnly)
+        {
+            return;
+        }
+
+        Value.Destroy<Item, ItemUnmanaged>(optionalsOnly);
     }
 
     /// <summary>

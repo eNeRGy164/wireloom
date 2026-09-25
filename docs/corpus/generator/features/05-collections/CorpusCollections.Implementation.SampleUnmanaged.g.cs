@@ -32,11 +32,11 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
             return;
         }
 
-        bounded.Destroy(optionalsOnly);
-        grid.Destroy(optionalsOnly);
         values.Destroy(optionalsOnly);
         unbounded.Destroy(optionalsOnly);
+        bounded.Destroy(optionalsOnly);
         items.Destroy<Item, ItemUnmanaged>(optionalsOnly);
+        grid.Destroy(optionalsOnly);
     }
 
     /// <summary>

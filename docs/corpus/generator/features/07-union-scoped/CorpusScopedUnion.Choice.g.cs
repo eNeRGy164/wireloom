@@ -39,12 +39,13 @@ public partial class Choice : IEquatable<Choice>
             {
                 throw new InvalidOperationException("qualifiedPayload not selected");
             }
+
             return _qualifiedPayload;
         }
-
         set
         {
             _qualifiedPayload = value;
+
             Discriminator = 10;
         }
     }
@@ -61,12 +62,13 @@ public partial class Choice : IEquatable<Choice>
             {
                 throw new InvalidOperationException("values not selected");
             }
+
             return _values;
         }
-
         set
         {
             _values = value;
+
             Discriminator = 11;
         }
     }
@@ -105,36 +107,29 @@ public partial class Choice : IEquatable<Choice>
         }
     }
 
-
     /// <summary>
     /// Gets the currently active union-branch value.
     /// </summary>
     /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
     public object Get()
     {
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case 10:
-                return qualifiedPayload;
-            case 11:
-                return values;
-            default:
-                throw new InvalidOperationException("No union branch is selected");
-        }
+            10 => qualifiedPayload,
+            11 => values,
+            _ => null,
+        };
     }
 
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case 10:
-                return HashCode.Combine(Discriminator, qualifiedPayload);
-            case 11:
-                return HashCode.Combine(Discriminator, values);
-            default:
-                return Discriminator.GetHashCode();
-        }
+            10 => HashCode.Combine(Discriminator, qualifiedPayload),
+            11 => HashCode.Combine(Discriminator, values.Count),
+            _ => HashCode.Combine(Discriminator),
+        };
     }
 
     /// <summary>
@@ -154,15 +149,12 @@ public partial class Choice : IEquatable<Choice>
             return true;
         }
 
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case 10:
-                return qualifiedPayload.Equals(other.qualifiedPayload);
-            case 11:
-                return values.Equals(other.values);
-            default:
-                return true;
-        }
+            10 => qualifiedPayload.Equals(other.qualifiedPayload),
+            11 => values.SequenceEqual(other.values),
+            _ => true,
+        };
     }
 
     /// <inheritdoc />

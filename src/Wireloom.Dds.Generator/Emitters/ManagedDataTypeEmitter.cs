@@ -221,7 +221,7 @@ internal sealed class ManagedDataTypeEmitter
                     writer.Indent();
                 }
 
-                writer.WriteLine($"{prefix}{fields[index].EqualityExpression()}{suffix}");
+                WriteEqualityExpression(writer, prefix, fields[index].EqualityExpression(), suffix);
             }
 
             if (fields.Count > 1)
@@ -235,5 +235,24 @@ internal sealed class ManagedDataTypeEmitter
 
         writer.WriteXmlInheritdoc();
         writer.WriteLine($"public override bool Equals(object? obj) => Equals(obj as {typeName});");
+    }
+
+    private static void WriteEqualityExpression(GeneratedSourceWriter writer, string prefix, string expression, string suffix)
+    {
+        var terms = expression.Split([" && "], StringSplitOptions.None);
+        writer.WriteLine($"{prefix}{terms[0]}{(terms.Length == 1 ? suffix : string.Empty)}");
+
+        if (terms.Length == 1)
+        {
+            return;
+        }
+
+        writer.Indent();
+        for (var index = 1; index < terms.Length; index++)
+        {
+            writer.WriteLine($"&& {terms[index]}{(index == terms.Length - 1 ? suffix : string.Empty)}");
+        }
+
+        writer.Unindent();
     }
 }

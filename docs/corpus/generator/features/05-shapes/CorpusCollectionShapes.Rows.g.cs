@@ -56,7 +56,11 @@ public partial class Rows : IEquatable<Rows>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        return Value.Count;
+        var hash = new HashCode();
+
+        hash.Add(Value.Count);
+
+        return hash.ToHashCode();
     }
 
     /// <summary>

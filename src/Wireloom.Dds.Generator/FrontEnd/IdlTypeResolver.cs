@@ -45,6 +45,11 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
             return new IdlType.Enum(qualified, enumDeclaration.DefaultMember.Value);
         }
 
+        if (symbols.ContainsUnion(qualified))
+        {
+            return new IdlType.Union(qualified);
+        }
+
         if (symbols.TryGetTypedef(qualified, out var alias))
         {
             if (alias.IsString)

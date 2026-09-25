@@ -157,7 +157,7 @@ public partial class Sample : IEquatable<Sample>
         return unboundedItems.SequenceEqual(other.unboundedItems)
             && boundedItems.Equals(other.boundedItems)
             && nestedSequences.SequenceEqual(other.nestedSequences)
-            && rows.Cast<Row>().SequenceEqual(other.rows.Cast<Row>())
+            && rows.SequenceEqual(other.rows)
             && sequenceOfArrays.SequenceEqual(other.sequenceOfArrays)
             && sequenceOfArrayAliases.SequenceEqual(other.sequenceOfArrayAliases)
             && names.Equals(other.names);

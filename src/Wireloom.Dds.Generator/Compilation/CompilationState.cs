@@ -28,6 +28,9 @@ internal sealed partial class CompilationState
     public bool IsEnum(string typeName, string? currentNamespace) =>
         symbols.ContainsEnum(ResolveTypeName(typeName, currentNamespace));
 
+    public bool IsUnion(string typeName, string? currentNamespace) =>
+        symbols.ContainsUnion(ResolveTypeName(typeName, currentNamespace));
+
     public void EmitDeclarations()
     {
         foreach (var declaration in parser.Declarations)

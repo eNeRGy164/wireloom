@@ -12,7 +12,7 @@ namespace CorpusCollectionShapes.Implementation;
 
 public struct NamesUnmanaged : INativeTopicType<Names>
 {
-    private NativeSeq Value;
+    private NativeStringSeq Value;
 
     /// <summary>
     /// Releases native resources held by this instance.
@@ -20,7 +20,12 @@ public struct NamesUnmanaged : INativeTopicType<Names>
     /// <param name="optionalsOnly">Indicates whether only optional members should be released.</param>
     public void Destroy(bool optionalsOnly)
     {
-        Value.Destroy(optionalsOnly);
+        if (optionalsOnly)
+        {
+            return;
+        }
+
+        Value.Destroy();
     }
 
     /// <summary>
@@ -30,7 +35,7 @@ public struct NamesUnmanaged : INativeTopicType<Names>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void FromNative(Names sample, bool keysOnly = false)
     {
-        Value.FromNative((Sequence<string>)sample.Value);
+        Value.FromNative(sample.Value);
     }
 
     /// <summary>
@@ -40,7 +45,7 @@ public struct NamesUnmanaged : INativeTopicType<Names>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize<string>(max: 4, absoluteMax: 4, allocateMemory: allocateMemory);
+        Value.Initialize(max: 4, absoluteMax: 4, maxStrLen: 32, allocateMemory: allocateMemory);
     }
 
     /// <summary>
@@ -50,6 +55,6 @@ public struct NamesUnmanaged : INativeTopicType<Names>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void ToNative(Names sample, bool keysOnly = false)
     {
-        Value.ToNative((Sequence<string>)sample.Value);
+        Value.ToNative(sample.Value, 32);
     }
 }

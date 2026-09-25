@@ -51,7 +51,11 @@ public partial class PointAlias : IEquatable<PointAlias>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        return Value.GetHashCode();
+        var hash = new HashCode();
+
+        hash.Add(Value);
+
+        return hash.ToHashCode();
     }
 
     /// <summary>

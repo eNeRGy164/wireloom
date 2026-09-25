@@ -33,6 +33,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
         }
 
         text.Destroy();
+        payload.Destroy(optionalsOnly);
     }
 
     /// <summary>
@@ -47,12 +48,20 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
             case CorpusEnumUnion.Kind.Number:
                 sample.number = number;
                 break;
+
             case CorpusEnumUnion.Kind.Text:
                 sample.text = text.FromNative();
                 break;
+
             case CorpusEnumUnion.Kind.PayloadValue:
+                if (sample.Discriminator != _discriminator)
+                {
+                    sample.payload = new Payload();
+                }
+
                 payload.FromNative(sample.payload, keysOnly: false);
                 break;
+
             default:
                 break;
         }
@@ -81,17 +90,21 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     public void ToNative(Choice sample, bool keysOnly = false)
     {
         _discriminator = sample.Discriminator;
+
         switch (_discriminator)
         {
             case CorpusEnumUnion.Kind.Number:
                 number = sample.number;
                 break;
+
             case CorpusEnumUnion.Kind.Text:
                 text.ToNative(sample.text, 255);
                 break;
+
             case CorpusEnumUnion.Kind.PayloadValue:
                 payload.ToNative(sample.payload, keysOnly: false);
                 break;
+
             default:
                 break;
         }

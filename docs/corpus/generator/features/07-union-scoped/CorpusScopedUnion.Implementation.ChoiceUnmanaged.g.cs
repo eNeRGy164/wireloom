@@ -30,6 +30,9 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
         {
             return;
         }
+
+        qualifiedPayload.Destroy(optionalsOnly);
+        values.Destroy(optionalsOnly);
     }
 
     /// <summary>
@@ -42,11 +45,23 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
         switch (_discriminator)
         {
             case 10:
+                if (sample.Discriminator != _discriminator)
+                {
+                    sample.qualifiedPayload = new Payload();
+                }
+
                 qualifiedPayload.FromNative(sample.qualifiedPayload, keysOnly: false);
                 break;
+
             case 11:
+                if (sample.Discriminator != _discriminator)
+                {
+                    sample.values = new Sequence<int>();
+                }
+
                 values.FromNative((Sequence<int>)sample.values);
                 break;
+
             default:
                 break;
         }
@@ -74,14 +89,17 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     public void ToNative(Choice sample, bool keysOnly = false)
     {
         _discriminator = sample.Discriminator;
+
         switch (_discriminator)
         {
             case 10:
                 qualifiedPayload.ToNative(sample.qualifiedPayload, keysOnly: false);
                 break;
+
             case 11:
                 values.ToNative((Sequence<int>)sample.values);
                 break;
+
             default:
                 break;
         }

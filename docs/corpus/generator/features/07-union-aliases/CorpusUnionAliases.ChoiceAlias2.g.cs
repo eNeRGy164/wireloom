@@ -51,7 +51,11 @@ public partial class ChoiceAlias2 : IEquatable<ChoiceAlias2>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        return Value.GetHashCode();
+        var hash = new HashCode();
+
+        hash.Add(Value);
+
+        return hash.ToHashCode();
     }
 
     /// <summary>

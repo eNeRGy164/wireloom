@@ -54,16 +54,6 @@ internal class ContextPlugin : InterpretedTypePlugin<Context, ContextUnmanaged>
             result.SetMemberAnnotations(0, annotations);
         }
 
-        {
-            var annotations = new Annotations(
-                TypeKind.String,
-                defaultValue: new AnnotationParameterValue { StringValue = "" },
-                minValue: null,
-                maxValue: null,
-                unit: null);
-            result.SetMemberAnnotations(1, annotations);
-        }
-
         return result;
     }
 }

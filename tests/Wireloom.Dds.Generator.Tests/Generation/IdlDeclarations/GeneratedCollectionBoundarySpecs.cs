@@ -35,6 +35,14 @@ public sealed class GeneratedCollectionBoundarySpecs
         data.ShouldContain("public BoundedLongs bounded { get; set; } = new BoundedLongs();");
         data.ShouldContain("items = new Sequence<Item>();");
         data.ShouldContain("public CoordinateGrid grid { get; set; } = new CoordinateGrid();");
+        data.ShouldContain(
+            "return values.Rank == other.values.Rank\n"
+            + "            && Enumerable.Range(0, values.Rank).All(dimension => values.GetLength(dimension) == other.values.GetLength(dimension))\n"
+            + "            && values.Cast<int>().SequenceEqual(other.values.Cast<int>())\n"
+            + "            && unbounded.SequenceEqual(other.unbounded)\n"
+            + "            && bounded.Equals(other.bounded)\n"
+            + "            && items.SequenceEqual(other.items)\n"
+            + "            && grid.Equals(other.grid);");
 
         // Native initialization carries the RTI boundary contract: exact values
         // are accepted and over-bound values are rejected by serialization.

@@ -46,9 +46,11 @@ public struct IdentityUnmanaged : INativeTopicType<Identity>
             case 0:
                 sample.number = number;
                 break;
+
             case 1:
                 sample.text = text.FromNative();
                 break;
+
             default:
                 break;
         }
@@ -76,14 +78,17 @@ public struct IdentityUnmanaged : INativeTopicType<Identity>
     public void ToNative(Identity sample, bool keysOnly = false)
     {
         _discriminator = sample.Discriminator;
+
         switch (_discriminator)
         {
             case 0:
                 number = sample.number;
                 break;
+
             case 1:
                 text.ToNative(sample.text, 255);
                 break;
+
             default:
                 break;
         }

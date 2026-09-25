@@ -10,6 +10,7 @@ internal abstract class EmissionTypePlan(string cSharpType)
 {
     public string CSharpType { get; } = cSharpType;
     public virtual bool IsAggregate => false;
+    public virtual bool IsUnion => false;
     public virtual bool IsEnum => false;
     public virtual int? Bound => null;
     public virtual string? SupportType => null;
@@ -22,6 +23,7 @@ internal sealed class OptionalEmissionType(EmissionTypePlan target, string cShar
 {
     public EmissionTypePlan Target { get; } = target;
     public override bool IsAggregate => Target.IsAggregate;
+    public override bool IsUnion => Target.IsUnion;
     public override bool IsEnum => Target.IsEnum;
     public override int? Bound => Target.Bound;
     public override string? SupportType => Target.SupportType;
@@ -57,12 +59,21 @@ internal sealed class StructEmissionType(string qualifiedName, string cSharpType
     public override bool IsAggregate => true;
 }
 
+internal sealed class UnionEmissionType(string qualifiedName, string cSharpType)
+    : EmissionTypePlan(cSharpType)
+{
+    public string QualifiedName { get; } = qualifiedName;
+    public override bool IsAggregate => true;
+    public override bool IsUnion => true;
+}
+
 internal sealed class AliasEmissionType(string qualifiedName, EmissionTypePlan target, string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
     public string QualifiedName { get; } = qualifiedName;
     public EmissionTypePlan Target { get; } = target;
     public override bool IsAggregate => Target is SequenceEmissionType or ArrayEmissionType || Target.IsAggregate;
+    public override bool IsUnion => Target.IsUnion;
     public override bool IsEnum => Target.IsEnum;
     public override int? Bound => Target.Bound;
     public override string? SupportType => EscapeQualifiedIdentifier(QualifiedName);

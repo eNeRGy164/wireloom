@@ -44,9 +44,11 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
             case 1:
                 sample.first = first;
                 break;
+
             case 1:
                 sample.second = second;
                 break;
+
             default:
                 break;
         }
@@ -74,14 +76,17 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     public void ToNative(Choice sample, bool keysOnly = false)
     {
         _discriminator = sample.Discriminator;
+
         switch (_discriminator)
         {
             case 1:
                 first = sample.first;
                 break;
+
             case 1:
                 second = sample.second;
                 break;
+
             default:
                 break;
         }

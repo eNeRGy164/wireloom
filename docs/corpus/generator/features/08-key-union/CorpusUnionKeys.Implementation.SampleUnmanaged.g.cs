@@ -24,11 +24,6 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     /// <param name="optionalsOnly">Indicates whether only optional members should be released.</param>
     public void Destroy(bool optionalsOnly)
     {
-        if (optionalsOnly)
-        {
-            return;
-        }
-
         identity.Destroy(optionalsOnly);
     }
 

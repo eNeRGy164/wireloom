@@ -51,7 +51,11 @@ public partial class ColorAlias2 : IEquatable<ColorAlias2>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        return Value.GetHashCode();
+        var hash = new HashCode();
+
+        hash.Add(Value);
+
+        return hash.ToHashCode();
     }
 
     /// <summary>

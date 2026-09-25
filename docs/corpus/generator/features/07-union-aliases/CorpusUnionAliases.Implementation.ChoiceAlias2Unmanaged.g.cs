@@ -20,6 +20,7 @@ public struct ChoiceAlias2Unmanaged : INativeTopicType<ChoiceAlias2>
     /// <param name="optionalsOnly">Indicates whether only optional members should be released.</param>
     public void Destroy(bool optionalsOnly)
     {
+        Value.Destroy(optionalsOnly);
     }
 
     /// <summary>

@@ -31,6 +31,21 @@ internal sealed partial class MemberEmissionPlan
         return BuildPrimitiveFromNativeStatement();
     }
 
+    public string? BuildFromNativeValueExpression()
+    {
+        if (IsArray || IsSequence || IsAggregate || IsOptional)
+        {
+            return null;
+        }
+
+        if (IsString)
+        {
+            return $"{EscapedName}.FromNative()";
+        }
+
+        return PrimitiveFromNativeExpression();
+    }
+
     private string BuildArrayFromNativeStatement(bool forwardKeysOnly, string? namespaceName)
     {
         if (IsOptional)

@@ -40,12 +40,13 @@ public partial class Choice : IEquatable<Choice>
             {
                 throw new InvalidOperationException("number not selected");
             }
+
             return _number;
         }
-
         set
         {
             _number = value;
+
             Discriminator = Kind.Number;
         }
     }
@@ -62,12 +63,13 @@ public partial class Choice : IEquatable<Choice>
             {
                 throw new InvalidOperationException("text not selected");
             }
+
             return _text;
         }
-
         set
         {
             _text = value;
+
             Discriminator = Kind.Text;
         }
     }
@@ -83,12 +85,13 @@ public partial class Choice : IEquatable<Choice>
             {
                 throw new InvalidOperationException("payload not selected");
             }
+
             return _payload;
         }
-
         set
         {
             _payload = value;
+
             Discriminator = Kind.PayloadValue;
         }
     }
@@ -130,40 +133,31 @@ public partial class Choice : IEquatable<Choice>
         }
     }
 
-
     /// <summary>
     /// Gets the currently active union-branch value.
     /// </summary>
     /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
     public object Get()
     {
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case Kind.Number:
-                return number;
-            case Kind.Text:
-                return text;
-            case Kind.PayloadValue:
-                return payload;
-            default:
-                throw new InvalidOperationException("No union branch is selected");
-        }
+            Kind.Number => number,
+            Kind.Text => text,
+            Kind.PayloadValue => payload,
+            _ => null,
+        };
     }
 
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case Kind.Number:
-                return HashCode.Combine(Discriminator, number);
-            case Kind.Text:
-                return HashCode.Combine(Discriminator, text);
-            case Kind.PayloadValue:
-                return HashCode.Combine(Discriminator, payload);
-            default:
-                return Discriminator.GetHashCode();
-        }
+            Kind.Number => HashCode.Combine(Discriminator, number),
+            Kind.Text => HashCode.Combine(Discriminator, text),
+            Kind.PayloadValue => HashCode.Combine(Discriminator, payload),
+            _ => HashCode.Combine(Discriminator),
+        };
     }
 
     /// <summary>
@@ -183,17 +177,13 @@ public partial class Choice : IEquatable<Choice>
             return true;
         }
 
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case Kind.Number:
-                return number.Equals(other.number);
-            case Kind.Text:
-                return text.Equals(other.text);
-            case Kind.PayloadValue:
-                return payload.Equals(other.payload);
-            default:
-                return true;
-        }
+            Kind.Number => number.Equals(other.number),
+            Kind.Text => text.Equals(other.text),
+            Kind.PayloadValue => payload.Equals(other.payload),
+            _ => true,
+        };
     }
 
     /// <inheritdoc />

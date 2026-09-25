@@ -39,12 +39,13 @@ public partial class Choice : IEquatable<Choice>
             {
                 throw new InvalidOperationException("zero not selected");
             }
+
             return _zero;
         }
-
         set
         {
             _zero = value;
+
             Discriminator = Kind.Zero;
         }
     }
@@ -61,12 +62,13 @@ public partial class Choice : IEquatable<Choice>
             {
                 throw new InvalidOperationException("ten not selected");
             }
+
             return _ten;
         }
-
         set
         {
             _ten = value;
+
             Discriminator = Kind.Ten;
         }
     }
@@ -105,36 +107,29 @@ public partial class Choice : IEquatable<Choice>
         }
     }
 
-
     /// <summary>
     /// Gets the currently active union-branch value.
     /// </summary>
     /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
     public object Get()
     {
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case Kind.Zero:
-                return zero;
-            case Kind.Ten:
-                return ten;
-            default:
-                throw new InvalidOperationException("No union branch is selected");
-        }
+            Kind.Zero => zero,
+            Kind.Ten => ten,
+            _ => null,
+        };
     }
 
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case Kind.Zero:
-                return HashCode.Combine(Discriminator, zero);
-            case Kind.Ten:
-                return HashCode.Combine(Discriminator, ten);
-            default:
-                return Discriminator.GetHashCode();
-        }
+            Kind.Zero => HashCode.Combine(Discriminator, zero),
+            Kind.Ten => HashCode.Combine(Discriminator, ten),
+            _ => HashCode.Combine(Discriminator),
+        };
     }
 
     /// <summary>
@@ -154,15 +149,12 @@ public partial class Choice : IEquatable<Choice>
             return true;
         }
 
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case Kind.Zero:
-                return zero.Equals(other.zero);
-            case Kind.Ten:
-                return ten.Equals(other.ten);
-            default:
-                return true;
-        }
+            Kind.Zero => zero.Equals(other.zero),
+            Kind.Ten => ten.Equals(other.ten),
+            _ => true,
+        };
     }
 
     /// <inheritdoc />

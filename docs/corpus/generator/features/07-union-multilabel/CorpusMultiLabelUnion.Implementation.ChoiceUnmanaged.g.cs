@@ -45,11 +45,13 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
         {
             case 1:
             case 5:
-                sample.number = number;
+                sample.Setnumber(number, _discriminator);
                 break;
+
             case 2:
                 sample.text = text.FromNative();
                 break;
+
             default:
                 break;
         }
@@ -77,15 +79,18 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     public void ToNative(Choice sample, bool keysOnly = false)
     {
         _discriminator = sample.Discriminator;
+
         switch (_discriminator)
         {
             case 1:
             case 5:
                 number = sample.number;
                 break;
+
             case 2:
                 text.ToNative(sample.text, 255);
                 break;
+
             default:
                 break;
         }

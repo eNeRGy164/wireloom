@@ -46,9 +46,11 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
             case CorpusUnionAliases.Kind.Zero:
                 sample.zero = zero;
                 break;
+
             case CorpusUnionAliases.Kind.Ten:
                 sample.ten = ten.FromNative();
                 break;
+
             default:
                 break;
         }
@@ -76,14 +78,17 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     public void ToNative(Choice sample, bool keysOnly = false)
     {
         _discriminator = sample.Discriminator;
+
         switch (_discriminator)
         {
             case CorpusUnionAliases.Kind.Zero:
                 zero = sample.zero;
                 break;
+
             case CorpusUnionAliases.Kind.Ten:
                 ten.ToNative(sample.ten, 255);
                 break;
+
             default:
                 break;
         }

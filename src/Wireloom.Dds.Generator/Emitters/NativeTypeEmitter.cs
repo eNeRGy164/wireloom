@@ -40,24 +40,40 @@ internal sealed class NativeTypeEmitter
 
         var destroyableFields = fields .Where(f => f.DestroyKind != NativeDestroyKind.None).ToArray();
         var optionalFields = destroyableFields.Where(f => f.IsOptional).ToArray();
-        var requiredFields = fields
-            .Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.Nested)
-            .Concat(fields.Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.Collection))
-            .Concat(fields.Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.String))
-            .Concat(fields.Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.OptionalPrimitive))
-            .ToArray();
+        var requiredFields = baseUnmanagedType is null
+            ? fields.Where(f => !f.IsOptional && f.DestroyKind != NativeDestroyKind.None).ToArray()
+            : [
+                .. fields.Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.Nested)
+,               .. fields.Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.Collection),
+                .. fields.Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.String),
+                .. fields.Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.OptionalPrimitive),
+            ];
+        var preGuardFields = baseUnmanagedType is null
+            ? []
+            : requiredFields.Where(field => field.DestroyKind is NativeDestroyKind.Nested or NativeDestroyKind.Collection).ToArray();
+        var guardedFields = baseUnmanagedType is null
+            ? requiredFields
+            : [.. requiredFields.Except(preGuardFields)];
         var requiresOptionalOnlyGuard = optionalFields.Length > 0 ||
             baseUnmanagedType is not null ||
-            requiredFields.Any(field => field.IsString || field.IsAggregate || field.HasAggregateElement || field.HasSequenceElement || field.IsSequenceArray);
+            guardedFields.Any(f => f.IsString || (f.IsAggregate && !f.IsUnion) || f.HasAggregateElement || f.HasSequenceElement || f.IsSequenceArray);
 
         foreach (var field in optionalFields)
         {
             writer.WriteLine(field.BuildDestroyStatement(currentNamespace)!);
         }
 
-        if (requiredFields.Length > 0)
+        if (preGuardFields.Length > 0)
         {
-            if (optionalFields.Length > 0 || baseUnmanagedType is not null)
+            foreach (var field in preGuardFields)
+            {
+                writer.WriteLine(field.BuildDestroyStatement(currentNamespace)!);
+            }
+        }
+
+        if (guardedFields.Length > 0)
+        {
+            if (optionalFields.Length > 0 || preGuardFields.Length > 0 || baseUnmanagedType is not null)
             {
                 writer.BlankLine();
             }
@@ -70,7 +86,7 @@ internal sealed class NativeTypeEmitter
                 writer.BlankLine();
             }
 
-            foreach (var field in requiredFields)
+            foreach (var field in guardedFields)
             {
                 writer.WriteLine(field.BuildDestroyStatement(currentNamespace)!);
             }

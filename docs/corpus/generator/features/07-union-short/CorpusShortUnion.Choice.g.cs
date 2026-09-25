@@ -40,12 +40,13 @@ public partial class Choice : IEquatable<Choice>
             {
                 throw new InvalidOperationException("negative not selected");
             }
+
             return _negative;
         }
-
         set
         {
             _negative = value;
+
             Discriminator = -1;
         }
     }
@@ -62,12 +63,13 @@ public partial class Choice : IEquatable<Choice>
             {
                 throw new InvalidOperationException("text not selected");
             }
+
             return _text;
         }
-
         set
         {
             _text = value;
+
             Discriminator = 2;
         }
     }
@@ -83,12 +85,13 @@ public partial class Choice : IEquatable<Choice>
             {
                 throw new InvalidOperationException("other not selected");
             }
+
             return _other;
         }
-
         set
         {
             _other = value;
+
             Discriminator = 0;
         }
     }
@@ -139,7 +142,9 @@ public partial class Choice : IEquatable<Choice>
         {
             throw new ArgumentException("Invalid discriminator value for other", nameof(discriminator));
         }
+
         _other = value;
+
         Discriminator = discriminator;
     }
 
@@ -149,29 +154,23 @@ public partial class Choice : IEquatable<Choice>
     /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
     public object Get()
     {
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case -1:
-                return negative;
-            case 2:
-                return text;
-            default:
-                return other;
-        }
+            -1 => negative,
+            2 => text,
+            _ => other,
+        };
     }
 
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case -1:
-                return HashCode.Combine(Discriminator, negative);
-            case 2:
-                return HashCode.Combine(Discriminator, text);
-            default:
-                return HashCode.Combine(Discriminator, other);
-        }
+            -1 => HashCode.Combine(Discriminator, negative),
+            2 => HashCode.Combine(Discriminator, text),
+            _ => HashCode.Combine(Discriminator, other),
+        };
     }
 
     /// <summary>
@@ -191,15 +190,12 @@ public partial class Choice : IEquatable<Choice>
             return true;
         }
 
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case -1:
-                return negative.Equals(other.negative);
-            case 2:
-                return text.Equals(other.text);
-            default:
-                return other.Equals(other.other);
-        }
+            -1 => negative.Equals(other.negative),
+            2 => text.Equals(other.text),
+            _ => other.Equals(other.other),
+        };
     }
 
     /// <inheritdoc />

@@ -47,9 +47,11 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
             case 0:
                 sample.number = number;
                 break;
+
             case 1:
                 sample.text = text.FromNative();
                 break;
+
             default:
                 sample.flag = Convert.ToBoolean(flag);
                 break;
@@ -79,14 +81,17 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     public void ToNative(Choice sample, bool keysOnly = false)
     {
         _discriminator = sample.Discriminator;
+
         switch (_discriminator)
         {
             case 0:
                 number = sample.number;
                 break;
+
             case 1:
                 text.ToNative(sample.text, 255);
                 break;
+
             default:
                 flag = Convert.ToByte(sample.flag);
                 break;

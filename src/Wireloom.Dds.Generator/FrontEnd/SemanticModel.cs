@@ -45,6 +45,11 @@ internal abstract class IdlType
         public string QualifiedName { get; } = qualifiedName;
     }
 
+    public sealed class Union(string qualifiedName) : IdlType
+    {
+        public string QualifiedName { get; } = qualifiedName;
+    }
+
     public sealed class Alias(string qualifiedName, IdlType target) : IdlType
     {
         public string QualifiedName { get; } = qualifiedName;

@@ -34,13 +34,13 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
             return;
         }
 
-        boundedItems.Destroy(optionalsOnly);
-        names.Destroy(optionalsOnly);
         unboundedItems.Destroy<Item, ItemUnmanaged>(optionalsOnly);
+        boundedItems.Destroy(optionalsOnly);
         nestedSequences.Destroy<BoundedLongs, BoundedLongsUnmanaged>(optionalsOnly);
         rows.Destroy<Row, RowUnmanaged>(dimension: 2, optionalsOnly: optionalsOnly);
         sequenceOfArrays.Destroy<Row, RowUnmanaged>(optionalsOnly);
         sequenceOfArrayAliases.Destroy<Rows, RowsUnmanaged>(optionalsOnly);
+        names.Destroy(optionalsOnly);
     }
 
     /// <summary>

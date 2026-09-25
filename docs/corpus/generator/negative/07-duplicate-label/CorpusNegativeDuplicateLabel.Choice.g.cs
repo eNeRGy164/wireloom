@@ -39,12 +39,13 @@ public partial class Choice : IEquatable<Choice>
             {
                 throw new InvalidOperationException("first not selected");
             }
+
             return _first;
         }
-
         set
         {
             _first = value;
+
             Discriminator = 1;
         }
     }
@@ -60,12 +61,13 @@ public partial class Choice : IEquatable<Choice>
             {
                 throw new InvalidOperationException("second not selected");
             }
+
             return _second;
         }
-
         set
         {
             _second = value;
+
             Discriminator = 1;
         }
     }
@@ -104,36 +106,29 @@ public partial class Choice : IEquatable<Choice>
         }
     }
 
-
     /// <summary>
     /// Gets the currently active union-branch value.
     /// </summary>
     /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
     public object Get()
     {
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case 1:
-                return first;
-            case 1:
-                return second;
-            default:
-                throw new InvalidOperationException("No union branch is selected");
-        }
+            1 => first,
+            1 => second,
+            _ => null,
+        };
     }
 
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case 1:
-                return HashCode.Combine(Discriminator, first);
-            case 1:
-                return HashCode.Combine(Discriminator, second);
-            default:
-                return Discriminator.GetHashCode();
-        }
+            1 => HashCode.Combine(Discriminator, first),
+            1 => HashCode.Combine(Discriminator, second),
+            _ => HashCode.Combine(Discriminator),
+        };
     }
 
     /// <summary>
@@ -153,15 +148,12 @@ public partial class Choice : IEquatable<Choice>
             return true;
         }
 
-        switch (Discriminator)
+        return Discriminator switch
         {
-            case 1:
-                return first.Equals(other.first);
-            case 1:
-                return second.Equals(other.second);
-            default:
-                return true;
-        }
+            1 => first.Equals(other.first),
+            1 => second.Equals(other.second),
+            _ => true,
+        };
     }
 
     /// <inheritdoc />

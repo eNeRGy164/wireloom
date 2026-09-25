@@ -120,7 +120,9 @@ public partial class Sample : IEquatable<Sample>
             return true;
         }
 
-        return values.SequenceEqual(other.values)
+        return values.Rank == other.values.Rank
+            && Enumerable.Range(0, values.Rank).All(dimension => values.GetLength(dimension) == other.values.GetLength(dimension))
+            && values.Cast<int>().SequenceEqual(other.values.Cast<int>())
             && unbounded.SequenceEqual(other.unbounded)
             && bounded.Equals(other.bounded)
             && items.SequenceEqual(other.items)

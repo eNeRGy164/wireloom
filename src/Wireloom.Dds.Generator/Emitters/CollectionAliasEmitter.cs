@@ -90,7 +90,11 @@ internal sealed class CollectionAliasEmitter
 
             writer.WriteXmlInheritdoc();
             writer.OpenBlock("public override int GetHashCode()");
-            writer.WriteLine("return Value.Count;");
+            writer.WriteLine("var hash = new HashCode();");
+            writer.BlankLine();
+            writer.WriteLine("hash.Add(Value.Count);");
+            writer.BlankLine();
+            writer.WriteLine("return hash.ToHashCode();");
             writer.CloseBlock();
             writer.BlankLine();
 
@@ -155,9 +159,14 @@ internal sealed class CollectionAliasEmitter
             writer.CloseBlock();
             writer.BlankLine();
 
+            var firstElementIndex = string.Join(", ", declaration.Dimensions.Select(_ => "0"));
             writer.WriteXmlInheritdoc();
             writer.OpenBlock("public override int GetHashCode()");
-            writer.WriteLine($"return Value.Cast<{elementReference}>().First().GetHashCode();");
+            writer.WriteLine("var hash = new HashCode();");
+            writer.BlankLine();
+            writer.WriteLine($"hash.Add(Value[{firstElementIndex}]);");
+            writer.BlankLine();
+            writer.WriteLine("return hash.ToHashCode();");
             writer.CloseBlock();
             writer.BlankLine();
 
@@ -172,10 +181,20 @@ internal sealed class CollectionAliasEmitter
             writer.WriteLine("return true;");
             writer.CloseBlock();
             writer.BlankLine();
-            writer.WriteLine("return Value.Rank == other.Value.Rank");
-            writer.Indent();
-            writer.WriteLine($"&& Value.Cast<{elementReference}>().SequenceEqual(other.Value.Cast<{elementReference}>());");
-            writer.Unindent();
+
+            if (declaration.Dimensions.Count == 1)
+            {
+                writer.WriteLine("return Value.SequenceEqual(other.Value);");
+            }
+            else
+            {
+                writer.WriteLine("return Value.Rank == other.Value.Rank");
+                writer.Indent();
+                writer.WriteLine("&& Enumerable.Range(0, Value.Rank).All(dimension => Value.GetLength(dimension) == other.Value.GetLength(dimension))");
+                writer.WriteLine($"&& Value.Cast<{elementReference}>().SequenceEqual(other.Value.Cast<{elementReference}>());");
+                writer.Unindent();
+            }
+
             writer.CloseBlock();
             writer.BlankLine();
 
@@ -222,7 +241,11 @@ internal sealed class CollectionAliasEmitter
 
             writer.WriteXmlInheritdoc();
             writer.OpenBlock("public override int GetHashCode()");
-            writer.WriteLine("return Value.GetHashCode();");
+            writer.WriteLine("var hash = new HashCode();");
+            writer.BlankLine();
+            writer.WriteLine("hash.Add(Value);");
+            writer.BlankLine();
+            writer.WriteLine("return hash.ToHashCode();");
             writer.CloseBlock();
             writer.BlankLine();
 
@@ -262,7 +285,13 @@ internal sealed class CollectionAliasEmitter
         var elementIdlType = declaration.IsCollection ? declaration.ElementType! : elementType;
         var implementationElementType = TypeReference(elementType, implementation);
         var isString = declaration.IsString;
+        var isStringSequence = declaration.IsSequence && IsStringType(elementIdlType);
+        var stringSequenceNativeType = isStringSequence && elementIdlType!.StartsWith("wstring", StringComparison.Ordinal)
+            ? "NativeWstringSeq"
+            : "NativeStringSeq";
+        var stringSequenceBound = isStringSequence ? ParseStringBound(elementIdlType!) : 0;
         var isAggregate = !declaration.IsCollection && !isString && !IsPrimitive(elementType) && !IsCSharpPrimitive(elementType) && !compilation.IsEnum(elementType, declaration.Namespace);
+        var isUnion = !declaration.IsCollection && !isString && compilation.IsUnion(elementType, declaration.Namespace);
         var collectionElementIsAggregate = declaration.IsCollection &&
             !IsStringType(elementIdlType) &&
             !IsPrimitive(elementType) &&
@@ -345,7 +374,7 @@ internal sealed class CollectionAliasEmitter
         string? collectionNative;
         if (declaration.IsSequence)
         {
-            collectionNative = "NativeSeq";
+            collectionNative = isStringSequence ? stringSequenceNativeType : "NativeSeq";
         }
         else
         {
@@ -368,9 +397,25 @@ internal sealed class CollectionAliasEmitter
 
         if (declaration.IsCollection)
         {
-            if (declaration.IsArray && collectionElementIsAggregate)
+            if (isStringSequence)
+            {
+                writer.OpenBlock("if (optionalsOnly)");
+                writer.WriteLine("return;");
+                writer.CloseBlock();
+                writer.BlankLine();
+                writer.WriteLine("Value.Destroy();");
+            }
+            else if (declaration.IsArray && collectionElementIsAggregate)
             {
                 writer.WriteLine($"Value.Destroy<{implementationElementType}, {collectionElementUnmanagedType}>(dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, optionalsOnly: optionalsOnly);");
+            }
+            else if (collectionElementIsAggregate)
+            {
+                writer.OpenBlock("if (optionalsOnly)");
+                writer.WriteLine("return;");
+                writer.CloseBlock();
+                writer.BlankLine();
+                writer.WriteLine($"Value.Destroy<{implementationElementType}, {collectionElementUnmanagedType}>(optionalsOnly);");
             }
             else
             {
@@ -380,6 +425,18 @@ internal sealed class CollectionAliasEmitter
         else if (isString)
         {
             writer.WriteLine("Value.Destroy();");
+        }
+        else if (isAggregate)
+        {
+            if (!isUnion)
+            {
+                writer.OpenBlock("if (optionalsOnly)");
+                writer.WriteLine("return;");
+                writer.CloseBlock();
+                writer.BlankLine();
+            }
+
+            writer.WriteLine("Value.Destroy(optionalsOnly);");
         }
 
         writer.CloseBlock();
@@ -392,7 +449,11 @@ internal sealed class CollectionAliasEmitter
 
         if (declaration.IsSequence)
         {
-            if (collectionElementIsAggregate)
+            if (isStringSequence)
+            {
+                writer.WriteLine("Value.FromNative(sample.Value);");
+            }
+            else if (collectionElementIsAggregate)
             {
                 writer.WriteLine($"Value.FromNative<{implementationElementType}, {collectionElementUnmanagedType}>((Sequence<{implementationElementType}>)sample.Value);");
             }
@@ -441,7 +502,11 @@ internal sealed class CollectionAliasEmitter
 
         if (declaration.IsSequence)
         {
-            if (collectionElementIsAggregate)
+            if (isStringSequence)
+            {
+                writer.WriteLine($"Value.Initialize(max: {declaration.Bound}, absoluteMax: {declaration.Bound}, maxStrLen: {stringSequenceBound}, allocateMemory: allocateMemory);");
+            }
+            else if (collectionElementIsAggregate)
             {
                 writer.WriteLine($"Value.Initialize<{implementationElementType}, {collectionElementUnmanagedType}>(max: {declaration.Bound}, absoluteMax: {declaration.Bound}, allocateMemory: allocateMemory);");
             }
@@ -490,7 +555,11 @@ internal sealed class CollectionAliasEmitter
 
         if (declaration.IsSequence)
         {
-            if (collectionElementIsAggregate)
+            if (isStringSequence)
+            {
+                writer.WriteLine($"Value.ToNative(sample.Value, {stringSequenceBound});");
+            }
+            else if (collectionElementIsAggregate)
             {
                 writer.WriteLine($"Value.ToNative<{implementationElementType}, {collectionElementUnmanagedType}>((Sequence<{implementationElementType}>)sample.Value);");
             }

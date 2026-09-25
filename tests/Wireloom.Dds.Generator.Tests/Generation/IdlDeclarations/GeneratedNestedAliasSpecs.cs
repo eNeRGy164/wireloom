@@ -61,5 +61,24 @@ public sealed class GeneratedNestedAliasSpecs
 
         var producerPlugin = documents["Envelope.Metadata.Implementation.ProducerPlugin.g.cs"].Source;
         producerPlugin.ShouldContain("dtf.CreateString(17)");
+
+    }
+
+    [Fact]
+    public void OrdersDerivedDestroyLikeRtiAroundTheOptionalGuard()
+    {
+        var documents = IdlCompiler.CompileSources([
+            CompilerTestSupport.Input("derived-destroy.idl", """
+                module DerivedDestroy {
+                    struct Base { long baseValue; };
+                    struct Context { string correlation; };
+                    struct Derived : Base { string state; Context traceContext; };
+                };
+                """)
+        ], TestContext.Current.CancellationToken);
+
+        var native = documents["DerivedDestroy.Implementation.DerivedUnmanaged.g.cs"].Source;
+        native.ShouldContain("parent.Destroy(optionalsOnly);\n        traceContext.Destroy(optionalsOnly);\n\n        if (optionalsOnly)");
+        native.ShouldContain("return;\n        }\n\n        state.Destroy();");
     }
 }

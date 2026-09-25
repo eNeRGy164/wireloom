@@ -437,16 +437,16 @@ internal sealed class IdlDeclarationParser
             throw new IdlException(input, baseOffset + position, "The union must contain at least one branch and at most one default branch.");
         }
 
-        declarationQueue.Add(new IdlUnionDeclaration(
-            new IdlUnion(
-                unionName,
-                currentNamespace,
-                discriminatorIdlType,
-                discriminatorIsEnum,
-                branches,
-                ParseExtensibility(unionDeclaration.Groups["extensibility"].Value),
-                unionDeclaration.Groups["nested"].Success || unionDeclaration.Groups["nestedAfter"].Success),
-            Path.GetFileName(input.Path)));
+        var parsedUnion = new IdlUnion(
+            unionName,
+            currentNamespace,
+            discriminatorIdlType,
+            discriminatorIsEnum,
+            branches,
+            ParseExtensibility(unionDeclaration.Groups["extensibility"].Value),
+            unionDeclaration.Groups["nested"].Success || unionDeclaration.Groups["nestedAfter"].Success);
+        symbols.AddUnion(qualified, parsedUnion);
+        declarationQueue.Add(new IdlUnionDeclaration(parsedUnion, Path.GetFileName(input.Path)));
 
         position += unionDeclaration.Length;
 

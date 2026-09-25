@@ -35,6 +35,55 @@ public sealed class UnionSpecs
     }
 
     [Fact]
+    public void MultiLabelUnionAccessorsAndFromNativePreserveTheNativeDiscriminator()
+    {
+        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("multi-label-union.idl", """
+            module Example {
+                union Choice switch(long) {
+                    case 1: case 5: long number;
+                    default: boolean flag;
+                };
+            };
+            """)], TestContext.Current.CancellationToken);
+
+        var managed = documents["Example.Choice.g.cs"].Source;
+        managed.ShouldContain("Discriminator != 1 && Discriminator != 5");
+        managed.ShouldContain("public void Setnumber(int value, int discriminator)");
+
+        var native = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
+        native.ShouldContain("sample.Setnumber(number, _discriminator);");
+        native.ShouldNotContain("sample.Setnumber(sample.number = number, _discriminator);");
+    }
+
+    [Fact]
+    public void UnionDestroyReleasesAllResourceBearingBranchesAndHolderDelegatesDirectly()
+    {
+        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("union-destroy.idl", """
+            module Example {
+                struct Payload { long value; };
+                union Choice switch(long) {
+                    case 1: string text;
+                    case 2: Payload payload;
+                };
+                typedef Choice ChoiceAlias;
+                struct Holder { ChoiceAlias value; };
+            };
+            """)], TestContext.Current.CancellationToken);
+
+        var union = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
+        union.ShouldContain("text.Destroy();");
+        union.ShouldContain("payload.Destroy(optionalsOnly);");
+
+        var choiceAlias = documents["Example.Implementation.ChoiceAliasUnmanaged.g.cs"].Source;
+        choiceAlias.ShouldContain("Value.Destroy(optionalsOnly);");
+        choiceAlias.ShouldNotContain("if (optionalsOnly)");
+
+        var holder = documents["Example.Implementation.HolderUnmanaged.g.cs"].Source;
+        holder.ShouldContain("value.Destroy(optionalsOnly);");
+        holder.ShouldNotContain("if (optionalsOnly)");
+    }
+
+    [Fact]
     public void EmitsEnumDiscriminatorAndUnionWithoutDefault()
     {
         var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("enum-union.idl", """
@@ -107,6 +156,28 @@ public sealed class UnionSpecs
         constructor.ShouldContain("Discriminator = DefaultDiscriminator;");
         constructor.ShouldNotContain("new global::Example.Payload()");
         constructor.ShouldNotContain("new Sequence<long>");
+    }
+
+    [Fact]
+    public void UnionFromNativeInitializesActiveAggregateBranchesWhenTheDiscriminatorChanges()
+    {
+        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("union-from-native.idl", """
+            module Example {
+                struct Payload { long value; };
+                union Choice switch(long) {
+                    case 10: Payload payload;
+                    case 11: sequence<long, 4> values;
+                };
+            };
+            """)], TestContext.Current.CancellationToken);
+
+        var native = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
+
+        native.ShouldContain("if (sample.Discriminator != _discriminator)");
+        native.ShouldContain("sample.payload = new ");
+        native.ShouldContain("payload.FromNative(sample.payload, keysOnly: false);");
+        native.ShouldContain("sample.values = new Sequence<int>();");
+        native.ShouldContain("values.FromNative((Sequence<int>)sample.values);");
     }
 
     [Fact]

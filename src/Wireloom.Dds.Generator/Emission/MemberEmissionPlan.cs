@@ -62,6 +62,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public bool IsSequenceArray => IsSequence && Dimensions.Count > 0;
     public bool IsStringSequence => IsSequence && ElementType is StringEmissionType;
     public bool IsAggregate => Type.IsAggregate;
+    public bool IsUnion => Type.IsUnion;
     public bool HasAggregateElement => ElementType?.IsAggregate == true;
     public bool HasSequenceElement => IsArray && ElementType is not null && HasSequenceType(ElementType);
     public string? BoundSummary => Bound is not int bound
@@ -304,9 +305,24 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
     public string EqualityExpression(string otherPrefix = "other.", string thisPrefix = "")
     {
-        if (IsOptional && IsArray)
+        if (IsArray)
         {
-            return $"(ReferenceEquals({thisPrefix}{EscapedName}, {otherPrefix}{EscapedName}) || ({thisPrefix}{EscapedName} is not null && {otherPrefix}{EscapedName} is not null && {thisPrefix}{EscapedName}.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>().SequenceEqual({otherPrefix}{EscapedName}.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>()" + ")))";
+            string arrayEquality;
+            if (Dimensions.Count == 1)
+            {
+                arrayEquality = $"{thisPrefix}{EscapedName}.SequenceEqual({otherPrefix}{EscapedName})";
+            }
+            else
+            {
+                arrayEquality = $"{thisPrefix}{EscapedName}.Rank == {otherPrefix}{EscapedName}.Rank && Enumerable.Range(0, {thisPrefix}{EscapedName}.Rank).All(dimension => {thisPrefix}{EscapedName}.GetLength(dimension) == {otherPrefix}{EscapedName}.GetLength(dimension)) && {thisPrefix}{EscapedName}.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>().SequenceEqual({otherPrefix}{EscapedName}.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>())";
+            }
+
+            if (IsOptional)
+            {
+                return $"(ReferenceEquals({thisPrefix}{EscapedName}, {otherPrefix}{EscapedName}) || ({thisPrefix}{EscapedName} is not null && {otherPrefix}{EscapedName} is not null && {arrayEquality}))";
+            }
+
+            return arrayEquality;
         }
 
         if (IsOptional && IsSequence)
@@ -383,7 +399,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
             PrimitiveEmissionType => FieldEmissionShape.Primitive,
             StringEmissionType => FieldEmissionShape.String,
             EnumEmissionType => FieldEmissionShape.Enum,
-            StructEmissionType => FieldEmissionShape.Struct,
+            StructEmissionType or UnionEmissionType => FieldEmissionShape.Struct,
             AliasEmissionType => FieldEmissionShape.Alias,
             SequenceEmissionType => FieldEmissionShape.Sequence,
             ArrayEmissionType => FieldEmissionShape.Array,

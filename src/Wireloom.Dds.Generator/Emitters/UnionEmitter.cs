@@ -76,9 +76,8 @@ internal sealed class UnionEmitter
         if (defaultBranch is not null)
         {
             EmitDefaultBranchSetter(writer, declaration, defaultBranch);
+            writer.BlankLine();
         }
-
-        writer.BlankLine();
 
         writer.WriteXmlSummary("Gets the currently active union-branch value.");
         writer.WriteXmlReturns("The value of the branch selected by <see cref=\"Discriminator\"/>.");
@@ -142,13 +141,40 @@ internal sealed class UnionEmitter
         writer.OpenBlock($"if ({UnionSelectionCondition(declaration, branch, negated: true)})");
         writer.WriteLine($"throw new InvalidOperationException(\"{branch.Field.Name} not selected\");");
         writer.CloseBlock();
+        writer.BlankLine();
         writer.WriteLine($"return _{branch.Plan.EscapedName};");
         writer.CloseBlock();
-        writer.BlankLine();
         writer.OpenBlock("set");
         writer.WriteLine($"_{branch.Plan.EscapedName} = value;");
+        writer.BlankLine();
         writer.WriteLine($"Discriminator = {UnionBranchDiscriminator(declaration, branch)};");
         writer.CloseBlock();
+        writer.CloseBlock();
+
+        if (branch.Labels.Count > 1)
+        {
+            EmitMultiLabelBranchSetter(writer, declaration, branch);
+        }
+    }
+
+    /// <summary>Emits the explicit-discriminator setter required for a branch with multiple labels.</summary>
+    private static void EmitMultiLabelBranchSetter(GeneratedSourceWriter writer, IdlEmissionUnion declaration, UnionBranchEmissionPlan branch)
+    {
+        var methodName = "Set" + EscapeIdentifier(branch.Field.Name);
+        var validLabels = string.Join(" || ", branch.Labels.Select(label => $"discriminator == {ManagedDiscriminatorLabel(label, declaration)}"));
+
+        writer.BlankLine();
+        writer.WriteXmlSummary($"Sets the {branch.Field.Name} branch with an explicit discriminator value.");
+        writer.WriteXmlParam("value", $"The value for the {branch.Field.Name} branch.");
+        writer.WriteXmlParam("discriminator", "A discriminator value selecting this branch.");
+        writer.OpenBlock($"public void {methodName}({TypeReference(branch.Plan.CSharpType, declaration.Namespace)} value, {ManagedDiscriminatorType(declaration)} discriminator)");
+        writer.OpenBlock($"if (!({validLabels}))");
+        writer.WriteLine($"throw new ArgumentException(\"Invalid discriminator value for {branch.Field.Name}\", nameof(discriminator));");
+        writer.CloseBlock();
+        writer.BlankLine();
+        writer.WriteLine($"_{branch.Plan.EscapedName} = value;");
+        writer.BlankLine();
+        writer.WriteLine("Discriminator = discriminator;");
         writer.CloseBlock();
     }
 
@@ -156,17 +182,19 @@ internal sealed class UnionEmitter
     private static void EmitDefaultBranchSetter(GeneratedSourceWriter writer, IdlEmissionUnion declaration, UnionBranchEmissionPlan defaultBranch)
     {
         var methodName = "Set" + EscapeIdentifier(defaultBranch.Field.Name);
+        var explicitLabels = declaration.Branches.Where(branch => !branch.IsDefault)
+            .SelectMany(branch => branch.Labels).Select(label => $"discriminator == {ManagedDiscriminatorLabel(label, declaration)}").ToArray();
 
         writer.WriteXmlSummary("Sets the default branch with an explicit discriminator value.");
         writer.WriteXmlParam("value", "The value for the default branch.");
         writer.WriteXmlParam("discriminator", "A discriminator value that does not select an explicit branch.");
         writer.OpenBlock($"public void {methodName}({TypeReference(defaultBranch.Plan.CSharpType, declaration.Namespace)} value, {ManagedDiscriminatorType(declaration)} discriminator)");
-        var explicitLabels = declaration.Branches.Where(branch => !branch.IsDefault)
-            .SelectMany(branch => branch.Labels).Select(label => $"discriminator == {ManagedDiscriminatorLabel(label, declaration)}").ToArray();
         writer.OpenBlock($"if ({string.Join(" || ", explicitLabels)})");
         writer.WriteLine($"throw new ArgumentException(\"Invalid discriminator value for {defaultBranch.Field.Name}\", nameof(discriminator));");
         writer.CloseBlock();
+        writer.BlankLine();
         writer.WriteLine($"_{defaultBranch.Plan.EscapedName} = value;");
+        writer.BlankLine();
         writer.WriteLine("Discriminator = discriminator;");
         writer.CloseBlock();
     }
@@ -208,104 +236,66 @@ internal sealed class UnionEmitter
     /// <summary>Emits a switch that returns the active public union branch.</summary>
     private static void EmitUnionReturnSwitch(GeneratedSourceWriter writer, IdlEmissionUnion declaration)
     {
-        writer.OpenBlock("switch (Discriminator)");
+        writer.WriteLine("return Discriminator switch");
+        writer.OpenBrace();
 
         foreach (var branch in declaration.Branches.Where(branch => !branch.IsDefault))
         {
-            foreach (var label in branch.Labels)
-            {
-                writer.WriteLine($"case {ManagedDiscriminatorLabel(label, declaration)}:");
-            }
-
-            writer.Indent();
-            writer.WriteLine($"return {EscapeIdentifier(branch.Field.Name)};");
-            writer.Unindent();
+            var labels = string.Join(" or ", branch.Labels.Select(label => ManagedDiscriminatorLabel(label, declaration)));
+            writer.WriteLine($"{labels} => {EscapeIdentifier(branch.Field.Name)},");
         }
-
-        writer.WriteLine("default:");
-        writer.Indent();
 
         var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
-        if (defaultBranch is not null)
-        {
-            writer.WriteLine($"return {EscapeIdentifier(defaultBranch.Field.Name)};");
-        }
-        else
-        {
-            writer.WriteLine("throw new InvalidOperationException(\"No union branch is selected\");");
-        }
-
-        writer.Unindent();
-        writer.CloseBlock();
+        var fallback = defaultBranch is null ? "null" : EscapeIdentifier(defaultBranch.Field.Name);
+        writer.WriteLine($"_ => {fallback},");
+        writer.CloseBlock(";");
     }
 
     /// <summary>Emits a switch that hashes the discriminator and active union branch.</summary>
     private static void EmitUnionHashSwitch(GeneratedSourceWriter writer, IdlEmissionUnion declaration)
     {
-        writer.OpenBlock("switch (Discriminator)");
+        writer.WriteLine("return Discriminator switch");
+        writer.OpenBrace();
 
         foreach (var branch in declaration.Branches.Where(branch => !branch.IsDefault))
         {
-            foreach (var label in branch.Labels)
-            {
-                writer.WriteLine($"case {ManagedDiscriminatorLabel(label, declaration)}:");
-            }
-
-            writer.Indent();
-            writer.WriteLine($"return HashCode.Combine(Discriminator, {EscapeIdentifier(branch.Field.Name)});");
-            writer.Unindent();
+            var labels = string.Join(" or ", branch.Labels.Select(label => ManagedDiscriminatorLabel(label, declaration)));
+            writer.WriteLine($"{labels} => HashCode.Combine(Discriminator, {branch.Plan.HashValue()}),");
         }
 
-        writer.WriteLine("default:");
-        writer.Indent();
-
         var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
+        var fallback = "";
         if (defaultBranch is not null)
         {
-            writer.WriteLine($"return HashCode.Combine(Discriminator, {EscapeIdentifier(defaultBranch.Field.Name)});");
+            fallback = $"HashCode.Combine(Discriminator, {EscapeIdentifier(defaultBranch.Field.Name)})";
         }
         else
         {
-            writer.WriteLine("return Discriminator.GetHashCode();");
+            fallback = "HashCode.Combine(Discriminator)";
         }
 
-        writer.Unindent();
-        writer.CloseBlock();
+        writer.WriteLine($"_ => {fallback},");
+        writer.CloseBlock(";");
     }
 
     /// <summary>Emits a switch that compares the active union branch values.</summary>
     private static void EmitUnionEqualitySwitch(GeneratedSourceWriter writer, IdlEmissionUnion declaration)
     {
-        writer.OpenBlock("switch (Discriminator)");
+        writer.WriteLine("return Discriminator switch");
+        writer.OpenBrace();
 
         foreach (var branch in declaration.Branches.Where(branch => !branch.IsDefault))
         {
-            foreach (var label in branch.Labels)
-            {
-                writer.WriteLine($"case {ManagedDiscriminatorLabel(label, declaration)}:");
-            }
-
-            writer.Indent();
-            writer.WriteLine($"return {EscapeIdentifier(branch.Field.Name)}.Equals(other.{EscapeIdentifier(branch.Field.Name)});");
-            writer.Unindent();
+            var labels = string.Join(" or ", branch.Labels.Select(label => ManagedDiscriminatorLabel(label, declaration)));
+            writer.WriteLine($"{labels} => {branch.Plan.EqualityExpression()},");
         }
-
-        writer.WriteLine("default:");
-        writer.Indent();
 
         var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
-        if (defaultBranch is not null)
-        {
-            var defaultField = EscapeIdentifier(defaultBranch.Field.Name);
-            writer.WriteLine($"return {defaultField}.Equals(other.{defaultField});");
-        }
-        else
-        {
-            writer.WriteLine("return true;");
-        }
-
-        writer.Unindent();
-        writer.CloseBlock();
+        var fallback = defaultBranch is null
+            ? "true"
+            : $"{EscapeIdentifier(defaultBranch.Field.Name)}.Equals(other.{EscapeIdentifier(defaultBranch.Field.Name)})";
+        writer.WriteLine($"_ => {fallback},");
+        writer.CloseBlock(";");
     }
 
     /// <summary>Builds the condition that determines whether a union branch is selected.</summary>
@@ -313,7 +303,9 @@ internal sealed class UnionEmitter
     {
         if (!branch.IsDefault)
         {
-            return $"Discriminator {(negated ? "!=" : "==")} {ManagedDiscriminatorLabel(branch.Labels[0], declaration)}";
+            var comparison = negated ? "!=" : "==";
+            var join = negated ? " && " : " || ";
+            return string.Join(join, branch.Labels.Select(label => $"Discriminator {comparison} {ManagedDiscriminatorLabel(label, declaration)}"));
         }
 
         var operators = declaration.Branches.Where(candidate => !candidate.IsDefault)

@@ -5,6 +5,11 @@ internal static class TypeSupportAnnotationEmitter
 {
     public static void Emit(GeneratedSourceWriter writer, int index, MemberEmissionPlan field)
     {
+        if (field.IsOptional)
+        {
+            return;
+        }
+
         var annotation = field.PrimitiveAnnotation();
         if (annotation is null)
         {

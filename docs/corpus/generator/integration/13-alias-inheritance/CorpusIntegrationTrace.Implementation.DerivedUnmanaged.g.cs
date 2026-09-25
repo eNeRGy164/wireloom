@@ -26,13 +26,13 @@ public struct DerivedUnmanaged : INativeTopicType<Derived>
     public void Destroy(bool optionalsOnly)
     {
         parent.Destroy(optionalsOnly);
+        traceContext.Destroy(optionalsOnly);
 
         if (optionalsOnly)
         {
             return;
         }
 
-        traceContext.Destroy(optionalsOnly);
         state.Destroy();
     }
 

@@ -104,4 +104,57 @@ public sealed class GeneratedTypedefSpecs
         wideTextNative.ShouldContain("sample.Value = Value.FromNative();");
         wideTextNative.ShouldContain("Value.ToNative(sample.Value, 4);");
     }
+
+    [Fact]
+    public void EmitsBoundedStringSequenceAliasContracts()
+    {
+        var documents = IdlCompiler.CompileSources([
+            CompilerTestSupport.Input(
+                "string-sequence-aliases.idl",
+                """
+                module StringSequenceAliases {
+                    typedef sequence<string<8>, 3> Texts;
+                    typedef sequence<wstring<4>, 2> WideTexts;
+                };
+                """)
+        ], TestContext.Current.CancellationToken);
+
+        var textsNative = documents["StringSequenceAliases.Implementation.TextsUnmanaged.g.cs"].Source;
+        textsNative.ShouldContain("private NativeStringSeq Value;");
+        textsNative.ShouldContain("Value.Initialize(max: 3, absoluteMax: 3, maxStrLen: 8, allocateMemory: allocateMemory);");
+        textsNative.ShouldContain("Value.FromNative(sample.Value);");
+        textsNative.ShouldContain("Value.ToNative(sample.Value, 8);");
+        textsNative.ShouldContain("if (optionalsOnly)");
+        textsNative.ShouldContain("Value.Destroy();");
+        textsNative.ShouldNotContain("Value.Destroy(optionalsOnly)");
+
+        var wideTextsNative = documents["StringSequenceAliases.Implementation.WideTextsUnmanaged.g.cs"].Source;
+        wideTextsNative.ShouldContain("private NativeWstringSeq Value;");
+        wideTextsNative.ShouldContain("Value.Initialize(max: 2, absoluteMax: 2, maxStrLen: 4, allocateMemory: allocateMemory);");
+        wideTextsNative.ShouldContain("Value.FromNative(sample.Value);");
+        wideTextsNative.ShouldContain("Value.ToNative(sample.Value, 4);");
+        wideTextsNative.ShouldContain("if (optionalsOnly)");
+        wideTextsNative.ShouldContain("Value.Destroy();");
+        wideTextsNative.ShouldNotContain("Value.Destroy(optionalsOnly)");
+    }
+
+    [Fact]
+    public void EmitsTypedDestroyContractsForAggregateAliasesAndNestedSequences()
+    {
+        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("destroy-aliases.idl", """
+            module DestroyAliases {
+                struct Item { long value; };
+                typedef Item ItemAlias;
+                typedef sequence<ItemAlias, 2> Items;
+            };
+            """)], TestContext.Current.CancellationToken);
+
+        var itemAlias = documents["DestroyAliases.Implementation.ItemAliasUnmanaged.g.cs"].Source;
+        itemAlias.ShouldContain("if (optionalsOnly)");
+        itemAlias.ShouldContain("Value.Destroy(optionalsOnly);");
+
+        var items = documents["DestroyAliases.Implementation.ItemsUnmanaged.g.cs"].Source;
+        items.ShouldContain("if (optionalsOnly)");
+        items.ShouldContain("Value.Destroy<ItemAlias, ItemAliasUnmanaged>(optionalsOnly);");
+    }
 }

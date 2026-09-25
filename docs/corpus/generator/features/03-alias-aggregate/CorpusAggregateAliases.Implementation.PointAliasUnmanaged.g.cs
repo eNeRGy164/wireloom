@@ -20,6 +20,12 @@ public struct PointAliasUnmanaged : INativeTopicType<PointAlias>
     /// <param name="optionalsOnly">Indicates whether only optional members should be released.</param>
     public void Destroy(bool optionalsOnly)
     {
+        if (optionalsOnly)
+        {
+            return;
+        }
+
+        Value.Destroy(optionalsOnly);
     }
 
     /// <summary>

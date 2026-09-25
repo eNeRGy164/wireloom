@@ -54,7 +54,11 @@ public partial class CoordinateGrid : IEquatable<CoordinateGrid>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        return Value.Cast<int>().First().GetHashCode();
+        var hash = new HashCode();
+
+        hash.Add(Value[0, 0]);
+
+        return hash.ToHashCode();
     }
 
     /// <summary>
@@ -74,6 +78,7 @@ public partial class CoordinateGrid : IEquatable<CoordinateGrid>
         }
 
         return Value.Rank == other.Value.Rank
+            && Enumerable.Range(0, Value.Rank).All(dimension => Value.GetLength(dimension) == other.Value.GetLength(dimension))
             && Value.Cast<int>().SequenceEqual(other.Value.Cast<int>());
     }
 

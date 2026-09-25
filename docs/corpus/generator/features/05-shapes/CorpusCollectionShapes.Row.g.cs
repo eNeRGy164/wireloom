@@ -54,7 +54,11 @@ public partial class Row : IEquatable<Row>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        return Value.Cast<int>().First().GetHashCode();
+        var hash = new HashCode();
+
+        hash.Add(Value[0]);
+
+        return hash.ToHashCode();
     }
 
     /// <summary>
@@ -73,8 +77,7 @@ public partial class Row : IEquatable<Row>
             return true;
         }
 
-        return Value.Rank == other.Value.Rank
-            && Value.Cast<int>().SequenceEqual(other.Value.Cast<int>());
+        return Value.SequenceEqual(other.Value);
     }
 
     /// <inheritdoc />

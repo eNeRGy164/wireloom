@@ -90,8 +90,12 @@ public partial class Sample : IEquatable<Sample>
             return true;
         }
 
-        return (ReferenceEquals(values, other.values) || (values is not null && other.values is not null && values.SequenceEqual(other.values)))
-            && (ReferenceEquals(items, other.items) || (items is not null && other.items is not null && items.Cast<int>().SequenceEqual(other.items.Cast<int>())));
+        return (ReferenceEquals(values, other.values) || (values is not null
+            && other.values is not null
+            && values.SequenceEqual(other.values)))
+            && (ReferenceEquals(items, other.items) || (items is not null
+                && other.items is not null
+                && items.SequenceEqual(other.items)));
     }
 
     /// <inheritdoc />

@@ -59,6 +59,7 @@ internal static class EmissionTypeProjector
             IdlType.StringType stringType => new StringEmissionType(stringType.IsWide, stringType.Bound),
             IdlType.Enum @enum => new EnumEmissionType(@enum.QualifiedName, EscapeQualifiedIdentifier(@enum.QualifiedName), @enum.DefaultValue),
             IdlType.Struct structure => new StructEmissionType(structure.QualifiedName, EscapeQualifiedIdentifier(structure.QualifiedName)),
+            IdlType.Union union => new UnionEmissionType(union.QualifiedName, EscapeQualifiedIdentifier(union.QualifiedName)),
             IdlType.Alias alias => ProjectAlias(alias, currentNamespace),
             IdlType.Sequence sequence => ProjectSequence(sequence, currentNamespace),
             IdlType.Array array => ProjectArray(array, currentNamespace),
@@ -90,7 +91,7 @@ internal static class EmissionTypeProjector
 
     internal static bool IsAggregateEmissionType(EmissionTypePlan type) => type switch
     {
-        StructEmissionType => true,
+        StructEmissionType or UnionEmissionType => true,
         AliasEmissionType alias => alias.Target is SequenceEmissionType or ArrayEmissionType || IsAggregateEmissionType(alias.Target),
         _ => false
     };
