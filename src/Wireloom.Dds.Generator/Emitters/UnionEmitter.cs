@@ -41,11 +41,11 @@ internal sealed class UnionEmitter
         writer.BlankLine();
 
         writer.WriteXmlSummary("Gets the discriminator that selects the active DDS union branch.");
-        writer.WriteLine($"public {declaration.DiscriminatorCSharpType} Discriminator {{ get; private set; }}");
+        writer.WriteLine($"public {ManagedDiscriminatorType(declaration)} Discriminator {{ get; private set; }}");
         writer.BlankLine();
 
         writer.WriteXmlSummary("Gets the discriminator value used to initialize this union.");
-        writer.WriteLine($"public const {declaration.DiscriminatorCSharpType} DefaultDiscriminator = 0;");
+        writer.WriteLine($"public const {ManagedDiscriminatorType(declaration)} DefaultDiscriminator = 0;");
 
         foreach (var branch in declaration.Branches)
         {
@@ -155,7 +155,6 @@ internal sealed class UnionEmitter
         writer.OpenBlock($"if ({UnionSelectionCondition(declaration, branch, negated: true)})");
         writer.WriteLine($"throw new InvalidOperationException(\"{branch.Field.Name} not selected\");");
         writer.CloseBlock();
-        writer.BlankLine();
         writer.WriteLine($"return _{branch.Plan.EscapedName};");
         writer.CloseBlock();
         writer.BlankLine();
@@ -174,9 +173,9 @@ internal sealed class UnionEmitter
         writer.WriteXmlSummary("Sets the default branch with an explicit discriminator value.");
         writer.WriteXmlParam("value", "The value for the default branch.");
         writer.WriteXmlParam("discriminator", "A discriminator value that does not select an explicit branch.");
-        writer.OpenBlock($"public void {methodName}({TypeReference(defaultBranch.Plan.CSharpType, declaration.Namespace)} value, {declaration.DiscriminatorCSharpType} discriminator)");
+        writer.OpenBlock($"public void {methodName}({TypeReference(defaultBranch.Plan.CSharpType, declaration.Namespace)} value, {ManagedDiscriminatorType(declaration)} discriminator)");
         var explicitLabels = declaration.Branches.Where(branch => !branch.IsDefault)
-            .SelectMany(branch => branch.Labels).Select(label => $"discriminator == {label}").ToArray();
+            .SelectMany(branch => branch.Labels).Select(label => $"discriminator == {ManagedDiscriminatorLabel(label, declaration)}").ToArray();
         writer.OpenBlock($"if ({string.Join(" || ", explicitLabels)})");
         writer.WriteLine($"throw new ArgumentException(\"Invalid discriminator value for {defaultBranch.Field.Name}\", nameof(discriminator));");
         writer.CloseBlock();
@@ -194,7 +193,7 @@ internal sealed class UnionEmitter
         {
             foreach (var label in branch.Labels)
             {
-                writer.WriteLine($"case {label}:");
+                writer.WriteLine($"case {ManagedDiscriminatorLabel(label, declaration)}:");
             }
 
             writer.Indent();
@@ -228,7 +227,7 @@ internal sealed class UnionEmitter
         {
             foreach (var label in branch.Labels)
             {
-                writer.WriteLine($"case {label}:");
+                writer.WriteLine($"case {ManagedDiscriminatorLabel(label, declaration)}:");
             }
 
             writer.Indent();
@@ -262,7 +261,7 @@ internal sealed class UnionEmitter
         {
             foreach (var label in branch.Labels)
             {
-                writer.WriteLine($"case {label}:");
+                writer.WriteLine($"case {ManagedDiscriminatorLabel(label, declaration)}:");
             }
 
             writer.Indent();
@@ -296,7 +295,7 @@ internal sealed class UnionEmitter
         {
             foreach (var label in branch.Labels)
             {
-                writer.WriteLine($"case {label}:");
+                writer.WriteLine($"case {ManagedDiscriminatorLabel(label, declaration)}:");
             }
 
             writer.Indent();
@@ -327,12 +326,12 @@ internal sealed class UnionEmitter
     {
         if (!branch.IsDefault)
         {
-            return $"Discriminator {(negated ? "!=" : "==")} {branch.Labels[0]}";
+            return $"Discriminator {(negated ? "!=" : "==")} {ManagedDiscriminatorLabel(branch.Labels[0], declaration)}";
         }
 
         var operators = declaration.Branches.Where(candidate => !candidate.IsDefault)
             .SelectMany(candidate => candidate.Labels)
-            .Select(label => $"Discriminator {(negated ? "==" : "!=")} {label}");
+            .Select(label => $"Discriminator {(negated ? "==" : "!=")} {ManagedDiscriminatorLabel(label, declaration)}");
 
         return string.Join(negated ? " || " : " && ", operators);
     }
@@ -342,12 +341,12 @@ internal sealed class UnionEmitter
     {
         if (!branch.IsDefault)
         {
-            return branch.Labels[0];
+            return ManagedDiscriminatorLabel(branch.Labels[0], declaration);
         }
 
-        if (declaration.DiscriminatorCSharpType.Contains("."))
+        if (declaration.DiscriminatorIsEnum)
         {
-            return $"default({declaration.DiscriminatorCSharpType})";
+            return $"default({ManagedDiscriminatorType(declaration)})";
         }
 
         var labels = new HashSet<int>(declaration.Branches.Where(candidate => !candidate.IsDefault)
@@ -360,5 +359,11 @@ internal sealed class UnionEmitter
 
         return candidate.ToString();
     }
+
+    private static string ManagedDiscriminatorType(IdlEmissionUnion declaration) =>
+        TypeReference(declaration.DiscriminatorCSharpType, declaration.Namespace);
+
+    private static string ManagedDiscriminatorLabel(string label, IdlEmissionUnion declaration) =>
+        TypeReference(label, declaration.Namespace);
 
 }

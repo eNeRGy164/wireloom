@@ -49,6 +49,11 @@ public sealed class UnionSpecs
 
         var managed = documents["Example.Choice.g.cs"].Source;
         managed.ShouldContain("Discriminator { get; private set; }");
+        managed.ShouldContain("public Kind Discriminator { get; private set; }");
+        managed.ShouldContain("public const Kind DefaultDiscriminator = 0;");
+        managed.ShouldContain("Discriminator != Kind.Number");
+        managed.ShouldContain("Discriminator = Kind.Number;");
+        managed.ShouldNotContain("global::Example.Kind");
         managed.ShouldNotContain("Settext");
         managed.ShouldContain("number");
         managed.ShouldContain("text");
@@ -75,6 +80,10 @@ public sealed class UnionSpecs
         managed.ShouldContain("return _number;");
         managed.ShouldContain("return _text;");
         managed.ShouldContain("public Choice(Choice? other)");
+        managed.ShouldContain("if (Discriminator != 1)\n            {");
+        managed.ShouldContain("Discriminator = other.Discriminator;\n\n");
+        managed.ShouldContain("switch (Discriminator)");
+        managed.ShouldNotContain("throw new InvalidOperationException(\"number not selected\");\n\n            return _number;");
     }
 
     [Fact]
