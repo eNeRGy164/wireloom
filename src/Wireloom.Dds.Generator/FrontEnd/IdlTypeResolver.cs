@@ -3,15 +3,8 @@ namespace Wireloom;
 using static IdlCompiler;
 
 /// <summary>Resolves IDL names and aliases into the target-independent semantic type model.</summary>
-internal sealed class IdlTypeResolver
+internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
 {
-    private readonly IdlSymbolTable symbols;
-
-    public IdlTypeResolver(IdlSymbolTable symbols)
-    {
-        this.symbols = symbols;
-    }
-
     public IdlType? Resolve(string idlType, string? currentNamespace)
     {
         var normalized = NormalizeIdlType(idlType);

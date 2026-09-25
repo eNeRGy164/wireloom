@@ -37,9 +37,8 @@ internal enum NativeDestroyKind
 /// operations on demand, so names, namespaces, keysOnly, and recursive type
 /// support are not frozen into reusable source fragments.
 /// </summary>
-internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string? namespaceName)
+internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string? currentNamespace)
 {
-    private readonly string? currentNamespace = namespaceName;
     private readonly FieldEmissionShape shape = GetShape(field.Type);
 
     public IdlEmissionField Field { get; } = field;

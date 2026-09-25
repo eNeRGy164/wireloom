@@ -5,15 +5,8 @@ namespace Wireloom;
 using static IdlCompiler;
 
 /// <summary>Owns front-end validation that does not produce target code.</summary>
-internal sealed class IdlSemanticValidator
+internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
 {
-    private readonly IdlSymbolTable symbols;
-
-    public IdlSemanticValidator(IdlSymbolTable symbols)
-    {
-        this.symbols = symbols;
-    }
-
     public void EnsureNewName(IdlInput input, int offset, string name)
     {
         if (!symbols.AddName(name) || symbols.ContainsEnum(name) || symbols.ContainsTypedef(name))
