@@ -21,6 +21,7 @@ corpus/
 │   ├── integration/    integration entry points and support IDL
 │   └── includes/       shared IDL included by feature cases
 └── oracles/            RTI-generated C# reference sources
+└── generator/          Wireloom-generated C# sources exported from the corpus
 ```
 
 The checked-in oracle sources are generated reference material. They are
@@ -109,3 +110,15 @@ evidence separate from runtime or interoperability claims.
 - Keep RTI acceptance separate from managed-generator support status.
 - Keep runtime, serialization, and wire claims out of source-generation status.
 - Review the RTI license status before committing or sharing generated output.
+
+## Exporting managed-generator sources
+
+Set `CORPUS_GENERATOR_EXPORT_ROOT` and run the corpus export test to publish
+generated sources under `generator/<source-kind>/<case-id>`:
+
+```powershell
+$env:CORPUS_GENERATOR_EXPORT_ROOT = "docs/corpus/generator"
+dotnet test tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --filter-method ExportAcceptedCorpusSources
+```
+
+Rejected cases are omitted because they do not produce generated sources.

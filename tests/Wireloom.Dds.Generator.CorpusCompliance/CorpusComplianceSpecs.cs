@@ -49,7 +49,10 @@ public sealed class CorpusComplianceSpecs
 
             foreach (var source in Compile(corpusCase).Values)
             {
-                File.WriteAllText(Path.Combine(caseRoot, source.HintName + ".g.cs"), source.Source);
+                var fileName = source.HintName.EndsWith(".g.cs", StringComparison.Ordinal)
+                    ? source.HintName
+                    : $"{source.HintName}.g.cs";
+                File.WriteAllText(Path.Combine(caseRoot, fileName), source.Source);
             }
         }
     }
