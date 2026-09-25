@@ -269,7 +269,7 @@ internal sealed class CollectionAliasEmitter
             !IsCSharpPrimitive(elementType) &&
             !compilation.IsEnum(elementType, declaration.Namespace);
 
-        string? collectionElementUnmanagedType = string.Empty;
+        var collectionElementUnmanagedType = string.Empty;
         if (collectionElementIsAggregate)
         {
             collectionElementUnmanagedType = TypeReference(compilation.ResolveAliasNativeType(elementType, declaration.Namespace), implementation);
