@@ -42,10 +42,11 @@ internal sealed class StringEmissionType(bool isWide, int bound)
     public override int? Bound { get; } = bound;
 }
 
-internal sealed class EnumEmissionType(string qualifiedName, string cSharpType)
+internal sealed class EnumEmissionType(string qualifiedName, string cSharpType, int defaultValue)
     : EmissionTypePlan(cSharpType)
 {
     public string QualifiedName { get; } = qualifiedName;
+    public int DefaultValue { get; } = defaultValue;
     public override bool IsEnum => true;
 }
 

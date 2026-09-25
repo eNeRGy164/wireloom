@@ -66,7 +66,7 @@ internal sealed class EnumEmitter
         writer.WriteLine("var annotations = new Annotations(");
         writer.Indent();
         writer.WriteLine("TypeKind.Enumeration,");
-        writer.WriteLine($"defaultValue: new AnnotationParameterValue {{ EnumValue = {declaration.Members[0].Value} }},");
+        writer.WriteLine($"defaultValue: new AnnotationParameterValue {{ EnumValue = {declaration.DefaultMember.Value} }},");
         writer.WriteLine("minValue: null,");
         writer.WriteLine("maxValue: null,");
         writer.WriteLine("unit: null);");

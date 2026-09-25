@@ -229,6 +229,7 @@ internal sealed class IdlDeclarationParser
         var qualified = Qualify(enumName, currentNamespace);
         EnsureNewName(input, baseOffset + position, qualified);
         var enumMembers = new List<IdlEnumMember>();
+        var hasDefaultLiteral = false;
         var nextValue = 0L;
         var enumBody = enumDeclaration.Groups["body"];
         var rawMembers = enumBody.Value.Split(',');

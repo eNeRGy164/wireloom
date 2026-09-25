@@ -34,9 +34,10 @@ internal abstract class IdlType
         public int Bound { get; } = bound;
     }
 
-    public sealed class Enum(string qualifiedName) : IdlType
+    public sealed class Enum(string qualifiedName, int defaultValue) : IdlType
     {
         public string QualifiedName { get; } = qualifiedName;
+        public int DefaultValue { get; } = defaultValue;
     }
 
     public sealed class Struct(string qualifiedName) : IdlType
@@ -88,11 +89,12 @@ internal sealed class IdlMember(string name, IdlType type, IdlMemberMetadata? me
                 memberId ?? Metadata.MemberId));
 }
 
-internal sealed class IdlEnumMember(string name, int value, bool hasExplicitValue)
+internal sealed class IdlEnumMember(string name, int value, bool hasExplicitValue, bool isDefaultLiteral)
 {
     public string Name { get; } = name;
     public int Value { get; } = value;
     public bool HasExplicitValue { get; } = hasExplicitValue;
+    public bool IsDefaultLiteral { get; } = isDefaultLiteral;
 }
 
 internal sealed class IdlEnum(string name, string? @namespace, IReadOnlyList<IdlEnumMember> members, IdlExtensibilityKind extensibility)
@@ -101,6 +103,7 @@ internal sealed class IdlEnum(string name, string? @namespace, IReadOnlyList<Idl
     public string? Namespace { get; } = @namespace;
     public IReadOnlyList<IdlEnumMember> Members { get; } = members;
     public IdlExtensibilityKind Extensibility { get; } = extensibility;
+    public IdlEnumMember DefaultMember => Members.SingleOrDefault(member => member.IsDefaultLiteral) ?? Members[0];
 }
 
 /// <summary>Raw typedef facts retained until semantic type resolution.</summary>

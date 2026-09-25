@@ -128,4 +128,36 @@ public sealed class IdlTypeResolutionSpecs
         explicitEnum.ShouldContain("NEXT,");
         explicitEnum.ShouldNotContain("NEXT = 8");
     }
+
+    [Fact]
+    [Trait("Corpus", "C042")]
+    public void PreservesDefaultLiteralForManagedAndTypeSupportDefaults()
+    {
+        var output = CompilerTestSupport.Compile(
+            CompilerTestSupport.Input(
+                "defaults.idl",
+                """
+                module Defaults {
+                    enum Color { GREEN, @default_literal RED, BLUE };
+                    struct Sample { Color color; };
+                };
+                """
+            )
+        );
+
+        output.ShouldContain("RED,");
+        output.ShouldContain("EnumValue = 1");
+        output.ShouldContain("public Color color { get; set; } = (Color)1;");
+    }
+
+    [Fact]
+    public void RejectsMultipleDefaultLiterals()
+    {
+        Should.Throw<IdlException>(() => CompilerTestSupport.Compile(
+            CompilerTestSupport.Input(
+                "duplicate-default-literal.idl",
+                "module Defaults { enum Color { @default_literal RED, @default_literal BLUE }; };"
+            )
+        )).Message.ShouldContain("at most one @default_literal");
+    }
 }

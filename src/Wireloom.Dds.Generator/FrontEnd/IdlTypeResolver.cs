@@ -47,9 +47,9 @@ internal sealed class IdlTypeResolver
             qualified = ResolveTypeName(idlType, null);
         }
 
-        if (symbols.TryGetEnum(qualified, out _))
+        if (symbols.TryGetEnum(qualified, out var enumDeclaration))
         {
-            return new IdlType.Enum(qualified);
+            return new IdlType.Enum(qualified, enumDeclaration.DefaultMember.Value);
         }
 
         if (symbols.TryGetTypedef(qualified, out var alias))

@@ -108,7 +108,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
             if (Type.IsEnum)
             {
-                return $" = ({TypeReference(CSharpType, currentNamespace)})0;";
+                return $" = ({TypeReference(CSharpType, currentNamespace)}){EnumDefaultValue};";
             }
 
             if (IsSequence || IsArray)
@@ -330,7 +330,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         {
             StringEmissionType stringType when stringType.IsWide => ("WideString", "WideStringValue", "\"\"", null, null),
             StringEmissionType => ("String", "StringValue", "\"\"", null, null),
-            EnumEmissionType => ("Enumeration", "EnumValue", "0", null, null),
+            EnumEmissionType enumType => ("Enumeration", "EnumValue", enumType.DefaultValue.ToString(), null, null),
             PrimitiveEmissionType primitive => primitive.IdlName switch
             {
                 "short" or "int16" => ("Int16", "Int16Value", "(short)0", "short.MinValue", "short.MaxValue"),
@@ -355,6 +355,8 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     private bool IsOptionalScalar => IsOptional && !IsSequence && !IsArray && !IsString && !IsAggregate;
 
     private EmissionTypePlan ValueType => UnwrapValueEmissionType(Type);
+
+    private int EnumDefaultValue => ValueType is EnumEmissionType enumType ? enumType.DefaultValue : 0;
 
     private string GetReferencedUnmanagedType(string? namespaceOverride) =>
         GetUnmanagedType(CSharpType, namespaceOverride);

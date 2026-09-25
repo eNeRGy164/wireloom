@@ -47,7 +47,7 @@ internal sealed partial class MemberEmissionPlan
             "long double" => "(LongDouble)0",
             _ => "0"
         },
-        EnumEmissionType => $"({TypeReference(CSharpType, namespaceName)})0",
+        EnumEmissionType enumType => $"({TypeReference(CSharpType, namespaceName)}){enumType.DefaultValue}",
         _ => throw new InvalidOperationException("Expected a scalar native value.")
     };
 
