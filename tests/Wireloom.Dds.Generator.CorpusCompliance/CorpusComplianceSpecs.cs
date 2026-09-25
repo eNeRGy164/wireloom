@@ -31,6 +31,30 @@ public sealed class CorpusComplianceSpecs
     }
 
     [Fact]
+    public void ExportAcceptedCorpusSources()
+    {
+        var exportRoot = Environment.GetEnvironmentVariable("CORPUS_GENERATOR_EXPORT_ROOT");
+        if (string.IsNullOrWhiteSpace(exportRoot))
+        {
+            Assert.Skip("Set CORPUS_GENERATOR_EXPORT_ROOT to publish generated corpus sources.");
+        }
+
+        var root = Path.GetFullPath(exportRoot);
+        Directory.CreateDirectory(root);
+
+        foreach (var corpusCase in CorpusRepository.Cases.Where(corpusCase => corpusCase.ExpectedToCompile))
+        {
+            var caseRoot = Path.Combine(root, corpusCase.SourceKind, corpusCase.Id);
+            Directory.CreateDirectory(caseRoot);
+
+            foreach (var source in Compile(corpusCase).Values)
+            {
+                File.WriteAllText(Path.Combine(caseRoot, source.HintName + ".g.cs"), source.Source);
+            }
+        }
+    }
+
+    [Fact]
     public void EveryCorpusIdlIsADeclaredRootOrAnIncludedSupportFile()
     {
         var roots = CorpusRepository.ManifestRoots

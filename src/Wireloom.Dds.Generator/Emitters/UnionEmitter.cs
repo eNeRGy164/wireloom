@@ -57,19 +57,6 @@ internal sealed class UnionEmitter
         writer.WriteXmlSummary("Initializes a new union with its RTI default discriminator.");
         writer.OpenBlock($"public {typeName}()");
         writer.WriteLine("Discriminator = DefaultDiscriminator;");
-
-        foreach (var branch in declaration.Branches)
-        {
-            if (branch.Plan.IsSequence)
-            {
-                writer.WriteLine(branch.Plan.ManagedDefaultInitializationStatement!);
-            }
-            else if (branch.Plan.IsAggregate)
-            {
-                writer.WriteLine(branch.Plan.ManagedDefaultInitializationStatement!);
-            }
-        }
-
         writer.CloseBlock();
         writer.BlankLine();
 

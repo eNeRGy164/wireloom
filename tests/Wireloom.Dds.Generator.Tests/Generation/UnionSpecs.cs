@@ -87,6 +87,29 @@ public sealed class UnionSpecs
     }
 
     [Fact]
+    public void UnionConstructorDoesNotInitializeInactiveAggregateBranches()
+    {
+        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("struct-union.idl", """
+            module Example {
+                struct Payload { long value; };
+                union Choice switch(long) {
+                    case 10: Payload payload;
+                    case 11: sequence<long, 4> values;
+                };
+            };
+            """)], TestContext.Current.CancellationToken);
+
+        var managed = documents["Example.Choice.g.cs"].Source;
+        var constructorStart = managed.IndexOf("public Choice()", StringComparison.Ordinal);
+        constructorStart.ShouldBeGreaterThanOrEqualTo(0);
+        var constructor = managed[constructorStart..managed.IndexOf("public Choice(Choice? other)", constructorStart, StringComparison.Ordinal)];
+
+        constructor.ShouldContain("Discriminator = DefaultDiscriminator;");
+        constructor.ShouldNotContain("new global::Example.Payload()");
+        constructor.ShouldNotContain("new Sequence<long>");
+    }
+
+    [Fact]
     public void AppendableEnumAndUnionUseExtensibleTypeSupport()
     {
         var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("appendable.idl", """
