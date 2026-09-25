@@ -1,7 +1,7 @@
 namespace Wireloom;
 
 using System.Numerics;
-using static Wireloom.IdlCompiler;
+using static IdlCompiler;
 
 /// <summary>Emits documented C# representations of IDL constants.</summary>
 internal sealed class ConstantEmitter

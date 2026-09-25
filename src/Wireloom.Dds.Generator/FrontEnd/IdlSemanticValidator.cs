@@ -2,7 +2,7 @@ using System.Numerics;
 
 namespace Wireloom;
 
-using static Wireloom.IdlCompiler;
+using static IdlCompiler;
 
 /// <summary>Owns front-end validation that does not produce target code.</summary>
 internal sealed class IdlSemanticValidator

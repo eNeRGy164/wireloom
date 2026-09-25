@@ -1,6 +1,6 @@
 namespace Wireloom;
 
-using static Wireloom.IdlCompiler;
+using static IdlCompiler;
 
 /// <summary>
 /// Target-specific type projection used by source emitters after semantic

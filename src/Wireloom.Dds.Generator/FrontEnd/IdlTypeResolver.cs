@@ -1,6 +1,6 @@
 namespace Wireloom;
 
-using static Wireloom.IdlCompiler;
+using static IdlCompiler;
 
 /// <summary>Resolves IDL names and aliases into the target-independent semantic type model.</summary>
 internal sealed class IdlTypeResolver

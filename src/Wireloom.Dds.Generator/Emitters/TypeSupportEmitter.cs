@@ -1,6 +1,6 @@
 namespace Wireloom;
 
-using static Wireloom.IdlCompiler;
+using static IdlCompiler;
 
 /// <summary>Owns the output entry point for native/plugin/type-support documents.</summary>
 internal sealed class TypeSupportEmitter

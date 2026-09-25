@@ -3,8 +3,8 @@ using System.Text.RegularExpressions;
 
 namespace Wireloom;
 
-using static Wireloom.IdlCompiler;
-using static Wireloom.IdlGrammar;
+using static IdlCompiler;
+using static IdlGrammar;
 
 internal sealed class IdlDeclarationParser
 {

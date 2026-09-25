@@ -1,7 +1,7 @@
 namespace Wireloom;
 
-using static Wireloom.EmissionTypeProjector;
-using static Wireloom.IdlCompiler;
+using static EmissionTypeProjector;
+using static IdlCompiler;
 
 internal sealed class UnionEmitter
 {
