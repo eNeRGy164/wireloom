@@ -54,7 +54,7 @@ internal sealed partial class CompilationState
                         throw new IdlException(@class.SourceInput, 0, "struct/valuetype derived from a struct/valuetype can not contain @key fields. This check is only enforced when using strict validation.");
                     }
 
-                    ClassEmitter.Emit(this, @class.Name, @class.Namespace, @class.Fields, @class.Extensibility, @class.SourceIdlFileName, @class.BaseType, inheritedFields);
+                    ClassEmitter.Emit(this, @class.Name, @class.Namespace, @class.Fields, @class.Extensibility, @class.SourceIdlFileName, @class.BaseType, inheritedFields, @class.IsTopic);
                     break;
 
                 case IdlUnionDeclaration union:

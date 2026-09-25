@@ -26,6 +26,15 @@ public sealed class IdlValidationSpecs
     }
 
     [Fact]
+    public void RejectsTopicAnnotationsOnModules()
+    {
+        var exception = Should.Throw<IdlException>(() => CompilerTestSupport.Compile(
+            CompilerTestSupport.Input("topic-module.idl", "@topic module Invalid { struct Sample { long value; }; };")));
+
+        exception.Message.ShouldContain("Unsupported IDL syntax near 'module'");
+    }
+
+    [Fact]
     public void ReportsUnknownTypedefTargets()
     {
         var exception = Should.Throw<IdlException>(() => CompilerTestSupport.Compile(CompilerTestSupport.Input(

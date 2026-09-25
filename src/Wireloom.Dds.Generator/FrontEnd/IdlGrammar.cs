@@ -11,6 +11,9 @@ internal static class IdlGrammar
     internal static readonly Regex DefaultNestedAnnotationPattern = new(
         @"^@default_nested\b\s*",
         RegexOptions.Compiled);
+    internal static readonly Regex TopicAnnotationPattern = new(
+        @"^@topic\b\s*",
+        RegexOptions.Compiled);
     internal static readonly Regex StructPattern = new(
         @"^(?:(?<nested>@nested\s+))?(?:(?<extensibility>@(?:final|appendable|mutable)\s+))?(?:(?<nestedAfter>@nested\s+))?struct\s+(?<name>[A-Za-z_]\w*)(?:\s*:\s*(?<base>[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*))?\s*\{(?<body>[^{}]*)\}\s*;",
         RegexOptions.Compiled);

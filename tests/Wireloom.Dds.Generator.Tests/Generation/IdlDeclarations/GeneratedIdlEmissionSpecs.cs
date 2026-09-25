@@ -154,4 +154,18 @@ public sealed class GeneratedIdlEmissionSpecs
         data.ShouldContain("public LongSequence[] sequences { get; set; }");
         data.ShouldContain("new Sequence<Item>(other.unboundedItems.Select(element => new Item(element)))");
     }
+
+    [Fact]
+    [Trait("Corpus", "C044")]
+    public void AcceptsTopicAnnotationsAndPreservesTheirMeaningInTheGeneratedDocumentation()
+    {
+        var documents = IdlCompiler.CompileSources([
+            CompilerTestSupport.Input("C044-annotations.idl", "module CorpusAnnotations { @topic struct Sample { @key long id; }; };")
+        ], TestContext.Current.CancellationToken);
+
+        var sample = documents["CorpusAnnotations.Sample.g.cs"].Source;
+        sample.ShouldContain("It is marked as a DDS topic type.");
+        documents["CorpusAnnotations.Implementation.SamplePlugin.g.cs"].Source
+            .ShouldContain("isKeyed: true");
+    }
 }

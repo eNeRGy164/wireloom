@@ -14,7 +14,8 @@ internal sealed class ClassEmitter
         IdlExtensibilityKind extensibility,
         string sourceIdlFileName,
         string? baseType,
-        IReadOnlyList<IdlMember> inheritedFields)
+        IReadOnlyList<IdlMember> inheritedFields,
+        bool isTopic)
     {
         var emissionFields = fields.Select(field => ToEmissionField(field, currentNamespace)).ToArray();
         var emissionInheritedFields = inheritedFields.Select(field => ToEmissionField(field, currentNamespace)).ToArray();
@@ -39,6 +40,10 @@ internal sealed class ClassEmitter
         }
 
         typeSummary += $" It is marked as <c>{extensibility.ToString().ToLowerInvariant()}</c>.";
+        if (isTopic)
+        {
+            typeSummary += " It is marked as a DDS topic type.";
+        }
 
         writer.WriteXmlSummary(typeSummary);
         var baseReference = baseType is null ? null : TypeReference(baseType, currentNamespace);

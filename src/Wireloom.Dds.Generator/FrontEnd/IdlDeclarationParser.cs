@@ -77,18 +77,22 @@ internal sealed class IdlDeclarationParser
 
     private int ParseStruct(string declarations, IdlInput input, int baseOffset, string? currentNamespace, int position)
     {
-        var declaration = StructPattern.Match(declarations.Substring(position));
+        var isTopic = TopicAnnotationPattern.IsMatch(declarations[position..]);
+        var declarationStart = isTopic
+            ? position + TopicAnnotationPattern.Match(declarations[position..]).Length
+            : position;
+        var declaration = StructPattern.Match(declarations.Substring(declarationStart));
         if (!declaration.Success)
         {
-            var remaining = declarations[position..].TrimStart();
+            var remaining = declarations[declarationStart..].TrimStart();
             var tokenEnd = remaining.IndexOfAny([' ', '\t', '\r', '\n', '{', ';']);
             var token = tokenEnd < 0 ? remaining : remaining[..tokenEnd];
-            throw new IdlException(input, baseOffset + position, $"Unsupported IDL syntax near '{token}'. This generator does not support that declaration or annotation.");
+            throw new IdlException(input, baseOffset + declarationStart, $"Unsupported IDL syntax near '{token}'. This generator does not support that declaration or annotation.");
         }
 
         var name = declaration.Groups["name"].Value;
         var fullyQualifiedName = Qualify(name, currentNamespace);
-        EnsureNewName(input, baseOffset + position, fullyQualifiedName);
+        EnsureNewName(input, baseOffset + declarationStart, fullyQualifiedName);
         var body = declaration.Groups["body"];
         var extensibility = declaration.Groups["extensibility"].Value.Trim() switch
         {
@@ -96,8 +100,8 @@ internal sealed class IdlDeclarationParser
             "@mutable" => IdlExtensibilityKind.Mutable,
             _ => IdlExtensibilityKind.Extensible
         };
-        var fields = ParseStructMembers(input, body.Value, baseOffset + position + body.Index, currentNamespace);
-        IdlSemanticValidator.ValidateMemberIds(input, baseOffset + position, fields);
+        var fields = ParseStructMembers(input, body.Value, baseOffset + declarationStart + body.Index, currentNamespace);
+        IdlSemanticValidator.ValidateMemberIds(input, baseOffset + declarationStart, fields);
 
         var parsedDeclaration = new IdlClassDeclaration(
             name,
@@ -108,12 +112,13 @@ internal sealed class IdlDeclarationParser
             input,
             declaration.Groups["base"].Success
                 ? EscapeQualifiedIdentifier(ResolveTypeName(declaration.Groups["base"].Value, currentNamespace))
-                : null);
+                : null,
+            isTopic);
         declarationQueue.Add(parsedDeclaration);
 
         AddClass(fullyQualifiedName, parsedDeclaration);
 
-        return declaration.Length;
+        return declarationStart - position + declaration.Length;
     }
 
     private List<IdlMember> ParseStructMembers(IdlInput input, string body, int sourceOffset, string? currentNamespace)
