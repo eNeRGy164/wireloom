@@ -41,9 +41,9 @@ root explicitly:
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
+    <PackageReference Include="Rti.ConnextDds" Version="7.3.1" />
     <PackageReference Include="Wireloom.Dds.Generator"
-                      Version="0.1.0-preview.72"
+                      Version="0.1.0"
                       PrivateAssets="all" />
 
     <DdsIdl Include="Contracts\Telemetry.idl" />
@@ -109,17 +109,17 @@ generated contract shape—not automatic proof of runtime or wire compatibility.
 ## Compatibility evidence
 
 Wireloom compares small, attributable IDL cases with retained RTI Connext
-7.7.0 / `rtiddsgen` 4.7.0 reference output. The checked-in corpus currently
+7.3.1 / `rtiddsgen` 4.7.0 reference output. The checked-in corpus currently
 contains:
 
-| Evidence set | Cases |
-| --- | ---: |
-| Positive feature cases | 54 |
-| Negative and diagnostic probes | 53 |
-| Integration entry points | 4 |
-| Total corpus cases | 111 |
-| Implemented positive/integration cases | 44 / 58 |
-| Compliance checks | 225 total, 224 passing |
+| Evidence set                           |                  Cases |
+| -------------------------------------- | ---------------------: |
+| Positive feature cases                 |                     54 |
+| Negative and diagnostic probes         |                     53 |
+| Integration entry points               |                      4 |
+| Total corpus cases                     |                    111 |
+| Implemented positive/integration cases |                44 / 58 |
+| Compliance checks                      | 225 total, 224 passing |
 
 One cyclic-alias probe is intentionally isolated while the compiler-process
 harness is being completed. The snapshot above was recorded on 2026-09-24;
@@ -147,8 +147,7 @@ Pack the analyzer/source-generator package with:
 
 ```powershell
 dotnet restore src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --locked-mode
-dotnet pack src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj `
-  --no-restore --configuration Release --output artifacts
+dotnet pack src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --no-restore --configuration Release --output artifacts
 ```
 
 The package integration suite consumes that packed `.nupkg` from an isolated
@@ -178,16 +177,14 @@ The architecture is documented with a compact [arc42 baseline](docs/architecture
 
 ## Repository map
 
-| Path | Purpose |
-| --- | --- |
-| [`src/Wireloom.Dds.Generator`](src/Wireloom.Dds.Generator) | Packable Roslyn incremental generator and managed compiler |
-| [`tests/Wireloom.Dds.Generator.Tests`](tests/Wireloom.Dds.Generator.Tests) | Fast in-memory front-end and emitter tests |
-| [`tests/Wireloom.Dds.Generator.CorpusCompliance`](tests/Wireloom.Dds.Generator.CorpusCompliance) | Manifest-driven corpus and RTI C# shape checks |
-| [`tests/Wireloom.Dds.Generator.PackageIntegration`](tests/Wireloom.Dds.Generator.PackageIntegration) | Tests against the packed NuGet analyzer |
-| [`docs/corpus`](docs/corpus) | Authored IDL cases, oracle sources, and feature status |
-| [`docs/architecture`](docs/architecture) | Architecture baseline and terminology |
-| [`docs/testing`](docs/testing) | Test strategy and verification boundaries |
-| [`evidence`](evidence) | Supporting records and retained evidence |
+| Path                                                                                                 | Purpose                                                    |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [`src/Wireloom.Dds.Generator`](src/Wireloom.Dds.Generator)                                           | Packable Roslyn incremental generator and managed compiler |
+| [`tests/Wireloom.Dds.Generator.Tests`](tests/Wireloom.Dds.Generator.Tests)                           | Fast in-memory front-end and emitter tests                 |
+| [`tests/Wireloom.Dds.Generator.CorpusCompliance`](tests/Wireloom.Dds.Generator.CorpusCompliance)     | Manifest-driven corpus and RTI C# shape checks             |
+| [`tests/Wireloom.Dds.Generator.PackageIntegration`](tests/Wireloom.Dds.Generator.PackageIntegration) | Tests against the packed NuGet analyzer                    |
+| [`docs/corpus`](docs/corpus)                                                                         | Authored IDL cases, oracle sources, and feature status     |
+| [`docs/architecture`](docs/architecture)                                                             | Architecture baseline and terminology                      |
 
 The design grows out of the managed-generator research in the companion
 `rtiddsgen-gen` repository. That research established the Roslyn-hosted,
