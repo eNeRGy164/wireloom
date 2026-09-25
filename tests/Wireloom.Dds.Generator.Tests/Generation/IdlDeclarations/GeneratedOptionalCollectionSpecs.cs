@@ -86,7 +86,7 @@ public sealed class GeneratedOptionalCollectionSpecs
         source.ShouldContain("values is null ? null! : new Sequence<int>(other.values)");
         source.ShouldContain("matrix is null ? null! : (int[,])other.matrix.Clone()");
         source.ShouldContain("values?.Count ?? -1");
-        source.ShouldContain("matrix?.Length ?? -1");
+        source.ShouldContain("matrix is null ? -1 : matrix[0]");
         source.ShouldContain("ReferenceEquals(values, other.values)");
         source.ShouldContain("ReferenceEquals(matrix, other.matrix)");
     }

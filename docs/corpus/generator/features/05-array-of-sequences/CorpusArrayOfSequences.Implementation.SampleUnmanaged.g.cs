@@ -16,7 +16,7 @@ namespace CorpusArrayOfSequences.Implementation;
 public struct SampleUnmanaged : INativeTopicType<Sample>
 {
     private NativeSeq values;
-    private NativeSeq names;
+    private NativeStringSeq names;
 
     /// <summary>
     /// Releases native resources held by this instance.
@@ -30,7 +30,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
         }
 
         values.Destroy(optionalsOnly);
-        names.Destroy(optionalsOnly);
+        names.Destroy();
     }
 
     /// <summary>
@@ -41,7 +41,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         values.FromNative((Sequence<int>)sample.values);
-        names.FromNative((Sequence<string>)sample.names);
+        names.FromNative(sample.names);
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         values.Initialize<int>(max: 100, absoluteMax: 100, allocateMemory: allocateMemory);
-        names.Initialize<string>(max: 3, absoluteMax: 3, allocateMemory: allocateMemory);
+        names.Initialize(max: 3, absoluteMax: 3, maxStrLen: 16, allocateMemory: allocateMemory);
     }
 
     /// <summary>
@@ -63,6 +63,6 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void ToNative(Sample sample, bool keysOnly = false)
     {
         values.ToNative((Sequence<int>)sample.values);
-        names.ToNative((Sequence<string>)sample.names);
+        names.ToNative(sample.names, 16);
     }
 }

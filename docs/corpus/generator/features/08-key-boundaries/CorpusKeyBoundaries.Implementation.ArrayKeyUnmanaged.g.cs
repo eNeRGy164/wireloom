@@ -24,11 +24,6 @@ public struct ArrayKeyUnmanaged : INativeTopicType<ArrayKey>
     /// <param name="optionalsOnly">Indicates whether only optional members should be released.</param>
     public void Destroy(bool optionalsOnly)
     {
-        if (optionalsOnly)
-        {
-            return;
-        }
-
         coordinates.Destroy(optionalsOnly);
     }
 

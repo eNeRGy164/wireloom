@@ -51,10 +51,11 @@ internal abstract class IdlType
         public IdlType Target { get; } = target;
     }
 
-    public sealed class Sequence(IdlType element, int? bound) : IdlType
+    public sealed class Sequence(IdlType element, int? bound, IReadOnlyList<int>? dimensions = null) : IdlType
     {
         public IdlType Element { get; } = element;
         public int? Bound { get; } = bound;
+        public IReadOnlyList<int> Dimensions { get; } = dimensions ?? [];
     }
 
     public sealed class Array(IdlType element, IReadOnlyList<int> dimensions) : IdlType

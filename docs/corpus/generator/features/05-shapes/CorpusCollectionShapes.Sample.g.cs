@@ -129,7 +129,7 @@ public partial class Sample : IEquatable<Sample>
         hash.Add(unboundedItems.Count);
         hash.Add(boundedItems);
         hash.Add(nestedSequences.Count);
-        hash.Add(rows.Length);
+        hash.Add(rows[0]);
         hash.Add(sequenceOfArrays.Count);
         hash.Add(sequenceOfArrayAliases.Count);
         hash.Add(names);

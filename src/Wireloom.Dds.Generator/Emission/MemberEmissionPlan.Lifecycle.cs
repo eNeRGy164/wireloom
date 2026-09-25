@@ -103,6 +103,11 @@ internal sealed partial class MemberEmissionPlan
     {
         var element = TypeReference(ElementCSharpType!, namespaceName);
 
+        if (IsStringSequence && IsSequenceArray)
+        {
+            return $"{EscapedName}.Initialize(max: {Bound}, absoluteMax: {Bound}, maxStrLen: {ElementType!.Bound}, allocateMemory: allocateMemory);";
+        }
+
         if (HasAggregateElement)
         {
             return $"{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
@@ -147,6 +152,11 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildCollectionDestroyStatement(string? namespaceName)
     {
+        if (IsStringSequence && IsSequenceArray)
+        {
+            return $"{EscapedName}.Destroy();";
+        }
+
         if (!HasAggregateElement)
         {
             return $"{EscapedName}.Destroy(optionalsOnly);";

@@ -121,8 +121,8 @@ public partial class Sample : IEquatable<Sample>
 
         hash.Add(unboundedItems.Count);
         hash.Add(boundedItems.Count);
-        hash.Add(aggregateArray.Length);
-        hash.Add(rows.Length);
+        hash.Add(aggregateArray[0]);
+        hash.Add(rows[0]);
         hash.Add(sequenceOfArrays.Count);
 
         return hash.ToHashCode();

@@ -57,6 +57,11 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildSequenceFromNativeStatement(string? namespaceName)
     {
+        if (IsStringSequence && IsSequenceArray)
+        {
+            return $"{EscapedName}.FromNative(sample.{EscapedName});";
+        }
+
         if (IsOptional)
         {
             var temporary = $"{EscapedName}Temporary_";
@@ -172,6 +177,11 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildSequenceToNativeStatement(string? namespaceName)
     {
+        if (IsStringSequence && IsSequenceArray)
+        {
+            return $"{EscapedName}.ToNative(sample.{EscapedName}, {ElementType!.Bound});";
+        }
+
         if (IsOptional && HasAggregateElement)
         {
             return $"{EscapedName}.ToNative<{TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, {Bound});";

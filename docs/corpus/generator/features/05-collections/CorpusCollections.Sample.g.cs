@@ -94,7 +94,7 @@ public partial class Sample : IEquatable<Sample>
     {
         var hash = new HashCode();
 
-        hash.Add(values.Length);
+        hash.Add(values[0]);
         hash.Add(unbounded.Count);
         hash.Add(bounded);
         hash.Add(items.Count);
@@ -120,7 +120,7 @@ public partial class Sample : IEquatable<Sample>
             return true;
         }
 
-        return values.Cast<int>().SequenceEqual(other.values.Cast<int>())
+        return values.SequenceEqual(other.values)
             && unbounded.SequenceEqual(other.unbounded)
             && bounded.Equals(other.bounded)
             && items.SequenceEqual(other.items)

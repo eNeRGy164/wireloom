@@ -70,11 +70,12 @@ internal sealed class AliasEmissionType(string qualifiedName, EmissionTypePlan t
     public override IReadOnlyList<int> Dimensions => Target.Dimensions;
 }
 
-internal sealed class SequenceEmissionType(EmissionTypePlan element, int bound, string cSharpType)
+internal sealed class SequenceEmissionType(EmissionTypePlan element, int bound, string cSharpType, IReadOnlyList<int>? dimensions = null)
     : EmissionTypePlan(cSharpType)
 {
     public override int? Bound { get; } = bound;
     public override EmissionTypePlan Element { get; } = element;
+    public override IReadOnlyList<int> Dimensions { get; } = dimensions ?? [];
 }
 
 internal sealed class ArrayEmissionType(EmissionTypePlan element, IReadOnlyList<int> dimensions, string cSharpType)

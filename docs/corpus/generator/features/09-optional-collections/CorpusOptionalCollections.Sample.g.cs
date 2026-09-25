@@ -68,7 +68,7 @@ public partial class Sample : IEquatable<Sample>
         var hash = new HashCode();
 
         hash.Add(values?.Count ?? -1);
-        hash.Add(items?.Length ?? -1);
+        hash.Add(items is null ? -1 : items[0]);
 
         return hash.ToHashCode();
     }

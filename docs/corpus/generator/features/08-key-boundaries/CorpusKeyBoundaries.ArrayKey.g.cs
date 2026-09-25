@@ -66,7 +66,7 @@ public partial class ArrayKey : IEquatable<ArrayKey>
     {
         var hash = new HashCode();
 
-        hash.Add(coordinates.Length);
+        hash.Add(coordinates[0]);
         hash.Add(payload);
 
         return hash.ToHashCode();
@@ -89,7 +89,7 @@ public partial class ArrayKey : IEquatable<ArrayKey>
             return true;
         }
 
-        return coordinates.Cast<int>().SequenceEqual(other.coordinates.Cast<int>())
+        return coordinates.SequenceEqual(other.coordinates)
             && payload.Equals(other.payload);
     }
 

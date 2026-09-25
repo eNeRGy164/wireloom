@@ -68,7 +68,7 @@ public partial class Sample : IEquatable<Sample>
         var hash = new HashCode();
 
         hash.Add(values.Count);
-        hash.Add(array.Length);
+        hash.Add(array[0]);
 
         return hash.ToHashCode();
     }
@@ -91,7 +91,7 @@ public partial class Sample : IEquatable<Sample>
         }
 
         return values.SequenceEqual(other.values)
-            && array.Cast<int>().SequenceEqual(other.array.Cast<int>());
+            && array.SequenceEqual(other.array);
     }
 
     /// <inheritdoc />

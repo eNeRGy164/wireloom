@@ -46,6 +46,9 @@ internal sealed class NativeTypeEmitter
             .Concat(fields.Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.String))
             .Concat(fields.Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.OptionalPrimitive))
             .ToArray();
+        var requiresOptionalOnlyGuard = optionalFields.Length > 0 ||
+            baseUnmanagedType is not null ||
+            requiredFields.Any(field => field.IsString || field.IsAggregate || field.HasAggregateElement || field.HasSequenceElement || field.IsSequenceArray);
 
         foreach (var field in optionalFields)
         {
@@ -59,10 +62,13 @@ internal sealed class NativeTypeEmitter
                 writer.BlankLine();
             }
 
-            writer.OpenBlock("if (optionalsOnly)");
-            writer.WriteLine("return;");
-            writer.CloseBlock();
-            writer.BlankLine();
+            if (requiresOptionalOnlyGuard)
+            {
+                writer.OpenBlock("if (optionalsOnly)");
+                writer.WriteLine("return;");
+                writer.CloseBlock();
+                writer.BlankLine();
+            }
 
             foreach (var field in requiredFields)
             {

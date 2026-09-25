@@ -642,7 +642,8 @@ internal sealed class IdlDeclarationParser
                 throw new IdlException(input, memberSourceOffset, $"Unknown collection element type: {ElementType}");
             }
 
-            parsedField = CreateCollectionMember(field, IdlCollectionKind.Sequence, Bound, element, isKey: isKey, isOptional: isOptional, memberId: memberId);
+            var sequence = new IdlType.Sequence(element, Bound, dimensions);
+            parsedField = new IdlMember(field, sequence, new IdlMemberMetadata(isKey, isOptional, memberId));
         }
         else if (dimensions.Count > 0)
         {

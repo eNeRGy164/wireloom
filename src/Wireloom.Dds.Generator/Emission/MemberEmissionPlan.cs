@@ -59,8 +59,11 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public bool IsString => ValueType is StringEmissionType;
     public bool IsSequence => shape == FieldEmissionShape.Sequence;
     public bool IsArray => shape == FieldEmissionShape.Array;
+    public bool IsSequenceArray => IsSequence && Dimensions.Count > 0;
+    public bool IsStringSequence => IsSequence && ElementType is StringEmissionType;
     public bool IsAggregate => Type.IsAggregate;
     public bool HasAggregateElement => ElementType?.IsAggregate == true;
+    public bool HasSequenceElement => IsArray && ElementType is not null && HasSequenceType(ElementType);
     public string? BoundSummary => Bound is not int bound
         ? null
         : IsString
@@ -140,6 +143,11 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         switch (shape)
         {
             case FieldEmissionShape.Sequence:
+                if (IsStringSequence && IsSequenceArray)
+                {
+                    return "NativeStringSeq";
+                }
+
                 return IsOptional ? "NativeOptionalSeq" : "NativeSeq";
             case FieldEmissionShape.Array:
                 if (IsOptional)
@@ -281,12 +289,12 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
         if (IsOptional && IsArray)
         {
-            return $"{targetPrefix}{EscapedName}?.Length ?? -1";
+            return $"{targetPrefix}{EscapedName} is null ? -1 : {targetPrefix}{EscapedName}[0]";
         }
 
         var suffix = shape switch
         {
-            FieldEmissionShape.Array => ".Length",
+            FieldEmissionShape.Array => "[0]",
             FieldEmissionShape.Sequence => ".Count",
             _ => string.Empty
         };
@@ -306,12 +314,12 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
             return $"(ReferenceEquals({thisPrefix}{EscapedName}, {otherPrefix}{EscapedName}) || ({thisPrefix}{EscapedName} is not null && {otherPrefix}{EscapedName} is not null && {thisPrefix}{EscapedName}.SequenceEqual({otherPrefix}{EscapedName})))";
         }
 
-        if (IsArray)
+        if (IsArray && HasAggregateElement)
         {
             return $"{thisPrefix}{EscapedName}.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>().SequenceEqual({otherPrefix}{EscapedName}.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>())";
         }
 
-        if (IsSequence)
+        if (IsArray || IsSequence)
         {
             return $"{thisPrefix}{EscapedName}.SequenceEqual({otherPrefix}{EscapedName})";
         }
