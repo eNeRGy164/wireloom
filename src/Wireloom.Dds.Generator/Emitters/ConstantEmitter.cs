@@ -4,7 +4,7 @@ using System.Numerics;
 using static IdlCompiler;
 
 /// <summary>Emits documented C# representations of IDL constants.</summary>
-internal sealed class ConstantEmitter
+internal static class ConstantEmitter
 {
     public static void Emit(CompilationState compilation, IdlConstantDeclaration declaration, string sourceIdlFileName)
     {

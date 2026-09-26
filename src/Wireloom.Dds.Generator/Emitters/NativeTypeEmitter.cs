@@ -1,7 +1,7 @@
 namespace Wireloom;
 
 /// <summary>Emits native storage and lifecycle/conversion methods for a data type.</summary>
-internal sealed class NativeTypeEmitter
+internal static class NativeTypeEmitter
 {
     public static void Emit(
         GeneratedSourceWriter writer,
