@@ -35,7 +35,6 @@ internal static class EmissionTypeProjector
         new(
             union.Name,
             union.Namespace,
-            union.DiscriminatorIdlType,
             union.DiscriminatorIsEnum
                 ? EscapeQualifiedIdentifier(ResolveTypeName(union.DiscriminatorIdlType, union.Namespace))
                 : MapPrimitive(union.DiscriminatorIdlType),
@@ -57,9 +56,9 @@ internal static class EmissionTypeProjector
         {
             IdlType.Primitive primitive => new PrimitiveEmissionType(NormalizeIdlType(primitive.Name), MapPrimitive(primitive.Name)),
             IdlType.StringType stringType => new StringEmissionType(stringType.IsWide, stringType.Bound),
-            IdlType.Enum @enum => new EnumEmissionType(@enum.QualifiedName, EscapeQualifiedIdentifier(@enum.QualifiedName), @enum.DefaultValue),
-            IdlType.Struct structure => new StructEmissionType(structure.QualifiedName, EscapeQualifiedIdentifier(structure.QualifiedName)),
-            IdlType.Union union => new UnionEmissionType(union.QualifiedName, EscapeQualifiedIdentifier(union.QualifiedName)),
+            IdlType.Enum @enum => new EnumEmissionType(EscapeQualifiedIdentifier(@enum.QualifiedName), @enum.DefaultValue),
+            IdlType.Struct structure => new StructEmissionType(EscapeQualifiedIdentifier(structure.QualifiedName)),
+            IdlType.Union union => new UnionEmissionType(EscapeQualifiedIdentifier(union.QualifiedName)),
             IdlType.Alias alias => ProjectAlias(alias, currentNamespace),
             IdlType.Sequence sequence => ProjectSequence(sequence, currentNamespace),
             IdlType.Array array => ProjectArray(array, currentNamespace),

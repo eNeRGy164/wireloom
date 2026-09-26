@@ -11,27 +11,6 @@ namespace Wireloom;
 public static partial class IdlCompiler
 {
     /// <summary>
-    /// Compiles IDL generation roots and their quoted or angle-bracket include closures.
-    /// </summary>
-    /// <param name="inputs">
-    /// All source inputs available to the compiler. Only inputs with
-    /// <see cref="IdlInput.Generate"/> set to <see langword="true"/> initiate
-    /// generation.
-    /// </param>
-    /// <param name="cancellationToken">A token that cancels compilation.</param>
-    /// <returns>The generated C# source.</returns>
-    /// <exception cref="IdlException">
-    /// Thrown when an include cannot be resolved, an include is cyclic, or the
-    /// input uses an unsupported construct.
-    /// </exception>
-    public static string Compile(List<IdlInput> inputs, CancellationToken cancellationToken = default)
-    {
-        return string.Concat(CompileSources(inputs, cancellationToken)
-            .Values
-            .Select(s => s.Source));
-    }
-
-    /// <summary>
     /// Compiles IDL generation roots and returns one C# document for each
     /// generated type or type-support class.
     /// </summary>

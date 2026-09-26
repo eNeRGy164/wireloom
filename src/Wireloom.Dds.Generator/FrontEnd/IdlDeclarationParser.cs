@@ -108,7 +108,6 @@ internal sealed class IdlDeclarationParser
             currentNamespace,
             fields,
             extensibility,
-            declaration.Groups["nested"].Success || declaration.Groups["nestedAfter"].Success,
             input,
             declaration.Groups["base"].Success
                 ? EscapeQualifiedIdentifier(ResolveTypeName(declaration.Groups["base"].Value, currentNamespace))
@@ -443,8 +442,7 @@ internal sealed class IdlDeclarationParser
             discriminatorIdlType,
             discriminatorIsEnum,
             branches,
-            ParseExtensibility(unionDeclaration.Groups["extensibility"].Value),
-            unionDeclaration.Groups["nested"].Success || unionDeclaration.Groups["nestedAfter"].Success);
+            ParseExtensibility(unionDeclaration.Groups["extensibility"].Value));
         symbols.AddUnion(qualified, parsedUnion);
         declarationQueue.Add(new IdlUnionDeclaration(parsedUnion, Path.GetFileName(input.Path)));
 

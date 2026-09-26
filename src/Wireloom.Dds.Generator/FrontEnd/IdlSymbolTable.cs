@@ -30,8 +30,6 @@ internal sealed class IdlSymbolTable
 
     public bool TryGetEnum(string name, out IdlEnum declaration) => enums.TryGetValue(name, out declaration!);
 
-    public bool TryGetUnion(string name, out IdlUnion declaration) => unions.TryGetValue(name, out declaration!);
-
     public bool TryGetTypedef(string name, out IdlTypedef declaration) => typedefs.TryGetValue(name, out declaration!);
 
     public void AddEnum(string name, IdlEnum declaration) => enums.Add(name, declaration);

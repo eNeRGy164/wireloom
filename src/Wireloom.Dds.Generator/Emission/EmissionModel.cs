@@ -49,27 +49,24 @@ internal sealed class StringEmissionType(bool isWide, int bound)
 }
 
 [PublicAPI]
-internal sealed class EnumEmissionType(string qualifiedName, string cSharpType, int defaultValue)
+internal sealed class EnumEmissionType(string cSharpType, int defaultValue)
     : EmissionTypePlan(cSharpType)
 {
-    public string QualifiedName { get; } = qualifiedName;
     public int DefaultValue { get; } = defaultValue;
     public override bool IsEnum => true;
 }
 
 [PublicAPI]
-internal sealed class StructEmissionType(string qualifiedName, string cSharpType)
+internal sealed class StructEmissionType(string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
-    public string QualifiedName { get; } = qualifiedName;
     public override bool IsAggregate => true;
 }
 
 [PublicAPI]
-internal sealed class UnionEmissionType(string qualifiedName, string cSharpType)
+internal sealed class UnionEmissionType(string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
-    public string QualifiedName { get; } = qualifiedName;
     public override bool IsAggregate => true;
     public override bool IsUnion => true;
 }
@@ -136,15 +133,13 @@ internal sealed class UnionBranchEmissionPlan(IdlEmissionField field, MemberEmis
     public IReadOnlyList<string> Labels { get; } = labels;
     public IReadOnlyList<int> LabelValues { get; } = labelValues;
     public bool IsDefault { get; } = isDefault;
-    public string? Label => IsDefault ? null : Labels[0];
 }
 
 [PublicAPI]
-internal sealed class IdlEmissionUnion(string name, string? @namespace, string discriminatorIdlType, string discriminatorCSharpType, bool discriminatorIsEnum, IReadOnlyList<UnionBranchEmissionPlan> branches, IdlExtensibilityKind extensibility)
+internal sealed class IdlEmissionUnion(string name, string? @namespace, string discriminatorCSharpType, bool discriminatorIsEnum, IReadOnlyList<UnionBranchEmissionPlan> branches, IdlExtensibilityKind extensibility)
 {
     public string Name { get; } = name;
     public string? Namespace { get; } = @namespace;
-    public string DiscriminatorIdlType { get; } = discriminatorIdlType;
     public string DiscriminatorCSharpType { get; } = discriminatorCSharpType;
     public bool DiscriminatorIsEnum { get; } = discriminatorIsEnum;
     public IReadOnlyList<UnionBranchEmissionPlan> Branches { get; } = branches;

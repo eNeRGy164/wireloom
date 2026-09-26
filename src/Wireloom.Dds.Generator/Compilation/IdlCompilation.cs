@@ -1,9 +1,7 @@
 namespace Wireloom;
 
 /// <summary>Coordinates input traversal, declaration parsing, and emission.</summary>
-internal sealed class IdlCompilation(
-    IReadOnlyList<IdlInput> inputs,
-    CancellationToken cancellationToken)
+internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, CancellationToken cancellationToken)
 {
     public IReadOnlyList<GeneratedIdlSource> Run()
     {
