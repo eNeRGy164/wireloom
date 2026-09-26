@@ -48,7 +48,7 @@ public sealed class GeneratedCollectionBoundarySpecs
                         && bounded.Equals(other.bounded)
                         && items.SequenceEqual(other.items)
                         && grid.Equals(other.grid);
-            """);
+            """.ReplaceLineEndings("\n"));
 
         // Native initialization carries the RTI boundary contract: exact values
         // are accepted and over-bound values are rejected by serialization.
