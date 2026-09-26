@@ -92,3 +92,6 @@ dotnet_sort_system_directives_first = true
 # The generator targets netstandard2.0, which does not provide
 # GeneratedRegexAttribute without adding compatibility infrastructure.
 dotnet_diagnostic.SYSLIB1045.severity = none
+
+# These ReSharper inspections do not match the project's naming and file layout.
+resharper_inconsistent_naming_highlighting = none
