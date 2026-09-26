@@ -6,6 +6,7 @@
 | :------------------------------------------------------------------------------- | :------------------------------------------------------------- | :--------- | :------------------------------------------------------------------- |
 | Feature coverage is incomplete                                                   | Consumers may assume RTI parity that has not been established  | High       | Publish the feature index and keep claims case-specific              |
 | Oracle sources and RTI tooling are license-controlled                            | Evidence cannot always be regenerated or redistributed freely  | Medium     | Retain provenance and follow corpus review rules                     |
+| Oracle capture is retained as pending review evidence                            | Source-shape results may be used beyond their reviewed scope   | Medium     | Keep the manifest state visible and complete runtime/wire review     |
 | Runtime and C++ interoperability evidence is narrower than source-shape evidence | Generated code may compile while a wire-level mismatch remains | Medium     | Add runtime and C++ verification tiers before making those claims    |
 | IDE and Linux host behavior is not fully verified                                | Developer experience may differ outside the tested build path  | Medium     | Qualify supported hosts before making an explicit IDE/platform claim |
 

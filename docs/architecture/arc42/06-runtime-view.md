@@ -12,6 +12,8 @@ RTI runtime.
    references to `Generator`.
 3. The generator requires C# 12 or later and a resolved RTI runtime reference of
    at least 7.3.1.
+   The retained oracle corpus is captured with RTI 7.7.0 / `rtiddsgen` 4.7.0;
+   this is an evidence baseline, not the minimum runtime version.
 4. `IdlCompiler` resolves the include graph, preprocesses input, parses
    declarations, resolves symbols and types, and validates semantics.
 5. Emitters add generated C# documents. An invalid or unsupported input instead

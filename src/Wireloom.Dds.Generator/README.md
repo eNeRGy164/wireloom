@@ -24,9 +24,10 @@ version and configuration.
 </ItemGroup>
 ```
 
-The repository is tested against RTI Connext DDS 7.3.1 and C# 12 or later. The
-consumer project must resolve a compatible `Rti.ConnextDds` reference and use
-C# 12 or later.
+The retained oracle corpus was generated with RTI Connext DDS 7.7.0 /
+`rtiddsgen` 4.7.0. The compatibility floor is RTI 7.3.1 and later because
+7.3.1 ships the same `rtiddsgen` version. The consumer project must resolve a
+compatible `Rti.ConnextDds` reference and use C# 12 or later.
 
 ## Declare an IDL generation root
 
@@ -72,8 +73,8 @@ interpreted plugins, and DynamicType metadata.
 
 ## Configure includes and preprocessing
 
-Use project properties for defaults shared by roots, or item metadata for one
-root:
+Use project properties for defaults shared by roots, or root-item metadata for
+the project-wide generation batch:
 
 ```xml
 <PropertyGroup>
@@ -93,13 +94,16 @@ root:
 
 Supported metadata:
 
-| Setting                    | Scope         | Meaning                                                                                       |
-| :------------------------- | :------------ | :-------------------------------------------------------------------------------------------- |
-| `DdsIdlIncludeDirectories` | Project       | Semicolon-separated directories searched for configured includes and tracked for invalidation |
-| `IncludeDirectories`       | `DdsIdl` item | Additional include directories for that root                                                  |
-| `Defines`                  | `DdsIdl` item | Semicolon-separated preprocessor symbols                                                      |
-| `Undefines`                | `DdsIdl` item | Semicolon-separated symbols removed before preprocessing                                      |
-| `Strict`                   | `DdsIdl` item | Enables the stricter RTI-compatible semantic validation boundary                              |
+| Setting                    | Scope                                      | Meaning                                                                                       |
+| :------------------------- | :----------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| `DdsIdlIncludeDirectories` | Project                                    | Semicolon-separated directories searched for configured includes and tracked for invalidation |
+| `IncludeDirectories`       | Root-item metadata collected for the batch | Additional include directories available to the generation batch                              |
+| `Defines`                  | Root-item metadata collected for the batch | Semicolon-separated preprocessor symbols                                                      |
+| `Undefines`                | Root-item metadata collected for the batch | Semicolon-separated symbols removed before preprocessing                                      |
+| `Strict`                   | Root-item metadata collected for the batch | Enables strict validation for the generation batch when any root sets it                      |
+
+The current compiler combines these settings across all generating roots. It
+does not provide isolated preprocessing or validation settings per root.
 
 Quoted relative includes resolve from the including file's directory. Angle
 includes use the configured include directories. Keep a shared file as an
@@ -192,7 +196,7 @@ have evidence for a safe generated contract.
 
 - [Wireloom repository](https://github.com/eNeRGy164/wireloom)
 - [Architecture overview](https://github.com/eNeRGy164/wireloom/blob/main/docs/architecture/arc42/index.md)
-- [Testing and verification](https://github.com/eNeRGy164/wireloom/blob/main/docs/testing/README.md)
+- [Corpus compliance tests](https://github.com/eNeRGy164/wireloom/blob/main/tests/Wireloom.Dds.Generator.CorpusCompliance/README.md)
 - [Package integration test](https://github.com/eNeRGy164/wireloom/blob/main/tests/Wireloom.Dds.Generator.PackageIntegration/README.md)
 
 RTI-generated reference material in the repository is retained under the

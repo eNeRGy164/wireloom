@@ -5,6 +5,9 @@
 The project distinguishes RTI acceptance, managed implementation, generated
 contract shape, runtime eligibility, and verified wire compatibility. The
 corpus feature index is the authoritative status view for source generation.
+The retained oracle capture uses RTI 7.7.0 / `rtiddsgen` 4.7.0, while the
+generator's compatibility floor is RTI 7.3.1+ because that release ships the
+same `rtiddsgen` version.
 
 ## 8.2 Diagnostics and source locations
 
@@ -28,8 +31,10 @@ package path.
 ## 8.5 Test separation
 
 Fast in-memory tests validate compiler invariants; corpus tests validate
-feature-level acceptance and output shape; packed-package tests validate the
-actual NuGet consumption path.
+feature-level acceptance and required public output shape; packed-package tests
+validate the actual NuGet consumption path. The corpus shape comparison does
+not establish exact generated-source, native support, runtime, or wire
+equivalence.
 
 ## 8.6 RTI-compatible generated value semantics
 

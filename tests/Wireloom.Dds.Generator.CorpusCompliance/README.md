@@ -9,7 +9,9 @@ integration entry without duplicating fixture lists in the project file.
 
 - Positive and integration roots are required to compile.
 - Negative roots are required to produce an `IdlException`.
-- Accepted oracle cases are checked for data-contract type and property shape.
+- Accepted oracle cases are checked for required data-contract types, property
+  shapes, and enum members; this is structural evidence, not exact source or
+  runtime equivalence.
 - The inventory test checks that the IDL and oracle case sets remain aligned.
 
 RTI classifications are retained in the oracle manifest. They do not change

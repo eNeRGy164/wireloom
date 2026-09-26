@@ -71,9 +71,10 @@ module Telemetry {
 
 `DdsIdl` is an explicit generation root. Files reached through `#include` are
 tracked inputs, but are not independently generated as roots. Project-level
-`DdsIdlIncludeDirectories` and per-root `IncludeDirectories` control include
-search. `Defines`, `Undefines`, and `Strict` can be supplied as item metadata
-when a root needs different preprocessing or validation settings.
+`DdsIdlIncludeDirectories` and root-item `IncludeDirectories` contribute to the
+project-wide generation batch. Likewise, `Defines`, `Undefines`, and `Strict`
+are collected from the generating roots: roots are explicit, but these settings
+are not isolated per root in the current implementation.
 
 Generated documents appear as normal Roslyn generated documents. To write them
 to disk for inspection, use the standard compiler options:
@@ -109,27 +110,31 @@ generated contract shape—not automatic proof of runtime or wire compatibility.
 ## Compatibility evidence
 
 Wireloom compares small, attributable IDL cases with retained RTI Connext
-7.3.1 / `rtiddsgen` 4.7.0 reference output. The checked-in corpus currently
+7.7.0 / `rtiddsgen` 4.7.0 reference output. The compatibility floor is RTI
+7.3.1 and later because 7.3.1 ships the same `rtiddsgen` version. The checked-in corpus currently
 contains:
 
-| Evidence set                           |                  Cases |
-| -------------------------------------- | ---------------------: |
-| Positive feature cases                 |                     54 |
-| Negative and diagnostic probes         |                     53 |
-| Integration entry points               |                      4 |
-| Total corpus cases                     |                    111 |
-| Implemented positive/integration cases |                44 / 58 |
-| Compliance checks                      | 225 total, 224 passing |
+| Evidence set                                 |                                         Cases |
+| -------------------------------------------- | --------------------------------------------: |
+| Positive feature cases                       |                                            54 |
+| Negative and diagnostic probes               |                                            53 |
+| Integration entry points                     |                                             4 |
+| Total corpus cases                           |                                           111 |
+| Fully implemented positive/integration cases |                                       47 / 58 |
+| Not fully implemented positive/integration   |                11 (10 unsupported, 1 partial) |
+| Compliance test invocations                  | 226 total, 224 succeeded, 0 failed, 2 skipped |
 
 One cyclic-alias probe is intentionally isolated while the compiler-process
-harness is being completed. The snapshot above was recorded on 2026-09-24;
+harness is being completed. The export test is also skipped unless an export
+directory is configured. The snapshot above was recorded on 2026-09-27;
 consult the feature index for the current result.
 
 The corpus is source-generation evidence. It does not by itself establish
 serialization-byte equivalence, live DDS behavior, or C++ interoperability.
-Those claims require the additional runtime and interoperability verification
-described in the [testing documentation](docs/testing/README.md) and
-[evidence records](evidence/README.md).
+Those claims require additional runtime and interoperability verification; see
+the [corpus compliance test guide](tests/Wireloom.Dds.Generator.CorpusCompliance/README.md)
+and [feature coverage index](docs/corpus/FEATURE-COVERAGE.md) for the current
+evidence boundary.
 
 ## Build and test
 

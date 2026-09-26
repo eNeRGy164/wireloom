@@ -6,13 +6,13 @@ data path.
 
 ## 3.1 Business context
 
-| Neighbor                | Direction                 | Exchanged value / data                                              |
-| :---------------------- | :------------------------ | :------------------------------------------------------------------ |
-| .NET DDS consumer       | to Wireloom               | `DdsIdl` roots, include directories, defines, and runtime reference |
-| Wireloom package        | to consumer build         | Generated C# data types and RTI type-specific support               |
-| RTI Connext DDS runtime | to generated application  | Runtime APIs, serialization, and DDS communication                  |
-| RTI `rtiddsgen` 4.7.0   | to compatibility evidence | Named oracle output and diagnostics for selected cases              |
-| CI and package feeds    | to/from repository        | Restore, tests, package artifacts, SBOM, and attestations           |
+| Neighbor                                  | Direction                 | Exchanged value / data                                                        |
+| :---------------------------------------- | :------------------------ | :---------------------------------------------------------------------------- |
+| .NET DDS consumer                         | to Wireloom               | `DdsIdl` roots, batch-wide include directories/defines, and runtime reference |
+| Wireloom package                          | to consumer build         | Generated C# data types and RTI type-specific support                         |
+| RTI Connext DDS runtime                   | to generated application  | Runtime APIs, serialization, and DDS communication                            |
+| RTI Connext DDS 7.7.0 / `rtiddsgen` 4.7.0 | to compatibility evidence | Named oracle output for selected cases; target floor is RTI 7.3.1+            |
+| CI and package feeds                      | to/from repository        | Restore, tests, package artifacts, SBOM, and attestations                     |
 
 ## 3.2 Technical context
 

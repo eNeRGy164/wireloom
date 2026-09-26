@@ -13,5 +13,7 @@
    Unsupported declarations and invalid input produce source-located diagnostics
    rather than partial output.
 5. **Advance compatibility by case.**  
-   A feature becomes a compatibility claim only after the relevant RTI oracle,
-   source-shape, runtime, and interoperability evidence exists.
+   The retained oracle capture uses RTI 7.7.0 / `rtiddsgen` 4.7.0; the target
+   compatibility floor is RTI 7.3.1+ because that release ships the same
+   generator version. A feature becomes a compatibility claim only after the
+   relevant source-shape, runtime, and interoperability evidence exists.

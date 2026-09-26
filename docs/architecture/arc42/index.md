@@ -6,7 +6,7 @@ Roslyn build. The RTI runtime remains responsible for DDS communication,
 serialization, and representation negotiation.
 
 Owner:  
-Last reviewed: 2026-09-25
+Last reviewed: 2026-09-27
 
 | Chapter                                                        | Status  | Description                                          |
 | :------------------------------------------------------------- | :------ | :--------------------------------------------------- |

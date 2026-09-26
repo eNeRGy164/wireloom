@@ -14,8 +14,10 @@
 | The generator targets `netstandard2.0`                                       | Roslyn analyzer compatibility boundary               |
 | Consumer and test projects use .NET 10; SDK `10.0.401` is pinned             | Repository build baseline                            |
 | A resolved `Rti.ConnextDds` reference of at least 7.3.1 is required          | Generated support targets the RTI runtime surface    |
+| Retained RTI oracle sources use Connext DDS 7.7.0 / `rtiddsgen` 4.7.0        | Compatibility evidence capture baseline              |
 | C# 12 or later is required by the generator host                             | Current emitted-source baseline                      |
 | Generation runs through Roslyn `AdditionalFiles` and MSBuild `DdsIdl` items  | Keeps the package inside the normal .NET build graph |
+| Root metadata is combined for one project-wide generation batch              | Current compiler behavior for defines and includes   |
 | Package versions, lock files, NuGet audit, and CI action pins are controlled | Reproducible and reviewable supply chain             |
 
 ## 2.3 Conventions
