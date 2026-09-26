@@ -65,7 +65,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
-      contents: read
+      contents: write
+      pull-requests: write
       checks: write
     steps:
       - name: Check out repository
@@ -87,3 +88,5 @@ jobs:
           post-pr-comment: false
           upload-result: true
           artifact-name: qodana-community-report
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_646265375 }}
