@@ -95,3 +95,4 @@ dotnet_diagnostic.SYSLIB1045.severity = none
 
 # These ReSharper inspections do not match the project's naming and file layout.
 resharper_inconsistent_naming_highlighting = none
+resharper_check_namespace_highlighting = none
