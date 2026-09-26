@@ -98,3 +98,4 @@ resharper_inconsistent_naming_highlighting = none
 resharper_check_namespace_highlighting = none
 resharper_convert_type_check_pattern_to_null_check_highlighting = none
 resharper_convert_if_statement_to_conditional_ternary_expression_highlighting = none
+resharper_arrange_method_or_operator_body_highlighting = none
