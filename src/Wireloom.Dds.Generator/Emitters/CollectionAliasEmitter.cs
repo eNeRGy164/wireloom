@@ -28,7 +28,7 @@ internal sealed class CollectionAliasEmitter
             element = declaration.Target;
         }
 
-        if (!declaration.IsCollection && !declaration.IsString)
+        if (declaration is { IsCollection: false, IsString: false })
         {
             element = compilation.ResolveUnderlyingType(element, declaration.Namespace);
         }

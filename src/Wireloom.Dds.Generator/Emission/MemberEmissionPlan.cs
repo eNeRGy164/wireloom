@@ -211,10 +211,10 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     {
         return ValueType switch
         {
-            StringEmissionType stringType when stringType.IsWide => "NativeWstring",
+            StringEmissionType { IsWide: true } => "NativeWstring",
             StringEmissionType => "NativeString",
-            PrimitiveEmissionType primitive when primitive.IdlName is "boolean" or "char" => "byte",
-            PrimitiveEmissionType primitive when primitive.IdlName == "wchar" => "short",
+            PrimitiveEmissionType { IdlName: "boolean" or "char" } => "byte",
+            PrimitiveEmissionType { IdlName: "wchar" } => "short",
             _ => TypeReference(CSharpType, namespaceName)
         };
     }
@@ -386,7 +386,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public (string TypeKind, string ValueProperty, string DefaultValue, string? Minimum, string? Maximum)? PrimitiveAnnotation() =>
         ValueType switch
         {
-            StringEmissionType stringType when stringType.IsWide => ("WideString", "WideStringValue", "\"\"", null, null),
+            StringEmissionType { IsWide: true } => ("WideString", "WideStringValue", "\"\"", null, null),
             StringEmissionType => ("String", "StringValue", "\"\"", null, null),
             EnumEmissionType enumType => ("Enumeration", "EnumValue", enumType.DefaultValue.ToString(), null, null),
             PrimitiveEmissionType primitive => primitive.IdlName switch
