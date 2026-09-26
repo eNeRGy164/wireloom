@@ -11,11 +11,13 @@ Meziantou
 MSBuild
 NSubstitute
 NuGet
+Qodana
 Roslyn
 RTI
 rtiddsgen
 Shouldly
 Testcontainers
+Undefines
 Wireloom
 XCDR
 Xunit
