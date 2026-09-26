@@ -32,8 +32,6 @@ internal sealed class TypeSupportEmitter
         var supportName = EscapeIdentifier(name + "Support");
         var unmanagedName = EscapeIdentifier(name + "Unmanaged");
         var pluginName = EscapeIdentifier(name + "Plugin");
-        var runtimeTypeName = currentNamespace is null ? typeName : $"{EscapeQualifiedIdentifier(currentNamespace)}.{typeName}";
-        var idlTypeName = currentNamespace is null ? name : $"{currentNamespace.Replace(".", "::")}::{name}";
         var implementationNamespace = currentNamespace is null ? "Implementation" : $"{currentNamespace}.Implementation";
         var baseUnmanagedType = baseType is null ? null : GetUnmanagedType(baseType, implementationNamespace);
 
