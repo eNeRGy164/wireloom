@@ -19,10 +19,6 @@ internal enum IdlExtensibilityKind
 /// </summary>
 internal abstract class IdlType
 {
-    private IdlType()
-    {
-    }
-
     public sealed class Primitive(string name) : IdlType
     {
         public string Name { get; } = name;
