@@ -1,3 +1,5 @@
+using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
+
 namespace Wireloom.Dds.Generator.Tests;
 
 public sealed class IdlPreprocessorSpecs
@@ -5,12 +7,17 @@ public sealed class IdlPreprocessorSpecs
     [Fact]
     public void ReportsThatIncludeFilenamesNeedQuotesOrAngleBrackets()
     {
-        var input = CompilerTestSupport.Input(
-            "unquoted-include.idl",
-            "#include CommonHeader.idl\nstruct Sample { long value; };");
+        // Arrange
+        var input = Input("unquoted-include.idl",
+            """
+            #include CommonHeader.idl
+            struct Sample { long value; };
+            """);
 
-        var exception = Should.Throw<IdlException>(() => CompilerTestSupport.Compile(input));
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
 
+        // Assert
         exception.Message.ShouldContain("expected a quoted or angle-bracket filename");
         exception.Offset.ShouldBe(0);
         exception.Input.Path.ShouldEndWith("unquoted-include.idl");
@@ -22,30 +29,34 @@ public sealed class IdlPreprocessorSpecs
     [Trait("Corpus", "C050")]
     public void CompilesTheCorpusPreprocessingShape()
     {
-        var rootPath = Path.Combine("fixtures", "C048-11-preprocessing.idl");
-        var commonPath = Path.Combine("fixtures", "C048-11-common.idl");
-        var root = new IdlInput(
-            rootPath,
-            "#include \"C048-11-common.idl\"\n" +
-            "#define CORPUS_VALUE(x) ((x) + 1)\n" +
-            "#if defined(CORPUS_CAPTURE_DEFINE)\n" +
-            "const long BranchValue = CORPUS_VALUE(IncludedConstant);\n" +
-            "#else\n" +
-            "const long BranchValue = 0;\n" +
-            "#endif\n" +
-            "module CorpusPreprocessing { struct Preprocessed { long value; }; };",
+        // Arrange
+        var root = new IdlInput(Path.Combine("fixtures", "C048-11-preprocessing.idl"),
+            """
+            #include "C048-11-common.idl"
+            #define CORPUS_VALUE(x) ((x) + 1)
+            #if defined(CORPUS_CAPTURE_DEFINE)
+            const long BranchValue = CORPUS_VALUE(IncludedConstant);
+            #else
+            const long BranchValue = 0;
+            #endif
+            module CorpusPreprocessing { struct Preprocessed { long value; }; };
+            """,
             defines: ["CORPUS_CAPTURE_DEFINE"]);
-        var common = new IdlInput(
-            commonPath,
-            "#ifndef CORPUS_COMMON\n" +
-            "#define CORPUS_COMMON\n" +
-            "const long IncludedConstant = 7;\n" +
-            "struct IncludedType { long value; };\n" +
-            "#endif\n",
+
+        var common = new IdlInput(Path.Combine("fixtures", "C048-11-common.idl"),
+            """
+            #ifndef CORPUS_COMMON
+            #define CORPUS_COMMON
+            const long IncludedConstant = 7;
+            struct IncludedType { long value; };
+            #endif
+            """,
             generate: false);
 
-        var output = IdlCompiler.Compile([root, common], TestContext.Current.CancellationToken);
+        // Act
+        var output = Compile(root, common);
 
+        // Assert
         output.ShouldContain("BranchValue");
         output.ShouldContain("IncludedConstant");
         output.ShouldContain("public const int Value");
@@ -59,29 +70,32 @@ public sealed class IdlPreprocessorSpecs
     [Trait("Corpus", "C049")]
     public void AppliesSourceUndefineAndExternalUndefineToConditionalBranches()
     {
-        var source =
-            "#define SOURCE_FEATURE\n" +
-            "#if defined(SOURCE_FEATURE)\n" +
-            "struct Before { int32 value; };\n" +
-            "#endif\n" +
-            "#undef SOURCE_FEATURE\n" +
-            "#if defined(SOURCE_FEATURE)\n" +
-            "struct WrongAfterUndef { int32 value; };\n" +
-            "#else\n" +
-            "struct After { boolean value; };\n" +
-            "#endif\n" +
-            "#if defined(EXTERNAL_FEATURE)\n" +
-            "struct WrongExternal { int32 value; };\n" +
-            "#else\n" +
-            "struct ExternalAfterUndef { boolean value; };\n" +
-            "#endif\n";
+        // Arrange
         var input = new IdlInput(
             Path.Combine("fixtures", "C049-11-conditionals.idl"),
-            source,
+            """
+            #define SOURCE_FEATURE
+            #if defined(SOURCE_FEATURE)
+            struct Before { int32 value; };
+            #endif
+            #undef SOURCE_FEATURE
+            #if defined(SOURCE_FEATURE)
+            struct WrongAfterUndef { int32 value; };
+            #else
+            struct After { boolean value; };
+            #endif
+            #if defined(EXTERNAL_FEATURE)
+            struct WrongExternal { int32 value; };
+            #else
+            struct ExternalAfterUndef { boolean value; };
+            #endif
+            """,
             undefines: ["EXTERNAL_FEATURE"]);
 
-        var output = IdlCompiler.Compile([input], TestContext.Current.CancellationToken);
+        // Act
+        var output = Compile(input);
 
+        // Assert
         output.ShouldContain("public class Before");
         output.ShouldContain("public class After");
         output.ShouldContain("public class ExternalAfterUndef");
@@ -93,15 +107,18 @@ public sealed class IdlPreprocessorSpecs
     [Trait("Corpus", "C050")]
     public void ExpandsObjectLikeMacrosInTypesAndBounds()
     {
-        var source =
-            "#define VALUE_TYPE int32\n" +
-            "#define VALUE_BOUND 3\n" +
-            "struct MacroUse { VALUE_TYPE value; string<VALUE_BOUND> text; };\n";
+        // Arrange
+        var input = Input("C050-11-macros.idl",
+            """
+            #define VALUE_TYPE int32
+            #define VALUE_BOUND 3
+            struct MacroUse { VALUE_TYPE value; string<VALUE_BOUND> text; };
+            """);
 
-        var output = IdlCompiler.Compile(
-            [CompilerTestSupport.Input("C050-11-macros.idl", source)],
-            TestContext.Current.CancellationToken);
+        // Act
+        var output = Compile(input);
 
+        // Assert
         output.ShouldContain("public int value");
         output.ShouldContain("Bound(3)");
     }
@@ -110,15 +127,20 @@ public sealed class IdlPreprocessorSpecs
     [Trait("Corpus", "C051")]
     public void ExpandsStringificationAndTokenPasting()
     {
+        // Arrange
         var preprocessor = new IdlPreprocessor([], []);
-        var source = preprocessor.Process(
-            CompilerTestSupport.Input("C051-11-macro-operators.idl",
-                "#define CAT(a,b) a ## b\n" +
-                "#define STR(x) #x\n" +
-                "const string Name = STR(sample);\n" +
-                "struct Sample { long CAT(fi,eld); };"),
-            (_, _, _) => { });
+        var input = Input("C051-11-macro-operators.idl",
+            """
+            #define CAT(a,b) a ## b
+            #define STR(x) #x
+            const string Name = STR(sample);
+            struct Sample { long CAT(fi,eld); };
+            """);
 
+        // Act
+        var source = preprocessor.Process(input, (_, _, _) => { });
+
+        // Assert
         source.ShouldContain("const string Name = \"sample\";");
         source.ShouldContain("struct Sample { long field; };");
     }

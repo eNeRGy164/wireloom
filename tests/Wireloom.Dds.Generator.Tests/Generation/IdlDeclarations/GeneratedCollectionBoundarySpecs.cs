@@ -1,3 +1,5 @@
+using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
+
 namespace Wireloom.Dds.Generator.Tests;
 
 public sealed class GeneratedCollectionBoundarySpecs
@@ -6,25 +8,27 @@ public sealed class GeneratedCollectionBoundarySpecs
     [Trait("Corpus", "C016")]
     public void EmitsTheP05EmptyExactAndOverBoundAllocationContract()
     {
-        var documents = IdlCompiler.CompileSources([
-            CompilerTestSupport.Input(
-                "C016-05-collections.idl",
-                """
-                module CorpusCollections {
-                    struct Item { long id; string<16> label; };
-                    typedef sequence<long, 4> BoundedLongs;
-                    typedef long CoordinateGrid[2][3];
-                    struct Sample {
-                        long values[2][3];
-                        sequence<long> unbounded;
-                        BoundedLongs bounded;
-                        sequence<Item, 2> items;
-                        CoordinateGrid grid;
-                    };
+        // Arrange
+        var input = Input("05-collections.idl",
+            """
+            module CorpusCollections {
+                struct Item { long id; string<16> label; };
+                typedef sequence<long, 4> BoundedLongs;
+                typedef long CoordinateGrid[2][3];
+                struct Sample {
+                    long values[2][3];
+                    sequence<long> unbounded;
+                    BoundedLongs bounded;
+                    sequence<Item, 2> items;
+                    CoordinateGrid grid;
                 };
-                """)
-        ], TestContext.Current.CancellationToken);
+            };
+            """);
 
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
         var data = documents["CorpusCollections.Sample.g.cs"].Source;
         var native = documents["CorpusCollections.Implementation.SampleUnmanaged.g.cs"].Source;
         var plugin = documents["CorpusCollections.Implementation.SamplePlugin.g.cs"].Source;
@@ -36,13 +40,15 @@ public sealed class GeneratedCollectionBoundarySpecs
         data.ShouldContain("items = new Sequence<Item>();");
         data.ShouldContain("public CoordinateGrid grid { get; set; } = new CoordinateGrid();");
         data.ShouldContain(
-            "return values.Rank == other.values.Rank\n"
-            + "            && Enumerable.Range(0, values.Rank).All(dimension => values.GetLength(dimension) == other.values.GetLength(dimension))\n"
-            + "            && values.Cast<int>().SequenceEqual(other.values.Cast<int>())\n"
-            + "            && unbounded.SequenceEqual(other.unbounded)\n"
-            + "            && bounded.Equals(other.bounded)\n"
-            + "            && items.SequenceEqual(other.items)\n"
-            + "            && grid.Equals(other.grid);");
+            """
+            return values.Rank == other.values.Rank
+                        && Enumerable.Range(0, values.Rank).All(dimension => values.GetLength(dimension) == other.values.GetLength(dimension))
+                        && values.Cast<int>().SequenceEqual(other.values.Cast<int>())
+                        && unbounded.SequenceEqual(other.unbounded)
+                        && bounded.Equals(other.bounded)
+                        && items.SequenceEqual(other.items)
+                        && grid.Equals(other.grid);
+            """);
 
         // Native initialization carries the RTI boundary contract: exact values
         // are accepted and over-bound values are rejected by serialization.

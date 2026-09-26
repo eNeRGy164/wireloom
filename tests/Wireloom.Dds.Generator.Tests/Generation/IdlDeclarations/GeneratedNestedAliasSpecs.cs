@@ -1,3 +1,5 @@
+using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
+
 namespace Wireloom.Dds.Generator.Tests;
 
 public sealed class GeneratedNestedAliasSpecs
@@ -5,42 +7,43 @@ public sealed class GeneratedNestedAliasSpecs
     [Fact]
     public void SupportsGuardedNestedAppendableTypesWithBoundedStringAliases()
     {
-        var documents = IdlCompiler.CompileSources([
-            CompilerTestSupport.Input(
-                "nested-aliases.idl",
-                """
-                #ifndef NESTED_ALIASES_IDL
-                #define NESTED_ALIASES_IDL
+        // Arrange
+        var input = Input("nested-aliases.idl",
+            """
+            #ifndef NESTED_ALIASES_IDL
+            #define NESTED_ALIASES_IDL
 
-                @default_nested
-                module Envelope {
-                    module Metadata {
-                        typedef string<9> Correlation;
-                        typedef string<17> Producer;
+            @default_nested
+            module Envelope {
+                module Metadata {
+                    typedef string<9> Correlation;
+                    typedef string<17> Producer;
 
-                        @appendable
-                        struct Context {
-                            Correlation correlation;
-                            @optional Producer producer;
-                        };
+                    @appendable
+                    struct Context {
+                        Correlation correlation;
+                        @optional Producer producer;
+                    };
 
-                        @appendable
-                        struct Base {
-                            Correlation state;
-                        };
+                    @appendable
+                    struct Base {
+                        Correlation state;
+                    };
 
-                        @appendable
-                        struct Derived : Base {
-                            Context context;
-                        };
+                    @appendable
+                    struct Derived : Base {
+                        Context context;
                     };
                 };
+            };
 
-                #endif
-                """
-            )
-        ], TestContext.Current.CancellationToken);
+            #endif
+            """);
 
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
         var context = documents["Envelope.Metadata.Context.g.cs"].Source;
         context.ShouldContain("It is marked as <c>extensible</c>.");
         context.ShouldContain("Its maximum length is <c>9</c>.");
@@ -61,22 +64,25 @@ public sealed class GeneratedNestedAliasSpecs
 
         var producerPlugin = documents["Envelope.Metadata.Implementation.ProducerPlugin.g.cs"].Source;
         producerPlugin.ShouldContain("dtf.CreateString(17)");
-
     }
 
     [Fact]
     public void OrdersDerivedDestroyLikeRtiAroundTheOptionalGuard()
     {
-        var documents = IdlCompiler.CompileSources([
-            CompilerTestSupport.Input("derived-destroy.idl", """
-                module DerivedDestroy {
-                    struct Base { long baseValue; };
-                    struct Context { string correlation; };
-                    struct Derived : Base { string state; Context traceContext; };
-                };
-                """)
-        ], TestContext.Current.CancellationToken);
+        // Arrange
+        var input = Input("derived-destroy.idl",
+            """
+            module DerivedDestroy {
+                struct Base { long baseValue; };
+                struct Context { string correlation; };
+                struct Derived : Base { string state; Context traceContext; };
+            };
+            """);
 
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
         var native = documents["DerivedDestroy.Implementation.DerivedUnmanaged.g.cs"].Source;
         native.ShouldContain("parent.Destroy(optionalsOnly);\n        traceContext.Destroy(optionalsOnly);\n\n        if (optionalsOnly)");
         native.ShouldContain("return;\n        }\n\n        state.Destroy();");

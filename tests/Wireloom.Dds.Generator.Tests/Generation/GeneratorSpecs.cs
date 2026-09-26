@@ -11,16 +11,21 @@ public sealed class GeneratorSpecs
     [Fact]
     public void GeneratesSourcesWhenRuntimeAndMetadataAreAvailable()
     {
-        var result = Run("module Sample { struct Value { long value; }; };", LanguageVersion.CSharp12,
-            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["Generate"] = "true",
-                ["Strict"] = "true",
-                ["Defines"] = "FEATURE_A; FEATURE_B",
-                ["Undefines"] = "FEATURE_C",
-                ["IncludeDirectories"] = "idl;idl/includes"
-            }, includeRuntime: true);
+        // Arrange
+        var idl = "module Sample { struct Value { long value; }; };";
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Generate"] = "true",
+            ["Strict"] = "true",
+            ["Defines"] = "FEATURE_A; FEATURE_B",
+            ["Undefines"] = "FEATURE_C",
+            ["IncludeDirectories"] = "idl;idl/includes"
+        };
 
+        // Act
+        var result = Run(idl, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
         result.Diagnostics.ShouldBeEmpty();
         result.Output.SyntaxTrees.Any(tree => tree.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeTrue();
         result.Output.SyntaxTrees.Count().ShouldBeGreaterThan(1);
@@ -29,9 +34,14 @@ public sealed class GeneratorSpecs
     [Fact]
     public void ReportsMissingRuntimeReferenceBeforeParsingIdl()
     {
-        var result = Run("module Sample { struct Value { long value; }; };", LanguageVersion.CSharp12,
-            new Dictionary<string, string>(), includeRuntime: false);
+        // Arrange
+        var idl = "module Sample { struct Value { long value; }; };";
+        var metadata = new Dictionary<string, string>();
 
+        // Act
+        var result = Run(idl, LanguageVersion.CSharp12, metadata, includeRuntime: false);
+
+        // Assert
         result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0003");
         result.Output.SyntaxTrees.Any(tree => tree.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeFalse();
     }
@@ -39,9 +49,14 @@ public sealed class GeneratorSpecs
     [Fact]
     public void ReportsUnsupportedLanguageVersion()
     {
-        var result = Run("module Sample { struct Value { long value; }; };", LanguageVersion.CSharp11,
-            new Dictionary<string, string>(), includeRuntime: true);
+        // Arrange
+        var idl = "module Sample { struct Value { long value; }; };";
+        var metadata = new Dictionary<string, string>();
 
+        // Act
+        var result = Run(idl, LanguageVersion.CSharp11, metadata, includeRuntime: true);
+
+        // Assert
         result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0002");
         result.Output.SyntaxTrees.Any(tree => tree.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeFalse();
     }
@@ -49,9 +64,14 @@ public sealed class GeneratorSpecs
     [Fact]
     public void ReportsInvalidIdlWithTheAdditionalFileLocation()
     {
-        var result = Run("module Sample { struct Value { long value; }", LanguageVersion.CSharp12,
-            new Dictionary<string, string>(), includeRuntime: true);
+        // Arrange
+        var idl = "module Sample { struct Value { long value; }";
+        var metadata = new Dictionary<string, string>();
 
+        // Act
+        var result = Run(idl, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
         var diagnostic = result.Diagnostics.Single(diagnostic => diagnostic.Id == "DDSG0001");
         diagnostic.GetMessage().ShouldNotBeNullOrWhiteSpace();
         diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
@@ -60,15 +80,19 @@ public sealed class GeneratorSpecs
     [Fact]
     public void HonorsGenerateFalseAdditionalFileMetadata()
     {
-        var result = Run("module Sample { struct Value { long value; }; };", LanguageVersion.CSharp12,
-            new Dictionary<string, string> { ["Generate"] = "false" }, includeRuntime: true);
+        // Arrange
+        var idl = "module Sample { struct Value { long value; }; };";
+        var metadata = new Dictionary<string, string> { ["Generate"] = "false" };
 
+        // Act
+        var result = Run(idl, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
         result.Diagnostics.ShouldBeEmpty();
         result.Output.SyntaxTrees.Any(tree => tree.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeFalse();
     }
 
-    private static GeneratorRunResult Run(string idl, LanguageVersion languageVersion,
-        IReadOnlyDictionary<string, string> metadata, bool includeRuntime)
+    private static GeneratorRunResult Run(string idl, LanguageVersion languageVersion, IReadOnlyDictionary<string, string> metadata, bool includeRuntime)
     {
         var parseOptions = new CSharpParseOptions(languageVersion);
         var compilation = CSharpCompilation.Create(
@@ -78,7 +102,7 @@ public sealed class GeneratorSpecs
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var driver = CSharpGeneratorDriver.Create(
-            [new global::Wireloom.Generator().AsSourceGenerator()],
+            [new Wireloom.Generator().AsSourceGenerator()],
             [new TestAdditionalText("sample.idl", idl)],
             parseOptions,
             new TestAnalyzerConfigOptionsProvider(metadata));
@@ -87,16 +111,21 @@ public sealed class GeneratorSpecs
         var runDiagnostics = driver.GetRunResult().Results
             .SelectMany(result => result.Diagnostics.IsDefault ? [] : result.Diagnostics)
             .ToImmutableArray();
-        return new GeneratorRunResult(output, generatorDiagnostics
-            .Concat(runDiagnostics)
-            .Concat(output.GetDiagnostics().Where(diagnostic => diagnostic.Id.StartsWith("DDSG", StringComparison.Ordinal)))
-            .ToImmutableArray());
+
+        return new GeneratorRunResult(output,
+        [
+            .. generatorDiagnostics,
+            .. runDiagnostics,
+            .. output.GetDiagnostics().Where(diagnostic => diagnostic.Id.StartsWith("DDSG", StringComparison.Ordinal)),
+        ]);
     }
 
     private static IEnumerable<MetadataReference> FrameworkReferences()
     {
         var paths = (string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") ?? string.Empty;
-        return paths.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+
+        return paths
+            .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
             .Where(path => !string.Equals(Path.GetFileName(path), "Rti.ConnextDds.dll", StringComparison.OrdinalIgnoreCase))
             .Select(path => MetadataReference.CreateFromFile(path));
     }
@@ -105,8 +134,11 @@ public sealed class GeneratorSpecs
     {
         var references = FrameworkReferences().ToList();
         var runtime = Path.Combine(AppContext.BaseDirectory, "Rti.ConnextDds.dll");
+
         File.Exists(runtime).ShouldBeTrue($"Expected RTI runtime at {runtime}");
+
         references.Add(MetadataReference.CreateFromFile(runtime));
+
         return references;
     }
 
@@ -134,9 +166,17 @@ public sealed class GeneratorSpecs
     {
         public override bool TryGetValue(string key, out string value)
         {
-            var metadataName = key.StartsWith("build_metadata.AdditionalFiles.", StringComparison.OrdinalIgnoreCase)
-                ? key["build_metadata.AdditionalFiles.".Length..]
-                : key;
+            string metadataName;
+
+            if (key.StartsWith("build_metadata.AdditionalFiles.", StringComparison.OrdinalIgnoreCase))
+            {
+                metadataName = key["build_metadata.AdditionalFiles.".Length..];
+            }
+            else
+            {
+                metadataName = key;
+            }
+
             return values.TryGetValue(metadataName, out value!);
         }
     }

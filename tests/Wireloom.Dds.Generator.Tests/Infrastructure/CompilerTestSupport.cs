@@ -7,4 +7,7 @@ internal static class CompilerTestSupport
 
     public static string Compile(params List<IdlInput> inputs) =>
         IdlCompiler.Compile(inputs, TestContext.Current.CancellationToken);
+
+    public static Dictionary<string, GeneratedIdlSource> CompileSources(params List<IdlInput> inputs) =>
+        IdlCompiler.CompileSources(inputs, TestContext.Current.CancellationToken);
 }

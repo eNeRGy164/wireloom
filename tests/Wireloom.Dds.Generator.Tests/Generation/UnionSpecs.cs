@@ -1,3 +1,5 @@
+using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
+
 namespace Wireloom.Dds.Generator.Tests;
 
 public sealed class UnionSpecs
@@ -5,9 +7,14 @@ public sealed class UnionSpecs
     [Fact]
     public void EmitsUnionManagedNativePluginAndTypeSupportDocuments()
     {
-        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("union.idl",
-            "module Example { union Choice switch(long) { case 1: case 5: long number; case 2: string text; default: boolean flag; }; };" )], TestContext.Current.CancellationToken);
+        // Arrange
+        var input = Input("union.idl",
+            "module Example { union Choice switch(long) { case 1: case 5: long number; case 2: string text; default: boolean flag; }; };");
 
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
         documents.Keys.ShouldBe([
             "Example.Choice.g.cs",
             "Example.Implementation.ChoiceUnmanaged.g.cs",
@@ -29,23 +36,32 @@ public sealed class UnionSpecs
         native.ShouldContain("Initialize");
         native.ShouldContain("Destroy");
 
-        documents["Example.Implementation.ChoicePlugin.g.cs"].Source.ShouldContain("BuildUnion()");
-        documents["Example.Implementation.ChoicePlugin.g.cs"].Source.ShouldContain("UnionMember.DefaultLabel");
-        documents["Example.ChoiceSupport.g.cs"].Source.ShouldContain("TypeSupport<Choice>");
+        var plugin = documents["Example.Implementation.ChoicePlugin.g.cs"].Source;
+        plugin.ShouldContain("BuildUnion()");
+        plugin.ShouldContain("UnionMember.DefaultLabel");
+
+        var support = documents["Example.ChoiceSupport.g.cs"].Source;
+        support.ShouldContain("TypeSupport<Choice>");
     }
 
     [Fact]
     public void MultiLabelUnionAccessorsAndFromNativePreserveTheNativeDiscriminator()
     {
-        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("multi-label-union.idl", """
+        // Arrange
+        var input = Input("multi-label-union.idl",
+            """
             module Example {
                 union Choice switch(long) {
                     case 1: case 5: long number;
                     default: boolean flag;
                 };
             };
-            """)], TestContext.Current.CancellationToken);
+            """);
 
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
         var managed = documents["Example.Choice.g.cs"].Source;
         managed.ShouldContain("Discriminator != 1 && Discriminator != 5");
         managed.ShouldContain("public void Setnumber(int value, int discriminator)");
@@ -58,7 +74,9 @@ public sealed class UnionSpecs
     [Fact]
     public void UnionDestroyReleasesAllResourceBearingBranchesAndHolderDelegatesDirectly()
     {
-        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("union-destroy.idl", """
+        // Arrange
+        var input = Input("union-destroy.idl",
+            """
             module Example {
                 struct Payload { long value; };
                 union Choice switch(long) {
@@ -68,8 +86,12 @@ public sealed class UnionSpecs
                 typedef Choice ChoiceAlias;
                 struct Holder { ChoiceAlias value; };
             };
-            """)], TestContext.Current.CancellationToken);
+            """);
 
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
         var union = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
         union.ShouldContain("text.Destroy();");
         union.ShouldContain("payload.Destroy(optionalsOnly);");
@@ -86,7 +108,9 @@ public sealed class UnionSpecs
     [Fact]
     public void EmitsEnumDiscriminatorAndUnionWithoutDefault()
     {
-        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("enum-union.idl", """
+        // Arrange
+        var input = Input("enum-union.idl",
+            """
             module Example {
                 enum Kind { Number, Text };
                 union Choice switch(Kind) {
@@ -94,8 +118,12 @@ public sealed class UnionSpecs
                     case Text: string text;
                 };
             };
-            """)], TestContext.Current.CancellationToken);
+            """);
 
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
         var managed = documents["Example.Choice.g.cs"].Source;
         managed.ShouldContain("Discriminator { get; private set; }");
         managed.ShouldContain("public Kind Discriminator { get; private set; }");
@@ -107,21 +135,28 @@ public sealed class UnionSpecs
         managed.ShouldContain("number");
         managed.ShouldContain("text");
 
-        documents["Example.Implementation.ChoicePlugin.g.cs"].Source
-            .ShouldContain("WithDiscriminator(KindSupport.Instance.GetDynamicTypeInternal(isPublic))");
+        var plugin = documents["Example.Implementation.ChoicePlugin.g.cs"].Source;
+        plugin.ShouldContain("WithDiscriminator(KindSupport.Instance.GetDynamicTypeInternal(isPublic))");
     }
 
     [Fact]
     public void UnionGeneratedBehaviorSelectsBranchesAndCopiesValues()
     {
-        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("behavior.idl", """
+        // Arrange
+        var input = Input("behavior.idl",
+            """
             module Example {
                 union Choice switch(long) {
                     case 1: long number;
                     default: string text;
                 };
             };
-            """)], TestContext.Current.CancellationToken);
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
         var managed = documents["Example.Choice.g.cs"].Source;
 
         managed.ShouldContain("Discriminator = 1;");
@@ -138,7 +173,9 @@ public sealed class UnionSpecs
     [Fact]
     public void UnionConstructorDoesNotInitializeInactiveAggregateBranches()
     {
-        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("struct-union.idl", """
+        // Arrange
+        var input = Input("struct-union.idl",
+            """
             module Example {
                 struct Payload { long value; };
                 union Choice switch(long) {
@@ -146,8 +183,12 @@ public sealed class UnionSpecs
                     case 11: sequence<long, 4> values;
                 };
             };
-            """)], TestContext.Current.CancellationToken);
+            """);
 
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
         var managed = documents["Example.Choice.g.cs"].Source;
         var constructorStart = managed.IndexOf("public Choice()", StringComparison.Ordinal);
         constructorStart.ShouldBeGreaterThanOrEqualTo(0);
@@ -161,7 +202,9 @@ public sealed class UnionSpecs
     [Fact]
     public void UnionFromNativeInitializesActiveAggregateBranchesWhenTheDiscriminatorChanges()
     {
-        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("union-from-native.idl", """
+        // Arrange
+        var input = Input("union-from-native.idl",
+            """
             module Example {
                 struct Payload { long value; };
                 union Choice switch(long) {
@@ -169,8 +212,12 @@ public sealed class UnionSpecs
                     case 11: sequence<long, 4> values;
                 };
             };
-            """)], TestContext.Current.CancellationToken);
+            """);
 
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
         var native = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
 
         native.ShouldContain("if (sample.Discriminator != _discriminator)");
@@ -183,7 +230,9 @@ public sealed class UnionSpecs
     [Fact]
     public void AppendableEnumAndUnionUseExtensibleTypeSupport()
     {
-        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("appendable.idl", """
+        // Arrange
+        var input = Input("appendable.idl",
+            """
             module Example {
                 @appendable enum Kind { Number, Text };
                 @appendable union Choice switch(Kind) {
@@ -191,18 +240,25 @@ public sealed class UnionSpecs
                     case Text: string text;
                 };
             };
-            """)], TestContext.Current.CancellationToken);
+            """);
 
-        documents["Example.Implementation.KindPlugin.g.cs"].Source
-            .ShouldContain("WithExtensibility(ExtensibilityKind.Extensible)");
-        documents["Example.Implementation.ChoicePlugin.g.cs"].Source
-            .ShouldContain("WithExtensibility(ExtensibilityKind.Extensible)");
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var kindPlugin = documents["Example.Implementation.KindPlugin.g.cs"].Source;
+        kindPlugin.ShouldContain("WithExtensibility(ExtensibilityKind.Extensible)");
+
+        var choicePlugin = documents["Example.Implementation.ChoicePlugin.g.cs"].Source;
+        choicePlugin.ShouldContain("WithExtensibility(ExtensibilityKind.Extensible)");
     }
 
     [Fact]
     public void NestedAppendableUnionIsAccepted()
     {
-        var documents = IdlCompiler.CompileSources([CompilerTestSupport.Input("nested-union.idl", """
+        // Arrange
+        var input = Input("nested-union.idl",
+            """
             module Example {
                 enum Kind { Number, Text };
                 @nested @appendable union Choice switch(Kind) {
@@ -210,8 +266,13 @@ public sealed class UnionSpecs
                     case Text: string text;
                 };
             };
-            """)], TestContext.Current.CancellationToken);
+            """);
 
-        documents["Example.Choice.g.cs"].Source.ShouldContain("public partial class Choice");
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var choice = documents["Example.Choice.g.cs"].Source;
+        choice.ShouldContain("public partial class Choice");
     }
 }
