@@ -41,12 +41,12 @@ namespace CorpusPrimitiveBoundaries
 
     public static class longLongMin
     {
-        public const int Value = -9223372036854775807-1;
+        public const long Value = -9223372036854775807-1;
     }
 
     public static class longLongMax
     {
-        public const int Value = 9223372036854775807;
+        public const long Value = 9223372036854775807;
     }
 
     public static class int8Min

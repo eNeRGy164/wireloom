@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using Wireloom;
 
 namespace Wireloom.Dds.Generator.CorpusCompliance;
 
@@ -13,6 +12,7 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
     private static readonly HashSet<string> ManagedAcceptedCaseIds =
     [
         "01-primitives",
+        "01-boundaries",
         "01-full-widths",
         "02-names-constants",
         "02-scopes",
