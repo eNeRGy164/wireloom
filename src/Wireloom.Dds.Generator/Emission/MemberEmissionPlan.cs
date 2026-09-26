@@ -1,5 +1,7 @@
 namespace Wireloom;
 
+using System.Globalization;
+using System.Numerics;
 using JetBrains.Annotations;
 using static EmissionTypeProjector;
 using static IdlCompiler;
@@ -58,6 +60,13 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public string? ElementCSharpType => Field.ElementCSharpType;
     public string? ElementSupportType => Field.ElementSupportType;
     public IReadOnlyList<int> Dimensions => Field.Dimensions;
+    public BigInteger? DefaultValue => Field.ValueMetadata?.DefaultValue;
+    public BigInteger? MinimumValue => Field.ValueMetadata?.Minimum;
+    public BigInteger? MaximumValue => Field.ValueMetadata?.Maximum;
+    public string? DefaultExpression => Field.ValueMetadata?.DefaultExpression;
+    public bool HasExplicitDefault => DefaultValue is not null;
+    public bool HasManagedRange => MinimumValue is not null || MaximumValue is not null;
+    public string ManagedBackingFieldName => "_" + EscapedName;
     public bool IsString => ValueType is StringEmissionType;
     public bool IsSequence => shape == FieldEmissionShape.Sequence;
     public bool IsArray => shape == FieldEmissionShape.Array;
@@ -87,6 +96,35 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
             }
 
             return $"Its DDS bound is <c>{bound}</c>.";
+        }
+    }
+
+    public string? ValueConstraintSummary
+    {
+        get
+        {
+            var constraints = new List<string>();
+
+            if (MinimumValue is { } minimum && MaximumValue is { } maximum)
+            {
+                constraints.Add($"Its value must be between <c>{FormatCSharpValue(CSharpType.TrimEnd('?'), minimum)}</c> and <c>{FormatCSharpValue(CSharpType.TrimEnd('?'), maximum)}</c>.");
+            }
+            else if (MinimumValue is { } lower)
+            {
+                constraints.Add($"Its minimum value is <c>{FormatCSharpValue(CSharpType.TrimEnd('?'), lower)}</c>.");
+            }
+            else if (MaximumValue is { } upper)
+            {
+                constraints.Add($"Its maximum value is <c>{FormatCSharpValue(CSharpType.TrimEnd('?'), upper)}</c>.");
+            }
+
+            if (DefaultValue is not null)
+            {
+                var defaultText = DefaultExpression ?? FormatCSharpValue(CSharpType.TrimEnd('?'), DefaultValue.Value);
+                constraints.Add($"Its default value is <c>{System.Security.SecurityElement.Escape(defaultText)}</c>.");
+            }
+
+            return constraints.Count == 0 ? null : string.Join(" ", constraints);
         }
     }
 
@@ -139,6 +177,11 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     {
         get
         {
+            if (HasExplicitDefault)
+            {
+                return null;
+            }
+
             if (CSharpType == "string")
             {
                 return " = string.Empty;";
@@ -165,10 +208,31 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
     public string? ManagedDefaultInitializationStatement => ManagedInitialization switch
     {
+        _ when HasExplicitDefault => $"{EscapedName} = {ManagedDefaultValue};",
         ManagedInitializationKind.Sequence => $"{EscapedName} = new Sequence<{TypeReference(ElementCSharpType!, currentNamespace)}>();",
         ManagedInitializationKind.Array => $"{EscapedName} = new {TypeReference(ElementCSharpType!, currentNamespace)}[{string.Join(", ", Dimensions)}];",
         ManagedInitializationKind.Aggregate => $"{EscapedName} = new {TypeReference(CSharpType, currentNamespace)}();",
         _ => null
+    };
+
+    public string ManagedDefaultValue => ValueType switch
+    {
+        EnumEmissionType => $"({TypeReference(CSharpType, currentNamespace)}){DefaultValue!.Value.ToString(CultureInfo.InvariantCulture)}",
+        _ => FormatCSharpValue(CSharpType.TrimEnd('?'), DefaultValue!.Value)
+    };
+
+    public string FormatCSharpValue(string typeName, BigInteger value) => typeName switch
+    {
+        "long" when value == long.MinValue => "long.MinValue",
+        "long" => $"{value.ToString(CultureInfo.InvariantCulture)}L",
+        "ulong" when value == ulong.MaxValue => "ulong.MaxValue",
+        "ulong" => $"{value.ToString(CultureInfo.InvariantCulture)}UL",
+        "uint" => $"{value.ToString(CultureInfo.InvariantCulture)}U",
+        "short" => $"(short){value.ToString(CultureInfo.InvariantCulture)}",
+        "ushort" => $"(ushort){value.ToString(CultureInfo.InvariantCulture)}",
+        "sbyte" => $"(sbyte){value.ToString(CultureInfo.InvariantCulture)}",
+        "byte" => $"(byte){value.ToString(CultureInfo.InvariantCulture)}",
+        _ => value.ToString(CultureInfo.InvariantCulture)
     };
 
 
@@ -388,18 +452,18 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         {
             StringEmissionType { IsWide: true } => ("WideString", "WideStringValue", "\"\"", null, null),
             StringEmissionType => ("String", "StringValue", "\"\"", null, null),
-            EnumEmissionType enumType => ("Enumeration", "EnumValue", enumType.DefaultValue.ToString(), null, null),
+            EnumEmissionType enumType => ("Enumeration", "EnumValue", HasExplicitDefault ? DefaultValue!.Value.ToString(CultureInfo.InvariantCulture) : enumType.DefaultValue.ToString(CultureInfo.InvariantCulture), null, null),
             PrimitiveEmissionType primitive => primitive.IdlName switch
             {
-                "short" or "int16" => ("Int16", "Int16Value", "(short)0", "short.MinValue", "short.MaxValue"),
-                "long" or "int32" => ("Int32", "Int32Value", "0", "int.MinValue", "int.MaxValue"),
-                "long long" or "int64" => ("Int64", "Int64Value", "0L", "long.MinValue", "long.MaxValue"),
-                "unsigned short" or "uint16" => ("Uint16", "Uint16Value", "(ushort)0", "ushort.MinValue", "ushort.MaxValue"),
-                "unsigned long" or "uint32" => ("UInt32", "Uint32Value", "0U", "uint.MinValue", "uint.MaxValue"),
-                "unsigned long long" or "uint64" => ("UInt64", "Uint64Value", "0UL", "ulong.MinValue", "ulong.MaxValue"),
-                "int8" => ("Int8", "Int8Value", "(sbyte)0", "sbyte.MinValue", "sbyte.MaxValue"),
-                "uint8" => ("Uint8", "Uint8Value", "(byte)0", "byte.MinValue", "byte.MaxValue"),
-                "octet" => ("Octet", "OctetValue", "(byte)0", "byte.MinValue", "byte.MaxValue"),
+                "short" or "int16" => ("Int16", "Int16Value", HasExplicitDefault ? FormatCSharpValue("short", DefaultValue!.Value) : "(short)0", MinimumValue is null ? "short.MinValue" : FormatCSharpValue("short", MinimumValue.Value), MaximumValue is null ? "short.MaxValue" : FormatCSharpValue("short", MaximumValue.Value)),
+                "long" or "int32" => ("Int32", "Int32Value", HasExplicitDefault ? FormatCSharpValue("int", DefaultValue!.Value) : "0", MinimumValue is null ? "int.MinValue" : FormatCSharpValue("int", MinimumValue.Value), MaximumValue is null ? "int.MaxValue" : FormatCSharpValue("int", MaximumValue.Value)),
+                "long long" or "int64" => ("Int64", "Int64Value", HasExplicitDefault ? FormatCSharpValue("long", DefaultValue!.Value) : "0L", MinimumValue is null ? "long.MinValue" : FormatCSharpValue("long", MinimumValue.Value), MaximumValue is null ? "long.MaxValue" : FormatCSharpValue("long", MaximumValue.Value)),
+                "unsigned short" or "uint16" => ("Uint16", "Uint16Value", HasExplicitDefault ? FormatCSharpValue("ushort", DefaultValue!.Value) : "(ushort)0", MinimumValue is null ? "ushort.MinValue" : FormatCSharpValue("ushort", MinimumValue.Value), MaximumValue is null ? "ushort.MaxValue" : FormatCSharpValue("ushort", MaximumValue.Value)),
+                "unsigned long" or "uint32" => ("UInt32", "Uint32Value", HasExplicitDefault ? FormatCSharpValue("uint", DefaultValue!.Value) : "0U", MinimumValue is null ? "uint.MinValue" : FormatCSharpValue("uint", MinimumValue.Value), MaximumValue is null ? "uint.MaxValue" : FormatCSharpValue("uint", MaximumValue.Value)),
+                "unsigned long long" or "uint64" => ("UInt64", "Uint64Value", HasExplicitDefault ? FormatCSharpValue("ulong", DefaultValue!.Value) : "0UL", MinimumValue is null ? "ulong.MinValue" : FormatCSharpValue("ulong", MinimumValue.Value), MaximumValue is null ? "ulong.MaxValue" : FormatCSharpValue("ulong", MaximumValue.Value)),
+                "int8" => ("Int8", "Int8Value", HasExplicitDefault ? FormatCSharpValue("sbyte", DefaultValue!.Value) : "(sbyte)0", MinimumValue is null ? "sbyte.MinValue" : FormatCSharpValue("sbyte", MinimumValue.Value), MaximumValue is null ? "sbyte.MaxValue" : FormatCSharpValue("sbyte", MaximumValue.Value)),
+                "uint8" => ("Uint8", "Uint8Value", HasExplicitDefault ? FormatCSharpValue("byte", DefaultValue!.Value) : "(byte)0", MinimumValue is null ? "byte.MinValue" : FormatCSharpValue("byte", MinimumValue.Value), MaximumValue is null ? "byte.MaxValue" : FormatCSharpValue("byte", MaximumValue.Value)),
+                "octet" => ("Octet", "OctetValue", HasExplicitDefault ? FormatCSharpValue("byte", DefaultValue!.Value) : "(byte)0", MinimumValue is null ? "byte.MinValue" : FormatCSharpValue("byte", MinimumValue.Value), MaximumValue is null ? "byte.MaxValue" : FormatCSharpValue("byte", MaximumValue.Value)),
                 "boolean" => ("Boolean", "BoolValue", "false", null, null),
                 "char" => ("Char8", "Char8Value", "'\\0'", null, null),
                 "wchar" => ("Char16", "Char16Value", "'\\0'", null, null),

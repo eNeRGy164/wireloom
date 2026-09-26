@@ -22,6 +22,17 @@ internal static class ManagedDataTypeEmitter
 
     private static void EmitDataMembers(GeneratedSourceWriter writer, IReadOnlyList<MemberEmissionPlan> fields)
     {
+        var rangedFields = fields.Where(field => field.HasManagedRange).ToArray();
+        foreach (var field in rangedFields)
+        {
+            writer.WriteLine($"private {TypeReference(field.CSharpType, field.CurrentNamespace)} {field.ManagedBackingFieldName};");
+        }
+
+        if (rangedFields.Length > 0 && fields.Count > 0)
+        {
+            writer.BlankLine();
+        }
+
         for (var index = 0; index < fields.Count; index++)
         {
             if (index > 0)
@@ -47,6 +58,11 @@ internal static class ManagedDataTypeEmitter
                 propertySummary += $" {boundSummary}";
             }
 
+            if (field.ValueConstraintSummary is string valueConstraintSummary)
+            {
+                propertySummary += $" {valueConstraintSummary}";
+            }
+
             writer.WriteXmlSummary(propertySummary);
 
             if (field.IsKey)
@@ -64,8 +80,49 @@ internal static class ManagedDataTypeEmitter
                 writer.WriteLine($"[Bound({bound})]");
             }
 
-            writer.WriteLine($"public {TypeReference(field.CSharpType, field.CurrentNamespace)} {EscapeIdentifier(field.Name)}{field.ManagedPropertyAccessors}{field.ManagedPropertyInitializer}");
+            if (field.HasManagedRange)
+            {
+                EmitRangedProperty(writer, field);
+            }
+            else
+            {
+                writer.WriteLine($"public {TypeReference(field.CSharpType, field.CurrentNamespace)} {EscapeIdentifier(field.Name)}{field.ManagedPropertyAccessors}{field.ManagedPropertyInitializer}");
+            }
         }
+    }
+
+    private static void EmitRangedProperty(GeneratedSourceWriter writer, MemberEmissionPlan field)
+    {
+        var type = TypeReference(field.CSharpType, field.CurrentNamespace);
+        var name = EscapeIdentifier(field.Name);
+        var backingField = field.ManagedBackingFieldName;
+
+        writer.OpenBlock($"public {type} {name}");
+        writer.OpenBlock("get");
+        writer.WriteLine($"return {backingField};");
+        writer.CloseBlock();
+        writer.OpenBlock("set");
+
+        if (field.MinimumValue is { } minimum)
+        {
+            var minimumText = field.FormatCSharpValue(field.CSharpType.TrimEnd('?'), minimum);
+            writer.WriteLine($"ArgumentOutOfRangeException.ThrowIfLessThan(value, {minimumText});");
+        }
+
+        if (field.MaximumValue is { } maximum)
+        {
+            var maximumText = field.FormatCSharpValue(field.CSharpType.TrimEnd('?'), maximum);
+            writer.WriteLine($"ArgumentOutOfRangeException.ThrowIfGreaterThan(value, {maximumText});");
+        }
+
+        if (field.MinimumValue is not null && field.MaximumValue is not null)
+        {
+            writer.BlankLine();
+        }
+
+        writer.WriteLine($"{backingField} = value;");
+        writer.CloseBlock();
+        writer.CloseBlock();
     }
 
     private static void EmitDefaultConstructor(GeneratedSourceWriter writer, string typeName, IReadOnlyList<MemberEmissionPlan> fields)
@@ -90,6 +147,11 @@ internal static class ManagedDataTypeEmitter
             writer.WriteLine(field.ManagedDefaultInitializationStatement!);
 
             field.EmitAggregateArrayInitialization(writer, field.EscapedName, index < arrayFields.Length - 1);
+        }
+
+        foreach (var field in fields.Where(field => field.HasExplicitDefault))
+        {
+            writer.WriteLine(field.ManagedDefaultInitializationStatement!);
         }
 
         writer.CloseBlock();
@@ -123,7 +185,8 @@ internal static class ManagedDataTypeEmitter
 
         foreach (var field in fields)
         {
-            writer.WriteLine($"this.{EscapeIdentifier(field.Name)} = {EscapeIdentifier(field.Name)};");
+            var target = field.HasManagedRange ? field.ManagedBackingFieldName : EscapeIdentifier(field.Name);
+            writer.WriteLine($"this.{target} = {EscapeIdentifier(field.Name)};");
         }
 
         writer.CloseBlock();
@@ -147,7 +210,9 @@ internal static class ManagedDataTypeEmitter
             for (var index = 0; index < fields.Count; index++)
             {
                 var field = fields[index];
-                writer.WriteLine($"{field.EscapedName} = {field.BuildCopyExpression()};");
+                var target = field.HasManagedRange ? field.ManagedBackingFieldName : field.EscapedName;
+                var source = field.HasManagedRange ? $"other.{field.ManagedBackingFieldName}" : field.BuildCopyExpression();
+                writer.WriteLine($"{target} = {source};");
                 field.EmitAggregateArrayCopy(writer, field.EscapedName, index < fields.Count - 1);
             }
         }

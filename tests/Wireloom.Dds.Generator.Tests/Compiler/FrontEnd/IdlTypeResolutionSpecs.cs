@@ -179,6 +179,22 @@ public sealed class IdlTypeResolutionSpecs
     }
 
     [Fact]
+    [Trait("Corpus", "C042")]
+    public void RejectsMemberDefaultsOutsideTheirDeclaredRange()
+    {
+        // Arrange
+        var input = Input(
+            "invalid-default-range.idl",
+            "module Defaults { struct Sample { @min(0) @max(10) @default(11) long value; }; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("outside its declared range");
+    }
+
+    [Fact]
     public void ResolvesAbsoluteScopedStructBaseNames()
     {
         // Arrange

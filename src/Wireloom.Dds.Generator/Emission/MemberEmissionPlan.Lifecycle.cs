@@ -1,6 +1,7 @@
 namespace Wireloom;
 
 using System;
+using System.Globalization;
 using static IdlCompiler;
 
 internal sealed partial class MemberEmissionPlan
@@ -38,22 +39,39 @@ internal sealed partial class MemberEmissionPlan
         return $"{EscapedName} = {NativeDefaultValue(namespaceName)};";
     }
 
-    private string NativeDefaultValue(string? namespaceName) => ValueType switch
+    private string NativeDefaultValue(string? namespaceName)
     {
-        PrimitiveEmissionType primitive => primitive.IdlName switch
+        if (HasExplicitDefault)
         {
-            "long" or "int32" => "0",
-            "long long" or "int64" => "0L",
-            "unsigned long" or "uint32" => "0U",
-            "unsigned long long" or "uint64" => "0UL",
-            "float" => "0.0F",
-            "double" => "0.0D",
-            "long double" => "(LongDouble)0",
-            _ => "0"
-        },
-        EnumEmissionType enumType => $"({TypeReference(CSharpType, namespaceName)}){enumType.DefaultValue}",
-        _ => throw new InvalidOperationException("Expected a scalar native value.")
-    };
+            var value = ValueType is EnumEmissionType
+                ? DefaultValue!.Value.ToString(CultureInfo.InvariantCulture)
+                : FormatCSharpValue(CSharpType.TrimEnd('?'), DefaultValue!.Value);
+
+            if (ValueType is EnumEmissionType)
+            {
+                return $"({TypeReference(CSharpType, namespaceName)}){value}";
+            }
+
+            return value;
+        }
+
+        return ValueType switch
+        {
+            PrimitiveEmissionType primitive => primitive.IdlName switch
+            {
+                "long" or "int32" => "0",
+                "long long" or "int64" => "0L",
+                "unsigned long" or "uint32" => "0U",
+                "unsigned long long" or "uint64" => "0UL",
+                "float" => "0.0F",
+                "double" => "0.0D",
+                "long double" => "(LongDouble)0",
+                _ => "0"
+            },
+            EnumEmissionType enumType => $"({TypeReference(CSharpType, namespaceName)}){enumType.DefaultValue}",
+            _ => throw new InvalidOperationException("Expected a scalar native value.")
+        };
+    }
 
     public string? BuildInitializeStatement(string? namespaceOverride = null)
     {

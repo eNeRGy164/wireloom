@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace Wireloom;
 
 internal enum IdlCollectionKind
@@ -67,11 +69,20 @@ internal abstract class IdlType
 }
 
 /// <summary>Metadata attached to an IDL member independently of its type.</summary>
-internal sealed class IdlMemberMetadata(bool isKey = false, bool isOptional = false, int? memberId = null)
+internal sealed class IdlMemberValueMetadata(BigInteger? defaultValue = null, BigInteger? minimum = null, BigInteger? maximum = null, string? defaultExpression = null)
+{
+    public BigInteger? DefaultValue { get; } = defaultValue;
+    public BigInteger? Minimum { get; } = minimum;
+    public BigInteger? Maximum { get; } = maximum;
+    public string? DefaultExpression { get; } = defaultExpression;
+}
+
+internal sealed class IdlMemberMetadata(bool isKey = false, bool isOptional = false, int? memberId = null, IdlMemberValueMetadata? valueMetadata = null)
 {
     public bool IsKey { get; } = isKey;
     public bool IsOptional { get; } = isOptional;
     public int? MemberId { get; } = memberId;
+    public IdlMemberValueMetadata? ValueMetadata { get; } = valueMetadata;
 }
 
 /// <summary>Represents an IDL member independently of any target language.</summary>

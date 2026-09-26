@@ -556,60 +556,8 @@ internal sealed class IdlDeclarationParser
         string? currentNamespace,
         HashSet<string> members)
     {
-        var annotationsLength = 0;
-        var isKey = false;
-        var isOptional = false;
-        int? memberId = null;
-
-        while (true)
-        {
-            var keyAnnotation = KeyAnnotationPattern.Match(body.Substring(offset));
-            if (keyAnnotation.Success)
-            {
-                if (isKey)
-                {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate @key annotation.");
-                }
-
-                isKey = true;
-                offset += keyAnnotation.Length;
-                annotationsLength += keyAnnotation.Length;
-
-                continue;
-            }
-
-            var optionalAnnotation = OptionalAnnotationPattern.Match(body.Substring(offset));
-            if (optionalAnnotation.Success)
-            {
-                if (isOptional)
-                {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate @optional annotation.");
-                }
-
-                isOptional = true;
-                offset += optionalAnnotation.Length;
-                annotationsLength += optionalAnnotation.Length;
-
-                continue;
-            }
-
-            var idAnnotation = IdAnnotationPattern.Match(body.Substring(offset));
-            if (idAnnotation.Success)
-            {
-                if (memberId is not null || !int.TryParse(idAnnotation.Groups[1].Value, out var parsedId))
-                {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate or invalid @id annotation.");
-                }
-
-                memberId = parsedId;
-                offset += idAnnotation.Length;
-                annotationsLength += idAnnotation.Length;
-
-                continue;
-            }
-
-            break;
-        }
+        var (annotations, annotationsLength) = ParseMemberAnnotations(input, body, offset, sourceOffset);
+        offset += annotationsLength;
 
         var member = MemberPattern.Match(body.Substring(offset));
         if (!member.Success)
@@ -628,7 +576,7 @@ internal sealed class IdlDeclarationParser
         var dimensions = member.Groups[4].Success && member.Groups[4].Value.Length > 0
             ? ParseDimensions(input, memberSourceOffset, member.Groups[4].Value, currentNamespace)
             : [];
-        IdlMember parsedField;
+        IdlType parsedType;
 
         if (kind.StartsWith("sequence", StringComparison.Ordinal))
         {
@@ -640,8 +588,7 @@ internal sealed class IdlDeclarationParser
                 throw new IdlException(input, memberSourceOffset, $"Unknown collection element type: {ElementType}");
             }
 
-            var sequence = new IdlType.Sequence(element, Bound, dimensions);
-            parsedField = new IdlMember(field, sequence, new IdlMemberMetadata(isKey, isOptional, memberId));
+            parsedType = new IdlType.Sequence(element, Bound, dimensions);
         }
         else if (dimensions.Count > 0)
         {
@@ -651,7 +598,7 @@ internal sealed class IdlDeclarationParser
                 throw new IdlException(input, memberSourceOffset, $"Unknown collection element type: {kind}");
             }
 
-            parsedField = CreateCollectionMember(field, IdlCollectionKind.Array, null, element, dimensions, isKey, isOptional, memberId);
+            parsedType = new IdlType.Array(element, dimensions);
         }
         else if (kind.StartsWith("string", StringComparison.Ordinal) || kind.StartsWith("wstring", StringComparison.Ordinal))
         {
@@ -662,16 +609,11 @@ internal sealed class IdlDeclarationParser
                 bound = ResolveBound(input, memberSourceOffset, member.Groups[2].Value, currentNamespace, "String bound");
             }
 
-            parsedField = new IdlMember(
-                field,
-                new IdlType.StringType(
-                    kind.StartsWith("wstring", StringComparison.Ordinal),
-                    bound),
-                new IdlMemberMetadata(isKey, isOptional, memberId));
+            parsedType = new IdlType.StringType(kind.StartsWith("wstring", StringComparison.Ordinal), bound);
         }
         else if (IsPrimitive(kind))
         {
-            parsedField = new IdlMember(field, new IdlType.Primitive(NormalizeIdlType(kind)), new IdlMemberMetadata(isKey, isOptional, memberId));
+            parsedType = new IdlType.Primitive(NormalizeIdlType(kind));
         }
         else
         {
@@ -681,15 +623,263 @@ internal sealed class IdlDeclarationParser
                 throw new IdlException(input, memberSourceOffset, $"Unknown struct type: {kind}");
             }
 
-            if (isOptional && !IsOptionalScalar(resolved))
+            if (annotations.IsOptional && !IsOptionalScalar(resolved))
             {
                 throw new IdlException(input, memberSourceOffset, "Optional aggregate members are not supported yet.");
             }
 
-            parsedField = new IdlMember(field, resolved, new IdlMemberMetadata(isKey, isOptional, memberId));
+            parsedType = resolved;
         }
 
-        return (parsedField, annotationsLength + member.Length);
+        var valueMetadata = ResolveMemberValueMetadata(input, memberSourceOffset, currentNamespace, parsedType, annotations);
+        var metadata = new IdlMemberMetadata(
+            annotations.IsKey,
+            annotations.IsOptional,
+            annotations.MemberId,
+            valueMetadata);
+
+        return (new IdlMember(field, parsedType, metadata), annotationsLength + member.Length);
+    }
+
+    private (MemberAnnotationState Annotations, int Length) ParseMemberAnnotations(
+        IdlInput input,
+        string body,
+        int offset,
+        int sourceOffset)
+    {
+        var annotations = new MemberAnnotationState();
+        var length = 0;
+
+        while (true)
+        {
+            var remaining = body[offset..];
+            var keyAnnotation = KeyAnnotationPattern.Match(remaining);
+            if (keyAnnotation.Success)
+            {
+                if (annotations.IsKey)
+                {
+                    throw new IdlException(input, sourceOffset + offset, "Duplicate @key annotation.");
+                }
+
+                annotations.IsKey = true;
+                offset += keyAnnotation.Length;
+                length += keyAnnotation.Length;
+
+                continue;
+            }
+
+            var optionalAnnotation = OptionalAnnotationPattern.Match(remaining);
+            if (optionalAnnotation.Success)
+            {
+                if (annotations.IsOptional)
+                {
+                    throw new IdlException(input, sourceOffset + offset, "Duplicate @optional annotation.");
+                }
+
+                annotations.IsOptional = true;
+                offset += optionalAnnotation.Length;
+                length += optionalAnnotation.Length;
+
+                continue;
+            }
+
+            var idAnnotation = IdAnnotationPattern.Match(remaining);
+            if (idAnnotation.Success)
+            {
+                if (annotations.MemberId is not null || !int.TryParse(idAnnotation.Groups[1].Value, out var parsedId))
+                {
+                    throw new IdlException(input, sourceOffset + offset, "Duplicate or invalid @id annotation.");
+                }
+
+                annotations.MemberId = parsedId;
+                offset += idAnnotation.Length;
+                length += idAnnotation.Length;
+
+                continue;
+            }
+
+            var minimumAnnotation = MinimumAnnotationPattern.Match(remaining);
+            if (minimumAnnotation.Success)
+            {
+                if (annotations.MinimumExpression is not null)
+                {
+                    throw new IdlException(input, sourceOffset + offset, "Duplicate @min or @range annotation.");
+                }
+
+                annotations.MinimumExpression = minimumAnnotation.Groups["value"].Value.Trim();
+                offset += minimumAnnotation.Length;
+                length += minimumAnnotation.Length;
+
+                continue;
+            }
+
+            var maximumAnnotation = MaximumAnnotationPattern.Match(remaining);
+            if (maximumAnnotation.Success)
+            {
+                if (annotations.MaximumExpression is not null)
+                {
+                    throw new IdlException(input, sourceOffset + offset, "Duplicate @max or @range annotation.");
+                }
+
+                annotations.MaximumExpression = maximumAnnotation.Groups["value"].Value.Trim();
+                offset += maximumAnnotation.Length;
+                length += maximumAnnotation.Length;
+
+                continue;
+            }
+
+            var rangeAnnotation = RangeAnnotationPattern.Match(remaining);
+            if (rangeAnnotation.Success)
+            {
+                if (annotations.MinimumExpression is not null || annotations.MaximumExpression is not null)
+                {
+                    throw new IdlException(input, sourceOffset + offset, "Duplicate @min, @max, or @range annotation.");
+                }
+
+                annotations.MinimumExpression = rangeAnnotation.Groups["min"].Value.Trim();
+                annotations.MaximumExpression = rangeAnnotation.Groups["max"].Value.Trim();
+                offset += rangeAnnotation.Length;
+                length += rangeAnnotation.Length;
+
+                continue;
+            }
+
+            var defaultAnnotation = DefaultAnnotationPattern.Match(remaining);
+            if (defaultAnnotation.Success)
+            {
+                if (annotations.DefaultExpression is not null)
+                {
+                    throw new IdlException(input, sourceOffset + offset, "Duplicate @default annotation.");
+                }
+
+                annotations.DefaultExpression = defaultAnnotation.Groups["value"].Value.Trim();
+                offset += defaultAnnotation.Length;
+                length += defaultAnnotation.Length;
+
+                continue;
+            }
+
+            return (annotations, length);
+        }
+    }
+
+    private IdlMemberValueMetadata? ResolveMemberValueMetadata(
+        IdlInput input,
+        int offset,
+        string? currentNamespace,
+        IdlType type,
+        MemberAnnotationState annotations)
+    {
+        if (annotations.MinimumExpression is null &&
+            annotations.MaximumExpression is null &&
+            annotations.DefaultExpression is null)
+        {
+            return null;
+        }
+
+        var valueType = UnwrapAliases(type);
+        if (valueType is not IdlType.Primitive and not IdlType.Enum)
+        {
+            throw new IdlException(input, offset, "@min, @max, @range, and @default are only supported on primitive and enum members.");
+        }
+
+        BigInteger? minimum = null;
+        BigInteger? maximum = null;
+        BigInteger? defaultValue = null;
+
+        if (annotations.MinimumExpression is not null || annotations.MaximumExpression is not null)
+        {
+            if (valueType is not IdlType.Primitive primitive)
+            {
+                throw new IdlException(input, offset, "@min, @max, and @range require a primitive member.");
+            }
+
+            minimum = annotations.MinimumExpression is null
+                ? null
+                : EvaluateMemberInteger(input, offset, currentNamespace, annotations.MinimumExpression, "minimum");
+            maximum = annotations.MaximumExpression is null
+                ? null
+                : EvaluateMemberInteger(input, offset, currentNamespace, annotations.MaximumExpression, "maximum");
+
+            if (minimum is { } minimumValue)
+            {
+                ValidateConstantRange(input, offset, primitive.Name, minimumValue);
+            }
+
+            if (maximum is { } maximumValue)
+            {
+                ValidateConstantRange(input, offset, primitive.Name, maximumValue);
+            }
+
+            if (minimum is { } lower && maximum is { } upper && lower > upper)
+            {
+                throw new IdlException(input, offset, "Member minimum value cannot be greater than its maximum value.");
+            }
+        }
+
+        if (annotations.DefaultExpression is not null)
+        {
+            if (valueType is IdlType.Primitive primitive)
+            {
+                defaultValue = EvaluateMemberInteger(input, offset, currentNamespace, annotations.DefaultExpression, "default");
+                ValidateConstantRange(input, offset, primitive.Name, defaultValue.Value);
+            }
+            else if (valueType is IdlType.Enum @enum)
+            {
+                if (!symbols.TryGetEnum(@enum.QualifiedName, out var enumDeclaration))
+                {
+                    throw new IdlException(input, offset, $"Unknown enum type: {@enum.QualifiedName}");
+                }
+
+                var defaultName = annotations.DefaultExpression.Replace("::", ".").Split('.').Last();
+                var enumMember = enumDeclaration.Members.SingleOrDefault(member => member.Name == defaultName);
+                if (enumMember is null)
+                {
+                    throw new IdlException(input, offset, $"Unknown default enum value: {annotations.DefaultExpression}");
+                }
+
+                defaultValue = enumMember.Value;
+            }
+        }
+
+        if (defaultValue is { } value && ((minimum is { } defaultLower && value < defaultLower) || (maximum is { } defaultUpper && value > defaultUpper)))
+        {
+            throw new IdlException(input, offset, "Member default value is outside its declared range.");
+        }
+
+        return new IdlMemberValueMetadata(defaultValue, minimum, maximum, annotations.DefaultExpression);
+    }
+
+    private BigInteger EvaluateMemberInteger(IdlInput input, int offset, string? currentNamespace, string expression, string valueName)
+    {
+        try
+        {
+            return IdlConstantExpressionEvaluator.Evaluate(expression, symbols, currentNamespace);
+        }
+        catch (FormatException exception)
+        {
+            throw new IdlException(input, offset, $"Invalid {valueName} expression: {exception.Message}");
+        }
+    }
+
+    private static IdlType UnwrapAliases(IdlType type)
+    {
+        while (type is IdlType.Alias alias)
+        {
+            type = alias.Target;
+        }
+
+        return type;
+    }
+
+    private sealed class MemberAnnotationState
+    {
+        public bool IsKey { get; set; }
+        public bool IsOptional { get; set; }
+        public int? MemberId { get; set; }
+        public string? MinimumExpression { get; set; }
+        public string? MaximumExpression { get; set; }
+        public string? DefaultExpression { get; set; }
     }
 
     private void EnsureNewName(IdlInput input, int offset, string name) =>

@@ -53,5 +53,17 @@ internal static class IdlGrammar
     internal static readonly Regex OptionalAnnotationPattern = new(
         @"^@optional\b\s*",
         RegexOptions.Compiled);
+    internal static readonly Regex MinimumAnnotationPattern = new(
+        @"^@min\s*\(\s*(?<value>[^)]+)\)\s*",
+        RegexOptions.Compiled);
+    internal static readonly Regex MaximumAnnotationPattern = new(
+        @"^@max\s*\(\s*(?<value>[^)]+)\)\s*",
+        RegexOptions.Compiled);
+    internal static readonly Regex DefaultAnnotationPattern = new(
+        @"^@default\s*\(\s*(?<value>[^)]+)\)\s*",
+        RegexOptions.Compiled);
+    internal static readonly Regex RangeAnnotationPattern = new(
+        @"^@range\s*\(\s*min\s*=\s*(?<min>[^,]+)\s*,\s*max\s*=\s*(?<max>[^)]+)\)\s*",
+        RegexOptions.Compiled);
     internal static readonly Regex WhitespacePattern = new("\\s+", RegexOptions.Compiled);
 }
