@@ -264,7 +264,7 @@ internal sealed class UnionEmitter
         }
 
         var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
-        var fallback = "";
+        string fallback;
         if (defaultBranch is not null)
         {
             fallback = $"HashCode.Combine(Discriminator, {EscapeIdentifier(defaultBranch.Field.Name)})";
