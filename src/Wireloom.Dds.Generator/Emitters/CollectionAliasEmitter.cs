@@ -286,10 +286,10 @@ internal sealed class CollectionAliasEmitter
         var implementationElementType = TypeReference(elementType, implementation);
         var isString = declaration.IsString;
         var isStringSequence = declaration.IsSequence && IsStringType(elementIdlType);
-        var stringSequenceNativeType = isStringSequence && elementIdlType!.StartsWith("wstring", StringComparison.Ordinal)
+        var stringSequenceNativeType = isStringSequence && elementIdlType.StartsWith("wstring", StringComparison.Ordinal)
             ? "NativeWstringSeq"
             : "NativeStringSeq";
-        var stringSequenceBound = isStringSequence ? ParseStringBound(elementIdlType!) : 0;
+        var stringSequenceBound = isStringSequence ? ParseStringBound(elementIdlType) : 0;
         var isAggregate = !declaration.IsCollection && !isString && !IsPrimitive(elementType) && !IsCSharpPrimitive(elementType) && !compilation.IsEnum(elementType, declaration.Namespace);
         var isUnion = !declaration.IsCollection && !isString && compilation.IsUnion(elementType, declaration.Namespace);
         var collectionElementIsAggregate = declaration.IsCollection &&
