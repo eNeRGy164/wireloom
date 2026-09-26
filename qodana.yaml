@@ -1,12 +1,10 @@
+####################################################################################################################
+# WARNING: Do not store sensitive information in this file, as its contents will be included in the Qodana report. #
+####################################################################################################################
+
 version: "1.0"
 linter: qodana-cdnet
-
-dotnet:
-  project: src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
-  configuration: Release
-
-bootstrap: |
-  set -eu
-  curl --fail --silent --show-error --location https://dot.net/v1/dotnet-install.sh --output /tmp/dotnet-install.sh
-  bash /tmp/dotnet-install.sh --jsonfile /data/project/global.json --install-dir /usr/share/dotnet
-  rm -f /tmp/dotnet-install.sh
+profile:
+  name: qodana.recommended
+include:
+  - name: CheckDependencyLicenses
