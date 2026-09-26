@@ -80,15 +80,6 @@ internal sealed class IdlMember(string name, IdlType type, IdlMemberMetadata? me
     public string Name { get; } = name;
     public IdlType Type { get; } = type;
     public IdlMemberMetadata Metadata { get; } = metadata ?? new();
-
-    public IdlMember WithName(string name, bool? isKey = null, int? memberId = null) =>
-        new(
-            name,
-            Type,
-            new IdlMemberMetadata(
-                isKey ?? Metadata.IsKey,
-                Metadata.IsOptional,
-                memberId ?? Metadata.MemberId));
 }
 
 internal sealed class IdlEnumMember(string name, int value, bool hasExplicitValue, bool isDefaultLiteral)
@@ -134,7 +125,7 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? lab
     public string? Label => IsDefault ? null : Labels[0];
 }
 
-internal sealed class IdlUnion(string name, string? @namespace, string discriminatorIdlType, bool discriminatorIsEnum, IReadOnlyList<IdlUnionBranch> branches, IdlExtensibilityKind extensibility, bool isNested)
+internal sealed class IdlUnion(string name, string? @namespace, string discriminatorIdlType, bool discriminatorIsEnum, IReadOnlyList<IdlUnionBranch> branches, IdlExtensibilityKind extensibility)
 {
     public string Name { get; } = name;
     public string? Namespace { get; } = @namespace;
@@ -142,5 +133,4 @@ internal sealed class IdlUnion(string name, string? @namespace, string discrimin
     public bool DiscriminatorIsEnum { get; } = discriminatorIsEnum;
     public IReadOnlyList<IdlUnionBranch> Branches { get; } = branches;
     public IdlExtensibilityKind Extensibility { get; } = extensibility;
-    public bool IsNested { get; } = isNested;
 }

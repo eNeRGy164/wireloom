@@ -55,8 +55,6 @@ internal sealed partial class MemberEmissionPlan
         _ => throw new InvalidOperationException("Expected a scalar native value.")
     };
 
-    public string NativeStorageType => NativeStorageTypeFor(currentNamespace);
-
     public string? BuildInitializeStatement(string? namespaceOverride = null)
     {
         var namespaceName = namespaceOverride ?? currentNamespace;
