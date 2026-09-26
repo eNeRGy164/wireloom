@@ -18,5 +18,13 @@ bin/
 obj/
 *.user
 *.suo
+
+# Visual Studio
+*.vs/
+
+# Stryker
+StrykerOutput/
+
+# project
 package-test-feed/
 coverage/
