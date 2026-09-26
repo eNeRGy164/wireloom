@@ -106,15 +106,6 @@ internal static class EmissionTypeProjector
         return type is AliasEmissionType alias ? UnwrapValueEmissionType(alias.Target) : type;
     }
 
-    private static bool IsStringEmissionType(IdlEmissionField field) =>
-        UnwrapOptionalEmissionType(field.Type) is StringEmissionType;
-
-    private static bool IsSequenceEmissionType(IdlEmissionField field) =>
-        UnwrapOptionalEmissionType(field.Type) is SequenceEmissionType;
-
-    private static bool IsArrayEmissionType(IdlEmissionField field) =>
-        UnwrapOptionalEmissionType(field.Type) is ArrayEmissionType;
-
     internal static bool HasSequenceType(EmissionTypePlan type)
     {
         type = UnwrapOptionalEmissionType(type);
