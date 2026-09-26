@@ -3,7 +3,7 @@ namespace Wireloom;
 using static IdlCompiler;
 
 /// <summary>Emits managed enum, plugin, and type-support documents.</summary>
-internal sealed class EnumEmitter
+internal static class EnumEmitter
 {
     public static void Emit(CompilationState compilation, IdlEnum declaration, string sourceIdlFileName)
     {

@@ -2,7 +2,7 @@ namespace Wireloom;
 
 using static IdlCompiler;
 
-internal sealed class DynamicTypeEmitter
+internal static class DynamicTypeEmitter
 {
     public static void EmitStructPlugin(
         CompilationState compilation,

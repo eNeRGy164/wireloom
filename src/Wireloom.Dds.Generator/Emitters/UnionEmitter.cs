@@ -3,7 +3,7 @@ namespace Wireloom;
 using static EmissionTypeProjector;
 using static IdlCompiler;
 
-internal sealed class UnionEmitter
+internal static class UnionEmitter
 {
     /// <summary>Emits the managed, native, plugin, and type-support documents for an IDL union.</summary>
     public static void Emit(CompilationState compilation, IdlUnion declaration, string sourceIdlFileName)
@@ -344,5 +344,4 @@ internal sealed class UnionEmitter
 
     private static string ManagedDiscriminatorLabel(string label, IdlEmissionUnion declaration) =>
         TypeReference(label, declaration.Namespace);
-
 }

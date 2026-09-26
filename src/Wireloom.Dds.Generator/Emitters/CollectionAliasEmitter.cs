@@ -3,7 +3,7 @@ using static Wireloom.IdlCompiler;
 namespace Wireloom;
 
 /// <summary>Emits collection and value typedef documents.</summary>
-internal sealed class CollectionAliasEmitter
+internal static class CollectionAliasEmitter
 {
     public static void Emit(CompilationState compilation, IdlTypedef declaration, string sourceIdlFileName)
     {
@@ -305,6 +305,7 @@ internal sealed class CollectionAliasEmitter
         }
 
         var writer = CreateSource(implementation, PluginUsings, sourceIdlFileName);
+
         writer.OpenBlock($"internal class {typeName}Plugin : InterpretedTypePlugin<{typeName}, {typeName}Unmanaged>");
         writer.OpenBlock($"internal {typeName}Plugin() : base(\"{runtime}\", isKeyed: false, CreateDynamicType(isPublic: false))");
         writer.CloseBlock();
@@ -353,6 +354,7 @@ internal sealed class CollectionAliasEmitter
         compilation.AddSource(new(CreateHintName(implementation, declaration.Name + "Plugin"), writer.ToString()));
 
         writer = CreateSource(implementation, UnmanagedTypeUsings, sourceIdlFileName);
+
         writer.OpenBlock($"public struct {typeName}Unmanaged : INativeTopicType<{typeName}>");
         string? nativeElementType;
         if (declaration.IsCollection)
@@ -660,17 +662,13 @@ internal sealed class CollectionAliasEmitter
         {
             return $"dtf.GetPrimitiveType<{MapPrimitive(typeName)}>()";
         }
-        else
+
+        if (IsCSharpPrimitive(typeName))
         {
-            if (IsCSharpPrimitive(typeName))
-            {
-                return $"dtf.GetPrimitiveType<{typeName}>()";
-            }
-            else
-            {
-                return $"{TypeReference(EscapeQualifiedIdentifier(ResolveTypeName(typeName, null)), currentNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic)";
-            }
+            return $"dtf.GetPrimitiveType<{typeName}>()";
         }
+
+        return $"{TypeReference(EscapeQualifiedIdentifier(ResolveTypeName(typeName, null)), currentNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic)";
     }
 
     /// <summary>Determines whether a type is already expressed as a C# primitive keyword.</summary>
@@ -690,4 +688,3 @@ internal sealed class CollectionAliasEmitter
             : bound;
     }
 }
-

@@ -2,7 +2,7 @@ namespace Wireloom;
 
 using static IdlCompiler;
 
-internal sealed class UnionTypeSupportEmitter
+internal static class UnionTypeSupportEmitter
 {
     /// <summary>Emits the RTI native representation, plugin, and type support for an IDL union.</summary>
     public static void Emit(CompilationState compilation, IdlEmissionUnion declaration, string sourceIdlFileName, string implementationNamespace)
@@ -268,5 +268,4 @@ internal sealed class UnionTypeSupportEmitter
 
         writer.CloseBlock();
     }
-
 }

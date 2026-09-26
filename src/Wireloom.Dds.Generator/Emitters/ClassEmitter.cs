@@ -4,7 +4,7 @@ using static Wireloom.IdlCompiler;
 namespace Wireloom;
 
 /// <summary>Emits the managed data class and its RTI type-support documents.</summary>
-internal sealed class ClassEmitter
+internal static class ClassEmitter
 {
     public static void Emit(
         CompilationState compilation,
@@ -82,5 +82,4 @@ internal sealed class ClassEmitter
                 isRecursive);
         }
     }
-
 }

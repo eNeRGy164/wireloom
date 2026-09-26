@@ -3,7 +3,7 @@ namespace Wireloom;
 using static IdlCompiler;
 
 /// <summary>Emits the public managed representation of one IDL data type.</summary>
-internal sealed class ManagedDataTypeEmitter
+internal static class ManagedDataTypeEmitter
 {
     public static void Emit(GeneratedSourceWriter writer, string typeName, string? currentNamespace, IReadOnlyList<MemberEmissionPlan> fields, IReadOnlyList<MemberEmissionPlan> inheritedFields, string? baseType)
     {
