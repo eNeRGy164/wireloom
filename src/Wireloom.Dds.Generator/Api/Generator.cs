@@ -52,7 +52,7 @@ public sealed class Generator : IIncrementalGenerator
             var files = compilationAndInputs.Left;
             var compilation = compilationAndInputs.Right;
 
-            if (compilation is CSharpCompilation csharpCompilation && csharpCompilation.LanguageVersion < LanguageVersion.CSharp12)
+            if (compilation is CSharpCompilation { LanguageVersion: < LanguageVersion.CSharp12 } csharpCompilation)
             {
                 production.ReportDiagnostic(Diagnostic.Create(LanguageVersionError, Location.None, csharpCompilation.LanguageVersion));
 

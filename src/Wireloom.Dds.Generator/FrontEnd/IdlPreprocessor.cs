@@ -612,7 +612,7 @@ internal sealed class IdlPreprocessor
 
     private static string TrimOuterParentheses(string text)
     {
-        while (text.Length >= 2 && text[0] == '(' && text[^1] == ')' && IsBalanced(text[1..^1]))
+        while (text is ['(', .., ')'] && IsBalanced(text[1..^1]))
         {
             text = text[1..^1].Trim();
         }

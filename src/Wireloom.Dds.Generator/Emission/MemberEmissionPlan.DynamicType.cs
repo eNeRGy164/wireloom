@@ -26,7 +26,7 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildStringDynamicType() => ValueType switch
     {
-        StringEmissionType stringType when stringType.IsWide => $"dtf.CreateWideString({stringType.Bound})",
+        StringEmissionType { IsWide: true } stringType => $"dtf.CreateWideString({stringType.Bound})",
         StringEmissionType stringType => $"dtf.CreateString({stringType.Bound})",
         _ => throw new InvalidOperationException("Expected a string emission type.")
     };
@@ -34,8 +34,8 @@ internal sealed partial class MemberEmissionPlan
     private string PrimitiveDynamicType() => ValueType switch
     {
         EnumEmissionType => NullableValueType(),
-        PrimitiveEmissionType primitive when primitive.IdlName == "octet" => "Octet",
-        PrimitiveEmissionType primitive when primitive.IdlName == "wchar" => "DynamicTypeFactory.WideCharType",
+        PrimitiveEmissionType { IdlName: "octet" } => "Octet",
+        PrimitiveEmissionType { IdlName: "wchar" } => "DynamicTypeFactory.WideCharType",
         _ => NullableValueType()
     };
 

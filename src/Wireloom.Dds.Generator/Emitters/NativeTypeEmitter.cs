@@ -56,7 +56,7 @@ internal sealed class NativeTypeEmitter
             : [.. requiredFields.Except(preGuardFields)];
         var requiresOptionalOnlyGuard = optionalFields.Length > 0 ||
             baseUnmanagedType is not null ||
-            guardedFields.Any(f => f.IsString || (f.IsAggregate && !f.IsUnion) || f.HasAggregateElement || f.HasSequenceElement || f.IsSequenceArray);
+            guardedFields.Any(f => f is { IsString: true } or { IsAggregate: true, IsUnion: false } or { HasAggregateElement: true } or { HasSequenceElement: true } or { IsSequenceArray: true });
 
         foreach (var field in optionalFields)
         {
