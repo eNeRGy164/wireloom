@@ -89,7 +89,7 @@ internal static class EmissionTypeProjector
         return new ArrayEmissionType(element, array.Dimensions, BuildArrayType(element.CSharpType, array.Dimensions));
     }
 
-    internal static bool IsAggregateEmissionType(EmissionTypePlan type) => type switch
+    private static bool IsAggregateEmissionType(EmissionTypePlan type) => type switch
     {
         StructEmissionType or UnionEmissionType => true,
         AliasEmissionType alias => alias.Target is SequenceEmissionType or ArrayEmissionType || IsAggregateEmissionType(alias.Target),

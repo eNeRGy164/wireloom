@@ -1,5 +1,6 @@
 namespace Wireloom;
 
+using JetBrains.Annotations;
 using static IdlCompiler;
 
 /// <summary>
@@ -18,6 +19,7 @@ internal abstract class EmissionTypePlan(string cSharpType)
     public virtual IReadOnlyList<int> Dimensions => [];
 }
 
+[PublicAPI]
 internal sealed class OptionalEmissionType(EmissionTypePlan target, string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
@@ -31,12 +33,14 @@ internal sealed class OptionalEmissionType(EmissionTypePlan target, string cShar
     public override IReadOnlyList<int> Dimensions => Target.Dimensions;
 }
 
+[PublicAPI]
 internal sealed class PrimitiveEmissionType(string idlName, string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
     public string IdlName { get; } = idlName;
 }
 
+[PublicAPI]
 internal sealed class StringEmissionType(bool isWide, int bound)
     : EmissionTypePlan("string")
 {
@@ -44,6 +48,7 @@ internal sealed class StringEmissionType(bool isWide, int bound)
     public override int? Bound { get; } = bound;
 }
 
+[PublicAPI]
 internal sealed class EnumEmissionType(string qualifiedName, string cSharpType, int defaultValue)
     : EmissionTypePlan(cSharpType)
 {
@@ -52,6 +57,7 @@ internal sealed class EnumEmissionType(string qualifiedName, string cSharpType, 
     public override bool IsEnum => true;
 }
 
+[PublicAPI]
 internal sealed class StructEmissionType(string qualifiedName, string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
@@ -59,6 +65,7 @@ internal sealed class StructEmissionType(string qualifiedName, string cSharpType
     public override bool IsAggregate => true;
 }
 
+[PublicAPI]
 internal sealed class UnionEmissionType(string qualifiedName, string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
@@ -67,6 +74,7 @@ internal sealed class UnionEmissionType(string qualifiedName, string cSharpType)
     public override bool IsUnion => true;
 }
 
+[PublicAPI]
 internal sealed class AliasEmissionType(string qualifiedName, EmissionTypePlan target, string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
@@ -81,6 +89,7 @@ internal sealed class AliasEmissionType(string qualifiedName, EmissionTypePlan t
     public override IReadOnlyList<int> Dimensions => Target.Dimensions;
 }
 
+[PublicAPI]
 internal sealed class SequenceEmissionType(EmissionTypePlan element, int bound, string cSharpType, IReadOnlyList<int>? dimensions = null)
     : EmissionTypePlan(cSharpType)
 {
@@ -89,6 +98,7 @@ internal sealed class SequenceEmissionType(EmissionTypePlan element, int bound, 
     public override IReadOnlyList<int> Dimensions { get; } = dimensions ?? [];
 }
 
+[PublicAPI]
 internal sealed class ArrayEmissionType(EmissionTypePlan element, IReadOnlyList<int> dimensions, string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
@@ -100,6 +110,7 @@ internal sealed class ArrayEmissionType(EmissionTypePlan element, IReadOnlyList<
 /// Target-specific field projection used only by source emitters. Its type
 /// shape is explicit; the forwarding properties are formatting conveniences.
 /// </summary>
+[PublicAPI]
 internal sealed class IdlEmissionField(string name, EmissionTypePlan type, bool isKey, int? memberId, bool isOptional)
 {
     public string Name { get; } = name;
@@ -117,6 +128,7 @@ internal sealed class IdlEmissionField(string name, EmissionTypePlan type, bool 
 }
 
 /// <summary>Resolved branch decisions shared by all union emitters.</summary>
+[PublicAPI]
 internal sealed class UnionBranchEmissionPlan(IdlEmissionField field, MemberEmissionPlan plan, IReadOnlyList<string> labels, IReadOnlyList<int> labelValues, bool isDefault)
 {
     public IdlEmissionField Field { get; } = field;
@@ -127,6 +139,7 @@ internal sealed class UnionBranchEmissionPlan(IdlEmissionField field, MemberEmis
     public string? Label => IsDefault ? null : Labels[0];
 }
 
+[PublicAPI]
 internal sealed class IdlEmissionUnion(string name, string? @namespace, string discriminatorIdlType, string discriminatorCSharpType, bool discriminatorIsEnum, IReadOnlyList<UnionBranchEmissionPlan> branches, IdlExtensibilityKind extensibility)
 {
     public string Name { get; } = name;

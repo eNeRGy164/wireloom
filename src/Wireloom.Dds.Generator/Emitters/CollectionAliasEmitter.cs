@@ -10,7 +10,7 @@ internal sealed class CollectionAliasEmitter
         EmitTypedefDocuments(compilation, declaration, sourceIdlFileName);
     }
 
-    internal static void EmitTypedefDocuments(CompilationState compilation, IdlTypedef declaration, string sourceIdlFileName)
+    private static void EmitTypedefDocuments(CompilationState compilation, IdlTypedef declaration, string sourceIdlFileName)
     {
         var typeName = EscapeIdentifier(declaration.Name);
         string? element;

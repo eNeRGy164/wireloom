@@ -1,5 +1,6 @@
 namespace Wireloom;
 
+using JetBrains.Annotations;
 using static EmissionTypeProjector;
 using static IdlCompiler;
 
@@ -37,6 +38,7 @@ internal enum NativeDestroyKind
 /// operations on demand, so names, namespaces, keysOnly, and recursive type
 /// support are not frozen into reusable source fragments.
 /// </summary>
+[PublicAPI]
 internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string? currentNamespace)
 {
     private readonly FieldEmissionShape shape = GetShape(field.Type);
@@ -65,13 +67,29 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public bool IsUnion => Type.IsUnion;
     public bool HasAggregateElement => ElementType?.IsAggregate == true;
     public bool HasSequenceElement => IsArray && ElementType is not null && HasSequenceType(ElementType);
-    public string? BoundSummary => Bound is not int bound
-        ? null
-        : IsString
-            ? $"Its maximum length is <c>{bound}</c>."
-            : HasSequenceType(Type)
-                ? $"Its maximum number of elements is <c>{bound}</c>."
-                : $"Its DDS bound is <c>{bound}</c>.";
+    public string? BoundSummary
+    {
+        get
+        {
+            if (Bound is not int bound)
+            {
+                return null;
+            }
+
+            if (IsString)
+            {
+                return $"Its maximum length is <c>{bound}</c>.";
+            }
+
+            if (HasSequenceType(Type))
+            {
+                return $"Its maximum number of elements is <c>{bound}</c>.";
+            }
+
+            return $"Its DDS bound is <c>{bound}</c>.";
+        }
+    }
+
     public ManagedInitializationKind ManagedInitialization => shape switch
     {
         _ when IsOptional && (IsSequence || IsArray) => ManagedInitializationKind.None,
@@ -81,16 +99,33 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         _ => ManagedInitializationKind.None
     };
 
-    public NativeDestroyKind DestroyKind =>
-        IsAggregate && !IsSequence && !IsArray
-            ? NativeDestroyKind.Nested
-            : IsSequence || IsArray
-                ? NativeDestroyKind.Collection
-                : IsString
-                    ? NativeDestroyKind.String
-                    : IsOptionalScalar
-                        ? NativeDestroyKind.OptionalPrimitive
-                        : NativeDestroyKind.None;
+    public NativeDestroyKind DestroyKind
+    {
+        get
+        {
+            if (IsAggregate && !IsSequence && !IsArray)
+            {
+                return NativeDestroyKind.Nested;
+            }
+
+            if (IsSequence || IsArray)
+            {
+                return NativeDestroyKind.Collection;
+            }
+
+            if (IsString)
+            {
+                return NativeDestroyKind.String;
+            }
+
+            if (IsOptionalScalar)
+            {
+                return NativeDestroyKind.OptionalPrimitive;
+            }
+
+            return NativeDestroyKind.None;
+        }
+    }
 
     public bool HasTypeSupport => Bound is null || HasSequenceType(Type) || IsString;
 
