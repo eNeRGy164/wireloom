@@ -16,13 +16,15 @@ internal sealed class IdlDeclarationParser
     private readonly List<IdlDeclaration> declarationQueue = [];
     private readonly Dictionary<string, IdlClassDeclaration> classes = new(StringComparer.Ordinal);
     private readonly CancellationToken cancellationToken;
+    private readonly ICollection<IdlDiagnostic>? diagnostics;
 
-    internal IdlDeclarationParser(IdlSymbolTable symbols, CancellationToken cancellationToken)
+    internal IdlDeclarationParser(IdlSymbolTable symbols, CancellationToken cancellationToken, ICollection<IdlDiagnostic>? diagnostics = null)
     {
         this.symbols = symbols;
         typeResolver = new IdlTypeResolver(symbols);
         validator = new IdlSemanticValidator(symbols);
         this.cancellationToken = cancellationToken;
+        this.diagnostics = diagnostics;
     }
 
     internal IReadOnlyList<IdlDeclaration> Declarations => declarationQueue;
@@ -83,6 +85,26 @@ internal sealed class IdlDeclarationParser
                 continue;
             }
 
+            var unknownAnnotation = UnknownAnnotationPattern.Match(declarations[position..]);
+            if (unknownAnnotation.Success && !KnownDeclarationAnnotationNames.Contains(unknownAnnotation.Groups["name"].Value))
+            {
+                var name = unknownAnnotation.Groups["name"].Value;
+                if (UnsupportedAnnotationNames.Contains(name))
+                {
+                    throw new IdlException(
+                        input,
+                        baseOffset + position,
+                        $"Annotation '@{name}' is not supported in this context.");
+                }
+
+                diagnostics?.Add(new IdlDiagnostic(
+                    input,
+                    baseOffset + position,
+                    $"Annotation '@{name}' is not recognized and will be ignored."));
+                position += unknownAnnotation.Length;
+                continue;
+            }
+
             if (TryParseModule(declarations, input, baseOffset, currentNamespace, ref position) ||
                 TryParseConstant(declarations, input, baseOffset, currentNamespace, ref position) ||
                 TryParseEnum(declarations, input, baseOffset, currentNamespace, ref position) ||
@@ -104,6 +126,16 @@ internal sealed class IdlDeclarationParser
             ValidateTypedef(input, baseOffset, typedefName);
         }
     }
+
+    private static readonly HashSet<string> UnsupportedAnnotationNames =
+        ["position", "bit_bound", "service"];
+
+    private static readonly HashSet<string> KnownDeclarationAnnotationNames =
+    [
+        "topic", "autoid", "nested", "final", "appendable", "mutable",
+        "language_binding", "transfer_mode", "data_representation",
+        "allowed_data_representation", "default_nested"
+    ];
 
     private int ParseStruct(string declarations, IdlInput input, int baseOffset, string? currentNamespace, int position)
     {

@@ -71,6 +71,7 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "13-integration",
         "13-modules",
         "13-alias-inheritance",
+        "12-unknown-annotation",
         "13-compositions"
     ];
 

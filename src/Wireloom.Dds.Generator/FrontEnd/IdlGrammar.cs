@@ -26,6 +26,9 @@ internal static class IdlGrammar
     internal static readonly Regex AutoIdAnnotationPattern = new(
         @"^@autoid(?:\s*\(\s*(?<value>HASH|SEQUENTIAL)\s*\))?\s*",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    internal static readonly Regex UnknownAnnotationPattern = new(
+        @"^@(?<name>[A-Za-z_]\w*)\b(?:\s*\([^()]*\))?\s*",
+        RegexOptions.Compiled);
     internal static readonly Regex TopicAnnotationPattern = new(
         @"^@topic\b\s*",
         RegexOptions.Compiled);

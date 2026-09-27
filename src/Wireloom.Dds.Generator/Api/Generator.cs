@@ -37,6 +37,14 @@ public sealed class Generator : IIncrementalGenerator
         DiagnosticSeverity.Error,
         true);
 
+    private static readonly DiagnosticDescriptor UnknownAnnotationWarning = new(
+        "DDSG0101",
+        "Unknown IDL annotation",
+        "{0}",
+        "DDS Source Generator",
+        DiagnosticSeverity.Warning,
+        true);
+
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -67,7 +75,19 @@ public sealed class Generator : IIncrementalGenerator
 
             try
             {
-                var outputs = IdlCompiler.CompileSources([.. files], production.CancellationToken);
+                var diagnostics = new List<IdlDiagnostic>();
+                var outputs = IdlCompiler.CompileSourcesWithDiagnostics([.. files], diagnostics, production.CancellationToken);
+                foreach (var diagnostic in diagnostics)
+                {
+                    var text = SourceText.From(diagnostic.Input.Text);
+                    var span = new TextSpan(Math.Min(diagnostic.Offset, text.Length), 0);
+
+                    production.ReportDiagnostic(Diagnostic.Create(
+                        UnknownAnnotationWarning,
+                        Location.Create(diagnostic.Input.Path, span, text.Lines.GetLinePositionSpan(span)),
+                        diagnostic.Message));
+                }
+
                 foreach (var output in outputs.Values)
                 {
                     production.AddSource(output.HintName, SourceText.From(output.Source, Encoding.UTF8));

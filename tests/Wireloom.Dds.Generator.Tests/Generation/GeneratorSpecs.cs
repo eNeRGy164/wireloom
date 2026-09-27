@@ -78,6 +78,24 @@ public sealed class GeneratorSpecs
     }
 
     [Fact]
+    public void ReportsUnknownAnnotationWarningAndContinuesGeneration()
+    {
+        // Arrange
+        var idl = "module Sample { @custom_unknown struct Value { long value; }; };";
+        var metadata = new Dictionary<string, string>();
+
+        // Act
+        var result = Run(idl, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        var diagnostic = result.Diagnostics.Single(diagnostic => diagnostic.Id == "DDSG0101");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
+        diagnostic.GetMessage().ShouldBe("Annotation '@custom_unknown' is not recognized and will be ignored.");
+        diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
+        result.Output.SyntaxTrees.Any(tree => tree.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeTrue();
+    }
+
+    [Fact]
     public void HonorsGenerateFalseAdditionalFileMetadata()
     {
         // Arrange

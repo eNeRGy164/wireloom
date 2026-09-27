@@ -3,7 +3,7 @@ namespace Wireloom;
 /// <summary>Coordinates input traversal, declaration parsing, and emission.</summary>
 internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, CancellationToken cancellationToken)
 {
-    public IReadOnlyList<GeneratedIdlSource> Run()
+    public IReadOnlyList<GeneratedIdlSource> Run(ICollection<IdlDiagnostic>? diagnostics = null)
     {
         var comparer = Path.DirectorySeparatorChar == '\\'
             ? StringComparer.OrdinalIgnoreCase
@@ -18,7 +18,7 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, Cancellatio
         var symbols = new IdlSymbolTable();
         var roots = inputs.Where(input => input.Generate).ToArray();
         var graph = new IdlInputGraph(files, roots.SelectMany(input => input.Defines), roots.SelectMany(input => input.Undefines), roots.SelectMany(input => input.IncludeDirectories), cancellationToken);
-        var parser = new IdlDeclarationParser(symbols, cancellationToken);
+        var parser = new IdlDeclarationParser(symbols, cancellationToken, diagnostics);
         var compilation = new CompilationState(parser, symbols, inputs.Any(input => input.Generate && input.Strict));
 
         // Roots are sorted by path so generation is stable even when the build
