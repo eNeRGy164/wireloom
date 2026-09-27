@@ -190,6 +190,25 @@ public sealed class GeneratedIdlEmissionSpecs
     }
 
     [Fact]
+    public void EmitsRecursiveTypeSupportAccessorForSelfReferencingCollections()
+    {
+        // Arrange
+        var input = Input("recursive-support.idl",
+            "module RecursiveSupport { struct Node { sequence<Node> children; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var support = documents["RecursiveSupport.NodeSupport.g.cs"].Source;
+        support.ShouldContain("public static NodeSupport Instance { get; private set; } =");
+        support.ShouldContain("internal static NodeSupport GetOrCreateInstanceImpl()");
+        support.ShouldContain("if (Instance is null)");
+        support.ShouldContain("Instance = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<NodeSupport, Node>();");
+        support.ShouldContain("return Instance;");
+    }
+
+    [Fact]
     [Trait("Corpus", "C044")]
     public void AcceptsTopicAnnotationsAndPreservesTheirMeaningInTheGeneratedDocumentation()
     {

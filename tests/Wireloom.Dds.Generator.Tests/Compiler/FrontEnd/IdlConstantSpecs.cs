@@ -89,4 +89,76 @@ public sealed class IdlConstantSpecs
         // Assert
         exception.Message.ShouldContain("outside its representable range");
     }
+
+    [Fact]
+    public void EvaluatesBitwiseUnaryArithmeticAndQualifiedExpressions()
+    {
+        // Arrange
+        var input = Input("constant-operators.idl",
+            """
+            module Constants {
+                const long long Base = 7;
+                const long long Arithmetic = (Base * 3 / 2) % 5;
+                const long long Bits = 1 | 2 ^ 3 & 1;
+                const long long Shift = 8 >> 2;
+                const long long Complement = ~1;
+                const long long Hex = 0x10;
+                const long long Qualified = ::Constants::Base;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var arithmetic = documents["Constants.Arithmetic.g.cs"].Source;
+        arithmetic.ShouldContain("public const long Value = 0L;");
+
+        var bits = documents["Constants.Bits.g.cs"].Source;
+        bits.ShouldContain("public const long Value = 3L;");
+
+        var shift = documents["Constants.Shift.g.cs"].Source;
+        shift.ShouldContain("public const long Value = 2L;");
+
+        var complement = documents["Constants.Complement.g.cs"].Source;
+        complement.ShouldContain("public const long Value = -2L;");
+
+        var hex = documents["Constants.Hex.g.cs"].Source;
+        hex.ShouldContain("public const long Value = 16L;");
+
+        var qualified = documents["Constants.Qualified.g.cs"].Source;
+        qualified.ShouldContain("public const long Value = 7L;");
+    }
+
+    [Fact]
+    public void RejectsDivisionByZeroInConstantExpressions()
+    {
+        var exception = Should.Throw<IdlException>(() => Compile(Input("constant-division.idl", "const long Value = 1 / 0;")));
+
+        exception.Message.ShouldContain("Division by zero");
+    }
+
+    [Fact]
+    public void RejectsNegativeConstantExpressionShiftCounts()
+    {
+        var exception = Should.Throw<IdlException>(() => Compile(Input("constant-shift.idl", "const long Value = 1 << -1;")));
+
+        exception.Message.ShouldContain("Shift count is outside");
+    }
+
+    [Fact]
+    public void RejectsUnknownIntegralConstants()
+    {
+        var exception = Should.Throw<IdlException>(() => Compile(Input("constant-name.idl", "const long Value = Missing;")));
+
+        exception.Message.ShouldContain("Unknown integral constant");
+    }
+
+    [Fact]
+    public void RejectsMalformedConstantExpressions()
+    {
+        var exception = Should.Throw<IdlException>(() => Compile(Input("constant-token.idl", "const long Value = 1 + );")));
+
+        exception.Message.ShouldContain("Expected an integer literal");
+    }
 }

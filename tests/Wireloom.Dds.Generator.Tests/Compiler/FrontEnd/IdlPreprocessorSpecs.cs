@@ -145,4 +145,212 @@ public sealed class IdlPreprocessorSpecs
         source.ShouldContain("const string Name = \"sample\";");
         source.ShouldContain("struct Sample { long field; };");
     }
+
+    [Fact]
+    public void SelectsTheFirstActiveElifBranchAndPreservesInactiveLines()
+    {
+        // Arrange
+        var preprocessor = new IdlPreprocessor(["SECOND"], []);
+        var input = Input("elif.idl",
+            """
+            #if defined(FIRST)
+            first
+            #elif defined(SECOND)
+            selected
+            #elif THIRD
+            third
+            #else
+            fallback
+            #endif
+            """);
+
+        // Act
+        var source = preprocessor.Process(input, (_, _, _) => { });
+
+        // Assert
+        source.ShouldContain("selected");
+        source.ShouldNotContain("first");
+        source.ShouldNotContain("third");
+        source.ShouldNotContain("fallback");
+    }
+
+    [Fact]
+    public void ExpandsVariadicMacrosAndReportsWrongArgumentCounts()
+    {
+        // Arrange
+        var diagnostics = new List<IdlDiagnostic>();
+        var preprocessor = new IdlPreprocessor([], []);
+        var input = Input("variadic.idl",
+            """
+            #define FIRST(value, ...) value
+            #define ADD(left, right) left + right
+            const long Selected = FIRST(7, 8, 9);
+            const long Invalid = ADD(1);
+            """);
+
+        // Act
+        var source = preprocessor.Process(input, (_, _, _) => { }, diagnostics);
+
+        // Assert
+        source.ShouldContain("const long Selected = 7;");
+        diagnostics.ShouldContain(d => d.Message.Contains("wrong number of arguments", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RejectsRecursiveMacroExpansion()
+    {
+        // Arrange
+        var preprocessor = new IdlPreprocessor([], []);
+        var input = Input("recursive-macro.idl", "#define LOOP LOOP\nLOOP");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => preprocessor.Process(input, (_, _, _) => { }));
+
+        // Assert
+        exception.Message.ShouldContain("Recursive macro expansion");
+    }
+
+    [Fact]
+    public void RejectsUnsupportedActivePreprocessorDirectives()
+    {
+        // Arrange
+        var preprocessor = new IdlPreprocessor([], []);
+        var input = Input("unsupported-directive.idl", "#pragma once");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => preprocessor.Process(input, (_, _, _) => { }));
+
+        // Assert
+        exception.Message.ShouldContain("Unsupported preprocessor directive");
+    }
+
+    [Fact]
+    public void ReportsAngleBracketIncludeFilenames()
+    {
+        // Arrange
+        var includeName = string.Empty;
+        var includeIsAngle = false;
+        var includeOffset = -1;
+        var includePreprocessor = new IdlPreprocessor([], []);
+        var includeInput = Input("include.idl", "#include <Common.idl>");
+
+        // Act
+        includePreprocessor.Process(includeInput, (name, isAngle, offset) =>
+        {
+            includeName = name;
+            includeIsAngle = isAngle;
+            includeOffset = offset;
+        });
+
+        // Assert
+        includeName.ShouldBe("Common.idl");
+        includeIsAngle.ShouldBeTrue();
+        includeOffset.ShouldBe(0);
+    }
+
+    [Fact]
+    public void IgnoresUnsupportedDirectivesInInactiveBranches()
+    {
+        // Arrange
+        var preprocessor = new IdlPreprocessor([], []);
+        var input = Input("inactive.idl", "#if 0\n#pragma ignored\n#endif");
+
+        // Act
+        var source = preprocessor.Process(input, (_, _, _) => { });
+
+        // Assert
+        source.ShouldNotContain("#pragma ignored");
+    }
+
+    [Fact]
+    public void RejectsMalformedDefineDirectives()
+    {
+        // Arrange
+        var input = Input("bad-define.idl", "#define 1");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => new IdlPreprocessor([], []).Process(
+            input, (_, _, _) => { }));
+
+        // Assert
+        exception.Message.ShouldContain("Malformed #define");
+    }
+
+    [Fact]
+    public void RejectsMalformedUndefDirectives()
+    {
+        // Arrange
+        var input = Input("bad-undef.idl", "#undef 1");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => new IdlPreprocessor([], []).Process(input, (_, _, _) => { }));
+
+        // Assert
+        exception.Message.ShouldContain("Malformed #undef");
+    }
+
+    [Fact]
+    public void RejectsUnexpectedElseDirectives()
+    {
+        // Arrange
+        var input = Input("bad-else.idl", "#else");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => new IdlPreprocessor([], []).Process(input, (_, _, _) => { }));
+
+        // Assert
+        exception.Message.ShouldContain("Unexpected #else");
+    }
+
+    [Fact]
+    public void RejectsUnexpectedEndifDirectives()
+    {
+        // Arrange
+        var input = Input("bad-endif.idl", "#endif");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => new IdlPreprocessor([], []).Process(input, (_, _, _) => { }));
+
+        // Assert
+        exception.Message.ShouldContain("Unexpected #endif");
+    }
+
+    [Fact]
+    public void RejectsErrorDirectives()
+    {
+        // Arrange
+        var input = Input("bad-error.idl", "#error stop");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => new IdlPreprocessor([], []).Process(input, (_, _, _) => { }));
+
+        // Assert
+        exception.Message.ShouldContain("Preprocessor error");
+    }
+
+    [Fact]
+    public void RejectsUnterminatedPreprocessorConditionals()
+    {
+        // Arrange
+        var input = Input("unterminated.idl", "#if 1\nvalue");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => new IdlPreprocessor([], []).Process(input, (_, _, _) => { }));
+
+        // Assert
+        exception.Message.ShouldContain("Unterminated preprocessor conditional");
+    }
+
+    [Fact]
+    public void RejectsUnterminatedStringLiterals()
+    {
+        // Arrange
+        var input = Input("unterminated-string.idl", "const string Value = \"value;");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => new IdlPreprocessor([], []).Process(input, (_, _, _) => { }));
+
+        // Assert
+        exception.Message.ShouldContain("Unterminated string literal");
+    }
 }
