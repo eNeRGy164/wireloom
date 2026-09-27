@@ -34,7 +34,7 @@ internal sealed class IdlInputGraph
         active = new HashSet<string>(comparer);
     }
 
-    public void Visit(IdlInput input, Action<string, IdlInput, int, string?> parse)
+    public void Visit(IdlInput input, Action<string, IdlInput, int, string?> parse, ICollection<IdlDiagnostic>? diagnostics = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -73,8 +73,8 @@ internal sealed class IdlInputGraph
                     throw new IdlException(input, offset, $"Could not resolve included IDL: {includeName}");
                 }
 
-                Visit(child, parse);
-            });
+                Visit(child, parse, diagnostics);
+            }, diagnostics);
 
             parse(declarations, input, 0, null);
         }

@@ -137,6 +137,25 @@ public sealed class GeneratorSpecs
     }
 
     [Fact]
+    public void ReportsMacroArityWarningAndContinuesExpansion()
+    {
+        // Arrange
+        var idl = "#define CORPUS_PAIR(a, b) a\nconst long Value = CORPUS_PAIR(1);";
+        var metadata = new Dictionary<string, string>();
+
+        // Act
+        var result = Run(idl, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0104");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
+        diagnostic.GetMessage().ShouldBe("Function-like macro 'CORPUS_PAIR' was invoked with the wrong number of arguments; expansion will continue.");
+        diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
+
+        result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("public const int Value = 1;", StringComparison.Ordinal)).ShouldBeTrue();
+    }
+
+    [Fact]
     public void HonorsGenerateFalseAdditionalFileMetadata()
     {
         // Arrange

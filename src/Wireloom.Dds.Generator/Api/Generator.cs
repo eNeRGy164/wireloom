@@ -61,6 +61,14 @@ public sealed class Generator : IIncrementalGenerator
         DiagnosticSeverity.Warning,
         true);
 
+    private static readonly DiagnosticDescriptor MacroArityWarning = new(
+        "DDSG0104",
+        "Macro argument count mismatch",
+        "{0}",
+        "DDS Source Generator",
+        DiagnosticSeverity.Warning,
+        true);
+
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -122,6 +130,7 @@ public sealed class Generator : IIncrementalGenerator
             {
                 "DDSG0102" => UnsupportedAnnotationWarning,
                 "DDSG0103" => IgnoredInterfaceWarning,
+                "DDSG0104" => MacroArityWarning,
                 _ => UnknownAnnotationWarning
             };
 

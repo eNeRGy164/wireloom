@@ -39,6 +39,7 @@ internal sealed class IdlPreprocessor
 
     private readonly Dictionary<string, Macro> macros = new(StringComparer.Ordinal);
     private IdlInput? currentInput;
+    private ICollection<IdlDiagnostic>? diagnostics;
 
     public IdlPreprocessor(IEnumerable<string> defines, IEnumerable<string> undefines)
     {
@@ -64,9 +65,10 @@ internal sealed class IdlPreprocessor
         }
     }
 
-    public string Process(IdlInput input, Action<string, bool, int> include)
+    public string Process(IdlInput input, Action<string, bool, int> include, ICollection<IdlDiagnostic>? diagnosticSink = null)
     {
         currentInput = input;
+        diagnostics = diagnosticSink;
 
         var source = CommentPattern.Replace(input.Text, match => new string(' ', match.Length));
         source = JoinContinuations(source);
@@ -403,12 +405,20 @@ internal sealed class IdlPreprocessor
 
                 if (open >= text.Length
                     || text[open] != '('
-                    || !TryReadArguments(text, open, out var arguments, out var end)
-                    || (!macro.Variadic && arguments.Count != macro.Parameters.Count)
-                    || (macro.Variadic && arguments.Count < macro.Parameters.Count - 1))
+                    || !TryReadArguments(text, open, out var arguments, out var end))
                 {
                     output.Append(name);
                     continue;
+                }
+
+                if ((!macro.Variadic && arguments.Count != macro.Parameters.Count)
+                    || (macro.Variadic && arguments.Count < macro.Parameters.Count - 1))
+                {
+                    diagnostics?.Add(new IdlDiagnostic(
+                        "DDSG0104",
+                        currentInput!,
+                        0,
+                        $"Function-like macro '{name}' was invoked with the wrong number of arguments; expansion will continue."));
                 }
 
                 expanding.Add(name);
@@ -447,7 +457,7 @@ internal sealed class IdlPreprocessor
 
         for (var index = 0; index < fixedCount; index++)
         {
-            var raw = arguments[index].Trim();
+            var raw = index < arguments.Count ? arguments[index].Trim() : string.Empty;
             substitutions[macro.Parameters[index]] = (raw, Expand(raw, expanding, depth + 1));
         }
 

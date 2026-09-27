@@ -126,14 +126,15 @@ pre-generation step.
 
 ## Diagnostics
 
-| ID         | Meaning                                                 | Typical action                                                                                   |
-| :--------- | :------------------------------------------------------ | :----------------------------------------------------------------------------------------------- |
-| `DDSG0001` | IDL generation failed                                   | Fix the source-located parse, include, semantic, or unsupported-feature error                    |
-| `DDSG0002` | C# 12 or later is required                              | Set the consumer's language version to C# 12 or later                                            |
-| `DDSG0003` | A compatible RTI runtime was not found                  | Add an explicit `Rti.ConnextDds` reference at the tested compatible version                      |
-| `DDSG0101` | An unknown IDL annotation was ignored                   | Verify the annotation is supported by the managed generator if it affects the generated contract |
-| `DDSG0102` | A recognized but unsupported IDL annotation was ignored | Remove the annotation or use a supported declaration context                                     |
-| `DDSG0103` | A non-DDS IDL interface was ignored                     | Use a DDS service interface when interface generation is required                                |
+| ID         | Meaning                                                              | Typical action                                                                                   |
+| :--------- | :------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
+| `DDSG0001` | IDL generation failed                                                | Fix the source-located parse, include, semantic, or unsupported-feature error                    |
+| `DDSG0002` | C# 12 or later is required                                           | Set the consumer's language version to C# 12 or later                                            |
+| `DDSG0003` | A compatible RTI runtime was not found                               | Add an explicit `Rti.ConnextDds` reference at the tested compatible version                      |
+| `DDSG0101` | An unknown IDL annotation was ignored                                | Verify the annotation is supported by the managed generator if it affects the generated contract |
+| `DDSG0102` | A recognized but unsupported IDL annotation was ignored              | Remove the annotation or use a supported declaration context                                     |
+| `DDSG0103` | A non-DDS IDL interface was ignored                                  | Use a DDS service interface when interface generation is required                                |
+| `DDSG0104` | A function-like macro was invoked with the wrong number of arguments | Correct the macro invocation; RTI-compatible expansion continues after the warning               |
 
 Diagnostics are owned by the generator and use the original IDL/include
 location where one is available. Configure severity through standard
