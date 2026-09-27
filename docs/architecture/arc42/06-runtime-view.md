@@ -26,5 +26,5 @@ RTI runtime.
 - Unsupported syntax is rejected rather than silently dropped.
 - An older language version produces `DDSG0002`.
 - A missing compatible RTI runtime reference produces `DDSG0003`.
-- The known cyclic-alias corpus probe is currently isolated because the resolver
-  overflows in-process instead of returning a normal `IdlException`.
+- Cyclic typedef aliases are rejected during semantic resolution with a source-
+  located IDL diagnostic; they do not produce generated output.

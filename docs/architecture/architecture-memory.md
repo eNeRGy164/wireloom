@@ -21,9 +21,10 @@ or ADRs first, then refresh this file and
 - **Strategy:** Use an in-process Roslyn generator with a managed compiler
   pipeline, explicit `DdsIdl` roots, project-wide batch configuration,
   source-located diagnostics, and feature-level evidence. See [chapter 4](arc42/04-solution-strategy.md).
-- **Building blocks:** The pipeline separates input graph/preprocessing,
-  parsing, semantic resolution, emission planning, and managed/native/support
-  emitters. See [chapter 5](arc42/05-building-block-view.md).
+- **Building blocks:** The pipeline separates Roslyn hosting, input graph and
+  preprocessing, front-end parsing and semantics, compilation orchestration and
+  resolution, emission models and plans, and managed/native/support emitters.
+  See [chapter 5](arc42/05-building-block-view.md).
 - **Runtime and deployment:** The meaningful runtime scenario is the consumer
   build; the output is packaged into the application, which uses its selected
   RTI runtime. See [chapters 6](arc42/06-runtime-view.md) and
@@ -32,11 +33,12 @@ or ADRs first, then refresh this file and
   identity, diagnostics, test separation, and supply-chain controls apply
   across the system. See [chapter 8](arc42/08-crosscutting-concepts.md).
 - **Decisions:** Roslyn hosting, explicit roots, independent semantic models,
-  project-wide root metadata, explicit runtime ownership, and case-level
-  compatibility evidence are current decisions. See [chapter 9](arc42/09-architectural-decisions.md).
+  project-wide root metadata, explicit runtime ownership, case-level
+  compatibility evidence, and separated compiler orchestration/resolution/
+  emission are current decisions. See [chapter 9](arc42/09-architectural-decisions.md).
 - **Quality and risk:** Corpus shape checks are stronger than the current
-  runtime/interoperability evidence; cyclic aliases and incomplete feature
-  coverage remain visible risks. See [chapters 10](arc42/10-quality-requirements.md)
+  runtime/interoperability evidence; coverage outside the retained corpus
+  remains a visible risk. See [chapters 10](arc42/10-quality-requirements.md)
   and [11](arc42/11-risks-and-technical-debt.md).
 
 ## Repository defaults and decisions
@@ -65,7 +67,6 @@ does not use them.
   claims are made.
 - The retained oracle capture remains marked pending review in the corpus
   manifest; source-shape evidence must not be treated as runtime or wire proof.
-- A compiler-process harness is needed for the cyclic-alias negative case.
 
 ## Source map
 

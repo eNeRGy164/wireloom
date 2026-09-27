@@ -43,7 +43,7 @@ root explicitly:
   <ItemGroup>
     <PackageReference Include="Rti.ConnextDds" Version="7.3.1" />
     <PackageReference Include="Wireloom.Dds.Generator"
-                      Version="0.1.0"
+                      Version="0.2.0"
                       PrivateAssets="all" />
 
     <DdsIdl Include="Contracts\Telemetry.idl" />
