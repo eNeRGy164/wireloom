@@ -1,9 +1,10 @@
+using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Semantics;
 
-using static Wireloom.EmissionTypeProjector;
+using static Wireloom.Compiler.Emission.Planning.EmissionTypeProjector;
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Emitters;
 
 /// <summary>Emits the managed data class and its RTI type-support documents.</summary>
 internal static class ClassEmitter

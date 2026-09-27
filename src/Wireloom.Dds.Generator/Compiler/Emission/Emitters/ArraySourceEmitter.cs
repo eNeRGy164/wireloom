@@ -1,4 +1,6 @@
-namespace Wireloom;
+using Wireloom.Compiler.Emission.Writers;
+
+namespace Wireloom.Compiler.Emission.Emitters;
 
 /// <summary>Writes the repeated loop shapes used by generated fixed arrays.</summary>
 internal static class ArraySourceEmitter
@@ -6,23 +8,14 @@ internal static class ArraySourceEmitter
     public static string ElementCount(IReadOnlyList<int> dimensions) =>
         string.Join(" * ", dimensions);
 
-    public static void EmitAggregateInitialization(
-        GeneratedSourceWriter writer,
-        string target,
-        string elementType,
-        IReadOnlyList<int> dimensions)
+    public static void EmitAggregateInitialization(GeneratedSourceWriter writer, string target, string elementType, IReadOnlyList<int> dimensions)
     {
         var indices = OpenLoops(writer, dimensions);
         writer.WriteLine($"{target}{IndexExpression(indices)} = new {elementType}();");
         CloseLoops(writer, indices.Count);
     }
 
-    public static void EmitAggregateCopy(
-        GeneratedSourceWriter writer,
-        string target,
-        string source,
-        string elementType,
-        IReadOnlyList<int> dimensions)
+    public static void EmitAggregateCopy(GeneratedSourceWriter writer, string target, string source, string elementType, IReadOnlyList<int> dimensions)
     {
         var indices = OpenLoops(writer, dimensions);
         writer.WriteLine($"{target}{IndexExpression(indices)} = new {elementType}({source}{IndexExpression(indices)});");

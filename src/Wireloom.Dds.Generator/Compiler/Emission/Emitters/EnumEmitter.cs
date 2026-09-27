@@ -2,7 +2,7 @@ using Wireloom.Compiler.Semantics;
 
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Emitters;
 
 /// <summary>Emits managed enum, plugin, and type-support documents.</summary>
 internal static class EnumEmitter

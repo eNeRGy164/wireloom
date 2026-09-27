@@ -1,8 +1,9 @@
+using Wireloom.Compiler.Emission.Writers;
 using Wireloom.Compiler.Semantics;
 
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Emitters;
 
 /// <summary>Emits collection and value typedef documents.</summary>
 internal static class CollectionAliasEmitter

@@ -1,7 +1,7 @@
 using System.Text;
 using JetBrains.Annotations;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Writers;
 
 /// <summary>
 /// Writes deterministic generated C# source while owning its layout.

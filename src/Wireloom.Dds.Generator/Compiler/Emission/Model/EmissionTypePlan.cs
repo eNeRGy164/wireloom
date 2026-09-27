@@ -1,14 +1,8 @@
-using Wireloom.Compiler.Semantics;
-using JetBrains.Annotations;
-
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Model;
 
-/// <summary>
-/// Target-specific type projection used by source emitters after semantic
-/// resolution has completed.
-/// </summary>
+/// <summary>Target-specific type projection used by source emitters after semantic resolution.</summary>
 internal abstract class EmissionTypePlan(string cSharpType)
 {
     public string CSharpType { get; } = cSharpType;
@@ -21,7 +15,7 @@ internal abstract class EmissionTypePlan(string cSharpType)
     public virtual IReadOnlyList<int> Dimensions => [];
 }
 
-[PublicAPI]
+/// <summary>Preserves the target-independent type wrapped by an optional field.</summary>
 internal sealed class OptionalEmissionType(EmissionTypePlan target, string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
@@ -35,14 +29,14 @@ internal sealed class OptionalEmissionType(EmissionTypePlan target, string cShar
     public override IReadOnlyList<int> Dimensions => Target.Dimensions;
 }
 
-[PublicAPI]
+/// <summary>Represents an IDL primitive projected to a C# type.</summary>
 internal sealed class PrimitiveEmissionType(string idlName, string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
     public string IdlName { get; } = idlName;
 }
 
-[PublicAPI]
+/// <summary>Represents a bounded IDL string projected to C#.</summary>
 internal sealed class StringEmissionType(bool isWide, int bound)
     : EmissionTypePlan("string")
 {
@@ -50,7 +44,7 @@ internal sealed class StringEmissionType(bool isWide, int bound)
     public override int? Bound { get; } = bound;
 }
 
-[PublicAPI]
+/// <summary>Represents an IDL enum projected to a C# type.</summary>
 internal sealed class EnumEmissionType(string cSharpType, int defaultValue)
     : EmissionTypePlan(cSharpType)
 {
@@ -58,14 +52,14 @@ internal sealed class EnumEmissionType(string cSharpType, int defaultValue)
     public override bool IsEnum => true;
 }
 
-[PublicAPI]
+/// <summary>Represents an IDL struct projected to a C# type.</summary>
 internal sealed class StructEmissionType(string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
     public override bool IsAggregate => true;
 }
 
-[PublicAPI]
+/// <summary>Represents an IDL union projected to a C# type.</summary>
 internal sealed class UnionEmissionType(string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
@@ -73,11 +67,11 @@ internal sealed class UnionEmissionType(string cSharpType)
     public override bool IsUnion => true;
 }
 
-[PublicAPI]
+/// <summary>Represents an IDL alias and its projected target type.</summary>
 internal sealed class AliasEmissionType(string qualifiedName, EmissionTypePlan target, string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
-    public string QualifiedName { get; } = qualifiedName;
+    private string QualifiedName { get; } = qualifiedName;
     public EmissionTypePlan Target { get; } = target;
     public override bool IsAggregate => Target is SequenceEmissionType or ArrayEmissionType || Target.IsAggregate;
     public override bool IsUnion => Target.IsUnion;
@@ -88,7 +82,7 @@ internal sealed class AliasEmissionType(string qualifiedName, EmissionTypePlan t
     public override IReadOnlyList<int> Dimensions => Target.Dimensions;
 }
 
-[PublicAPI]
+/// <summary>Represents a bounded IDL sequence projected to a C# type.</summary>
 internal sealed class SequenceEmissionType(EmissionTypePlan element, int bound, string cSharpType, IReadOnlyList<int>? dimensions = null)
     : EmissionTypePlan(cSharpType)
 {
@@ -97,58 +91,10 @@ internal sealed class SequenceEmissionType(EmissionTypePlan element, int bound, 
     public override IReadOnlyList<int> Dimensions { get; } = dimensions ?? [];
 }
 
-[PublicAPI]
+/// <summary>Represents a fixed-size IDL array projected to a C# type.</summary>
 internal sealed class ArrayEmissionType(EmissionTypePlan element, IReadOnlyList<int> dimensions, string cSharpType)
     : EmissionTypePlan(cSharpType)
 {
     public override EmissionTypePlan Element { get; } = element;
     public override IReadOnlyList<int> Dimensions { get; } = dimensions;
-}
-
-/// <summary>
-/// Target-specific field projection used only by source emitters. Its type
-/// shape is explicit; the forwarding properties are formatting conveniences.
-/// </summary>
-[PublicAPI]
-internal sealed class IdlEmissionField(string name, EmissionTypePlan type, bool isKey, int? memberId, bool isOptional, IdlMemberValueMetadata? valueMetadata, bool isExternal, bool isMustUnderstand, string? memberIdHashSource, bool usesAutoIdHash)
-{
-    public string Name { get; } = name;
-    public EmissionTypePlan Type { get; } = type;
-    public bool IsKey { get; } = isKey;
-    public int? MemberId { get; } = memberId;
-    public bool IsOptional { get; } = isOptional;
-    public IdlMemberValueMetadata? ValueMetadata { get; } = valueMetadata;
-    public bool IsExternal { get; } = isExternal;
-    public bool IsMustUnderstand { get; } = isMustUnderstand;
-    public string? MemberIdHashSource { get; } = memberIdHashSource;
-    public bool UsesAutoIdHash { get; } = usesAutoIdHash;
-    public string CSharpType => Type.CSharpType;
-    public int? Bound => Type.Bound;
-    public string? SupportType => Type.SupportType;
-    public EmissionTypePlan? ElementType => Type.Element;
-    public string? ElementCSharpType => Type.Element?.CSharpType;
-    public string? ElementSupportType => Type.Element?.SupportType;
-    public IReadOnlyList<int> Dimensions => Type.Dimensions;
-}
-
-/// <summary>Resolved branch decisions shared by all union emitters.</summary>
-[PublicAPI]
-internal sealed class UnionBranchEmissionPlan(IdlEmissionField field, MemberEmissionPlan plan, IReadOnlyList<string> labels, IReadOnlyList<int> labelValues, bool isDefault)
-{
-    public IdlEmissionField Field { get; } = field;
-    public MemberEmissionPlan Plan { get; } = plan;
-    public IReadOnlyList<string> Labels { get; } = labels;
-    public IReadOnlyList<int> LabelValues { get; } = labelValues;
-    public bool IsDefault { get; } = isDefault;
-}
-
-[PublicAPI]
-internal sealed class IdlEmissionUnion(string name, string? @namespace, string discriminatorCSharpType, bool discriminatorIsEnum, IReadOnlyList<UnionBranchEmissionPlan> branches, IdlExtensibilityKind extensibility)
-{
-    public string Name { get; } = name;
-    public string? Namespace { get; } = @namespace;
-    public string DiscriminatorCSharpType { get; } = discriminatorCSharpType;
-    public bool DiscriminatorIsEnum { get; } = discriminatorIsEnum;
-    public IReadOnlyList<UnionBranchEmissionPlan> Branches { get; } = branches;
-    public IdlExtensibilityKind Extensibility { get; } = extensibility;
 }

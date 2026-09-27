@@ -1,7 +1,11 @@
+using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.Emission.Writers;
+
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Emitters;
 
+/// <summary>Emits native and type-support documents for generated unions.</summary>
 internal static class UnionTypeSupportEmitter
 {
     /// <summary>Emits the RTI native representation, plugin, and type support for an IDL union.</summary>

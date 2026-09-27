@@ -1,4 +1,7 @@
-namespace Wireloom;
+using Wireloom.Compiler.Emission.Planning;
+using Wireloom.Compiler.Emission.Writers;
+
+namespace Wireloom.Compiler.Emission.Emitters;
 
 /// <summary>Emits primitive range and default annotations for DynamicType members.</summary>
 internal static class TypeSupportAnnotationEmitter

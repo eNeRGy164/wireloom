@@ -1,7 +1,11 @@
+using Wireloom.Compiler.Emission.Emitters;
+using Wireloom.Compiler.Emission.Model;
+
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Planning;
 
+/// <summary>Builds native conversion operations for a member emission plan.</summary>
 internal sealed partial class MemberEmissionPlan
 {
     public string BuildFromNativeStatement(bool forwardKeysOnly, string? namespaceOverride = null)

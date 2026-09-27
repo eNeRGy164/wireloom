@@ -1,7 +1,10 @@
+using Wireloom.Compiler.Emission.Model;
+
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Planning;
 
+/// <summary>Builds dynamic-type expressions for a member emission plan.</summary>
 internal sealed partial class MemberEmissionPlan
 {
     public string BuildDynamicTypeExpression(string implementationNamespace, string? recursiveTypeName = null, bool isRecursive = false) => shape switch

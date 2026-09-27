@@ -1,8 +1,9 @@
+using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Semantics;
 
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Emitters;
 
 /// <summary>Owns the output entry point for native/plugin/type-support documents.</summary>
 internal static class TypeSupportEmitter

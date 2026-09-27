@@ -1,10 +1,13 @@
+using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.Emission.Writers;
 using Wireloom.Compiler.Semantics;
 
-using static Wireloom.EmissionTypeProjector;
+using static Wireloom.Compiler.Emission.Planning.EmissionTypeProjector;
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Emitters;
 
+/// <summary>Emits managed union documents and their support members.</summary>
 internal static class UnionEmitter
 {
     /// <summary>Emits the managed, native, plugin, and type-support documents for an IDL union.</summary>

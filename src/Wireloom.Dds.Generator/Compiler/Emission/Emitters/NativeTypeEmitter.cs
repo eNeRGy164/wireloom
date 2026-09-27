@@ -1,4 +1,7 @@
-namespace Wireloom;
+using Wireloom.Compiler.Emission.Planning;
+using Wireloom.Compiler.Emission.Writers;
+
+namespace Wireloom.Compiler.Emission.Emitters;
 
 /// <summary>Emits native storage and lifecycle/conversion methods for a data type.</summary>
 internal static class NativeTypeEmitter
@@ -17,6 +20,7 @@ internal static class NativeTypeEmitter
         EmitInitialize(writer, fields, implementationNamespace, baseUnmanagedType);
         EmitToNative(writer, typeName, fields, implementationNamespace, baseUnmanagedType, inheritedHasKeys: inheritedFields.Any(field => field.IsKey));
     }
+
     private static void EmitFields(GeneratedSourceWriter writer, IReadOnlyList<MemberEmissionPlan> fields, string? implementationNamespace)
     {
         foreach (var field in fields)

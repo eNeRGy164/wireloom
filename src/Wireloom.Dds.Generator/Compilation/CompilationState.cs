@@ -1,3 +1,4 @@
+using Wireloom.Compiler.Emission.Emitters;
 using Wireloom.Compiler.Semantics;
 
 using static Wireloom.IdlCompiler;

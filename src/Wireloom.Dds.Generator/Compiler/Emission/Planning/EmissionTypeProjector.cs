@@ -1,9 +1,11 @@
+using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Semantics;
 
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Planning;
 
+/// <summary>Projects semantic IDL types into target-specific emission plans.</summary>
 internal static class EmissionTypeProjector
 {
     internal static IdlEmissionField ToEmissionField(IdlMember member, string? currentNamespace)
@@ -28,14 +30,15 @@ internal static class EmissionTypeProjector
         return new IdlEmissionField(
             member.Name,
             type,
-            member.Metadata.IsKey,
-            member.Metadata.MemberId,
-            member.Metadata.IsOptional,
-            member.Metadata.ValueMetadata,
-            member.Metadata.IsExternal,
-            member.Metadata.IsMustUnderstand,
-            member.Metadata.MemberIdHashSource,
-            member.Metadata.UsesAutoIdHash);
+            new EmissionMetadata(
+                member.Metadata.IsKey,
+                member.Metadata.MemberId,
+                member.Metadata.IsOptional,
+                member.Metadata.ValueMetadata,
+                member.Metadata.IsExternal,
+                member.Metadata.IsMustUnderstand,
+                member.Metadata.MemberIdHashSource,
+                member.Metadata.UsesAutoIdHash));
     }
 
     internal static IdlEmissionUnion ToEmissionUnion(IdlUnion union) =>

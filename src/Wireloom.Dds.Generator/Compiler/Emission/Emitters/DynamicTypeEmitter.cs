@@ -1,9 +1,11 @@
+using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Semantics;
 
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Emitters;
 
+/// <summary>Emits DynamicType plugin documents for generated data types.</summary>
 internal static class DynamicTypeEmitter
 {
     public static void EmitStructPlugin(

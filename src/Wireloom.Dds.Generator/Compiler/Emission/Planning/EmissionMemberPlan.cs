@@ -1,11 +1,15 @@
 using System.Globalization;
 using JetBrains.Annotations;
+using Wireloom.Compiler.Emission.Emitters;
+using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.Emission.Writers;
 
-using static Wireloom.EmissionTypeProjector;
+using static Wireloom.Compiler.Emission.Planning.EmissionTypeProjector;
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Planning;
 
+/// <summary>Classifies the projected shape of a member value.</summary>
 internal enum FieldEmissionShape
 {
     Primitive,
@@ -17,6 +21,7 @@ internal enum FieldEmissionShape
     Array
 }
 
+/// <summary>Identifies the managed initialization strategy for a member.</summary>
 internal enum ManagedInitializationKind
 {
     None,
@@ -25,6 +30,7 @@ internal enum ManagedInitializationKind
     Aggregate
 }
 
+/// <summary>Identifies the native cleanup strategy for a member.</summary>
 internal enum NativeDestroyKind
 {
     None,

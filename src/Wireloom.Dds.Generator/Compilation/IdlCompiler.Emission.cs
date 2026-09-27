@@ -1,5 +1,8 @@
+using Wireloom.Compiler.Emission.Writers;
+
 namespace Wireloom;
 
+/// <summary>Provides shared source-emission helpers for IDL compilation.</summary>
 public static partial class IdlCompiler
 {
     internal static readonly string[] DataTypeUsings = ["Omg.Types", "Rti.Types", "System"];

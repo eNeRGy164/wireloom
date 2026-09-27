@@ -1,6 +1,9 @@
+using Wireloom.Compiler.Emission.Planning;
+using Wireloom.Compiler.Emission.Writers;
+
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission.Emitters;
 
 /// <summary>Emits the public managed representation of one IDL data type.</summary>
 internal static class ManagedDataTypeEmitter
