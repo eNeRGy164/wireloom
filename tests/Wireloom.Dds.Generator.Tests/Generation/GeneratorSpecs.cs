@@ -3,8 +3,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
+using Wireloom;
 
-namespace Wireloom.Dds.Generator.Tests;
+namespace Wireloom.Generation.Tests;
 
 public sealed class GeneratorSpecs
 {

@@ -1,9 +1,11 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Wireloom;
+using Wireloom.Dds.Generator.Tests;
 
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
 
-namespace Wireloom.Dds.Generator.Tests;
+namespace Wireloom.Generation.Tests;
 
 public sealed class GeneratedAggregateSpecs
 {

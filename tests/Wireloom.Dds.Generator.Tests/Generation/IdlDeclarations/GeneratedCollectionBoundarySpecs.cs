@@ -1,6 +1,8 @@
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
+using Wireloom;
+using Wireloom.Dds.Generator.Tests;
 
-namespace Wireloom.Dds.Generator.Tests;
+namespace Wireloom.Generation.IdlDeclarations.Tests;
 
 public sealed class GeneratedCollectionBoundarySpecs
 {

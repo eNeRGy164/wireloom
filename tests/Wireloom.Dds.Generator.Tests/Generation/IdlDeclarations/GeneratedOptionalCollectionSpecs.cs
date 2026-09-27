@@ -1,6 +1,8 @@
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
+using Wireloom;
+using Wireloom.Dds.Generator.Tests;
 
-namespace Wireloom.Dds.Generator.Tests;
+namespace Wireloom.Generation.IdlDeclarations.Tests;
 
 [Trait("Corpus", "C039")]
 public sealed class GeneratedOptionalCollectionSpecs
