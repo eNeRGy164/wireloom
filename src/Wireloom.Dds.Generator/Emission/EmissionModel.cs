@@ -1,3 +1,4 @@
+using Wireloom.Compiler.Semantics;
 using JetBrains.Annotations;
 
 using static Wireloom.IdlCompiler;

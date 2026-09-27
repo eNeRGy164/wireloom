@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Wireloom.Compiler.Semantics;
 
 using static Wireloom.IdlCompiler;
 using static Wireloom.IdlGrammar;

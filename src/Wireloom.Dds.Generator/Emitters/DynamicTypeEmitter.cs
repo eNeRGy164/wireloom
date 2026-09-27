@@ -1,3 +1,5 @@
+using Wireloom.Compiler.Semantics;
+
 using static Wireloom.IdlCompiler;
 
 namespace Wireloom;

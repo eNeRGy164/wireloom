@@ -1,3 +1,5 @@
+using Wireloom.Compiler.Semantics;
+
 namespace Wireloom;
 
 /// <summary>Stores declaration names and lookup tables for the front end.</summary>
