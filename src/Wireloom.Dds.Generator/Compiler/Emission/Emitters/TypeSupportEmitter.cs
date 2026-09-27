@@ -31,9 +31,9 @@ internal static class TypeSupportEmitter
         bool isRecursive)
     {
         var typeName = IdlNaming.EscapeIdentifier(name);
-        var supportName = IdlNaming.EscapeIdentifier(name + "Support");
-        var unmanagedName = IdlNaming.EscapeIdentifier(name + "Unmanaged");
-        var pluginName = IdlNaming.EscapeIdentifier(name + "Plugin");
+        var supportName = IdlNaming.EscapeIdentifier($"{name}Support");
+        var unmanagedName = IdlNaming.EscapeIdentifier($"{name}Unmanaged");
+        var pluginName = IdlNaming.EscapeIdentifier($"{name}Plugin");
         var implementationNamespace = currentNamespace is null ? "Implementation" : $"{currentNamespace}.Implementation";
         var baseUnmanagedType = baseType is null ? null : EmissionSupport.GetUnmanagedType(baseType, implementationNamespace);
 
@@ -47,27 +47,12 @@ internal static class TypeSupportEmitter
             writer.WriteLine($"private {baseUnmanagedType} parent;");
         }
 
-        NativeTypeEmitter.Emit(
-            writer,
-            typeName,
-            fields,
-            inheritedFields,
-            implementationNamespace,
-            baseUnmanagedType);
+        NativeTypeEmitter.Emit(writer, typeName, fields, inheritedFields, implementationNamespace, baseUnmanagedType);
         writer.CloseBlock();
 
         compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementationNamespace, $"{name}Unmanaged"), writer.ToString()));
 
-        DynamicTypeEmitter.EmitStructPlugin(
-           compilation,
-           name,
-           currentNamespace,
-           fields,
-           inheritedFields,
-           extensibility,
-           sourceIdlFileName,
-           baseType,
-           isRecursive);
+        DynamicTypeEmitter.EmitStructPlugin(compilation, name, currentNamespace, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive);
 
         writer = EmissionSupport.CreateSource(currentNamespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
 
@@ -97,9 +82,10 @@ internal static class TypeSupportEmitter
 
             writer.WriteXmlSummary("Gets or creates the recursive type-support instance without forcing its public dynamic type.");
             writer.OpenBlock($"internal static {supportName} GetOrCreateInstanceImpl()");
-            writer.OpenBlock("if (Instance == null)");
+            writer.OpenBlock("if (Instance is null)");
             writer.WriteLine($"Instance = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{supportName}, {typeName}>();");
             writer.CloseBlock();
+            writer.BlankLine();
             writer.WriteLine("return Instance;");
             writer.CloseBlock();
         }

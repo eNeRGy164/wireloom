@@ -28,5 +28,6 @@ public class NestedSequenceSupport : TypeSupport<NestedSequence>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static NestedSequenceSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<NestedSequenceSupport, NestedSequence>();
+    public static NestedSequenceSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<NestedSequenceSupport, NestedSequence>();
 }

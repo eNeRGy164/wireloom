@@ -137,7 +137,10 @@ internal static class UnionTypeSupportEmitter
         writer.CloseBlock();
         writer.BlankLine();
         writer.WriteXmlSummary("Gets the cached RTI Connext DDS type-support instance.");
-        writer.WriteLine($"public static {supportName} Instance {{ get; }} = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{supportName}, {typeName}>();");
+        writer.WriteLine($"public static {supportName} Instance {{ get; }} =");
+        writer.Indent();
+        writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{supportName}, {typeName}>();");
+        writer.Unindent();
         writer.CloseBlock();
 
         compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(declaration.Namespace, $"{declaration.Name}Support"), writer.ToString()));

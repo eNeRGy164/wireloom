@@ -28,5 +28,6 @@ public class StateSupport : TypeSupport<State>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static StateSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<StateSupport, State>();
+    public static StateSupport Instance { get; } = 
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<StateSupport, State>();
 }

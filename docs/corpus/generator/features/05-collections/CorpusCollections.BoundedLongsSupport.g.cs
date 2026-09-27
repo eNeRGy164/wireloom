@@ -28,5 +28,6 @@ public class BoundedLongsSupport : TypeSupport<BoundedLongs>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static BoundedLongsSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<BoundedLongsSupport, BoundedLongs>();
+    public static BoundedLongsSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<BoundedLongsSupport, BoundedLongs>();
 }

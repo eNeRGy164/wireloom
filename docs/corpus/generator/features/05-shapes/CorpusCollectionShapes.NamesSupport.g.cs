@@ -28,5 +28,6 @@ public class NamesSupport : TypeSupport<Names>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static NamesSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<NamesSupport, Names>();
+    public static NamesSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<NamesSupport, Names>();
 }

@@ -28,5 +28,6 @@ public class ChoiceAlias2Support : TypeSupport<ChoiceAlias2>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static ChoiceAlias2Support Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ChoiceAlias2Support, ChoiceAlias2>();
+    public static ChoiceAlias2Support Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ChoiceAlias2Support, ChoiceAlias2>();
 }

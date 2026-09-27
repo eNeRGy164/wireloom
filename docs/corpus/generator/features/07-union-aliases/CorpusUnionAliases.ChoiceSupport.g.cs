@@ -28,5 +28,6 @@ public class ChoiceSupport : TypeSupport<Choice>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static ChoiceSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ChoiceSupport, Choice>();
+    public static ChoiceSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ChoiceSupport, Choice>();
 }

@@ -101,7 +101,10 @@ internal static class EnumEmitter
         writer.BlankLine();
 
         writer.WriteXmlSummary("Gets the cached RTI Connext DDS type-support instance.");
-        writer.WriteLine($"public static {typeName}Support Instance {{ get; }} = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{typeName}Support, {typeName}>();");
+        writer.WriteLine($"public static {typeName}Support Instance {{ get; }} = ");
+        writer.Indent();
+        writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{typeName}Support, {typeName}>();");
+        writer.Unindent();
         writer.CloseBlock();
 
         compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(declaration.Namespace, declaration.Name + "Support"), writer.ToString()));

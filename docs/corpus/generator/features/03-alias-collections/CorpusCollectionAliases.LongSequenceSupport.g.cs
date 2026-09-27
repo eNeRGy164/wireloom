@@ -28,5 +28,6 @@ public class LongSequenceSupport : TypeSupport<LongSequence>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static LongSequenceSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<LongSequenceSupport, LongSequence>();
+    public static LongSequenceSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<LongSequenceSupport, LongSequence>();
 }

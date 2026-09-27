@@ -28,5 +28,6 @@ public class ExplicitSupport : TypeSupport<Explicit>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static ExplicitSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ExplicitSupport, Explicit>();
+    public static ExplicitSupport Instance { get; } = 
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ExplicitSupport, Explicit>();
 }

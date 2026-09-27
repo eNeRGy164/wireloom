@@ -28,5 +28,6 @@ public class ColorSupport : TypeSupport<Color>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static ColorSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ColorSupport, Color>();
+    public static ColorSupport Instance { get; } = 
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ColorSupport, Color>();
 }

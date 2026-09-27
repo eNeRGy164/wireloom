@@ -28,5 +28,6 @@ public class ScalarAliasSupport : TypeSupport<ScalarAlias>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static ScalarAliasSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ScalarAliasSupport, ScalarAlias>();
+    public static ScalarAliasSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ScalarAliasSupport, ScalarAlias>();
 }

@@ -28,5 +28,6 @@ public class IdentifierSupport : TypeSupport<Identifier>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static IdentifierSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<IdentifierSupport, Identifier>();
+    public static IdentifierSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<IdentifierSupport, Identifier>();
 }

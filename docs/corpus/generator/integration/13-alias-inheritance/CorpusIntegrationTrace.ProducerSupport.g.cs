@@ -28,5 +28,6 @@ public class ProducerSupport : TypeSupport<Producer>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static ProducerSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ProducerSupport, Producer>();
+    public static ProducerSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ProducerSupport, Producer>();
 }

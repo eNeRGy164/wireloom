@@ -28,5 +28,6 @@ public class ScalarSupport : TypeSupport<Scalar>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static ScalarSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ScalarSupport, Scalar>();
+    public static ScalarSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ScalarSupport, Scalar>();
 }

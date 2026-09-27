@@ -28,5 +28,6 @@ public class CoordinateGridSupport : TypeSupport<CoordinateGrid>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static CoordinateGridSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<CoordinateGridSupport, CoordinateGrid>();
+    public static CoordinateGridSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<CoordinateGridSupport, CoordinateGrid>();
 }

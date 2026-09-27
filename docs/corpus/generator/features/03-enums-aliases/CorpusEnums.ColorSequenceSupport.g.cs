@@ -28,5 +28,6 @@ public class ColorSequenceSupport : TypeSupport<ColorSequence>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static ColorSequenceSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ColorSequenceSupport, ColorSequence>();
+    public static ColorSequenceSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ColorSequenceSupport, ColorSequence>();
 }

@@ -28,5 +28,6 @@ public class RowsSupport : TypeSupport<Rows>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static RowsSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<RowsSupport, Rows>();
+    public static RowsSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<RowsSupport, Rows>();
 }

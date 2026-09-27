@@ -28,5 +28,6 @@ public class PointAlias2Support : TypeSupport<PointAlias2>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static PointAlias2Support Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<PointAlias2Support, PointAlias2>();
+    public static PointAlias2Support Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<PointAlias2Support, PointAlias2>();
 }

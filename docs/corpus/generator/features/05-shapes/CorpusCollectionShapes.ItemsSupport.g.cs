@@ -28,5 +28,6 @@ public class ItemsSupport : TypeSupport<Items>
     /// <summary>
     /// Gets the cached RTI Connext DDS type-support instance.
     /// </summary>
-    public static ItemsSupport Instance { get; } = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ItemsSupport, Items>();
+    public static ItemsSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ItemsSupport, Items>();
 }
