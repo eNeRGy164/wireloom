@@ -29,6 +29,18 @@ internal class IdentifierPlugin : InterpretedTypePlugin<Identifier, IdentifierUn
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<IdentifierUnmanaged>(dtf, "Identifier", dtf.GetPrimitiveType<int>());
+        var aliasType = tsf.CreateAliasWithAccessInfo<IdentifierUnmanaged>(dtf, "Identifier", dtf.GetPrimitiveType<int>());
+
+        {
+            var annotations = new Annotations(
+                TypeKind.Int32,
+                defaultValue: new AnnotationParameterValue { Int32Value = 0 },
+                minValue: new AnnotationParameterValue { Int32Value = int.MinValue },
+                maxValue: new AnnotationParameterValue { Int32Value = int.MaxValue },
+                unit: null);
+            aliasType.SetAnnotations(annotations);
+        }
+
+        return aliasType;
     }
 }

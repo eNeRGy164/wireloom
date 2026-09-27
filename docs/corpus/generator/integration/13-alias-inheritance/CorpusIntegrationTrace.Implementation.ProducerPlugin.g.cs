@@ -29,6 +29,19 @@ internal class ProducerPlugin : InterpretedTypePlugin<Producer, ProducerUnmanage
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<ProducerUnmanaged>(dtf, "Producer", dtf.CreateString(16));
+        using var dtString = dtf.CreateString(16);
+        var aliasType = tsf.CreateAliasWithAccessInfo<ProducerUnmanaged>(dtf, "Producer", dtString);
+
+        {
+            var annotations = new Annotations(
+                TypeKind.String,
+                defaultValue: new AnnotationParameterValue { StringValue = "" },
+                minValue: null,
+                maxValue: null,
+                unit: null);
+            aliasType.SetAnnotations(annotations);
+        }
+
+        return aliasType;
     }
 }

@@ -334,11 +334,13 @@ internal static class CollectionAliasEmitter
             {
                 if (declaration.IsWideString)
                 {
-                    dynamicType = $"dtf.CreateWideString({declaration.StringBound})";
+                    writer.WriteLine($"using var dtWString = dtf.CreateWideString({declaration.StringBound});");
+                    dynamicType = "dtWString";
                 }
                 else
                 {
-                    dynamicType = $"dtf.CreateString({declaration.StringBound})";
+                    writer.WriteLine($"using var dtString = dtf.CreateString({declaration.StringBound});");
+                    dynamicType = "dtString";
                 }
             }
             else
@@ -346,7 +348,22 @@ internal static class CollectionAliasEmitter
                 dynamicType = $"dtf.GetPrimitiveType<{TypeReference(elementType, implementation)}>()";
             }
 
-            writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{typeName}Unmanaged>(dtf, \"{typeName}\", {dynamicType});");
+            if (declaration.IsString || IsPrimitive(declaration.Target))
+            {
+                writer.WriteLine($"var aliasType = tsf.CreateAliasWithAccessInfo<{typeName}Unmanaged>(dtf, \"{typeName}\", {dynamicType});");
+            }
+            else
+            {
+                writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{typeName}Unmanaged>(dtf, \"{typeName}\", {dynamicType});");
+            }
+        }
+
+        if (!declaration.IsCollection && (declaration.IsString || IsPrimitive(declaration.Target)))
+        {
+            EmitAliasAnnotations(writer, declaration);
+
+            writer.BlankLine();
+            writer.WriteLine("return aliasType;");
         }
 
         writer.CloseBlock();
@@ -624,6 +641,62 @@ internal static class CollectionAliasEmitter
         writer.CloseBlock();
 
         compilation.AddSource(new GeneratedIdlSource(CreateHintName(declaration.Namespace, $"{declaration.Name}Support"), writer.ToString()));
+    }
+
+    private static void EmitAliasAnnotations(GeneratedSourceWriter writer, IdlTypedef declaration)
+    {
+        if (declaration.IsString)
+        {
+            writer.BlankLine();
+            writer.OpenBrace();
+            writer.WriteLine("var annotations = new Annotations(");
+            writer.Indent();
+            writer.WriteLine("TypeKind.String,");
+            writer.WriteLine("defaultValue: new AnnotationParameterValue { StringValue = \"\" },");
+            writer.WriteLine("minValue: null,");
+            writer.WriteLine("maxValue: null,");
+            writer.WriteLine("unit: null);");
+            writer.Unindent();
+            writer.WriteLine("aliasType.SetAnnotations(annotations);");
+            writer.CloseBlock();
+            return;
+        }
+
+        var annotation = declaration.Target switch
+        {
+            "short" or "int16" => ("Int16", "Int16Value", "(short)0", "short.MinValue", "short.MaxValue"),
+            "long" or "int32" => ("Int32", "Int32Value", "0", "int.MinValue", "int.MaxValue"),
+            "long long" or "int64" => ("Int64", "Int64Value", "0L", "long.MinValue", "long.MaxValue"),
+            "unsigned short" or "uint16" => ("Uint16", "Uint16Value", "(ushort)0", "ushort.MinValue", "ushort.MaxValue"),
+            "unsigned long" or "uint32" => ("UInt32", "Uint32Value", "0U", "uint.MinValue", "uint.MaxValue"),
+            "unsigned long long" or "uint64" => ("UInt64", "Uint64Value", "0UL", "ulong.MinValue", "ulong.MaxValue"),
+            "int8" => ("Int8", "Int8Value", "(sbyte)0", "sbyte.MinValue", "sbyte.MaxValue"),
+            "uint8" or "octet" => ("Octet", "OctetValue", "(byte)0", "byte.MinValue", "byte.MaxValue"),
+            "float" => ("Float32", "Float32Value", "0F", "float.MinValue", "float.MaxValue"),
+            "double" => ("Float64", "Float64Value", "0D", "double.MinValue", "double.MaxValue"),
+            "boolean" => ("Boolean", "BooleanValue", "false", "null", "null"),
+            "char" => ("Char8", "Char8Value", "(byte)0", "byte.MinValue", "byte.MaxValue"),
+            "wchar" => ("Char16", "Char16Value", "(ushort)0", "ushort.MinValue", "ushort.MaxValue"),
+            _ => default
+        };
+
+        if (annotation == default)
+        {
+            return;
+        }
+
+        writer.BlankLine();
+        writer.OpenBrace();
+        writer.WriteLine("var annotations = new Annotations(");
+        writer.Indent();
+        writer.WriteLine($"TypeKind.{annotation.Item1},");
+        writer.WriteLine($"defaultValue: new AnnotationParameterValue {{ {annotation.Item2} = {annotation.Item3} }},");
+        writer.WriteLine($"minValue: {(annotation.Item4 == "null" ? "null" : $"new AnnotationParameterValue {{ {annotation.Item2} = {annotation.Item4} }}")},");
+        writer.WriteLine($"maxValue: {(annotation.Item5 == "null" ? "null" : $"new AnnotationParameterValue {{ {annotation.Item2} = {annotation.Item5} }}")},");
+        writer.WriteLine("unit: null);");
+        writer.Unindent();
+        writer.WriteLine("aliasType.SetAnnotations(annotations);");
+        writer.CloseBlock();
     }
 
     private static string NativeDefaultValue(string elementType, string implementationElementType)

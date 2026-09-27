@@ -192,4 +192,35 @@ public sealed class GeneratedPluginSpecs
         plugin.ShouldContain("ExtensibilityKind.Extensible");
         plugin.ShouldContain("new StructMember(\"value\", dtf.GetPrimitiveType<int>(), id: 1)");
     }
+
+    [Fact]
+    [Trait("Corpus", "C110")]
+    public void AliasInheritancePreservesScalarAliasAnnotationsAndDerivedParent()
+    {
+        var input = Input("alias-inheritance.idl",
+            """
+            @default_nested
+            module AliasInheritance {
+                typedef string<16> Producer;
+                @appendable struct Context { @optional Producer producer; };
+                @appendable struct Base { long baseValue; };
+                @appendable struct Derived : Base { Context context; };
+            };
+            """);
+
+        var documents = CompileSources(input);
+
+        var producerPlugin = documents["AliasInheritance.Implementation.ProducerPlugin.g.cs"].Source;
+        producerPlugin.ShouldContain("using var dtString = dtf.CreateString(16);");
+        producerPlugin.ShouldContain("\"Producer\", dtString);");
+        producerPlugin.ShouldContain("TypeKind.String,");
+        producerPlugin.ShouldContain("defaultValue: new AnnotationParameterValue { StringValue = \"\" },");
+        producerPlugin.ShouldContain("aliasType.SetAnnotations(annotations);");
+
+        var contextPlugin = documents["AliasInheritance.Implementation.ContextPlugin.g.cs"].Source;
+        contextPlugin.ShouldContain("ProducerSupport.Instance.GetDynamicTypeInternal(isPublic), isOptional: true");
+
+        var derivedPlugin = documents["AliasInheritance.Implementation.DerivedPlugin.g.cs"].Source;
+        derivedPlugin.ShouldContain(".WithParent((StructType) BaseSupport.Instance.GetDynamicTypeInternal(isPublic))");
+    }
 }
