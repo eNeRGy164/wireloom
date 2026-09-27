@@ -20,6 +20,9 @@ internal static class IdlGrammar
     internal static readonly Regex DataRepresentationAnnotationPattern = new(
         @"^@data_representation\s*\(\s*[A-Za-z_]\w*\s*\)\s*",
         RegexOptions.Compiled);
+    internal static readonly Regex AllowedDataRepresentationAnnotationPattern = new(
+        @"^@allowed_data_representation\s*\(\s*[A-Za-z_]\w*\s*\)\s*",
+        RegexOptions.Compiled);
     internal static readonly Regex AutoIdAnnotationPattern = new(
         @"^@autoid(?:\s*\(\s*(?<value>HASH|SEQUENTIAL)\s*\))?\s*",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);

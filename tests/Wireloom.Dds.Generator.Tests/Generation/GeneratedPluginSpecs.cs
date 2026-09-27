@@ -165,4 +165,31 @@ public sealed class GeneratedPluginSpecs
         plugin.ShouldContain("new StructMember(\"id\", dtf.GetPrimitiveType<int>(), isMustUnderstand: true, id: 75475440)");
         plugin.ShouldContain("new StructMember(\"text\", dtf.CreateString(16), id: 206680604)");
     }
+
+    [Fact]
+    [Trait("Corpus", "C043")]
+    public void AllowedDataRepresentationAnnotationDoesNotChangeGeneratedContractShape()
+    {
+        // Arrange
+        var input = Input("allowed-data-representation.idl",
+            """
+            module AllowedDataRepresentation {
+                @allowed_data_representation(XCDR2) @appendable struct Sample {
+                    @id(1) long value;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["AllowedDataRepresentation.Sample.g.cs"].Source;
+        managed.ShouldContain("public partial class Sample");
+        managed.ShouldContain("public int value");
+
+        var plugin = documents["AllowedDataRepresentation.Implementation.SamplePlugin.g.cs"].Source;
+        plugin.ShouldContain("ExtensibilityKind.Extensible");
+        plugin.ShouldContain("new StructMember(\"value\", dtf.GetPrimitiveType<int>(), id: 1)");
+    }
 }

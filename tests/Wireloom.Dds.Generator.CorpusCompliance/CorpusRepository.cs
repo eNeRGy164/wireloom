@@ -46,6 +46,7 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "08-key-boundaries",
         "08-key-union",
         "09-data-representation",
+        "09-allowed-data-representation",
         "09-extensibility",
         "09-default",
         "09-id-gaps",
