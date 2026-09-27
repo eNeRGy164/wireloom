@@ -1,3 +1,4 @@
+using Wireloom.Compiler.Emission;
 using Wireloom.Compiler.FrontEnd.Parsing;
 using Wireloom.Compiler.FrontEnd.Preprocessing;
 using Wireloom.Compiler.FrontEnd.Symbols;
@@ -23,7 +24,7 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, Cancellatio
         var roots = inputs.Where(input => input.Generate).ToArray();
         var graph = new IdlInputGraph(files, roots.SelectMany(input => input.Defines), roots.SelectMany(input => input.Undefines), roots.SelectMany(input => input.IncludeDirectories), cancellationToken);
         var parser = new IdlDeclarationParser(symbols, cancellationToken, diagnostics);
-        var compilation = new CompilationContext(parser, symbols, inputs.Any(input => input.Generate && input.Strict));
+        var compilation = new CompilationContext(symbols);
 
         // Roots are sorted by path so generation is stable even when the build
         // system supplies AdditionalFiles in a different order.
@@ -32,7 +33,7 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, Cancellatio
             graph.Visit(input, parser.Parse, diagnostics);
         }
 
-        compilation.EmitDeclarations();
+        new IdlDeclarationEmitter(compilation, parser, inputs.Any(input => input.Generate && input.Strict)).Emit();
 
         return compilation.Sources;
     }

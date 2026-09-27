@@ -1,10 +1,24 @@
+using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.FrontEnd.Symbols;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler;
 
-internal sealed partial class CompilationContext
+/// <summary>Resolves IDL symbols and typedef representations for the compiler pipeline.</summary>
+internal sealed class CompilationResolver(IdlSymbolTable symbols)
 {
-    /// <summary>Resolves a scalar typedef chain for the legacy alias emitter.</summary>
+    /// <summary>Gets the constants known to the compilation.</summary>
+    public IEnumerable<IdlConstantDeclaration> Constants => symbols.Constants;
+
+    /// <summary>Determines whether a type resolves to an enum.</summary>
+    public bool IsEnum(string typeName, string? currentNamespace) =>
+        symbols.ContainsEnum(IdlNaming.ResolveTypeName(typeName, currentNamespace));
+
+    /// <summary>Determines whether a type resolves to a union.</summary>
+    public bool IsUnion(string typeName, string? currentNamespace) =>
+        symbols.ContainsUnion(IdlNaming.ResolveTypeName(typeName, currentNamespace));
+
+    /// <summary>Resolves a scalar typedef chain in IDL type space.</summary>
     public string ResolveUnderlyingType(string idlType, string? currentNamespace)
     {
         var type = IdlNaming.NormalizeIdlType(idlType);
@@ -33,8 +47,8 @@ internal sealed partial class CompilationContext
             currentNamespace = alias.Namespace;
         }
 
-        // Keep this resolver in IDL space. Emitters decide whether the
-        // normalized primitive is represented as C# int, short, etc.
+        // Keep this resolver in IDL space. Emitters decide whether the normalized
+        // primitive is represented as C# int, short, etc.
         return IdlNaming.NormalizeIdlType(type);
     }
 
