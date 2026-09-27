@@ -24,7 +24,7 @@ internal static class IdlGrammar
         @"^@topic\b\s*",
         RegexOptions.Compiled);
     internal static readonly Regex StructPattern = new(
-        @"^(?:(?<nested>@nested\s+))?(?:(?<extensibility>@(?:final|appendable|mutable)\s+))?(?:(?<nestedAfter>@nested\s+))?struct\s+(?<name>[A-Za-z_]\w*)(?:\s*:\s*(?<base>(?:::)?[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*))?\s*\{(?<body>[^{}]*)\}\s*;",
+        @"^(?:(?<nested>@nested\s+))?(?:(?<extensibility>@(?:final|appendable|mutable)\s+))?(?:(?<nestedAfter>@nested\s+))?(?:struct|valuetype)\s+(?<name>[A-Za-z_]\w*)(?:\s*:\s*(?<base>(?:::)?[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*))?\s*\{(?<body>[^{}]*)\}\s*;",
         RegexOptions.Compiled);
     internal static readonly Regex UnionPattern = new(
         @"^(?:(?<nested>@nested\s+))?(?:(?<extensibility>@appendable\s+))?(?:(?<nestedAfter>@nested\s+))?union\s+(?<name>[A-Za-z_]\w*)\s+switch\s*\(\s*(?<discriminator>boolean|char|short|long|unsigned\s+short|unsigned\s+long|(?:::)?[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*)\s*\)\s*\{(?<body>[^{}]*)\}\s*;",
@@ -51,7 +51,7 @@ internal static class IdlGrammar
         @"^const\s+(?<type>string|wstring|long\s+double|unsigned\s+long\s+long|unsigned\s+long|unsigned\s+short|long\s+long|short|long|int8|int16|int32|int64|uint8|uint16|uint32|uint64|octet|boolean|char|wchar|float|double)\s+(?<name>[A-Za-z_]\w*)\s*=\s*(?<expression>[^;]+);",
         RegexOptions.Compiled);
     internal static readonly Regex MemberPattern = new(
-        @"^(sequence\s*<\s*(?:(?:string|wstring)\s*<\s*[^>]+\s*>|[^,>]+)\s*(?:,\s*[^>]+)?\s*>|(?:string|wstring)(?:\s*<\s*((?:::)?[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*|[0-9]+)\s*>)?|long\s+double|unsigned\s+long\s+long|unsigned\s+short|unsigned\s+long|long\s+long|int8|int16|int32|int64|uint8|uint16|short|long|octet|boolean|char|wchar|float|double|(?:::)?[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*)\s+([A-Za-z_]\w*)\s*((?:\[[^\]]+\])*)\s*;",
+        @"^(?:public\s+)?(sequence\s*<\s*(?:(?:string|wstring)\s*<\s*[^>]+\s*>|[^,>]+)\s*(?:,\s*[^>]+)?\s*>|(?:string|wstring)(?:\s*<\s*((?:::)?[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*|[0-9]+)\s*>)?|long\s+double|unsigned\s+long\s+long|unsigned\s+short|unsigned\s+long|long\s+long|int8|int16|int32|int64|uint8|uint16|short|long|octet|boolean|char|wchar|float|double|(?:::)?[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*)\s+([A-Za-z_]\w*)\s*((?:\[[^\]]+\])*)\s*;",
         RegexOptions.Compiled);
     internal static readonly Regex KeyAnnotationPattern = new(
         @"^@key\b\s+",

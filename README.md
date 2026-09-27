@@ -120,8 +120,8 @@ contains:
 | Negative and diagnostic probes               |                                            53 |
 | Integration entry points                     |                                             4 |
 | Total corpus cases                           |                                           111 |
-| Fully implemented positive/integration cases |                                       54 / 58 |
-| Not fully implemented positive/integration   |                 4 (3 unsupported, 1 partial) |
+| Fully implemented positive/integration cases |                                       55 / 58 |
+| Not fully implemented positive/integration   |                 3 (2 unsupported, 1 partial) |
 | Compliance test invocations                  | 226 total, 225 succeeded, 0 failed, 1 skipped |
 
 One cyclic-alias probe is intentionally isolated while the compiler-process

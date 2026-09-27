@@ -41,6 +41,43 @@ public sealed class GeneratedAggregateSpecs
     }
 
     [Fact]
+    [Trait("Corpus", "C020")]
+    public void ValueTypesPreserveInheritanceAndAggregateComposition()
+    {
+        // Arrange
+        var input = Input("valuetypes.idl",
+            """
+            module ValueTypes {
+                valuetype BaseValue {
+                    public long baseValue;
+                };
+                valuetype DerivedValue : BaseValue {
+                    public string<16> name;
+                };
+                struct Holder { DerivedValue value; };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var @base = documents["ValueTypes.BaseValue.g.cs"].Source;
+        @base.ShouldContain("public partial class BaseValue");
+        @base.ShouldContain("public int baseValue");
+
+        var derived = documents["ValueTypes.DerivedValue.g.cs"].Source;
+        derived.ShouldContain("public partial class DerivedValue : BaseValue");
+        derived.ShouldContain("public DerivedValue(int baseValue, string name) : base(baseValue)");
+        derived.ShouldContain("[Bound(16)]");
+
+        var holder = documents["ValueTypes.Implementation.HolderUnmanaged.g.cs"].Source;
+        holder.ShouldContain("private DerivedValueUnmanaged value");
+        holder.ShouldContain("value.FromNative(sample.value, keysOnly: false);");
+        holder.ShouldContain("value.ToNative(sample.value, keysOnly: false);");
+    }
+
+    [Fact]
     [Trait("Corpus", "C012")]
     [Trait("Corpus", "C013")]
     public void AggregateAndNestedAliasesPreserveTypedDelegationContracts()

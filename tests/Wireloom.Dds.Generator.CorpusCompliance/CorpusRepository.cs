@@ -30,6 +30,7 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "05-shapes",
         "05-array-of-sequences",
         "06-aggregates",
+        "06-valuetypes",
         "06-alias-composition",
         "07-unions",
         "07-union-enum",
