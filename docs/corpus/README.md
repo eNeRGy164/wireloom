@@ -24,9 +24,12 @@ corpus/
 └── generator/          Wireloom-generated C# sources exported from the corpus
 ```
 
-The checked-in oracle sources are generated reference material. They are
-license-controlled and must not be redistributed or regenerated outside the
-applicable RTI license and repository review rules.
+The repository's MIT License does not apply to the checked-in RTI-generated
+oracle sources. They are third-party reference material, provided as-is for
+compatibility testing, and remain subject to any applicable RTI rights and
+terms. Do not redistribute or regenerate them except as permitted by the
+applicable RTI license and repository review rules. Retain all file-level
+notices.
 
 ## Case inventory
 

@@ -215,7 +215,11 @@ and provenance artifacts.
 
 ## License and RTI reference material
 
-RTI-generated oracle sources and related reference material are retained for
-compatibility verification under the repository's licensing and review rules.
-Review the [corpus guidance](docs/corpus/README.md) before adding, regenerating,
-or redistributing reference artifacts.
+Wireloom is licensed under the MIT License; see [`LICENSE`](LICENSE). This
+license applies to Wireloom's original code, documentation, and authored IDL
+corpus inputs. It does not apply to RTI-generated oracle sources in
+[`docs/corpus/oracles`](docs/corpus/oracles)
+or other third-party material, which retain their own applicable rights and
+terms. Those oracle sources are reference artifacts provided as-is for
+compatibility testing. Review the [corpus guidance](docs/corpus/README.md)
+before adding, regenerating, or redistributing reference artifacts.
