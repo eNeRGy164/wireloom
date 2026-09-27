@@ -2,7 +2,7 @@
 
 This is the feature index for the managed-generator compatibility corpus. Each case has a stable `C###` tag that can be used in test names, issues, and implementation work. The numbering follows the corpus manifest: positive features first, negative probes second, and integration entry points last.
 
-The status snapshot below comes from the corpus compliance run on 2026-09-27: `dotnet test tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --no-restore`. It is source-generation coverage only; runtime, serialization, wire, and live DDS behavior are excluded.
+The status snapshot below comes from the corpus compliance run on 2026-09-27. It is source-generation coverage only; runtime, serialization, wire, and live DDS behavior are excluded.
 
 ## Status meanings
 
@@ -45,8 +45,8 @@ RTI oracle links point to the licensee-generated C# source under `corpus/oracles
 | C024 | `07-union-scoped`                | scoped and collection union branches          | [idl/features/07-union-scoped.idl](idl/features/07-union-scoped.idl)                               | [source](oracles/features/07-union-scoped/07-union-scoped.cs), [plugin](oracles/features/07-union-scoped/07-union-scopedPlugin.cs)                                                             | accepted        | [implemented](generator/features/07-union-scoped/)          |
 | C025 | `07-union-multilabel`            | multi-label unions without default            | [idl/features/07-union-multilabel.idl](idl/features/07-union-multilabel.idl)                       | [source](oracles/features/07-union-multilabel/07-union-multilabel.cs), [plugin](oracles/features/07-union-multilabel/07-union-multilabelPlugin.cs)                                             | accepted        | [implemented](generator/features/07-union-multilabel/)      |
 | C026 | `07-union-short`                 | short union discriminator                     | [idl/features/07-union-short.idl](idl/features/07-union-short.idl)                                 | [source](oracles/features/07-union-short/07-union-short.cs), [plugin](oracles/features/07-union-short/07-union-shortPlugin.cs)                                                                 | accepted        | [implemented](generator/features/07-union-short/)           |
-| C027 | `07-union-char`                  | character union discriminator                 | [idl/features/07-union-char.idl](idl/features/07-union-char.idl)                                   | [source](oracles/features/07-union-char/07-union-char.cs), [plugin](oracles/features/07-union-char/07-union-charPlugin.cs)                                                                     | accepted        | unsupported                                                 |
-| C028 | `07-union-boolean`               | boolean union discriminator                   | [idl/features/07-union-boolean.idl](idl/features/07-union-boolean.idl)                             | [source](oracles/features/07-union-boolean/07-union-boolean.cs), [plugin](oracles/features/07-union-boolean/07-union-booleanPlugin.cs)                                                         | accepted        | unsupported                                                 |
+| C027 | `07-union-char`                  | character union discriminator                 | [idl/features/07-union-char.idl](idl/features/07-union-char.idl)                                   | [source](oracles/features/07-union-char/07-union-char.cs), [plugin](oracles/features/07-union-char/07-union-charPlugin.cs)                                                                     | accepted        | [implemented](generator/features/07-union-char/)            |
+| C028 | `07-union-boolean`               | boolean union discriminator                   | [idl/features/07-union-boolean.idl](idl/features/07-union-boolean.idl)                             | [source](oracles/features/07-union-boolean/07-union-boolean.cs), [plugin](oracles/features/07-union-boolean/07-union-booleanPlugin.cs)                                                         | accepted        | [implemented](generator/features/07-union-boolean/)         |
 | C029 | `07-union-aliases`               | explicit enum and union alias chains          | [idl/features/07-union-aliases.idl](idl/features/07-union-aliases.idl)                             | [source](oracles/features/07-union-aliases/07-union-aliases.cs), [plugin](oracles/features/07-union-aliases/07-union-aliasesPlugin.cs)                                                         | accepted        | [implemented](generator/features/07-union-aliases/)         |
 | C030 | `08-keys`                        | multiple, nested and simple keys              | [idl/features/08-keys.idl](idl/features/08-keys.idl)                                               | [source](oracles/features/08-keys/08-keys.cs), [plugin](oracles/features/08-keys/08-keysPlugin.cs)                                                                                             | accepted        | [implemented](generator/features/08-keys/)                  |
 | C031 | `08-key-nested`                  | nested key propagation                        | [idl/features/08-key-nested.idl](idl/features/08-key-nested.idl)                                   | [source](oracles/features/08-key-nested/08-key-nested.cs), [plugin](oracles/features/08-key-nested/08-key-nestedPlugin.cs)                                                                     | accepted        | [implemented](generator/features/08-key-nested/)            |
@@ -157,16 +157,14 @@ Use the stable tag together with the case ID when referring to coverage, for exa
 | Negative                                   |                           53 |
 | Integration                                |                            4 |
 | Total                                      |                          111 |
-| Fully implemented positive/integration     |                      52 / 58 |
-| Not fully implemented positive/integration | 6 (5 unsupported, 1 partial) |
+| Fully implemented positive/integration     |                      54 / 58 |
+| Not fully implemented positive/integration | 4 (3 unsupported, 1 partial) |
 | Compliance test invocations                |                          226 |
-| Succeeded                                  |                          224 |
+| Succeeded                                  |                          225 |
 | Failed                                     |                            0 |
-| Skipped test invocations                   |   2 (export opt-in and C083) |
+| Skipped test invocations                   |                    1 (C083) |
 | Isolated corpus cases                      |      1 (C083 cyclic aliases) |
 
 The positive/integration statistic covers the 54 positive cases and 4
 integration cases. Negative rejection probes are excluded because their
-expected outcome is rejection rather than implementation. The compliance runner
-also reports the opt-in source export test as skipped when no export directory
-is configured.
+expected outcome is rejection rather than implementation.

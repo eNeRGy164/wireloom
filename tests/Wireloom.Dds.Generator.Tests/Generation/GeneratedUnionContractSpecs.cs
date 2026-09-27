@@ -132,6 +132,85 @@ public sealed class GeneratedUnionContractSpecs
     }
 
     [Fact]
+    [Trait("Corpus", "C027")]
+    public void CharDiscriminatorsPreserveManagedAndNativeRepresentations()
+    {
+        // Arrange
+        var input = Input("primitive-unions.idl",
+            """
+            module CharUnion {
+                union Choice switch(char) {
+                    case 'a': long letter;
+                    case 'z': string text;
+                    default: boolean other;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["CharUnion.Choice.g.cs"].Source;
+        managed.ShouldContain("public char Discriminator");
+        managed.ShouldContain("public const char DefaultDiscriminator = '\\0'");
+        managed.ShouldContain("Discriminator != 'a'");
+        managed.ShouldContain("Discriminator != 'z'");
+
+        var unmanaged = documents["CharUnion.Implementation.ChoiceUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("private byte _discriminator");
+        unmanaged.ShouldContain("switch (NativeChar.FromUtf8(_discriminator))");
+        unmanaged.ShouldContain("_discriminator = NativeChar.ToUtf8(sample.Discriminator);");
+        unmanaged.ShouldContain("_discriminator = NativeChar.ToUtf8(Choice.DefaultDiscriminator);");
+
+        var plugin = documents["CharUnion.Implementation.ChoicePlugin.g.cs"].Source;
+        plugin.ShouldContain("WithDiscriminator(dtf.GetPrimitiveType<char>())");
+        plugin.ShouldContain("new int[] { 97 }");
+        plugin.ShouldContain("new int[] { 122 }");
+    }
+
+    [Fact]
+    [Trait("Corpus", "C028")]
+    public void BooleanDiscriminatorsPreserveManagedAndNativeRepresentations()
+    {
+        // Arrange
+        var input = Input("primitive-unions.idl",
+            """
+            module BooleanUnion {
+                union Choice switch(boolean) {
+                    case TRUE: long enabled;
+                    case FALSE: string disabled;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["BooleanUnion.Choice.g.cs"].Source;
+        managed.ShouldContain("public bool Discriminator");
+        managed.ShouldContain("public const bool DefaultDiscriminator = false");
+        managed.ShouldContain("Discriminator != true");
+        managed.ShouldContain("Discriminator != false");
+        managed.ShouldNotContain("_ => null");
+        managed.ShouldNotContain("_ => HashCode.Combine(Discriminator)");
+        managed.ShouldNotContain("_ => true");
+
+        var unmanaged = documents["BooleanUnion.Implementation.ChoiceUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("private byte _discriminator");
+        unmanaged.ShouldContain("switch (Convert.ToBoolean(_discriminator))");
+        unmanaged.ShouldContain("_discriminator = Convert.ToByte(sample.Discriminator);");
+        unmanaged.ShouldContain("_discriminator = Convert.ToByte(Choice.DefaultDiscriminator);");
+        unmanaged.ShouldNotContain("default:");
+
+        var plugin = documents["BooleanUnion.Implementation.ChoicePlugin.g.cs"].Source;
+        plugin.ShouldContain("WithDiscriminator(dtf.GetPrimitiveType<bool>())");
+        plugin.ShouldContain("new int[] { 1 }");
+        plugin.ShouldContain("new int[] { 0 }");
+    }
+
+    [Fact]
     [Trait("Corpus", "C022")]
     public void DefaultUnionsEmitFallbackAndResourceCleanup()
     {

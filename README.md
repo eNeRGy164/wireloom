@@ -120,13 +120,13 @@ contains:
 | Negative and diagnostic probes               |                                            53 |
 | Integration entry points                     |                                             4 |
 | Total corpus cases                           |                                           111 |
-| Fully implemented positive/integration cases |                                       47 / 58 |
-| Not fully implemented positive/integration   |                11 (10 unsupported, 1 partial) |
-| Compliance test invocations                  | 226 total, 224 succeeded, 0 failed, 2 skipped |
+| Fully implemented positive/integration cases |                                       54 / 58 |
+| Not fully implemented positive/integration   |                 4 (3 unsupported, 1 partial) |
+| Compliance test invocations                  | 226 total, 225 succeeded, 0 failed, 1 skipped |
 
 One cyclic-alias probe is intentionally isolated while the compiler-process
-harness is being completed. The export test is also skipped unless an export
-directory is configured. The snapshot above was recorded on 2026-09-27;
+harness is being completed. The snapshot above was recorded on 2026-09-27
+with the corpus export directory configured;
 consult the feature index for the current result.
 
 The corpus is source-generation evidence. It does not by itself establish

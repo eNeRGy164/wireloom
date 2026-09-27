@@ -443,6 +443,7 @@ internal sealed class IdlDeclarationParser
                 unionOffset,
                 baseOffset + position + unionBody.Index,
                 currentNamespace,
+                discriminatorIdlType,
                 discriminatorQualified,
                 discriminatorIsEnum,
                 discriminatorEnum,
@@ -485,6 +486,7 @@ internal sealed class IdlDeclarationParser
         int offset,
         int sourceOffset,
         string? currentNamespace,
+        string discriminatorIdlType,
         string discriminatorQualified,
         bool discriminatorIsEnum,
         IdlEnum? discriminatorEnum,
@@ -509,10 +511,21 @@ internal sealed class IdlDeclarationParser
 
         if (branch.Groups[1].Success)
         {
-            foreach (Match match in Regex.Matches(branch.Groups[1].Value, @"case\s+(-?[0-9]+|[A-Za-z_]\w*)"))
+            foreach (Match match in Regex.Matches(branch.Groups[1].Value, @"case\s+(-?[0-9]+|'(?:\\.|[^'])'|[A-Za-z_]\w*)"))
             {
                 var label = match.Groups[1].Value;
-                if (int.TryParse(label, out var numericLabel))
+                if (discriminatorIdlType == "char" && TryParseCharacterLabel(label, out var characterLabel))
+                {
+                    labels.Add(label);
+                    labelValues.Add(characterLabel);
+                }
+                else if (discriminatorIdlType == "boolean" && label is "TRUE" or "FALSE")
+                {
+                    var booleanLabel = label == "TRUE";
+                    labels.Add(booleanLabel ? "true" : "false");
+                    labelValues.Add(booleanLabel ? 1 : 0);
+                }
+                else if (int.TryParse(label, out var numericLabel))
                 {
                     labels.Add(numericLabel.ToString());
                     labelValues.Add(numericLabel);
@@ -530,6 +543,36 @@ internal sealed class IdlDeclarationParser
         }
 
         return (new IdlUnionBranch(field, labels, labelValues, branch.Groups[2].Success), branch.Length);
+    }
+
+    private static bool TryParseCharacterLabel(string label, out int value)
+    {
+        value = 0;
+        if (label.Length < 3 || label[0] != '\'' || label[^1] != '\'')
+        {
+            return false;
+        }
+
+        var content = label[1..^1];
+        var character = content switch
+        {
+            "\\n" => '\n',
+            "\\r" => '\r',
+            "\\t" => '\t',
+            "\\\\" => '\\',
+            "\\'" => '\'',
+            _ when content.Length == 1 => content[0],
+            _ => '\0'
+        };
+
+        if (content.Length != 1 && character == '\0')
+        {
+            return false;
+        }
+
+        value = character;
+
+        return true;
     }
 
     private IdlMember ParseUnionBranchField(IdlInput input, string branchName, string branchType, int sourceOffset, string? currentNamespace)

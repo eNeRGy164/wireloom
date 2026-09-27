@@ -36,6 +36,8 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "07-union-scoped",
         "07-union-multilabel",
         "07-union-short",
+        "07-union-char",
+        "07-union-boolean",
         "07-union-aliases",
         "08-keys",
         "08-key-nested",

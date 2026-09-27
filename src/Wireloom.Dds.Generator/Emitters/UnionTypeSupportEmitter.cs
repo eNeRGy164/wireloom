@@ -13,12 +13,13 @@ internal static class UnionTypeSupportEmitter
         var supportName = EscapeIdentifier(declaration.Name + "Support");
         var runtimeTypeName = declaration.Namespace is null ? typeName : $"{EscapeQualifiedIdentifier(declaration.Namespace)}.{typeName}";
         var idlTypeName = declaration.Namespace is null ? declaration.Name : $"{declaration.Namespace.Replace(".", "::")}::{declaration.Name}";
+        var nativeDiscriminatorType = NativeDiscriminatorType(declaration);
 
         var writer = CreateSource(implementationNamespace, UnmanagedTypeUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI native representation for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"public struct {unmanagedName} : INativeTopicType<{typeName}>");
-        writer.WriteLine($"private {declaration.DiscriminatorCSharpType} _discriminator;");
+        writer.WriteLine($"private {nativeDiscriminatorType} _discriminator;");
         writer.BlankLine();
 
         foreach (var branch in declaration.Branches)
@@ -157,11 +158,11 @@ internal static class UnionTypeSupportEmitter
             writer.WriteXmlParam("sample", "The managed sample to copy.");
             writer.WriteXmlParam("keysOnly", "Whether to copy only key members.");
             writer.OpenBlock($"public void ToNative({typeName} sample, bool keysOnly = false)");
-            writer.WriteLine("_discriminator = sample.Discriminator;");
+            writer.WriteLine($"_discriminator = {NativeDiscriminatorWriteExpression(declaration, "sample.Discriminator")};");
             writer.BlankLine();
         }
 
-        writer.OpenBlock("switch (_discriminator)");
+        writer.OpenBlock($"switch ({NativeDiscriminatorReadExpression(declaration)})");
 
         foreach (var branch in declaration.Branches.Where(branch => !branch.IsDefault))
         {
@@ -183,7 +184,7 @@ internal static class UnionTypeSupportEmitter
                     var valueExpression = branch.Plan.BuildFromNativeValueExpression();
                     if (valueExpression is not null)
                     {
-                        statement = $"sample.Set{EscapeIdentifier(branch.Field.Name)}({valueExpression}, _discriminator);";
+                        statement = $"sample.Set{EscapeIdentifier(branch.Field.Name)}({valueExpression}, {NativeDiscriminatorReadExpression(declaration)});";
                     }
                 }
 
@@ -199,25 +200,29 @@ internal static class UnionTypeSupportEmitter
             writer.Unindent();
         }
 
-        writer.WriteLine("default:");
-        writer.Indent();
-
-        var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
-        if (defaultBranch is not null)
+        if (!IsExhaustiveBooleanUnion(declaration))
         {
-            if (fromNative)
+            writer.WriteLine("default:");
+            writer.Indent();
+
+            var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
+            if (defaultBranch is not null)
             {
-                EmitManagedBranchInitialization(writer, defaultBranch);
-                writer.WriteLine(defaultBranch.Plan.BuildFromNativeStatement(false, implementationNamespace));
+                if (fromNative)
+                {
+                    EmitManagedBranchInitialization(writer, defaultBranch);
+                    writer.WriteLine(defaultBranch.Plan.BuildFromNativeStatement(false, implementationNamespace));
+                }
+                else
+                {
+                    writer.WriteLine(defaultBranch.Plan.BuildToNativeStatement(false, implementationNamespace));
+                }
             }
-            else
-            {
-                writer.WriteLine(defaultBranch.Plan.BuildToNativeStatement(false, implementationNamespace));
-            }
+
+            writer.WriteLine("break;");
+            writer.Unindent();
         }
 
-        writer.WriteLine("break;");
-        writer.Unindent();
         writer.CloseBlock();
         writer.CloseBlock();
     }
@@ -241,11 +246,13 @@ internal static class UnionTypeSupportEmitter
     {
         writer.BlankLine();
 
+        var defaultDiscriminator = $"{EscapeIdentifier(declaration.Name)}.DefaultDiscriminator";
+
         writer.WriteXmlSummary("Initializes this native union representation to its IDL default values.");
         writer.WriteXmlParam("allocatePointers", "Whether pointer members should be allocated.");
         writer.WriteXmlParam("allocateMemory", "Whether native memory should be allocated.");
         writer.OpenBlock("public void Initialize(bool allocatePointers = true, bool allocateMemory = true)");
-        writer.WriteLine($"_discriminator = {EscapeIdentifier(declaration.Name)}.DefaultDiscriminator;");
+        writer.WriteLine($"_discriminator = {NativeDiscriminatorWriteExpression(declaration, defaultDiscriminator)};");
 
         var initializationStatements = declaration.Branches
             .Select(branch => branch.Plan.UnionDefaultInitializationStatement(implementationNamespace))
@@ -268,4 +275,26 @@ internal static class UnionTypeSupportEmitter
 
         writer.CloseBlock();
     }
+
+    private static string NativeDiscriminatorType(IdlEmissionUnion declaration) =>
+        declaration.DiscriminatorCSharpType is "char" or "bool" ? "byte" : declaration.DiscriminatorCSharpType;
+
+    private static string NativeDiscriminatorReadExpression(IdlEmissionUnion declaration) =>
+        declaration.DiscriminatorCSharpType switch
+        {
+            "char" => "NativeChar.FromUtf8(_discriminator)",
+            "bool" => "Convert.ToBoolean(_discriminator)",
+            _ => "_discriminator"
+        };
+
+    private static string NativeDiscriminatorWriteExpression(IdlEmissionUnion declaration, string source) =>
+        declaration.DiscriminatorCSharpType switch
+        {
+            "char" => $"NativeChar.ToUtf8({source})",
+            "bool" => $"Convert.ToByte({source})",
+            _ => source
+        };
+
+    private static bool IsExhaustiveBooleanUnion(IdlEmissionUnion declaration) =>
+        declaration.DiscriminatorCSharpType == "bool" && !declaration.Branches.Any(branch => branch.IsDefault);
 }

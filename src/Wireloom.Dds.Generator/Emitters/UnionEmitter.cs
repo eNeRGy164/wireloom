@@ -45,7 +45,7 @@ internal static class UnionEmitter
         writer.BlankLine();
 
         writer.WriteXmlSummary("Gets the discriminator value used to initialize this union.");
-        writer.WriteLine($"public const {ManagedDiscriminatorType(declaration)} DefaultDiscriminator = 0;");
+        writer.WriteLine($"public const {ManagedDiscriminatorType(declaration)} DefaultDiscriminator = {ManagedDefaultDiscriminator(declaration)};");
 
         foreach (var branch in declaration.Branches)
         {
@@ -246,8 +246,12 @@ internal static class UnionEmitter
         }
 
         var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
-        var fallback = defaultBranch is null ? "null" : EscapeIdentifier(defaultBranch.Field.Name);
-        writer.WriteLine($"_ => {fallback},");
+        if (!IsExhaustiveBooleanUnion(declaration, defaultBranch))
+        {
+            var fallback = defaultBranch is null ? "null" : EscapeIdentifier(defaultBranch.Field.Name);
+            writer.WriteLine($"_ => {fallback},");
+        }
+
         writer.CloseBlock(";");
     }
 
@@ -274,7 +278,11 @@ internal static class UnionEmitter
             fallback = "HashCode.Combine(Discriminator)";
         }
 
-        writer.WriteLine($"_ => {fallback},");
+        if (!IsExhaustiveBooleanUnion(declaration, defaultBranch))
+        {
+            writer.WriteLine($"_ => {fallback},");
+        }
+
         writer.CloseBlock(";");
     }
 
@@ -294,7 +302,11 @@ internal static class UnionEmitter
         var fallback = defaultBranch is null
             ? "true"
             : $"{EscapeIdentifier(defaultBranch.Field.Name)}.Equals(other.{EscapeIdentifier(defaultBranch.Field.Name)})";
-        writer.WriteLine($"_ => {fallback},");
+        if (!IsExhaustiveBooleanUnion(declaration, defaultBranch))
+        {
+            writer.WriteLine($"_ => {fallback},");
+        }
+
         writer.CloseBlock(";");
     }
 
@@ -336,11 +348,27 @@ internal static class UnionEmitter
             candidate++;
         }
 
-        return candidate.ToString();
+        return declaration.DiscriminatorCSharpType switch
+        {
+            "bool" => candidate == 0 ? "false" : "true",
+            "char" when candidate == 0 => "'\\0'",
+            _ => candidate.ToString()
+        };
     }
 
     private static string ManagedDiscriminatorType(IdlEmissionUnion declaration) =>
         TypeReference(declaration.DiscriminatorCSharpType, declaration.Namespace);
+
+    private static string ManagedDefaultDiscriminator(IdlEmissionUnion declaration) =>
+        declaration.DiscriminatorCSharpType switch
+        {
+            "bool" => "false",
+            "char" => "'\\0'",
+            _ => "0"
+        };
+
+    private static bool IsExhaustiveBooleanUnion(IdlEmissionUnion declaration, UnionBranchEmissionPlan? defaultBranch) =>
+        declaration.DiscriminatorCSharpType == "bool" && defaultBranch is null;
 
     private static string ManagedDiscriminatorLabel(string label, IdlEmissionUnion declaration) =>
         TypeReference(label, declaration.Namespace);
