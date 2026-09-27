@@ -25,6 +25,9 @@ obj/
 # Stryker
 StrykerOutput/
 
+# Qodana
+.qodana/
+
 # project
 package-test-feed/
 coverage/
