@@ -122,6 +122,9 @@ jobs:
           format: cyclonedx-json
           output-file: ${{ env.ARTIFACTS_DIR }}/wireloom-dds-generator.sbom.cdx.json
           artifact-name: wireloom-dds-generator-release.sbom.cdx.json
+          # Immutable GitHub releases reject post-publication asset uploads.
+          # The SBOM remains available through upload-artifact and is attested below.
+          upload-release-assets: false
 
       - name: Attest package provenance
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
