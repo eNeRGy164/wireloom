@@ -88,11 +88,12 @@ public sealed class GeneratorSpecs
         var result = Run(idl, LanguageVersion.CSharp12, metadata, includeRuntime: true);
 
         // Assert
-        var diagnostic = result.Diagnostics.Single(diagnostic => diagnostic.Id == "DDSG0101");
+        var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0101");
         diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
         diagnostic.GetMessage().ShouldBe("Annotation '@custom_unknown' is not recognized and will be ignored.");
         diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
-        result.Output.SyntaxTrees.Any(tree => tree.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeTrue();
+
+        result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeTrue();
     }
 
     [Fact]
@@ -106,12 +107,33 @@ public sealed class GeneratorSpecs
         var result = Run(idl, LanguageVersion.CSharp12, metadata, includeRuntime: true);
 
         // Assert
-        var diagnostic = result.Diagnostics.Single(diagnostic => diagnostic.Id == "DDSG0102");
+        var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0102");
         diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
         diagnostic.GetMessage().ShouldBe("Annotation 'position' is recognized but unsupported and will be ignored.");
         diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
-        result.Diagnostics.ShouldContain(candidate => candidate.Id == "DDSG0001");
-        result.Output.SyntaxTrees.Any(tree => tree.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeFalse();
+
+        result.Diagnostics.ShouldContain(d => d.Id == "DDSG0001");
+        result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ReportsAndIgnoresNonDdsInterface()
+    {
+        // Arrange
+        var idl = "module Sample { interface Service { void ping(); }; };";
+        var metadata = new Dictionary<string, string>();
+
+        // Act
+        var result = Run(idl, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0103");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
+        diagnostic.GetMessage().ShouldBe("The interface 'Service' is ignored because it is not a DDS service.");
+        diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
+
+        result.Diagnostics.ShouldNotContain(d => d.Id == "DDSG0001");
+        result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Service", StringComparison.Ordinal)).ShouldBeFalse();
     }
 
     [Fact]

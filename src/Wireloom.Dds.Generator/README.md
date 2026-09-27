@@ -133,6 +133,7 @@ pre-generation step.
 | `DDSG0003` | A compatible RTI runtime was not found                  | Add an explicit `Rti.ConnextDds` reference at the tested compatible version                      |
 | `DDSG0101` | An unknown IDL annotation was ignored                   | Verify the annotation is supported by the managed generator if it affects the generated contract |
 | `DDSG0102` | A recognized but unsupported IDL annotation was ignored | Remove the annotation or use a supported declaration context                                     |
+| `DDSG0103` | A non-DDS IDL interface was ignored                     | Use a DDS service interface when interface generation is required                                |
 
 Diagnostics are owned by the generator and use the original IDL/include
 location where one is available. Configure severity through standard

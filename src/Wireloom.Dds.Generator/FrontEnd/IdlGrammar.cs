@@ -35,6 +35,9 @@ internal static class IdlGrammar
     internal static readonly Regex StructPattern = new(
         @"^(?:(?<nested>@nested\s+))?(?:(?<extensibility>@(?:final|appendable|mutable)\s+))?(?:(?<nestedAfter>@nested\s+))?(?:struct|valuetype)\s+(?<name>[A-Za-z_]\w*)(?:\s*:\s*(?<base>(?:::)?[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*))?\s*\{(?<body>[^{}]*)\}\s*;",
         RegexOptions.Compiled);
+    internal static readonly Regex InterfacePattern = new(
+        @"^interface\s+(?<name>[A-Za-z_]\w*)\s*\{(?<body>[^{}]*)\}\s*;",
+        RegexOptions.Compiled);
     internal static readonly Regex UnionPattern = new(
         @"^(?:(?<nested>@nested\s+))?(?:(?<extensibility>@appendable\s+))?(?:(?<nestedAfter>@nested\s+))?union\s+(?<name>[A-Za-z_]\w*)\s+switch\s*\(\s*(?<discriminator>boolean|char|short|long|unsigned\s+short|unsigned\s+long|(?:::)?[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*)\s*\)\s*\{(?<body>[^{}]*)\}\s*;",
         RegexOptions.Compiled);

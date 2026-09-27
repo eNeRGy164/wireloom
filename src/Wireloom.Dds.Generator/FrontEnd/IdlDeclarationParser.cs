@@ -111,7 +111,8 @@ internal sealed class IdlDeclarationParser
                 continue;
             }
 
-            if (TryParseModule(declarations, input, baseOffset, currentNamespace, ref position) ||
+            if (TryParseInterface(declarations, input, baseOffset, ref position) ||
+                TryParseModule(declarations, input, baseOffset, currentNamespace, ref position) ||
                 TryParseConstant(declarations, input, baseOffset, currentNamespace, ref position) ||
                 TryParseEnum(declarations, input, baseOffset, currentNamespace, ref position) ||
                 TryParseTypedef(declarations, input, baseOffset, currentNamespace, ref position))
@@ -194,6 +195,21 @@ internal sealed class IdlDeclarationParser
         AddClass(fullyQualifiedName, parsedDeclaration);
 
         return declarationStart - position + declaration.Length;
+    }
+
+    private bool TryParseInterface(string declarations, IdlInput input, int baseOffset, ref int position)
+    {
+        var @interface = InterfacePattern.Match(declarations[position..]);
+        if (!@interface.Success)
+        {
+            return false;
+        }
+
+        diagnostics?.Add(new IdlDiagnostic("DDSG0103", input, baseOffset + position, $"The interface '{@interface.Groups["name"].Value}' is ignored because it is not a DDS service."));
+
+        position += @interface.Length;
+
+        return true;
     }
 
     private List<IdlMember> ParseStructMembers(IdlInput input, string body, int sourceOffset, string? currentNamespace, bool useHashIds = false)

@@ -9,6 +9,7 @@
 | DDSG0003 | DDS Source Generator | Error    | Compatible RTI runtime not found                                                  |
 | DDSG0101 | DDS Source Generator | Warning  | Unknown IDL annotation is ignored                                                 |
 | DDSG0102 | DDS Source Generator | Warning  | Recognized but unsupported IDL annotation is ignored before contextual validation |
+| DDSG0103 | DDS Source Generator | Warning  | Non-DDS interface is ignored                                                      |
 
 ### Changed Rules
 

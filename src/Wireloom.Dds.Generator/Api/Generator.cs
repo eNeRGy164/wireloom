@@ -53,6 +53,14 @@ public sealed class Generator : IIncrementalGenerator
         DiagnosticSeverity.Warning,
         true);
 
+    private static readonly DiagnosticDescriptor IgnoredInterfaceWarning = new(
+        "DDSG0103",
+        "Non-DDS interface ignored",
+        "{0}",
+        "DDS Source Generator",
+        DiagnosticSeverity.Warning,
+        true);
+
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -113,6 +121,7 @@ public sealed class Generator : IIncrementalGenerator
             var descriptor = diagnostic.Id switch
             {
                 "DDSG0102" => UnsupportedAnnotationWarning,
+                "DDSG0103" => IgnoredInterfaceWarning,
                 _ => UnknownAnnotationWarning
             };
 
