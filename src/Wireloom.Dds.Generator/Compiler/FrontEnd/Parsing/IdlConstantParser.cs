@@ -5,9 +5,15 @@ using static Wireloom.Compiler.Naming.IdlNaming;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing;
 
-internal sealed partial class IdlDeclarationParser
+/// <summary>Parses IDL constant declarations and validates their values.</summary>
+internal sealed class IdlConstantParser
 {
-    private bool TryParseConstant(string declarations, IdlInput input, int baseOffset, string? currentNamespace, ref int position)
+    private readonly IdlParseContext context;
+
+    internal IdlConstantParser(IdlParseContext context)
+        => this.context = context;
+
+    internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, ref int position)
     {
         var constant = ConstantPattern.Match(declarations[position..]);
         if (!constant.Success)
@@ -16,16 +22,16 @@ internal sealed partial class IdlDeclarationParser
         }
 
         var name = constant.Groups["name"].Value;
-        var qualified = Qualify(name, currentNamespace);
-        EnsureNewName(input, baseOffset + position, qualified);
+        var qualified = context.Qualify(name, currentNamespace);
+        context.EnsureNewName(input, baseOffset + position, qualified);
 
         var type = NormalizeIdlType(constant.Groups["type"].Value);
         var expression = constant.Groups["expression"].Value.Trim();
         var integerValue = TryEvaluateIntegerConstant(input, baseOffset + position, type, expression, currentNamespace);
         var declaration = new IdlConstantDeclaration(name, type, expression, currentNamespace, Path.GetFileName(input.Path), integerValue);
 
-        symbols.AddConstant(qualified, declaration);
-        declarationQueue.Add(declaration);
+        context.Symbols.AddConstant(qualified, declaration);
+        context.Declarations.Add(declaration);
 
         position += constant.Length;
 
@@ -41,7 +47,7 @@ internal sealed partial class IdlDeclarationParser
 
         try
         {
-            var value = IdlConstantExpressionEvaluator.Evaluate(expression, symbols, currentNamespace);
+            var value = IdlConstantExpressionEvaluator.Evaluate(expression, context.Symbols, currentNamespace);
 
             ValidateConstantRange(input, offset, type, value);
 
@@ -53,7 +59,7 @@ internal sealed partial class IdlDeclarationParser
         }
     }
 
-    private static void ValidateConstantRange(IdlInput input, int offset, string type, BigInteger value)
+    internal static void ValidateConstantRange(IdlInput input, int offset, string type, BigInteger value)
     {
         var (minimum, maximum) = type switch
         {

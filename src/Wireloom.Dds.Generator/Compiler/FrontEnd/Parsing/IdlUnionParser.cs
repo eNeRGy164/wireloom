@@ -6,9 +6,15 @@ using static Wireloom.Compiler.Naming.IdlNaming;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing;
 
-internal sealed partial class IdlDeclarationParser
+/// <summary>Parses IDL union declarations and branches.</summary>
+internal sealed class IdlUnionParser
 {
-    private bool TryParseUnion(string declarations, IdlInput input, int baseOffset, string? currentNamespace, ref int position)
+    private readonly IdlParseContext context;
+
+    internal IdlUnionParser(IdlParseContext context) =>
+        this.context = context;
+
+    internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, ref int position)
     {
         var unionDeclaration = UnionPattern.Match(declarations.Substring(position));
         if (!unionDeclaration.Success)
@@ -17,11 +23,11 @@ internal sealed partial class IdlDeclarationParser
         }
 
         var unionName = unionDeclaration.Groups["name"].Value;
-        var qualified = Qualify(unionName, currentNamespace);
-        EnsureNewName(input, baseOffset + position, qualified);
+        var qualified = context.Qualify(unionName, currentNamespace);
+        context.EnsureNewName(input, baseOffset + position, qualified);
         var discriminatorIdlType = NormalizeIdlType(unionDeclaration.Groups["discriminator"].Value);
         var discriminatorQualified = ResolveTypeName(discriminatorIdlType, currentNamespace);
-        var discriminatorIsEnum = symbols.TryGetEnum(discriminatorQualified, out var discriminatorEnum);
+        var discriminatorIsEnum = context.Symbols.TryGetEnum(discriminatorQualified, out var discriminatorEnum);
         var unionBody = unionDeclaration.Groups["body"];
         var branches = new List<IdlUnionBranch>();
         var branchNames = new HashSet<string>(StringComparer.Ordinal);
@@ -62,21 +68,14 @@ internal sealed partial class IdlDeclarationParser
             discriminatorIdlType,
             discriminatorIsEnum,
             branches,
-            ParseExtensibility(unionDeclaration.Groups["extensibility"].Value));
-        symbols.AddUnion(qualified, parsedUnion);
-        declarationQueue.Add(new IdlUnionDeclaration(parsedUnion, Path.GetFileName(input.Path)));
+            IdlParseContext.ParseExtensibility(unionDeclaration.Groups["extensibility"].Value));
+        context.Symbols.AddUnion(qualified, parsedUnion);
+        context.Declarations.Add(new IdlUnionDeclaration(parsedUnion, Path.GetFileName(input.Path)));
 
         position += unionDeclaration.Length;
 
         return true;
     }
-
-    private static IdlExtensibilityKind ParseExtensibility(string annotation) => annotation.Trim() switch
-    {
-        "@final" => IdlExtensibilityKind.Final,
-        "@mutable" => IdlExtensibilityKind.Mutable,
-        _ => IdlExtensibilityKind.Extensible
-    };
 
     private (IdlUnionBranch Branch, int Length) ParseUnionBranch(
         IdlInput input,
@@ -177,9 +176,9 @@ internal sealed partial class IdlDeclarationParser
     {
         if (branchType.StartsWith("sequence", StringComparison.Ordinal))
         {
-            var (ElementType, Bound) = ParseSequenceType(input, sourceOffset, branchType, currentNamespace);
+            var (ElementType, Bound) = context.TypeParser.ParseSequenceType(input, sourceOffset, branchType, currentNamespace);
 
-            var element = ResolveFieldType(ElementType, currentNamespace, input, sourceOffset);
+            var element = context.ResolveFieldType(ElementType, currentNamespace, input, sourceOffset);
             if (element is null)
             {
                 throw new IdlException(input, sourceOffset, $"Unknown union collection element type: {ElementType}");
@@ -191,7 +190,7 @@ internal sealed partial class IdlDeclarationParser
         if (branchType.StartsWith("string", StringComparison.Ordinal) ||
             branchType.StartsWith("wstring", StringComparison.Ordinal))
         {
-            var bound = ParseStringBound(input, sourceOffset, branchType, currentNamespace, "Union string bound must be a positive Int32.");
+            var bound = context.TypeParser.ParseStringBound(input, sourceOffset, branchType, currentNamespace, "Union string bound must be a positive Int32.");
 
             return new IdlMember(branchName, new IdlType.StringType(branchType.StartsWith("wstring", StringComparison.Ordinal), bound));
         }
@@ -201,7 +200,7 @@ internal sealed partial class IdlDeclarationParser
             return new IdlMember(branchName, new IdlType.Primitive(NormalizeIdlType(branchType)));
         }
 
-        var resolved = ResolveFieldType(branchType, currentNamespace, input, sourceOffset);
+        var resolved = context.ResolveFieldType(branchType, currentNamespace, input, sourceOffset);
         if (resolved is null)
         {
             throw new IdlException(input, sourceOffset, $"Unknown union branch type: {branchType}");
@@ -209,5 +208,4 @@ internal sealed partial class IdlDeclarationParser
 
         return new IdlMember(branchName, resolved);
     }
-
 }

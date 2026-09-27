@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using Wireloom.Compiler.FrontEnd.Semantic;
 
@@ -6,9 +8,15 @@ using static Wireloom.Compiler.Naming.IdlNaming;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing;
 
-internal sealed partial class IdlDeclarationParser
+/// <summary>Parses IDL member types, annotations, bounds, and dimensions.</summary>
+internal sealed class IdlTypeParser
 {
-    private (IdlMember Field, int Length) ParseMember(IdlInput input, string body, int offset, int sourceOffset, string? currentNamespace, HashSet<string> members, bool useHashIds = false)
+    private readonly IdlParseContext context;
+
+    internal IdlTypeParser(IdlParseContext context) =>
+        this.context = context;
+
+    internal (IdlMember Field, int Length) ParseMember(IdlInput input, string body, int offset, int sourceOffset, string? currentNamespace, HashSet<string> members, bool useHashIds = false)
     {
         var (annotations, annotationsLength) = ParseMemberAnnotations(input, body, offset, sourceOffset);
         offset += annotationsLength;
@@ -36,7 +44,7 @@ internal sealed partial class IdlDeclarationParser
         {
             var (ElementType, Bound) = ParseSequenceType(input, memberSourceOffset, kind, currentNamespace);
 
-            var element = ResolveFieldType(ElementType, currentNamespace, input, memberSourceOffset);
+            var element = context.ResolveFieldType(ElementType, currentNamespace, input, memberSourceOffset);
             if (element is null)
             {
                 throw new IdlException(input, memberSourceOffset, $"Unknown collection element type: {ElementType}");
@@ -46,7 +54,7 @@ internal sealed partial class IdlDeclarationParser
         }
         else if (dimensions.Count > 0)
         {
-            var element = ResolveFieldType(kind, currentNamespace, input, memberSourceOffset);
+            var element = context.ResolveFieldType(kind, currentNamespace, input, memberSourceOffset);
             if (element is null)
             {
                 throw new IdlException(input, memberSourceOffset, $"Unknown collection element type: {kind}");
@@ -71,7 +79,7 @@ internal sealed partial class IdlDeclarationParser
         }
         else
         {
-            var resolved = ResolveFieldType(kind, currentNamespace, input, memberSourceOffset);
+            var resolved = context.ResolveFieldType(kind, currentNamespace, input, memberSourceOffset);
             if (resolved is null)
             {
                 throw new IdlException(input, memberSourceOffset, $"Unknown struct type: {kind}");
@@ -87,7 +95,7 @@ internal sealed partial class IdlDeclarationParser
 
         if (parsedType is IdlType.Sequence { Dimensions.Count: > 0 })
         {
-            diagnostics?.Add(new IdlDiagnostic("DDSG0105", input, memberSourceOffset, $"The C# binding does not support arrays of sequences without using a typedef; generated code for member '{field}' may not match IDL semantics."));
+            context.Diagnostics?.Add(new IdlDiagnostic("DDSG0105", input, memberSourceOffset, $"The C# binding does not support arrays of sequences without using a typedef; generated code for member '{field}' may not match IDL semantics."));
         }
 
         var valueMetadata = ResolveMemberValueMetadata(input, memberSourceOffset, currentNamespace, parsedType, annotations);
@@ -339,12 +347,12 @@ internal sealed partial class IdlDeclarationParser
 
             if (minimum is { } minimumValue)
             {
-                ValidateConstantRange(input, offset, primitive.Name, minimumValue);
+                IdlConstantParser.ValidateConstantRange(input, offset, primitive.Name, minimumValue);
             }
 
             if (maximum is { } maximumValue)
             {
-                ValidateConstantRange(input, offset, primitive.Name, maximumValue);
+                IdlConstantParser.ValidateConstantRange(input, offset, primitive.Name, maximumValue);
             }
 
             if (minimum is { } lower && maximum is { } upper && lower > upper)
@@ -358,11 +366,11 @@ internal sealed partial class IdlDeclarationParser
             if (valueType is IdlType.Primitive primitive)
             {
                 defaultValue = EvaluateMemberInteger(input, offset, currentNamespace, annotations.DefaultExpression, "default");
-                ValidateConstantRange(input, offset, primitive.Name, defaultValue.Value);
+                IdlConstantParser.ValidateConstantRange(input, offset, primitive.Name, defaultValue.Value);
             }
             else if (valueType is IdlType.Enum @enum)
             {
-                if (!symbols.TryGetEnum(@enum.QualifiedName, out var enumDeclaration))
+                if (!context.Symbols.TryGetEnum(@enum.QualifiedName, out var enumDeclaration))
                 {
                     throw new IdlException(input, offset, $"Unknown enum type: {@enum.QualifiedName}");
                 }
@@ -390,7 +398,7 @@ internal sealed partial class IdlDeclarationParser
     {
         try
         {
-            return IdlConstantExpressionEvaluator.Evaluate(expression, symbols, currentNamespace);
+            return IdlConstantExpressionEvaluator.Evaluate(expression, context.Symbols, currentNamespace);
         }
         catch (FormatException exception)
         {
@@ -422,10 +430,21 @@ internal sealed partial class IdlDeclarationParser
         public bool IsMustUnderstand { get; set; }
     }
 
-    private int ResolveBound(IdlInput input, int offset, string text, string? currentNamespace, string diagnosticName = "Collection bound") =>
-        validator.ResolveBound(input, offset, text, currentNamespace, diagnosticName);
+    private static int ComputeHashMemberId(string value)
+    {
+        using var md5 = MD5.Create();
+        var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(value));
+        var littleEndian = (uint)(hash[0] |
+            (hash[1] << 8) |
+            (hash[2] << 16) |
+            (hash[3] << 24));
+        return (int)(littleEndian & 0x0FFFFFFF);
+    }
 
-    private IReadOnlyList<int> ParseDimensions(IdlInput input, int offset, string text, string? currentNamespace)
+    internal int ResolveBound(IdlInput input, int offset, string text, string? currentNamespace, string diagnosticName = "Collection bound") =>
+        context.Validator.ResolveBound(input, offset, text, currentNamespace, diagnosticName);
+
+    internal IReadOnlyList<int> ParseDimensions(IdlInput input, int offset, string text, string? currentNamespace)
     {
         var result = new List<int>();
 
@@ -442,7 +461,7 @@ internal sealed partial class IdlDeclarationParser
         return result;
     }
 
-    private int ParseStringBound(IdlInput input, int offset, string type, string? currentNamespace, string errorMessage)
+    internal int ParseStringBound(IdlInput input, int offset, string type, string? currentNamespace, string errorMessage)
     {
         var bound = 255;
 
@@ -455,7 +474,7 @@ internal sealed partial class IdlDeclarationParser
         return bound;
     }
 
-    private (string ElementType, int? Bound) ParseSequenceType(IdlInput input, int offset, string type, string? currentNamespace)
+    internal (string ElementType, int? Bound) ParseSequenceType(IdlInput input, int offset, string type, string? currentNamespace)
     {
         var inner = type.Substring(type.IndexOf('<') + 1, type.LastIndexOf('>') - type.IndexOf('<') - 1);
         var parts = inner.Split(',');

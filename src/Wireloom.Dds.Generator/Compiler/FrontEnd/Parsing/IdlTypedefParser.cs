@@ -5,23 +5,29 @@ using static Wireloom.Compiler.Naming.IdlNaming;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing;
 
-internal sealed partial class IdlDeclarationParser
+/// <summary>Parses IDL typedef declarations.</summary>
+internal sealed class IdlTypedefParser
 {
-    private bool TryParseTypedef(string declarations, IdlInput input, int baseOffset, string? currentNamespace, ref int position)
+    private readonly IdlParseContext context;
+
+    internal IdlTypedefParser(IdlParseContext context) =>
+        this.context = context;
+
+    internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, ref int position)
     {
         var sequenceTypedef = SequenceTypedefPattern.Match(declarations.Substring(position));
         if (sequenceTypedef.Success)
         {
             var sequenceName = sequenceTypedef.Groups[3].Value;
-            var qualified = Qualify(sequenceName, currentNamespace);
-            EnsureNewName(input, baseOffset + position, qualified);
+            var qualified = context.Qualify(sequenceName, currentNamespace);
+            context.EnsureNewName(input, baseOffset + position, qualified);
             var target = NormalizeIdlType(sequenceTypedef.Groups[1].Value);
             var bound = sequenceTypedef.Groups[2].Success
-                ? ResolveBound(input, baseOffset + position, sequenceTypedef.Groups[2].Value, currentNamespace)
+                ? context.TypeParser.ResolveBound(input, baseOffset + position, sequenceTypedef.Groups[2].Value, currentNamespace)
                 : (int?)null;
             var parsedSequence = new IdlTypedef(sequenceName, currentNamespace, "sequence", target, bound);
-            symbols.AddTypedef(qualified, parsedSequence);
-            declarationQueue.Add(new IdlTypedefDeclaration(parsedSequence, Path.GetFileName(input.Path)));
+            context.Symbols.AddTypedef(qualified, parsedSequence);
+            context.Declarations.Add(new IdlTypedefDeclaration(parsedSequence, Path.GetFileName(input.Path)));
 
             position += sequenceTypedef.Length;
 
@@ -32,9 +38,9 @@ internal sealed partial class IdlDeclarationParser
         if (arrayTypedef.Success)
         {
             var typedefName = arrayTypedef.Groups[2].Value;
-            var qualified = Qualify(typedefName, currentNamespace);
-            EnsureNewName(input, baseOffset + position, qualified);
-            var dimensions = ParseDimensions(input, baseOffset + position, arrayTypedef.Groups[3].Value, currentNamespace);
+            var qualified = context.Qualify(typedefName, currentNamespace);
+            context.EnsureNewName(input, baseOffset + position, qualified);
+            var dimensions = context.TypeParser.ParseDimensions(input, baseOffset + position, arrayTypedef.Groups[3].Value, currentNamespace);
             var parsedArray = new IdlTypedef(
                 typedefName,
                 currentNamespace,
@@ -42,8 +48,8 @@ internal sealed partial class IdlDeclarationParser
                 NormalizeIdlType(arrayTypedef.Groups[1].Value),
                 null,
                 dimensions);
-            symbols.AddTypedef(qualified, parsedArray);
-            declarationQueue.Add(new IdlTypedefDeclaration(parsedArray, Path.GetFileName(input.Path)));
+            context.Symbols.AddTypedef(qualified, parsedArray);
+            context.Declarations.Add(new IdlTypedefDeclaration(parsedArray, Path.GetFileName(input.Path)));
 
             position += arrayTypedef.Length;
 
@@ -57,14 +63,14 @@ internal sealed partial class IdlDeclarationParser
         }
 
         var name = typedefDeclaration.Groups[2].Value;
-        var typeName = Qualify(name, currentNamespace);
-        EnsureNewName(input, baseOffset + position, typeName);
+        var typeName = context.Qualify(name, currentNamespace);
+        context.EnsureNewName(input, baseOffset + position, typeName);
         var typedefTarget = NormalizeIdlType(typedefDeclaration.Groups[1].Value);
         if (typedefTarget.StartsWith("string", StringComparison.Ordinal) ||
             typedefTarget.StartsWith("wstring", StringComparison.Ordinal))
         {
             var isWideString = typedefTarget.StartsWith("wstring", StringComparison.Ordinal);
-            var bound = ParseStringBound(
+            var bound = context.TypeParser.ParseStringBound(
                 input,
                 baseOffset + position,
                 typedefTarget,
@@ -78,8 +84,8 @@ internal sealed partial class IdlDeclarationParser
                 null,
                 stringBound: bound,
                 isWideString: isWideString);
-            symbols.AddTypedef(typeName, parsedStringTypedef);
-            declarationQueue.Add(new IdlTypedefDeclaration(parsedStringTypedef, Path.GetFileName(input.Path)));
+            context.Symbols.AddTypedef(typeName, parsedStringTypedef);
+            context.Declarations.Add(new IdlTypedefDeclaration(parsedStringTypedef, Path.GetFileName(input.Path)));
 
             position += typedefDeclaration.Length;
 
@@ -92,14 +98,14 @@ internal sealed partial class IdlDeclarationParser
             typedefTarget,
             null,
             null);
-        symbols.AddTypedef(typeName, parsedTypedef);
-        declarationQueue.Add(new IdlTypedefDeclaration(parsedTypedef, Path.GetFileName(input.Path)));
+        context.Symbols.AddTypedef(typeName, parsedTypedef);
+        context.Declarations.Add(new IdlTypedefDeclaration(parsedTypedef, Path.GetFileName(input.Path)));
 
         position += typedefDeclaration.Length;
 
         return true;
     }
 
-    private void ValidateTypedef(IdlInput input, int offset, string name) =>
-        validator.ValidateTypedef(input, offset, name);
+    internal void Validate(IdlInput input, int offset, string name) =>
+        context.Validator.ValidateTypedef(input, offset, name);
 }
