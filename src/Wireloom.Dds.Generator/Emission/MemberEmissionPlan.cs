@@ -66,6 +66,9 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public string? DefaultExpression => Field.ValueMetadata?.DefaultExpression;
     public string? Unit => Field.ValueMetadata?.Unit;
     public bool IsExternal => Field.IsExternal;
+    public bool IsMustUnderstand => Field.IsMustUnderstand;
+    public string? MemberIdHashSource => Field.MemberIdHashSource;
+    public bool UsesAutoIdHash => Field.UsesAutoIdHash;
     public bool HasExplicitDefault => DefaultValue is not null;
     public bool HasManagedRange => MinimumValue is not null || MaximumValue is not null;
     public string ManagedBackingFieldName => "_" + EscapedName;

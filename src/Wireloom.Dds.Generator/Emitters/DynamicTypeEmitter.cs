@@ -75,9 +75,10 @@ internal static class DynamicTypeEmitter
             var field = fields[index];
             var key = field.IsKey ? ", isKey: true" : string.Empty;
             var optional = field.IsOptional ? ", isOptional: true" : string.Empty;
+            var mustUnderstand = field.IsMustUnderstand ? ", isMustUnderstand: true" : string.Empty;
             var comma = index == fields.Count - 1 ? string.Empty : ",";
 
-            writer.WriteLine($"new StructMember(\"{field.Name}\", {field.BuildDynamicTypeExpression(implementationNamespace, runtimeTypeName, isRecursive)}{key}{optional}, id: {field.MemberId ?? inheritedFields.Count + index}){comma}");
+            writer.WriteLine($"new StructMember(\"{field.Name}\", {field.BuildDynamicTypeExpression(implementationNamespace, runtimeTypeName, isRecursive)}{key}{optional}{mustUnderstand}, id: {field.MemberId ?? inheritedFields.Count + index}){comma}");
         }
 
         writer.CloseBlock(";");

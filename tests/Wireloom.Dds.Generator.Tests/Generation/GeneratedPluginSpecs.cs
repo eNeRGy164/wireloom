@@ -136,5 +136,33 @@ public sealed class GeneratedPluginSpecs
         plugin.ShouldContain("result.SetMemberAnnotations(2, annotations);");
         plugin.ShouldNotContain("result.SetMemberAnnotations(3, annotations);");
     }
-}
 
+    [Fact]
+    [Trait("Corpus", "C040")]
+    public void AutoIdHashAndHashIdAnnotationsProduceXTypesMemberIds()
+    {
+        // Arrange
+        var input = Input("autoid-hash.idl",
+            """
+            module AutoIdHash {
+                @autoid(HASH) @appendable struct Sample {
+                    @must_understand @hashid("stable_id") long id;
+                    @hashid string<16> text;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["AutoIdHash.Sample.g.cs"].Source;
+        managed.ShouldContain("Its DDS member ID is generated from the hash of <c>stable_id</c> through <c>@hashid</c>.");
+        managed.ShouldContain("This member is marked as must-understand by DDS.");
+        managed.ShouldContain("Its DDS member ID is generated from the hash of <c>text</c> through <c>@hashid</c>.");
+
+        var plugin = documents["AutoIdHash.Implementation.SamplePlugin.g.cs"].Source;
+        plugin.ShouldContain("new StructMember(\"id\", dtf.GetPrimitiveType<int>(), isMustUnderstand: true, id: 75475440)");
+        plugin.ShouldContain("new StructMember(\"text\", dtf.CreateString(16), id: 206680604)");
+    }
+}

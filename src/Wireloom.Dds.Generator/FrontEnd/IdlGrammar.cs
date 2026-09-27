@@ -20,6 +20,9 @@ internal static class IdlGrammar
     internal static readonly Regex DataRepresentationAnnotationPattern = new(
         @"^@data_representation\s*\(\s*[A-Za-z_]\w*\s*\)\s*",
         RegexOptions.Compiled);
+    internal static readonly Regex AutoIdAnnotationPattern = new(
+        @"^@autoid(?:\s*\(\s*(?<value>HASH|SEQUENTIAL)\s*\))?\s*",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
     internal static readonly Regex TopicAnnotationPattern = new(
         @"^@topic\b\s*",
         RegexOptions.Compiled);
@@ -82,6 +85,12 @@ internal static class IdlGrammar
         RegexOptions.Compiled);
     internal static readonly Regex ExternalAnnotationPattern = new(
         @"^@external\b\s*",
+        RegexOptions.Compiled);
+    internal static readonly Regex MustUnderstandAnnotationPattern = new(
+        @"^@must_understand\b\s*",
+        RegexOptions.Compiled);
+    internal static readonly Regex HashIdAnnotationPattern = new(
+        "^@hashid(?:\\s*\\(\\s*\\\"(?<value>[^\\\"]*)\\\"\\s*\\))?\\s*",
         RegexOptions.Compiled);
     internal static readonly Regex WhitespacePattern = new("\\s+", RegexOptions.Compiled);
 }

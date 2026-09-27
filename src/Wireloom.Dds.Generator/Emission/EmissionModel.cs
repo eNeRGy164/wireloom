@@ -108,7 +108,7 @@ internal sealed class ArrayEmissionType(EmissionTypePlan element, IReadOnlyList<
 /// shape is explicit; the forwarding properties are formatting conveniences.
 /// </summary>
 [PublicAPI]
-internal sealed class IdlEmissionField(string name, EmissionTypePlan type, bool isKey, int? memberId, bool isOptional, IdlMemberValueMetadata? valueMetadata, bool isExternal)
+internal sealed class IdlEmissionField(string name, EmissionTypePlan type, bool isKey, int? memberId, bool isOptional, IdlMemberValueMetadata? valueMetadata, bool isExternal, bool isMustUnderstand, string? memberIdHashSource, bool usesAutoIdHash)
 {
     public string Name { get; } = name;
     public EmissionTypePlan Type { get; } = type;
@@ -117,6 +117,9 @@ internal sealed class IdlEmissionField(string name, EmissionTypePlan type, bool 
     public bool IsOptional { get; } = isOptional;
     public IdlMemberValueMetadata? ValueMetadata { get; } = valueMetadata;
     public bool IsExternal { get; } = isExternal;
+    public bool IsMustUnderstand { get; } = isMustUnderstand;
+    public string? MemberIdHashSource { get; } = memberIdHashSource;
+    public bool UsesAutoIdHash { get; } = usesAutoIdHash;
     public string CSharpType => Type.CSharpType;
     public int? Bound => Type.Bound;
     public string? SupportType => Type.SupportType;

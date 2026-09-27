@@ -1,4 +1,6 @@
 using System.Numerics;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Wireloom;
@@ -99,9 +101,16 @@ internal sealed class IdlDeclarationParser
     private int ParseStruct(string declarations, IdlInput input, int baseOffset, string? currentNamespace, int position)
     {
         var isTopic = TopicAnnotationPattern.IsMatch(declarations[position..]);
+        var topicLength = isTopic ? TopicAnnotationPattern.Match(declarations[position..]).Length : 0;
+        var autoId = AutoIdAnnotationPattern.Match(declarations[(position + topicLength)..]);
         var declarationStart = isTopic
             ? position + TopicAnnotationPattern.Match(declarations[position..]).Length
             : position;
+        if (autoId.Success)
+        {
+            declarationStart += autoId.Length;
+        }
+
         var declaration = StructPattern.Match(declarations.Substring(declarationStart));
         if (!declaration.Success)
         {
@@ -121,7 +130,8 @@ internal sealed class IdlDeclarationParser
             "@mutable" => IdlExtensibilityKind.Mutable,
             _ => IdlExtensibilityKind.Extensible
         };
-        var fields = ParseStructMembers(input, body.Value, baseOffset + declarationStart + body.Index, currentNamespace);
+        var useHashIds = autoId.Success && string.Equals(autoId.Groups["value"].Value, "HASH", StringComparison.OrdinalIgnoreCase);
+        var fields = ParseStructMembers(input, body.Value, baseOffset + declarationStart + body.Index, currentNamespace, useHashIds);
         IdlSemanticValidator.ValidateMemberIds(input, baseOffset + declarationStart, fields);
 
         var parsedDeclaration = new IdlClassDeclaration(
@@ -141,7 +151,7 @@ internal sealed class IdlDeclarationParser
         return declarationStart - position + declaration.Length;
     }
 
-    private List<IdlMember> ParseStructMembers(IdlInput input, string body, int sourceOffset, string? currentNamespace)
+    private List<IdlMember> ParseStructMembers(IdlInput input, string body, int sourceOffset, string? currentNamespace, bool useHashIds = false)
     {
         var offset = 0;
         var members = new HashSet<string>(StringComparer.Ordinal);
@@ -155,7 +165,7 @@ internal sealed class IdlDeclarationParser
                 continue;
             }
 
-            var (Field, Length) = ParseMember(input, body, offset, sourceOffset, currentNamespace, members);
+            var (Field, Length) = ParseMember(input, body, offset, sourceOffset, currentNamespace, members, useHashIds);
             fields.Add(Field);
             offset += Length;
         }
@@ -618,7 +628,8 @@ internal sealed class IdlDeclarationParser
         int offset,
         int sourceOffset,
         string? currentNamespace,
-        HashSet<string> members)
+        HashSet<string> members,
+        bool useHashIds = false)
     {
         var (annotations, annotationsLength) = ParseMemberAnnotations(input, body, offset, sourceOffset);
         offset += annotationsLength;
@@ -696,12 +707,25 @@ internal sealed class IdlDeclarationParser
         }
 
         var valueMetadata = ResolveMemberValueMetadata(input, memberSourceOffset, currentNamespace, parsedType, annotations);
+        var memberId = annotations.MemberId;
+        var memberIdHashSource = annotations.HashIdExpression is not null
+            ? string.IsNullOrEmpty(annotations.HashIdExpression) ? field : annotations.HashIdExpression
+            : useHashIds ? field : null;
+        var usesAutoIdHash = useHashIds && annotations.MemberId is null && annotations.HashIdExpression is null;
+        if (memberId is null && memberIdHashSource is not null)
+        {
+            memberId = ComputeHashMemberId(memberIdHashSource);
+        }
+
         var metadata = new IdlMemberMetadata(
             annotations.IsKey,
             annotations.IsOptional,
-            annotations.MemberId,
+            memberId,
             valueMetadata,
-            annotations.IsExternal);
+            annotations.IsExternal,
+            annotations.IsMustUnderstand,
+            memberIdHashSource,
+            usesAutoIdHash);
 
         return (new IdlMember(field, parsedType, metadata), annotationsLength + member.Length);
     }
@@ -751,7 +775,7 @@ internal sealed class IdlDeclarationParser
             var idAnnotation = IdAnnotationPattern.Match(remaining);
             if (idAnnotation.Success)
             {
-                if (annotations.MemberId is not null || !int.TryParse(idAnnotation.Groups[1].Value, out var parsedId))
+                if (annotations.MemberId is not null || annotations.HashIdExpression is not null || !int.TryParse(idAnnotation.Groups[1].Value, out var parsedId))
                 {
                     throw new IdlException(input, sourceOffset + offset, "Duplicate or invalid @id annotation.");
                 }
@@ -759,6 +783,23 @@ internal sealed class IdlDeclarationParser
                 annotations.MemberId = parsedId;
                 offset += idAnnotation.Length;
                 length += idAnnotation.Length;
+
+                continue;
+            }
+
+            var hashIdAnnotation = HashIdAnnotationPattern.Match(remaining);
+            if (hashIdAnnotation.Success)
+            {
+                if (annotations.MemberId is not null || annotations.HashIdExpression is not null)
+                {
+                    throw new IdlException(input, sourceOffset + offset, "Duplicate or conflicting @id/@hashid annotation.");
+                }
+
+                annotations.HashIdExpression = hashIdAnnotation.Groups["value"].Success
+                    ? hashIdAnnotation.Groups["value"].Value
+                    : string.Empty;
+                offset += hashIdAnnotation.Length;
+                length += hashIdAnnotation.Length;
 
                 continue;
             }
@@ -859,6 +900,21 @@ internal sealed class IdlDeclarationParser
                 annotations.IsExternal = true;
                 offset += externalAnnotation.Length;
                 length += externalAnnotation.Length;
+
+                continue;
+            }
+
+            var mustUnderstandAnnotation = MustUnderstandAnnotationPattern.Match(remaining);
+            if (mustUnderstandAnnotation.Success)
+            {
+                if (annotations.IsMustUnderstand)
+                {
+                    throw new IdlException(input, sourceOffset + offset, "Duplicate @must_understand annotation.");
+                }
+
+                annotations.IsMustUnderstand = true;
+                offset += mustUnderstandAnnotation.Length;
+                length += mustUnderstandAnnotation.Length;
 
                 continue;
             }
@@ -982,11 +1038,24 @@ internal sealed class IdlDeclarationParser
         public bool IsKey { get; set; }
         public bool IsOptional { get; set; }
         public int? MemberId { get; set; }
+        public string? HashIdExpression { get; set; }
         public string? MinimumExpression { get; set; }
         public string? MaximumExpression { get; set; }
         public string? DefaultExpression { get; set; }
         public string? UnitExpression { get; set; }
         public bool IsExternal { get; set; }
+        public bool IsMustUnderstand { get; set; }
+    }
+
+    private static int ComputeHashMemberId(string value)
+    {
+        using var md5 = MD5.Create();
+        var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(value));
+        var littleEndian = (uint)(hash[0] |
+            (hash[1] << 8) |
+            (hash[2] << 16) |
+            (hash[3] << 24));
+        return (int)(littleEndian & 0x0FFFFFFF);
     }
 
     private void EnsureNewName(IdlInput input, int offset, string name) =>

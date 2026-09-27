@@ -51,6 +51,7 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "09-id-gaps",
         "09-evolution-optional",
         "09-optional-collections",
+        "09-autoid-hash",
         "09-defaults-ranges",
         "10-annotations",
         "10-annotations-extended",

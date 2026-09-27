@@ -63,6 +63,18 @@ internal static class ManagedDataTypeEmitter
                 propertySummary += $" {valueConstraintSummary}";
             }
 
+            if (field.MemberIdHashSource is string memberIdHashSource)
+            {
+                var escapedHashSource = System.Security.SecurityElement.Escape(memberIdHashSource);
+                var annotation = field.UsesAutoIdHash ? "<c>@autoid(HASH)</c>" : "<c>@hashid</c>";
+                propertySummary += $" Its DDS member ID is generated from the hash of <c>{escapedHashSource}</c> through {annotation}.";
+            }
+
+            if (field.IsMustUnderstand)
+            {
+                propertySummary += " This member is marked as must-understand by DDS.";
+            }
+
             writer.WriteXmlSummary(propertySummary);
 
             if (field.IsKey)
