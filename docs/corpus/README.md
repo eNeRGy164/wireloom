@@ -94,8 +94,8 @@ do not rewrite this Markdown table.
 
 1. Add a feature-bound IDL under the appropriate `idl/` group. Keep one theme
    per case and make the root explicit in `manifest.json`.
-2. Add required defines, include roots, and observed outcomes to
-   `manifest.json` where applicable.
+2. Add required defines, include roots, observed outcomes, and normalized
+   `observedDiagnostics` captured from RTI to `manifest.json` where applicable.
 3. Update [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md) with the case's feature,
    `C###` tag, IDL link, oracle link, and managed status.
 4. Run the applicable corpus, package, and integration tests.

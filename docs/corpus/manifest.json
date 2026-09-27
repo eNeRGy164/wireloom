@@ -32,7 +32,7 @@
     { "id": "04-boundaries", "theme": "bounded string boundaries", "idl": "idl/features/04-boundaries.idl", "defines": [] },
     { "id": "05-collections", "theme": "arrays and sequences", "idl": "idl/features/05-collections.idl", "defines": [] },
     { "id": "05-shapes", "theme": "collection compositions and aliases", "idl": "idl/features/05-shapes.idl", "defines": [] },
-    { "id": "05-array-of-sequences", "theme": "arrays of sequences", "idl": "idl/features/05-array-of-sequences.idl", "defines": [], "observedOutcome": "warning/ignored" },
+    { "id": "05-array-of-sequences", "theme": "arrays of sequences", "idl": "idl/features/05-array-of-sequences.idl", "defines": [], "observedOutcome": "warning/ignored", "observedDiagnostics": ["warning: C# binding does not support arrays of sequences without using typedef; generated code will not match the IDL semantic for CorpusArrayOfSequences::Sample::values", "warning: C# binding does not support arrays of sequences without using typedef; generated code will not match the IDL semantic for CorpusArrayOfSequences::Sample::names"] },
     { "id": "06-aggregates", "theme": "aggregates, inheritance and recursion", "idl": "idl/features/06-aggregates.idl", "defines": [] },
     { "id": "06-valuetypes", "theme": "valuetypes and value inheritance", "idl": "idl/features/06-valuetypes.idl", "defines": [] },
     { "id": "06-alias-composition", "theme": "composed aliases and constants", "idl": "idl/features/06-alias-composition.idl", "defines": [] },
@@ -61,7 +61,7 @@
     { "id": "10-annotations", "theme": "topic, key and default annotations", "idl": "idl/features/10-annotations.idl", "defines": [] },
     { "id": "10-annotations-extended", "theme": "nested and annotation combinations", "idl": "idl/features/10-annotations-extended.idl", "defines": [] },
     { "id": "10-annotations-rti", "theme": "RTI generation annotations", "idl": "idl/features/10-annotations-rti.idl", "defines": [] },
-    { "id": "10-flat-data-binding", "theme": "RTI FlatData language binding", "idl": "idl/features/10-flat-data-binding.idl", "defines": [], "observedOutcome": "warning/ignored" },
+    { "id": "10-flat-data-binding", "theme": "RTI FlatData language binding", "idl": "idl/features/10-flat-data-binding.idl", "defines": [], "observedOutcome": "warning/ignored", "observedDiagnostics": ["warning: @language_binding(FLAT_DATA) is not compatible with C# and will be ignored"] },
     { "id": "11-preprocessing", "theme": "include closure and command-line defines", "idl": "idl/features/11-preprocessing.idl", "defines": ["CORPUS_CAPTURE_DEFINE"] },
     { "id": "11-conditionals", "theme": "conditional branches and undefines", "idl": "idl/features/11-conditionals.idl", "defines": [] },
     { "id": "11-macros", "theme": "object and function macros", "idl": "idl/features/11-macros.idl", "defines": [] },
@@ -79,8 +79,8 @@
     { "id": "12-missing-include", "theme": "missing include", "idl": "idl/negative/12-missing-include.idl" },
     { "id": "12-malformed-condition", "theme": "malformed conditional", "idl": "idl/negative/12-malformed-condition.idl" },
     { "id": "12-unsupported-map", "theme": "unsupported IDL kind", "idl": "idl/negative/12-unsupported-map.idl" },
-    { "id": "12-invalid-annotation", "theme": "invalid annotation target", "idl": "idl/negative/12-invalid-annotation.idl" },
-    { "id": "12-unknown-annotation", "theme": "accepted or ignored custom annotation", "idl": "idl/negative/12-unknown-annotation.idl", "observedOutcome": "warning/ignored" },
+    { "id": "12-invalid-annotation", "theme": "invalid annotation target", "idl": "idl/negative/12-invalid-annotation.idl", "observedDiagnostics": ["warning: annotation 'position' is not handled for this release and will be ignored", "error: annotation '@position(1)' is not applicable for the context: struct"] },
+    { "id": "12-unknown-annotation", "theme": "accepted or ignored custom annotation", "idl": "idl/negative/12-unknown-annotation.idl", "observedOutcome": "warning/ignored", "observedDiagnostics": ["warning: unhandled annotation '@custom_unknown'"] },
     { "id": "12-inline-nested", "theme": "known inline nested defect", "idl": "idl/negative/12-inline-nested.idl" },
     { "id": "12-legacy-name", "theme": "legacy name ambiguity", "idl": "idl/negative/12-legacy-name.idl", "observedOutcome": "accepted" },
     { "id": "12-missing-brace", "theme": "missing brace", "idl": "idl/negative/12-missing-brace.idl" },
@@ -99,28 +99,28 @@
     { "id": "12-malformed-preprocessor", "theme": "malformed preprocessor input", "idl": "idl/negative/12-malformed-preprocessor.idl" }
     ,{ "id": "02-forward-declarations", "theme": "unsupported forward aggregate declarations", "idl": "idl/features/02-forward-declarations.idl", "observedOutcome": "rejected" }
     ,{ "id": "07-union-long-long", "theme": "unsupported long long union discriminator", "idl": "idl/features/07-union-long-long.idl", "observedOutcome": "rejected" }
-    ,{ "id": "02-alias-cycle", "theme": "cyclic typedef aliases", "idl": "idl/negative/02-alias-cycle.idl" }
+    ,{ "id": "02-alias-cycle", "theme": "cyclic typedef aliases", "idl": "idl/negative/02-alias-cycle.idl", "observedOutcome": "rejected", "observedDiagnostics": ["error: member type 'AliasB' not found"] }
     ,{ "id": "05-negative-bound", "theme": "negative collection bound", "idl": "idl/negative/05-negative-bound.idl" }
     ,{ "id": "05-overflow-bound", "theme": "overflowing collection bound", "idl": "idl/negative/05-overflow-bound.idl" }
     ,{ "id": "07-invalid-discriminator", "theme": "invalid union discriminator", "idl": "idl/negative/07-invalid-discriminator.idl" }
     ,{ "id": "07-duplicate-label", "theme": "duplicate union label", "idl": "idl/negative/07-duplicate-label.idl", "observedOutcome": "accepted" }
     ,{ "id": "07-duplicate-default", "theme": "duplicate union default", "idl": "idl/negative/07-duplicate-default.idl", "observedOutcome": "accepted" }
     ,{ "id": "08-member-id-conflict", "theme": "conflicting explicit member IDs", "idl": "idl/negative/08-member-id-conflict.idl", "observedOutcome": "accepted" }
-    ,{ "id": "10-unsupported-annotations", "theme": "unsupported annotation forms", "idl": "idl/negative/10-unsupported-annotations.idl" }
-    ,{ "id": "10-ignored-annotations", "theme": "accepted or ignored RTI annotations", "idl": "idl/negative/10-ignored-annotations.idl", "observedOutcome": "warning/ignored" }
+    ,{ "id": "10-unsupported-annotations", "theme": "unsupported annotation forms", "idl": "idl/negative/10-unsupported-annotations.idl", "observedDiagnostics": ["warning: annotation 'position' is not handled for this release and will be ignored", "error: annotation '@position(1)' is not applicable for the context: struct"] }
+    ,{ "id": "10-ignored-annotations", "theme": "accepted or ignored RTI annotations", "idl": "idl/negative/10-ignored-annotations.idl", "observedOutcome": "warning/ignored", "observedDiagnostics": ["warning: directive //@verbatim(\"ignored text\") was not recognized and will be ignored", "warning: directive //@ignore_literal_names was not recognized and will be ignored", "warning: directive //@try_construct was not recognized and will be ignored"] }
     ,{ "id": "10-service-annotation", "theme": "invalid service annotation target", "idl": "idl/negative/10-service-annotation.idl" }
     ,{ "id": "12-bitmask", "theme": "unsupported bitmask", "idl": "idl/negative/12-bitmask.idl" }
     ,{ "id": "12-bitset", "theme": "unsupported bitset", "idl": "idl/negative/12-bitset.idl" }
     ,{ "id": "12-fixed", "theme": "unsupported fixed type", "idl": "idl/negative/12-fixed.idl" }
     ,{ "id": "12-any", "theme": "unsupported any type", "idl": "idl/negative/12-any.idl" }
-    ,{ "id": "12-interface", "theme": "unsupported interface and operation", "idl": "idl/negative/12-interface.idl", "observedOutcome": "warning/ignored" }
+    ,{ "id": "12-interface", "theme": "unsupported interface and operation", "idl": "idl/negative/12-interface.idl", "observedOutcome": "warning/ignored", "observedDiagnostics": ["warning: interface Service ignored because it is not a service(\"DDS\")"] }
     ,{ "id": "12-import", "theme": "unsupported IDL import", "idl": "idl/negative/12-import.idl" }
     ,{ "id": "12-module-idl", "theme": "known module idl ambiguity", "idl": "idl/negative/12-module-idl.idl", "observedOutcome": "accepted" }
     ,{ "id": "12-union-64bit-label", "theme": "known 64-bit union label limitation", "idl": "idl/negative/12-union-64bit-label.idl" }
     ,{ "id": "12-unterminated-string", "theme": "unterminated string literal", "idl": "idl/negative/12-unterminated-string.idl" }
     ,{ "id": "12-unterminated-comment", "theme": "unterminated comment", "idl": "idl/negative/12-unterminated-comment.idl" }
     ,{ "id": "12-macro-recursion", "theme": "recursive macro expansion", "idl": "idl/negative/12-macro-recursion.idl", "observedOutcome": "accepted" }
-    ,{ "id": "12-macro-arity", "theme": "macro argument arity error", "idl": "idl/negative/12-macro-arity.idl", "observedOutcome": "warning/ignored" }
+    ,{ "id": "12-macro-arity", "theme": "macro argument arity error", "idl": "idl/negative/12-macro-arity.idl", "observedOutcome": "warning/ignored", "observedDiagnostics": ["warning C4003: not enough arguments for function-like macro invocation 'CORPUS_PAIR'"] }
     ,{ "id": "12-error-directive", "theme": "preprocessor error directive", "idl": "idl/negative/12-error-directive.idl" }
     ,{ "id": "12-angle-missing", "theme": "missing angle include", "idl": "idl/negative/12-angle-missing.idl" }
     ,{ "id": "12-included-error", "theme": "diagnostic in included file", "idl": "idl/negative/12-included-error.idl" }
