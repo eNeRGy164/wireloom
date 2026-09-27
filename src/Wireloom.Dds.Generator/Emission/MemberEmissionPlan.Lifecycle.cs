@@ -1,8 +1,8 @@
-namespace Wireloom;
-
-using System;
 using System.Globalization;
-using static IdlCompiler;
+
+using static Wireloom.IdlCompiler;
+
+namespace Wireloom;
 
 internal sealed partial class MemberEmissionPlan
 {

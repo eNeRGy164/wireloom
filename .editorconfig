@@ -83,11 +83,9 @@ dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_event = false:suggestion
 
-# Keep using directives deterministic. Static imports currently follow the
-# file-scoped namespace in compiler files; preserve that layout when adding one.
 dotnet_separate_import_directive_groups = false
-
 dotnet_sort_system_directives_first = true
+csharp_using_directive_placement = outside_namespace:suggestion
 
 # The generator targets netstandard2.0, which does not provide
 # GeneratedRegexAttribute without adding compatibility infrastructure.

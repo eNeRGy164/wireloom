@@ -16,6 +16,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Using Include="System.Numerics" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Wireloom.Dds.Generator.Tests" />
   </ItemGroup>
 

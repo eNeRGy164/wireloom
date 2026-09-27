@@ -1,7 +1,8 @@
-namespace Wireloom;
-
 using JetBrains.Annotations;
-using static IdlCompiler;
+
+using static Wireloom.IdlCompiler;
+
+namespace Wireloom;
 
 /// <summary>
 /// Target-specific type projection used by source emitters after semantic

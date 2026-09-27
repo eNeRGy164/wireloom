@@ -1,6 +1,6 @@
-namespace Wireloom;
+using static Wireloom.IdlCompiler;
 
-using static IdlCompiler;
+namespace Wireloom;
 
 internal sealed partial class MemberEmissionPlan
 {
@@ -204,7 +204,7 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsOptional)
         {
-            return $"{EscapedName}.ToNative<{TypeReference(ElementCSharpType!, namespaceName)}>((Sequence<{TypeReference(ElementCSharpType!, namespaceName) }>)sample.{EscapedName}, {Bound});";
+            return $"{EscapedName}.ToNative<{TypeReference(ElementCSharpType!, namespaceName)}>((Sequence<{TypeReference(ElementCSharpType!, namespaceName)}>)sample.{EscapedName}, {Bound});";
         }
 
         if (HasAggregateElement)

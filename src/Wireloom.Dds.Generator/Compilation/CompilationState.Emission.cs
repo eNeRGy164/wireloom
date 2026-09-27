@@ -1,6 +1,6 @@
-namespace Wireloom;
+using static Wireloom.IdlCompiler;
 
-using static IdlCompiler;
+namespace Wireloom;
 
 internal sealed partial class CompilationState
 {

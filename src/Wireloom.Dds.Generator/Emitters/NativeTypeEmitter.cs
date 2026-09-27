@@ -38,7 +38,7 @@ internal static class NativeTypeEmitter
             writer.WriteLine("parent.Destroy(optionalsOnly);");
         }
 
-        var destroyableFields = fields .Where(f => f.DestroyKind != NativeDestroyKind.None).ToArray();
+        var destroyableFields = fields.Where(f => f.DestroyKind != NativeDestroyKind.None).ToArray();
         var optionalFields = destroyableFields.Where(f => f.IsOptional).ToArray();
         var requiredFields = baseUnmanagedType is null
             ? fields.Where(f => !f.IsOptional && f.DestroyKind != NativeDestroyKind.None).ToArray()

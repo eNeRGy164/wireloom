@@ -1,6 +1,6 @@
-namespace Wireloom;
+using static Wireloom.IdlCompiler;
 
-using static IdlCompiler;
+namespace Wireloom;
 
 /// <summary>Emits managed enum, plugin, and type-support documents.</summary>
 internal static class EnumEmitter

@@ -1,4 +1,5 @@
 using Microsoft.CodeAnalysis.CSharp;
+
 using static Wireloom.IdlGrammar;
 
 namespace Wireloom;

@@ -1,8 +1,8 @@
-using System.Numerics;
+using Wireloom.Compiler.Semantics;
+
+using static Wireloom.IdlCompiler;
 
 namespace Wireloom;
-
-using static IdlCompiler;
 
 /// <summary>Owns front-end validation that does not produce target code.</summary>
 internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)

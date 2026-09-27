@@ -1,10 +1,10 @@
-namespace Wireloom;
-
 using System.Globalization;
-using System.Numerics;
 using JetBrains.Annotations;
-using static EmissionTypeProjector;
-using static IdlCompiler;
+
+using static Wireloom.EmissionTypeProjector;
+using static Wireloom.IdlCompiler;
+
+namespace Wireloom;
 
 internal enum FieldEmissionShape
 {
