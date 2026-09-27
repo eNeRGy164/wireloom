@@ -1,6 +1,5 @@
 using Wireloom.Compiler.Emission.Model;
-
-using static Wireloom.IdlCompiler;
+using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Planning;
 
@@ -19,7 +18,7 @@ internal sealed partial class MemberEmissionPlan
     {
         if (isRecursive && IsRecursive(recursiveTypeName!))
         {
-            var supportType = $"{TypeReference(recursiveTypeName!, implementationNamespace)}Support.GetOrCreateInstanceImpl()";
+            var supportType = $"{IdlNaming.TypeReference(recursiveTypeName!, implementationNamespace)}Support.GetOrCreateInstanceImpl()";
 
             return $"tsf.CreateSequenceWithAccessInfo(dtf, {supportType}.GetDynamicTypeInternal(isPublic), {Bound})";
         }
@@ -60,12 +59,12 @@ internal sealed partial class MemberEmissionPlan
     {
         if (HasAggregateElement || ElementType?.IsEnum == true || ElementSupportType is not null)
         {
-            return $"{TypeReference(ElementSupportType ?? ElementCSharpType!, implementationNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic)";
+            return $"{IdlNaming.TypeReference(ElementSupportType ?? ElementCSharpType!, implementationNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic)";
         }
 
-        return $"dtf.GetPrimitiveType<{TypeReference(ElementCSharpType!, implementationNamespace)}>()";
+        return $"dtf.GetPrimitiveType<{IdlNaming.TypeReference(ElementCSharpType!, implementationNamespace)}>()";
     }
 
     private string ReferencedSupportType(string implementationNamespace) =>
-        $"{TypeReference(SupportType ?? CSharpType, implementationNamespace)}Support.Instance";
+        $"{IdlNaming.TypeReference(SupportType ?? CSharpType, implementationNamespace)}Support.Instance";
 }

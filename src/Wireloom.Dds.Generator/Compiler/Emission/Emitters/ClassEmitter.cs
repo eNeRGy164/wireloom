@@ -1,7 +1,6 @@
 using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.FrontEnd.Semantic;
-
-using static Wireloom.IdlCompiler;
+using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
 
@@ -9,7 +8,7 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class ClassEmitter
 {
     public static void Emit(
-        CompilationState compilation,
+        CompilationContext compilation,
         string name,
         string? currentNamespace,
         IReadOnlyList<IdlMember> fields,
@@ -26,9 +25,9 @@ internal static class ClassEmitter
         var hasTypeSupport = fieldPlans.All(field => field.HasTypeSupport);
         var runtimeTypeName = currentNamespace is null ? name : $"{currentNamespace}.{name}";
         var isRecursive = fieldPlans.Any(field => field.IsRecursive(runtimeTypeName));
-        var dataTypeUsings = fieldPlans.Any(field => field.IsSequence || field.IsArray) ? DataTypeUsings.Concat(["System.Linq"]) : DataTypeUsings;
-        var writer = CreateSource(currentNamespace, dataTypeUsings, sourceIdlFileName);
-        var escapedName = EscapeIdentifier(name);
+        var dataTypeUsings = fieldPlans.Any(field => field.IsSequence || field.IsArray) ? EmissionSupport.DataTypeUsings.Concat(["System.Linq"]) : EmissionSupport.DataTypeUsings;
+        var writer = EmissionSupport.CreateSource(currentNamespace, dataTypeUsings, sourceIdlFileName);
+        var escapedName = IdlNaming.EscapeIdentifier(name);
         var typeSummary = $"Represents the <c>{name}</c> DDS type declared in <c>{sourceIdlFileName}</c>.";
 
         if (inheritedFieldPlans.Concat(fieldPlans).Any(field => field.IsKey))
@@ -38,7 +37,7 @@ internal static class ClassEmitter
 
         if (baseType is not null)
         {
-            typeSummary += $" It derives from <see cref=\"{TypeReference(baseType, currentNamespace)}\"/>.";
+            typeSummary += $" It derives from <see cref=\"{IdlNaming.TypeReference(baseType, currentNamespace)}\"/>.";
         }
 
         typeSummary += $" It is marked as <c>{extensibility.ToString().ToLowerInvariant()}</c>.";
@@ -48,7 +47,7 @@ internal static class ClassEmitter
         }
 
         writer.WriteXmlSummary(typeSummary);
-        var baseReference = baseType is null ? null : TypeReference(baseType, currentNamespace);
+        var baseReference = baseType is null ? null : IdlNaming.TypeReference(baseType, currentNamespace);
         writer.OpenBlock($"public partial class {escapedName} : {(baseReference is null ? "" : baseReference + ", ")}IEquatable<{escapedName}>");
 
         ManagedDataTypeEmitter.Emit(
@@ -68,7 +67,7 @@ internal static class ClassEmitter
         }
 
         writer.CloseBlock();
-        compilation.AddSource(new GeneratedIdlSource(CreateHintName(currentNamespace, name), writer.ToString()));
+        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(currentNamespace, name), writer.ToString()));
 
         if (hasTypeSupport)
         {

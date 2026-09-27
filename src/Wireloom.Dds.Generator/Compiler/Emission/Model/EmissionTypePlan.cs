@@ -1,4 +1,4 @@
-using static Wireloom.IdlCompiler;
+using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Model;
 
@@ -77,7 +77,7 @@ internal sealed class AliasEmissionType(string qualifiedName, EmissionTypePlan t
     public override bool IsUnion => Target.IsUnion;
     public override bool IsEnum => Target.IsEnum;
     public override int? Bound => Target.Bound;
-    public override string SupportType => EscapeQualifiedIdentifier(QualifiedName);
+    public override string SupportType => IdlNaming.EscapeQualifiedIdentifier(QualifiedName);
     public override EmissionTypePlan? Element => Target.Element;
     public override IReadOnlyList<int> Dimensions => Target.Dimensions;
 }

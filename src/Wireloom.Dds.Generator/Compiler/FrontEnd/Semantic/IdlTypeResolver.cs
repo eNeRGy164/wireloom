@@ -1,6 +1,5 @@
 using Wireloom.Compiler.FrontEnd.Symbols;
-
-using static Wireloom.IdlCompiler;
+using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.FrontEnd.Semantic;
 
@@ -12,7 +11,7 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
 
     private IdlType? Resolve(string idlType, string? currentNamespace, IdlInput input, int offset, HashSet<string> activeAliases)
     {
-        var normalized = NormalizeIdlType(idlType);
+        var normalized = IdlNaming.NormalizeIdlType(idlType);
 
         if (normalized.StartsWith("string", StringComparison.Ordinal)
             || normalized.StartsWith("wstring", StringComparison.Ordinal))
@@ -30,12 +29,12 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
             return new IdlType.StringType(isWide, bound);
         }
 
-        if (IsPrimitive(idlType))
+        if (IdlNaming.IsPrimitive(idlType))
         {
             return new IdlType.Primitive(normalized);
         }
 
-        var qualified = ResolveTypeName(idlType, currentNamespace);
+        var qualified = IdlNaming.ResolveTypeName(idlType, currentNamespace);
         if (currentNamespace is not null
             && !idlType.StartsWith("::", StringComparison.Ordinal)
             && !idlType.Contains(".", StringComparison.Ordinal)
@@ -43,7 +42,7 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
             && !symbols.ContainsEnum(qualified)
             && !symbols.ContainsTypedef(qualified))
         {
-            qualified = ResolveTypeName(idlType, null);
+            qualified = IdlNaming.ResolveTypeName(idlType, null);
         }
 
         if (symbols.TryGetEnum(qualified, out var enumDeclaration))

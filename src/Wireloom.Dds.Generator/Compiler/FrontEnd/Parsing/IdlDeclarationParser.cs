@@ -5,7 +5,7 @@ using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.FrontEnd.Symbols;
 
 using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
-using static Wireloom.IdlCompiler;
+using static Wireloom.Compiler.Naming.IdlNaming;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing;
 

@@ -1,13 +1,12 @@
 using Wireloom.Compiler.FrontEnd.Semantic;
-
-using static Wireloom.IdlCompiler;
+using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
 
 /// <summary>Emits documented C# representations of IDL constants.</summary>
 internal static class ConstantEmitter
 {
-    public static void Emit(CompilationState compilation, IdlConstantDeclaration declaration, string sourceIdlFileName)
+    public static void Emit(CompilationContext compilation, IdlConstantDeclaration declaration, string sourceIdlFileName)
     {
         var name = declaration.Name;
         var currentNamespace = declaration.Namespace;
@@ -16,17 +15,17 @@ internal static class ConstantEmitter
             ? FormatIntegerLiteral(declaration.Type, declaration.IntegerValue!.Value)
             : ReplaceConstantReferences(declaration.Expression, currentNamespace, compilation);
 
-        var writer = CreateSource(currentNamespace, ["System"], sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(currentNamespace, ["System"], sourceIdlFileName);
 
         var valueDescription = declaration.Type == "long" ? "integer" : declaration.Type;
 
         writer.WriteXmlSummary($"Provides the <c>{name}</c> IDL constant.");
-        writer.OpenBlock($"public static class {EscapeIdentifier(name)}");
+        writer.OpenBlock($"public static class {IdlNaming.EscapeIdentifier(name)}");
         writer.WriteXmlSummary($"Gets the {valueDescription} value of the <c>{name}</c> IDL constant.");
         writer.WriteLine($"public const {type} Value = {expression};");
         writer.CloseBlock();
 
-        compilation.AddSource(new(CreateHintName(currentNamespace, name), writer.ToString()));
+        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(currentNamespace, name), writer.ToString()));
     }
 
     private static string MapConstantType(string type) => type switch
@@ -36,7 +35,7 @@ internal static class ConstantEmitter
         "char" or "wchar" => "char",
         "float" => "float",
         "double" => "double",
-        _ => MapPrimitive(type)
+        _ => IdlNaming.MapPrimitive(type)
     };
 
     private static string FormatIntegerLiteral(string type, BigInteger value) => type switch
@@ -55,12 +54,12 @@ internal static class ConstantEmitter
             || declaration.IntegerValue is { } value && value == long.MinValue;
     }
 
-    private static string ReplaceConstantReferences(string expression, string? currentNamespace, CompilationState compilation)
+    private static string ReplaceConstantReferences(string expression, string? currentNamespace, CompilationContext compilation)
     {
         foreach (var constant in compilation.Constants)
         {
             var qualifiedName = constant.Namespace is null ? constant.Name : $"{constant.Namespace}.{constant.Name}";
-            var replacement = $"{TypeReference(EscapeQualifiedIdentifier(qualifiedName), currentNamespace)}.Value";
+            var replacement = $"{IdlNaming.TypeReference(IdlNaming.EscapeQualifiedIdentifier(qualifiedName), currentNamespace)}.Value";
 
             expression = expression.Replace(
                 constant.Namespace is null ? constant.Name : $"{constant.Namespace.Replace(".", "::")}::{constant.Name}",

@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using Wireloom.Compiler;
 
 namespace Wireloom;
 
@@ -11,7 +12,7 @@ namespace Wireloom;
 /// syntax rather than silently producing an incomplete data contract.
 /// </remarks>
 [PublicAPI]
-public static partial class IdlCompiler
+public static class IdlCompiler
 {
     /// <summary>
     /// Compiles IDL generation roots and returns one C# document for each

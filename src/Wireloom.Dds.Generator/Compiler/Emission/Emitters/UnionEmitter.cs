@@ -2,7 +2,7 @@ using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Emission.Writers;
 using Wireloom.Compiler.FrontEnd.Semantic;
-using static Wireloom.IdlCompiler;
+using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
 
@@ -10,18 +10,18 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class UnionEmitter
 {
     /// <summary>Emits the managed, native, plugin, and type-support documents for an IDL union.</summary>
-    public static void Emit(CompilationState compilation, IdlUnion declaration, string sourceIdlFileName)
+    public static void Emit(CompilationContext compilation, IdlUnion declaration, string sourceIdlFileName)
     {
         EmitUnionCore(compilation, EmissionTypeProjector.ToEmissionUnion(declaration), sourceIdlFileName);
     }
 
-    private static void EmitUnionCore(CompilationState compilation, IdlEmissionUnion declaration, string sourceIdlFileName)
+    private static void EmitUnionCore(CompilationContext compilation, IdlEmissionUnion declaration, string sourceIdlFileName)
     {
-        var typeName = EscapeIdentifier(declaration.Name);
+        var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
         var implementationNamespace = declaration.Namespace is null ? "Implementation" : $"{declaration.Namespace}.Implementation";
         var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
 
-        var writer = CreateSource(declaration.Namespace, DataTypeUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.DataTypeUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> DDS union declared in <c>{sourceIdlFileName}</c>. Exactly one branch is selected by <see cref=\"Discriminator\"/>.");
         writer.OpenBlock($"public partial class {typeName} : IEquatable<{typeName}>");
@@ -39,7 +39,7 @@ internal static class UnionEmitter
                 initializer = branch.Plan.IsSequence || branch.Plan.IsArray || branch.Plan.IsAggregate ? " = null!;" : ";";
             }
 
-            writer.WriteLine($"private {TypeReference(branch.Plan.CSharpType, declaration.Namespace)} _{branch.Plan.EscapedName}{initializer}");
+            writer.WriteLine($"private {IdlNaming.TypeReference(branch.Plan.CSharpType, declaration.Namespace)} _{branch.Plan.EscapedName}{initializer}");
         }
 
         writer.BlankLine();
@@ -120,7 +120,7 @@ internal static class UnionEmitter
         writer.WriteLine($"public override string ToString() => {typeName}Support.Instance.ToString(this);");
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(CreateHintName(declaration.Namespace, declaration.Name), writer.ToString()));
+        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(declaration.Namespace, declaration.Name), writer.ToString()));
 
         UnionTypeSupportEmitter.Emit(compilation, declaration, sourceIdlFileName, implementationNamespace);
     }
@@ -140,7 +140,7 @@ internal static class UnionEmitter
             writer.WriteLine($"[Bound({bound})]");
         }
 
-        writer.OpenBlock($"public {TypeReference(branch.Plan.CSharpType, declaration.Namespace)} {branch.Plan.EscapedName}");
+        writer.OpenBlock($"public {IdlNaming.TypeReference(branch.Plan.CSharpType, declaration.Namespace)} {branch.Plan.EscapedName}");
         writer.OpenBlock("get");
         writer.OpenBlock($"if ({UnionSelectionCondition(declaration, branch, negated: true)})");
         writer.WriteLine($"throw new InvalidOperationException(\"{branch.Field.Name} not selected\");");
@@ -164,14 +164,14 @@ internal static class UnionEmitter
     /// <summary>Emits the explicit-discriminator setter required for a branch with multiple labels.</summary>
     private static void EmitMultiLabelBranchSetter(GeneratedSourceWriter writer, IdlEmissionUnion declaration, UnionBranchEmissionPlan branch)
     {
-        var methodName = "Set" + EscapeIdentifier(branch.Field.Name);
+        var methodName = "Set" + IdlNaming.EscapeIdentifier(branch.Field.Name);
         var validLabels = string.Join(" || ", branch.Labels.Select(label => $"discriminator == {ManagedDiscriminatorLabel(label, declaration)}"));
 
         writer.BlankLine();
         writer.WriteXmlSummary($"Sets the {branch.Field.Name} branch with an explicit discriminator value.");
         writer.WriteXmlParam("value", $"The value for the {branch.Field.Name} branch.");
         writer.WriteXmlParam("discriminator", "A discriminator value selecting this branch.");
-        writer.OpenBlock($"public void {methodName}({TypeReference(branch.Plan.CSharpType, declaration.Namespace)} value, {ManagedDiscriminatorType(declaration)} discriminator)");
+        writer.OpenBlock($"public void {methodName}({IdlNaming.TypeReference(branch.Plan.CSharpType, declaration.Namespace)} value, {ManagedDiscriminatorType(declaration)} discriminator)");
         writer.OpenBlock($"if (!({validLabels}))");
         writer.WriteLine($"throw new ArgumentException(\"Invalid discriminator value for {branch.Field.Name}\", nameof(discriminator));");
         writer.CloseBlock();
@@ -185,14 +185,14 @@ internal static class UnionEmitter
     /// <summary>Emits the explicit-discriminator setter required for a default branch.</summary>
     private static void EmitDefaultBranchSetter(GeneratedSourceWriter writer, IdlEmissionUnion declaration, UnionBranchEmissionPlan defaultBranch)
     {
-        var methodName = "Set" + EscapeIdentifier(defaultBranch.Field.Name);
+        var methodName = "Set" + IdlNaming.EscapeIdentifier(defaultBranch.Field.Name);
         var explicitLabels = declaration.Branches.Where(branch => !branch.IsDefault)
             .SelectMany(branch => branch.Labels).Select(label => $"discriminator == {ManagedDiscriminatorLabel(label, declaration)}").ToArray();
 
         writer.WriteXmlSummary("Sets the default branch with an explicit discriminator value.");
         writer.WriteXmlParam("value", "The value for the default branch.");
         writer.WriteXmlParam("discriminator", "A discriminator value that does not select an explicit branch.");
-        writer.OpenBlock($"public void {methodName}({TypeReference(defaultBranch.Plan.CSharpType, declaration.Namespace)} value, {ManagedDiscriminatorType(declaration)} discriminator)");
+        writer.OpenBlock($"public void {methodName}({IdlNaming.TypeReference(defaultBranch.Plan.CSharpType, declaration.Namespace)} value, {ManagedDiscriminatorType(declaration)} discriminator)");
         writer.OpenBlock($"if ({string.Join(" || ", explicitLabels)})");
         writer.WriteLine($"throw new ArgumentException(\"Invalid discriminator value for {defaultBranch.Field.Name}\", nameof(discriminator));");
         writer.CloseBlock();
@@ -246,13 +246,13 @@ internal static class UnionEmitter
         foreach (var branch in declaration.Branches.Where(branch => !branch.IsDefault))
         {
             var labels = string.Join(" or ", branch.Labels.Select(label => ManagedDiscriminatorLabel(label, declaration)));
-            writer.WriteLine($"{labels} => {EscapeIdentifier(branch.Field.Name)},");
+            writer.WriteLine($"{labels} => {IdlNaming.EscapeIdentifier(branch.Field.Name)},");
         }
 
         var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
         if (!IsExhaustiveBooleanUnion(declaration, defaultBranch))
         {
-            var fallback = defaultBranch is null ? "null" : EscapeIdentifier(defaultBranch.Field.Name);
+            var fallback = defaultBranch is null ? "null" : IdlNaming.EscapeIdentifier(defaultBranch.Field.Name);
             writer.WriteLine($"_ => {fallback},");
         }
 
@@ -275,7 +275,7 @@ internal static class UnionEmitter
         string fallback;
         if (defaultBranch is not null)
         {
-            fallback = $"HashCode.Combine(Discriminator, {EscapeIdentifier(defaultBranch.Field.Name)})";
+            fallback = $"HashCode.Combine(Discriminator, {IdlNaming.EscapeIdentifier(defaultBranch.Field.Name)})";
         }
         else
         {
@@ -305,7 +305,7 @@ internal static class UnionEmitter
         var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
         var fallback = defaultBranch is null
             ? "true"
-            : $"{EscapeIdentifier(defaultBranch.Field.Name)}.Equals(other.{EscapeIdentifier(defaultBranch.Field.Name)})";
+            : $"{IdlNaming.EscapeIdentifier(defaultBranch.Field.Name)}.Equals(other.{IdlNaming.EscapeIdentifier(defaultBranch.Field.Name)})";
         if (!IsExhaustiveBooleanUnion(declaration, defaultBranch))
         {
             writer.WriteLine($"_ => {fallback},");
@@ -361,7 +361,7 @@ internal static class UnionEmitter
     }
 
     private static string ManagedDiscriminatorType(IdlEmissionUnion declaration) =>
-        TypeReference(declaration.DiscriminatorCSharpType, declaration.Namespace);
+        IdlNaming.TypeReference(declaration.DiscriminatorCSharpType, declaration.Namespace);
 
     private static string ManagedDefaultDiscriminator(IdlEmissionUnion declaration) =>
         declaration.DiscriminatorCSharpType switch
@@ -375,5 +375,5 @@ internal static class UnionEmitter
         declaration.DiscriminatorCSharpType == "bool" && defaultBranch is null;
 
     private static string ManagedDiscriminatorLabel(string label, IdlEmissionUnion declaration) =>
-        TypeReference(label, declaration.Namespace);
+        IdlNaming.TypeReference(label, declaration.Namespace);
 }

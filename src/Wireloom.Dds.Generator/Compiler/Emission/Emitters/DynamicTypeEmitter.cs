@@ -1,7 +1,6 @@
 using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.FrontEnd.Semantic;
-
-using static Wireloom.IdlCompiler;
+using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
 
@@ -9,7 +8,7 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class DynamicTypeEmitter
 {
     public static void EmitStructPlugin(
-        CompilationState compilation,
+        CompilationContext compilation,
         string name,
         string? currentNamespace,
         IReadOnlyList<MemberEmissionPlan> fields,
@@ -19,14 +18,14 @@ internal static class DynamicTypeEmitter
         string? baseType,
         bool isRecursive)
     {
-        var typeName = EscapeIdentifier(name);
-        var unmanagedName = EscapeIdentifier(name + "Unmanaged");
-        var pluginName = EscapeIdentifier(name + "Plugin");
-        var runtimeTypeName = currentNamespace is null ? typeName : $"{EscapeQualifiedIdentifier(currentNamespace)}.{typeName}";
+        var typeName = IdlNaming.EscapeIdentifier(name);
+        var unmanagedName = IdlNaming.EscapeIdentifier(name + "Unmanaged");
+        var pluginName = IdlNaming.EscapeIdentifier(name + "Plugin");
+        var runtimeTypeName = currentNamespace is null ? typeName : $"{IdlNaming.EscapeQualifiedIdentifier(currentNamespace)}.{typeName}";
         var idlTypeName = currentNamespace is null ? name : $"{currentNamespace.Replace(".", "::")}::{name}";
         var implementationNamespace = currentNamespace is null ? "Implementation" : $"{currentNamespace}.Implementation";
 
-        var writer = CreateSource(implementationNamespace, PluginUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(implementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI interpreted type plugin for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"internal class {pluginName} : InterpretedTypePlugin<{typeName}, {unmanagedName}>");
@@ -94,7 +93,7 @@ internal static class DynamicTypeEmitter
 
         if (baseType is not null)
         {
-            writer.WriteLine($".WithParent((StructType) {GetSupportType(baseType, implementationNamespace)}.GetDynamicTypeInternal(isPublic))");
+            writer.WriteLine($".WithParent((StructType) {EmissionSupport.GetSupportType(baseType, implementationNamespace)}.GetDynamicTypeInternal(isPublic))");
         }
 
         writer.WriteLine($".WithExtensibility(ExtensibilityKind.{extensibility})");
@@ -122,6 +121,6 @@ internal static class DynamicTypeEmitter
         writer.CloseBlock();
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(CreateHintName(implementationNamespace, name + "Plugin"), writer.ToString()));
+        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementationNamespace, name + "Plugin"), writer.ToString()));
     }
 }

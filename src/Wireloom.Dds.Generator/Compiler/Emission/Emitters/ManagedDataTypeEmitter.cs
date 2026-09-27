@@ -1,7 +1,6 @@
 using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Emission.Writers;
-
-using static Wireloom.IdlCompiler;
+using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
 
@@ -15,10 +14,10 @@ internal static class ManagedDataTypeEmitter
 
         if (fields.Count > 0 || inheritedFields.Count > 0)
         {
-            EmitValueConstructor(writer, typeName, fields, inheritedFields, baseType is null ? null : TypeReference(baseType, currentNamespace));
+            EmitValueConstructor(writer, typeName, fields, inheritedFields, baseType is null ? null : IdlNaming.TypeReference(baseType, currentNamespace));
         }
 
-        EmitCopyConstructor(writer, typeName, fields, baseType is null ? null : TypeReference(baseType, currentNamespace));
+        EmitCopyConstructor(writer, typeName, fields, baseType is null ? null : IdlNaming.TypeReference(baseType, currentNamespace));
         EmitHashCode(writer, fields, baseType is not null);
         EmitEquality(writer, typeName, fields, baseType is not null);
     }
@@ -28,7 +27,7 @@ internal static class ManagedDataTypeEmitter
         var rangedFields = fields.Where(field => field.HasManagedRange).ToArray();
         foreach (var field in rangedFields)
         {
-            writer.WriteLine($"private {TypeReference(field.CSharpType, field.CurrentNamespace)} {field.ManagedBackingFieldName};");
+            writer.WriteLine($"private {IdlNaming.TypeReference(field.CSharpType, field.CurrentNamespace)} {field.ManagedBackingFieldName};");
         }
 
         if (rangedFields.Length > 0 && fields.Count > 0)
@@ -101,15 +100,15 @@ internal static class ManagedDataTypeEmitter
             }
             else
             {
-                writer.WriteLine($"public {TypeReference(field.CSharpType, field.CurrentNamespace)} {EscapeIdentifier(field.Name)}{field.ManagedPropertyAccessors}{field.ManagedPropertyInitializer}");
+                writer.WriteLine($"public {IdlNaming.TypeReference(field.CSharpType, field.CurrentNamespace)} {IdlNaming.EscapeIdentifier(field.Name)}{field.ManagedPropertyAccessors}{field.ManagedPropertyInitializer}");
             }
         }
     }
 
     private static void EmitRangedProperty(GeneratedSourceWriter writer, MemberEmissionPlan field)
     {
-        var type = TypeReference(field.CSharpType, field.CurrentNamespace);
-        var name = EscapeIdentifier(field.Name);
+        var type = IdlNaming.TypeReference(field.CSharpType, field.CurrentNamespace);
+        var name = IdlNaming.EscapeIdentifier(field.Name);
         var backingField = field.ManagedBackingFieldName;
 
         writer.OpenBlock($"public {type} {name}");
@@ -185,23 +184,23 @@ internal static class ManagedDataTypeEmitter
 
         foreach (var field in inheritedFields.Concat(fields))
         {
-            writer.WriteXmlParam(EscapeIdentifier(field.Name), $"The value for the <c>{field.Name}</c> member.");
+            writer.WriteXmlParam(IdlNaming.EscapeIdentifier(field.Name), $"The value for the <c>{field.Name}</c> member.");
         }
 
-        var parameters = inheritedFields.Concat(fields).Select(field => $"{TypeReference(field.CSharpType, field.CurrentNamespace)} {EscapeIdentifier(field.Name)}");
+        var parameters = inheritedFields.Concat(fields).Select(field => $"{IdlNaming.TypeReference(field.CSharpType, field.CurrentNamespace)} {IdlNaming.EscapeIdentifier(field.Name)}");
         var constructor = $"public {typeName}({string.Join(", ", parameters)})";
 
         if (baseReference is not null)
         {
-            constructor += $" : base({string.Join(", ", inheritedFields.Select(field => EscapeIdentifier(field.Name)))})";
+            constructor += $" : base({string.Join(", ", inheritedFields.Select(field => IdlNaming.EscapeIdentifier(field.Name)))})";
         }
 
         writer.OpenBlock(constructor);
 
         foreach (var field in fields)
         {
-            var target = field.HasManagedRange ? field.ManagedBackingFieldName : EscapeIdentifier(field.Name);
-            writer.WriteLine($"this.{target} = {EscapeIdentifier(field.Name)};");
+            var target = field.HasManagedRange ? field.ManagedBackingFieldName : IdlNaming.EscapeIdentifier(field.Name);
+            writer.WriteLine($"this.{target} = {IdlNaming.EscapeIdentifier(field.Name)};");
         }
 
         writer.CloseBlock();

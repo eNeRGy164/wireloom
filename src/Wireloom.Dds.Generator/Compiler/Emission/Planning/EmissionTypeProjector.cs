@@ -1,7 +1,6 @@
 using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.FrontEnd.Semantic;
-
-using static Wireloom.IdlCompiler;
+using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Planning;
 
@@ -46,8 +45,8 @@ internal static class EmissionTypeProjector
             union.Name,
             union.Namespace,
             union.DiscriminatorIsEnum
-                ? EscapeQualifiedIdentifier(ResolveTypeName(union.DiscriminatorIdlType, union.Namespace))
-                : MapPrimitive(union.DiscriminatorIdlType),
+                ? IdlNaming.EscapeQualifiedIdentifier(IdlNaming.ResolveTypeName(union.DiscriminatorIdlType, union.Namespace))
+                : IdlNaming.MapPrimitive(union.DiscriminatorIdlType),
             union.DiscriminatorIsEnum,
             [.. union.Branches.Select(branch =>
             {
@@ -64,11 +63,11 @@ internal static class EmissionTypeProjector
     private static EmissionTypePlan ProjectType(IdlType type, string? currentNamespace) =>
         type switch
         {
-            IdlType.Primitive primitive => new PrimitiveEmissionType(NormalizeIdlType(primitive.Name), MapPrimitive(primitive.Name)),
+            IdlType.Primitive primitive => new PrimitiveEmissionType(IdlNaming.NormalizeIdlType(primitive.Name), IdlNaming.MapPrimitive(primitive.Name)),
             IdlType.StringType stringType => new StringEmissionType(stringType.IsWide, stringType.Bound),
-            IdlType.Enum @enum => new EnumEmissionType(EscapeQualifiedIdentifier(@enum.QualifiedName), @enum.DefaultValue),
-            IdlType.Struct structure => new StructEmissionType(EscapeQualifiedIdentifier(structure.QualifiedName)),
-            IdlType.Union union => new UnionEmissionType(EscapeQualifiedIdentifier(union.QualifiedName)),
+            IdlType.Enum @enum => new EnumEmissionType(IdlNaming.EscapeQualifiedIdentifier(@enum.QualifiedName), @enum.DefaultValue),
+            IdlType.Struct structure => new StructEmissionType(IdlNaming.EscapeQualifiedIdentifier(structure.QualifiedName)),
+            IdlType.Union union => new UnionEmissionType(IdlNaming.EscapeQualifiedIdentifier(union.QualifiedName)),
             IdlType.Alias alias => ProjectAlias(alias, currentNamespace),
             IdlType.Sequence sequence => ProjectSequence(sequence, currentNamespace),
             IdlType.Array array => ProjectArray(array, currentNamespace),
@@ -78,7 +77,7 @@ internal static class EmissionTypeProjector
     private static EmissionTypePlan ProjectAlias(IdlType.Alias alias, string? currentNamespace)
     {
         var target = ProjectType(alias.Target, currentNamespace);
-        var aliasName = EscapeQualifiedIdentifier(alias.QualifiedName);
+        var aliasName = IdlNaming.EscapeQualifiedIdentifier(alias.QualifiedName);
         var cSharpType = target is SequenceEmissionType or ArrayEmissionType ? aliasName : target.CSharpType;
 
         return new AliasEmissionType(alias.QualifiedName, target, cSharpType);

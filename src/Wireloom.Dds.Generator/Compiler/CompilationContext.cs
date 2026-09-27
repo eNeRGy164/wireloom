@@ -2,19 +2,19 @@ using Wireloom.Compiler.Emission.Emitters;
 using Wireloom.Compiler.FrontEnd.Parsing;
 using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Compiler.Naming;
 
-using static Wireloom.IdlCompiler;
+namespace Wireloom.Compiler;
 
-namespace Wireloom;
-
-internal sealed partial class CompilationState
+/// <summary>Maintains parsed declarations and coordinates compiler emission.</summary>
+internal sealed partial class CompilationContext
 {
     private readonly IdlDeclarationParser parser;
     private readonly IdlSymbolTable symbols;
     private readonly List<GeneratedIdlSource> sources = [];
     private readonly bool strict;
 
-    internal CompilationState(IdlDeclarationParser parser, IdlSymbolTable symbols, bool strict)
+    internal CompilationContext(IdlDeclarationParser parser, IdlSymbolTable symbols, bool strict)
     {
         this.parser = parser;
         this.symbols = symbols;
@@ -28,10 +28,10 @@ internal sealed partial class CompilationState
     public void AddSource(GeneratedIdlSource source) => sources.Add(source);
 
     public bool IsEnum(string typeName, string? currentNamespace) =>
-        symbols.ContainsEnum(ResolveTypeName(typeName, currentNamespace));
+        symbols.ContainsEnum(IdlNaming.ResolveTypeName(typeName, currentNamespace));
 
     public bool IsUnion(string typeName, string? currentNamespace) =>
-        symbols.ContainsUnion(ResolveTypeName(typeName, currentNamespace));
+        symbols.ContainsUnion(IdlNaming.ResolveTypeName(typeName, currentNamespace));
 
     public void EmitDeclarations()
     {

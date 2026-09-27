@@ -1,7 +1,6 @@
 using Wireloom.Compiler.FrontEnd.Parsing;
 using Wireloom.Compiler.FrontEnd.Symbols;
-
-using static Wireloom.IdlCompiler;
+using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.FrontEnd.Semantic;
 
@@ -74,9 +73,9 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         var target = alias.IsCollection ? alias.ElementType! : alias.Target;
         if (!target.StartsWith("string", StringComparison.Ordinal)
             && !target.StartsWith("wstring", StringComparison.Ordinal)
-            && !IsPrimitive(target))
+            && !IdlNaming.IsPrimitive(target))
         {
-            var qualifiedTarget = ResolveTypeName(target, alias.Namespace);
+            var qualifiedTarget = IdlNaming.ResolveTypeName(target, alias.Namespace);
             if (symbols.ContainsTypedef(qualifiedTarget))
             {
                 ValidateTypedef(input, offset, qualifiedTarget, activeAliases);

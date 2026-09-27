@@ -1,9 +1,10 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Wireloom.Compiler.FrontEnd.Parsing;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Naming;
 
-public static partial class IdlCompiler
+/// <summary>Provides shared IDL-to-C# naming and type-resolution helpers.</summary>
+internal static class IdlNaming
 {
     /// <summary>Maps an IDL primitive spelling to its managed C# type.</summary>
     internal static string MapPrimitive(string idlType)

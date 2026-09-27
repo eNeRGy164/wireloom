@@ -1,8 +1,7 @@
 using System.Globalization;
 using Wireloom.Compiler.Emission.Emitters;
 using Wireloom.Compiler.Emission.Model;
-
-using static Wireloom.IdlCompiler;
+using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Planning;
 
@@ -15,7 +14,7 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsSequence)
         {
-            var element = TypeReference(ElementCSharpType!, namespaceName);
+            var element = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
             if (HasAggregateElement)
             {
                 return $"{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
@@ -52,7 +51,7 @@ internal sealed partial class MemberEmissionPlan
 
             if (ValueType is EnumEmissionType)
             {
-                return $"({TypeReference(CSharpType, namespaceName)}){value}";
+                return $"({IdlNaming.TypeReference(CSharpType, namespaceName)}){value}";
             }
 
             return value;
@@ -71,7 +70,7 @@ internal sealed partial class MemberEmissionPlan
                 "long double" => "(LongDouble)0",
                 _ => "0"
             },
-            EnumEmissionType enumType => $"({TypeReference(CSharpType, namespaceName)}){enumType.DefaultValue}",
+            EnumEmissionType enumType => $"({IdlNaming.TypeReference(CSharpType, namespaceName)}){enumType.DefaultValue}",
             _ => throw new InvalidOperationException("Expected a scalar native value.")
         };
     }
@@ -89,7 +88,7 @@ internal sealed partial class MemberEmissionPlan
 
             if (HasAggregateElement)
             {
-                return $"{EscapedName}.Initialize<{TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>();";
+                return $"{EscapedName}.Initialize<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>();";
             }
 
             return $"{EscapedName}.Initialize();";
@@ -120,7 +119,7 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildSequenceInitializeStatement(string? namespaceName)
     {
-        var element = TypeReference(ElementCSharpType!, namespaceName);
+        var element = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
 
         if (IsStringSequence && IsSequenceArray)
         {
@@ -137,7 +136,7 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildArrayInitializeStatement(string? namespaceName)
     {
-        var element = TypeReference(ElementCSharpType!, namespaceName);
+        var element = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
 
         if (HasAggregateElement)
         {
@@ -183,9 +182,9 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsSequence)
         {
-            return $"{EscapedName}.Destroy<{TypeReference(ElementCSharpType!, currentNamespace)}, {ElementUnmanagedType(namespaceName)}>(optionalsOnly);";
+            return $"{EscapedName}.Destroy<{IdlNaming.TypeReference(ElementCSharpType!, currentNamespace)}, {ElementUnmanagedType(namespaceName)}>(optionalsOnly);";
         }
 
-        return $"{EscapedName}.Destroy<{TypeReference(ElementCSharpType!, currentNamespace)}, {ElementUnmanagedType(namespaceName)}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, optionalsOnly: optionalsOnly);";
+        return $"{EscapedName}.Destroy<{IdlNaming.TypeReference(ElementCSharpType!, currentNamespace)}, {ElementUnmanagedType(namespaceName)}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, optionalsOnly: optionalsOnly);";
     }
 }

@@ -1,18 +1,17 @@
 using Wireloom.Compiler.FrontEnd.Semantic;
-
-using static Wireloom.IdlCompiler;
+using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
 
 /// <summary>Emits managed enum, plugin, and type-support documents.</summary>
 internal static class EnumEmitter
 {
-    public static void Emit(CompilationState compilation, IdlEnum declaration, string sourceIdlFileName)
+    public static void Emit(CompilationContext compilation, IdlEnum declaration, string sourceIdlFileName)
     {
-        var writer = CreateSource(declaration.Namespace, ["System"], sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(declaration.Namespace, ["System"], sourceIdlFileName);
 
         writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> enumeration declared in <c>{sourceIdlFileName}</c>.");
-        writer.OpenBlock($"public enum {EscapeIdentifier(declaration.Name)}");
+        writer.OpenBlock($"public enum {IdlNaming.EscapeIdentifier(declaration.Name)}");
 
         for (var index = 0; index < declaration.Members.Count; index++)
         {
@@ -25,24 +24,24 @@ internal static class EnumEmitter
             var value = member.HasExplicitValue ? $" = {member.Value}" : string.Empty;
 
             writer.WriteXmlSummary($"The <c>{member.Name}</c> enumeration value.");
-            writer.WriteLine($"{EscapeIdentifier(member.Name)}{value},");
+            writer.WriteLine($"{IdlNaming.EscapeIdentifier(member.Name)}{value},");
         }
 
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(CreateHintName(declaration.Namespace, declaration.Name), writer.ToString()));
+        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(declaration.Namespace, declaration.Name), writer.ToString()));
 
         EmitPlugin(compilation, declaration, sourceIdlFileName);
         EmitTypeSupport(compilation, declaration, sourceIdlFileName);
     }
 
-    private static void EmitPlugin(CompilationState compilation, IdlEnum declaration, string sourceIdlFileName)
+    private static void EmitPlugin(CompilationContext compilation, IdlEnum declaration, string sourceIdlFileName)
     {
-        var typeName = EscapeIdentifier(declaration.Name);
-        var runtimeName = declaration.Namespace is null ? typeName : $"{EscapeQualifiedIdentifier(declaration.Namespace)}.{typeName}";
+        var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
+        var runtimeName = declaration.Namespace is null ? typeName : $"{IdlNaming.EscapeQualifiedIdentifier(declaration.Namespace)}.{typeName}";
         var implementation = declaration.Namespace is null ? "Implementation" : $"{declaration.Namespace}.Implementation";
 
-        var writer = CreateSource(implementation, PluginUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(implementation, EmissionSupport.PluginUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI interpreted type plugin for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"internal class {typeName}Plugin : EnumTypePlugin");
@@ -79,14 +78,14 @@ internal static class EnumEmitter
         writer.CloseBlock();
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(CreateHintName(implementation, $"{declaration.Name}Plugin"), writer.ToString()));
+        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementation, $"{declaration.Name}Plugin"), writer.ToString()));
     }
 
-    private static void EmitTypeSupport(CompilationState compilation, IdlEnum declaration, string sourceIdlFileName)
+    private static void EmitTypeSupport(CompilationContext compilation, IdlEnum declaration, string sourceIdlFileName)
     {
-        var typeName = EscapeIdentifier(declaration.Name);
+        var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
 
-        var writer = CreateSource(declaration.Namespace, TypeSupportUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides RTI Connext DDS type support for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"public class {typeName}Support : TypeSupport<{typeName}>");
@@ -105,6 +104,6 @@ internal static class EnumEmitter
         writer.WriteLine($"public static {typeName}Support Instance {{ get; }} = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{typeName}Support, {typeName}>();");
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(CreateHintName(declaration.Namespace, declaration.Name + "Support"), writer.ToString()));
+        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(declaration.Namespace, declaration.Name + "Support"), writer.ToString()));
     }
 }

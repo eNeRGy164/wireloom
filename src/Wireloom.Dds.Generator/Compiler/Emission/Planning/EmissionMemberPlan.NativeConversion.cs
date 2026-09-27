@@ -1,7 +1,6 @@
 using Wireloom.Compiler.Emission.Emitters;
 using Wireloom.Compiler.Emission.Model;
-
-using static Wireloom.IdlCompiler;
+using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Planning;
 
@@ -56,19 +55,19 @@ internal sealed partial class MemberEmissionPlan
         {
             var dimensions = $"new int[] {{ {string.Join(", ", Dimensions)} }}";
             var temporary = $"{EscapedName}Temporary_";
-            var arrayType = TypeReference(CSharpType, namespaceName);
+            var arrayType = IdlNaming.TypeReference(CSharpType, namespaceName);
 
             if (HasAggregateElement)
             {
-                return $"{EscapedName}.FromNative<{TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(out {arrayType} {temporary}, keysOnly: {(forwardKeysOnly ? "keysOnly" : "false")}, dimensions: {dimensions}); sample.{EscapedName} = {temporary};";
+                return $"{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(out {arrayType} {temporary}, keysOnly: {(forwardKeysOnly ? "keysOnly" : "false")}, dimensions: {dimensions}); sample.{EscapedName} = {temporary};";
             }
 
-            return $"{EscapedName}.FromNative<{TypeReference(ElementCSharpType!, namespaceName)}>(out {arrayType} {temporary}, dimensions: {dimensions}); sample.{EscapedName} = {temporary};";
+            return $"{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>(out {arrayType} {temporary}, dimensions: {dimensions}); sample.{EscapedName} = {temporary};";
         }
 
         if (HasAggregateElement)
         {
-            return $"{EscapedName}.FromNative<{TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, keysOnly: {(forwardKeysOnly ? "keysOnly" : "false")}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
+            return $"{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, keysOnly: {(forwardKeysOnly ? "keysOnly" : "false")}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
         }
 
         return $"{EscapedName}.FromNative(sample.{EscapedName}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
@@ -87,18 +86,18 @@ internal sealed partial class MemberEmissionPlan
 
             if (HasAggregateElement)
             {
-                return $"{EscapedName}.FromNative<{TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(out ISequence<{TypeReference(ElementCSharpType!, namespaceName)}> {temporary}, keysOnly: false); sample.{EscapedName} = {temporary};";
+                return $"{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(out ISequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}> {temporary}, keysOnly: false); sample.{EscapedName} = {temporary};";
             }
 
-            return $"{EscapedName}.FromNative<{TypeReference(ElementCSharpType!, namespaceName)}>(out Sequence<{TypeReference(ElementCSharpType!, namespaceName)}> {temporary}); sample.{EscapedName} = {temporary};";
+            return $"{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>(out Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}> {temporary}); sample.{EscapedName} = {temporary};";
         }
 
         if (HasAggregateElement)
         {
-            return $"{EscapedName}.FromNative<{TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName});";
+            return $"{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName});";
         }
 
-        return $"{EscapedName}.FromNative((Sequence<{TypeReference(ElementCSharpType!, namespaceName)}>)sample.{EscapedName});";
+        return $"{EscapedName}.FromNative((Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>)sample.{EscapedName});";
     }
 
     private string BuildAggregateFromNativeStatement(bool forwardKeysOnly) =>
@@ -178,20 +177,20 @@ internal sealed partial class MemberEmissionPlan
     {
         if (IsOptional && HasAggregateElement)
         {
-            return $"{EscapedName}.ToNative<{TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, keysOnly: {(forwardKeysOnly ? "keysOnly" : "false")}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
+            return $"{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, keysOnly: {(forwardKeysOnly ? "keysOnly" : "false")}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
         }
 
         if (IsOptional)
         {
-            return $"{EscapedName}.ToNative<{TypeReference(ElementCSharpType!, namespaceName)}>(sample.{EscapedName}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
+            return $"{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>(sample.{EscapedName}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
         }
 
         if (HasAggregateElement)
         {
-            return $"{EscapedName}.ToNative<{TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, keysOnly: {(forwardKeysOnly ? "keysOnly" : "false")}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
+            return $"{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, keysOnly: {(forwardKeysOnly ? "keysOnly" : "false")}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
         }
 
-        return $"{EscapedName}.ToNative<{TypeReference(ElementCSharpType!, namespaceName)}>(sample.{EscapedName}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
+        return $"{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>(sample.{EscapedName}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
     }
 
     private string BuildSequenceToNativeStatement(string? namespaceName)
@@ -203,20 +202,20 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsOptional && HasAggregateElement)
         {
-            return $"{EscapedName}.ToNative<{TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, {Bound});";
+            return $"{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, {Bound});";
         }
 
         if (IsOptional)
         {
-            return $"{EscapedName}.ToNative<{TypeReference(ElementCSharpType!, namespaceName)}>((Sequence<{TypeReference(ElementCSharpType!, namespaceName)}>)sample.{EscapedName}, {Bound});";
+            return $"{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>((Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>)sample.{EscapedName}, {Bound});";
         }
 
         if (HasAggregateElement)
         {
-            return $"{EscapedName}.ToNative<{TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName});";
+            return $"{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName});";
         }
 
-        return $"{EscapedName}.ToNative((Sequence<{TypeReference(ElementCSharpType!, namespaceName)}>)sample.{EscapedName});";
+        return $"{EscapedName}.ToNative((Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>)sample.{EscapedName});";
     }
 
     private string BuildAggregateToNativeStatement(bool forwardKeysOnly) =>

@@ -4,8 +4,7 @@ using Wireloom.Compiler.Emission.Emitters;
 using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Writers;
 
-using static Wireloom.Compiler.Emission.Planning.EmissionTypeProjector;
-using static Wireloom.IdlCompiler;
+using static Wireloom.Compiler.Naming.IdlNaming;
 
 namespace Wireloom.Compiler.Emission.Planning;
 
@@ -86,7 +85,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public bool IsAggregate => Type.IsAggregate;
     public bool IsUnion => Type.IsUnion;
     public bool HasAggregateElement => ElementType?.IsAggregate == true;
-    public bool HasSequenceElement => IsArray && ElementType is not null && HasSequenceType(ElementType);
+    public bool HasSequenceElement => IsArray && ElementType is not null && EmissionTypeProjector.HasSequenceType(ElementType);
     public string? BoundSummary
     {
         get
@@ -101,7 +100,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
                 return $"Its maximum length is <c>{bound}</c>.";
             }
 
-            if (HasSequenceType(Type))
+            if (EmissionTypeProjector.HasSequenceType(Type))
             {
                 return $"Its maximum number of elements is <c>{bound}</c>.";
             }
@@ -176,7 +175,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         }
     }
 
-    public bool HasTypeSupport => Bound is null || HasSequenceType(Type) || IsString;
+    public bool HasTypeSupport => Bound is null || EmissionTypeProjector.HasSequenceType(Type) || IsString;
 
     public bool IsRecursive(string runtimeTypeName) =>
         IsSequence && string.Equals(ElementCSharpType, runtimeTypeName, StringComparison.Ordinal);
@@ -491,24 +490,24 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
     private bool IsOptionalScalar => IsOptional && !IsSequence && !IsArray && !IsString && !IsAggregate;
 
-    private EmissionTypePlan ValueType => UnwrapValueEmissionType(Type);
+    private EmissionTypePlan ValueType => EmissionTypeProjector.UnwrapValueEmissionType(Type);
 
     private int EnumDefaultValue => ValueType is EnumEmissionType enumType ? enumType.DefaultValue : 0;
 
     private string GetReferencedUnmanagedType(string? namespaceOverride) =>
-        GetUnmanagedType(CSharpType, namespaceOverride);
+        EmissionSupport.GetUnmanagedType(CSharpType, namespaceOverride);
 
     private string ElementUnmanagedType(string? namespaceOverride = null)
     {
         var typeName = ElementSupportType ?? ElementCSharpType!;
 
-        return GetUnmanagedType(typeName, namespaceOverride ?? currentNamespace);
+        return EmissionSupport.GetUnmanagedType(typeName, namespaceOverride ?? currentNamespace);
     }
 
     private string NullableValueType() => CSharpType.TrimEnd('?');
 
     private static FieldEmissionShape GetShape(EmissionTypePlan type) =>
-        UnwrapOptionalEmissionType(type) switch
+        EmissionTypeProjector.UnwrapOptionalEmissionType(type) switch
         {
             PrimitiveEmissionType => FieldEmissionShape.Primitive,
             StringEmissionType => FieldEmissionShape.String,

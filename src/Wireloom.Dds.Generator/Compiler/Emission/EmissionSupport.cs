@@ -1,9 +1,10 @@
 using Wireloom.Compiler.Emission.Writers;
+using Wireloom.Compiler.Naming;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.Emission;
 
 /// <summary>Provides shared source-emission helpers for IDL compilation.</summary>
-public static partial class IdlCompiler
+internal static class EmissionSupport
 {
     internal static readonly string[] DataTypeUsings = ["Omg.Types", "Rti.Types", "System"];
     internal static readonly string[] UnmanagedTypeUsings = ["Rti.Dds.NativeInterface.TypePlugin", "Rti.Types", "System"];
@@ -16,7 +17,7 @@ public static partial class IdlCompiler
         IEnumerable<string> usingAliases,
         string sourceIdlFileName) =>
         new(
-            currentNamespace is null ? null : EscapeQualifiedIdentifier(currentNamespace),
+            currentNamespace is null ? null : IdlNaming.EscapeQualifiedIdentifier(currentNamespace),
             usingAliases,
             sourceIdlFileName);
 
@@ -28,9 +29,9 @@ public static partial class IdlCompiler
             return typeName + "Unmanaged";
         }
 
-        return TypeReference($"{typeName[..lastDot]}.Implementation.{typeName[(lastDot + 1)..]}Unmanaged", currentNamespace);
+        return IdlNaming.TypeReference($"{typeName[..lastDot]}.Implementation.{typeName[(lastDot + 1)..]}Unmanaged", currentNamespace);
     }
 
     internal static string GetSupportType(string typeName, string? currentNamespace) =>
-        TypeReference(typeName, currentNamespace) + "Support.Instance";
+        IdlNaming.TypeReference(typeName, currentNamespace) + "Support.Instance";
 }
