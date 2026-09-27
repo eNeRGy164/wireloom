@@ -46,6 +46,20 @@ internal sealed class IdlDeclarationParser
                 continue;
             }
 
+            var languageBindingAnnotation = LanguageBindingAnnotationPattern.Match(declarations[position..]);
+            if (languageBindingAnnotation.Success)
+            {
+                position += languageBindingAnnotation.Length;
+                continue;
+            }
+
+            var transferModeAnnotation = TransferModeAnnotationPattern.Match(declarations[position..]);
+            if (transferModeAnnotation.Success)
+            {
+                position += transferModeAnnotation.Length;
+                continue;
+            }
+
             var defaultNested = DefaultNestedAnnotationPattern.Match(declarations.Substring(position));
             if (defaultNested.Success)
             {
@@ -522,7 +536,7 @@ internal sealed class IdlDeclarationParser
                 throw new IdlException(input, sourceOffset, $"Unknown union collection element type: {ElementType}");
             }
 
-            return CreateCollectionMember(branchName, IdlCollectionKind.Sequence, Bound ?? 100, element);
+            return new IdlMember(branchName, new IdlType.Sequence(element, Bound ?? 100));
         }
 
         if (branchType.StartsWith("string", StringComparison.Ordinal) ||
@@ -636,7 +650,8 @@ internal sealed class IdlDeclarationParser
             annotations.IsKey,
             annotations.IsOptional,
             annotations.MemberId,
-            valueMetadata);
+            valueMetadata,
+            annotations.IsExternal);
 
         return (new IdlMember(field, parsedType, metadata), annotationsLength + member.Length);
     }
@@ -759,6 +774,45 @@ internal sealed class IdlDeclarationParser
                 continue;
             }
 
+            var unitAnnotation = UnitAnnotationPattern.Match(remaining);
+            if (unitAnnotation.Success)
+            {
+                if (annotations.UnitExpression is not null)
+                {
+                    throw new IdlException(input, sourceOffset + offset, "Duplicate @unit annotation.");
+                }
+
+                annotations.UnitExpression = unitAnnotation.Groups["value"].Value;
+                offset += unitAnnotation.Length;
+                length += unitAnnotation.Length;
+
+                continue;
+            }
+
+            var resolveNameAnnotation = ResolveNameAnnotationPattern.Match(remaining);
+            if (resolveNameAnnotation.Success)
+            {
+                offset += resolveNameAnnotation.Length;
+                length += resolveNameAnnotation.Length;
+
+                continue;
+            }
+
+            var externalAnnotation = ExternalAnnotationPattern.Match(remaining);
+            if (externalAnnotation.Success)
+            {
+                if (annotations.IsExternal)
+                {
+                    throw new IdlException(input, sourceOffset + offset, "Duplicate @external annotation.");
+                }
+
+                annotations.IsExternal = true;
+                offset += externalAnnotation.Length;
+                length += externalAnnotation.Length;
+
+                continue;
+            }
+
             return (annotations, length);
         }
     }
@@ -772,7 +826,8 @@ internal sealed class IdlDeclarationParser
     {
         if (annotations.MinimumExpression is null &&
             annotations.MaximumExpression is null &&
-            annotations.DefaultExpression is null)
+            annotations.DefaultExpression is null &&
+            annotations.UnitExpression is null)
         {
             return null;
         }
@@ -847,7 +902,7 @@ internal sealed class IdlDeclarationParser
             throw new IdlException(input, offset, "Member default value is outside its declared range.");
         }
 
-        return new IdlMemberValueMetadata(defaultValue, minimum, maximum, annotations.DefaultExpression);
+        return new IdlMemberValueMetadata(defaultValue, minimum, maximum, annotations.DefaultExpression, annotations.UnitExpression);
     }
 
     private BigInteger EvaluateMemberInteger(IdlInput input, int offset, string? currentNamespace, string expression, string valueName)
@@ -880,6 +935,8 @@ internal sealed class IdlDeclarationParser
         public string? MinimumExpression { get; set; }
         public string? MaximumExpression { get; set; }
         public string? DefaultExpression { get; set; }
+        public string? UnitExpression { get; set; }
+        public bool IsExternal { get; set; }
     }
 
     private void EnsureNewName(IdlInput input, int offset, string name) =>
@@ -986,23 +1043,6 @@ internal sealed class IdlDeclarationParser
         {
             throw new IdlException(input, offset, $"{type} constant value is outside its representable range.");
         }
-    }
-
-    private static IdlMember CreateCollectionMember(
-        string name,
-        IdlCollectionKind kind,
-        int? bound,
-        IdlType element,
-        IReadOnlyList<int>? dimensions = null,
-        bool isKey = false,
-        bool isOptional = false,
-        int? memberId = null)
-    {
-        IdlType collection = kind == IdlCollectionKind.Sequence
-            ? new IdlType.Sequence(element, bound)
-            : new IdlType.Array(element, dimensions ?? []);
-
-        return new IdlMember(name, collection, new IdlMemberMetadata(isKey, isOptional, memberId));
     }
 
     private static bool IsOptionalScalar(IdlType type) => type switch

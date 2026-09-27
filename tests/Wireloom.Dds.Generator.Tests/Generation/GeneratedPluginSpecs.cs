@@ -100,5 +100,41 @@ public sealed class GeneratedPluginSpecs
             "maxValue:",
             "result.SetMemberAnnotations(1, annotations);");
     }
+
+    [Fact]
+    [Trait("Corpus", "C046")]
+    public void RtiGenerationAnnotationsReachTheExpectedDynamicTypeMetadata()
+    {
+        // Arrange
+        var input = Input("annotations-rti.idl",
+            """
+            module RtiAnnotations {
+                @language_binding(PLAIN)
+                @transfer_mode(INBAND)
+                @topic struct Sample {
+                    @key long id;
+                    @range(min = -32, max = 31) @unit("meters") long value;
+                    @resolve_name(false) string<16> text;
+                    @external string<16> externalText;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["RtiAnnotations.Sample.g.cs"].Source;
+        managed.ShouldContain("ArgumentOutOfRangeException.ThrowIfLessThan(value, -32);");
+        managed.ShouldContain("ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 31);");
+
+        var plugin = documents["RtiAnnotations.Implementation.SamplePlugin.g.cs"].Source;
+        plugin.ShouldContain("new StructMember(\"value\", dtf.GetPrimitiveType<int>(), id: 1)");
+        plugin.ShouldContain("unit: \"meters\"");
+        plugin.ShouldContain("result.SetMemberAnnotations(0, annotations);");
+        plugin.ShouldContain("result.SetMemberAnnotations(1, annotations);");
+        plugin.ShouldContain("result.SetMemberAnnotations(2, annotations);");
+        plugin.ShouldNotContain("result.SetMemberAnnotations(3, annotations);");
+    }
 }
 

@@ -5,7 +5,7 @@ internal static class TypeSupportAnnotationEmitter
 {
     public static void Emit(GeneratedSourceWriter writer, int index, MemberEmissionPlan field)
     {
-        if (field.IsOptional)
+        if (field.IsOptional || field.IsExternal)
         {
             return;
         }
@@ -16,7 +16,7 @@ internal static class TypeSupportAnnotationEmitter
             return;
         }
 
-        var (TypeKind, ValueProperty, DefaultValue, Minimum, Maximum) = annotation.Value;
+        var (TypeKind, ValueProperty, DefaultValue, Minimum, Maximum, Unit) = annotation.Value;
 
         writer.BlankLine();
         writer.OpenBrace();
@@ -26,7 +26,7 @@ internal static class TypeSupportAnnotationEmitter
         writer.WriteLine($"defaultValue: new AnnotationParameterValue {{ {ValueProperty} = {DefaultValue} }},");
         writer.WriteLine($"minValue: {(Minimum is null ? "null," : $"new AnnotationParameterValue {{ {ValueProperty} = {Minimum} }},")}");
         writer.WriteLine($"maxValue: {(Maximum is null ? "null," : $"new AnnotationParameterValue {{ {ValueProperty} = {Maximum} }},")}");
-        writer.WriteLine("unit: null);");
+        writer.WriteLine($"unit: {Unit ?? "null"});");
         writer.Unindent();
         writer.WriteLine($"result.SetMemberAnnotations({index}, annotations);");
         writer.CloseBlock();

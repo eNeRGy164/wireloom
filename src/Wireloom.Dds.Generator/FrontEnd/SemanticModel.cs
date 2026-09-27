@@ -2,12 +2,6 @@ using System.Numerics;
 
 namespace Wireloom;
 
-internal enum IdlCollectionKind
-{
-    Sequence,
-    Array
-}
-
 internal enum IdlExtensibilityKind
 {
     Extensible,
@@ -69,20 +63,22 @@ internal abstract class IdlType
 }
 
 /// <summary>Metadata attached to an IDL member independently of its type.</summary>
-internal sealed class IdlMemberValueMetadata(BigInteger? defaultValue = null, BigInteger? minimum = null, BigInteger? maximum = null, string? defaultExpression = null)
+internal sealed class IdlMemberValueMetadata(BigInteger? defaultValue = null, BigInteger? minimum = null, BigInteger? maximum = null, string? defaultExpression = null, string? unit = null)
 {
     public BigInteger? DefaultValue { get; } = defaultValue;
     public BigInteger? Minimum { get; } = minimum;
     public BigInteger? Maximum { get; } = maximum;
     public string? DefaultExpression { get; } = defaultExpression;
+    public string? Unit { get; } = unit;
 }
 
-internal sealed class IdlMemberMetadata(bool isKey = false, bool isOptional = false, int? memberId = null, IdlMemberValueMetadata? valueMetadata = null)
+internal sealed class IdlMemberMetadata(bool isKey = false, bool isOptional = false, int? memberId = null, IdlMemberValueMetadata? valueMetadata = null, bool isExternal = false)
 {
     public bool IsKey { get; } = isKey;
     public bool IsOptional { get; } = isOptional;
     public int? MemberId { get; } = memberId;
     public IdlMemberValueMetadata? ValueMetadata { get; } = valueMetadata;
+    public bool IsExternal { get; } = isExternal;
 }
 
 /// <summary>Represents an IDL member independently of any target language.</summary>

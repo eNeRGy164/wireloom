@@ -11,6 +11,12 @@ internal static class IdlGrammar
     internal static readonly Regex DefaultNestedAnnotationPattern = new(
         @"^@default_nested\b\s*",
         RegexOptions.Compiled);
+    internal static readonly Regex LanguageBindingAnnotationPattern = new(
+        @"^@language_binding\s*\(\s*[A-Za-z_]\w*\s*\)\s*",
+        RegexOptions.Compiled);
+    internal static readonly Regex TransferModeAnnotationPattern = new(
+        @"^@transfer_mode\s*\(\s*[A-Za-z_]\w*\s*\)\s*",
+        RegexOptions.Compiled);
     internal static readonly Regex TopicAnnotationPattern = new(
         @"^@topic\b\s*",
         RegexOptions.Compiled);
@@ -64,6 +70,15 @@ internal static class IdlGrammar
         RegexOptions.Compiled);
     internal static readonly Regex RangeAnnotationPattern = new(
         @"^@range\s*\(\s*min\s*=\s*(?<min>[^,]+)\s*,\s*max\s*=\s*(?<max>[^)]+)\)\s*",
+        RegexOptions.Compiled);
+    internal static readonly Regex UnitAnnotationPattern = new(
+        "^@unit\\s*\\(\\s*\\\"(?<value>[^\\\"]*)\\\"\\s*\\)\\s*",
+        RegexOptions.Compiled);
+    internal static readonly Regex ResolveNameAnnotationPattern = new(
+        @"^@resolve_name\s*\(\s*(?:true|false)\s*\)\s*",
+        RegexOptions.Compiled);
+    internal static readonly Regex ExternalAnnotationPattern = new(
+        @"^@external\b\s*",
         RegexOptions.Compiled);
     internal static readonly Regex WhitespacePattern = new("\\s+", RegexOptions.Compiled);
 }

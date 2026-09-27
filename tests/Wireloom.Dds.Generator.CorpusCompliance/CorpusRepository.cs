@@ -50,6 +50,7 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "09-defaults-ranges",
         "10-annotations",
         "10-annotations-extended",
+        "10-annotations-rti",
         "11-preprocessing",
         "11-conditionals",
         "11-macros",

@@ -29,7 +29,8 @@ internal static class EmissionTypeProjector
             member.Metadata.IsKey,
             member.Metadata.MemberId,
             member.Metadata.IsOptional,
-            member.Metadata.ValueMetadata);
+            member.Metadata.ValueMetadata,
+            member.Metadata.IsExternal);
     }
 
     internal static IdlEmissionUnion ToEmissionUnion(IdlUnion union) =>
