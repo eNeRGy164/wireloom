@@ -17,6 +17,9 @@ internal static class IdlGrammar
     internal static readonly Regex TransferModeAnnotationPattern = new(
         @"^@transfer_mode\s*\(\s*[A-Za-z_]\w*\s*\)\s*",
         RegexOptions.Compiled);
+    internal static readonly Regex DataRepresentationAnnotationPattern = new(
+        @"^@data_representation\s*\(\s*[A-Za-z_]\w*\s*\)\s*",
+        RegexOptions.Compiled);
     internal static readonly Regex TopicAnnotationPattern = new(
         @"^@topic\b\s*",
         RegexOptions.Compiled);

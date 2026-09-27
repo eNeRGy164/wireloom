@@ -60,6 +60,13 @@ internal sealed class IdlDeclarationParser
                 continue;
             }
 
+            var dataRepresentationAnnotation = DataRepresentationAnnotationPattern.Match(declarations[position..]);
+            if (dataRepresentationAnnotation.Success)
+            {
+                position += dataRepresentationAnnotation.Length;
+                continue;
+            }
+
             var defaultNested = DefaultNestedAnnotationPattern.Match(declarations.Substring(position));
             if (defaultNested.Success)
             {
