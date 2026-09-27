@@ -1,8 +1,8 @@
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
+using Wireloom.Roslyn;
 
 namespace Wireloom;
 
@@ -13,77 +13,13 @@ namespace Wireloom;
 [Generator]
 public sealed class Generator : IIncrementalGenerator
 {
-    private static readonly DiagnosticDescriptor GenerationError = new(
-        "DDSG0001",
-        "IDL generation failed",
-        "{0}",
-        "DDS Source Generator",
-        DiagnosticSeverity.Error,
-        true);
-
-    private static readonly DiagnosticDescriptor LanguageVersionError = new(
-        "DDSG0002",
-        "C# 12 or later is required",
-        "The DDS source generator requires C# 12 or later; the project uses C# {0}",
-        "DDS Source Generator",
-        DiagnosticSeverity.Error,
-        true);
-
-    private static readonly DiagnosticDescriptor RuntimeReferenceError = new(
-        "DDSG0003",
-        "Compatible RTI runtime not found",
-        "A resolved Rti.ConnextDds reference with version 7.3.1 or later is required",
-        "DDS Source Generator",
-        DiagnosticSeverity.Error,
-        true);
-
-    private static readonly DiagnosticDescriptor UnknownAnnotationWarning = new(
-        "DDSG0101",
-        "Unknown IDL annotation",
-        "{0}",
-        "DDS Source Generator",
-        DiagnosticSeverity.Warning,
-        true);
-
-    private static readonly DiagnosticDescriptor UnsupportedAnnotationWarning = new(
-        "DDSG0102",
-        "Unsupported IDL annotation",
-        "{0}",
-        "DDS Source Generator",
-        DiagnosticSeverity.Warning,
-        true);
-
-    private static readonly DiagnosticDescriptor IgnoredInterfaceWarning = new(
-        "DDSG0103",
-        "Non-DDS interface ignored",
-        "{0}",
-        "DDS Source Generator",
-        DiagnosticSeverity.Warning,
-        true);
-
-    private static readonly DiagnosticDescriptor MacroArityWarning = new(
-        "DDSG0104",
-        "Macro argument count mismatch",
-        "{0}",
-        "DDS Source Generator",
-        DiagnosticSeverity.Warning,
-        true);
-
-    private static readonly DiagnosticDescriptor ArrayOfSequenceWarning = new(
-        "DDSG0105",
-        "Array of sequences may not preserve IDL semantics",
-        "{0}",
-        "DDS Source Generator",
-        DiagnosticSeverity.Warning,
-        true);
-
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var inputs = context.AdditionalTextsProvider
             .Where(file => file.Path.EndsWith(".idl", StringComparison.OrdinalIgnoreCase))
             .Combine(context.AnalyzerConfigOptionsProvider)
-            .Select(CreateInput)
+            .Select(GeneratorInputFactory.Create)
             .Collect()
             .Combine(context.CompilationProvider);
 
@@ -94,14 +30,14 @@ public sealed class Generator : IIncrementalGenerator
 
             if (compilation is CSharpCompilation { LanguageVersion: < LanguageVersion.CSharp12 } csharpCompilation)
             {
-                production.ReportDiagnostic(Diagnostic.Create(LanguageVersionError, Location.None, csharpCompilation.LanguageVersion));
+                production.ReportDiagnostic(Diagnostic.Create(GeneratorDiagnostics.LanguageVersionError, Location.None, csharpCompilation.LanguageVersion));
 
                 return;
             }
 
-            if (!HasCompatibleRuntime(compilation))
+            if (!RuntimeReferenceGuard.HasCompatibleRuntime(compilation))
             {
-                production.ReportDiagnostic(Diagnostic.Create(RuntimeReferenceError, Location.None));
+                production.ReportDiagnostic(Diagnostic.Create(GeneratorDiagnostics.RuntimeReferenceError, Location.None));
                 return;
             }
 
@@ -110,7 +46,7 @@ public sealed class Generator : IIncrementalGenerator
             try
             {
                 var outputs = IdlCompiler.CompileSourcesWithDiagnostics([.. files], diagnostics, production.CancellationToken);
-                ReportDiagnostics(production, diagnostics);
+                GeneratorDiagnostics.Report(production, diagnostics);
 
                 foreach (var output in outputs.Values)
                 {
@@ -119,89 +55,13 @@ public sealed class Generator : IIncrementalGenerator
             }
             catch (IdlException exception)
             {
-                ReportDiagnostics(production, diagnostics);
+                GeneratorDiagnostics.Report(production, diagnostics);
                 var text = SourceText.From(exception.Input.Text);
                 var span = new TextSpan(Math.Min(exception.Offset, text.Length), 0);
 
-                production.ReportDiagnostic(Diagnostic.Create(GenerationError, Location.Create(exception.Input.Path, span, text.Lines.GetLinePositionSpan(span)), exception.Message));
+                production.ReportDiagnostic(Diagnostic.Create(GeneratorDiagnostics.GenerationError, Location.Create(exception.Input.Path, span, text.Lines.GetLinePositionSpan(span)), exception.Message));
             }
         });
     }
 
-    private static void ReportDiagnostics(SourceProductionContext production, IEnumerable<IdlDiagnostic> diagnostics)
-    {
-        foreach (var diagnostic in diagnostics)
-        {
-            var text = SourceText.From(diagnostic.Input.Text);
-            var span = new TextSpan(Math.Min(diagnostic.Offset, text.Length), 0);
-            var descriptor = diagnostic.Id switch
-            {
-                "DDSG0102" => UnsupportedAnnotationWarning,
-                "DDSG0103" => IgnoredInterfaceWarning,
-                "DDSG0104" => MacroArityWarning,
-                "DDSG0105" => ArrayOfSequenceWarning,
-                _ => UnknownAnnotationWarning
-            };
-
-            production.ReportDiagnostic(Diagnostic.Create(
-                descriptor,
-                Location.Create(diagnostic.Input.Path, span, text.Lines.GetLinePositionSpan(span)),
-                diagnostic.Message));
-        }
-    }
-
-    private static IdlInput CreateInput((AdditionalText Left, AnalyzerConfigOptionsProvider Right) inputAndOptions, CancellationToken cancellationToken)
-    {
-        var input = inputAndOptions.Left;
-
-        inputAndOptions.Right
-            .GetOptions(input)
-            .TryGetValue("build_metadata.AdditionalFiles.Generate", out var generate);
-
-        inputAndOptions.Right
-            .GetOptions(input)
-            .TryGetValue("build_metadata.AdditionalFiles.Strict", out var strict);
-
-        inputAndOptions.Right
-            .GetOptions(input)
-            .TryGetValue("build_metadata.AdditionalFiles.Defines", out var defines);
-
-        inputAndOptions.Right
-            .GetOptions(input)
-            .TryGetValue("build_metadata.AdditionalFiles.Undefines", out var undefines);
-
-        inputAndOptions.Right
-            .GetOptions(input)
-            .TryGetValue("build_metadata.AdditionalFiles.IncludeDirectories", out var includeDirectories);
-
-        return new(
-            input.Path,
-            input.GetText(cancellationToken)?.ToString() ?? string.Empty,
-            !string.Equals(generate, "false", StringComparison.OrdinalIgnoreCase),
-            string.Equals(strict, "true", StringComparison.OrdinalIgnoreCase),
-            ParseSymbols(defines),
-            ParseSymbols(undefines),
-            ParseSymbols(includeDirectories));
-    }
-
-    private static List<string> ParseSymbols(string? value) =>
-        string.IsNullOrWhiteSpace(value)
-            ? []
-            : [.. value!.Split([';'], StringSplitOptions.RemoveEmptyEntries)
-                .Select(symbol => symbol.Trim())
-                .Where(symbol => symbol.Length != 0)];
-
-    private static bool HasCompatibleRuntime(Compilation compilation)
-    {
-        foreach (var reference in compilation.References)
-        {
-            var assembly = compilation.GetAssemblyOrModuleSymbol(reference) as IAssemblySymbol;
-            if (assembly?.Identity.Name == "Rti.ConnextDds" && assembly.Identity.Version >= new Version(7, 3, 1))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
