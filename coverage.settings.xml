@@ -4,6 +4,8 @@
     <Sources>
       <Exclude>
         <Source>.*[\\/]obj[\\/].*</Source>
+        <Source>.*[\\/]jetbrains\.annotations\.sources[\\/].*</Source>
+        <Source>.*[\\/]JetBrains\.Annotations\.Sources[\\/].*</Source>
       </Exclude>
     </Sources>
   </CodeCoverage>
