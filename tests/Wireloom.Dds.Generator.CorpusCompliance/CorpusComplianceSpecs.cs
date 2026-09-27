@@ -82,11 +82,6 @@ public sealed class CorpusComplianceSpecs
     [MemberData(nameof(CorpusCases))]
     public void EveryCorpusCaseMatchesItsExpectedAcceptance(CorpusCase corpusCase)
     {
-        if (corpusCase.IsUnsafeInProcess)
-        {
-            Assert.Skip("The current alias resolver overflows on this cyclic-alias probe; run it in an isolated compiler process before enabling this assertion.");
-        }
-
         if (corpusCase.ExpectedToCompile)
         {
             Should.NotThrow(() => Compile(corpusCase), $"Case {corpusCase.Id} should compile.");

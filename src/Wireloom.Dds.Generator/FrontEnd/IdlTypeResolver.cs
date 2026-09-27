@@ -5,7 +5,10 @@ using static IdlCompiler;
 /// <summary>Resolves IDL names and aliases into the target-independent semantic type model.</summary>
 internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
 {
-    public IdlType? Resolve(string idlType, string? currentNamespace)
+    public IdlType? Resolve(string idlType, string? currentNamespace, IdlInput input, int offset) =>
+        Resolve(idlType, currentNamespace, input, offset, new HashSet<string>(StringComparer.Ordinal));
+
+    private IdlType? Resolve(string idlType, string? currentNamespace, IdlInput input, int offset, HashSet<string> activeAliases)
     {
         var normalized = NormalizeIdlType(idlType);
 
@@ -57,27 +60,39 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
                 return new IdlType.Alias(qualified, new IdlType.StringType(alias.IsWideString, alias.StringBound));
             }
 
-            var target = Resolve(alias.IsCollection ? alias.ElementType! : alias.Target, alias.Namespace);
-            if (target is null)
+            if (!activeAliases.Add(qualified))
             {
-                return null;
+                throw new IdlException(input, offset, $"Typedef alias cycle detected: {qualified}");
             }
 
-            if (alias.IsSequence)
+            try
             {
-                var element = Resolve(alias.ElementType!, alias.Namespace);
-                return element is null ? null : new IdlType.Alias(qualified, new IdlType.Sequence(element, alias.Bound));
-            }
+                var target = Resolve(alias.IsCollection ? alias.ElementType! : alias.Target, alias.Namespace, input, offset, activeAliases);
+                if (target is null)
+                {
+                    return null;
+                }
 
-            if (alias.IsArray)
+                if (alias.IsSequence)
+                {
+                    var element = Resolve(alias.ElementType!, alias.Namespace, input, offset, activeAliases);
+                    return element is null ? null : new IdlType.Alias(qualified, new IdlType.Sequence(element, alias.Bound));
+                }
+
+                if (alias.IsArray)
+                {
+                    // Preserve collection typedef identity for nested and composed
+                    // collection shapes instead of flattening the alias.
+                    var element = Resolve(alias.ElementType!, alias.Namespace, input, offset, activeAliases);
+                    return element is null ? null : new IdlType.Alias(qualified, new IdlType.Array(element, alias.Dimensions));
+                }
+
+                return new IdlType.Alias(qualified, target);
+            }
+            finally
             {
-                // Preserve collection typedef identity for nested and composed
-                // collection shapes instead of flattening the alias.
-                var element = Resolve(alias.ElementType!, alias.Namespace);
-                return element is null ? null : new IdlType.Alias(qualified, new IdlType.Array(element, alias.Dimensions));
+                activeAliases.Remove(qualified);
             }
-
-            return new IdlType.Alias(qualified, target);
         }
 
         return symbols.ContainsName(qualified) ? new IdlType.Struct(qualified) : null;

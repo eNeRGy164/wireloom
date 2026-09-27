@@ -122,11 +122,9 @@ contains:
 | Total corpus cases                           |                                           111 |
 | Fully implemented positive/integration cases |                                       58 / 58 |
 | Not fully implemented positive/integration   |                                             0 |
-| Compliance test invocations                  | 226 total, 225 succeeded, 0 failed, 1 skipped |
+| Compliance test invocations                  | 226 total, 226 succeeded, 0 failed, 0 skipped |
 
-One cyclic-alias probe is intentionally isolated while the compiler-process
-harness is being completed. The snapshot above was recorded on 2026-09-27
-with the corpus export directory configured;
+The snapshot above was recorded on 2026-09-27;
 consult the feature index for the current result.
 
 The corpus is source-generation evidence. It does not by itself establish
@@ -140,7 +138,7 @@ evidence boundary.
 
 Restore the locked dependencies, then run the focused unit and corpus suites:
 
-```powershell
+```shell
 dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
 dotnet test tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --no-restore --configuration Release
 
@@ -150,7 +148,7 @@ dotnet test tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator
 
 Pack the analyzer/source-generator package with:
 
-```powershell
+```shell
 dotnet restore src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --locked-mode
 dotnet pack src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --no-restore --configuration Release --output artifacts
 ```

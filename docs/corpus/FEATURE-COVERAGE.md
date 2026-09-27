@@ -106,7 +106,7 @@ RTI oracle links point to the licensee-generated C# source under `corpus/oracles
 | C080 | `12-malformed-preprocessor`       | malformed preprocessor input               | [idl/negative/12-malformed-preprocessor.idl](idl/negative/12-malformed-preprocessor.idl)             | — (no C# output)                                                                                                                                               | rejected        | rejected                                              |
 | C081 | `02-forward-declarations`         | unsupported forward aggregate declarations | [idl/features/02-forward-declarations.idl](idl/features/02-forward-declarations.idl)                 | — (no C# output)                                                                                                                                               | rejected        | rejected                                              |
 | C082 | `07-union-long-long`              | unsupported long long union discriminator  | [idl/features/07-union-long-long.idl](idl/features/07-union-long-long.idl)                           | — (no C# output)                                                                                                                                               | rejected        | rejected                                              |
-| C083 | `02-alias-cycle`                  | cyclic typedef aliases                     | [idl/negative/02-alias-cycle.idl](idl/negative/02-alias-cycle.idl)                                   | — (no C# output)                                                                                                                                               | rejected        | isolated                                              |
+| C083 | `02-alias-cycle`                  | cyclic typedef aliases                     | [idl/negative/02-alias-cycle.idl](idl/negative/02-alias-cycle.idl)                                   | — (no C# output)                                                                                                                                               | rejected        | rejected                                              |
 | C084 | `05-negative-bound`               | negative collection bound                  | [idl/negative/05-negative-bound.idl](idl/negative/05-negative-bound.idl)                             | — (no C# output)                                                                                                                                               | rejected        | rejected                                              |
 | C085 | `05-overflow-bound`               | overflowing collection bound               | [idl/negative/05-overflow-bound.idl](idl/negative/05-overflow-bound.idl)                             | — (no C# output)                                                                                                                                               | rejected        | rejected                                              |
 | C086 | `07-invalid-discriminator`        | invalid union discriminator                | [idl/negative/07-invalid-discriminator.idl](idl/negative/07-invalid-discriminator.idl)               | — (no C# output)                                                                                                                                               | rejected        | rejected                                              |
@@ -151,19 +151,16 @@ Use the stable tag together with the case ID when referring to coverage, for exa
 
 ## Current snapshot
 
-| Category                                   |                   Cases |
-| ------------------------------------------ | ----------------------: |
-| Positive                                   |                      54 |
-| Negative                                   |                      53 |
-| Integration                                |                       4 |
-| Total                                      |                     111 |
-| Fully implemented positive/integration     |                 58 / 58 |
-| Not fully implemented positive/integration |                       0 |
-| Compliance test invocations                |                     226 |
-| Succeeded                                  |                     225 |
-| Failed                                     |                       0 |
-| Skipped test invocations                   |                1 (C083) |
-| Isolated corpus cases                      | 1 (C083 cyclic aliases) |
+| Category                                   |   Cases |
+| ------------------------------------------ | ------: |
+| Positive                                   |      54 |
+| Negative                                   |      53 |
+| Integration                                |       4 |
+| Total                                      |     111 |
+| Fully implemented positive/integration     | 58 / 58 |
+| Compliance test invocations                |     226 |
+| Succeeded                                  |     226 |
+| Failed                                     |       0 |
 
 The positive/integration statistic covers the 54 positive cases and 4
 integration cases. Negative rejection probes are excluded because their

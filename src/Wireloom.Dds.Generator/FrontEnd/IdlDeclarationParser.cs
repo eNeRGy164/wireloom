@@ -597,7 +597,7 @@ internal sealed class IdlDeclarationParser
         if (branchType.StartsWith("sequence", StringComparison.Ordinal))
         {
             var (ElementType, Bound) = ParseSequenceType(input, sourceOffset, branchType, currentNamespace);
-            var element = ResolveFieldType(ElementType, currentNamespace);
+            var element = ResolveFieldType(ElementType, currentNamespace, input, sourceOffset);
             if (element is null)
             {
                 throw new IdlException(input, sourceOffset, $"Unknown union collection element type: {ElementType}");
@@ -620,7 +620,7 @@ internal sealed class IdlDeclarationParser
             return new IdlMember(branchName, new IdlType.Primitive(NormalizeIdlType(branchType)));
         }
 
-        var resolved = ResolveFieldType(branchType, currentNamespace);
+        var resolved = ResolveFieldType(branchType, currentNamespace, input, sourceOffset);
         if (resolved is null)
         {
             throw new IdlException(input, sourceOffset, $"Unknown union branch type: {branchType}");
@@ -664,7 +664,7 @@ internal sealed class IdlDeclarationParser
         {
             var (ElementType, Bound) = ParseSequenceType(input, memberSourceOffset, kind, currentNamespace);
 
-            var element = ResolveFieldType(ElementType, currentNamespace);
+            var element = ResolveFieldType(ElementType, currentNamespace, input, memberSourceOffset);
             if (element is null)
             {
                 throw new IdlException(input, memberSourceOffset, $"Unknown collection element type: {ElementType}");
@@ -674,7 +674,7 @@ internal sealed class IdlDeclarationParser
         }
         else if (dimensions.Count > 0)
         {
-            var element = ResolveFieldType(kind, currentNamespace);
+            var element = ResolveFieldType(kind, currentNamespace, input, memberSourceOffset);
             if (element is null)
             {
                 throw new IdlException(input, memberSourceOffset, $"Unknown collection element type: {kind}");
@@ -699,7 +699,7 @@ internal sealed class IdlDeclarationParser
         }
         else
         {
-            var resolved = ResolveFieldType(kind, currentNamespace);
+            var resolved = ResolveFieldType(kind, currentNamespace, input, memberSourceOffset);
             if (resolved is null)
             {
                 throw new IdlException(input, memberSourceOffset, $"Unknown struct type: {kind}");
@@ -1071,8 +1071,8 @@ internal sealed class IdlDeclarationParser
     private string Qualify(string name, string? currentNamespace) =>
         currentNamespace is null ? name : $"{currentNamespace}.{name}";
 
-    private IdlType? ResolveFieldType(string idlType, string? currentNamespace) =>
-        typeResolver.Resolve(idlType, currentNamespace);
+    private IdlType? ResolveFieldType(string idlType, string? currentNamespace, IdlInput input, int offset) =>
+        typeResolver.Resolve(idlType, currentNamespace, input, offset);
 
     private void ValidateTypedef(IdlInput input, int offset, string name) =>
         validator.ValidateTypedef(input, offset, name);

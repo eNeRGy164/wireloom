@@ -78,7 +78,6 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
 
     public bool HasOracleOutput => !string.Equals(Classification, "rejected", StringComparison.OrdinalIgnoreCase);
 
-    public bool IsUnsafeInProcess => string.Equals(Id, "02-alias-cycle", StringComparison.Ordinal);
 }
 
 internal sealed class CorpusManifest
