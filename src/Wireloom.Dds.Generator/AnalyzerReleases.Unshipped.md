@@ -11,6 +11,7 @@
 | DDSG0102 | DDS Source Generator | Warning  | Recognized but unsupported IDL annotation is ignored before contextual validation |
 | DDSG0103 | DDS Source Generator | Warning  | Non-DDS interface is ignored                                                      |
 | DDSG0104 | DDS Source Generator | Warning  | Function-like macro argument count mismatch continues expansion                   |
+| DDSG0105 | DDS Source Generator | Warning  | Direct arrays of sequences may not preserve IDL semantics                         |
 
 ### Changed Rules
 

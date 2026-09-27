@@ -156,6 +156,24 @@ public sealed class GeneratorSpecs
     }
 
     [Fact]
+    public void ReportsDirectArrayOfSequencesWarning()
+    {
+        // Arrange
+        var idl = "module Sample { struct Value { sequence<long> values[2]; sequence<string<16>, 3> names[2]; }; };";
+        var metadata = new Dictionary<string, string>();
+
+        // Act
+        var result = Run(idl, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.Count(d => d.Id == "DDSG0105").ShouldBe(2);
+        result.Diagnostics.ShouldAllBe(d => d.Id != "DDSG0001");
+        result.Diagnostics.Where(d => d.Id == "DDSG0105")
+            .ShouldAllBe(d => d.Severity == DiagnosticSeverity.Warning && d.Location.GetLineSpan().Path == "sample.idl");
+        result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeTrue();
+    }
+
+    [Fact]
     public void HonorsGenerateFalseAdditionalFileMetadata()
     {
         // Arrange

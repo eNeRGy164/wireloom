@@ -767,6 +767,15 @@ internal sealed class IdlDeclarationParser
             parsedType = resolved;
         }
 
+        if (parsedType is IdlType.Sequence { Dimensions.Count: > 0 })
+        {
+            diagnostics?.Add(new IdlDiagnostic(
+                "DDSG0105",
+                input,
+                memberSourceOffset,
+                $"The C# binding does not support arrays of sequences without using a typedef; generated code for member '{field}' may not match IDL semantics."));
+        }
+
         var valueMetadata = ResolveMemberValueMetadata(input, memberSourceOffset, currentNamespace, parsedType, annotations);
         var memberId = annotations.MemberId;
         var memberIdHashSource = annotations.HashIdExpression is not null
