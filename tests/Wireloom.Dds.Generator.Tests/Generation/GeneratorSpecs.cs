@@ -96,6 +96,25 @@ public sealed class GeneratorSpecs
     }
 
     [Fact]
+    public void ReportsUnsupportedAnnotationWarningBeforeContextualError()
+    {
+        // Arrange
+        var idl = "module Sample { @position(1) struct Value { long value; }; };";
+        var metadata = new Dictionary<string, string>();
+
+        // Act
+        var result = Run(idl, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        var diagnostic = result.Diagnostics.Single(diagnostic => diagnostic.Id == "DDSG0102");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
+        diagnostic.GetMessage().ShouldBe("Annotation 'position' is recognized but unsupported and will be ignored.");
+        diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
+        result.Diagnostics.ShouldContain(candidate => candidate.Id == "DDSG0001");
+        result.Output.SyntaxTrees.Any(tree => tree.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeFalse();
+    }
+
+    [Fact]
     public void HonorsGenerateFalseAdditionalFileMetadata()
     {
         // Arrange

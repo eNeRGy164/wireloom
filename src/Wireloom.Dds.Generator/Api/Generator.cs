@@ -45,6 +45,14 @@ public sealed class Generator : IIncrementalGenerator
         DiagnosticSeverity.Warning,
         true);
 
+    private static readonly DiagnosticDescriptor UnsupportedAnnotationWarning = new(
+        "DDSG0102",
+        "Unsupported IDL annotation",
+        "{0}",
+        "DDS Source Generator",
+        DiagnosticSeverity.Warning,
+        true);
+
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -73,20 +81,12 @@ public sealed class Generator : IIncrementalGenerator
                 return;
             }
 
+            var diagnostics = new List<IdlDiagnostic>();
+
             try
             {
-                var diagnostics = new List<IdlDiagnostic>();
                 var outputs = IdlCompiler.CompileSourcesWithDiagnostics([.. files], diagnostics, production.CancellationToken);
-                foreach (var diagnostic in diagnostics)
-                {
-                    var text = SourceText.From(diagnostic.Input.Text);
-                    var span = new TextSpan(Math.Min(diagnostic.Offset, text.Length), 0);
-
-                    production.ReportDiagnostic(Diagnostic.Create(
-                        UnknownAnnotationWarning,
-                        Location.Create(diagnostic.Input.Path, span, text.Lines.GetLinePositionSpan(span)),
-                        diagnostic.Message));
-                }
+                ReportDiagnostics(production, diagnostics);
 
                 foreach (var output in outputs.Values)
                 {
@@ -95,12 +95,32 @@ public sealed class Generator : IIncrementalGenerator
             }
             catch (IdlException exception)
             {
+                ReportDiagnostics(production, diagnostics);
                 var text = SourceText.From(exception.Input.Text);
                 var span = new TextSpan(Math.Min(exception.Offset, text.Length), 0);
 
                 production.ReportDiagnostic(Diagnostic.Create(GenerationError, Location.Create(exception.Input.Path, span, text.Lines.GetLinePositionSpan(span)), exception.Message));
             }
         });
+    }
+
+    private static void ReportDiagnostics(SourceProductionContext production, IEnumerable<IdlDiagnostic> diagnostics)
+    {
+        foreach (var diagnostic in diagnostics)
+        {
+            var text = SourceText.From(diagnostic.Input.Text);
+            var span = new TextSpan(Math.Min(diagnostic.Offset, text.Length), 0);
+            var descriptor = diagnostic.Id switch
+            {
+                "DDSG0102" => UnsupportedAnnotationWarning,
+                _ => UnknownAnnotationWarning
+            };
+
+            production.ReportDiagnostic(Diagnostic.Create(
+                descriptor,
+                Location.Create(diagnostic.Input.Path, span, text.Lines.GetLinePositionSpan(span)),
+                diagnostic.Message));
+        }
     }
 
     private static IdlInput CreateInput((AdditionalText Left, AnalyzerConfigOptionsProvider Right) inputAndOptions, CancellationToken cancellationToken)

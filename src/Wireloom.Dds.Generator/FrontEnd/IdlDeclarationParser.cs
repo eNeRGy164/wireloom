@@ -91,6 +91,11 @@ internal sealed class IdlDeclarationParser
                 var name = unknownAnnotation.Groups["name"].Value;
                 if (UnsupportedAnnotationNames.Contains(name))
                 {
+                    diagnostics?.Add(new IdlDiagnostic(
+                        "DDSG0102",
+                        input,
+                        baseOffset + position,
+                        $"Annotation '{name}' is recognized but unsupported and will be ignored."));
                     throw new IdlException(
                         input,
                         baseOffset + position,
@@ -98,6 +103,7 @@ internal sealed class IdlDeclarationParser
                 }
 
                 diagnostics?.Add(new IdlDiagnostic(
+                    "DDSG0101",
                     input,
                     baseOffset + position,
                     $"Annotation '@{name}' is not recognized and will be ignored."));
