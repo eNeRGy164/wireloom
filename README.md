@@ -1,6 +1,7 @@
 # Wireloom
 
 [![Coverage Status](https://coveralls.io/repos/github/eNeRGy164/wireloom/badge.svg?branch=main)](https://coveralls.io/github/eNeRGy164/wireloom?branch=main)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/eNeRGy164/wireloom/badge)](https://scorecard.dev/viewer/?uri=github.com/eNeRGy164/wireloom)
 
 Wireloom is a managed .NET source generator for the RTI Connext DDS IDL subset.
 It turns IDL generation roots into C# data types and the RTI type-specific
