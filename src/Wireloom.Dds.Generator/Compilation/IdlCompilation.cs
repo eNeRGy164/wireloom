@@ -1,3 +1,7 @@
+using Wireloom.Compiler.FrontEnd.Parsing;
+using Wireloom.Compiler.FrontEnd.Preprocessing;
+using Wireloom.Compiler.FrontEnd.Symbols;
+
 namespace Wireloom;
 
 /// <summary>Coordinates input traversal, declaration parsing, and emission.</summary>

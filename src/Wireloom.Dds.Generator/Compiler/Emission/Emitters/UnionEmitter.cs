@@ -1,8 +1,7 @@
 using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Emission.Writers;
-using Wireloom.Compiler.Semantics;
-
-using static Wireloom.Compiler.Emission.Planning.EmissionTypeProjector;
+using Wireloom.Compiler.FrontEnd.Semantic;
 using static Wireloom.IdlCompiler;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -13,7 +12,7 @@ internal static class UnionEmitter
     /// <summary>Emits the managed, native, plugin, and type-support documents for an IDL union.</summary>
     public static void Emit(CompilationState compilation, IdlUnion declaration, string sourceIdlFileName)
     {
-        EmitUnionCore(compilation, ToEmissionUnion(declaration), sourceIdlFileName);
+        EmitUnionCore(compilation, EmissionTypeProjector.ToEmissionUnion(declaration), sourceIdlFileName);
     }
 
     private static void EmitUnionCore(CompilationState compilation, IdlEmissionUnion declaration, string sourceIdlFileName)

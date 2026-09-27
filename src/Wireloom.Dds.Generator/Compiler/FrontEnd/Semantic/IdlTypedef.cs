@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.Semantics;
+namespace Wireloom.Compiler.FrontEnd.Semantic;
 
 /// <summary>Represents raw typedef facts retained until semantic type resolution.</summary>
 internal sealed class IdlTypedef(string name, string? @namespace, string target, string? elementType, int? bound, IReadOnlyList<int>? dimensions = null, int? stringBound = null, bool isWideString = false)

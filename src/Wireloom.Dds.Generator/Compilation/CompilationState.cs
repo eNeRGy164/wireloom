@@ -1,5 +1,7 @@
 using Wireloom.Compiler.Emission.Emitters;
-using Wireloom.Compiler.Semantics;
+using Wireloom.Compiler.FrontEnd.Parsing;
+using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.FrontEnd.Symbols;
 
 using static Wireloom.IdlCompiler;
 
@@ -12,10 +14,7 @@ internal sealed partial class CompilationState
     private readonly List<GeneratedIdlSource> sources = [];
     private readonly bool strict;
 
-    internal CompilationState(
-        IdlDeclarationParser parser,
-        IdlSymbolTable symbols,
-        bool strict)
+    internal CompilationState(IdlDeclarationParser parser, IdlSymbolTable symbols, bool strict)
     {
         this.parser = parser;
         this.symbols = symbols;

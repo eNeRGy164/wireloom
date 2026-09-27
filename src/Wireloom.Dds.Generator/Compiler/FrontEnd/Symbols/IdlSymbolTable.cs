@@ -1,6 +1,6 @@
-using Wireloom.Compiler.Semantics;
+using Wireloom.Compiler.FrontEnd.Semantic;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.FrontEnd.Symbols;
 
 /// <summary>Stores declaration names and lookup tables for the front end.</summary>
 internal sealed class IdlSymbolTable

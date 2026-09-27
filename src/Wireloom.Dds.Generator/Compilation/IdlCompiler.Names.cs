@@ -1,6 +1,5 @@
 using Microsoft.CodeAnalysis.CSharp;
-
-using static Wireloom.IdlGrammar;
+using Wireloom.Compiler.FrontEnd.Parsing;
 
 namespace Wireloom;
 
@@ -59,7 +58,7 @@ public static partial class IdlCompiler
 
     /// <summary>Normalizes whitespace in an IDL type spelling.</summary>
     internal static string NormalizeIdlType(string idlType) =>
-        WhitespacePattern.Replace(idlType, " ").Trim();
+        IdlGrammar.WhitespacePattern.Replace(idlType, " ").Trim();
 
     /// <summary>Shortens a generated type reference when the file already imports its namespace.</summary>
     internal static string TypeReference(string typeName, string? currentNamespace)

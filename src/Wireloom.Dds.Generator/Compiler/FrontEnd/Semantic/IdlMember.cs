@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.Semantics;
+namespace Wireloom.Compiler.FrontEnd.Semantic;
 
 /// <summary>Metadata attached to an IDL member independently of its type.</summary>
 internal sealed class IdlMemberValueMetadata(BigInteger? defaultValue = null, BigInteger? minimum = null, BigInteger? maximum = null, string? defaultExpression = null, string? unit = null)

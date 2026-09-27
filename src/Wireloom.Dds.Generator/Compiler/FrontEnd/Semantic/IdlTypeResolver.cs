@@ -1,14 +1,14 @@
-using Wireloom.Compiler.Semantics;
+using Wireloom.Compiler.FrontEnd.Symbols;
 
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.FrontEnd.Semantic;
 
 /// <summary>Resolves IDL names and aliases into the target-independent semantic type model.</summary>
 internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
 {
     public IdlType? Resolve(string idlType, string? currentNamespace, IdlInput input, int offset) =>
-        Resolve(idlType, currentNamespace, input, offset, new HashSet<string>(StringComparer.Ordinal));
+        Resolve(idlType, currentNamespace, input, offset, new(StringComparer.Ordinal));
 
     private IdlType? Resolve(string idlType, string? currentNamespace, IdlInput input, int offset, HashSet<string> activeAliases)
     {
@@ -19,9 +19,10 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
         {
             var isWide = normalized.StartsWith("wstring", StringComparison.Ordinal);
             var bound = 255;
+
             var open = normalized.IndexOf('<');
-            if (open >= 0 && normalized.EndsWith(">", StringComparison.Ordinal) &&
-                int.TryParse(normalized[(open + 1)..^1].Trim(), out var parsedBound))
+            if (open >= 0 && normalized.EndsWith(">", StringComparison.Ordinal)
+                && int.TryParse(normalized[(open + 1)..^1].Trim(), out var parsedBound))
             {
                 bound = parsedBound;
             }

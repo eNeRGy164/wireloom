@@ -1,12 +1,13 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using Wireloom.Compiler.Semantics;
+using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.FrontEnd.Symbols;
 
+using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
 using static Wireloom.IdlCompiler;
-using static Wireloom.IdlGrammar;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.FrontEnd.Parsing;
 
 internal sealed class IdlDeclarationParser
 {

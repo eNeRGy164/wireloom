@@ -1,4 +1,4 @@
-using Wireloom.Compiler.Semantics;
+using Wireloom.Compiler.FrontEnd.Semantic;
 
 namespace Wireloom.Compiler.Emission.Model;
 

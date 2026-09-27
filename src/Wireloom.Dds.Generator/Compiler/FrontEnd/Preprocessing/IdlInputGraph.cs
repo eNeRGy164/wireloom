@@ -1,4 +1,4 @@
-namespace Wireloom;
+namespace Wireloom.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>
 /// Owns canonical IDL inputs and deterministic include traversal.
@@ -20,18 +20,19 @@ internal sealed class IdlInputGraph
         IEnumerable<string> includeDirectories,
         CancellationToken cancellationToken)
     {
-        this.files = files;
         var comparer = Path.DirectorySeparatorChar == '\\'
             ? StringComparer.OrdinalIgnoreCase
             : StringComparer.Ordinal;
+
+        this.files = files;
         preprocessor = new IdlPreprocessor(defines, undefines);
+        visited = new(comparer);
+        active = new(comparer);
         this.includeDirectories = includeDirectories
             .Select(Path.GetFullPath)
             .Distinct(comparer)
             .ToArray();
         this.cancellationToken = cancellationToken;
-        visited = new HashSet<string>(comparer);
-        active = new HashSet<string>(comparer);
     }
 
     public void Visit(IdlInput input, Action<string, IdlInput, int, string?> parse, ICollection<IdlDiagnostic>? diagnostics = null)
@@ -59,7 +60,7 @@ internal sealed class IdlInputGraph
             {
                 var searchDirectories = angle
                     ? includeDirectories
-                    : new[] { Path.GetDirectoryName(path)! }.Concat(includeDirectories);
+                    : new[] { Path.GetDirectoryName(path) }.Concat(includeDirectories);
                 var candidates = searchDirectories
                     .Select(directory => Path.GetFullPath(Path.Combine(directory, includeName)))
                     .Distinct(Path.DirectorySeparatorChar == '\\'

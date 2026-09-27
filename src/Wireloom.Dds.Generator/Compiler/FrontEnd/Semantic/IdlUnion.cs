@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.Semantics;
+namespace Wireloom.Compiler.FrontEnd.Semantic;
 
 /// <summary>Represents one branch of an IDL union and its discriminator labels.</summary>
 internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? labels, IReadOnlyList<int>? labelValues, bool isDefault = false)

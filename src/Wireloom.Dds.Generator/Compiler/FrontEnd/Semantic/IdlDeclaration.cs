@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.Semantics;
+namespace Wireloom.Compiler.FrontEnd.Semantic;
 
 /// <summary>Base type for declarations collected from an IDL source.</summary>
 internal abstract class IdlDeclaration;

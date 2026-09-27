@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>
 /// Processes the deterministic preprocessing subset used by IDL inputs.
@@ -326,7 +326,7 @@ internal sealed class IdlPreprocessor
         return result;
     }
 
-    private string Expand(string text) => Expand(text, new HashSet<string>(StringComparer.Ordinal), 0);
+    private string Expand(string text) => Expand(text, new(StringComparer.Ordinal), 0);
 
     private string Expand(string text, HashSet<string> expanding, int depth)
     {
@@ -414,11 +414,7 @@ internal sealed class IdlPreprocessor
                 if ((!macro.Variadic && arguments.Count != macro.Parameters.Count)
                     || (macro.Variadic && arguments.Count < macro.Parameters.Count - 1))
                 {
-                    diagnostics?.Add(new IdlDiagnostic(
-                        "DDSG0104",
-                        currentInput!,
-                        0,
-                        $"Function-like macro '{name}' was invoked with the wrong number of arguments; expansion will continue."));
+                    diagnostics?.Add(new IdlDiagnostic("DDSG0104", currentInput!, 0, $"Function-like macro '{name}' was invoked with the wrong number of arguments; expansion will continue."));
                 }
 
                 expanding.Add(name);

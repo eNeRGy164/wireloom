@@ -1,4 +1,4 @@
-using Wireloom.Compiler.Semantics;
+using Wireloom.Compiler.FrontEnd.Semantic;
 
 using static Wireloom.IdlCompiler;
 

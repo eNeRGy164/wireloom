@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.Semantics;
+namespace Wireloom.Compiler.FrontEnd.Semantic;
 
 internal enum IdlExtensibilityKind
 {

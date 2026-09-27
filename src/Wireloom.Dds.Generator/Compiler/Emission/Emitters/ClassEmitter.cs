@@ -1,7 +1,6 @@
 using Wireloom.Compiler.Emission.Planning;
-using Wireloom.Compiler.Semantics;
+using Wireloom.Compiler.FrontEnd.Semantic;
 
-using static Wireloom.Compiler.Emission.Planning.EmissionTypeProjector;
 using static Wireloom.IdlCompiler;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -20,8 +19,8 @@ internal static class ClassEmitter
         IReadOnlyList<IdlMember> inheritedFields,
         bool isTopic)
     {
-        var emissionFields = fields.Select(field => ToEmissionField(field, currentNamespace)).ToArray();
-        var emissionInheritedFields = inheritedFields.Select(field => ToEmissionField(field, currentNamespace)).ToArray();
+        var emissionFields = fields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace)).ToArray();
+        var emissionInheritedFields = inheritedFields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace)).ToArray();
         var fieldPlans = emissionFields.Select(field => new MemberEmissionPlan(field, currentNamespace)).ToArray();
         var inheritedFieldPlans = emissionInheritedFields.Select(field => new MemberEmissionPlan(field, currentNamespace)).ToArray();
         var hasTypeSupport = fieldPlans.All(field => field.HasTypeSupport);

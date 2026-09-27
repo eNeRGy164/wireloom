@@ -1,8 +1,9 @@
-using Wireloom.Compiler.Semantics;
+using Wireloom.Compiler.FrontEnd.Parsing;
+using Wireloom.Compiler.FrontEnd.Symbols;
 
 using static Wireloom.IdlCompiler;
 
-namespace Wireloom;
+namespace Wireloom.Compiler.FrontEnd.Semantic;
 
 /// <summary>Owns front-end validation that does not produce target code.</summary>
 internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
@@ -15,19 +16,13 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         }
     }
 
-    public void ValidateTypedef(IdlInput input, int offset, string name)
-    {
-        ValidateTypedef(input, offset, name, new HashSet<string>(StringComparer.Ordinal));
-    }
+    public void ValidateTypedef(IdlInput input, int offset, string name) =>
+        ValidateTypedef(input, offset, name, new(StringComparer.Ordinal));
 
-    public int ResolveBound(
-        IdlInput input,
-        int offset,
-        string text,
-        string? currentNamespace,
-        string diagnosticName = "Collection bound")
+    public int ResolveBound(IdlInput input, int offset, string text, string? currentNamespace, string diagnosticName = "Collection bound")
     {
         BigInteger value;
+
         try
         {
             value = IdlConstantExpressionEvaluator.Evaluate(text, symbols, currentNamespace);

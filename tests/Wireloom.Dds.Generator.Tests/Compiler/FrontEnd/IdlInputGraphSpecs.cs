@@ -1,6 +1,7 @@
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
+using Wireloom;
 
-namespace Wireloom.Dds.Generator.Tests;
+namespace Wireloom.Compiler.FrontEnd.Preprocessing.Tests;
 
 public sealed class IdlInputGraphSpecs
 {
