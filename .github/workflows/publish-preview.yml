@@ -34,6 +34,75 @@ jobs:
       - name: Review dependency changes
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
 
+  pull-request-validation:
+    name: Build and test pull request
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+
+      - name: Set up GitVersion
+        uses: gittools/actions/gitversion/setup@7417b1089e2c7de93510f1901d656ddf60bb024f # v4.7.0
+        with:
+          versionSpec: 6.8.x
+
+      - name: Calculate package version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@7417b1089e2c7de93510f1901d656ddf60bb024f # v4.7.0
+        with:
+          targetPath: ${{ github.workspace }}
+
+      - name: Restore locked dependencies
+        run: |
+          dotnet restore $env:PACKAGE_PROJECT --locked-mode
+          dotnet restore $env:TEST_PROJECT --locked-mode
+          dotnet restore $env:CORPUS_TEST_PROJECT --locked-mode
+        shell: pwsh
+
+      - name: Build generator
+        run: dotnet build $env:PACKAGE_PROJECT --no-restore --configuration Release
+        shell: pwsh
+
+      - name: Test generator
+        run: dotnet test $env:TEST_PROJECT --no-restore --configuration Release
+        shell: pwsh
+
+      - name: Test corpus compliance
+        run: dotnet test $env:CORPUS_TEST_PROJECT --no-restore --configuration Release
+        shell: pwsh
+
+      - name: Pack package for integration test
+        run: >-
+          dotnet pack $env:PACKAGE_PROJECT
+          --no-restore
+          --configuration Release
+          --output $env:PACKAGE_TEST_FEED
+          /p:Version=${{ steps.gitversion.outputs.semVer }}
+          /p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
+        shell: pwsh
+
+      - name: Restore package integration test
+        run: dotnet restore $env:PACKAGE_INTEGRATION_TEST_PROJECT --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config -p:WireloomDdsGeneratorPackageVersion=${{ steps.gitversion.outputs.semVer }}
+        shell: pwsh
+
+      - name: Test packed package
+        run: dotnet test $env:PACKAGE_INTEGRATION_TEST_PROJECT --no-restore --configuration Release
+        shell: pwsh
+
   package:
     name: Build and publish preview
     if: github.event_name != 'pull_request'
