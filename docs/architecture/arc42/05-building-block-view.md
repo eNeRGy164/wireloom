@@ -14,3 +14,8 @@ The source for the diagram is [level-1-overview.puml](images/05/level-1-overview
 | Emitters                     | Writes managed types, native companions, TypeSupport, plugins, unions, and metadata                   | Emission plans               | Deterministic generated source                                |
 | MSBuild package targets      | Converts `DdsIdl` roots and IDL include locations into compiler inputs                                | Consumer project             | Packed in the NuGet package                                   |
 | Corpus and integration tests | Checks acceptance, diagnostics, RTI C# shape, and packed-package consumption                          | Generator and fixtures       | Separate fast, corpus, and package layers                     |
+
+The input graph and preprocessor enforce deterministic work boundaries: macro
+expansion is capped at 100,000 expansion operations and each preprocessed file
+at 4 MiB of text. Source-origin spans map generated fragments back to exact
+input text or to the macro invocation that generated them, including EOF.

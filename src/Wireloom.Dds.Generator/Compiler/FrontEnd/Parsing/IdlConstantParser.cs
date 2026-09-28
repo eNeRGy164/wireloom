@@ -49,13 +49,13 @@ internal sealed class IdlConstantParser
         {
             var value = IdlConstantExpressionEvaluator.Evaluate(expression, context.Symbols, currentNamespace);
 
-            ValidateConstantRange(input, offset, type, value);
+            ValidateConstantRange(input, context.MapOffset(offset), type, value);
 
             return value;
         }
         catch (FormatException exception)
         {
-            throw new IdlException(input, offset, $"Invalid {type} constant expression: {exception.Message}");
+            throw new IdlException(input, context.MapOffset(offset), $"Invalid {type} constant expression: {exception.Message}");
         }
     }
 

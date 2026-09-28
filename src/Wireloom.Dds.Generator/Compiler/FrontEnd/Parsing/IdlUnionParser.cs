@@ -59,7 +59,7 @@ internal sealed class IdlUnionParser
 
         if (branches.Count == 0 || branches.Count(branch => branch.IsDefault) > 1)
         {
-            throw new IdlException(input, baseOffset + position, "The union must contain at least one branch and at most one default branch.");
+            throw new IdlException(input, context.MapOffset(baseOffset + position), "The union must contain at least one branch and at most one default branch.");
         }
 
         var parsedUnion = new IdlUnion(
@@ -92,13 +92,13 @@ internal sealed class IdlUnionParser
         var branch = UnionBranchPattern.Match(body.Substring(offset));
         if (!branch.Success)
         {
-            throw new IdlException(input, sourceOffset + offset, "Unsupported union branch declaration.");
+            throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Unsupported union branch declaration.");
         }
 
         var branchName = branch.Groups["name"].Value;
         if (!branchNames.Add(branchName))
         {
-            throw new IdlException(input, sourceOffset + offset, $"Duplicate union branch: {branchName}");
+            throw new IdlException(input, context.MapOffset(sourceOffset + offset), $"Duplicate union branch: {branchName}");
         }
 
         var branchType = NormalizeIdlType(branch.Groups["type"].Value);
@@ -134,7 +134,7 @@ internal sealed class IdlUnionParser
                 }
                 else
                 {
-                    throw new IdlException(input, sourceOffset + offset, $"Unknown union discriminator label: {label}");
+                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), $"Unknown union discriminator label: {label}");
                 }
             }
         }
@@ -181,7 +181,7 @@ internal sealed class IdlUnionParser
             var element = context.ResolveFieldType(ElementType, currentNamespace, input, sourceOffset);
             if (element is null)
             {
-                throw new IdlException(input, sourceOffset, $"Unknown union collection element type: {ElementType}");
+                throw new IdlException(input, context.MapOffset(sourceOffset), $"Unknown union collection element type: {ElementType}");
             }
 
             return new IdlMember(branchName, new IdlType.Sequence(element, Bound ?? 100));
@@ -203,7 +203,7 @@ internal sealed class IdlUnionParser
         var resolved = context.ResolveFieldType(branchType, currentNamespace, input, sourceOffset);
         if (resolved is null)
         {
-            throw new IdlException(input, sourceOffset, $"Unknown union branch type: {branchType}");
+            throw new IdlException(input, context.MapOffset(sourceOffset), $"Unknown union branch type: {branchType}");
         }
 
         return new IdlMember(branchName, resolved);

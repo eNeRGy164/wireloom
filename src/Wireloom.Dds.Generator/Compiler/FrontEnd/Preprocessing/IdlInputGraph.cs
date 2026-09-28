@@ -6,11 +6,16 @@ namespace Wireloom.Compiler.FrontEnd.Preprocessing;
 /// </summary>
 internal sealed class IdlInputGraph
 {
-    private readonly IReadOnlyDictionary<string, IdlInput> files;
-    private readonly HashSet<string> visited;
+    private const int MaximumIncludeDepth = 128;
+
+    private readonly Dictionary<string, HashSet<string>> parsedOutputs;
+    private readonly HashSet<string> onceIncluded;
     private readonly HashSet<string> active;
-    private readonly IdlPreprocessor preprocessor;
-    private readonly IReadOnlyList<string> includeDirectories;
+    private readonly IReadOnlyList<string> batchDefines;
+    private readonly IReadOnlyList<string> batchUndefines;
+    private readonly IReadOnlyList<string> batchIncludeDirectories;
+    private IdlPreprocessor preprocessor;
+    private readonly IdlIncludeResolver includeResolver;
     private readonly CancellationToken cancellationToken;
 
     public IdlInputGraph(
@@ -24,64 +29,89 @@ internal sealed class IdlInputGraph
             ? StringComparer.OrdinalIgnoreCase
             : StringComparer.Ordinal;
 
-        this.files = files;
-        preprocessor = new IdlPreprocessor(defines, undefines);
-        visited = new(comparer);
-        active = new(comparer);
-        this.includeDirectories = includeDirectories
-            .Select(Path.GetFullPath)
-            .Distinct(comparer)
-            .ToArray();
+        batchDefines = [.. defines];
+        batchUndefines = [.. undefines];
+        batchIncludeDirectories = [.. includeDirectories];
+        preprocessor = new IdlPreprocessor(batchDefines, batchUndefines, cancellationToken);
+        includeResolver = new IdlIncludeResolver(files, batchIncludeDirectories);
+        parsedOutputs = new Dictionary<string, HashSet<string>>(comparer);
+        onceIncluded = new HashSet<string>(comparer);
+        active = new HashSet<string>(comparer);
         this.cancellationToken = cancellationToken;
     }
 
-    public void Visit(IdlInput input, Action<string, IdlInput, int, string?> parse, ICollection<IdlDiagnostic>? diagnostics = null)
+    /// <summary>Starts a root with an isolated macro environment and search path.</summary>
+    public void BeginRoot()
+    {
+        onceIncluded.Clear();
+        active.Clear();
+        preprocessor = new IdlPreprocessor(batchDefines, batchUndefines, cancellationToken);
+        includeResolver.SetIncludeDirectories(batchIncludeDirectories);
+    }
+
+    public void Visit(IdlInput input, Action<string, IdlInput, int, string?, IReadOnlyList<SourceOriginSpan>> parse, ICollection<IdlDiagnostic>? diagnostics = null) =>
+        Visit(input, parse, diagnostics, 0);
+
+    private void Visit(IdlInput input, Action<string, IdlInput, int, string?, IReadOnlyList<SourceOriginSpan>> parse, ICollection<IdlDiagnostic>? diagnostics, int includeDepth)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         var path = Path.GetFullPath(input.Path);
-        if (active.Contains(path))
+        if (includeDepth > MaximumIncludeDepth)
         {
-            throw new IdlException(input, 0, "Cyclic include detected.");
+            var message = active.Contains(path)
+                ? "Cyclic include detected."
+                : "Include nesting exceeds the maximum depth.";
+            throw new IdlException(input, 0, message);
         }
 
-        // A shared include may be reached from several roots. Emit it once so
-        // the same IDL type cannot become duplicate generated C#.
-        if (!visited.Add(path))
+        if (onceIncluded.Contains(path))
         {
             return;
         }
 
-        active.Add(path);
+        var wasActive = !active.Add(path);
 
         try
         {
-            var declarations = preprocessor.Process(input, (includeName, angle, offset) =>
+            var result = preprocessor.ProcessWithMetadata(input, (includeName, angle, offset) =>
             {
-                var searchDirectories = angle
-                    ? includeDirectories
-                    : new[] { Path.GetDirectoryName(path) }.Concat(includeDirectories);
-                var candidates = searchDirectories
-                    .Select(directory => Path.GetFullPath(Path.Combine(directory, includeName)))
-                    .Distinct(Path.DirectorySeparatorChar == '\\'
-                        ? StringComparer.OrdinalIgnoreCase
-                        : StringComparer.Ordinal)
-                    .ToArray();
-                var include = candidates.FirstOrDefault(files.ContainsKey);
-
-                if (include is null || !files.TryGetValue(include, out var child))
+                if (!includeResolver.TryResolve(input, includeName, angle, out var child))
                 {
                     throw new IdlException(input, offset, $"Could not resolve included IDL: {includeName}");
                 }
 
-                Visit(child, parse, diagnostics);
-            }, diagnostics);
+                Visit(child, parse, diagnostics, includeDepth + 1);
+            },
+            diagnostics,
+            () => onceIncluded.Add(path),
+            (includeName, angle) => includeResolver.TryResolve(input, includeName, angle, out _));
 
-            parse(declarations, input, 0, null);
+            if (result.HasPragmaOnce)
+            {
+                onceIncluded.Add(path);
+            }
+
+            // A non-once include may produce different declarations under
+            // different macro states. Parse each distinct preprocessed output
+            // once, while still replaying the file for macro side effects.
+            if (!parsedOutputs.TryGetValue(path, out var outputs))
+            {
+                outputs = new HashSet<string>(StringComparer.Ordinal);
+                parsedOutputs[path] = outputs;
+            }
+
+            if (outputs.Add(result.Text))
+            {
+                parse(result.Text, input, 0, null, result.SourceOrigins);
+            }
         }
         finally
         {
-            active.Remove(path);
+            if (!wasActive)
+            {
+                active.Remove(path);
+            }
         }
     }
 }

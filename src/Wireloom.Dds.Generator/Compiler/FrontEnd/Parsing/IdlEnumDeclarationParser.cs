@@ -41,19 +41,19 @@ internal sealed class IdlEnumDeclarationParser
             var member = EnumMemberPattern.Match(trimmedMember);
             if (!member.Success)
             {
-                throw new IdlException(input, sourceOffset, "Malformed enum member; expected an identifier, an optional prefix @value(<signed decimal>), or an explicit signed decimal value.");
+                throw new IdlException(input, context.MapOffset(sourceOffset), "Malformed enum member; expected an identifier, an optional prefix @value(<signed decimal>), or an explicit signed decimal value.");
             }
 
             if (member.Groups["value"].Success && member.Groups["explicit"].Success)
             {
-                throw new IdlException(input, sourceOffset, "Combined @value and explicit enum values are unsupported.");
+                throw new IdlException(input, context.MapOffset(sourceOffset), "Combined @value and explicit enum values are unsupported.");
             }
 
-            var value = ParseEnumValue(input, sourceOffset, member, nextValue);
+            var value = ParseEnumValue(input, context.MapOffset(sourceOffset), member, nextValue);
             var isDefaultLiteral = member.Groups["defaultLiteral"].Success;
             if (isDefaultLiteral && hasDefaultLiteral)
             {
-                throw new IdlException(input, sourceOffset, "An enum may contain at most one @default_literal.");
+                throw new IdlException(input, context.MapOffset(sourceOffset), "An enum may contain at most one @default_literal.");
             }
 
             hasDefaultLiteral |= isDefaultLiteral;

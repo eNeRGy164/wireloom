@@ -33,7 +33,7 @@ internal sealed class IdlStructDeclarationParser
             var remaining = declarations[declarationStart..].TrimStart();
             var tokenEnd = remaining.IndexOfAny([' ', '\t', '\r', '\n', '{', ';']);
             var token = tokenEnd < 0 ? remaining : remaining[..tokenEnd];
-            throw new IdlException(input, baseOffset + declarationStart, $"Unsupported IDL syntax near '{token}'. This generator does not support that declaration or annotation.");
+            throw new IdlException(input, context.MapOffset(baseOffset + declarationStart), $"Unsupported IDL syntax near '{token}'. This generator does not support that declaration or annotation.");
         }
 
         var name = declaration.Groups["name"].Value;
@@ -48,7 +48,7 @@ internal sealed class IdlStructDeclarationParser
         };
         var useHashIds = autoId.Success && string.Equals(autoId.Groups["value"].Value, "HASH", StringComparison.OrdinalIgnoreCase);
         var fields = ParseMembers(input, body.Value, baseOffset + declarationStart + body.Index, currentNamespace, useHashIds);
-        IdlSemanticValidator.ValidateMemberIds(input, baseOffset + declarationStart, fields);
+        IdlSemanticValidator.ValidateMemberIds(input, context.MapOffset(baseOffset + declarationStart), fields);
 
         var parsedDeclaration = new IdlClassDeclaration(
             name,

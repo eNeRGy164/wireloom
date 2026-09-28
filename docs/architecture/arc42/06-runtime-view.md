@@ -28,3 +28,6 @@ RTI runtime.
 - A missing compatible RTI runtime reference produces `DDSG0003`.
 - Cyclic typedef aliases are rejected during semantic resolution with a source-
   located IDL diagnostic; they do not produce generated output.
+- Cancellation is observed during input traversal and preprocessing. Macro-work
+  or output limits fail the file with a stable source-located generator failure;
+  partial preprocessed text is never passed to the parser.
