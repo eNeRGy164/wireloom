@@ -17,3 +17,7 @@ does not duplicate its manifest-driven loading or oracle comparison.
 
 Tests that cover a general compiler invariant rather than one specific corpus
 case may have no `Corpus` trait.
+
+Preprocessor tests use the separate `Preprocessor` trait with `PP###` values.
+The feature matrix is maintained in
+[`docs/PREPROCESSOR-FEATURES.md`](../../docs/PREPROCESSOR-FEATURES.md).

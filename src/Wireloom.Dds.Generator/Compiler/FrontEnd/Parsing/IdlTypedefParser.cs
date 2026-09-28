@@ -107,5 +107,5 @@ internal sealed class IdlTypedefParser
     }
 
     internal void Validate(IdlInput input, int offset, string name) =>
-        context.Validator.ValidateTypedef(input, offset, name);
+        context.Validator.ValidateTypedef(input, context.MapOffset(offset), name);
 }

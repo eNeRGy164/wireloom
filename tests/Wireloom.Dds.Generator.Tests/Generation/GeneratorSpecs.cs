@@ -157,6 +157,50 @@ public sealed class GeneratorSpecs
     }
 
     [Fact]
+    [Trait("Preprocessor", "PP040")]
+    public void ReportsPreprocessorWarningThroughTheRoslynAdapter()
+    {
+        // Arrange
+        const string idl = "#warning prefer the supported IDL form\nconst long Value = 1;";
+        var metadata = new Dictionary<string, string>();
+
+        // Act
+        var result = Run(
+            idl,
+            LanguageVersion.CSharp12,
+            metadata,
+            includeRuntime: true);
+
+        // Assert
+        var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0106");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
+        diagnostic.GetMessage().ShouldBe("Preprocessor warning: prefer the supported IDL form");
+        diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
+    }
+
+    [Fact]
+    [Trait("Preprocessor", "PP042")]
+    public void ReportsPreprocessorMessageThroughTheRoslynAdapter()
+    {
+        // Arrange
+        const string idl = "#pragma message(\"build note\")\nconst long Value = 1;";
+        var metadata = new Dictionary<string, string>();
+
+        // Act
+        var result = Run(
+            idl,
+            LanguageVersion.CSharp12,
+            metadata,
+            includeRuntime: true);
+
+        // Assert
+        var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0107");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Info);
+        diagnostic.GetMessage().ShouldBe("Preprocessor message: message(\"build note\")");
+        diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
+    }
+
+    [Fact]
     public void ReportsDirectArrayOfSequencesWarning()
     {
         // Arrange

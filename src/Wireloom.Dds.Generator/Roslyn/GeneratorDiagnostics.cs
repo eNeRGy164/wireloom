@@ -14,6 +14,8 @@ internal static class GeneratorDiagnostics
     private static readonly DiagnosticDescriptor ignoredInterfaceWarning = new("DDSG0103", "Non-DDS interface ignored", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
     private static readonly DiagnosticDescriptor macroArityWarning = new("DDSG0104", "Macro argument count mismatch", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
     private static readonly DiagnosticDescriptor arrayOfSequenceWarning = new("DDSG0105", "Array of sequences may not preserve IDL semantics", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
+    private static readonly DiagnosticDescriptor preprocessorWarning = new("DDSG0106", "Preprocessor warning", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
+    private static readonly DiagnosticDescriptor preprocessorMessage = new("DDSG0107", "Preprocessor message", "{0}", "DDS Source Generator", DiagnosticSeverity.Info, true);
 
     internal static void Report(SourceProductionContext production, IEnumerable<IdlDiagnostic> diagnostics)
     {
@@ -27,6 +29,8 @@ internal static class GeneratorDiagnostics
                 "DDSG0103" => ignoredInterfaceWarning,
                 "DDSG0104" => macroArityWarning,
                 "DDSG0105" => arrayOfSequenceWarning,
+                "DDSG0106" => preprocessorWarning,
+                "DDSG0107" => preprocessorMessage,
                 _ => unknownAnnotationWarning
             };
 

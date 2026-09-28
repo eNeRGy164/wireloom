@@ -16,3 +16,16 @@
 | :-------------------------------------------------------- | :------------------------------------------------------------------- | :------- | :------------------------------------------------------------- |
 | All inputs currently form one collected incremental batch | Unrelated roots may invalidate together and caching is less granular | Medium   | Introduce per-root graph caching when measurement justifies it |
 | Some chapter and requirement details remain compact       | Future changes may need more explicit decision and quality records   | Medium   | Expand chapters or add ADRs when architecture changes          |
+
+A fixed preprocessing ceiling can reject unusually generated but finite IDL.
+The exact limits are therefore published and should only be raised with
+adversarial evidence that preserves deterministic build safety.
+
+The current deterministic limits are:
+
+- 4 MiB of preprocessed output per input.
+- 100,000 macro expansion operations per input.
+- 64 nested macro expansion levels.
+- 256 nested conditional-expression levels.
+- 128 include nesting levels.
+- 100,000 source-origin alignment work units per expanded line.

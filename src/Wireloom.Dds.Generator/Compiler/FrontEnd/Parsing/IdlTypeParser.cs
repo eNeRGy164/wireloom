@@ -24,13 +24,13 @@ internal sealed class IdlTypeParser
         var member = MemberPattern.Match(body[offset..]);
         if (!member.Success)
         {
-            throw new IdlException(input, sourceOffset + offset, "Unsupported member declaration.");
+            throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Unsupported member declaration.");
         }
 
         var field = member.Groups[3].Value;
         if (!members.Add(field))
         {
-            throw new IdlException(input, sourceOffset + offset, $"Duplicate member: {field}");
+            throw new IdlException(input, context.MapOffset(sourceOffset + offset), $"Duplicate member: {field}");
         }
 
         var kind = member.Groups[1].Value.Trim();
@@ -47,7 +47,7 @@ internal sealed class IdlTypeParser
             var element = context.ResolveFieldType(ElementType, currentNamespace, input, memberSourceOffset);
             if (element is null)
             {
-                throw new IdlException(input, memberSourceOffset, $"Unknown collection element type: {ElementType}");
+                throw new IdlException(input, context.MapOffset(memberSourceOffset), $"Unknown collection element type: {ElementType}");
             }
 
             parsedType = new IdlType.Sequence(element, Bound, dimensions);
@@ -57,7 +57,7 @@ internal sealed class IdlTypeParser
             var element = context.ResolveFieldType(kind, currentNamespace, input, memberSourceOffset);
             if (element is null)
             {
-                throw new IdlException(input, memberSourceOffset, $"Unknown collection element type: {kind}");
+                throw new IdlException(input, context.MapOffset(memberSourceOffset), $"Unknown collection element type: {kind}");
             }
 
             parsedType = new IdlType.Array(element, dimensions);
@@ -82,12 +82,12 @@ internal sealed class IdlTypeParser
             var resolved = context.ResolveFieldType(kind, currentNamespace, input, memberSourceOffset);
             if (resolved is null)
             {
-                throw new IdlException(input, memberSourceOffset, $"Unknown struct type: {kind}");
+                throw new IdlException(input, context.MapOffset(memberSourceOffset), $"Unknown struct type: {kind}");
             }
 
             if (annotations.IsOptional && !IsOptionalScalar(resolved))
             {
-                throw new IdlException(input, memberSourceOffset, "Optional aggregate members are not supported yet.");
+                throw new IdlException(input, context.MapOffset(memberSourceOffset), "Optional aggregate members are not supported yet.");
             }
 
             parsedType = resolved;
@@ -95,7 +95,7 @@ internal sealed class IdlTypeParser
 
         if (parsedType is IdlType.Sequence { Dimensions.Count: > 0 })
         {
-            context.Diagnostics?.Add(new IdlDiagnostic("DDSG0105", input, memberSourceOffset, $"The C# binding does not support arrays of sequences without using a typedef; generated code for member '{field}' may not match IDL semantics."));
+            context.Diagnostics?.Add(new IdlDiagnostic("DDSG0105", input, context.MapOffset(memberSourceOffset), $"The C# binding does not support arrays of sequences without using a typedef; generated code for member '{field}' may not match IDL semantics."));
         }
 
         var valueMetadata = ResolveMemberValueMetadata(input, memberSourceOffset, currentNamespace, parsedType, annotations);
@@ -135,7 +135,7 @@ internal sealed class IdlTypeParser
             {
                 if (annotations.IsKey)
                 {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate @key annotation.");
+                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @key annotation.");
                 }
 
                 annotations.IsKey = true;
@@ -150,7 +150,7 @@ internal sealed class IdlTypeParser
             {
                 if (annotations.IsOptional)
                 {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate @optional annotation.");
+                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @optional annotation.");
                 }
 
                 annotations.IsOptional = true;
@@ -165,7 +165,7 @@ internal sealed class IdlTypeParser
             {
                 if (annotations.MemberId is not null || annotations.HashIdExpression is not null || !int.TryParse(idAnnotation.Groups[1].Value, out var parsedId))
                 {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate or invalid @id annotation.");
+                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate or invalid @id annotation.");
                 }
 
                 annotations.MemberId = parsedId;
@@ -180,7 +180,7 @@ internal sealed class IdlTypeParser
             {
                 if (annotations.MemberId is not null || annotations.HashIdExpression is not null)
                 {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate or conflicting @id/@hashid annotation.");
+                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate or conflicting @id/@hashid annotation.");
                 }
 
                 annotations.HashIdExpression = hashIdAnnotation.Groups["value"].Success
@@ -197,7 +197,7 @@ internal sealed class IdlTypeParser
             {
                 if (annotations.MinimumExpression is not null)
                 {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate @min or @range annotation.");
+                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @min or @range annotation.");
                 }
 
                 annotations.MinimumExpression = minimumAnnotation.Groups["value"].Value.Trim();
@@ -212,7 +212,7 @@ internal sealed class IdlTypeParser
             {
                 if (annotations.MaximumExpression is not null)
                 {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate @max or @range annotation.");
+                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @max or @range annotation.");
                 }
 
                 annotations.MaximumExpression = maximumAnnotation.Groups["value"].Value.Trim();
@@ -227,7 +227,7 @@ internal sealed class IdlTypeParser
             {
                 if (annotations.MinimumExpression is not null || annotations.MaximumExpression is not null)
                 {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate @min, @max, or @range annotation.");
+                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @min, @max, or @range annotation.");
                 }
 
                 annotations.MinimumExpression = rangeAnnotation.Groups["min"].Value.Trim();
@@ -243,7 +243,7 @@ internal sealed class IdlTypeParser
             {
                 if (annotations.DefaultExpression is not null)
                 {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate @default annotation.");
+                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @default annotation.");
                 }
 
                 annotations.DefaultExpression = defaultAnnotation.Groups["value"].Value.Trim();
@@ -258,7 +258,7 @@ internal sealed class IdlTypeParser
             {
                 if (annotations.UnitExpression is not null)
                 {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate @unit annotation.");
+                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @unit annotation.");
                 }
 
                 annotations.UnitExpression = unitAnnotation.Groups["value"].Value;
@@ -282,7 +282,7 @@ internal sealed class IdlTypeParser
             {
                 if (annotations.IsExternal)
                 {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate @external annotation.");
+                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @external annotation.");
                 }
 
                 annotations.IsExternal = true;
@@ -297,7 +297,7 @@ internal sealed class IdlTypeParser
             {
                 if (annotations.IsMustUnderstand)
                 {
-                    throw new IdlException(input, sourceOffset + offset, "Duplicate @must_understand annotation.");
+                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @must_understand annotation.");
                 }
 
                 annotations.IsMustUnderstand = true;
@@ -324,7 +324,7 @@ internal sealed class IdlTypeParser
         var valueType = UnwrapAliases(type);
         if (valueType is not IdlType.Primitive and not IdlType.Enum)
         {
-            throw new IdlException(input, offset, "@min, @max, @range, and @default are only supported on primitive and enum members.");
+            throw new IdlException(input, context.MapOffset(offset), "@min, @max, @range, and @default are only supported on primitive and enum members.");
         }
 
         BigInteger? minimum = null;
@@ -335,7 +335,7 @@ internal sealed class IdlTypeParser
         {
             if (valueType is not IdlType.Primitive primitive)
             {
-                throw new IdlException(input, offset, "@min, @max, and @range require a primitive member.");
+                throw new IdlException(input, context.MapOffset(offset), "@min, @max, and @range require a primitive member.");
             }
 
             minimum = annotations.MinimumExpression is null
@@ -347,17 +347,17 @@ internal sealed class IdlTypeParser
 
             if (minimum is { } minimumValue)
             {
-                IdlConstantParser.ValidateConstantRange(input, offset, primitive.Name, minimumValue);
+                IdlConstantParser.ValidateConstantRange(input, context.MapOffset(offset), primitive.Name, minimumValue);
             }
 
             if (maximum is { } maximumValue)
             {
-                IdlConstantParser.ValidateConstantRange(input, offset, primitive.Name, maximumValue);
+                IdlConstantParser.ValidateConstantRange(input, context.MapOffset(offset), primitive.Name, maximumValue);
             }
 
             if (minimum is { } lower && maximum is { } upper && lower > upper)
             {
-                throw new IdlException(input, offset, "Member minimum value cannot be greater than its maximum value.");
+                throw new IdlException(input, context.MapOffset(offset), "Member minimum value cannot be greater than its maximum value.");
             }
         }
 
@@ -366,20 +366,20 @@ internal sealed class IdlTypeParser
             if (valueType is IdlType.Primitive primitive)
             {
                 defaultValue = EvaluateMemberInteger(input, offset, currentNamespace, annotations.DefaultExpression, "default");
-                IdlConstantParser.ValidateConstantRange(input, offset, primitive.Name, defaultValue.Value);
+                IdlConstantParser.ValidateConstantRange(input, context.MapOffset(offset), primitive.Name, defaultValue.Value);
             }
             else if (valueType is IdlType.Enum @enum)
             {
                 if (!context.Symbols.TryGetEnum(@enum.QualifiedName, out var enumDeclaration))
                 {
-                    throw new IdlException(input, offset, $"Unknown enum type: {@enum.QualifiedName}");
+                    throw new IdlException(input, context.MapOffset(offset), $"Unknown enum type: {@enum.QualifiedName}");
                 }
 
                 var defaultName = annotations.DefaultExpression.Replace("::", ".").Split('.').Last();
                 var enumMember = enumDeclaration.Members.SingleOrDefault(member => member.Name == defaultName);
                 if (enumMember is null)
                 {
-                    throw new IdlException(input, offset, $"Unknown default enum value: {annotations.DefaultExpression}");
+                    throw new IdlException(input, context.MapOffset(offset), $"Unknown default enum value: {annotations.DefaultExpression}");
                 }
 
                 defaultValue = enumMember.Value;
@@ -388,7 +388,7 @@ internal sealed class IdlTypeParser
 
         if (defaultValue is { } value && ((minimum is { } defaultLower && value < defaultLower) || (maximum is { } defaultUpper && value > defaultUpper)))
         {
-            throw new IdlException(input, offset, "Member default value is outside its declared range.");
+            throw new IdlException(input, context.MapOffset(offset), "Member default value is outside its declared range.");
         }
 
         return new IdlMemberValueMetadata(defaultValue, minimum, maximum, annotations.DefaultExpression, annotations.UnitExpression);
@@ -402,7 +402,7 @@ internal sealed class IdlTypeParser
         }
         catch (FormatException exception)
         {
-            throw new IdlException(input, offset, $"Invalid {valueName} expression: {exception.Message}");
+            throw new IdlException(input, context.MapOffset(offset), $"Invalid {valueName} expression: {exception.Message}");
         }
     }
 
@@ -442,7 +442,7 @@ internal sealed class IdlTypeParser
     }
 
     internal int ResolveBound(IdlInput input, int offset, string text, string? currentNamespace, string diagnosticName = "Collection bound") =>
-        context.Validator.ResolveBound(input, offset, text, currentNamespace, diagnosticName);
+        context.Validator.ResolveBound(input, context.MapOffset(offset), text, currentNamespace, diagnosticName);
 
     internal IReadOnlyList<int> ParseDimensions(IdlInput input, int offset, string text, string? currentNamespace)
     {
@@ -455,7 +455,7 @@ internal sealed class IdlTypeParser
 
         if (result.Count == 0)
         {
-            throw new IdlException(input, offset, "Array declaration must specify at least one dimension.");
+            throw new IdlException(input, context.MapOffset(offset), "Array declaration must specify at least one dimension.");
         }
 
         return result;
@@ -480,7 +480,7 @@ internal sealed class IdlTypeParser
         var parts = inner.Split(',');
         if (parts.Length > 2 || parts.Length == 0 || string.IsNullOrWhiteSpace(parts[0]))
         {
-            throw new IdlException(input, offset, "Malformed sequence declaration.");
+            throw new IdlException(input, context.MapOffset(offset), "Malformed sequence declaration.");
         }
 
         return (NormalizeIdlType(parts[0].Trim()), parts.Length == 2 ? ResolveBound(input, offset, parts[1], currentNamespace) : null);

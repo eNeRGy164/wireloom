@@ -1,5 +1,6 @@
 using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Compiler.FrontEnd.Preprocessing;
 
 using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
 
@@ -31,8 +32,17 @@ internal sealed class IdlDeclarationParser
         context.Classes.TryGetValue(name, out declaration);
 
     /// <summary>Parses declarations in one module and emits their documents.</summary>
-    public void Parse(string declarations, IdlInput input, int baseOffset, string? currentNamespace)
+    public void Parse(
+        string declarations,
+        IdlInput input,
+        int baseOffset,
+        string? currentNamespace,
+        IReadOnlyList<SourceOriginSpan>? sourceOrigins = null)
     {
+        // Always replace the mapping: sequential files must never inherit the
+        // previous parse's origin table.
+        context.SetSourceOrigins(sourceOrigins);
+
         var position = 0;
 
         while (position < declarations.Length)
@@ -86,20 +96,20 @@ internal sealed class IdlDeclarationParser
                 var name = unknownAnnotation.Groups["name"].Value;
                 if (UnsupportedAnnotationNames.Contains(name))
                 {
-                    context.Diagnostics?.Add(new IdlDiagnostic("DDSG0102", input, baseOffset + position, $"Annotation '{name}' is recognized but unsupported and will be ignored."));
+                    context.Diagnostics?.Add(new IdlDiagnostic("DDSG0102", input, context.MapOffset(baseOffset + position), $"Annotation '{name}' is recognized but unsupported and will be ignored."));
                     throw new IdlException(
                         input,
-                        baseOffset + position,
+                        context.MapOffset(baseOffset + position),
                         $"Annotation '@{name}' is not supported in this context.");
                 }
 
-                context.Diagnostics?.Add(new IdlDiagnostic("DDSG0101", input, baseOffset + position, $"Annotation '@{name}' is not recognized and will be ignored."));
+                context.Diagnostics?.Add(new IdlDiagnostic("DDSG0101", input, context.MapOffset(baseOffset + position), $"Annotation '@{name}' is not recognized and will be ignored."));
                 position += unknownAnnotation.Length;
                 continue;
             }
 
             if (TryParseInterface(declarations, input, baseOffset, ref position) ||
-                TryParseModule(declarations, input, baseOffset, currentNamespace, ref position) ||
+                TryParseModule(declarations, input, baseOffset, currentNamespace, sourceOrigins, ref position) ||
                 constantParser.TryParse(declarations, input, baseOffset, currentNamespace, ref position) ||
                 enumParser.TryParse(declarations, input, baseOffset, currentNamespace, ref position) ||
                 typedefParser.TryParse(declarations, input, baseOffset, currentNamespace, ref position))
@@ -139,7 +149,7 @@ internal sealed class IdlDeclarationParser
             return false;
         }
 
-        context.Diagnostics?.Add(new IdlDiagnostic("DDSG0103", input, baseOffset + position, $"The interface '{@interface.Groups["name"].Value}' is ignored because it is not a DDS service."));
+        context.Diagnostics?.Add(new IdlDiagnostic("DDSG0103", input, context.MapOffset(baseOffset + position), $"The interface '{@interface.Groups["name"].Value}' is ignored because it is not a DDS service."));
 
         position += @interface.Length;
 
@@ -147,7 +157,13 @@ internal sealed class IdlDeclarationParser
     }
 
 
-    private bool TryParseModule(string declarations, IdlInput input, int baseOffset, string? currentNamespace, ref int position)
+    private bool TryParseModule(
+        string declarations,
+        IdlInput input,
+        int baseOffset,
+        string? currentNamespace,
+        IReadOnlyList<SourceOriginSpan>? sourceOrigins,
+        ref int position)
     {
         var module = ModulePattern.Match(declarations.Substring(position));
         if (!module.Success)
@@ -159,7 +175,7 @@ internal sealed class IdlDeclarationParser
         var closeBrace = FindClosingBrace(declarations, openBrace);
         if (closeBrace < 0)
         {
-            throw new IdlException(input, baseOffset + position, "Unterminated module declaration.");
+            throw new IdlException(input, context.MapOffset(baseOffset + position), "Unterminated module declaration.");
         }
 
         var moduleName = context.Qualify(module.Groups[1].Value, currentNamespace);
@@ -167,7 +183,8 @@ internal sealed class IdlDeclarationParser
             declarations.Substring(openBrace + 1, closeBrace - openBrace - 1),
             input,
             baseOffset + openBrace + 1,
-            moduleName);
+            moduleName,
+            sourceOrigins);
 
         position = closeBrace + 1;
         while (position < declarations.Length && char.IsWhiteSpace(declarations[position]))
@@ -177,7 +194,7 @@ internal sealed class IdlDeclarationParser
 
         if (position >= declarations.Length || declarations[position] != ';')
         {
-            throw new IdlException(input, baseOffset + closeBrace, "Module declaration must end with a semicolon.");
+            throw new IdlException(input, context.MapOffset(baseOffset + closeBrace), "Module declaration must end with a semicolon.");
         }
 
         position++;
@@ -194,6 +211,25 @@ internal sealed class IdlDeclarationParser
         var depth = 0;
         for (var index = openingBrace; index < text.Length; index++)
         {
+            if (IsLiteralStart(text, index))
+            {
+                var quote = text[index++];
+                while (index < text.Length)
+                {
+                    var character = text[index++];
+                    if (character == '\\' && index < text.Length)
+                    {
+                        index++;
+                    }
+                    else if (character == quote)
+                    {
+                        break;
+                    }
+                }
+
+                continue;
+            }
+
             if (text[index] == '{')
             {
                 depth++;
@@ -206,5 +242,49 @@ internal sealed class IdlDeclarationParser
         }
 
         return -1;
+    }
+
+    private static bool IsLiteralStart(string text, int index)
+    {
+        if (text[index] == '"')
+        {
+            return true;
+        }
+
+        if (text[index] != '\'')
+        {
+            return false;
+        }
+
+        return HasCharacterLiteralPrefix(text, index)
+            || !LooksLikeIdentifierApostrophe(text, index);
+    }
+
+    private static bool HasCharacterLiteralPrefix(string text, int quoteIndex)
+    {
+        if (quoteIndex == 0)
+        {
+            return false;
+        }
+
+        var prefixCharacter = text[quoteIndex - 1];
+        if (prefixCharacter is 'L' or 'u' or 'U')
+        {
+            return true;
+        }
+
+        return prefixCharacter == '8'
+            && quoteIndex > 1
+            && text[quoteIndex - 2] == 'u';
+    }
+
+    private static bool LooksLikeIdentifierApostrophe(string text, int apostropheIndex)
+    {
+        var hasIdentifierCharacterBefore = apostropheIndex > 0
+            && char.IsLetterOrDigit(text[apostropheIndex - 1]);
+        var hasIdentifierCharacterAfter = apostropheIndex + 1 < text.Length
+            && char.IsLetterOrDigit(text[apostropheIndex + 1]);
+
+        return hasIdentifierCharacterBefore && hasIdentifierCharacterAfter;
     }
 }

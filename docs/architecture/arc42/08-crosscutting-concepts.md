@@ -65,3 +65,12 @@ hashes.
   and sequence arrays retain the RTI outer guard. Primitive-only fields and
   primitive-only collections delegate cleanup to their member wrapper and do
   not need an outer guard.
+
+## 8.7 Deterministic preprocessing safety
+
+Preprocessing is finite by contract. A file may perform at most 100,000 macro
+expansion operations and produce at most 4 MiB of preprocessed text. These
+limits are deterministic rather than elapsed-time based. Exceeding either
+limit, invalid include operands, and cancellation reject the compilation
+instead of returning partial text. Physical line starts are indexed once so
+repeated `__LINE__` expansion remains linear in total input and output size.

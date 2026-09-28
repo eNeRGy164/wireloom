@@ -30,6 +30,7 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, Cancellatio
         // system supplies AdditionalFiles in a different order.
         foreach (var input in roots.OrderBy(input => input.Path, StringComparer.Ordinal))
         {
+            graph.BeginRoot();
             graph.Visit(input, parser.Parse, diagnostics);
         }
 

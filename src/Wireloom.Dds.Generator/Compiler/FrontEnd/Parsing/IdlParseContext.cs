@@ -1,5 +1,6 @@
 using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Compiler.FrontEnd.Preprocessing;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing;
 
@@ -32,6 +33,41 @@ internal sealed class IdlParseContext
 
     internal IdlTypeParser TypeParser { get; }
 
+    private IReadOnlyList<SourceOriginSpan>? SourceOrigins { get; set; }
+
+    internal void SetSourceOrigins(IReadOnlyList<SourceOriginSpan>? sourceOrigins) =>
+        SourceOrigins = sourceOrigins;
+
+    internal int MapOffset(int offset)
+    {
+        if (SourceOrigins is null || SourceOrigins.Count == 0 || offset < 0)
+        {
+            return offset;
+        }
+
+        var low = 0;
+        var high = SourceOrigins.Count - 1;
+        while (low <= high)
+        {
+            var middle = low + ((high - low) / 2);
+            var origin = SourceOrigins[middle];
+            if (offset < origin.OutputStart)
+            {
+                high = middle - 1;
+            }
+            else if (offset >= origin.OutputStart + origin.OutputLength)
+            {
+                low = middle + 1;
+            }
+            else
+            {
+                return origin.Map(offset);
+            }
+        }
+
+        return SourceOrigins[^1].SourceStart;
+    }
+
     internal string Qualify(string name, string? currentNamespace) =>
         currentNamespace is null ? name : $"{currentNamespace}.{name}";
 
@@ -39,10 +75,10 @@ internal sealed class IdlParseContext
         Classes.Add(qualifiedName, declaration);
 
     internal void EnsureNewName(IdlInput input, int offset, string name) =>
-        Validator.EnsureNewName(input, offset, name);
+        Validator.EnsureNewName(input, MapOffset(offset), name);
 
     internal IdlType? ResolveFieldType(string idlType, string? currentNamespace, IdlInput input, int offset) =>
-        TypeResolver.Resolve(idlType, currentNamespace, input, offset);
+        TypeResolver.Resolve(idlType, currentNamespace, input, MapOffset(offset));
 
     internal static IdlExtensibilityKind ParseExtensibility(string annotation) => annotation.Trim() switch
     {

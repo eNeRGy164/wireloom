@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-09-27T19:18:50Z
+  generated_at: 2026-09-29T00:00:00Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -57,11 +57,11 @@ summary:
     sources:
       - docs/architecture/arc42/07-deployment-view.md
   cross_cutting:
-    text: Evidence vocabulary, deterministic inputs, diagnostics, test separation, separated compiler stages, and supply-chain controls apply across the system.
+    text: Evidence vocabulary, deterministic inputs, diagnostics, test separation, separated compiler stages, deterministic preprocessing limits, and supply-chain controls apply across the system.
     sources:
       - docs/architecture/arc42/08-crosscutting-concepts.md
   decisions:
-    text: Roslyn hosting, explicit roots, independent semantic modeling, project-wide root metadata, explicit runtime ownership, case-level evidence, and separated compiler orchestration/resolution/emission are current decisions.
+    text: Roslyn hosting, explicit roots, independent semantic modeling, project-wide root metadata, explicit runtime ownership, case-level evidence, separated compiler orchestration/resolution/emission, and bounded preprocessing work are current decisions.
     sources:
       - docs/architecture/arc42/09-architectural-decisions.md
   quality:
@@ -69,7 +69,7 @@ summary:
     sources:
       - docs/architecture/arc42/10-quality-requirements.md
   risks:
-    text: Coverage outside the retained corpus, runtime and C++ evidence, and host qualification remain open risks.
+    text: Coverage outside the retained corpus, fixed-limit compatibility, runtime and C++ evidence, and host qualification remain open risks.
     sources:
       - docs/architecture/arc42/11-risks-and-technical-debt.md
   glossary:
