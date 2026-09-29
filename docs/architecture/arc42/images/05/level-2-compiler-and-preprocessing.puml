@@ -1,0 +1,39 @@
+@startuml
+skinparam componentStyle rectangle
+
+rectangle "Roslyn generator boundary\nGeneratorInputFactory" as roslyn
+rectangle "Build metadata\nDdsIdl roots + include/define settings" as metadata
+database "IDL files" as idl
+database "Corpus fixtures" as corpus
+
+package "Input graph and preprocessing" {
+  rectangle "Root and build-metadata intake + traversal\nIdlInputGraph" as graph
+  rectangle "Include path resolver\nIdlIncludeResolver" as includes
+  rectangle "IDL preprocessor\nIdlPreprocessor\nmacros + directives + source locations" as preprocessor
+  rectangle "Preprocessed IDL\nPreprocessedIdl" as preprocessed
+}
+
+package "Target-independent compiler" {
+  rectangle "Parser\nIdlDeclarationParser + specialized parsers" as parser
+  rectangle "Symbols and semantic model\nIdlSymbolTable + semantic types" as semantic
+  rectangle "Compilation state\nIdlCompilation + CompilationContext" as compilation
+  rectangle "Resolution and validation\nCompilationResolver + type resolver + validator" as resolution
+  rectangle "Emission model and plans\nEmissionTypeProjector + plans" as plans
+}
+
+rectangle "Emission model and plans\n(level 1 handoff)" as level1
+
+metadata --> roslyn : compiler inputs
+roslyn --> graph : explicit roots
+idl --> includes : root/include files
+graph --> includes : include graph
+includes --> preprocessor : resolved files
+preprocessor --> preprocessed : bounded text + source map
+preprocessed --> parser
+parser --> semantic
+semantic --> compilation
+compilation --> resolution
+resolution --> plans
+corpus --> parser : compatibility cases
+plans --> level1 : validated handoff
+@enduml

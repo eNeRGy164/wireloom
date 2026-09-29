@@ -6,6 +6,9 @@ selected RTI Connext DDS runtime.
 
 ## 7.1 Infrastructure level 1
 
+The source for the deployment diagram is
+[deployment-overview.puml](images/07/deployment-overview.puml).
+
 | Node                       | Deployed material                                           | Role                                                        |
 | :------------------------- | :---------------------------------------------------------- | :---------------------------------------------------------- |
 | Developer or CI build host | .NET 10 SDK, consumer project, IDL, Wireloom package        | Runs restore, compilation, generation, and tests            |

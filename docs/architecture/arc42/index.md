@@ -5,18 +5,18 @@ RTI Connext DDS IDL into C# data types and RTI type-specific support during a
 Roslyn build. The RTI runtime remains responsible for DDS communication,
 serialization, and representation negotiation.
 
-Owner:  
+Owner: Michaël Hompus  
 Last reviewed: 2026-09-27
 
 | Chapter                                                        | Status  | Description                                          |
 | :------------------------------------------------------------- | :------ | :--------------------------------------------------- |
-| [1. Introduction and goals](01-introduction-and-goals.md)      | draft   | Purpose, goals, and stakeholders                     |
+| [1. Introduction and goals](01-introduction-and-goals.md)      | current | Purpose, goals, and stakeholders                     |
 | [2. Architecture constraints](02-architecture-constraints.md)  | current | Technical and repository constraints                 |
-| [3. Context and scope](03-context-and-scope.md)                | draft   | System boundary and neighbors                        |
+| [3. Context and scope](03-context-and-scope.md)                | current | System boundary and neighbors                        |
 | [4. Solution strategy](04-solution-strategy.md)                | current | Main architectural approach                          |
 | [5. Building block view](05-building-block-view.md)            | current | Compiler and package structure                       |
-| [6. Runtime view](06-runtime-view.md)                          | draft   | Build-time generation flow and failures              |
-| [7. Deployment view](07-deployment-view.md)                    | draft   | Consumer, CI, package, and runtime nodes             |
+| [6. Runtime view](06-runtime-view.md)                          | current | Build-time generation flow and failures              |
+| [7. Deployment view](07-deployment-view.md)                    | current | Consumer, CI, package, and runtime nodes             |
 | [8. Cross-cutting concepts](08-crosscutting-concepts.md)       | current | Evidence, diagnostics, determinism, and supply chain |
 | [9. Architectural decisions](09-architectural-decisions.md)    | current | Decisions embodied by the implementation             |
 | [10. Quality requirements](10-quality-requirements.md)         | draft   | Measurable quality scenarios                         |

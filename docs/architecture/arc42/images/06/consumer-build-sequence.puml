@@ -1,0 +1,33 @@
+@startuml
+autonumber
+
+actor "Consumer project build" as build
+participant "MSBuild targets" as msbuild
+participant "Roslyn" as roslyn
+participant "Generator" as generator
+participant "Input graph + preprocessor" as preprocess
+participant "Target-independent compiler" as compiler
+participant "Emission plans + emitters" as emitters
+participant "Consumer compilation" as compilation
+participant "Generated application" as application
+participant "RTI runtime" as runtime
+
+build -> msbuild : Declare DdsIdl roots\nand project-wide metadata
+msbuild -> roslyn : Add AdditionalFiles\nand visible item metadata
+roslyn -> generator : Execute with IDL,\noptions, and references
+generator -> preprocess : Resolve roots/includes\nand preprocess input
+preprocess --> generator : Preprocessed IDL\nand source locations
+generator -> compiler : Parse declarations,\nbuild symbols, resolve, validate
+
+alt Invalid or unsupported input
+  compiler --> generator : Source-located diagnostic
+  generator --> roslyn : Report diagnostic
+  roslyn --> build : Fail compilation
+else Valid input
+  compiler -> emitters : Create emission plans
+  emitters --> roslyn : Add generated documents
+  roslyn --> compilation : Generated and\nhand-written C#
+  compilation -> application : Build application
+  application -> runtime : DDS runtime calls
+end
+@enduml

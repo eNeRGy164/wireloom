@@ -1,0 +1,19 @@
+@startuml
+skinparam componentStyle rectangle
+
+rectangle "Wireloom\nmanaged generator package" as wireloom
+
+rectangle ".NET DDS consumer project" as consumer
+rectangle "Generated DDS application" as application
+rectangle "RTI Connext DDS runtime" as runtime
+cloud "CI and package feeds" as ci
+database "Compatibility corpus\nand RTI oracle output" as corpus
+
+consumer --> wireloom : DdsIdl roots\ninclude dirs + defines
+wireloom --> consumer : generated C#\ndiagnostics + build integration
+consumer --> application : compiles
+application --> runtime : DDS APIs,\nserialization, communication
+consumer --> runtime : explicit runtime reference
+ci <--> wireloom : restore inputs\npackage artifacts + tests
+corpus --> wireloom : IDL cases +\noracle evidence
+@enduml
