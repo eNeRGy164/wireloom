@@ -6,6 +6,9 @@ RTI runtime.
 
 ## 6.1 Consumer build and generation
 
+The source for the build-time sequence diagram is
+[consumer-build-sequence.puml](images/06/consumer-build-sequence.puml).
+
 1. MSBuild adds explicit `DdsIdl` roots and tracks other `.idl` files as
    non-generating inputs.
 2. Roslyn supplies the files, item metadata, compiler options, and compilation

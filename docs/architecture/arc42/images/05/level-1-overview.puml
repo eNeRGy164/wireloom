@@ -4,7 +4,7 @@ skinparam componentStyle rectangle
 rectangle "Consumer project" as consumer
 rectangle "MSBuild targets\nDdsIdl + include metadata" as msbuild
 rectangle "Roslyn generator\nGenerator" as generator
-rectangle "Managed compiler\nfront end → resolver → validator\nemission planning → writers" as compiler
+rectangle "Managed compiler" as compiler
 rectangle "Emitters\nmanaged/native/type support" as emitters
 rectangle "Generated C#\nAdditional documents" as output
 rectangle "RTI Connext DDS\nruntime" as runtime

@@ -6,6 +6,9 @@ data path.
 
 ## 3.1 Business context
 
+The source for the context diagram is
+[system-context.puml](images/03/system-context.puml).
+
 | Neighbor                                  | Direction                 | Exchanged value / data                                                        |
 | :---------------------------------------- | :------------------------ | :---------------------------------------------------------------------------- |
 | .NET DDS consumer                         | to Wireloom               | `DdsIdl` roots, batch-wide include directories/defines, and runtime reference |

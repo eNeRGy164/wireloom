@@ -1,0 +1,23 @@
+@startuml
+cloud "NuGet feeds" as feeds
+database "Evidence repository" as evidence
+
+node "Developer or CI build host" as build {
+  artifact "Consumer project + IDL" as source
+  artifact "Wireloom.Dds.Generator\nNuGet package" as package
+  node ".NET SDK + Roslyn" as sdk
+}
+
+node "Application runtime environment" as runtimeHost {
+  artifact "Generated DDS application" as application
+  artifact "Rti.ConnextDds runtime" as runtime
+}
+
+feeds --> build : restore package
+build --> feeds : publish preview\nor release package
+evidence --> build : corpus fixtures\n(CI only)
+source --> sdk : project + IDL inputs
+package --> sdk : analyzer + MSBuild targets
+sdk --> application : compiled output
+application --> runtime : uses selected runtime
+@enduml

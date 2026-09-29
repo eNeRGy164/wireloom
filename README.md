@@ -30,8 +30,7 @@ preprocessing, semantic validation, and generated C# source.
 
 ## Quick start
 
-Wireloom targets the .NET 10 SDK pinned by [`global.json`](global.json). A
-consumer references the RTI runtime explicitly and declares each IDL generation
+A consumer references the RTI runtime explicitly and declares each IDL generation
 root explicitly:
 
 ```xml
@@ -114,19 +113,6 @@ Wireloom compares small, attributable IDL cases with retained RTI Connext
 7.7.0 / `rtiddsgen` 4.7.0 reference output. The compatibility floor is RTI
 7.3.1 and later because 7.3.1 ships the same `rtiddsgen` version. The checked-in corpus currently
 contains:
-
-| Evidence set                                 |                                         Cases |
-| -------------------------------------------- | --------------------------------------------: |
-| Positive feature cases                       |                                            54 |
-| Negative and diagnostic probes               |                                            53 |
-| Integration entry points                     |                                             4 |
-| Total corpus cases                           |                                           111 |
-| Fully implemented positive/integration cases |                                       58 / 58 |
-| Not fully implemented positive/integration   |                                             0 |
-| Compliance test invocations                  | 226 total, 226 succeeded, 0 failed, 0 skipped |
-
-The snapshot above was recorded on 2026-09-27;
-consult the feature index for the current result.
 
 The corpus is source-generation evidence. It does not by itself establish
 serialization-byte equivalence, live DDS behavior, or C++ interoperability.

@@ -24,6 +24,7 @@ or ADRs first, then refresh this file and
 - **Building blocks:** The pipeline separates Roslyn hosting, input graph and
   preprocessing, front-end parsing and semantics, compilation orchestration and
   resolution, emission models and plans, and managed/native/support emitters.
+  Chapter 5 includes a level-2 zoom of the compiler and preprocessing boundary.
   See [chapter 5](arc42/05-building-block-view.md).
 - **Runtime and deployment:** The meaningful runtime scenario is the consumer
   build; the output is packaged into the application, which uses its selected
