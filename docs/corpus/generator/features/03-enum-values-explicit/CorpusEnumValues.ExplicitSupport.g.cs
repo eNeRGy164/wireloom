@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusEnumValues;
 
@@ -21,7 +20,7 @@ public class ExplicitSupport : TypeSupport<Explicit>
     /// </summary>
     public ExplicitSupport() : base(
         new Implementation.ExplicitPlugin(),
-        new Lazy<DynamicType>(() => Implementation.ExplicitPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.ExplicitPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

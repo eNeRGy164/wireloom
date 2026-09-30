@@ -20,14 +20,22 @@ internal sealed class GeneratedSourceWriter
         WriteComment("Do not modify it directly; update the IDL source and rebuild.");
         WriteComment("It requires the RTI Connext DDS .NET runtime.");
         WriteLine("#nullable enable");
-        BlankLine();
-
-        foreach (var usingDirective in usingDirectives.OrderBy(ud => ud, StringComparer.Ordinal))
+        var sortedUsingDirectives = usingDirectives.OrderBy(ud => ud, StringComparer.Ordinal).ToArray();
+        if (sortedUsingDirectives.Length > 0)
         {
-            WriteLine($"using {usingDirective};");
-        }
+            BlankLine();
 
-        BlankLine();
+            foreach (var usingDirective in sortedUsingDirectives)
+            {
+                WriteLine($"using {usingDirective};");
+            }
+
+            BlankLine();
+        }
+        else
+        {
+            BlankLine();
+        }
 
         if (currentNamespace is not null)
         {

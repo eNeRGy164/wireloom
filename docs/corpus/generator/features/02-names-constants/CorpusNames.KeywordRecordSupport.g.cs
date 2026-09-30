@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusNames;
 
@@ -21,7 +20,7 @@ public class KeywordRecordSupport : TypeSupport<KeywordRecord>
     /// </summary>
     public KeywordRecordSupport() : base(
         new Implementation.KeywordRecordPlugin(),
-        new Lazy<DynamicType>(() => Implementation.KeywordRecordPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.KeywordRecordPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusMultiLabelUnion;
 
 /// <summary>
 /// Represents the <c>Choice</c> DDS union declared in <c>07-union-multilabel.idl</c>. Exactly one branch is selected by <see cref="Discriminator"/>.
 /// </summary>
-public partial class Choice : IEquatable<Choice>
+public partial class Choice : global::System.IEquatable<Choice>
 {
     private int _number;
     private string _text = string.Empty;
@@ -37,7 +36,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator != 1 && Discriminator != 5)
             {
-                throw new InvalidOperationException("number not selected");
+                throw new global::System.InvalidOperationException("number not selected");
             }
 
             return _number;
@@ -59,7 +58,7 @@ public partial class Choice : IEquatable<Choice>
     {
         if (!(discriminator == 1 || discriminator == 5))
         {
-            throw new ArgumentException("Invalid discriminator value for number", nameof(discriminator));
+            throw new global::System.ArgumentException("Invalid discriminator value for number", nameof(discriminator));
         }
 
         _number = value;
@@ -77,7 +76,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator != 2)
             {
-                throw new InvalidOperationException("text not selected");
+                throw new global::System.InvalidOperationException("text not selected");
             }
 
             return _text;
@@ -129,7 +128,7 @@ public partial class Choice : IEquatable<Choice>
     /// Gets the currently active union-branch value.
     /// </summary>
     /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
-    public object Get()
+    public object? Get()
     {
         return Discriminator switch
         {
@@ -144,9 +143,9 @@ public partial class Choice : IEquatable<Choice>
     {
         return Discriminator switch
         {
-            1 or 5 => HashCode.Combine(Discriminator, number),
-            2 => HashCode.Combine(Discriminator, text),
-            _ => HashCode.Combine(Discriminator),
+            1 or 5 => global::System.HashCode.Combine(Discriminator, number),
+            2 => global::System.HashCode.Combine(Discriminator, text),
+            _ => global::System.HashCode.Combine(Discriminator),
         };
     }
 
@@ -162,7 +161,7 @@ public partial class Choice : IEquatable<Choice>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

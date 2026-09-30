@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusCollectionAliases;
 
@@ -21,7 +20,7 @@ public class NestedSequenceSupport : TypeSupport<NestedSequence>
     /// </summary>
     public NestedSequenceSupport() : base(
         new Implementation.NestedSequencePlugin(),
-        new Lazy<DynamicType>(() => Implementation.NestedSequencePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.NestedSequencePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

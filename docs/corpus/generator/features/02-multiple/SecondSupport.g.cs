@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 /// <summary>
 /// Provides RTI Connext DDS type support for <see cref="Second"/>.
@@ -19,7 +18,7 @@ public class SecondSupport : TypeSupport<Second>
     /// </summary>
     public SecondSupport() : base(
         new Implementation.SecondPlugin(),
-        new Lazy<DynamicType>(() => Implementation.SecondPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.SecondPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

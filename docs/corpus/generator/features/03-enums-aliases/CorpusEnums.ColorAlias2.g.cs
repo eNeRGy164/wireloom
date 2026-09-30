@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusEnums;
 
 /// <summary>
 /// Represents the <c>ColorAlias2</c> IDL typedef declared in <c>03-enums-aliases.idl</c>.
 /// </summary>
-public partial class ColorAlias2 : IEquatable<ColorAlias2>
+public partial class ColorAlias2 : global::System.IEquatable<ColorAlias2>
 {
     /// <summary>
     /// Gets or sets the value represented by this typedef.
@@ -51,7 +50,7 @@ public partial class ColorAlias2 : IEquatable<ColorAlias2>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(Value);
 
@@ -69,7 +68,7 @@ public partial class ColorAlias2 : IEquatable<ColorAlias2>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

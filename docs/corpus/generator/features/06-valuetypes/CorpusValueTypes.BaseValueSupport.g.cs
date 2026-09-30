@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusValueTypes;
 
@@ -21,7 +20,7 @@ public class BaseValueSupport : TypeSupport<BaseValue>
     /// </summary>
     public BaseValueSupport() : base(
         new Implementation.BaseValuePlugin(),
-        new Lazy<DynamicType>(() => Implementation.BaseValuePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.BaseValuePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

@@ -6,15 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
-using System.Linq;
 
 namespace CorpusAggregates;
 
 /// <summary>
 /// Represents the <c>Recursive</c> DDS type declared in <c>06-aggregates.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Recursive : IEquatable<Recursive>
+public partial class Recursive : global::System.IEquatable<Recursive>
 {
     /// <summary>
     /// Gets or sets the <c>value</c> member.
@@ -58,13 +56,13 @@ public partial class Recursive : IEquatable<Recursive>
         }
 
         value = other.value;
-        children = new Sequence<Recursive>(other.children.Select(element => new Recursive(element)));
+        children = new Sequence<Recursive>(global::System.Linq.Enumerable.Select(other.children, element => new Recursive(element)));
     }
 
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(value);
         hash.Add(children.Count);
@@ -84,13 +82,13 @@ public partial class Recursive : IEquatable<Recursive>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }
 
         return value.Equals(other.value)
-            && children.SequenceEqual(other.children);
+            && global::System.Linq.Enumerable.SequenceEqual(children, other.children);
     }
 
     /// <inheritdoc />

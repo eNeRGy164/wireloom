@@ -6,12 +6,11 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 /// <summary>
 /// Represents the <c>First</c> DDS type declared in <c>02-multiple.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class First : IEquatable<First>
+public partial class First : global::System.IEquatable<First>
 {
     /// <summary>
     /// Gets or sets the <c>value</c> member.
@@ -51,7 +50,7 @@ public partial class First : IEquatable<First>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(value);
 
@@ -70,7 +69,7 @@ public partial class First : IEquatable<First>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

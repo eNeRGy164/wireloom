@@ -6,12 +6,11 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 /// <summary>
 /// Represents the <c>Second</c> DDS type declared in <c>02-multiple.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Second : IEquatable<Second>
+public partial class Second : global::System.IEquatable<Second>
 {
     /// <summary>
     /// Gets or sets the <c>name</c> member. Its maximum length is <c>255</c>.
@@ -52,7 +51,7 @@ public partial class Second : IEquatable<Second>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(name);
 
@@ -71,7 +70,7 @@ public partial class Second : IEquatable<Second>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

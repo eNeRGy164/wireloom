@@ -17,7 +17,7 @@ public sealed class CorpusComplianceSpecs
     public void CorpusManifestAndOracleLibraryHaveTheSameCaseSet()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(111);
+        cases.Length.ShouldBe(112);
         cases.ShouldBeUnique();
         CorpusRepository.OracleCaseIds.ShouldBe(cases.OrderBy(id => id, StringComparer.Ordinal).ToArray());
 
@@ -28,6 +28,26 @@ public sealed class CorpusComplianceSpecs
                 corpusCase.HasOracleOutput ? 2 : 0,
                 corpusCase.Id);
         }
+    }
+
+    [Fact]
+    public void NewNegativeCasesDoNotRenumberExistingIntegrationTags()
+    {
+        // Arrange
+        var cases = CorpusRepository.Cases.ToDictionary(corpusCase => corpusCase.Id, StringComparer.Ordinal);
+
+        // Act
+        var integrationTags = new[]
+        {
+            cases["13-integration"].Tag,
+            cases["13-modules"].Tag,
+            cases["13-alias-inheritance"].Tag,
+            cases["13-compositions"].Tag
+        };
+
+        // Assert
+        integrationTags.ShouldBe(["C108", "C109", "C110", "C111"]);
+        cases["12-name-collisions"].Tag.ShouldBe("C112");
     }
 
     [Fact]
@@ -132,8 +152,8 @@ public sealed class CorpusComplianceSpecs
         var sample = optionalCollections["CorpusOptionalCollections.Sample.g.cs"].Source;
         var sampleUnmanaged = optionalCollections["CorpusOptionalCollections.Implementation.SampleUnmanaged.g.cs"].Source;
 
-        sample.ShouldContain("[Optional]\n    [Bound(4)]\n    public ISequence<int> values { get; set; }");
-        sample.ShouldContain("[Optional]\n    public int[] items { get; set; }");
+        sample.ShouldContain("[Optional]\n    [Bound(4)]\n    public ISequence<int>? values { get; set; }");
+        sample.ShouldContain("[Optional]\n    public int[]? items { get; set; }");
         sample.ShouldNotContain("values = new Sequence<int>();");
         sample.ShouldNotContain("items = new int[2]");
 
@@ -141,8 +161,8 @@ public sealed class CorpusComplianceSpecs
         sampleUnmanaged.ShouldContain("private NativeUnmanagedOptionalArray items;");
         sampleUnmanaged.ShouldContain("values.FromNative<int>(out Sequence<int> valuesTemporary_);");
         sampleUnmanaged.ShouldContain("items.FromNative<int>(out int[] itemsTemporary_, dimensions: new int[] { 2 });");
-        sampleUnmanaged.ShouldContain("values.ToNative<int>((Sequence<int>)sample.values, 4);");
-        sampleUnmanaged.ShouldContain("items.ToNative<int>(sample.items, dimension: 2);");
+        sampleUnmanaged.ShouldContain("values.ToNative<int>((Sequence<int>)sample.values!, 4);");
+        sampleUnmanaged.ShouldContain("items.ToNative<int>(sample.items, 2);");
         sampleUnmanaged.ShouldContain("values.Destroy(optionalsOnly);");
         sampleUnmanaged.ShouldContain("items.Destroy(optionalsOnly);");
 

@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusExtensibility;
 
 /// <summary>
 /// Represents the <c>Appendable</c> DDS type declared in <c>09-extensibility.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Appendable : IEquatable<Appendable>
+public partial class Appendable : global::System.IEquatable<Appendable>
 {
     /// <summary>
     /// Gets or sets the <c>id</c> member.
@@ -62,7 +61,7 @@ public partial class Appendable : IEquatable<Appendable>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(id);
         hash.Add(text);
@@ -82,7 +81,7 @@ public partial class Appendable : IEquatable<Appendable>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

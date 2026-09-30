@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusValueTypes;
 
@@ -21,7 +20,7 @@ public class DerivedValueSupport : TypeSupport<DerivedValue>
     /// </summary>
     public DerivedValueSupport() : base(
         new Implementation.DerivedValuePlugin(),
-        new Lazy<DynamicType>(() => Implementation.DerivedValuePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.DerivedValuePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

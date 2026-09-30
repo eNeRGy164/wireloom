@@ -124,6 +124,7 @@
     ,{ "id": "12-error-directive", "theme": "preprocessor error directive", "idl": "idl/negative/12-error-directive.idl" }
     ,{ "id": "12-angle-missing", "theme": "missing angle include", "idl": "idl/negative/12-angle-missing.idl" }
     ,{ "id": "12-included-error", "theme": "diagnostic in included file", "idl": "idl/negative/12-included-error.idl" }
+    ,{ "id": "12-name-collisions", "theme": "generated-name collision probes", "idl": "idl/negative/12-name-collisions.idl", "observedOutcome": "accepted", "tag": "C112" }
   ],
   "integrationEntryPoints": [
     "idl/integration/contracts/13-integration.idl",

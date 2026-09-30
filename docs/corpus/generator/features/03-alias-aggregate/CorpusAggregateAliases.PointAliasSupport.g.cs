@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusAggregateAliases;
 
@@ -21,7 +20,7 @@ public class PointAliasSupport : TypeSupport<PointAlias>
     /// </summary>
     public PointAliasSupport() : base(
         new Implementation.PointAliasPlugin(),
-        new Lazy<DynamicType>(() => Implementation.PointAliasPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.PointAliasPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

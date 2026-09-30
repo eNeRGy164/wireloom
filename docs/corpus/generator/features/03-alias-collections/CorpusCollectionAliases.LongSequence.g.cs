@@ -6,15 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
-using System.Linq;
 
 namespace CorpusCollectionAliases;
 
 /// <summary>
 /// Represents the <c>LongSequence</c> IDL typedef declared in <c>03-alias-collections.idl</c>.
 /// </summary>
-public partial class LongSequence : IEquatable<LongSequence>
+public partial class LongSequence : global::System.IEquatable<LongSequence>
 {
     /// <summary>
     /// Gets the sequence value represented by this typedef. Its maximum number of elements is <c>3</c>.
@@ -56,7 +54,7 @@ public partial class LongSequence : IEquatable<LongSequence>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(Value.Count);
 
@@ -70,7 +68,7 @@ public partial class LongSequence : IEquatable<LongSequence>
     public bool Equals(LongSequence? other)
     {
         return other is not null
-            && (ReferenceEquals(this, other) || Value.SequenceEqual(other.Value));
+            && (global::System.Object.ReferenceEquals(this, other) || global::System.Linq.Enumerable.SequenceEqual(Value, other.Value));
     }
 
     /// <inheritdoc />

@@ -134,6 +134,23 @@ public sealed class GeneratedScalarSpecs
     }
 
     [Fact]
+    public void QualifiesReferenceEqualsWhenAClassMemberUsesThatName()
+    {
+        // Arrange
+        var input = Input(
+            "member-reference-equals.idl",
+            """
+            struct Sample { long ReferenceEquals; };
+            """);
+
+        // Act
+        var managed = CompileSources(input)["Sample.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("global::System.Object.ReferenceEquals(this, other)");
+    }
+
+    [Fact]
     [Trait("Corpus", "C009")]
     public void EnumsEmitManagedNativePluginAndSupportSurfaces()
     {
@@ -172,4 +189,3 @@ public sealed class GeneratedScalarSpecs
         sampleSupport.ShouldContain("TypeSupport<Sample>");
     }
 }
-

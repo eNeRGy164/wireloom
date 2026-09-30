@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusIntegration.Contracts;
 
 /// <summary>
 /// Represents the <c>NamespacedMessage</c> DDS type declared in <c>13-modules.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class NamespacedMessage : IEquatable<NamespacedMessage>
+public partial class NamespacedMessage : global::System.IEquatable<NamespacedMessage>
 {
     /// <summary>
     /// Gets or sets the <c>enabled</c> member.
@@ -53,7 +52,7 @@ public partial class NamespacedMessage : IEquatable<NamespacedMessage>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(enabled);
 
@@ -72,7 +71,7 @@ public partial class NamespacedMessage : IEquatable<NamespacedMessage>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

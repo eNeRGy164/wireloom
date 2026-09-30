@@ -4,8 +4,6 @@
 // It requires the RTI Connext DDS .NET runtime.
 #nullable enable
 
-using System;
-
 /// <summary>
 /// Provides the <c>Selected</c> IDL constant.
 /// </summary>
@@ -14,5 +12,5 @@ public static class Selected
     /// <summary>
     /// Gets the integer value of the <c>Selected</c> IDL constant.
     /// </summary>
-    public const int Value = ((4      + 3) + (2));
+    public const int Value = 4 + 3 + 2;
 }

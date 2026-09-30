@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusEnumValuePrefix;
 
@@ -21,7 +20,7 @@ public class AnnotatedSupport : TypeSupport<Annotated>
     /// </summary>
     public AnnotatedSupport() : base(
         new Implementation.AnnotatedPlugin(),
-        new Lazy<DynamicType>(() => Implementation.AnnotatedPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.AnnotatedPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

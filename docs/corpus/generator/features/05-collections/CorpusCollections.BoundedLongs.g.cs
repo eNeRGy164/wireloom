@@ -6,15 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
-using System.Linq;
 
 namespace CorpusCollections;
 
 /// <summary>
 /// Represents the <c>BoundedLongs</c> IDL typedef declared in <c>05-collections.idl</c>.
 /// </summary>
-public partial class BoundedLongs : IEquatable<BoundedLongs>
+public partial class BoundedLongs : global::System.IEquatable<BoundedLongs>
 {
     /// <summary>
     /// Gets the sequence value represented by this typedef. Its maximum number of elements is <c>4</c>.
@@ -56,7 +54,7 @@ public partial class BoundedLongs : IEquatable<BoundedLongs>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(Value.Count);
 
@@ -70,7 +68,7 @@ public partial class BoundedLongs : IEquatable<BoundedLongs>
     public bool Equals(BoundedLongs? other)
     {
         return other is not null
-            && (ReferenceEquals(this, other) || Value.SequenceEqual(other.Value));
+            && (global::System.Object.ReferenceEquals(this, other) || global::System.Linq.Enumerable.SequenceEqual(Value, other.Value));
     }
 
     /// <inheritdoc />

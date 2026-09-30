@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusConditionals;
 
@@ -21,7 +20,7 @@ public class EnabledSupport : TypeSupport<Enabled>
     /// </summary>
     public EnabledSupport() : base(
         new Implementation.EnabledPlugin(),
-        new Lazy<DynamicType>(() => Implementation.EnabledPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.EnabledPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

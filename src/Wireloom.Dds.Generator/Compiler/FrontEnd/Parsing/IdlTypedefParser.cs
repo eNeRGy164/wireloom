@@ -21,6 +21,8 @@ internal sealed class IdlTypedefParser
             var sequenceName = sequenceTypedef.Groups[3].Value;
             var qualified = context.Qualify(sequenceName, currentNamespace);
             context.EnsureNewName(input, baseOffset + position, qualified);
+            context.EnsureGeneratedCompanionNames(input, baseOffset + position, sequenceName, currentNamespace, includeUnmanaged: true);
+            IdlSemanticValidator.ValidateGeneratedDeclarationName(input, context.MapOffset(baseOffset + position), sequenceName, GeneratedTypedefMemberNames);
             var target = NormalizeIdlType(sequenceTypedef.Groups[1].Value);
             var bound = sequenceTypedef.Groups[2].Success
                 ? context.TypeParser.ResolveBound(input, baseOffset + position, sequenceTypedef.Groups[2].Value, currentNamespace)
@@ -40,7 +42,9 @@ internal sealed class IdlTypedefParser
             var typedefName = arrayTypedef.Groups[2].Value;
             var qualified = context.Qualify(typedefName, currentNamespace);
             context.EnsureNewName(input, baseOffset + position, qualified);
+            context.EnsureGeneratedCompanionNames(input, baseOffset + position, typedefName, currentNamespace, includeUnmanaged: true);
             var dimensions = context.TypeParser.ParseDimensions(input, baseOffset + position, arrayTypedef.Groups[3].Value, currentNamespace);
+            IdlSemanticValidator.ValidateGeneratedDeclarationName(input, context.MapOffset(baseOffset + position), typedefName, GeneratedTypedefMemberNames);
             var parsedArray = new IdlTypedef(
                 typedefName,
                 currentNamespace,
@@ -65,6 +69,8 @@ internal sealed class IdlTypedefParser
         var name = typedefDeclaration.Groups[2].Value;
         var typeName = context.Qualify(name, currentNamespace);
         context.EnsureNewName(input, baseOffset + position, typeName);
+        context.EnsureGeneratedCompanionNames(input, baseOffset + position, name, currentNamespace, includeUnmanaged: true);
+        IdlSemanticValidator.ValidateGeneratedDeclarationName(input, context.MapOffset(baseOffset + position), name, GeneratedTypedefMemberNames);
         var typedefTarget = NormalizeIdlType(typedefDeclaration.Groups[1].Value);
         if (typedefTarget.StartsWith("string", StringComparison.Ordinal) ||
             typedefTarget.StartsWith("wstring", StringComparison.Ordinal))
@@ -108,4 +114,12 @@ internal sealed class IdlTypedefParser
 
     internal void Validate(IdlInput input, int offset, string name) =>
         context.Validator.ValidateTypedef(input, context.MapOffset(offset), name);
+
+    private static readonly string[] GeneratedTypedefMemberNames =
+    [
+        "Value",
+        "Equals",
+        "GetHashCode",
+        "ToString"
+    ];
 }

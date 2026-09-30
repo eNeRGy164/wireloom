@@ -1,0 +1,48 @@
+module CorpusNameCollisions {
+    struct Item {
+        long value;
+    };
+
+    @topic struct LifecycleParameters {
+        string<16> optionalsOnly;
+        Item allocatePointers;
+        sequence<long, 2> allocateMemory;
+    };
+
+    struct ManagedMethodParameters {
+        long other;
+        long hash;
+        long sample;
+        long keysOnly;
+    };
+
+    struct ArrayInitializationLocals {
+        Item dimension0[2];
+    };
+
+    struct NativeInheritanceStorage {
+        long baseValue;
+    };
+
+    struct Derived : NativeInheritanceStorage {
+        long parent;
+        long value;
+    };
+
+    union NativeLifecycleParameters switch(long) {
+        case 1: string<16> optionalsOnly;
+        case 2: Item allocatePointers;
+        case 3: sequence<long, 2> allocateMemory;
+        default: boolean flag;
+    };
+
+    union NativeDiscriminatorStorage switch(long) {
+        case 1: long _discriminator;
+        default: boolean flag;
+    };
+
+    union ManagedDiscriminatorStorage switch(long) {
+        case 1: long Discriminator;
+        default: boolean flag;
+    };
+};

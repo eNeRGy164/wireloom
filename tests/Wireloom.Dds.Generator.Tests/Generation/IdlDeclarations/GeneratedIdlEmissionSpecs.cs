@@ -116,7 +116,7 @@ public sealed class GeneratedIdlEmissionSpecs
 
     [Fact]
     [Trait("Corpus", "C001")]
-    public void EmitsSortedRuntimeImportsAndReadableTypeSupport()
+    public void EmitsRuntimeImportsAndFullyQualifiedSystemReferences()
     {
         // Arrange
         var input = Input("01-primitives.idl",
@@ -128,16 +128,22 @@ public sealed class GeneratedIdlEmissionSpecs
         // Assert
         var dataType = documents["OracleP01.Primitive.g.cs"].Source;
         dataType.ShouldContain("using Omg.Types;");
+        dataType.ShouldNotContain("using System;");
+        dataType.ShouldNotContain("using System.Linq;");
+        dataType.ShouldContain("global::System.IEquatable<Primitive>");
+        dataType.ShouldContain("new global::System.HashCode()");
+        dataType.ShouldContain("global::System.Object.ReferenceEquals(this, other)");
         dataType.ShouldContain("#nullable enable");
         dataType.ShouldNotContain("#nullable disable");
 
         var unmanagedType = documents["OracleP01.Implementation.PrimitiveUnmanaged.g.cs"].Source;
         unmanagedType.ShouldContain("public struct PrimitiveUnmanaged : INativeTopicType<Primitive>");
         unmanagedType.ShouldContain("public void FromNative(");
-        unmanagedType.ShouldNotContain("global::System");
+        unmanagedType.ShouldNotContain("using System;");
 
         var plugin = documents["OracleP01.Implementation.PrimitivePlugin.g.cs"].Source;
         plugin.ShouldContain("using Rti.Dds.Core;");
+        plugin.ShouldNotContain("using System;");
         plugin.ShouldContain("ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic)");
         plugin.ShouldNotContain("global::Rti.Dds.Core.ServiceEnvironment.Instance");
         plugin.ShouldContainInOrder(
@@ -145,6 +151,40 @@ public sealed class GeneratedIdlEmissionSpecs
             "using Omg.Types.Dynamic;",
             "using Rti.Dds.Core;",
             "using Rti.Dds.NativeInterface.TypePlugin;");
+
+        foreach (var document in documents.Values)
+        {
+            document.Source.ShouldNotContain("using System");
+        }
+    }
+
+    [Fact]
+    public void QualifiesGeneratedSystemTypesAcrossImplementationNamespacesWithoutRedundantQualification()
+    {
+        // Arrange
+        var input = Input(
+            "system-type.idl",
+            "module idl { struct System { long value; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["idl.System.g.cs"].Source;
+        managed.ShouldContain("global::System.IEquatable<System>");
+        managed.ShouldNotContain("global::idl.System");
+
+        var unmanaged = documents["idl.Implementation.SystemUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("INativeTopicType<global::idl.System>");
+        unmanaged.ShouldContain("FromNative(global::idl.System sample");
+        unmanaged.ShouldContain("ToNative(global::idl.System sample");
+
+        var plugin = documents["idl.Implementation.SystemPlugin.g.cs"].Source;
+        plugin.ShouldContain("InterpretedTypePlugin<global::idl.System, SystemUnmanaged>");
+
+        var support = documents["idl.SystemSupport.g.cs"].Source;
+        support.ShouldContain("TypeSupport<System>");
+        support.ShouldNotContain("TypeSupport<global::idl.System>");
     }
 
     [Fact]
@@ -186,7 +226,7 @@ public sealed class GeneratedIdlEmissionSpecs
             "public ISequence<Row> sequenceOfArrays { get; }",
             "public ISequence<Rows> sequenceOfArrayAliases { get; }",
             "public LongSequence[] sequences { get; set; }",
-            "new Sequence<Item>(other.unboundedItems.Select(element => new Item(element)))");
+            "new Sequence<Item>(global::System.Linq.Enumerable.Select(other.unboundedItems, element => new Item(element)))");
     }
 
     [Fact]

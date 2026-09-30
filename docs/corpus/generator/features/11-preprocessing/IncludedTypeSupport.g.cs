@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 /// <summary>
 /// Provides RTI Connext DDS type support for <see cref="IncludedType"/>.
@@ -19,7 +18,7 @@ public class IncludedTypeSupport : TypeSupport<IncludedType>
     /// </summary>
     public IncludedTypeSupport() : base(
         new Implementation.IncludedTypePlugin(),
-        new Lazy<DynamicType>(() => Implementation.IncludedTypePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.IncludedTypePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

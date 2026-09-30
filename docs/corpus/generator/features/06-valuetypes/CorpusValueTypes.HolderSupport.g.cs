@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusValueTypes;
 
@@ -21,7 +20,7 @@ public class HolderSupport : TypeSupport<Holder>
     /// </summary>
     public HolderSupport() : base(
         new Implementation.HolderPlugin(),
-        new Lazy<DynamicType>(() => Implementation.HolderPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.HolderPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

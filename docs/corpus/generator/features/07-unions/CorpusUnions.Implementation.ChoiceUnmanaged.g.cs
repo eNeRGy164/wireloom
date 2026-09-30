@@ -6,7 +6,6 @@
 
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
-using System;
 
 namespace CorpusUnions.Implementation;
 
@@ -53,7 +52,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
                 break;
 
             default:
-                sample.flag = Convert.ToBoolean(flag);
+                sample.Setflag(global::System.Convert.ToBoolean(flag), _discriminator);
                 break;
         }
     }
@@ -93,7 +92,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
                 break;
 
             default:
-                flag = Convert.ToByte(sample.flag);
+                flag = global::System.Convert.ToByte(sample.flag);
                 break;
         }
     }

@@ -30,7 +30,7 @@ public sealed class UnionSpecs
         managed.ShouldContain("Setflag");
         managed.ShouldContain("case 1:");
         managed.ShouldContain("case 5:");
-        managed.ShouldContain("throw new InvalidOperationException");
+        managed.ShouldContain("throw new global::System.InvalidOperationException");
 
         var native = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
         native.ShouldContain("FromNative");
@@ -71,6 +71,54 @@ public sealed class UnionSpecs
         var native = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
         native.ShouldContain("sample.Setnumber(number, _discriminator);");
         native.ShouldNotContain("sample.Setnumber(sample.number = number, _discriminator);");
+    }
+
+    [Fact]
+    public void QualifiesShadowedUnionNativeFieldsAcrossConversionPaths()
+    {
+        // Arrange
+        var input = Input("union-shadowing.idl",
+            """
+            module Example {
+                union Choice switch(long) {
+                    case 1: case 2: long sample;
+                    case 3: long keysOnly;
+                    default: boolean flag;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var native = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
+        native.ShouldContain("sample.Setsample(this.sample, _discriminator);");
+        native.ShouldContain("sample.keysOnly = this.keysOnly;");
+        native.ShouldContain("this.sample = sample.sample;");
+        native.ShouldContain("this.keysOnly = sample.keysOnly;");
+        native.ShouldNotContain("sample.Setsample(sample, _discriminator);");
+        native.ShouldNotContain("sample.keysOnly = keysOnly;");
+    }
+
+    [Fact]
+    public void QualifiesReferenceEqualsWhenAUnionBranchUsesThatName()
+    {
+        // Arrange
+        var input = Input(
+            "union-reference-equals.idl",
+            """
+            union Choice switch(long) {
+                case 1: long ReferenceEquals;
+                default: long value;
+            };
+            """);
+
+        // Act
+        var managed = CompileSources(input)["Choice.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("global::System.Object.ReferenceEquals(this, other)");
     }
 
     [Fact]
@@ -129,7 +177,7 @@ public sealed class UnionSpecs
         var managed = documents["Example.Choice.g.cs"].Source;
         managed.ShouldContain("Discriminator { get; private set; }");
         managed.ShouldContain("public Kind Discriminator { get; private set; }");
-        managed.ShouldContain("public const Kind DefaultDiscriminator = 0;");
+        managed.ShouldContain("public const Kind DefaultDiscriminator = (Kind)0;");
         managed.ShouldContain("Discriminator != Kind.Number");
         managed.ShouldContain("Discriminator = Kind.Number;");
         managed.ShouldNotContain("global::Example.Kind");
@@ -139,6 +187,29 @@ public sealed class UnionSpecs
 
         var plugin = documents["Example.Implementation.ChoicePlugin.g.cs"].Source;
         plugin.ShouldContain("WithDiscriminator(KindSupport.Instance.GetDynamicTypeInternal(isPublic))");
+    }
+
+    [Fact]
+    public void InitializesEnumDiscriminatorToTheFirstLiteralValue()
+    {
+        // Arrange
+        var input = Input("enum-default-value.idl",
+            """
+            module Example {
+                enum Kind { First = 10, Second = 20 };
+                union Choice switch(Kind) {
+                    case Second: long value;
+                    default: string other;
+                };
+            };
+            """);
+
+        // Act
+        var managed = CompileSources(input)["Example.Choice.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("public const Kind DefaultDiscriminator = (Kind)10;");
+        managed.ShouldContain("Discriminator = (Kind)0;");
     }
 
     [Fact]
@@ -169,7 +240,7 @@ public sealed class UnionSpecs
         managed.ShouldContain("if (Discriminator != 1)\n            {");
         managed.ShouldContain("Discriminator = other.Discriminator;\n\n");
         managed.ShouldContain("switch (Discriminator)");
-        managed.ShouldNotContain("throw new InvalidOperationException(\"number not selected\");\n\n            return _number;");
+        managed.ShouldNotContain("throw new global::System.InvalidOperationException(\"number not selected\");\n\n            return _number;");
     }
 
     [Fact]
@@ -202,6 +273,51 @@ public sealed class UnionSpecs
     }
 
     [Fact]
+    public void UnionDefaultAggregateSequenceInitializesNativeStorage()
+    {
+        // Arrange
+        var input = Input("union-default-sequence.idl",
+            """
+            module Example {
+                struct Payload { long value; };
+                union Choice switch(long) {
+                    case 1: long number;
+                    default: sequence<Payload, 2> values;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var native = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
+        native.ShouldContain("values.Initialize<Payload, PayloadUnmanaged>(max: 2, absoluteMax: 2, allocateMemory: allocateMemory);");
+    }
+
+    [Fact]
+    public void UnionDefaultEqualityQualifiesABranchNamedOther()
+    {
+        // Arrange
+        var input = Input("default-other-equality.idl",
+            """
+            module Example {
+                union Choice switch(long) {
+                    case 1: long value;
+                    default: string other;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Example.Choice.g.cs"].Source;
+        managed.ShouldContain("_ => this.other.Equals(other.other),");
+    }
+
+    [Fact]
     public void UnionFromNativeInitializesActiveAggregateBranchesWhenTheDiscriminatorChanges()
     {
         // Arrange
@@ -227,6 +343,101 @@ public sealed class UnionSpecs
         native.ShouldContain("payload.FromNative(sample.payload, keysOnly: false);");
         native.ShouldContain("sample.values = new Sequence<int>();");
         native.ShouldContain("values.FromNative((Sequence<int>)sample.values);");
+    }
+
+    [Fact]
+    public void UnionConversionsHandleStringAndAggregateMultiLabelBranches()
+    {
+        // Arrange
+        var input = Input("union-multi-label-conversions.idl",
+            """
+            module Example {
+                struct Payload { long value; };
+                union Choice switch(long) {
+                    case 1: case 2: string text;
+                    case 3: case 4: Payload payload;
+                    default: long value;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var native = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
+        native.ShouldContain("sample.Settext(text.FromNative(), _discriminator);");
+        native.ShouldContain("payload.FromNative(sample.payload, keysOnly: false);");
+        native.ShouldContain("sample.Setpayload(sample.payload, _discriminator);");
+        native.ShouldContain("sample.Setvalue(value, _discriminator);");
+    }
+
+    [Fact]
+    public void UnionDefaultDiscriminatorsHandleEnumOccupiedIntegerAndBooleanLabels()
+    {
+        // Arrange
+        var input = Input("union-default-discriminators.idl",
+            """
+            module Example {
+                enum Kind { Number, Text };
+                union EnumChoice switch(Kind) {
+                    case Number: long number;
+                    default: string text;
+                };
+                union ExhaustiveEnumChoice switch(Kind) {
+                    case Number:
+                    case Text: long value;
+                    default: string other;
+                };
+                union IntegerChoice switch(long) {
+                    case 0: long number;
+                    default: string text;
+                };
+                union BooleanChoice switch(boolean) {
+                    case FALSE: long number;
+                    default: string text;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var enumChoice = documents["Example.EnumChoice.g.cs"].Source;
+        enumChoice.ShouldContain("public const Kind DefaultDiscriminator = (Kind)0;");
+        enumChoice.ShouldContain("Discriminator = (Kind)1;");
+
+        var exhaustiveEnumChoice = documents["Example.ExhaustiveEnumChoice.g.cs"].Source;
+        exhaustiveEnumChoice.ShouldContain("public const Kind DefaultDiscriminator = (Kind)0;");
+        exhaustiveEnumChoice.ShouldContain("Discriminator = (Kind)2;");
+
+        var integerChoice = documents["Example.IntegerChoice.g.cs"].Source;
+        integerChoice.ShouldContain("Discriminator = 1;");
+
+        var booleanChoice = documents["Example.BooleanChoice.g.cs"].Source;
+        booleanChoice.ShouldContain("Discriminator = true;");
+    }
+
+    [Fact]
+    public void UsesTheLowestNegativeDiscriminatorWhenAllNonNegativeValuesAreOccupied()
+    {
+        // Arrange
+        var cases = string.Join(" ", Enumerable.Range(0, sbyte.MaxValue + 1).Select(value => $"case {value}:"));
+        var input = Input("signed-byte-default-discriminator.idl",
+            $$"""
+            union Choice switch(int8) {
+                {{cases}}
+                long value;
+                default: string other;
+            };
+            """);
+
+        // Act
+        var managed = CompileSources(input)["Choice.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("Discriminator = -128;");
     }
 
     [Fact]

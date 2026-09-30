@@ -6,7 +6,6 @@
 
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
-using System;
 
 namespace CorpusIncludeSearch.Implementation;
 
@@ -15,7 +14,7 @@ namespace CorpusIncludeSearch.Implementation;
 /// </summary>
 public struct SampleUnmanaged : INativeTopicType<Sample>
 {
-    private IncludedTypeUnmanaged item;
+    private global::Implementation.IncludedTypeUnmanaged item;
     private int value;
 
     /// <summary>

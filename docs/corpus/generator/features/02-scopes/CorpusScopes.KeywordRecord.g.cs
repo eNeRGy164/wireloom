@@ -6,15 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
-using System.Linq;
 
 namespace CorpusScopes;
 
 /// <summary>
 /// Represents the <c>KeywordRecord</c> DDS type declared in <c>02-scopes.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class KeywordRecord : IEquatable<KeywordRecord>
+public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
 {
     /// <summary>
     /// Gets or sets the <c>event</c> member.
@@ -80,7 +78,7 @@ public partial class KeywordRecord : IEquatable<KeywordRecord>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(@event);
         hash.Add(relative);
@@ -102,7 +100,7 @@ public partial class KeywordRecord : IEquatable<KeywordRecord>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }
@@ -110,7 +108,7 @@ public partial class KeywordRecord : IEquatable<KeywordRecord>
         return @event.Equals(other.@event)
             && relative.Equals(other.relative)
             && absolute.Equals(other.absolute)
-            && values.SequenceEqual(other.values);
+            && global::System.Linq.Enumerable.SequenceEqual(values, other.values);
     }
 
     /// <inheritdoc />

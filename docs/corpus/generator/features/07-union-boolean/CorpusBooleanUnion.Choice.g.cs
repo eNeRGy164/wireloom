@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusBooleanUnion;
 
 /// <summary>
 /// Represents the <c>Choice</c> DDS union declared in <c>07-union-boolean.idl</c>. Exactly one branch is selected by <see cref="Discriminator"/>.
 /// </summary>
-public partial class Choice : IEquatable<Choice>
+public partial class Choice : global::System.IEquatable<Choice>
 {
     private int _enabled;
     private string _disabled = string.Empty;
@@ -37,7 +36,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator != true)
             {
-                throw new InvalidOperationException("enabled not selected");
+                throw new global::System.InvalidOperationException("enabled not selected");
             }
 
             return _enabled;
@@ -60,7 +59,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator != false)
             {
-                throw new InvalidOperationException("disabled not selected");
+                throw new global::System.InvalidOperationException("disabled not selected");
             }
 
             return _disabled;
@@ -102,8 +101,6 @@ public partial class Choice : IEquatable<Choice>
             case false:
                 this._disabled = other.disabled;
                 break;
-            default:
-                break;
         }
     }
 
@@ -111,7 +108,7 @@ public partial class Choice : IEquatable<Choice>
     /// Gets the currently active union-branch value.
     /// </summary>
     /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
-    public object Get()
+    public object? Get()
     {
         return Discriminator switch
         {
@@ -125,8 +122,8 @@ public partial class Choice : IEquatable<Choice>
     {
         return Discriminator switch
         {
-            true => HashCode.Combine(Discriminator, enabled),
-            false => HashCode.Combine(Discriminator, disabled),
+            true => global::System.HashCode.Combine(Discriminator, enabled),
+            false => global::System.HashCode.Combine(Discriminator, disabled),
         };
     }
 
@@ -142,7 +139,7 @@ public partial class Choice : IEquatable<Choice>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

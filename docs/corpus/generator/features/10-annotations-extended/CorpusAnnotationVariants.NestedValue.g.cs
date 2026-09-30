@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusAnnotationVariants;
 
 /// <summary>
 /// Represents the <c>NestedValue</c> DDS type declared in <c>10-annotations-extended.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class NestedValue : IEquatable<NestedValue>
+public partial class NestedValue : global::System.IEquatable<NestedValue>
 {
     /// <summary>
     /// Gets or sets the <c>value</c> member.
@@ -53,7 +52,7 @@ public partial class NestedValue : IEquatable<NestedValue>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(value);
 
@@ -72,7 +71,7 @@ public partial class NestedValue : IEquatable<NestedValue>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

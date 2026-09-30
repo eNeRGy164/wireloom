@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusEnums;
 
@@ -21,7 +20,7 @@ public class RecordSupport : TypeSupport<Record>
     /// </summary>
     public RecordSupport() : base(
         new Implementation.RecordPlugin(),
-        new Lazy<DynamicType>(() => Implementation.RecordPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.RecordPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

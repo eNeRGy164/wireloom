@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusScopes;
 
 /// <summary>
 /// Represents the <c>Reopened</c> DDS type declared in <c>02-scopes.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Reopened : IEquatable<Reopened>
+public partial class Reopened : global::System.IEquatable<Reopened>
 {
     /// <summary>
     /// Gets or sets the <c>value</c> member.
@@ -53,7 +52,7 @@ public partial class Reopened : IEquatable<Reopened>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(value);
 
@@ -72,7 +71,7 @@ public partial class Reopened : IEquatable<Reopened>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

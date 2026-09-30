@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusNames;
 
 /// <summary>
 /// Represents the <c>KeywordRecord</c> DDS type declared in <c>02-names-constants.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class KeywordRecord : IEquatable<KeywordRecord>
+public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
 {
     /// <summary>
     /// Gets or sets the <c>event</c> member.
@@ -69,7 +68,7 @@ public partial class KeywordRecord : IEquatable<KeywordRecord>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(@event);
         hash.Add(state);
@@ -90,7 +89,7 @@ public partial class KeywordRecord : IEquatable<KeywordRecord>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

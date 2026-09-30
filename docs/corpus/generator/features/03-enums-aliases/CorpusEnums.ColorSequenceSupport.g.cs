@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusEnums;
 
@@ -21,7 +20,7 @@ public class ColorSequenceSupport : TypeSupport<ColorSequence>
     /// </summary>
     public ColorSequenceSupport() : base(
         new Implementation.ColorSequencePlugin(),
-        new Lazy<DynamicType>(() => Implementation.ColorSequencePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.ColorSequencePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

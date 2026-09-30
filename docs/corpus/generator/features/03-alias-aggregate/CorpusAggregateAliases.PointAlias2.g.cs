@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusAggregateAliases;
 
 /// <summary>
 /// Represents the <c>PointAlias2</c> IDL typedef declared in <c>03-alias-aggregate.idl</c>.
 /// </summary>
-public partial class PointAlias2 : IEquatable<PointAlias2>
+public partial class PointAlias2 : global::System.IEquatable<PointAlias2>
 {
     /// <summary>
     /// Gets or sets the value represented by this typedef.
@@ -51,7 +50,7 @@ public partial class PointAlias2 : IEquatable<PointAlias2>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(Value);
 
@@ -69,7 +68,7 @@ public partial class PointAlias2 : IEquatable<PointAlias2>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

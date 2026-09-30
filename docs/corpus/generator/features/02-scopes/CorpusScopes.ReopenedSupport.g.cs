@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusScopes;
 
@@ -21,7 +20,7 @@ public class ReopenedSupport : TypeSupport<Reopened>
     /// </summary>
     public ReopenedSupport() : base(
         new Implementation.ReopenedPlugin(),
-        new Lazy<DynamicType>(() => Implementation.ReopenedPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.ReopenedPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

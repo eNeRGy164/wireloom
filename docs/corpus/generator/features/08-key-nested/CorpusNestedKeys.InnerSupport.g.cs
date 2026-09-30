@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusNestedKeys;
 
@@ -21,7 +20,7 @@ public class InnerSupport : TypeSupport<Inner>
     /// </summary>
     public InnerSupport() : base(
         new Implementation.InnerPlugin(),
-        new Lazy<DynamicType>(() => Implementation.InnerPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.InnerPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusFormatting;
 
 /// <summary>
 /// Represents the <c>Value</c> DDS type declared in <c>02-formatting.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Value : IEquatable<Value>
+public partial class Value : global::System.IEquatable<Value>
 {
     /// <summary>
     /// Gets or sets the <c>text</c> member. Its maximum length is <c>16</c>.
@@ -54,7 +53,7 @@ public partial class Value : IEquatable<Value>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(text);
 
@@ -73,7 +72,7 @@ public partial class Value : IEquatable<Value>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

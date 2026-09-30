@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusScopedUnion;
 
 /// <summary>
 /// Represents the <c>Choice</c> DDS union declared in <c>07-union-scoped.idl</c>. Exactly one branch is selected by <see cref="Discriminator"/>.
 /// </summary>
-public partial class Choice : IEquatable<Choice>
+public partial class Choice : global::System.IEquatable<Choice>
 {
     private Payload _qualifiedPayload = null!;
     private ISequence<int> _values = null!;
@@ -37,7 +36,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator != 10)
             {
-                throw new InvalidOperationException("qualifiedPayload not selected");
+                throw new global::System.InvalidOperationException("qualifiedPayload not selected");
             }
 
             return _qualifiedPayload;
@@ -60,7 +59,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator != 11)
             {
-                throw new InvalidOperationException("values not selected");
+                throw new global::System.InvalidOperationException("values not selected");
             }
 
             return _values;
@@ -111,7 +110,7 @@ public partial class Choice : IEquatable<Choice>
     /// Gets the currently active union-branch value.
     /// </summary>
     /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
-    public object Get()
+    public object? Get()
     {
         return Discriminator switch
         {
@@ -126,9 +125,9 @@ public partial class Choice : IEquatable<Choice>
     {
         return Discriminator switch
         {
-            10 => HashCode.Combine(Discriminator, qualifiedPayload),
-            11 => HashCode.Combine(Discriminator, values.Count),
-            _ => HashCode.Combine(Discriminator),
+            10 => global::System.HashCode.Combine(Discriminator, qualifiedPayload),
+            11 => global::System.HashCode.Combine(Discriminator, values.Count),
+            _ => global::System.HashCode.Combine(Discriminator),
         };
     }
 
@@ -144,7 +143,7 @@ public partial class Choice : IEquatable<Choice>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }
@@ -152,7 +151,7 @@ public partial class Choice : IEquatable<Choice>
         return Discriminator switch
         {
             10 => qualifiedPayload.Equals(other.qualifiedPayload),
-            11 => values.SequenceEqual(other.values),
+            11 => global::System.Linq.Enumerable.SequenceEqual(values, other.values),
             _ => true,
         };
     }

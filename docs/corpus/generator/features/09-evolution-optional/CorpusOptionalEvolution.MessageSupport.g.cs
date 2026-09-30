@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusOptionalEvolution;
 
@@ -21,7 +20,7 @@ public class MessageSupport : TypeSupport<Message>
     /// </summary>
     public MessageSupport() : base(
         new Implementation.MessagePlugin(),
-        new Lazy<DynamicType>(() => Implementation.MessagePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.MessagePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

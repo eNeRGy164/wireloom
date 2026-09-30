@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusCollectionShapes;
 
@@ -21,7 +20,7 @@ public class NamesSupport : TypeSupport<Names>
     /// </summary>
     public NamesSupport() : base(
         new Implementation.NamesPlugin(),
-        new Lazy<DynamicType>(() => Implementation.NamesPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.NamesPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

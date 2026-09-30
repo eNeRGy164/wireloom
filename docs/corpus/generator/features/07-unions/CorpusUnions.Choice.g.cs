@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusUnions;
 
 /// <summary>
 /// Represents the <c>Choice</c> DDS union declared in <c>07-unions.idl</c>. Exactly one branch is selected by <see cref="Discriminator"/>.
 /// </summary>
-public partial class Choice : IEquatable<Choice>
+public partial class Choice : global::System.IEquatable<Choice>
 {
     private int _number;
     private string _text = string.Empty;
@@ -27,7 +26,7 @@ public partial class Choice : IEquatable<Choice>
     /// <summary>
     /// Gets the discriminator value used to initialize this union.
     /// </summary>
-    public const int DefaultDiscriminator = 0;
+    public const int DefaultDiscriminator = 2;
 
     /// <summary>
     /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>0</c>.
@@ -38,7 +37,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator != 0)
             {
-                throw new InvalidOperationException("number not selected");
+                throw new global::System.InvalidOperationException("number not selected");
             }
 
             return _number;
@@ -61,7 +60,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator != 1)
             {
-                throw new InvalidOperationException("text not selected");
+                throw new global::System.InvalidOperationException("text not selected");
             }
 
             return _text;
@@ -83,7 +82,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator == 0 || Discriminator == 1)
             {
-                throw new InvalidOperationException("flag not selected");
+                throw new global::System.InvalidOperationException("flag not selected");
             }
 
             return _flag;
@@ -140,7 +139,7 @@ public partial class Choice : IEquatable<Choice>
     {
         if (discriminator == 0 || discriminator == 1)
         {
-            throw new ArgumentException("Invalid discriminator value for flag", nameof(discriminator));
+            throw new global::System.ArgumentException("Invalid discriminator value for flag", nameof(discriminator));
         }
 
         _flag = value;
@@ -152,7 +151,7 @@ public partial class Choice : IEquatable<Choice>
     /// Gets the currently active union-branch value.
     /// </summary>
     /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
-    public object Get()
+    public object? Get()
     {
         return Discriminator switch
         {
@@ -167,9 +166,9 @@ public partial class Choice : IEquatable<Choice>
     {
         return Discriminator switch
         {
-            0 => HashCode.Combine(Discriminator, number),
-            1 => HashCode.Combine(Discriminator, text),
-            _ => HashCode.Combine(Discriminator, flag),
+            0 => global::System.HashCode.Combine(Discriminator, number),
+            1 => global::System.HashCode.Combine(Discriminator, text),
+            _ => global::System.HashCode.Combine(Discriminator, flag),
         };
     }
 
@@ -185,7 +184,7 @@ public partial class Choice : IEquatable<Choice>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

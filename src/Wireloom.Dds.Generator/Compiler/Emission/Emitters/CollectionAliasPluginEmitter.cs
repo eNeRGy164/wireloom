@@ -11,6 +11,7 @@ internal static class CollectionAliasPluginEmitter
     {
         var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
         var implementation = declaration.Namespace is null ? "Implementation" : $"{declaration.Namespace}.Implementation";
+        var implementationTypeName = IdlNaming.TypeReference(typeName, declaration.Namespace, implementation);
         var elementIdlType = declaration.IsCollection ? declaration.ElementType! : elementType;
         var isString = declaration.IsString;
         var collectionElementIsAggregate = declaration.IsCollection &&
@@ -27,7 +28,7 @@ internal static class CollectionAliasPluginEmitter
 
         var writer = EmissionSupport.CreateSource(implementation, EmissionSupport.PluginUsings, sourceIdlFileName);
 
-        writer.OpenBlock($"internal class {typeName}Plugin : InterpretedTypePlugin<{typeName}, {typeName}Unmanaged>");
+        writer.OpenBlock($"internal class {typeName}Plugin : InterpretedTypePlugin<{implementationTypeName}, {typeName}Unmanaged>");
         writer.OpenBlock($"internal {typeName}Plugin() : base(\"{(declaration.Namespace is null ? typeName : $"{IdlNaming.EscapeQualifiedIdentifier(declaration.Namespace)}.{typeName}")}\", isKeyed: false, CreateDynamicType(isPublic: false))");
         writer.CloseBlock();
         writer.BlankLine();
@@ -120,12 +121,13 @@ internal static class CollectionAliasPluginEmitter
             "unsigned long" or "uint32" => ("UInt32", "Uint32Value", "0U", "uint.MinValue", "uint.MaxValue"),
             "unsigned long long" or "uint64" => ("UInt64", "Uint64Value", "0UL", "ulong.MinValue", "ulong.MaxValue"),
             "int8" => ("Int8", "Int8Value", "(sbyte)0", "sbyte.MinValue", "sbyte.MaxValue"),
-            "uint8" or "octet" => ("Octet", "OctetValue", "(byte)0", "byte.MinValue", "byte.MaxValue"),
+            "uint8" => ("Uint8", "Uint8Value", "(byte)0", "byte.MinValue", "byte.MaxValue"),
+            "octet" => ("Octet", "OctetValue", "(byte)0", "byte.MinValue", "byte.MaxValue"),
             "float" => ("Float32", "Float32Value", "0F", "float.MinValue", "float.MaxValue"),
             "double" => ("Float64", "Float64Value", "0D", "double.MinValue", "double.MaxValue"),
-            "boolean" => ("Boolean", "BooleanValue", "false", "null", "null"),
-            "char" => ("Char8", "Char8Value", "(byte)0", "byte.MinValue", "byte.MaxValue"),
-            "wchar" => ("Char16", "Char16Value", "(ushort)0", "ushort.MinValue", "ushort.MaxValue"),
+            "boolean" => ("Boolean", "BoolValue", "false", "null", "null"),
+            "char" => ("Char8", "Char8Value", "'\\0'", "null", "null"),
+            "wchar" => ("Char16", "Char16Value", "'\\0'", "null", "null"),
             _ => default
         };
 

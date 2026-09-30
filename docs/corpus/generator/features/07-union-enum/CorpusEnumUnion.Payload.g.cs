@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusEnumUnion;
 
 /// <summary>
 /// Represents the <c>Payload</c> DDS type declared in <c>07-union-enum.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Payload : IEquatable<Payload>
+public partial class Payload : global::System.IEquatable<Payload>
 {
     /// <summary>
     /// Gets or sets the <c>code</c> member.
@@ -62,7 +61,7 @@ public partial class Payload : IEquatable<Payload>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(code);
         hash.Add(label);
@@ -82,7 +81,7 @@ public partial class Payload : IEquatable<Payload>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

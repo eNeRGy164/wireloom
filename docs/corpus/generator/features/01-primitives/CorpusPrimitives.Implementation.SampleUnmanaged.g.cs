@@ -6,7 +6,6 @@
 
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
-using System;
 
 namespace CorpusPrimitives.Implementation;
 
@@ -59,7 +58,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
         sample.fixedUint8 = fixedUint8;
         sample.fixedUint64 = fixedUint64;
         sample.octetValue = octetValue;
-        sample.boolValue = Convert.ToBoolean(boolValue);
+        sample.boolValue = global::System.Convert.ToBoolean(boolValue);
         sample.charValue = NativeChar.FromUtf8(charValue);
         sample.wideCharValue = (char)wideCharValue;
         sample.floatValue = floatValue;
@@ -111,7 +110,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
         fixedUint8 = sample.fixedUint8;
         fixedUint64 = sample.fixedUint64;
         octetValue = sample.octetValue;
-        boolValue = Convert.ToByte(sample.boolValue);
+        boolValue = global::System.Convert.ToByte(sample.boolValue);
         charValue = NativeChar.ToUtf8(sample.charValue);
         wideCharValue = (short)sample.wideCharValue;
         floatValue = sample.floatValue;

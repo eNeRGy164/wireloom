@@ -18,16 +18,19 @@ internal static class ClassEmitter
         IReadOnlyList<IdlMember> inheritedFields,
         bool isTopic)
     {
+        var escapedName = IdlNaming.EscapeIdentifier(name);
         var emissionFields = fields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace)).ToArray();
         var emissionInheritedFields = inheritedFields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace)).ToArray();
-        var fieldPlans = emissionFields.Select(field => new MemberEmissionPlan(field, currentNamespace)).ToArray();
+        var initialFieldPlans = emissionFields.Select(field => new MemberEmissionPlan(field, currentNamespace)).ToArray();
+        var managedBackingNames = ResolveManagedBackingNames(escapedName: IdlNaming.EscapeIdentifier(name), initialFieldPlans);
+        var fieldPlans = initialFieldPlans
+            .Select((field, index) => new MemberEmissionPlan(field.Field, currentNamespace, managedBackingNames[index]))
+            .ToArray();
         var inheritedFieldPlans = emissionInheritedFields.Select(field => new MemberEmissionPlan(field, currentNamespace)).ToArray();
         var hasTypeSupport = fieldPlans.All(field => field.HasTypeSupport);
         var runtimeTypeName = currentNamespace is null ? name : $"{currentNamespace}.{name}";
         var isRecursive = fieldPlans.Any(field => field.IsRecursive(runtimeTypeName));
-        var dataTypeUsings = fieldPlans.Any(field => field.IsSequence || field.IsArray) ? EmissionSupport.DataTypeUsings.Concat(["System.Linq"]) : EmissionSupport.DataTypeUsings;
-        var writer = EmissionSupport.CreateSource(currentNamespace, dataTypeUsings, sourceIdlFileName);
-        var escapedName = IdlNaming.EscapeIdentifier(name);
+        var writer = EmissionSupport.CreateSource(currentNamespace, EmissionSupport.DataTypeUsings, sourceIdlFileName);
         var typeSummary = $"Represents the <c>{name}</c> DDS type declared in <c>{sourceIdlFileName}</c>.";
 
         if (inheritedFieldPlans.Concat(fieldPlans).Any(field => field.IsKey))
@@ -48,7 +51,7 @@ internal static class ClassEmitter
 
         writer.WriteXmlSummary(typeSummary);
         var baseReference = baseType is null ? null : IdlNaming.TypeReference(baseType, currentNamespace);
-        writer.OpenBlock($"public partial class {escapedName} : {(baseReference is null ? "" : baseReference + ", ")}IEquatable<{escapedName}>");
+        writer.OpenBlock($"public partial class {escapedName} : {(baseReference is null ? "" : baseReference + ", ")}global::System.IEquatable<{escapedName}>");
 
         ManagedDataTypeEmitter.Emit(
             writer,
@@ -82,5 +85,33 @@ internal static class ClassEmitter
                 baseType,
                 isRecursive);
         }
+    }
+
+    private static string?[] ResolveManagedBackingNames(string escapedName, IReadOnlyList<MemberEmissionPlan> fields)
+    {
+        var occupied = new HashSet<string>(StringComparer.Ordinal)
+        {
+            escapedName
+        };
+        occupied.UnionWith(fields.Select(field => field.EscapedName));
+
+        var result = new string?[fields.Count];
+        foreach (var (field, index) in fields.Select((field, index) => (field, index)))
+        {
+            if (!field.HasManagedRange)
+            {
+                continue;
+            }
+
+            var candidate = IdlNaming.EscapeIdentifier("_" + field.Name);
+            while (!occupied.Add(candidate))
+            {
+                candidate = IdlNaming.EscapeIdentifier("_" + candidate);
+            }
+
+            result[index] = candidate;
+        }
+
+        return result;
     }
 }

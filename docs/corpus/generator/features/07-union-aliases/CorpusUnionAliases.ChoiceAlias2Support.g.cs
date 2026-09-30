@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusUnionAliases;
 
@@ -21,7 +20,7 @@ public class ChoiceAlias2Support : TypeSupport<ChoiceAlias2>
     /// </summary>
     public ChoiceAlias2Support() : base(
         new Implementation.ChoiceAlias2Plugin(),
-        new Lazy<DynamicType>(() => Implementation.ChoiceAlias2Plugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.ChoiceAlias2Plugin.CreateDynamicType(isPublic: true)))
     {
     }
 

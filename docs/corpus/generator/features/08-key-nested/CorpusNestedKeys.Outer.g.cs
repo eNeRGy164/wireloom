@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusNestedKeys;
 
 /// <summary>
 /// Represents the <c>Outer</c> DDS type declared in <c>08-key-nested.idl</c>. Its key members form the DDS instance key. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Outer : IEquatable<Outer>
+public partial class Outer : global::System.IEquatable<Outer>
 {
     /// <summary>
     /// Gets or sets the <c>identity</c> member. This member forms part of the DDS instance key.
@@ -62,7 +61,7 @@ public partial class Outer : IEquatable<Outer>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(identity);
         hash.Add(payload);
@@ -82,7 +81,7 @@ public partial class Outer : IEquatable<Outer>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

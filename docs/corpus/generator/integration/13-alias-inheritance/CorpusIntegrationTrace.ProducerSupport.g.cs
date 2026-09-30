@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusIntegrationTrace;
 
@@ -21,7 +20,7 @@ public class ProducerSupport : TypeSupport<Producer>
     /// </summary>
     public ProducerSupport() : base(
         new Implementation.ProducerPlugin(),
-        new Lazy<DynamicType>(() => Implementation.ProducerPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.ProducerPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

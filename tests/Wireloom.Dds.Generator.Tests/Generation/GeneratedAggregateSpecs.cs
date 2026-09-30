@@ -10,6 +10,30 @@ namespace Wireloom.Generation.Tests;
 public sealed class GeneratedAggregateSpecs
 {
     [Fact]
+    public void NativeMemberAccessQualifiesOnlyParametersThatShadowFields()
+    {
+        // Arrange
+        var input = Input(
+            "native-shadowing.idl",
+            "module Shadowing { struct Item { long value; }; struct Sample { string<8> optionalsOnly; Item allocatePointers; sequence<long, 2> allocateMemory; long value; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var native = documents["Shadowing.Implementation.SampleUnmanaged.g.cs"].Source;
+        native.ShouldContain("this.optionalsOnly.Destroy();");
+        native.ShouldContain("allocatePointers.Destroy(optionalsOnly);");
+        native.ShouldContain("allocateMemory.Destroy(optionalsOnly);");
+        native.ShouldContain("this.allocatePointers.Initialize(allocatePointers, allocateMemory);");
+        native.ShouldContain("this.allocateMemory.Initialize<int>(max: 2, absoluteMax: 2, allocateMemory: allocateMemory);");
+        native.ShouldContain("value = sample.value;");
+        native.ShouldContain("sample.value = value;");
+        native.ShouldNotContain("this.value.FromNative");
+        native.ShouldNotContain("this.value = sample.value;");
+    }
+
+    [Fact]
     [Trait("Corpus", "C019")]
     public void InheritedAggregatesPreserveConstructorAndDestroyOrder()
     {
@@ -199,6 +223,153 @@ public sealed class GeneratedAggregateSpecs
 
         var sampleSupport = documents["AggregateResources.SampleSupport.g.cs"].Source;
         sampleSupport.ShouldContain("TypeSupport<Sample>");
+    }
+
+    [Fact]
+    public void AggregateArrayCopyQualifiesTargetsThatShadowTheCopyParameter()
+    {
+        // Arrange
+        var input = Input("aggregate-array-shadowing.idl",
+            "module AggregateArrayShadowing { struct Item { long value; }; struct Sample { Item other[2]; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["AggregateArrayShadowing.Sample.g.cs"].Source;
+        managed.ShouldContain("this.other[dimension0] = new Item(other.other[dimension0]);");
+    }
+
+    [Fact]
+    public void AggregateArrayNamesMatchingDimensionLocalsQualifyManagedStorage()
+    {
+        // Arrange
+        var input = Input(
+            "dimension-array-shadowing.idl",
+            "module DimensionArrayShadowing { struct Item { long value; }; struct Sample { Item dimension0[2]; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["DimensionArrayShadowing.Sample.g.cs"].Source;
+        managed.ShouldContain("this.dimension0[dimension0] = new Item();");
+        managed.ShouldContain("this.dimension0[dimension0] = new Item(other.dimension0[dimension0]);");
+    }
+
+    [Fact]
+    public void OptionalAggregateCollectionsUseTypedNativeConversions()
+    {
+        // Arrange
+        var input = Input("optional-aggregate-collections.idl",
+            """
+            module OptionalAggregateCollections {
+                struct Item { long value; };
+                struct Sample {
+                    @optional Item items[2];
+                    @optional sequence<Item, 4> values;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var unmanaged = documents["OptionalAggregateCollections.Implementation.SampleUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("items.FromNative<Item, ItemUnmanaged>(out Item[] itemsTemporary_, keysOnly: false, dimensions: new int[] { 2 });");
+        unmanaged.ShouldContain("values.FromNative<Item, ItemUnmanaged>(out ISequence<Item> valuesTemporary_, keysOnly: false);");
+        unmanaged.ShouldContain("items.ToNative<Item, ItemUnmanaged>(sample.items, keysOnly: false, dimension: 2);");
+        unmanaged.ShouldContain("values.ToNative<Item, ItemUnmanaged>(sample.values, 4);");
+        unmanaged.ShouldContain("values.Initialize<Item, ItemUnmanaged>();");
+    }
+
+    [Fact]
+    [Trait("Corpus", "C021")]
+    public void AggregateMembersNamedSampleQualifyNativeStorageWhenForwarding()
+    {
+        // Arrange
+        var input = Input("alias-composition.idl",
+            "module AggregateComposition { struct Sample { long value; }; struct Named { Sample sample; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var unmanaged = documents["AggregateComposition.Implementation.NamedUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("this.sample.FromNative(sample.sample, keysOnly: false);");
+        unmanaged.ShouldContain("this.sample.ToNative(sample.sample, keysOnly: false);");
+    }
+
+    [Fact]
+    public void KeyedAggregateMembersForwardKeysOnlyWhileQualifyingShadowedNativeStorage()
+    {
+        // Arrange
+        var input = Input("keyed-aggregate-forwarding.idl",
+            "module AggregateComposition { struct Item { long value; }; @topic struct Named { @key Item sample; long payload; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var unmanaged = documents["AggregateComposition.Implementation.NamedUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("this.sample.FromNative(sample.sample, keysOnly);");
+        unmanaged.ShouldContain("this.sample.ToNative(sample.sample, keysOnly);");
+    }
+
+    [Fact]
+    public void MembersNamedSampleQualifyNativeStorageAcrossConversionShapesAndKeyPasses()
+    {
+        // Arrange
+        var input = Input("sample-shadowing.idl",
+            """
+            module SampleShadowing {
+                struct Item { long value; };
+                struct Primitive { long sample; };
+                struct Text { string sample; };
+                struct Sequence { sequence<long, 2> sample; };
+                struct Array { long sample[2]; };
+                struct Aggregate { Item sample; };
+                @topic struct Keyed { @key long id; long keysOnly; };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var primitive = documents["SampleShadowing.Implementation.PrimitiveUnmanaged.g.cs"].Source;
+        primitive.ShouldContainInOrder(
+            "sample.sample = this.sample;",
+            "this.sample = sample.sample;");
+
+        var text = documents["SampleShadowing.Implementation.TextUnmanaged.g.cs"].Source;
+        text.ShouldContainInOrder(
+            "sample.sample = this.sample.FromNative();",
+            "this.sample.ToNative(sample.sample,");
+
+        var sequence = documents["SampleShadowing.Implementation.SequenceUnmanaged.g.cs"].Source;
+        sequence.ShouldContainInOrder(
+            "this.sample.FromNative((Sequence<int>)sample.sample);",
+            "this.sample.ToNative((Sequence<int>)sample.sample);");
+
+        var array = documents["SampleShadowing.Implementation.ArrayUnmanaged.g.cs"].Source;
+        array.ShouldContainInOrder(
+            "this.sample.FromNative(sample.sample, dimension: 2);",
+            "this.sample.ToNative<int>(sample.sample, dimension: 2);");
+
+        var aggregate = documents["SampleShadowing.Implementation.AggregateUnmanaged.g.cs"].Source;
+        aggregate.ShouldContainInOrder(
+            "this.sample.FromNative(sample.sample, keysOnly: false);",
+            "this.sample.ToNative(sample.sample, keysOnly: false);");
+
+        var keyed = documents["SampleShadowing.Implementation.KeyedUnmanaged.g.cs"].Source;
+        keyed.ShouldContainInOrder(
+            "sample.id = id;",
+            "if (keysOnly)",
+            "sample.keysOnly = this.keysOnly;",
+            "id = sample.id;",
+            "this.keysOnly = sample.keysOnly;");
     }
 
     [Fact]

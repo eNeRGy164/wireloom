@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusIntegrationTrace;
 
@@ -21,7 +20,7 @@ public class ContextSupport : TypeSupport<Context>
     /// </summary>
     public ContextSupport() : base(
         new Implementation.ContextPlugin(),
-        new Lazy<DynamicType>(() => Implementation.ContextPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.ContextPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

@@ -44,11 +44,11 @@ public sealed class GeneratedCollectionBoundarySpecs
         data.ShouldContain(
             """
             return values.Rank == other.values.Rank
-                        && Enumerable.Range(0, values.Rank).All(dimension => values.GetLength(dimension) == other.values.GetLength(dimension))
-                        && values.Cast<int>().SequenceEqual(other.values.Cast<int>())
-                        && unbounded.SequenceEqual(other.unbounded)
+                        && global::System.Linq.Enumerable.All(global::System.Linq.Enumerable.Range(0, values.Rank), dimension => values.GetLength(dimension) == other.values.GetLength(dimension))
+                        && global::System.Linq.Enumerable.SequenceEqual(global::System.Linq.Enumerable.Cast<int>(values), global::System.Linq.Enumerable.Cast<int>(other.values))
+                        && global::System.Linq.Enumerable.SequenceEqual(unbounded, other.unbounded)
                         && bounded.Equals(other.bounded)
-                        && items.SequenceEqual(other.items)
+                        && global::System.Linq.Enumerable.SequenceEqual(items, other.items)
                         && grid.Equals(other.grid);
             """.ReplaceLineEndings("\n"));
 

@@ -24,11 +24,12 @@ internal static class DynamicTypeEmitter
         var runtimeTypeName = currentNamespace is null ? typeName : $"{IdlNaming.EscapeQualifiedIdentifier(currentNamespace)}.{typeName}";
         var idlTypeName = currentNamespace is null ? name : $"{currentNamespace.Replace(".", "::")}::{name}";
         var implementationNamespace = currentNamespace is null ? "Implementation" : $"{currentNamespace}.Implementation";
+        var implementationTypeName = IdlNaming.TypeReference(typeName, currentNamespace, implementationNamespace);
 
         var writer = EmissionSupport.CreateSource(implementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI interpreted type plugin for <see cref=\"{typeName}\"/>.");
-        writer.OpenBlock($"internal class {pluginName} : InterpretedTypePlugin<{typeName}, {unmanagedName}>");
+        writer.OpenBlock($"internal class {pluginName} : InterpretedTypePlugin<{implementationTypeName}, {unmanagedName}>");
 
         if (isRecursive)
         {

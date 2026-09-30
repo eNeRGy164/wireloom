@@ -8,7 +8,7 @@ internal static class EnumEmitter
 {
     public static void Emit(CompilationContext compilation, IdlEnum declaration, string sourceIdlFileName)
     {
-        var writer = EmissionSupport.CreateSource(declaration.Namespace, ["System"], sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(declaration.Namespace, [], sourceIdlFileName);
 
         writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> enumeration declared in <c>{sourceIdlFileName}</c>.");
         writer.OpenBlock($"public enum {IdlNaming.EscapeIdentifier(declaration.Name)}");
@@ -94,7 +94,7 @@ internal static class EnumEmitter
         writer.WriteLine($"public {typeName}Support() : base(");
         writer.Indent();
         writer.WriteLine($"new Implementation.{typeName}Plugin(),");
-        writer.WriteLine($"new Lazy<DynamicType>(() => Implementation.{typeName}Plugin.CreateDynamicType(isPublic: true)))");
+        writer.WriteLine($"new global::System.Lazy<DynamicType>(() => Implementation.{typeName}Plugin.CreateDynamicType(isPublic: true)))");
         writer.Unindent();
         writer.OpenBrace();
         writer.CloseBlock();

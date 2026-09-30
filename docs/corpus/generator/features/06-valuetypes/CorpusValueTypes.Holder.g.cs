@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusValueTypes;
 
 /// <summary>
 /// Represents the <c>Holder</c> DDS type declared in <c>06-valuetypes.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Holder : IEquatable<Holder>
+public partial class Holder : global::System.IEquatable<Holder>
 {
     /// <summary>
     /// Gets or sets the <c>value</c> member.
@@ -53,7 +52,7 @@ public partial class Holder : IEquatable<Holder>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(value);
 
@@ -72,7 +71,7 @@ public partial class Holder : IEquatable<Holder>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

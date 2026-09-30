@@ -6,15 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
-using System.Linq;
 
 namespace CorpusIntegrationCollections;
 
 /// <summary>
 /// Represents the <c>Row</c> IDL typedef declared in <c>13-compositions.idl</c>.
 /// </summary>
-public partial class Row : IEquatable<Row>
+public partial class Row : global::System.IEquatable<Row>
 {
     /// <summary>
     /// Gets or sets the array value represented by this typedef.
@@ -54,7 +52,7 @@ public partial class Row : IEquatable<Row>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(Value[0]);
 
@@ -72,12 +70,12 @@ public partial class Row : IEquatable<Row>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }
 
-        return Value.SequenceEqual(other.Value);
+        return global::System.Linq.Enumerable.SequenceEqual(Value, other.Value);
     }
 
     /// <inheritdoc />

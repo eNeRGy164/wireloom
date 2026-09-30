@@ -77,6 +77,9 @@ internal sealed class IdlParseContext
     internal void EnsureNewName(IdlInput input, int offset, string name) =>
         Validator.EnsureNewName(input, MapOffset(offset), name);
 
+    internal void EnsureGeneratedCompanionNames(IdlInput input, int offset, string name, string? currentNamespace, bool includeUnmanaged) =>
+        Validator.EnsureGeneratedCompanionNames(input, MapOffset(offset), name, currentNamespace, includeUnmanaged);
+
     internal IdlType? ResolveFieldType(string idlType, string? currentNamespace, IdlInput input, int offset) =>
         TypeResolver.Resolve(idlType, currentNamespace, input, MapOffset(offset));
 

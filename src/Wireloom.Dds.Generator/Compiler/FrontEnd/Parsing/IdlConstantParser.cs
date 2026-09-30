@@ -28,6 +28,7 @@ internal sealed class IdlConstantParser
         var type = NormalizeIdlType(constant.Groups["type"].Value);
         var expression = constant.Groups["expression"].Value.Trim();
         var integerValue = TryEvaluateIntegerConstant(input, baseOffset + position, type, expression, currentNamespace);
+        IdlSemanticValidator.ValidateGeneratedDeclarationName(input, context.MapOffset(baseOffset + position), name, ["Value"]);
         var declaration = new IdlConstantDeclaration(name, type, expression, currentNamespace, Path.GetFileName(input.Path), integerValue);
 
         context.Symbols.AddConstant(qualified, declaration);

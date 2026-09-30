@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusKeys;
 
 /// <summary>
 /// Represents the <c>Simple</c> DDS type declared in <c>08-keys.idl</c>. Its key members form the DDS instance key. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Simple : IEquatable<Simple>
+public partial class Simple : global::System.IEquatable<Simple>
 {
     /// <summary>
     /// Gets or sets the <c>id</c> member. This member forms part of the DDS instance key.
@@ -63,7 +62,7 @@ public partial class Simple : IEquatable<Simple>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(id);
         hash.Add(name);
@@ -83,7 +82,7 @@ public partial class Simple : IEquatable<Simple>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusExtensibility;
 
@@ -21,7 +20,7 @@ public class AppendableSupport : TypeSupport<Appendable>
     /// </summary>
     public AppendableSupport() : base(
         new Implementation.AppendablePlugin(),
-        new Lazy<DynamicType>(() => Implementation.AppendablePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.AppendablePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

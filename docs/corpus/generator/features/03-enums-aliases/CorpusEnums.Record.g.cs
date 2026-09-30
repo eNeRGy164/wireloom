@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusEnums;
 
 /// <summary>
 /// Represents the <c>Record</c> DDS type declared in <c>03-enums-aliases.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Record : IEquatable<Record>
+public partial class Record : global::System.IEquatable<Record>
 {
     /// <summary>
     /// Gets or sets the <c>value</c> member.
@@ -86,7 +85,7 @@ public partial class Record : IEquatable<Record>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(value);
         hash.Add(aliasValue);
@@ -109,7 +108,7 @@ public partial class Record : IEquatable<Record>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

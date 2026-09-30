@@ -25,6 +25,7 @@ internal sealed class IdlUnionParser
         var unionName = unionDeclaration.Groups["name"].Value;
         var qualified = context.Qualify(unionName, currentNamespace);
         context.EnsureNewName(input, baseOffset + position, qualified);
+        context.EnsureGeneratedCompanionNames(input, baseOffset + position, unionName, currentNamespace, includeUnmanaged: true);
         var discriminatorIdlType = NormalizeIdlType(unionDeclaration.Groups["discriminator"].Value);
         var discriminatorQualified = ResolveTypeName(discriminatorIdlType, currentNamespace);
         var discriminatorIsEnum = context.Symbols.TryGetEnum(discriminatorQualified, out var discriminatorEnum);
@@ -62,11 +63,16 @@ internal sealed class IdlUnionParser
             throw new IdlException(input, context.MapOffset(baseOffset + position), "The union must contain at least one branch and at most one default branch.");
         }
 
+        var validationOffset = context.MapOffset(baseOffset + position);
+        IdlSemanticValidator.ValidateUnionDefaultDiscriminator(input, validationOffset, discriminatorIdlType, branches);
+        IdlSemanticValidator.ValidateUnionGeneratedNameCollisions(input, validationOffset, unionName, branches);
+
         var parsedUnion = new IdlUnion(
             unionName,
             currentNamespace,
             discriminatorIdlType,
             discriminatorIsEnum,
+            discriminatorIsEnum ? discriminatorEnum.DefaultMember.Value : null,
             branches,
             IdlParseContext.ParseExtensibility(unionDeclaration.Groups["extensibility"].Value));
         context.Symbols.AddUnion(qualified, parsedUnion);

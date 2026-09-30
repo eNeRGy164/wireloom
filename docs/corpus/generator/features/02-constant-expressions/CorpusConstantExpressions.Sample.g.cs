@@ -6,15 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
-using System.Linq;
 
 namespace CorpusConstantExpressions;
 
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>02-constant-expressions.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Sample : IEquatable<Sample>
+public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets the <c>values</c> member. Its maximum number of elements is <c>5</c>.
@@ -65,7 +63,7 @@ public partial class Sample : IEquatable<Sample>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(values.Count);
         hash.Add(array[0]);
@@ -85,13 +83,13 @@ public partial class Sample : IEquatable<Sample>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }
 
-        return values.SequenceEqual(other.values)
-            && array.SequenceEqual(other.array);
+        return global::System.Linq.Enumerable.SequenceEqual(values, other.values)
+            && global::System.Linq.Enumerable.SequenceEqual(array, other.array);
     }
 
     /// <inheritdoc />

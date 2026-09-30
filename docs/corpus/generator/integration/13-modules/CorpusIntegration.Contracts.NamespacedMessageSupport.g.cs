@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusIntegration.Contracts;
 
@@ -21,7 +20,7 @@ public class NamespacedMessageSupport : TypeSupport<NamespacedMessage>
     /// </summary>
     public NamespacedMessageSupport() : base(
         new Implementation.NamespacedMessagePlugin(),
-        new Lazy<DynamicType>(() => Implementation.NamespacedMessagePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.NamespacedMessagePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

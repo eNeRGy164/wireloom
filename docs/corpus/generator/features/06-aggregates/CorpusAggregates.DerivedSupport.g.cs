@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusAggregates;
 
@@ -21,7 +20,7 @@ public class DerivedSupport : TypeSupport<Derived>
     /// </summary>
     public DerivedSupport() : base(
         new Implementation.DerivedPlugin(),
-        new Lazy<DynamicType>(() => Implementation.DerivedPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.DerivedPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

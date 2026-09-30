@@ -10,12 +10,13 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? lab
 }
 
 /// <summary>Represents the target-independent semantic form of an IDL union.</summary>
-internal sealed class IdlUnion(string name, string? @namespace, string discriminatorIdlType, bool discriminatorIsEnum, IReadOnlyList<IdlUnionBranch> branches, IdlExtensibilityKind extensibility)
+internal sealed class IdlUnion(string name, string? @namespace, string discriminatorIdlType, bool discriminatorIsEnum, int? discriminatorDefaultValue, IReadOnlyList<IdlUnionBranch> branches, IdlExtensibilityKind extensibility)
 {
     public string Name { get; } = name;
     public string? Namespace { get; } = @namespace;
     public string DiscriminatorIdlType { get; } = discriminatorIdlType;
     public bool DiscriminatorIsEnum { get; } = discriminatorIsEnum;
+    public int? DiscriminatorDefaultValue { get; } = discriminatorDefaultValue;
     public IReadOnlyList<IdlUnionBranch> Branches { get; } = branches;
     public IdlExtensibilityKind Extensibility { get; } = extensibility;
 }

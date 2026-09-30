@@ -26,7 +26,7 @@ public sealed class GeneratedUnionContractSpecs
 
         // Assert
         var managed = documents["MultiLabel.Choice.g.cs"].Source;
-        managed.ShouldContain("1 or 5 => HashCode.Combine(Discriminator, number)");
+        managed.ShouldContain("1 or 5 => global::System.HashCode.Combine(Discriminator, number)");
         managed.ShouldContain("public void Setnumber(int value, int discriminator)");
         managed.ShouldContain("Discriminator != 1 && Discriminator != 5");
 
@@ -120,7 +120,7 @@ public sealed class GeneratedUnionContractSpecs
         // Assert
         var managed = documents["EnumUnion.Choice.g.cs"].Source;
         managed.ShouldContain("public Kind Discriminator");
-        managed.ShouldContain("public const Kind DefaultDiscriminator = 0");
+        managed.ShouldContain("public const Kind DefaultDiscriminator = (Kind)0");
 
         var unmanaged = documents["EnumUnion.Implementation.ChoiceUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("private EnumUnion.Kind _discriminator");
@@ -193,17 +193,18 @@ public sealed class GeneratedUnionContractSpecs
         var managed = documents["BooleanUnion.Choice.g.cs"].Source;
         managed.ShouldContain("public bool Discriminator");
         managed.ShouldContain("public const bool DefaultDiscriminator = false");
+        managed.ShouldContain("public object? Get()");
         managed.ShouldContain("Discriminator != true");
         managed.ShouldContain("Discriminator != false");
         managed.ShouldNotContain("_ => null");
-        managed.ShouldNotContain("_ => HashCode.Combine(Discriminator)");
+        managed.ShouldNotContain("_ => global::System.HashCode.Combine(Discriminator)");
         managed.ShouldNotContain("_ => true");
 
         var unmanaged = documents["BooleanUnion.Implementation.ChoiceUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("private byte _discriminator");
-        unmanaged.ShouldContain("switch (Convert.ToBoolean(_discriminator))");
-        unmanaged.ShouldContain("_discriminator = Convert.ToByte(sample.Discriminator);");
-        unmanaged.ShouldContain("_discriminator = Convert.ToByte(Choice.DefaultDiscriminator);");
+        unmanaged.ShouldContain("switch (global::System.Convert.ToBoolean(_discriminator))");
+        unmanaged.ShouldContain("_discriminator = global::System.Convert.ToByte(sample.Discriminator);");
+        unmanaged.ShouldContain("_discriminator = global::System.Convert.ToByte(Choice.DefaultDiscriminator);");
         unmanaged.ShouldNotContain("default:");
 
         var plugin = documents["BooleanUnion.Implementation.ChoicePlugin.g.cs"].Source;
@@ -233,7 +234,7 @@ public sealed class GeneratedUnionContractSpecs
         // Assert
         var managed = documents["DefaultUnion.Choice.g.cs"].Source;
         managed.ShouldContain("DefaultDiscriminator");
-        managed.ShouldContain("HashCode.Combine(Discriminator, text)");
+        managed.ShouldContain("global::System.HashCode.Combine(Discriminator, text)");
         managed.ShouldContain("_ => text");
 
         var unmanaged = documents["DefaultUnion.Implementation.ChoiceUnmanaged.g.cs"].Source;
@@ -293,4 +294,3 @@ public sealed class GeneratedUnionContractSpecs
         holder.ShouldContain("value.Destroy(optionalsOnly);");
     }
 }
-

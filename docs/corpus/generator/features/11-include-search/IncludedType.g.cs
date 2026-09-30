@@ -6,12 +6,11 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 /// <summary>
 /// Represents the <c>IncludedType</c> DDS type declared in <c>common.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class IncludedType : IEquatable<IncludedType>
+public partial class IncludedType : global::System.IEquatable<IncludedType>
 {
     /// <summary>
     /// Gets or sets the <c>value</c> member.
@@ -51,7 +50,7 @@ public partial class IncludedType : IEquatable<IncludedType>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(value);
 
@@ -70,7 +69,7 @@ public partial class IncludedType : IEquatable<IncludedType>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

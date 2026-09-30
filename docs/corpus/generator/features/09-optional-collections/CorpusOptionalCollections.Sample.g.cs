@@ -6,28 +6,26 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
-using System.Linq;
 
 namespace CorpusOptionalCollections;
 
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>09-optional-collections.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Sample : IEquatable<Sample>
+public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets or sets the <c>values</c> member. This member is optional. Its maximum number of elements is <c>4</c>.
     /// </summary>
     [Optional]
     [Bound(4)]
-    public ISequence<int> values { get; set; }
+    public ISequence<int>? values { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>items</c> member. This member is optional.
     /// </summary>
     [Optional]
-    public int[] items { get; set; }
+    public int[]? items { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Sample"/> class.
@@ -41,7 +39,7 @@ public partial class Sample : IEquatable<Sample>
     /// </summary>
     /// <param name="values">The value for the <c>values</c> member.</param>
     /// <param name="items">The value for the <c>items</c> member.</param>
-    public Sample(ISequence<int> values, int[] items)
+    public Sample(ISequence<int>? values, int[]? items)
     {
         this.values = values;
         this.items = items;
@@ -65,7 +63,7 @@ public partial class Sample : IEquatable<Sample>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(values?.Count ?? -1);
         hash.Add(items is null ? -1 : items[0]);
@@ -85,17 +83,17 @@ public partial class Sample : IEquatable<Sample>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }
 
-        return (ReferenceEquals(values, other.values) || (values is not null
+        return (global::System.Object.ReferenceEquals(values, other.values) || (values is not null
             && other.values is not null
-            && values.SequenceEqual(other.values)))
-            && (ReferenceEquals(items, other.items) || (items is not null
+            && global::System.Linq.Enumerable.SequenceEqual(values, other.values)))
+            && (global::System.Object.ReferenceEquals(items, other.items) || (items is not null
                 && other.items is not null
-                && items.SequenceEqual(other.items)));
+                && global::System.Linq.Enumerable.SequenceEqual(items, other.items)));
     }
 
     /// <inheritdoc />

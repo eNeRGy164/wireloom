@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusCollections;
 
@@ -21,7 +20,7 @@ public class CoordinateGridSupport : TypeSupport<CoordinateGrid>
     /// </summary>
     public CoordinateGridSupport() : base(
         new Implementation.CoordinateGridPlugin(),
-        new Lazy<DynamicType>(() => Implementation.CoordinateGridPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.CoordinateGridPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

@@ -4,8 +4,6 @@
 // It requires the RTI Connext DDS .NET runtime.
 #nullable enable
 
-using System;
-
 namespace CorpusUnionAliases;
 
 /// <summary>

@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 /// <summary>
 /// Provides RTI Connext DDS type support for <see cref="First"/>.
@@ -19,7 +18,7 @@ public class FirstSupport : TypeSupport<First>
     /// </summary>
     public FirstSupport() : base(
         new Implementation.FirstPlugin(),
-        new Lazy<DynamicType>(() => Implementation.FirstPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.FirstPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

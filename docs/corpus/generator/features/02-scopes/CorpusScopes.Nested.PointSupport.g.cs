@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusScopes.Nested;
 
@@ -21,7 +20,7 @@ public class PointSupport : TypeSupport<Point>
     /// </summary>
     public PointSupport() : base(
         new Implementation.PointPlugin(),
-        new Lazy<DynamicType>(() => Implementation.PointPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.PointPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

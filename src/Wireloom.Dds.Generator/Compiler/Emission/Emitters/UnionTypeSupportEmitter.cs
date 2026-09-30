@@ -1,4 +1,5 @@
 using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Emission.Writers;
 using Wireloom.Compiler.Naming;
 
@@ -16,12 +17,14 @@ internal static class UnionTypeSupportEmitter
         var supportName = IdlNaming.EscapeIdentifier(declaration.Name + "Support");
         var runtimeTypeName = declaration.Namespace is null ? typeName : $"{IdlNaming.EscapeQualifiedIdentifier(declaration.Namespace)}.{typeName}";
         var idlTypeName = declaration.Namespace is null ? declaration.Name : $"{declaration.Namespace.Replace(".", "::")}::{declaration.Name}";
+        var implementationTypeName = IdlNaming.TypeReference(typeName, declaration.Namespace, implementationNamespace);
+        var supportTypeName = IdlNaming.TypeReference(typeName, declaration.Namespace, declaration.Namespace);
         var nativeDiscriminatorType = NativeDiscriminatorType(declaration);
 
         var writer = EmissionSupport.CreateSource(implementationNamespace, EmissionSupport.UnmanagedTypeUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI native representation for <see cref=\"{typeName}\"/>.");
-        writer.OpenBlock($"public struct {unmanagedName} : INativeTopicType<{typeName}>");
+        writer.OpenBlock($"public struct {unmanagedName} : INativeTopicType<{implementationTypeName}>");
         writer.WriteLine($"private {nativeDiscriminatorType} _discriminator;");
         writer.BlankLine();
 
@@ -40,7 +43,7 @@ internal static class UnionTypeSupportEmitter
         writer.CloseBlock();
 
         var destroyableBranches = declaration.Branches
-            .Select(branch => (Branch: branch, Statement: branch.Plan.BuildDestroyStatement(implementationNamespace)))
+            .Select(branch => (Branch: branch, Statement: branch.Plan.BuildDestroyStatement(implementationNamespace, NativeFieldPrefix(branch.Plan, "optionalsOnly"))))
             .Where(item => item.Statement is not null)
             .ToArray();
         if (destroyableBranches.Length > 0)
@@ -54,9 +57,9 @@ internal static class UnionTypeSupportEmitter
         }
 
         writer.CloseBlock();
-        EmitUnionNativeConversion(writer, declaration, typeName, implementationNamespace, fromNative: true);
+        EmitUnionNativeConversion(writer, declaration, implementationTypeName, implementationNamespace, fromNative: true);
         EmitUnionNativeInitialization(writer, declaration, implementationNamespace);
-        EmitUnionNativeConversion(writer, declaration, typeName, implementationNamespace, fromNative: false);
+        EmitUnionNativeConversion(writer, declaration, implementationTypeName, implementationNamespace, fromNative: false);
         writer.CloseBlock();
 
         compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementationNamespace, $"{declaration.Name}Unmanaged"), writer.ToString()));
@@ -64,7 +67,7 @@ internal static class UnionTypeSupportEmitter
         writer = EmissionSupport.CreateSource(implementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI interpreted type plugin for <see cref=\"{typeName}\"/>.");
-        writer.OpenBlock($"internal class {pluginName} : InterpretedTypePlugin<{typeName}, {unmanagedName}>");
+        writer.OpenBlock($"internal class {pluginName} : InterpretedTypePlugin<{implementationTypeName}, {unmanagedName}>");
         writer.OpenBlock($"internal {pluginName}() : base(\"{runtimeTypeName}\", isKeyed: false, CreateDynamicType(isPublic: false))");
         writer.CloseBlock();
         writer.BlankLine();
@@ -126,12 +129,12 @@ internal static class UnionTypeSupportEmitter
 
         writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
         writer.WriteXmlSummary($"Provides RTI Connext DDS type support for <see cref=\"{typeName}\"/>.");
-        writer.OpenBlock($"public class {supportName} : TypeSupport<{typeName}>");
+        writer.OpenBlock($"public class {supportName} : TypeSupport<{supportTypeName}>");
         writer.WriteXmlSummary($"Initializes a new instance of the <see cref=\"{supportName}\"/> class.");
         writer.WriteLine($"public {supportName}() : base(");
         writer.Indent();
         writer.WriteLine($"new Implementation.{pluginName}(),");
-        writer.WriteLine($"new Lazy<DynamicType>(() => Implementation.{pluginName}.CreateDynamicType(isPublic: true)))");
+        writer.WriteLine($"new global::System.Lazy<DynamicType>(() => Implementation.{pluginName}.CreateDynamicType(isPublic: true)))");
         writer.Unindent();
         writer.OpenBrace();
         writer.CloseBlock();
@@ -139,7 +142,7 @@ internal static class UnionTypeSupportEmitter
         writer.WriteXmlSummary("Gets the cached RTI Connext DDS type-support instance.");
         writer.WriteLine($"public static {supportName} Instance {{ get; }} =");
         writer.Indent();
-        writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{supportName}, {typeName}>();");
+        writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{supportName}, {supportTypeName}>();");
         writer.Unindent();
         writer.CloseBlock();
 
@@ -183,22 +186,26 @@ internal static class UnionTypeSupportEmitter
             {
                 EmitManagedBranchInitialization(writer, branch);
 
-                var statement = branch.Plan.BuildFromNativeStatement(false, implementationNamespace);
+                var nativeFieldPrefix = NativeFieldPrefix(branch.Plan, "sample", "keysOnly");
+                var statement = branch.Plan.BuildFromNativeStatement(false, implementationNamespace, nativeFieldPrefix);
 
                 if (branch.Labels.Count > 1)
                 {
-                    var valueExpression = branch.Plan.BuildFromNativeValueExpression();
-                    if (valueExpression is not null)
+                    var valueExpression = branch.Plan.BuildFromNativeValueExpression(nativeFieldPrefix);
+                    if (valueExpression is null)
                     {
-                        statement = $"sample.Set{IdlNaming.EscapeIdentifier(branch.Field.Name)}({valueExpression}, {NativeDiscriminatorReadExpression(declaration)});";
+                        writer.WriteLine(statement);
+                        valueExpression = $"sample.{branch.Plan.EscapedName}";
                     }
+
+                    statement = $"sample.{IdlNaming.EscapeIdentifier($"Set{branch.Field.Name}")}({valueExpression}, {NativeDiscriminatorReadExpression(declaration)});";
                 }
 
                 writer.WriteLine(statement);
             }
             else
             {
-                writer.WriteLine(branch.Plan.BuildToNativeStatement(false, implementationNamespace));
+                writer.WriteLine(branch.Plan.BuildToNativeStatement(false, implementationNamespace, NativeFieldPrefix(branch.Plan, "sample", "keysOnly")));
             }
 
             writer.WriteLine("break;");
@@ -217,11 +224,20 @@ internal static class UnionTypeSupportEmitter
                 if (fromNative)
                 {
                     EmitManagedBranchInitialization(writer, defaultBranch);
-                    writer.WriteLine(defaultBranch.Plan.BuildFromNativeStatement(false, implementationNamespace));
+                    var nativeFieldPrefix = NativeFieldPrefix(defaultBranch.Plan, "sample", "keysOnly");
+                    var statement = defaultBranch.Plan.BuildFromNativeStatement(false, implementationNamespace, nativeFieldPrefix);
+                    var valueExpression = defaultBranch.Plan.BuildFromNativeValueExpression(nativeFieldPrefix);
+                    if (valueExpression is null)
+                    {
+                        writer.WriteLine(statement);
+                        valueExpression = $"sample.{defaultBranch.Plan.EscapedName}";
+                    }
+
+                    writer.WriteLine($"sample.{IdlNaming.EscapeIdentifier($"Set{defaultBranch.Field.Name}")}({valueExpression}, {NativeDiscriminatorReadExpression(declaration)});");
                 }
                 else
                 {
-                    writer.WriteLine(defaultBranch.Plan.BuildToNativeStatement(false, implementationNamespace));
+                    writer.WriteLine(defaultBranch.Plan.BuildToNativeStatement(false, implementationNamespace, NativeFieldPrefix(defaultBranch.Plan, "sample", "keysOnly")));
                 }
             }
 
@@ -261,7 +277,7 @@ internal static class UnionTypeSupportEmitter
         writer.WriteLine($"_discriminator = {NativeDiscriminatorWriteExpression(declaration, defaultDiscriminator)};");
 
         var initializationStatements = declaration.Branches
-            .Select(branch => branch.Plan.UnionDefaultInitializationStatement(implementationNamespace))
+            .Select(branch => branch.Plan.UnionDefaultInitializationStatement(implementationNamespace, NativeFieldPrefix(branch.Plan, "allocatePointers", "allocateMemory")))
             .ToArray();
 
         if (initializationStatements.Length > 0)
@@ -282,6 +298,9 @@ internal static class UnionTypeSupportEmitter
         writer.CloseBlock();
     }
 
+    private static string NativeFieldPrefix(MemberEmissionPlan field, params string[] parameterNames) =>
+        parameterNames.Contains(field.Name, StringComparer.Ordinal) ? "this." : string.Empty;
+
     private static string NativeDiscriminatorType(IdlEmissionUnion declaration) =>
         declaration.DiscriminatorCSharpType is "char" or "bool" ? "byte" : declaration.DiscriminatorCSharpType;
 
@@ -289,7 +308,7 @@ internal static class UnionTypeSupportEmitter
         declaration.DiscriminatorCSharpType switch
         {
             "char" => "NativeChar.FromUtf8(_discriminator)",
-            "bool" => "Convert.ToBoolean(_discriminator)",
+            "bool" => "global::System.Convert.ToBoolean(_discriminator)",
             _ => "_discriminator"
         };
 
@@ -297,7 +316,7 @@ internal static class UnionTypeSupportEmitter
         declaration.DiscriminatorCSharpType switch
         {
             "char" => $"NativeChar.ToUtf8({source})",
-            "bool" => $"Convert.ToByte({source})",
+            "bool" => $"global::System.Convert.ToByte({source})",
             _ => source
         };
 

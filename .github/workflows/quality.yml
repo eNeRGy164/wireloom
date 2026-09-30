@@ -94,6 +94,8 @@ jobs:
             --configuration Release
             --fail-threshold 0
             --skip-pull=false
+          cache-dir: ${{ runner.temp }}/qodana/caches
+          use-caches: true
           post-pr-comment: false
           upload-result: true
           artifact-name: qodana-community-report

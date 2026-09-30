@@ -212,6 +212,11 @@ internal sealed class IdlConstantExpressionEvaluator
     private string ResolveConstantName(string name)
     {
         var normalized = name.TrimStart(':').Replace("::", ".");
+        if (name.StartsWith("::", StringComparison.Ordinal))
+        {
+            return normalized;
+        }
+
         var scope = currentNamespace;
 
         while (true)

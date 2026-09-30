@@ -35,19 +35,21 @@ internal static class TypeSupportEmitter
         var unmanagedName = IdlNaming.EscapeIdentifier($"{name}Unmanaged");
         var pluginName = IdlNaming.EscapeIdentifier($"{name}Plugin");
         var implementationNamespace = currentNamespace is null ? "Implementation" : $"{currentNamespace}.Implementation";
+        var implementationTypeName = IdlNaming.TypeReference(name, currentNamespace, implementationNamespace);
+        var supportTypeName = IdlNaming.TypeReference(name, currentNamespace, currentNamespace);
         var baseUnmanagedType = baseType is null ? null : EmissionSupport.GetUnmanagedType(baseType, implementationNamespace);
 
         var writer = EmissionSupport.CreateSource(implementationNamespace, EmissionSupport.UnmanagedTypeUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI native representation for <see cref=\"{typeName}\"/>.");
-        writer.OpenBlock($"public struct {unmanagedName} : INativeTopicType<{typeName}>");
+        writer.OpenBlock($"public struct {unmanagedName} : INativeTopicType<{implementationTypeName}>");
 
         if (baseUnmanagedType is not null)
         {
             writer.WriteLine($"private {baseUnmanagedType} parent;");
         }
 
-        NativeTypeEmitter.Emit(writer, typeName, fields, inheritedFields, implementationNamespace, baseUnmanagedType);
+        NativeTypeEmitter.Emit(writer, implementationTypeName, fields, inheritedFields, implementationNamespace, baseUnmanagedType);
         writer.CloseBlock();
 
         compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementationNamespace, $"{name}Unmanaged"), writer.ToString()));
@@ -57,13 +59,13 @@ internal static class TypeSupportEmitter
         writer = EmissionSupport.CreateSource(currentNamespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides RTI Connext DDS type support for <see cref=\"{typeName}\"/>.");
-        writer.OpenBlock($"public class {supportName} : TypeSupport<{typeName}>");
+        writer.OpenBlock($"public class {supportName} : TypeSupport<{supportTypeName}>");
 
         writer.WriteXmlSummary($"Initializes a new instance of the <see cref=\"{supportName}\"/> class.");
         writer.WriteLine($"public {supportName}() : base(");
         writer.Indent();
         writer.WriteLine($"new Implementation.{pluginName}(),");
-        writer.WriteLine($"new Lazy<DynamicType>(() => Implementation.{pluginName}.CreateDynamicType(isPublic: true)))");
+        writer.WriteLine($"new global::System.Lazy<DynamicType>(() => Implementation.{pluginName}.CreateDynamicType(isPublic: true)))");
         writer.Unindent();
         writer.OpenBrace();
         writer.CloseBlock();
@@ -73,7 +75,7 @@ internal static class TypeSupportEmitter
         writer.WriteXmlSummary("Gets the cached RTI Connext DDS type-support instance.");
         writer.WriteLine($"public static {supportName} Instance {instanceAccessors} =");
         writer.Indent();
-        writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{supportName}, {typeName}>();");
+        writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{supportName}, {supportTypeName}>();");
         writer.Unindent();
 
         if (isRecursive)
@@ -83,7 +85,7 @@ internal static class TypeSupportEmitter
             writer.WriteXmlSummary("Gets or creates the recursive type-support instance without forcing its public dynamic type.");
             writer.OpenBlock($"internal static {supportName} GetOrCreateInstanceImpl()");
             writer.OpenBlock("if (Instance is null)");
-            writer.WriteLine($"Instance = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{supportName}, {typeName}>();");
+            writer.WriteLine($"Instance = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{supportName}, {supportTypeName}>();");
             writer.CloseBlock();
             writer.BlankLine();
             writer.WriteLine("return Instance;");

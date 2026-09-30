@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusUnionAliases;
 
 /// <summary>
 /// Represents the <c>ChoiceAlias</c> IDL typedef declared in <c>07-union-aliases.idl</c>.
 /// </summary>
-public partial class ChoiceAlias : IEquatable<ChoiceAlias>
+public partial class ChoiceAlias : global::System.IEquatable<ChoiceAlias>
 {
     /// <summary>
     /// Gets or sets the value represented by this typedef.
@@ -51,7 +50,7 @@ public partial class ChoiceAlias : IEquatable<ChoiceAlias>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(Value);
 
@@ -69,7 +68,7 @@ public partial class ChoiceAlias : IEquatable<ChoiceAlias>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

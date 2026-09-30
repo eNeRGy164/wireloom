@@ -6,7 +6,6 @@
 
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
-using System;
 
 namespace CorpusIntegration.Contracts.Implementation;
 
@@ -32,7 +31,7 @@ public struct NamespacedMessageUnmanaged : INativeTopicType<NamespacedMessage>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void FromNative(NamespacedMessage sample, bool keysOnly = false)
     {
-        sample.enabled = Convert.ToBoolean(enabled);
+        sample.enabled = global::System.Convert.ToBoolean(enabled);
     }
 
     /// <summary>
@@ -52,6 +51,6 @@ public struct NamespacedMessageUnmanaged : INativeTopicType<NamespacedMessage>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void ToNative(NamespacedMessage sample, bool keysOnly = false)
     {
-        enabled = Convert.ToByte(sample.enabled);
+        enabled = global::System.Convert.ToByte(sample.enabled);
     }
 }
