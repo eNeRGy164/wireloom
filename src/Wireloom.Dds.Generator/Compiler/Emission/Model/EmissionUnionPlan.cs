@@ -14,12 +14,13 @@ internal sealed class UnionBranchEmissionPlan(IdlEmissionField field, MemberEmis
 }
 
 /// <summary>Describes an IDL union after projection to the generated target model.</summary>
-internal sealed class IdlEmissionUnion(string name, string? @namespace, string discriminatorCSharpType, bool discriminatorIsEnum, IReadOnlyList<UnionBranchEmissionPlan> branches, IdlExtensibilityKind extensibility)
+internal sealed class IdlEmissionUnion(string name, string? @namespace, string discriminatorCSharpType, bool discriminatorIsEnum, int? discriminatorDefaultValue, IReadOnlyList<UnionBranchEmissionPlan> branches, IdlExtensibilityKind extensibility)
 {
     public string Name { get; } = name;
     public string? Namespace { get; } = @namespace;
     public string DiscriminatorCSharpType { get; } = discriminatorCSharpType;
     public bool DiscriminatorIsEnum { get; } = discriminatorIsEnum;
+    public int? DiscriminatorDefaultValue { get; } = discriminatorDefaultValue;
     public IReadOnlyList<UnionBranchEmissionPlan> Branches { get; } = branches;
     public IdlExtensibilityKind Extensibility { get; } = extensibility;
 }

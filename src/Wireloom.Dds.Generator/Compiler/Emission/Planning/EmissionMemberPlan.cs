@@ -46,7 +46,7 @@ internal enum NativeDestroyKind
 /// support are not frozen into reusable source fragments.
 /// </summary>
 [PublicAPI]
-internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string? currentNamespace)
+internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string? currentNamespace, string? managedBackingFieldName = null)
 {
     private readonly FieldEmissionShape shape = GetShape(field.Type);
 
@@ -76,11 +76,31 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public bool UsesAutoIdHash => Field.UsesAutoIdHash;
     public bool HasExplicitDefault => DefaultValue is not null;
     public bool HasManagedRange => MinimumValue is not null || MaximumValue is not null;
-    public string ManagedBackingFieldName => "_" + EscapedName;
+    public string ManagedBackingFieldName => managedBackingFieldName ?? EscapeIdentifier("_" + Name);
     public bool IsString => ValueType is StringEmissionType;
     public bool IsSequence => shape == FieldEmissionShape.Sequence;
     public bool IsArray => shape == FieldEmissionShape.Array;
     public bool IsSequenceArray => IsSequence && Dimensions.Count > 0;
+    public bool IsArrayLoopLocalCollision
+    {
+        get
+        {
+            if (!IsArray || !Name.StartsWith("dimension", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            var suffix = Name["dimension".Length..];
+            if (suffix.Length == 0)
+            {
+                return Dimensions.Count > 0;
+            }
+
+            return int.TryParse(suffix, out var dimension)
+                && dimension >= 0
+                && dimension < Dimensions.Count;
+        }
+    }
     public bool IsStringSequence => IsSequence && ElementType is StringEmissionType;
     public bool IsAggregate => Type.IsAggregate;
     public bool IsUnion => Type.IsUnion;
@@ -301,18 +321,20 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         if (IsSequence)
         {
             var elementType = TypeReference(ElementCSharpType!, currentNamespace);
-            var elements = HasAggregateElement ? $".Select(element => new {elementType}(element))" : string.Empty;
+            var copiedSequence = HasAggregateElement
+                ? $"global::System.Linq.Enumerable.Select({source}, element => new {elementType}(element))"
+                : source;
             if (IsOptional)
             {
-                return $"{source} is null ? null! : new Sequence<{elementType}>({source}{elements})";
+                return $"{source} is null ? null! : new Sequence<{elementType}>({copiedSequence})";
             }
 
-            return $"new Sequence<{elementType}>({source}{elements})";
+            return $"new Sequence<{elementType}>({copiedSequence})";
         }
 
         if (IsArray)
         {
-            var copy = $"({TypeReference(CSharpType, currentNamespace)}){source}.Clone()";
+            var copy = $"({TypeReference(CSharpType.TrimEnd('?'), currentNamespace)}){source}.Clone()";
             return IsOptional ? $"{source} is null ? null! : {copy}" : copy;
         }
 
@@ -399,18 +421,20 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
         if (IsOptional && IsArray)
         {
-            return $"{targetPrefix}{EscapedName} is null ? -1 : {targetPrefix}{EscapedName}[0]";
+            return $"{targetPrefix}{EscapedName} is null ? -1 : {targetPrefix}{EscapedName}{ArraySourceEmitter.IndexExpression(ZeroIndices())}";
         }
 
         var suffix = shape switch
         {
-            FieldEmissionShape.Array => "[0]",
+            FieldEmissionShape.Array => ArraySourceEmitter.IndexExpression(ZeroIndices()),
             FieldEmissionShape.Sequence => ".Count",
             _ => string.Empty
         };
 
         return targetPrefix + EscapedName + suffix;
     }
+
+    private IReadOnlyList<string> ZeroIndices() => Enumerable.Repeat("0", Dimensions.Count).ToArray();
 
     public string EqualityExpression(string otherPrefix = "other.", string thisPrefix = "")
     {
@@ -419,16 +443,16 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
             string arrayEquality;
             if (Dimensions.Count == 1)
             {
-                arrayEquality = $"{thisPrefix}{EscapedName}.SequenceEqual({otherPrefix}{EscapedName})";
+                arrayEquality = $"global::System.Linq.Enumerable.SequenceEqual({thisPrefix}{EscapedName}, {otherPrefix}{EscapedName})";
             }
             else
             {
-                arrayEquality = $"{thisPrefix}{EscapedName}.Rank == {otherPrefix}{EscapedName}.Rank && Enumerable.Range(0, {thisPrefix}{EscapedName}.Rank).All(dimension => {thisPrefix}{EscapedName}.GetLength(dimension) == {otherPrefix}{EscapedName}.GetLength(dimension)) && {thisPrefix}{EscapedName}.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>().SequenceEqual({otherPrefix}{EscapedName}.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>())";
+                arrayEquality = $"{thisPrefix}{EscapedName}.Rank == {otherPrefix}{EscapedName}.Rank && global::System.Linq.Enumerable.All(global::System.Linq.Enumerable.Range(0, {thisPrefix}{EscapedName}.Rank), dimension => {thisPrefix}{EscapedName}.GetLength(dimension) == {otherPrefix}{EscapedName}.GetLength(dimension)) && global::System.Linq.Enumerable.SequenceEqual(global::System.Linq.Enumerable.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>({thisPrefix}{EscapedName}), global::System.Linq.Enumerable.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>({otherPrefix}{EscapedName}))";
             }
 
             if (IsOptional)
             {
-                return $"(ReferenceEquals({thisPrefix}{EscapedName}, {otherPrefix}{EscapedName}) || ({thisPrefix}{EscapedName} is not null && {otherPrefix}{EscapedName} is not null && {arrayEquality}))";
+                return $"(global::System.Object.ReferenceEquals({thisPrefix}{EscapedName}, {otherPrefix}{EscapedName}) || ({thisPrefix}{EscapedName} is not null && {otherPrefix}{EscapedName} is not null && {arrayEquality}))";
             }
 
             return arrayEquality;
@@ -436,17 +460,17 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
         if (IsOptional && IsSequence)
         {
-            return $"(ReferenceEquals({thisPrefix}{EscapedName}, {otherPrefix}{EscapedName}) || ({thisPrefix}{EscapedName} is not null && {otherPrefix}{EscapedName} is not null && {thisPrefix}{EscapedName}.SequenceEqual({otherPrefix}{EscapedName})))";
+            return $"(global::System.Object.ReferenceEquals({thisPrefix}{EscapedName}, {otherPrefix}{EscapedName}) || ({thisPrefix}{EscapedName} is not null && {otherPrefix}{EscapedName} is not null && global::System.Linq.Enumerable.SequenceEqual({thisPrefix}{EscapedName}, {otherPrefix}{EscapedName})))";
         }
 
         if (IsArray && HasAggregateElement)
         {
-            return $"{thisPrefix}{EscapedName}.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>().SequenceEqual({otherPrefix}{EscapedName}.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>())";
+            return $"global::System.Linq.Enumerable.SequenceEqual(global::System.Linq.Enumerable.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>({thisPrefix}{EscapedName}), global::System.Linq.Enumerable.Cast<{TypeReference(ElementCSharpType!, currentNamespace)}>({otherPrefix}{EscapedName}))";
         }
 
         if (IsArray || IsSequence)
         {
-            return $"{thisPrefix}{EscapedName}.SequenceEqual({otherPrefix}{EscapedName})";
+            return $"global::System.Linq.Enumerable.SequenceEqual({thisPrefix}{EscapedName}, {otherPrefix}{EscapedName})";
         }
 
         if (IsOptional)

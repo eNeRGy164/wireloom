@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusNegativeDuplicateLabel;
 
 /// <summary>
 /// Represents the <c>Choice</c> DDS union declared in <c>07-duplicate-label.idl</c>. Exactly one branch is selected by <see cref="Discriminator"/>.
 /// </summary>
-public partial class Choice : IEquatable<Choice>
+public partial class Choice : global::System.IEquatable<Choice>
 {
     private int _first;
     private int _second;
@@ -37,7 +36,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator != 1)
             {
-                throw new InvalidOperationException("first not selected");
+                throw new global::System.InvalidOperationException("first not selected");
             }
 
             return _first;
@@ -59,7 +58,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator != 1)
             {
-                throw new InvalidOperationException("second not selected");
+                throw new global::System.InvalidOperationException("second not selected");
             }
 
             return _second;
@@ -110,7 +109,7 @@ public partial class Choice : IEquatable<Choice>
     /// Gets the currently active union-branch value.
     /// </summary>
     /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
-    public object Get()
+    public object? Get()
     {
         return Discriminator switch
         {
@@ -125,9 +124,9 @@ public partial class Choice : IEquatable<Choice>
     {
         return Discriminator switch
         {
-            1 => HashCode.Combine(Discriminator, first),
-            1 => HashCode.Combine(Discriminator, second),
-            _ => HashCode.Combine(Discriminator),
+            1 => global::System.HashCode.Combine(Discriminator, first),
+            1 => global::System.HashCode.Combine(Discriminator, second),
+            _ => global::System.HashCode.Combine(Discriminator),
         };
     }
 
@@ -143,7 +142,7 @@ public partial class Choice : IEquatable<Choice>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

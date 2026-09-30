@@ -6,15 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
-using System.Linq;
 
 namespace CorpusCollectionShapes;
 
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>05-shapes.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Sample : IEquatable<Sample>
+public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets the <c>unboundedItems</c> member. Its maximum number of elements is <c>100</c>.
@@ -106,9 +104,9 @@ public partial class Sample : IEquatable<Sample>
             return;
         }
 
-        unboundedItems = new Sequence<Item>(other.unboundedItems.Select(element => new Item(element)));
+        unboundedItems = new Sequence<Item>(global::System.Linq.Enumerable.Select(other.unboundedItems, element => new Item(element)));
         boundedItems = new Items(other.boundedItems);
-        nestedSequences = new Sequence<BoundedLongs>(other.nestedSequences.Select(element => new BoundedLongs(element)));
+        nestedSequences = new Sequence<BoundedLongs>(global::System.Linq.Enumerable.Select(other.nestedSequences, element => new BoundedLongs(element)));
         rows = (Row[])other.rows.Clone();
 
         for (var dimension0 = 0; dimension0 < 2; dimension0++)
@@ -116,15 +114,15 @@ public partial class Sample : IEquatable<Sample>
             rows[dimension0] = new Row(other.rows[dimension0]);
         }
 
-        sequenceOfArrays = new Sequence<Row>(other.sequenceOfArrays.Select(element => new Row(element)));
-        sequenceOfArrayAliases = new Sequence<Rows>(other.sequenceOfArrayAliases.Select(element => new Rows(element)));
+        sequenceOfArrays = new Sequence<Row>(global::System.Linq.Enumerable.Select(other.sequenceOfArrays, element => new Row(element)));
+        sequenceOfArrayAliases = new Sequence<Rows>(global::System.Linq.Enumerable.Select(other.sequenceOfArrayAliases, element => new Rows(element)));
         names = new Names(other.names);
     }
 
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(unboundedItems.Count);
         hash.Add(boundedItems);
@@ -149,17 +147,17 @@ public partial class Sample : IEquatable<Sample>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }
 
-        return unboundedItems.SequenceEqual(other.unboundedItems)
+        return global::System.Linq.Enumerable.SequenceEqual(unboundedItems, other.unboundedItems)
             && boundedItems.Equals(other.boundedItems)
-            && nestedSequences.SequenceEqual(other.nestedSequences)
-            && rows.SequenceEqual(other.rows)
-            && sequenceOfArrays.SequenceEqual(other.sequenceOfArrays)
-            && sequenceOfArrayAliases.SequenceEqual(other.sequenceOfArrayAliases)
+            && global::System.Linq.Enumerable.SequenceEqual(nestedSequences, other.nestedSequences)
+            && global::System.Linq.Enumerable.SequenceEqual(rows, other.rows)
+            && global::System.Linq.Enumerable.SequenceEqual(sequenceOfArrays, other.sequenceOfArrays)
+            && global::System.Linq.Enumerable.SequenceEqual(sequenceOfArrayAliases, other.sequenceOfArrayAliases)
             && names.Equals(other.names);
     }
 

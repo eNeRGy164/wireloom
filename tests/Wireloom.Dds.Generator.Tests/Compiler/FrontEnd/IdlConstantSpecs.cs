@@ -44,6 +44,41 @@ public sealed class IdlConstantSpecs
     }
 
     [Fact]
+    public void EmitsBooleanFloatingPointAndUnsignedConstantTypes()
+    {
+        // Arrange
+        var input = Input("constant-types.idl",
+            """
+            module Constants {
+                const boolean Flag = TRUE;
+                const float Ratio = 1.5;
+                const double Precise = 2.5;
+                const unsigned long long Large = 42;
+                const short Small = 7;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var flag = documents["Constants.Flag.g.cs"].Source;
+        flag.ShouldContain("public const bool Value = true;");
+
+        var ratio = documents["Constants.Ratio.g.cs"].Source;
+        ratio.ShouldContain("public const float Value = 1.5F;");
+
+        var precise = documents["Constants.Precise.g.cs"].Source;
+        precise.ShouldContain("public const double Value = 2.5D;");
+
+        var large = documents["Constants.Large.g.cs"].Source;
+        large.ShouldContain("public const ulong Value = 42UL;");
+
+        var small = documents["Constants.Small.g.cs"].Source;
+        small.ShouldContain("public const short Value = 7;");
+    }
+
+    [Fact]
     [Trait("Corpus", "C006")]
     public void ResolvesConstantExpressionsInCollectionAndStringBounds()
     {
@@ -81,7 +116,7 @@ public sealed class IdlConstantSpecs
     public void RejectsIntegralConstantsOutsideTheirIdlRange()
     {
         // Arrange
-        var input = Input("constant-range.idl", "const long long TooLarge = 9223372036854775808;");
+        var input = Input("constant-range.idl", """const long long TooLarge = 9223372036854775808;""");
 
         // Act
         var exception = Should.Throw<IdlException>(() => Compile(input));
@@ -131,34 +166,159 @@ public sealed class IdlConstantSpecs
     }
 
     [Fact]
+    [Trait("Corpus", "C048")]
+    [Trait("Preprocessor", "PP007")]
+    [Trait("Preprocessor", "PP031")]
+    public void ReplacesPreprocessedConstantReferencesExactlyOnce()
+    {
+        // Arrange
+        var common = new IdlInput(
+            "includes/common.idl",
+            "const long IncludedConstant = 7;",
+            generate: false);
+        var root = new IdlInput(
+            "11-preprocessing.idl",
+            """
+            #include "includes/common.idl"
+            #define CORPUS_VALUE(x) ((x) + 1)
+            const long BranchValue = CORPUS_VALUE(IncludedConstant);
+            """,
+            defines: ["CORPUS_CAPTURE_DEFINE"]);
+
+        // Act
+        var documents = CompileSources(common, root);
+
+        // Assert
+        var branchValue = documents["BranchValue.g.cs"].Source;
+        branchValue.ShouldContain("public const int Value = IncludedConstant.Value + 1;");
+        branchValue.ShouldNotContain("((IncludedConstant.Value) + 1)");
+        branchValue.ShouldNotContain("IncludedConstant.Value.Value");
+    }
+
+    [Fact]
+    public void ReplacesUnqualifiedConstantsUsingTheInnermostIdlScope()
+    {
+        // Arrange
+        var input = Input("constant-scope.idl",
+            """
+            const string A = "root"; module N { const string A = "nested"; const string Pick = A; const string Root = ::A; };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var pick = documents["N.Pick.g.cs"].Source;
+        pick.ShouldContain("public const string Value = A.Value;");
+        pick.ShouldNotContain("global::A.Value");
+
+        var root = documents["N.Root.g.cs"].Source;
+        root.ShouldContain("public const string Value = global::A.Value;");
+    }
+
+    [Fact]
+    public void DoesNotReplaceConstantNamesInsideStringOrCharacterLiterals()
+    {
+        // Arrange
+        var input = Input("constant-literals.idl",
+            """
+            module Constants {
+                const long A = 7;
+                const char Marker = 'A';
+                const string Text = "A";
+                const long Uses = A + 1;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var marker = documents["Constants.Marker.g.cs"].Source;
+        marker.ShouldContain("public const char Value = 'A';");
+
+        var text = documents["Constants.Text.g.cs"].Source;
+        text.ShouldContain("public const string Value = \"A\";");
+
+        var uses = documents["Constants.Uses.g.cs"].Source;
+        uses.ShouldContain("public const int Value = A.Value + 1;");
+    }
+
+    [Fact]
+    public void PreservesGlobalQualificationForAbsoluteConstantReferences()
+    {
+        // Arrange
+        var input = Input("absolute-constant.idl",
+            """
+            const long Label = 1;
+            module N {
+                const long Label = 2;
+                const long Pick = ::Label;
+                const long NestedPick = ::N::Label;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var pick = documents["N.Pick.g.cs"].Source;
+        pick.ShouldContain("public const int Value = global::Label.Value;");
+        pick.ShouldNotContain("public const int Value = Label.Value;");
+
+        var nestedPick = documents["N.NestedPick.g.cs"].Source;
+        nestedPick.ShouldContain("public const int Value = global::N.Label.Value;");
+    }
+
+    [Fact]
     public void RejectsDivisionByZeroInConstantExpressions()
     {
-        var exception = Should.Throw<IdlException>(() => Compile(Input("constant-division.idl", "const long Value = 1 / 0;")));
+        // Arrange
+        var input = Input("constant-division.idl", """const long Constant = 1 / 0;""");
 
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
         exception.Message.ShouldContain("Division by zero");
     }
 
     [Fact]
     public void RejectsNegativeConstantExpressionShiftCounts()
     {
-        var exception = Should.Throw<IdlException>(() => Compile(Input("constant-shift.idl", "const long Value = 1 << -1;")));
+        // Arrange
+        var input = Input("constant-shift.idl", """const long Constant = 1 << -1;""");
 
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
         exception.Message.ShouldContain("Shift count is outside");
     }
 
     [Fact]
     public void RejectsUnknownIntegralConstants()
     {
-        var exception = Should.Throw<IdlException>(() => Compile(Input("constant-name.idl", "const long Value = Missing;")));
+        // Arrange
+        var input = Input("constant-name.idl", """const long Constant = Missing;""");
 
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
         exception.Message.ShouldContain("Unknown integral constant");
     }
 
     [Fact]
     public void RejectsMalformedConstantExpressions()
     {
-        var exception = Should.Throw<IdlException>(() => Compile(Input("constant-token.idl", "const long Value = 1 + );")));
+        // Arrange
+        var input = Input("constant-token.idl", """const long Constant = 1 + );""");
 
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
         exception.Message.ShouldContain("Expected an integer literal");
     }
 }

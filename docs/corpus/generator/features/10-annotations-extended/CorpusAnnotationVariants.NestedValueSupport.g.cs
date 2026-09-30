@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusAnnotationVariants;
 
@@ -21,7 +20,7 @@ public class NestedValueSupport : TypeSupport<NestedValue>
     /// </summary>
     public NestedValueSupport() : base(
         new Implementation.NestedValuePlugin(),
-        new Lazy<DynamicType>(() => Implementation.NestedValuePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.NestedValuePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

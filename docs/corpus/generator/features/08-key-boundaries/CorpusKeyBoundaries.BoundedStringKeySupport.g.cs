@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusKeyBoundaries;
 
@@ -21,7 +20,7 @@ public class BoundedStringKeySupport : TypeSupport<BoundedStringKey>
     /// </summary>
     public BoundedStringKeySupport() : base(
         new Implementation.BoundedStringKeyPlugin(),
-        new Lazy<DynamicType>(() => Implementation.BoundedStringKeyPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.BoundedStringKeyPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

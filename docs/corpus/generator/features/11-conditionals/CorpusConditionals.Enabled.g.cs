@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusConditionals;
 
 /// <summary>
 /// Represents the <c>Enabled</c> DDS type declared in <c>11-conditionals.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Enabled : IEquatable<Enabled>
+public partial class Enabled : global::System.IEquatable<Enabled>
 {
     /// <summary>
     /// Gets or sets the <c>value</c> member.
@@ -53,7 +52,7 @@ public partial class Enabled : IEquatable<Enabled>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(value);
 
@@ -72,7 +71,7 @@ public partial class Enabled : IEquatable<Enabled>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

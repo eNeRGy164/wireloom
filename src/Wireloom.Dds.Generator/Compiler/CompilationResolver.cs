@@ -1,4 +1,3 @@
-using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.FrontEnd.Symbols;
 using Wireloom.Compiler.Naming;
 
@@ -7,8 +6,34 @@ namespace Wireloom.Compiler;
 /// <summary>Resolves IDL symbols and typedef representations for the compiler pipeline.</summary>
 internal sealed class CompilationResolver(IdlSymbolTable symbols)
 {
-    /// <summary>Gets the constants known to the compilation.</summary>
-    public IEnumerable<IdlConstantDeclaration> Constants => symbols.Constants;
+    /// <summary>Resolves an IDL constant reference using lexical module scope.</summary>
+    public bool TryResolveConstant(string reference, string? currentNamespace, out string qualifiedName)
+    {
+        var normalized = reference.TrimStart(':').Replace("::", ".");
+        var isAbsolute = reference.StartsWith("::", StringComparison.Ordinal);
+        var scope = isAbsolute ? null : currentNamespace;
+
+        while (true)
+        {
+            var candidate = scope is null ? normalized : $"{scope}.{normalized}";
+            if (symbols.TryGetConstant(candidate, out _))
+            {
+                qualifiedName = candidate;
+                return true;
+            }
+
+            if (scope is null)
+            {
+                break;
+            }
+
+            var separator = scope.LastIndexOf('.');
+            scope = separator < 0 ? null : scope[..separator];
+        }
+
+        qualifiedName = normalized;
+        return false;
+    }
 
     /// <summary>Determines whether a type resolves to an enum.</summary>
     public bool IsEnum(string typeName, string? currentNamespace) =>

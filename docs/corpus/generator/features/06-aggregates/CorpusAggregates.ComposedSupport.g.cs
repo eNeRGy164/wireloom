@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusAggregates;
 
@@ -21,7 +20,7 @@ public class ComposedSupport : TypeSupport<Composed>
     /// </summary>
     public ComposedSupport() : base(
         new Implementation.ComposedPlugin(),
-        new Lazy<DynamicType>(() => Implementation.ComposedPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.ComposedPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

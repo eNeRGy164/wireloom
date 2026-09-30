@@ -6,7 +6,6 @@
 
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
-using System;
 
 namespace CorpusKeys.Implementation;
 
@@ -39,7 +38,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
-        identity.FromNative(sample.identity, keysOnly: keysOnly);
+        identity.FromNative(sample.identity, keysOnly);
 
         if (keysOnly)
         {
@@ -67,7 +66,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void ToNative(Sample sample, bool keysOnly = false)
     {
-        identity.ToNative(sample.identity, keysOnly: keysOnly);
+        identity.ToNative(sample.identity, keysOnly);
 
         if (keysOnly)
         {

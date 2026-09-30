@@ -6,7 +6,6 @@
 
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
-using System;
 
 namespace CorpusOptionalCollections.Implementation;
 
@@ -56,7 +55,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void ToNative(Sample sample, bool keysOnly = false)
     {
-        values.ToNative<int>((Sequence<int>)sample.values, 4);
-        items.ToNative<int>(sample.items, dimension: 2);
+        values.ToNative<int>((Sequence<int>)sample.values!, 4);
+        items.ToNative<int>(sample.items, 2);
     }
 }

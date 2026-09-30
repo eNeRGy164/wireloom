@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusAggregates;
 
 /// <summary>
 /// Represents the <c>Derived</c> DDS type declared in <c>06-aggregates.idl</c>. It derives from <see cref="Base"/>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Derived : Base, IEquatable<Derived>
+public partial class Derived : Base, global::System.IEquatable<Derived>
 {
     /// <summary>
     /// Gets or sets the <c>derived</c> member. Its maximum length is <c>16</c>.
@@ -55,7 +54,7 @@ public partial class Derived : Base, IEquatable<Derived>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(base.GetHashCode());
         hash.Add(derived);
@@ -75,7 +74,7 @@ public partial class Derived : Base, IEquatable<Derived>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

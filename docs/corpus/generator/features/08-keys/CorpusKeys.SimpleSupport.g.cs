@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusKeys;
 
@@ -21,7 +20,7 @@ public class SimpleSupport : TypeSupport<Simple>
     /// </summary>
     public SimpleSupport() : base(
         new Implementation.SimplePlugin(),
-        new Lazy<DynamicType>(() => Implementation.SimplePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.SimplePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

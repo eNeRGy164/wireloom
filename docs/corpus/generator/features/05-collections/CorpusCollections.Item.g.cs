@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusCollections;
 
 /// <summary>
 /// Represents the <c>Item</c> DDS type declared in <c>05-collections.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Item : IEquatable<Item>
+public partial class Item : global::System.IEquatable<Item>
 {
     /// <summary>
     /// Gets or sets the <c>id</c> member.
@@ -62,7 +61,7 @@ public partial class Item : IEquatable<Item>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(id);
         hash.Add(label);
@@ -82,7 +81,7 @@ public partial class Item : IEquatable<Item>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

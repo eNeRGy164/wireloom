@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusIntegrationTrace;
 
 /// <summary>
 /// Represents the <c>Producer</c> IDL typedef declared in <c>13-alias-inheritance.idl</c>.
 /// </summary>
-public partial class Producer : IEquatable<Producer>
+public partial class Producer : global::System.IEquatable<Producer>
 {
     /// <summary>
     /// Gets or sets the value represented by this typedef. Its maximum length is <c>16</c>.
@@ -52,7 +51,7 @@ public partial class Producer : IEquatable<Producer>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(Value);
 
@@ -70,7 +69,7 @@ public partial class Producer : IEquatable<Producer>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

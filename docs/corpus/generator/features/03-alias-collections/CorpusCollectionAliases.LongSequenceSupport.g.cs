@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusCollectionAliases;
 
@@ -21,7 +20,7 @@ public class LongSequenceSupport : TypeSupport<LongSequence>
     /// </summary>
     public LongSequenceSupport() : base(
         new Implementation.LongSequencePlugin(),
-        new Lazy<DynamicType>(() => Implementation.LongSequencePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.LongSequencePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

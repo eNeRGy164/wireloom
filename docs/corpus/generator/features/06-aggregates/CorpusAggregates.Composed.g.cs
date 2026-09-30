@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusAggregates;
 
 /// <summary>
 /// Represents the <c>Composed</c> DDS type declared in <c>06-aggregates.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Composed : IEquatable<Composed>
+public partial class Composed : global::System.IEquatable<Composed>
 {
     /// <summary>
     /// Gets or sets the <c>base</c> member.
@@ -61,7 +60,7 @@ public partial class Composed : IEquatable<Composed>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(@base);
         hash.Add(derived);
@@ -81,7 +80,7 @@ public partial class Composed : IEquatable<Composed>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

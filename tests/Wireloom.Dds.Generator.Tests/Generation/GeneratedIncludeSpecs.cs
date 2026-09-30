@@ -38,8 +38,11 @@ public sealed class GeneratedIncludeSpecs
         var sample = documents["IncludedConsumer.Sample.g.cs"].Source;
         sample.ShouldContain("public IncludedType item");
 
+        var sampleUnmanaged = documents["IncludedConsumer.Implementation.SampleUnmanaged.g.cs"].Source;
+        sampleUnmanaged.ShouldContain("global::Implementation.IncludedTypeUnmanaged item;");
+        sampleUnmanaged.ShouldNotContain("private IncludedTypeUnmanaged item;");
+
         var includedTypePlugin = documents["Implementation.IncludedTypePlugin.g.cs"].Source;
         includedTypePlugin.ShouldContain("SetMemberAnnotations(0, annotations);");
     }
 }
-

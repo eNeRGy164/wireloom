@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusIntegrationCollections;
 
@@ -21,7 +20,7 @@ public class ItemSupport : TypeSupport<Item>
     /// </summary>
     public ItemSupport() : base(
         new Implementation.ItemPlugin(),
-        new Lazy<DynamicType>(() => Implementation.ItemPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.ItemPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

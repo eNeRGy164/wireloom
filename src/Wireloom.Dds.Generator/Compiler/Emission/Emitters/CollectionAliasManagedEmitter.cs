@@ -45,12 +45,10 @@ internal static class CollectionAliasManagedEmitter
 
         var elementReference = IdlNaming.TypeReference(resolvedElement, declaration.Namespace);
         var requiresNullForgivingValueInitializer = !declaration.IsCollection && !IdlNaming.IsPrimitive(element) && !compilation.IsEnum(element, declaration.Namespace);
-        var typedefUsings = declaration.IsCollection ? EmissionSupport.DataTypeUsings.Concat(["System.Linq"]) : EmissionSupport.DataTypeUsings;
-
-        var writer = EmissionSupport.CreateSource(declaration.Namespace, typedefUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.DataTypeUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> IDL typedef declared in <c>{sourceIdlFileName}</c>.");
-        writer.OpenBlock($"public partial class {typeName} : IEquatable<{typeName}>");
+        writer.OpenBlock($"public partial class {typeName} : global::System.IEquatable<{typeName}>");
 
         if (declaration.IsSequence)
         {
@@ -86,7 +84,7 @@ internal static class CollectionAliasManagedEmitter
 
             writer.WriteXmlInheritdoc();
             writer.OpenBlock("public override int GetHashCode()");
-            writer.WriteLine("var hash = new HashCode();");
+            writer.WriteLine("var hash = new global::System.HashCode();");
             writer.BlankLine();
             writer.WriteLine("hash.Add(Value.Count);");
             writer.BlankLine();
@@ -99,7 +97,7 @@ internal static class CollectionAliasManagedEmitter
             writer.OpenBlock($"public bool Equals({typeName}? other)");
             writer.WriteLine("return other is not null");
             writer.Indent();
-            writer.WriteLine("&& (ReferenceEquals(this, other) || Value.SequenceEqual(other.Value));");
+            writer.WriteLine("&& (global::System.Object.ReferenceEquals(this, other) || global::System.Linq.Enumerable.SequenceEqual(Value, other.Value));");
             writer.Unindent();
             writer.CloseBlock();
             writer.BlankLine();
@@ -158,7 +156,7 @@ internal static class CollectionAliasManagedEmitter
             var firstElementIndex = string.Join(", ", declaration.Dimensions.Select(_ => "0"));
             writer.WriteXmlInheritdoc();
             writer.OpenBlock("public override int GetHashCode()");
-            writer.WriteLine("var hash = new HashCode();");
+            writer.WriteLine("var hash = new global::System.HashCode();");
             writer.BlankLine();
             writer.WriteLine($"hash.Add(Value[{firstElementIndex}]);");
             writer.BlankLine();
@@ -173,21 +171,21 @@ internal static class CollectionAliasManagedEmitter
             writer.WriteLine("return false;");
             writer.CloseBlock();
             writer.BlankLine();
-            writer.OpenBlock("if (ReferenceEquals(this, other))");
+            writer.OpenBlock("if (global::System.Object.ReferenceEquals(this, other))");
             writer.WriteLine("return true;");
             writer.CloseBlock();
             writer.BlankLine();
 
             if (declaration.Dimensions.Count == 1)
             {
-                writer.WriteLine("return Value.SequenceEqual(other.Value);");
+                writer.WriteLine("return global::System.Linq.Enumerable.SequenceEqual(Value, other.Value);");
             }
             else
             {
                 writer.WriteLine("return Value.Rank == other.Value.Rank");
                 writer.Indent();
-                writer.WriteLine("&& Enumerable.Range(0, Value.Rank).All(dimension => Value.GetLength(dimension) == other.Value.GetLength(dimension))");
-                writer.WriteLine($"&& Value.Cast<{elementReference}>().SequenceEqual(other.Value.Cast<{elementReference}>());");
+                writer.WriteLine("&& global::System.Linq.Enumerable.All(global::System.Linq.Enumerable.Range(0, Value.Rank), dimension => Value.GetLength(dimension) == other.Value.GetLength(dimension))");
+                writer.WriteLine($"&& global::System.Linq.Enumerable.SequenceEqual(global::System.Linq.Enumerable.Cast<{elementReference}>(Value), global::System.Linq.Enumerable.Cast<{elementReference}>(other.Value));");
                 writer.Unindent();
             }
 
@@ -237,7 +235,7 @@ internal static class CollectionAliasManagedEmitter
 
             writer.WriteXmlInheritdoc();
             writer.OpenBlock("public override int GetHashCode()");
-            writer.WriteLine("var hash = new HashCode();");
+            writer.WriteLine("var hash = new global::System.HashCode();");
             writer.BlankLine();
             writer.WriteLine("hash.Add(Value);");
             writer.BlankLine();
@@ -252,7 +250,7 @@ internal static class CollectionAliasManagedEmitter
             writer.WriteLine("return false;");
             writer.CloseBlock();
             writer.BlankLine();
-            writer.OpenBlock("if (ReferenceEquals(this, other))");
+            writer.OpenBlock("if (global::System.Object.ReferenceEquals(this, other))");
             writer.WriteLine("return true;");
             writer.CloseBlock();
             writer.BlankLine();

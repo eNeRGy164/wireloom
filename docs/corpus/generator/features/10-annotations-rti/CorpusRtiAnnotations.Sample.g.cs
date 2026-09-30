@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusRtiAnnotations;
 
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>10-annotations-rti.idl</c>. Its key members form the DDS instance key. It is marked as <c>extensible</c>. It is marked as a DDS topic type.
 /// </summary>
-public partial class Sample : IEquatable<Sample>
+public partial class Sample : global::System.IEquatable<Sample>
 {
     private int _value;
 
@@ -34,8 +33,8 @@ public partial class Sample : IEquatable<Sample>
         }
         set
         {
-            ArgumentOutOfRangeException.ThrowIfLessThan(value, -32);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 31);
+            global::System.ArgumentOutOfRangeException.ThrowIfLessThan(value, -32);
+            global::System.ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 31);
 
             _value = value;
         }
@@ -95,7 +94,7 @@ public partial class Sample : IEquatable<Sample>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(id);
         hash.Add(value);
@@ -117,7 +116,7 @@ public partial class Sample : IEquatable<Sample>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

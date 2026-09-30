@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusAutoId;
 
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>09-autoid-hash.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Sample : IEquatable<Sample>
+public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets or sets the <c>id</c> member. Its DDS member ID is generated from the hash of <c>stable_id</c> through <c>@hashid</c>. This member is marked as must-understand by DDS.
@@ -62,7 +61,7 @@ public partial class Sample : IEquatable<Sample>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(id);
         hash.Add(text);
@@ -82,7 +81,7 @@ public partial class Sample : IEquatable<Sample>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

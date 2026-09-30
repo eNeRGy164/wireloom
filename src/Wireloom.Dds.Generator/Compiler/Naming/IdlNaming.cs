@@ -49,12 +49,12 @@ internal static class IdlNaming
         var isAbsolute = normalized.StartsWith(".", StringComparison.Ordinal);
         normalized = normalized.TrimStart('.');
 
-        if (isAbsolute || currentNamespace is null || normalized.StartsWith(currentNamespace + ".", StringComparison.Ordinal))
+        if (isAbsolute || currentNamespace is null || normalized.StartsWith($"{currentNamespace}.", StringComparison.Ordinal))
         {
             return normalized;
         }
 
-        return currentNamespace + "." + normalized;
+        return $"{currentNamespace}.{normalized}";
     }
 
     /// <summary>Normalizes whitespace in an IDL type spelling.</summary>
@@ -69,6 +69,16 @@ internal static class IdlNaming
             return typeName;
         }
 
+        var originalTypeName = typeName;
+        var lastDot = typeName.LastIndexOf('.');
+        var declaringNamespace = typeName[..lastDot];
+        var simpleName = typeName[(lastDot + 1)..];
+        if (string.Equals(simpleName, "System", StringComparison.Ordinal)
+            && !string.Equals(declaringNamespace, currentNamespace, StringComparison.Ordinal))
+        {
+            return $"global::{EscapeQualifiedIdentifier(originalTypeName)}";
+        }
+
         typeName = typeName.Replace(currentNamespace + ".", string.Empty);
 
         const string implementationSuffix = ".Implementation";
@@ -81,7 +91,7 @@ internal static class IdlNaming
 
             if (typeName.StartsWith(parentNamespace + ".", StringComparison.Ordinal))
             {
-                return typeName.Substring(parentNamespace.Length + 1);
+                return typeName[(parentNamespace.Length + 1)..];
             }
 
             return typeName.Replace(parentNamespace + ".", string.Empty);
@@ -89,6 +99,14 @@ internal static class IdlNaming
 
         return typeName;
     }
+
+    /// <summary>Resolves a generated type from its declaring namespace in a generated document.</summary>
+    internal static string TypeReference(string typeName, string? declaringNamespace, string? currentNamespace) =>
+        TypeReference(
+            declaringNamespace is null
+                ? EscapeIdentifier(typeName)
+                : EscapeQualifiedIdentifier($"{declaringNamespace}.{typeName}"),
+            currentNamespace);
 
     /// <summary>Creates the deterministic generated-document hint name.</summary>
     internal static string CreateHintName(string? currentNamespace, string typeName) =>

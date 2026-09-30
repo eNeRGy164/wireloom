@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusExtensibility;
 
 /// <summary>
 /// Represents the <c>Mutable</c> DDS type declared in <c>09-extensibility.idl</c>. It is marked as <c>mutable</c>.
 /// </summary>
-public partial class Mutable : IEquatable<Mutable>
+public partial class Mutable : global::System.IEquatable<Mutable>
 {
     /// <summary>
     /// Gets or sets the <c>id</c> member.
@@ -62,7 +61,7 @@ public partial class Mutable : IEquatable<Mutable>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(id);
         hash.Add(optionalValue);
@@ -82,7 +81,7 @@ public partial class Mutable : IEquatable<Mutable>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

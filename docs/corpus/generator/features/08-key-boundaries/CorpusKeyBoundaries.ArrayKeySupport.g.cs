@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusKeyBoundaries;
 
@@ -21,7 +20,7 @@ public class ArrayKeySupport : TypeSupport<ArrayKey>
     /// </summary>
     public ArrayKeySupport() : base(
         new Implementation.ArrayKeyPlugin(),
-        new Lazy<DynamicType>(() => Implementation.ArrayKeyPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.ArrayKeyPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

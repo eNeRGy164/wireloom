@@ -10,7 +10,10 @@ internal static class CollectionAliasNativeEmitter
     {
         var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
         var implementation = declaration.Namespace is null ? "Implementation" : $"{declaration.Namespace}.Implementation";
-        var elementIdlType = declaration.IsCollection ? declaration.ElementType! : elementType;
+        var implementationTypeName = IdlNaming.TypeReference(typeName, declaration.Namespace, implementation);
+        var elementIdlType = declaration.IsCollection
+            ? declaration.ElementType!
+            : compilation.ResolveUnderlyingType(declaration.Target, declaration.Namespace);
         var implementationElementType = IdlNaming.TypeReference(elementType, implementation);
         var isString = declaration.IsString;
         var isStringSequence = declaration.IsSequence && IsStringType(elementIdlType);
@@ -34,7 +37,7 @@ internal static class CollectionAliasNativeEmitter
 
         var writer = EmissionSupport.CreateSource(implementation, EmissionSupport.UnmanagedTypeUsings, sourceIdlFileName);
 
-        writer.OpenBlock($"public struct {typeName}Unmanaged : INativeTopicType<{typeName}>");
+        writer.OpenBlock($"public struct {typeName}Unmanaged : INativeTopicType<{implementationTypeName}>");
 
         string? nativeElementType;
         if (declaration.IsCollection)
@@ -49,7 +52,7 @@ internal static class CollectionAliasNativeEmitter
             }
             else
             {
-                nativeElementType = IdlNaming.TypeReference(compilation.ResolveAliasNativeType(elementType, declaration.Namespace), implementation);
+                nativeElementType = IdlNaming.TypeReference(compilation.ResolveAliasNativeType(elementIdlType, declaration.Namespace), implementation);
             }
         }
 
@@ -127,7 +130,7 @@ internal static class CollectionAliasNativeEmitter
         writer.WriteXmlSummary("Copies native values into a managed typedef sample.");
         writer.WriteXmlParam("sample", "The managed typedef to populate.");
         writer.WriteXmlParam("keysOnly", "Whether to copy only key members.");
-        writer.OpenBlock($"public void FromNative({typeName} sample, bool keysOnly = false)");
+        writer.OpenBlock($"public void FromNative({implementationTypeName} sample, bool keysOnly = false)");
 
         if (declaration.IsSequence)
         {
@@ -222,7 +225,7 @@ internal static class CollectionAliasNativeEmitter
                 }
                 else
                 {
-                    writer.WriteLine($"Value = {NativeDefaultValue(elementType, implementationElementType)};");
+                    writer.WriteLine($"Value = {NativeDefaultValue(elementIdlType, elementType, implementationElementType)};");
                 }
             }
         }
@@ -233,7 +236,7 @@ internal static class CollectionAliasNativeEmitter
         writer.WriteXmlSummary("Copies a managed typedef sample into native storage.");
         writer.WriteXmlParam("sample", "The managed typedef to copy.");
         writer.WriteXmlParam("keysOnly", "Whether to copy only key members.");
-        writer.OpenBlock($"public void ToNative({typeName} sample, bool keysOnly = false)");
+        writer.OpenBlock($"public void ToNative({implementationTypeName} sample, bool keysOnly = false)");
 
         if (declaration.IsSequence)
         {
@@ -285,8 +288,24 @@ internal static class CollectionAliasNativeEmitter
         compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementation, $"{declaration.Name}Unmanaged"), writer.ToString()));
     }
 
-    private static string NativeDefaultValue(string elementType, string implementationElementType)
+    private static string NativeDefaultValue(string elementIdlType, string elementType, string implementationElementType)
     {
+        var normalizedElementIdlType = IdlNaming.NormalizeIdlType(elementIdlType);
+        if (normalizedElementIdlType is "boolean")
+        {
+            return "false";
+        }
+
+        if (normalizedElementIdlType is "char" or "wchar")
+        {
+            return "'\\0'";
+        }
+
+        if (normalizedElementIdlType is "long long" or "int64")
+        {
+            return "0L";
+        }
+
         if (!IdlNaming.IsPrimitive(elementType))
         {
             return $"({implementationElementType})0";

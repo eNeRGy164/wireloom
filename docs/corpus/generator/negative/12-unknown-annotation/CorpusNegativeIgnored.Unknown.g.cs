@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusNegativeIgnored;
 
 /// <summary>
 /// Represents the <c>Unknown</c> DDS type declared in <c>12-unknown-annotation.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Unknown : IEquatable<Unknown>
+public partial class Unknown : global::System.IEquatable<Unknown>
 {
     /// <summary>
     /// Gets or sets the <c>value</c> member.
@@ -53,7 +52,7 @@ public partial class Unknown : IEquatable<Unknown>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(value);
 
@@ -72,7 +71,7 @@ public partial class Unknown : IEquatable<Unknown>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

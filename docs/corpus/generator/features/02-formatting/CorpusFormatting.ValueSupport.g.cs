@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusFormatting;
 
@@ -21,7 +20,7 @@ public class ValueSupport : TypeSupport<Value>
     /// </summary>
     public ValueSupport() : base(
         new Implementation.ValuePlugin(),
-        new Lazy<DynamicType>(() => Implementation.ValuePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.ValuePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

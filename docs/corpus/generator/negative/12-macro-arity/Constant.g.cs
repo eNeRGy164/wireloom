@@ -4,15 +4,13 @@
 // It requires the RTI Connext DDS .NET runtime.
 #nullable enable
 
-using System;
-
 /// <summary>
-/// Provides the <c>Value</c> IDL constant.
+/// Provides the <c>Constant</c> IDL constant.
 /// </summary>
-public static class Value
+public static class Constant
 {
     /// <summary>
-    /// Gets the integer value of the <c>Value</c> IDL constant.
+    /// Gets the integer value of the <c>Constant</c> IDL constant.
     /// </summary>
     public const int Value = 1;
 }

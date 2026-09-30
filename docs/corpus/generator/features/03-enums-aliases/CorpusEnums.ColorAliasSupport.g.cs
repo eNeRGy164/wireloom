@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusEnums;
 
@@ -21,7 +20,7 @@ public class ColorAliasSupport : TypeSupport<ColorAlias>
     /// </summary>
     public ColorAliasSupport() : base(
         new Implementation.ColorAliasPlugin(),
-        new Lazy<DynamicType>(() => Implementation.ColorAliasPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.ColorAliasPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

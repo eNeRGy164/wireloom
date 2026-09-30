@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusValueTypes;
 
 /// <summary>
 /// Represents the <c>BaseValue</c> DDS type declared in <c>06-valuetypes.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class BaseValue : IEquatable<BaseValue>
+public partial class BaseValue : global::System.IEquatable<BaseValue>
 {
     /// <summary>
     /// Gets or sets the <c>baseValue</c> member.
@@ -53,7 +52,7 @@ public partial class BaseValue : IEquatable<BaseValue>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(baseValue);
 
@@ -72,7 +71,7 @@ public partial class BaseValue : IEquatable<BaseValue>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusValueTypes;
 
 /// <summary>
 /// Represents the <c>DerivedValue</c> DDS type declared in <c>06-valuetypes.idl</c>. It derives from <see cref="BaseValue"/>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class DerivedValue : BaseValue, IEquatable<DerivedValue>
+public partial class DerivedValue : BaseValue, global::System.IEquatable<DerivedValue>
 {
     /// <summary>
     /// Gets or sets the <c>name</c> member. Its maximum length is <c>16</c>.
@@ -55,7 +54,7 @@ public partial class DerivedValue : BaseValue, IEquatable<DerivedValue>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(base.GetHashCode());
         hash.Add(name);
@@ -75,7 +74,7 @@ public partial class DerivedValue : BaseValue, IEquatable<DerivedValue>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

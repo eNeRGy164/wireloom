@@ -16,6 +16,10 @@ internal static class EmissionTypeProjector
         {
             cSharpType = "string?";
         }
+        else if (member.Metadata.IsOptional && type is SequenceEmissionType or ArrayEmissionType)
+        {
+            cSharpType += "?";
+        }
         else if (member.Metadata.IsOptional && type is not SequenceEmissionType and not ArrayEmissionType && !IsAggregateEmissionType(type))
         {
             cSharpType += "?";
@@ -48,6 +52,7 @@ internal static class EmissionTypeProjector
                 ? IdlNaming.EscapeQualifiedIdentifier(IdlNaming.ResolveTypeName(union.DiscriminatorIdlType, union.Namespace))
                 : IdlNaming.MapPrimitive(union.DiscriminatorIdlType),
             union.DiscriminatorIsEnum,
+            union.DiscriminatorDefaultValue,
             [.. union.Branches.Select(branch =>
             {
                 var field = ToEmissionField(branch.Field, union.Namespace);

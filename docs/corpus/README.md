@@ -38,18 +38,19 @@ The current inventory contains:
 | Group                    | Count | Location                             |
 | ------------------------ | ----: | ------------------------------------ |
 | Positive feature cases   |    54 | [`idl/features`](idl/features)       |
-| Negative cases           |    53 | [`idl/negative`](idl/negative)       |
+| Negative cases           |    54 | [`idl/negative`](idl/negative)       |
 | Integration entry points |     4 | [`idl/integration`](idl/integration) |
-| Total                    |   111 | —                                    |
+| Total                    |   112 | —                                    |
 
 Each case has a manifest ID, such as `01-primitives`, and a stable `C###`
 provenance tag. Tags are used by the feature index and test diagnostics.
 Positive cases are numbered first, followed by negative cases, then integration
 cases.
 
-The compliance loader currently derives tags from manifest order. Keep existing
-case order append-only when adding cases so existing `C###` references do not
-move. The authoritative mapping is [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md).
+The compliance loader derives tags from manifest order unless a case has an
+explicit `tag` in `manifest.json`. Give a newly inserted case an explicit next
+tag when existing later cases must retain their `C###` references. The
+authoritative mapping is [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md).
 
 ## Oracle library
 
@@ -58,8 +59,11 @@ Connext DDS 7.7.0 / `rtiddsgen` 4.7.0 generated C# used for source-shape
 comparison. RTI acceptance is reference data only; it does not imply that the
 managed generator supports the same feature.
 
-Rejected cases may have no generated C# source, while remaining in the case
-inventory so accepted, rejected, and observed outcomes stay explicit.
+Rejected cases may have no managed generated C# source, while remaining in the
+case inventory so accepted, rejected, and observed outcomes stay explicit.
+An RTI-accepted case may still be deliberately rejected by Wireloom when its
+names would force invalid generated C#; the RTI oracle remains available as
+comparison evidence.
 
 ## Test responsibilities
 

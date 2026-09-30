@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusExtensibility;
 
 /// <summary>
 /// Represents the <c>Final</c> DDS type declared in <c>09-extensibility.idl</c>. It is marked as <c>final</c>.
 /// </summary>
-public partial class Final : IEquatable<Final>
+public partial class Final : global::System.IEquatable<Final>
 {
     /// <summary>
     /// Gets or sets the <c>id</c> member.
@@ -62,7 +61,7 @@ public partial class Final : IEquatable<Final>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(id);
         hash.Add(text);
@@ -82,7 +81,7 @@ public partial class Final : IEquatable<Final>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

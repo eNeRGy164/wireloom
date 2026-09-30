@@ -6,15 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
-using System.Linq;
 
 namespace CorpusIntegrationCollections;
 
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>13-compositions.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Sample : IEquatable<Sample>
+public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets the <c>unboundedItems</c> member. Its maximum number of elements is <c>100</c>.
@@ -95,8 +93,8 @@ public partial class Sample : IEquatable<Sample>
             return;
         }
 
-        unboundedItems = new Sequence<Item>(other.unboundedItems.Select(element => new Item(element)));
-        boundedItems = new Sequence<Item>(other.boundedItems.Select(element => new Item(element)));
+        unboundedItems = new Sequence<Item>(global::System.Linq.Enumerable.Select(other.unboundedItems, element => new Item(element)));
+        boundedItems = new Sequence<Item>(global::System.Linq.Enumerable.Select(other.boundedItems, element => new Item(element)));
         aggregateArray = (Item[])other.aggregateArray.Clone();
 
         for (var dimension0 = 0; dimension0 < 2; dimension0++)
@@ -111,13 +109,13 @@ public partial class Sample : IEquatable<Sample>
             rows[dimension0] = new Row(other.rows[dimension0]);
         }
 
-        sequenceOfArrays = new Sequence<Row>(other.sequenceOfArrays.Select(element => new Row(element)));
+        sequenceOfArrays = new Sequence<Row>(global::System.Linq.Enumerable.Select(other.sequenceOfArrays, element => new Row(element)));
     }
 
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(unboundedItems.Count);
         hash.Add(boundedItems.Count);
@@ -140,16 +138,16 @@ public partial class Sample : IEquatable<Sample>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }
 
-        return unboundedItems.SequenceEqual(other.unboundedItems)
-            && boundedItems.SequenceEqual(other.boundedItems)
-            && aggregateArray.SequenceEqual(other.aggregateArray)
-            && rows.SequenceEqual(other.rows)
-            && sequenceOfArrays.SequenceEqual(other.sequenceOfArrays);
+        return global::System.Linq.Enumerable.SequenceEqual(unboundedItems, other.unboundedItems)
+            && global::System.Linq.Enumerable.SequenceEqual(boundedItems, other.boundedItems)
+            && global::System.Linq.Enumerable.SequenceEqual(aggregateArray, other.aggregateArray)
+            && global::System.Linq.Enumerable.SequenceEqual(rows, other.rows)
+            && global::System.Linq.Enumerable.SequenceEqual(sequenceOfArrays, other.sequenceOfArrays);
     }
 
     /// <inheritdoc />

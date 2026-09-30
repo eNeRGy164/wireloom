@@ -6,7 +6,6 @@
 
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
-using System;
 
 namespace Implementation;
 
@@ -32,7 +31,7 @@ public struct CorpusIntegrationStatusUnmanaged : INativeTopicType<CorpusIntegrat
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void FromNative(CorpusIntegrationStatus sample, bool keysOnly = false)
     {
-        sample.active = Convert.ToBoolean(active);
+        sample.active = global::System.Convert.ToBoolean(active);
     }
 
     /// <summary>
@@ -52,6 +51,6 @@ public struct CorpusIntegrationStatusUnmanaged : INativeTopicType<CorpusIntegrat
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void ToNative(CorpusIntegrationStatus sample, bool keysOnly = false)
     {
-        active = Convert.ToByte(sample.active);
+        active = global::System.Convert.ToByte(sample.active);
     }
 }

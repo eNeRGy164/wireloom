@@ -4,8 +4,6 @@
 // It requires the RTI Connext DDS .NET runtime.
 #nullable enable
 
-using System;
-
 namespace CorpusNames;
 
 /// <summary>
@@ -16,5 +14,5 @@ public static class Derived
     /// <summary>
     /// Gets the integer value of the <c>Derived</c> IDL constant.
     /// </summary>
-    public const int Value = (Base.Value << 2) | 1;
+    public const int Value = Base.Value << 2 | 1;
 }

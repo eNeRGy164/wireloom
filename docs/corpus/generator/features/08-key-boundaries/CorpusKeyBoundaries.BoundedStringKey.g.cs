@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusKeyBoundaries;
 
 /// <summary>
 /// Represents the <c>BoundedStringKey</c> DDS type declared in <c>08-key-boundaries.idl</c>. Its key members form the DDS instance key. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class BoundedStringKey : IEquatable<BoundedStringKey>
+public partial class BoundedStringKey : global::System.IEquatable<BoundedStringKey>
 {
     /// <summary>
     /// Gets or sets the <c>name</c> member. This member forms part of the DDS instance key. Its maximum length is <c>12</c>.
@@ -63,7 +62,7 @@ public partial class BoundedStringKey : IEquatable<BoundedStringKey>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(name);
         hash.Add(payload);
@@ -83,7 +82,7 @@ public partial class BoundedStringKey : IEquatable<BoundedStringKey>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

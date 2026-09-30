@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusEnumUnion;
 
@@ -21,7 +20,7 @@ public class PayloadSupport : TypeSupport<Payload>
     /// </summary>
     public PayloadSupport() : base(
         new Implementation.PayloadPlugin(),
-        new Lazy<DynamicType>(() => Implementation.PayloadPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.PayloadPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

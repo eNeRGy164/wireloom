@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusNestedKeys;
 
@@ -21,7 +20,7 @@ public class OuterSupport : TypeSupport<Outer>
     /// </summary>
     public OuterSupport() : base(
         new Implementation.OuterPlugin(),
-        new Lazy<DynamicType>(() => Implementation.OuterPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.OuterPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

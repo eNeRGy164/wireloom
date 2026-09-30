@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace idl;
 
 /// <summary>
 /// Represents the <c>System</c> DDS type declared in <c>12-module-idl.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class System : IEquatable<System>
+public partial class System : global::System.IEquatable<System>
 {
     /// <summary>
     /// Gets or sets the <c>value</c> member.
@@ -53,7 +52,7 @@ public partial class System : IEquatable<System>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(value);
 
@@ -72,7 +71,7 @@ public partial class System : IEquatable<System>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

@@ -6,7 +6,6 @@
 
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
-using System;
 
 namespace CorpusBooleanUnion.Implementation;
 
@@ -41,7 +40,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void FromNative(Choice sample, bool keysOnly = false)
     {
-        switch (Convert.ToBoolean(_discriminator))
+        switch (global::System.Convert.ToBoolean(_discriminator))
         {
             case true:
                 sample.enabled = enabled;
@@ -61,7 +60,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        _discriminator = Convert.ToByte(Choice.DefaultDiscriminator);
+        _discriminator = global::System.Convert.ToByte(Choice.DefaultDiscriminator);
 
         enabled = 0;
 
@@ -75,9 +74,9 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void ToNative(Choice sample, bool keysOnly = false)
     {
-        _discriminator = Convert.ToByte(sample.Discriminator);
+        _discriminator = global::System.Convert.ToByte(sample.Discriminator);
 
-        switch (Convert.ToBoolean(_discriminator))
+        switch (global::System.Convert.ToBoolean(_discriminator))
         {
             case true:
                 enabled = sample.enabled;

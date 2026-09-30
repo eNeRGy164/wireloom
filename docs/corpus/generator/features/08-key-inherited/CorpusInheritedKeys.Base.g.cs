@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusInheritedKeys;
 
 /// <summary>
 /// Represents the <c>Base</c> DDS type declared in <c>08-key-inherited.idl</c>. Its key members form the DDS instance key. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Base : IEquatable<Base>
+public partial class Base : global::System.IEquatable<Base>
 {
     /// <summary>
     /// Gets or sets the <c>tenant</c> member. This member forms part of the DDS instance key.
@@ -62,7 +61,7 @@ public partial class Base : IEquatable<Base>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(tenant);
         hash.Add(baseValue);
@@ -82,7 +81,7 @@ public partial class Base : IEquatable<Base>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

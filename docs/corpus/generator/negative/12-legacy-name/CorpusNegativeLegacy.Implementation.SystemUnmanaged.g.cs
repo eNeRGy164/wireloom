@@ -6,14 +6,13 @@
 
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
-using System;
 
 namespace CorpusNegativeLegacy.Implementation;
 
 /// <summary>
 /// Provides the RTI native representation for <see cref="System"/>.
 /// </summary>
-public struct SystemUnmanaged : INativeTopicType<System>
+public struct SystemUnmanaged : INativeTopicType<global::CorpusNegativeLegacy.System>
 {
     private int value;
 
@@ -30,7 +29,7 @@ public struct SystemUnmanaged : INativeTopicType<System>
     /// </summary>
     /// <param name="sample">The managed sample to populate.</param>
     /// <param name="keysOnly">Whether to copy only key members.</param>
-    public void FromNative(System sample, bool keysOnly = false)
+    public void FromNative(global::CorpusNegativeLegacy.System sample, bool keysOnly = false)
     {
         sample.value = value;
     }
@@ -50,7 +49,7 @@ public struct SystemUnmanaged : INativeTopicType<System>
     /// </summary>
     /// <param name="sample">The managed sample to copy.</param>
     /// <param name="keysOnly">Whether to copy only key members.</param>
-    public void ToNative(System sample, bool keysOnly = false)
+    public void ToNative(global::CorpusNegativeLegacy.System sample, bool keysOnly = false)
     {
         value = sample.value;
     }

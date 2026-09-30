@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusPreprocessing;
 
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>11-preprocessing.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Sample : IEquatable<Sample>
+public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets or sets the <c>item</c> member.
@@ -61,7 +60,7 @@ public partial class Sample : IEquatable<Sample>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(item);
         hash.Add(value);
@@ -81,7 +80,7 @@ public partial class Sample : IEquatable<Sample>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

@@ -16,7 +16,7 @@ using Rti.Types;
 using System.Linq;
 using Omg.Types;
 
-public static class Value
+public static class Constant
 {
     public const int Value = 1;
 }

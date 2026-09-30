@@ -6,12 +6,11 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 /// <summary>
 /// Represents the <c>CorpusIntegrationStatus</c> DDS type declared in <c>13-status.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class CorpusIntegrationStatus : IEquatable<CorpusIntegrationStatus>
+public partial class CorpusIntegrationStatus : global::System.IEquatable<CorpusIntegrationStatus>
 {
     /// <summary>
     /// Gets or sets the <c>active</c> member.
@@ -51,7 +50,7 @@ public partial class CorpusIntegrationStatus : IEquatable<CorpusIntegrationStatu
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(active);
 
@@ -70,7 +69,7 @@ public partial class CorpusIntegrationStatus : IEquatable<CorpusIntegrationStatu
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

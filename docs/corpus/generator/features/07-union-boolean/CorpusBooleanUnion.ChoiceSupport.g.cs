@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusBooleanUnion;
 
@@ -21,7 +20,7 @@ public class ChoiceSupport : TypeSupport<Choice>
     /// </summary>
     public ChoiceSupport() : base(
         new Implementation.ChoicePlugin(),
-        new Lazy<DynamicType>(() => Implementation.ChoicePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.ChoicePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

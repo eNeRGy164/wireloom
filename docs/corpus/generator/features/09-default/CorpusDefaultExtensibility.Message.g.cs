@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusDefaultExtensibility;
 
 /// <summary>
 /// Represents the <c>Message</c> DDS type declared in <c>09-default.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Message : IEquatable<Message>
+public partial class Message : global::System.IEquatable<Message>
 {
     /// <summary>
     /// Gets or sets the <c>id</c> member.
@@ -62,7 +61,7 @@ public partial class Message : IEquatable<Message>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(id);
         hash.Add(text);
@@ -82,7 +81,7 @@ public partial class Message : IEquatable<Message>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

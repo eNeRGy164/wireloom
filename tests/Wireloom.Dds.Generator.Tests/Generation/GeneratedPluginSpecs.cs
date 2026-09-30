@@ -32,10 +32,10 @@ public sealed class GeneratedPluginSpecs
             "private int _value;",
             "private int _ranged;",
             "public int value");
-        managed.ShouldContain("ArgumentOutOfRangeException.ThrowIfLessThan(value, 0);");
-        managed.ShouldContain("ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 100);");
-        managed.ShouldContain("ArgumentOutOfRangeException.ThrowIfLessThan(value, -32);");
-        managed.ShouldContain("ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 31);");
+        managed.ShouldContain("global::System.ArgumentOutOfRangeException.ThrowIfLessThan(value, 0);");
+        managed.ShouldContain("global::System.ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 100);");
+        managed.ShouldContain("global::System.ArgumentOutOfRangeException.ThrowIfLessThan(value, -32);");
+        managed.ShouldContain("global::System.ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 31);");
         managed.ShouldContain("Its value must be between <c>0</c> and <c>100</c>. Its default value is <c>50</c>.");
         managed.ShouldContain("Its value must be between <c>-32</c> and <c>31</c>.");
         managed.ShouldContain("Its default value is <c>BLUE</c>.");
@@ -127,8 +127,8 @@ public sealed class GeneratedPluginSpecs
 
         // Assert
         var managed = documents["RtiAnnotations.Sample.g.cs"].Source;
-        managed.ShouldContain("ArgumentOutOfRangeException.ThrowIfLessThan(value, -32);");
-        managed.ShouldContain("ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 31);");
+        managed.ShouldContain("global::System.ArgumentOutOfRangeException.ThrowIfLessThan(value, -32);");
+        managed.ShouldContain("global::System.ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 31);");
 
         var plugin = documents["RtiAnnotations.Implementation.SamplePlugin.g.cs"].Source;
         plugin.ShouldContain("new StructMember(\"value\", dtf.GetPrimitiveType<int>(), id: 1)");

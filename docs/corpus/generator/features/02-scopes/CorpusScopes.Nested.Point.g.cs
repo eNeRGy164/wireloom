@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusScopes.Nested;
 
 /// <summary>
 /// Represents the <c>Point</c> DDS type declared in <c>02-scopes.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Point : IEquatable<Point>
+public partial class Point : global::System.IEquatable<Point>
 {
     /// <summary>
     /// Gets or sets the <c>x</c> member.
@@ -61,7 +60,7 @@ public partial class Point : IEquatable<Point>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(x);
         hash.Add(y);
@@ -81,7 +80,7 @@ public partial class Point : IEquatable<Point>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

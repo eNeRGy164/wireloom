@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace idl;
 
@@ -21,7 +20,7 @@ public class SystemSupport : TypeSupport<System>
     /// </summary>
     public SystemSupport() : base(
         new Implementation.SystemPlugin(),
-        new Lazy<DynamicType>(() => Implementation.SystemPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.SystemPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

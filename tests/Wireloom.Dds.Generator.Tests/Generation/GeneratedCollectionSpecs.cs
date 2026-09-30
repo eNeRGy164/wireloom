@@ -21,6 +21,7 @@ public sealed class GeneratedCollectionSpecs
                 typedef long Grid[2][3];
                 struct Sample {
                     sequence<long> values;
+                    long matrix[2][3];
                     Texts texts;
                     Items items;
                     Grid grid;
@@ -49,6 +50,10 @@ public sealed class GeneratedCollectionSpecs
         var sampleUnmanaged = documents["Collections.Implementation.SampleUnmanaged.g.cs"].Source;
         sampleUnmanaged.ShouldContain("values.Initialize<int>");
         sampleUnmanaged.ShouldContain("grid.Initialize(allocatePointers, allocateMemory)");
+
+        var sample = documents["Collections.Sample.g.cs"].Source;
+        sample.ShouldContain("hash.Add(matrix[0, 0]);");
+        sample.ShouldNotContain("hash.Add(matrix[0]);");
 
         var plugin = documents["Collections.Implementation.SamplePlugin.g.cs"].Source;
         plugin.ShouldContain("CreateSequenceWithAccessInfo");
@@ -86,8 +91,8 @@ public sealed class GeneratedCollectionSpecs
         // Assert
         var managed = documents["Optional.Sample.g.cs"].Source;
         managed.ShouldContain("[Optional]");
-        managed.ShouldContain("public ISequence<int> values");
-        managed.ShouldContain("public int[,] grid");
+        managed.ShouldContain("public ISequence<int>? values");
+        managed.ShouldContain("public int[,]? grid");
         managed.ShouldContain("public string? text");
 
         var unmanaged = documents["Optional.Implementation.SampleUnmanaged.g.cs"].Source;
@@ -134,5 +139,24 @@ public sealed class GeneratedCollectionSpecs
         var samplePlugin = documents["PrimitiveArray.Implementation.SamplePlugin.g.cs"].Source;
         samplePlugin.ShouldContain("CreateArrayWithAccessInfo<int>");
     }
-}
 
+    [Fact]
+    public void MultidimensionalArrayMembersNamedDimensionQualifyTheMemberInEqualityLambdas()
+    {
+        // Arrange
+        var input = Input(
+            "dimension-member-equality.idl",
+            """
+            module DimensionMemberEquality {
+                struct Sample { long dimension[2][3]; };
+            };
+            """);
+
+        // Act
+        var managed = CompileSources(input)["DimensionMemberEquality.Sample.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("this.dimension.GetLength(dimension)");
+        managed.ShouldContain("global::System.Linq.Enumerable.Cast<int>(this.dimension)");
+    }
+}

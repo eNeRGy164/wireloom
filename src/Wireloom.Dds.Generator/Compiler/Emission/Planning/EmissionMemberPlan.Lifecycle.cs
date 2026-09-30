@@ -8,7 +8,7 @@ namespace Wireloom.Compiler.Emission.Planning;
 /// <summary>Builds managed lifecycle operations for a member emission plan.</summary>
 internal sealed partial class MemberEmissionPlan
 {
-    public string UnionDefaultInitializationStatement(string? namespaceOverride)
+    public string UnionDefaultInitializationStatement(string? namespaceOverride, string nativeFieldPrefix = "")
     {
         var namespaceName = namespaceOverride ?? currentNamespace;
 
@@ -17,28 +17,28 @@ internal sealed partial class MemberEmissionPlan
             var element = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
             if (HasAggregateElement)
             {
-                return $"{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
+                return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
             }
 
-            return $"{EscapedName}.Initialize<{element}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
         }
 
         if (IsAggregate)
         {
-            return $"{EscapedName}.Initialize(allocatePointers, allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize(allocatePointers, allocateMemory);";
         }
 
         if (IsString)
         {
-            return $"{EscapedName}.Initialize(size: {Bound}, allocateMemory: allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {Bound}, allocateMemory: allocateMemory);";
         }
 
         if (IsOptionalScalar)
         {
-            return $"{EscapedName} = default;";
+            return $"{nativeFieldPrefix}{EscapedName} = default;";
         }
 
-        return $"{EscapedName} = {NativeDefaultValue(namespaceName)};";
+        return $"{nativeFieldPrefix}{EscapedName} = {NativeDefaultValue(namespaceName)};";
     }
 
     private string NativeDefaultValue(string? namespaceName)
@@ -75,7 +75,7 @@ internal sealed partial class MemberEmissionPlan
         };
     }
 
-    public string? BuildInitializeStatement(string? namespaceOverride = null)
+    public string? BuildInitializeStatement(string? namespaceOverride = null, string nativeFieldPrefix = "")
     {
         var namespaceName = namespaceOverride ?? currentNamespace;
 
@@ -88,103 +88,103 @@ internal sealed partial class MemberEmissionPlan
 
             if (HasAggregateElement)
             {
-                return $"{EscapedName}.Initialize<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>();";
+                return $"{nativeFieldPrefix}{EscapedName}.Initialize<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>();";
             }
 
-            return $"{EscapedName}.Initialize();";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize();";
         }
 
         if (IsSequence)
         {
-            return BuildSequenceInitializeStatement(namespaceName);
+            return BuildSequenceInitializeStatement(namespaceName, nativeFieldPrefix);
         }
 
         if (IsArray)
         {
-            return BuildArrayInitializeStatement(namespaceName);
+            return BuildArrayInitializeStatement(namespaceName, nativeFieldPrefix);
         }
 
         if (IsAggregate)
         {
-            return $"{EscapedName}.Initialize(allocatePointers, allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize(allocatePointers, allocateMemory);";
         }
 
         if (IsString)
         {
-            return $"{EscapedName}.Initialize(size: {Bound}, allocateMemory: allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {Bound}, allocateMemory: allocateMemory);";
         }
 
-        return $"{EscapedName} = {NativeDefaultValue(namespaceName)};";
+        return $"{nativeFieldPrefix}{EscapedName} = {NativeDefaultValue(namespaceName)};";
     }
 
-    private string BuildSequenceInitializeStatement(string? namespaceName)
+    private string BuildSequenceInitializeStatement(string? namespaceName, string nativeFieldPrefix)
     {
         var element = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
 
         if (IsStringSequence && IsSequenceArray)
         {
-            return $"{EscapedName}.Initialize(max: {Bound}, absoluteMax: {Bound}, maxStrLen: {ElementType!.Bound}, allocateMemory: allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize(max: {Bound}, absoluteMax: {Bound}, maxStrLen: {ElementType!.Bound}, allocateMemory: allocateMemory);";
         }
 
         if (HasAggregateElement)
         {
-            return $"{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
         }
 
-        return $"{EscapedName}.Initialize<{element}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
+        return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
     }
 
-    private string BuildArrayInitializeStatement(string? namespaceName)
+    private string BuildArrayInitializeStatement(string? namespaceName, string nativeFieldPrefix)
     {
         var element = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
 
         if (HasAggregateElement)
         {
-            return $"{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, allocatePointers: allocatePointers, allocateMemory: allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, allocatePointers: allocatePointers, allocateMemory: allocateMemory);";
         }
 
-        return $"{EscapedName}.Initialize<{element}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, allocateMemory: allocateMemory);";
+        return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, allocateMemory: allocateMemory);";
     }
 
-    public string? BuildDestroyStatement(string? namespaceOverride = null)
+    public string? BuildDestroyStatement(string? namespaceOverride = null, string nativeFieldPrefix = "")
     {
         var namespaceName = namespaceOverride ?? currentNamespace;
 
         if (IsOptionalScalar)
         {
-            return $"{EscapedName}.Destroy(optionalsOnly);";
+            return $"{nativeFieldPrefix}{EscapedName}.Destroy(optionalsOnly);";
         }
 
         if (IsString)
         {
-            return $"{EscapedName}.Destroy();";
+            return $"{nativeFieldPrefix}{EscapedName}.Destroy();";
         }
 
         if (IsSequence || IsArray)
         {
-            return BuildCollectionDestroyStatement(namespaceName);
+            return BuildCollectionDestroyStatement(namespaceName, nativeFieldPrefix);
         }
 
-        return IsAggregate ? $"{EscapedName}.Destroy(optionalsOnly);" : null;
+        return IsAggregate ? $"{nativeFieldPrefix}{EscapedName}.Destroy(optionalsOnly);" : null;
     }
 
-    private string BuildCollectionDestroyStatement(string? namespaceName)
+    private string BuildCollectionDestroyStatement(string? namespaceName, string nativeFieldPrefix)
     {
         if (IsStringSequence && IsSequenceArray)
         {
-            return $"{EscapedName}.Destroy();";
+            return $"{nativeFieldPrefix}{EscapedName}.Destroy();";
         }
 
         if (!HasAggregateElement)
         {
-            return $"{EscapedName}.Destroy(optionalsOnly);";
+            return $"{nativeFieldPrefix}{EscapedName}.Destroy(optionalsOnly);";
         }
 
         if (IsSequence)
         {
-            return $"{EscapedName}.Destroy<{IdlNaming.TypeReference(ElementCSharpType!, currentNamespace)}, {ElementUnmanagedType(namespaceName)}>(optionalsOnly);";
+            return $"{nativeFieldPrefix}{EscapedName}.Destroy<{IdlNaming.TypeReference(ElementCSharpType!, currentNamespace)}, {ElementUnmanagedType(namespaceName)}>(optionalsOnly);";
         }
 
-        return $"{EscapedName}.Destroy<{IdlNaming.TypeReference(ElementCSharpType!, currentNamespace)}, {ElementUnmanagedType(namespaceName)}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, optionalsOnly: optionalsOnly);";
+        return $"{nativeFieldPrefix}{EscapedName}.Destroy<{IdlNaming.TypeReference(ElementCSharpType!, currentNamespace)}, {ElementUnmanagedType(namespaceName)}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, optionalsOnly: optionalsOnly);";
     }
 }

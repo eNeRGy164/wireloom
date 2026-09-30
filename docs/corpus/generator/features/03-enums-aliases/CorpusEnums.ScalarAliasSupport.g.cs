@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusEnums;
 
@@ -21,7 +20,7 @@ public class ScalarAliasSupport : TypeSupport<ScalarAlias>
     /// </summary>
     public ScalarAliasSupport() : base(
         new Implementation.ScalarAliasPlugin(),
-        new Lazy<DynamicType>(() => Implementation.ScalarAliasPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.ScalarAliasPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

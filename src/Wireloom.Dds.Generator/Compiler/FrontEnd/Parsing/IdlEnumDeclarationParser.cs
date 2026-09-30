@@ -24,6 +24,7 @@ internal sealed class IdlEnumDeclarationParser
         var enumName = enumDeclaration.Groups["name"].Value;
         var qualified = context.Qualify(enumName, currentNamespace);
         context.EnsureNewName(input, baseOffset + position, qualified);
+        context.EnsureGeneratedCompanionNames(input, baseOffset + position, enumName, currentNamespace, includeUnmanaged: false);
         var enumMembers = new List<IdlEnumMember>();
         var hasDefaultLiteral = false;
         var nextValue = 0L;

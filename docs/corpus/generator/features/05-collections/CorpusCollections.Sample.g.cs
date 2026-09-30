@@ -6,15 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
-using System.Linq;
 
 namespace CorpusCollections;
 
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>05-collections.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Sample : IEquatable<Sample>
+public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets or sets the <c>values</c> member.
@@ -85,16 +83,16 @@ public partial class Sample : IEquatable<Sample>
         values = (int[,])other.values.Clone();
         unbounded = new Sequence<int>(other.unbounded);
         bounded = new BoundedLongs(other.bounded);
-        items = new Sequence<Item>(other.items.Select(element => new Item(element)));
+        items = new Sequence<Item>(global::System.Linq.Enumerable.Select(other.items, element => new Item(element)));
         grid = new CoordinateGrid(other.grid);
     }
 
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
-        hash.Add(values[0]);
+        hash.Add(values[0, 0]);
         hash.Add(unbounded.Count);
         hash.Add(bounded);
         hash.Add(items.Count);
@@ -115,17 +113,17 @@ public partial class Sample : IEquatable<Sample>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }
 
         return values.Rank == other.values.Rank
-            && Enumerable.Range(0, values.Rank).All(dimension => values.GetLength(dimension) == other.values.GetLength(dimension))
-            && values.Cast<int>().SequenceEqual(other.values.Cast<int>())
-            && unbounded.SequenceEqual(other.unbounded)
+            && global::System.Linq.Enumerable.All(global::System.Linq.Enumerable.Range(0, values.Rank), dimension => values.GetLength(dimension) == other.values.GetLength(dimension))
+            && global::System.Linq.Enumerable.SequenceEqual(global::System.Linq.Enumerable.Cast<int>(values), global::System.Linq.Enumerable.Cast<int>(other.values))
+            && global::System.Linq.Enumerable.SequenceEqual(unbounded, other.unbounded)
             && bounded.Equals(other.bounded)
-            && items.SequenceEqual(other.items)
+            && global::System.Linq.Enumerable.SequenceEqual(items, other.items)
             && grid.Equals(other.grid);
     }
 

@@ -6,15 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
-using System.Linq;
 
 namespace CorpusCollections;
 
 /// <summary>
 /// Represents the <c>CoordinateGrid</c> IDL typedef declared in <c>05-collections.idl</c>.
 /// </summary>
-public partial class CoordinateGrid : IEquatable<CoordinateGrid>
+public partial class CoordinateGrid : global::System.IEquatable<CoordinateGrid>
 {
     /// <summary>
     /// Gets or sets the array value represented by this typedef.
@@ -54,7 +52,7 @@ public partial class CoordinateGrid : IEquatable<CoordinateGrid>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(Value[0, 0]);
 
@@ -72,14 +70,14 @@ public partial class CoordinateGrid : IEquatable<CoordinateGrid>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }
 
         return Value.Rank == other.Value.Rank
-            && Enumerable.Range(0, Value.Rank).All(dimension => Value.GetLength(dimension) == other.Value.GetLength(dimension))
-            && Value.Cast<int>().SequenceEqual(other.Value.Cast<int>());
+            && global::System.Linq.Enumerable.All(global::System.Linq.Enumerable.Range(0, Value.Rank), dimension => Value.GetLength(dimension) == other.Value.GetLength(dimension))
+            && global::System.Linq.Enumerable.SequenceEqual(global::System.Linq.Enumerable.Cast<int>(Value), global::System.Linq.Enumerable.Cast<int>(other.Value));
     }
 
     /// <inheritdoc />

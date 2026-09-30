@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusExtensibility;
 
@@ -21,7 +20,7 @@ public class MutableSupport : TypeSupport<Mutable>
     /// </summary>
     public MutableSupport() : base(
         new Implementation.MutablePlugin(),
-        new Lazy<DynamicType>(() => Implementation.MutablePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.MutablePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusInheritedKeys;
 
 /// <summary>
 /// Represents the <c>Derived</c> DDS type declared in <c>08-key-inherited.idl</c>. Its key members form the DDS instance key. It derives from <see cref="Base"/>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Derived : Base, IEquatable<Derived>
+public partial class Derived : Base, global::System.IEquatable<Derived>
 {
     /// <summary>
     /// Gets or sets the <c>localId</c> member. This member forms part of the DDS instance key.
@@ -64,7 +63,7 @@ public partial class Derived : Base, IEquatable<Derived>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(base.GetHashCode());
         hash.Add(localId);
@@ -85,7 +84,7 @@ public partial class Derived : Base, IEquatable<Derived>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

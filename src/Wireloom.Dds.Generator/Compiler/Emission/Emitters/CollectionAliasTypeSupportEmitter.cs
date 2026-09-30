@@ -18,7 +18,7 @@ internal static class CollectionAliasTypeSupportEmitter
         writer.WriteLine($"public {typeName}Support() : base(");
         writer.Indent();
         writer.WriteLine($"new Implementation.{typeName}Plugin(),");
-        writer.WriteLine($"new Lazy<DynamicType>(() => Implementation.{typeName}Plugin.CreateDynamicType(isPublic: true)))");
+        writer.WriteLine($"new global::System.Lazy<DynamicType>(() => Implementation.{typeName}Plugin.CreateDynamicType(isPublic: true)))");
         writer.Unindent();
         writer.OpenBrace();
         writer.CloseBlock();

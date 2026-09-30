@@ -6,15 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
-using System.Linq;
 
 namespace CorpusKeyBoundaries;
 
 /// <summary>
 /// Represents the <c>ArrayKey</c> DDS type declared in <c>08-key-boundaries.idl</c>. Its key members form the DDS instance key. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class ArrayKey : IEquatable<ArrayKey>
+public partial class ArrayKey : global::System.IEquatable<ArrayKey>
 {
     /// <summary>
     /// Gets or sets the <c>coordinates</c> member. This member forms part of the DDS instance key.
@@ -64,7 +62,7 @@ public partial class ArrayKey : IEquatable<ArrayKey>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(coordinates[0]);
         hash.Add(payload);
@@ -84,12 +82,12 @@ public partial class ArrayKey : IEquatable<ArrayKey>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }
 
-        return coordinates.SequenceEqual(other.coordinates)
+        return global::System.Linq.Enumerable.SequenceEqual(coordinates, other.coordinates)
             && payload.Equals(other.payload);
     }
 

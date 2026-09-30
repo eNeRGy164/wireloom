@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusConditionals;
 
@@ -21,7 +20,7 @@ public class UndefBranchSupport : TypeSupport<UndefBranch>
     /// </summary>
     public UndefBranchSupport() : base(
         new Implementation.UndefBranchPlugin(),
-        new Lazy<DynamicType>(() => Implementation.UndefBranchPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.UndefBranchPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

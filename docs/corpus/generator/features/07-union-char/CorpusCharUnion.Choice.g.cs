@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusCharUnion;
 
 /// <summary>
 /// Represents the <c>Choice</c> DDS union declared in <c>07-union-char.idl</c>. Exactly one branch is selected by <see cref="Discriminator"/>.
 /// </summary>
-public partial class Choice : IEquatable<Choice>
+public partial class Choice : global::System.IEquatable<Choice>
 {
     private int _letter;
     private string _text = string.Empty;
@@ -38,7 +37,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator != 'a')
             {
-                throw new InvalidOperationException("letter not selected");
+                throw new global::System.InvalidOperationException("letter not selected");
             }
 
             return _letter;
@@ -61,7 +60,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator != 'z')
             {
-                throw new InvalidOperationException("text not selected");
+                throw new global::System.InvalidOperationException("text not selected");
             }
 
             return _text;
@@ -83,7 +82,7 @@ public partial class Choice : IEquatable<Choice>
         {
             if (Discriminator == 'a' || Discriminator == 'z')
             {
-                throw new InvalidOperationException("other not selected");
+                throw new global::System.InvalidOperationException("other not selected");
             }
 
             return _other;
@@ -140,7 +139,7 @@ public partial class Choice : IEquatable<Choice>
     {
         if (discriminator == 'a' || discriminator == 'z')
         {
-            throw new ArgumentException("Invalid discriminator value for other", nameof(discriminator));
+            throw new global::System.ArgumentException("Invalid discriminator value for other", nameof(discriminator));
         }
 
         _other = value;
@@ -152,7 +151,7 @@ public partial class Choice : IEquatable<Choice>
     /// Gets the currently active union-branch value.
     /// </summary>
     /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
-    public object Get()
+    public object? Get()
     {
         return Discriminator switch
         {
@@ -167,9 +166,9 @@ public partial class Choice : IEquatable<Choice>
     {
         return Discriminator switch
         {
-            'a' => HashCode.Combine(Discriminator, letter),
-            'z' => HashCode.Combine(Discriminator, text),
-            _ => HashCode.Combine(Discriminator, other),
+            'a' => global::System.HashCode.Combine(Discriminator, letter),
+            'z' => global::System.HashCode.Combine(Discriminator, text),
+            _ => global::System.HashCode.Combine(Discriminator, other),
         };
     }
 
@@ -185,7 +184,7 @@ public partial class Choice : IEquatable<Choice>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }
@@ -194,7 +193,7 @@ public partial class Choice : IEquatable<Choice>
         {
             'a' => letter.Equals(other.letter),
             'z' => text.Equals(other.text),
-            _ => other.Equals(other.other),
+            _ => this.other.Equals(other.other),
         };
     }
 

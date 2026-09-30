@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusAggregateComposition;
 
 /// <summary>
 /// Represents the <c>Identifier</c> IDL typedef declared in <c>06-alias-composition.idl</c>.
 /// </summary>
-public partial class Identifier : IEquatable<Identifier>
+public partial class Identifier : global::System.IEquatable<Identifier>
 {
     /// <summary>
     /// Gets or sets the value represented by this typedef.
@@ -51,7 +50,7 @@ public partial class Identifier : IEquatable<Identifier>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(Value);
 
@@ -69,7 +68,7 @@ public partial class Identifier : IEquatable<Identifier>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

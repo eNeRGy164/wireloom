@@ -64,14 +64,14 @@ internal static class NativeTypeEmitter
 
         foreach (var field in optionalFields)
         {
-            writer.WriteLine(field.BuildDestroyStatement(currentNamespace)!);
+            writer.WriteLine(field.BuildDestroyStatement(currentNamespace, NativeFieldPrefix(field, "optionalsOnly"))!);
         }
 
         if (preGuardFields.Length > 0)
         {
             foreach (var field in preGuardFields)
             {
-                writer.WriteLine(field.BuildDestroyStatement(currentNamespace)!);
+                writer.WriteLine(field.BuildDestroyStatement(currentNamespace, NativeFieldPrefix(field, "optionalsOnly"))!);
             }
         }
 
@@ -92,7 +92,7 @@ internal static class NativeTypeEmitter
 
             foreach (var field in guardedFields)
             {
-                writer.WriteLine(field.BuildDestroyStatement(currentNamespace)!);
+                writer.WriteLine(field.BuildDestroyStatement(currentNamespace, NativeFieldPrefix(field, "optionalsOnly"))!);
             }
         }
 
@@ -123,7 +123,7 @@ internal static class NativeTypeEmitter
 
         foreach (var field in hasKeys ? fields.Where(field => field.IsKey) : fields)
         {
-            writer.WriteLine(field.BuildFromNativeStatement(field.IsKey && hasKeys, currentNamespace));
+            writer.WriteLine(field.BuildFromNativeStatement(field.IsKey && hasKeys, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly")));
         }
 
         if (hasKeys && fields.Any(field => !field.IsKey))
@@ -136,7 +136,7 @@ internal static class NativeTypeEmitter
 
             foreach (var field in fields.Where(field => !field.IsKey))
             {
-                writer.WriteLine(field.BuildFromNativeStatement(false, currentNamespace));
+                writer.WriteLine(field.BuildFromNativeStatement(false, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly")));
             }
         }
 
@@ -159,7 +159,7 @@ internal static class NativeTypeEmitter
 
         foreach (var field in fields)
         {
-            var statement = field.BuildInitializeStatement(currentNamespace);
+            var statement = field.BuildInitializeStatement(currentNamespace, NativeFieldPrefix(field, "allocatePointers", "allocateMemory"));
             if (statement is not null)
             {
                 writer.WriteLine(statement);
@@ -193,7 +193,7 @@ internal static class NativeTypeEmitter
 
         foreach (var field in hasKeys ? fields.Where(field => field.IsKey) : fields)
         {
-            writer.WriteLine(field.BuildToNativeStatement(field.IsKey && hasKeys, currentNamespace));
+            writer.WriteLine(field.BuildToNativeStatement(field.IsKey && hasKeys, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly")));
         }
 
         if (hasKeys && fields.Any(field => !field.IsKey))
@@ -206,10 +206,13 @@ internal static class NativeTypeEmitter
 
             foreach (var field in fields.Where(field => !field.IsKey))
             {
-                writer.WriteLine(field.BuildToNativeStatement(false, currentNamespace));
+                writer.WriteLine(field.BuildToNativeStatement(false, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly")));
             }
         }
 
         writer.CloseBlock();
     }
+
+    private static string NativeFieldPrefix(MemberEmissionPlan field, params string[] parameterNames) =>
+        parameterNames.Contains(field.Name, StringComparer.Ordinal) ? "this." : string.Empty;
 }

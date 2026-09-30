@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusAggregateComposition;
 
@@ -21,7 +20,7 @@ public class SampleSupport : TypeSupport<Sample>
     /// </summary>
     public SampleSupport() : base(
         new Implementation.SamplePlugin(),
-        new Lazy<DynamicType>(() => Implementation.SamplePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.SamplePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

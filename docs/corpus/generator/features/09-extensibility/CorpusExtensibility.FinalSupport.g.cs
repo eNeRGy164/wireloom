@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusExtensibility;
 
@@ -21,7 +20,7 @@ public class FinalSupport : TypeSupport<Final>
     /// </summary>
     public FinalSupport() : base(
         new Implementation.FinalPlugin(),
-        new Lazy<DynamicType>(() => Implementation.FinalPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.FinalPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

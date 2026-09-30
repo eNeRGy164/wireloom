@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusEnums;
 
 /// <summary>
 /// Represents the <c>ScalarAlias</c> IDL typedef declared in <c>03-enums-aliases.idl</c>.
 /// </summary>
-public partial class ScalarAlias : IEquatable<ScalarAlias>
+public partial class ScalarAlias : global::System.IEquatable<ScalarAlias>
 {
     /// <summary>
     /// Gets or sets the value represented by this typedef.
@@ -51,7 +50,7 @@ public partial class ScalarAlias : IEquatable<ScalarAlias>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(Value);
 
@@ -69,7 +68,7 @@ public partial class ScalarAlias : IEquatable<ScalarAlias>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

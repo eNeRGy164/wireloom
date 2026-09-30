@@ -120,13 +120,13 @@ internal static class ManagedDataTypeEmitter
         if (field.MinimumValue is { } minimum)
         {
             var minimumText = field.FormatCSharpValue(field.CSharpType.TrimEnd('?'), minimum);
-            writer.WriteLine($"ArgumentOutOfRangeException.ThrowIfLessThan(value, {minimumText});");
+            writer.WriteLine($"global::System.ArgumentOutOfRangeException.ThrowIfLessThan(value, {minimumText});");
         }
 
         if (field.MaximumValue is { } maximum)
         {
             var maximumText = field.FormatCSharpValue(field.CSharpType.TrimEnd('?'), maximum);
-            writer.WriteLine($"ArgumentOutOfRangeException.ThrowIfGreaterThan(value, {maximumText});");
+            writer.WriteLine($"global::System.ArgumentOutOfRangeException.ThrowIfGreaterThan(value, {maximumText});");
         }
 
         if (field.MinimumValue is not null && field.MaximumValue is not null)
@@ -160,7 +160,7 @@ internal static class ManagedDataTypeEmitter
 
             writer.WriteLine(field.ManagedDefaultInitializationStatement!);
 
-            field.EmitAggregateArrayInitialization(writer, field.EscapedName, index < arrayFields.Length - 1);
+            field.EmitAggregateArrayInitialization(writer, ManagedFieldPrefix(field, "dimension") + field.EscapedName, index < arrayFields.Length - 1);
         }
 
         foreach (var field in fields.Where(field => field.HasExplicitDefault))
@@ -226,8 +226,10 @@ internal static class ManagedDataTypeEmitter
                 var field = fields[index];
                 var target = field.HasManagedRange ? field.ManagedBackingFieldName : field.EscapedName;
                 var source = field.HasManagedRange ? $"other.{field.ManagedBackingFieldName}" : field.BuildCopyExpression();
-                writer.WriteLine($"{target} = {source};");
-                field.EmitAggregateArrayCopy(writer, field.EscapedName, index < fields.Count - 1);
+                var targetPrefix = ManagedFieldPrefix(field, "other");
+                var arrayTarget = ManagedFieldPrefix(field, "dimension", "other") + field.EscapedName;
+                writer.WriteLine($"{targetPrefix}{target} = {source};");
+                field.EmitAggregateArrayCopy(writer, arrayTarget, index < fields.Count - 1);
             }
         }
 
@@ -240,7 +242,7 @@ internal static class ManagedDataTypeEmitter
 
         writer.WriteXmlInheritdoc();
         writer.OpenBlock("public override int GetHashCode()");
-        writer.WriteLine("var hash = new HashCode();");
+        writer.WriteLine("var hash = new global::System.HashCode();");
         writer.BlankLine();
 
         if (hasBase)
@@ -250,7 +252,8 @@ internal static class ManagedDataTypeEmitter
 
         foreach (var field in fields)
         {
-            writer.WriteLine($"hash.Add({field.HashValue()});");
+            var fieldPrefix = field.Name == "hash" ? "this." : string.Empty;
+            writer.WriteLine($"hash.Add({field.HashValue(fieldPrefix)});");
         }
 
         writer.BlankLine();
@@ -271,7 +274,7 @@ internal static class ManagedDataTypeEmitter
         writer.WriteLine("return false;");
         writer.CloseBlock();
         writer.BlankLine();
-        writer.OpenBlock("if (ReferenceEquals(this, other))");
+        writer.OpenBlock("if (global::System.Object.ReferenceEquals(this, other))");
         writer.WriteLine("return true;");
         writer.CloseBlock();
         writer.BlankLine();
@@ -300,7 +303,9 @@ internal static class ManagedDataTypeEmitter
                     writer.Indent();
                 }
 
-                WriteEqualityExpression(writer, prefix, fields[index].EqualityExpression(), suffix);
+                var field = fields[index];
+                var thisPrefix = ManagedFieldPrefix(field, "other");
+                WriteEqualityExpression(writer, prefix, field.EqualityExpression(thisPrefix: thisPrefix), suffix);
             }
 
             if (fields.Count > 1)
@@ -334,4 +339,7 @@ internal static class ManagedDataTypeEmitter
 
         writer.Unindent();
     }
+
+    private static string ManagedFieldPrefix(MemberEmissionPlan field, params string[] shadowedNames) =>
+        shadowedNames.Contains(field.Name, StringComparer.Ordinal) || field.IsArrayLoopLocalCollision ? "this." : string.Empty;
 }

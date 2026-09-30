@@ -6,12 +6,11 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 /// <summary>
 /// Represents the <c>CorpusIntegrationMessage</c> DDS type declared in <c>13-integration.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class CorpusIntegrationMessage : IEquatable<CorpusIntegrationMessage>
+public partial class CorpusIntegrationMessage : global::System.IEquatable<CorpusIntegrationMessage>
 {
     /// <summary>
     /// Gets or sets the <c>text</c> member. Its maximum length is <c>255</c>.
@@ -52,7 +51,7 @@ public partial class CorpusIntegrationMessage : IEquatable<CorpusIntegrationMess
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(text);
 
@@ -71,7 +70,7 @@ public partial class CorpusIntegrationMessage : IEquatable<CorpusIntegrationMess
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

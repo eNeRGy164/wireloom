@@ -27,8 +27,8 @@ public sealed class GeneratedOptionalCollectionSpecs
 
         // Assert
         var source = documents["OracleOptionalCollections.Message.g.cs"].Source;
-        source.ShouldContain("[Optional]\n    [Bound(4)]\n    public ISequence<int> values { get; set; }");
-        source.ShouldContain("[Optional]\n    public int[,] matrix { get; set; }");
+        source.ShouldContain("[Optional]\n    [Bound(4)]\n    public ISequence<int>? values { get; set; }");
+        source.ShouldContain("[Optional]\n    public int[,]? matrix { get; set; }");
         source.ShouldContain("[Optional]\n    [Bound(8)]\n    public string? text { get; set; }");
         source.ShouldNotContain("values = new Sequence<int>();");
         source.ShouldNotContain("matrix = new int[2, 3]");
@@ -58,9 +58,9 @@ public sealed class GeneratedOptionalCollectionSpecs
         unmanaged.ShouldContain("private NativeUnmanagedOptionalArray matrix;");
         unmanaged.ShouldContain("values.Initialize();");
         unmanaged.ShouldContain("values.FromNative<int>(out Sequence<int> valuesTemporary_);");
-        unmanaged.ShouldContain("values.ToNative<int>((Sequence<int>)sample.values, 4);");
+        unmanaged.ShouldContain("values.ToNative<int>((Sequence<int>)sample.values!, 4);");
         unmanaged.ShouldContain("matrix.FromNative<int>(out int[,] matrixTemporary_, dimensions: new int[] { 2, 3 });");
-        unmanaged.ShouldContain("matrix.ToNative<int>(sample.matrix, dimension: 2 * 3);");
+        unmanaged.ShouldContain("matrix.ToNative<int>(sample.matrix, 2 * 3);");
         unmanaged.ShouldContain("text.ToNativeOptional(sample.text, 8);");
         unmanaged.ShouldContain("values.Destroy(optionalsOnly);\n        matrix.Destroy(optionalsOnly);\n        text.Destroy();");
         unmanaged.ShouldNotContain("text.Initialize(size: 8");
@@ -93,8 +93,8 @@ public sealed class GeneratedOptionalCollectionSpecs
         source.ShouldContain("values is null ? null! : new Sequence<int>(other.values)");
         source.ShouldContain("matrix is null ? null! : (int[,])other.matrix.Clone()");
         source.ShouldContain("values?.Count ?? -1");
-        source.ShouldContain("matrix is null ? -1 : matrix[0]");
-        source.ShouldContain("ReferenceEquals(values, other.values)");
-        source.ShouldContain("ReferenceEquals(matrix, other.matrix)");
+        source.ShouldContain("matrix is null ? -1 : matrix[0, 0]");
+        source.ShouldContain("global::System.Object.ReferenceEquals(values, other.values)");
+        source.ShouldContain("global::System.Object.ReferenceEquals(matrix, other.matrix)");
     }
 }

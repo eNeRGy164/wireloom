@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusAggregates;
 
@@ -21,7 +20,7 @@ public class RecursiveSupport : TypeSupport<Recursive>
     /// </summary>
     public RecursiveSupport() : base(
         new Implementation.RecursivePlugin(),
-        new Lazy<DynamicType>(() => Implementation.RecursivePlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.RecursivePlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

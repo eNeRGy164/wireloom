@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusIntegrationCollections;
 
@@ -21,7 +20,7 @@ public class RowSupport : TypeSupport<Row>
     /// </summary>
     public RowSupport() : base(
         new Implementation.RowPlugin(),
-        new Lazy<DynamicType>(() => Implementation.RowPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.RowPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

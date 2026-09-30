@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusEnumUnion;
 
@@ -21,7 +20,7 @@ public class KindSupport : TypeSupport<Kind>
     /// </summary>
     public KindSupport() : base(
         new Implementation.KindPlugin(),
-        new Lazy<DynamicType>(() => Implementation.KindPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.KindPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

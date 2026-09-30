@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusIntegrationTrace;
 
 /// <summary>
 /// Represents the <c>Context</c> DDS type declared in <c>13-alias-inheritance.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Context : IEquatable<Context>
+public partial class Context : global::System.IEquatable<Context>
 {
     /// <summary>
     /// Gets or sets the <c>correlation</c> member. Its maximum length is <c>32</c>.
@@ -64,7 +63,7 @@ public partial class Context : IEquatable<Context>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(correlation);
         hash.Add(producer);
@@ -84,7 +83,7 @@ public partial class Context : IEquatable<Context>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

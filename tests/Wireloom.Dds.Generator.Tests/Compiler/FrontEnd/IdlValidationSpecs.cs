@@ -5,6 +5,207 @@ namespace Wireloom.Compiler.FrontEnd.Semantic.Tests;
 
 public sealed class IdlValidationSpecs
 {
+    [Fact]
+    public void RejectsTypedefNamesThatCollideWithGeneratedMembers()
+    {
+        // Arrange
+        var input = Input("typedef-member-collision.idl", """typedef long Value;""");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("collides with a generated member");
+    }
+
+    [Fact]
+    public void AllowsTypedefNamesThatMatchQualifiedLinqHelpers()
+    {
+        // Arrange
+        var input = Input("typedef-helper-collision.idl", """typedef long Enumerable[2][3];""");
+
+        // Act
+        var output = CompileSources(input);
+
+        // Assert
+        output.ShouldContainKey("Enumerable.g.cs");
+    }
+
+    [Fact]
+    public void AllowsNamesThatMatchQualifiedFrameworkHelpers()
+    {
+        // Arrange
+        var input = Input(
+            "qualified-framework-helper-names.idl",
+            """
+            typedef long HashCode;
+            struct Sample { long HashCode; long Enumerable; long grid[2][3]; };
+            union Choice switch(long) { case 1: long HashCode; default: long Enumerable; };
+            """);
+
+        // Act
+        var output = CompileSources(input);
+
+        // Assert
+        output.ShouldContainKey("HashCode.g.cs");
+        output["Sample.g.cs"].Source.ShouldContain("global::System.Linq.Enumerable");
+        output["Choice.g.cs"].Source.ShouldContain("global::System.HashCode.Combine");
+    }
+
+    [Fact]
+    public void RejectsConstantNamesThatCollideWithGeneratedMembers()
+    {
+        // Arrange
+        var input = Input("constant-member-collision.idl", """const long Value = 1;""");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("collides with a generated member");
+    }
+
+    [Fact]
+    public void RejectsDeclarationsThatCollideWithGeneratedCompanionTypes()
+    {
+        // Arrange
+        var input = Input(
+            "companion-type-collision.idl",
+            """
+            struct Foo { long value; };
+            struct FooSupport { long value; };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("collides with a generated type");
+    }
+
+    [Fact]
+    public void AcceptsEnumUnmanagedNamesBecauseEnumsDoNotEmitUnmanagedTypes()
+    {
+        // Arrange
+        var input = Input(
+            "enum-unmanaged-name.idl",
+            """
+            module Example {
+                enum Kind { A };
+                module Implementation {
+                    struct KindUnmanaged { long value; };
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents.ShouldContainKey("Example.Implementation.KindUnmanaged.g.cs");
+        documents.ShouldContainKey("Example.Implementation.KindPlugin.g.cs");
+    }
+
+    [Fact]
+    public void RejectsNamespacedDeclarationsThatCollideWithGeneratedCompanionNamespaces()
+    {
+        // Arrange
+        var input = Input(
+            "namespaced-companion-namespace-collision.idl",
+            """
+            module Example {
+                struct Sample { long value; };
+                struct Implementation { long value; };
+            };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("collides with a generated type");
+    }
+
+    [Fact]
+    public void AllowsCompanionNamespacesInDifferentModules()
+    {
+        // Arrange
+        var input = Input(
+            "namespaced-companion-namespace-isolation.idl",
+            """
+            module Example {
+                struct Sample { long value; };
+            };
+            module Other {
+                struct Sample { long value; };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents.ShouldContainKey("Example.Sample.g.cs");
+        documents.ShouldContainKey("Other.Sample.g.cs");
+    }
+
+    [Fact]
+    public void RejectsDeclarationsThatCollideWithGeneratedNamespaces()
+    {
+        // Arrange
+        var input = Input(
+            "generated-namespace-collision.idl",
+            """
+            struct Implementation { long value; };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("collides with a generated companion type");
+    }
+
+    [Fact]
+    public void RejectsMembersThatCollideWithGeneratedCollectionTemporaries()
+    {
+        // Arrange
+        var input = Input(
+            "generated-temporary-collision.idl",
+            """
+            struct Sample {
+                @optional sequence<long> values;
+                long valuesTemporary_;
+            };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("collides with a generated member, parameter, or local variable");
+    }
+
+    [Fact]
+    public void RejectsEscapedMembersThatCollideWithGeneratedCollectionTemporaries()
+    {
+        // Arrange
+        var input = Input(
+            "escaped-generated-temporary-collision.idl",
+            """
+            struct Sample {
+                @optional sequence<long> event;
+                long eventTemporary_;
+            };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("collides with a generated member, parameter, or local variable");
+    }
+
     [Theory]
     [InlineData("struct Bad { string<0> value; };", "String bound")]
     [InlineData("#error no\nstruct Bad { int32 value; };", "Preprocessor error")]
@@ -44,7 +245,7 @@ public sealed class IdlValidationSpecs
         // Arrange
         var input = Input("spliced-parser.idl",
             """
-            const long Value = 1 + \
+            const long Constant = 1 + \
             2;
             struct Broken { Missing value; };
             """);
@@ -164,7 +365,7 @@ public sealed class IdlValidationSpecs
     public void RequiresASemicolonAfterAModuleDeclaration()
     {
         // Arrange
-        var input = Input("module-without-semicolon.idl", "module Broken { struct Sample { long value; }; }");
+        var input = Input("module-without-semicolon.idl", """module Broken { struct Sample { long value; }; }""");
 
         // Act
         var exception = Should.Throw<IdlException>(() => Compile(input));
@@ -383,7 +584,7 @@ public sealed class IdlValidationSpecs
     public void RejectsDuplicateMemberNames()
     {
         // Arrange
-        var input = Input("duplicate-member.idl", "struct Broken { long value; long value; };");
+        var input = Input("duplicate-member.idl", """struct Broken { long value; long value; };""");
 
         // Act
         var exception = Should.Throw<IdlException>(() => Compile(input));
@@ -422,7 +623,7 @@ public sealed class IdlValidationSpecs
     public void RejectsDuplicateMemberAnnotations(string member, string expectedMessage)
     {
         // Arrange
-        var input = Input("duplicate-member-annotation.idl", $"struct Broken {{ {member} }};");
+        var input = Input("duplicate-member-annotation.idl", $$"""struct Broken { {{member}} };""");
 
         // Act
         var exception = Should.Throw<IdlException>(() => Compile(input));
@@ -453,7 +654,7 @@ public sealed class IdlValidationSpecs
     public void RejectsMemberRangesWithTheMinimumAboveTheMaximum()
     {
         // Arrange
-        var input = Input("reversed-member-range.idl", "struct Broken { @range(min=10,max=1) long value; };");
+        var input = Input("reversed-member-range.idl", """struct Broken { @range(min=10,max=1) long value; };""");
 
         // Act
         var exception = Should.Throw<IdlException>(() => Compile(input));
@@ -466,7 +667,7 @@ public sealed class IdlValidationSpecs
     public void RejectsUnknownEnumDefaultValues()
     {
         // Arrange
-        var input = Input("unknown-enum-default.idl", "enum Kind { Zero }; struct Broken { @default(Missing) Kind kind; };");
+        var input = Input("unknown-enum-default.idl", """enum Kind { Zero }; struct Broken { @default(Missing) Kind kind; };""");
 
         // Act
         var exception = Should.Throw<IdlException>(() => Compile(input));
@@ -479,7 +680,7 @@ public sealed class IdlValidationSpecs
     public void RejectsInvalidMemberRangeExpressions()
     {
         // Arrange
-        var input = Input("invalid-member-range.idl", "struct Broken { @min(not_an_expression) long value; };");
+        var input = Input("invalid-member-range.idl", """struct Broken { @min(not_an_expression) long value; };""");
 
         // Act
         var exception = Should.Throw<IdlException>(() => Compile(input));
@@ -551,5 +752,294 @@ public sealed class IdlValidationSpecs
 
         // Assert
         output.ShouldContain("public class Choice");
+    }
+
+    [Theory]
+    [InlineData("struct Bad { long Destroy; };", "Destroy")]
+    [InlineData("struct Bad { long FromNative; };", "FromNative")]
+    [InlineData("struct Bad { long GetHashCode; };", "GetHashCode")]
+    public void RejectsStructMembersThatCollideWithGeneratedNames(string source, string memberName)
+    {
+        // Arrange
+        var input = Input("generated-name-collision.idl", source);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain($"IDL member '{memberName}'");
+    }
+
+    [Fact]
+    public void RejectsStructMembersThatCollideWithTheirEnclosingType()
+    {
+        // Arrange
+        var input = Input(
+            "generated-type-name-collision.idl",
+            """
+            struct Sample { long Sample; };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("IDL member 'Sample'");
+    }
+
+    [Theory]
+    [InlineData("Equals")]
+    [InlineData("GetHashCode")]
+    [InlineData("ToString")]
+    public void RejectsStructDeclarationsThatCollideWithGeneratedMembers(string declarationName)
+    {
+        // Arrange
+        var input = Input(
+            "generated-struct-declaration-collision.idl",
+            $$"""
+            struct {{declarationName}} { long value; };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain($"IDL declaration '{declarationName}'");
+    }
+
+    [Fact]
+    public void AllowsRangeBackingFieldsToUseAnAlternativeNameWhenNeeded()
+    {
+        // Arrange
+        var input = Input(
+            "generated-range-name-collision.idl",
+            """
+            struct Sample { @min(0) long value; long _value; };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Sample.g.cs"].Source;
+        managed.ShouldContain("private int __value;");
+        managed.ShouldContain("public int value");
+        managed.ShouldContain("public int _value");
+    }
+
+    [Fact]
+    public void RejectsAParentMemberOnDerivedStructs()
+    {
+        // Arrange
+        var input = Input(
+            "generated-parent-collision.idl",
+            "struct Base { long value; }; struct Derived : Base { long parent; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("IDL member 'parent'");
+    }
+
+    [Theory]
+    [InlineData("Discriminator")]
+    [InlineData("_discriminator")]
+    [InlineData("GetHashCode")]
+    public void RejectsUnionBranchesThatCollideWithGeneratedNames(string branchName)
+    {
+        // Arrange
+        var input = Input(
+            "generated-union-name-collision.idl",
+            $$"""
+            union Bad switch(long) {
+                case 1: long {{branchName}};
+                default: long value;
+            };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain($"IDL union branch '{branchName}'");
+    }
+
+    [Fact]
+    public void RejectsUnionBranchesThatMatchTheEnclosingTypeName()
+    {
+        // Arrange
+        var input = Input(
+            "generated-union-type-collision.idl",
+            """
+            union Choice switch(long) {
+                case 1: long Choice;
+                default: long value;
+            };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("IDL union branch 'Choice'");
+    }
+
+    [Theory]
+    [InlineData("Get", "case 1: long value; default: long other;")]
+    [InlineData("Setvalue", "case 1: case 2: long value; default: long other;")]
+    public void RejectsUnionDeclarationsThatCollideWithGeneratedMembers(string declarationName, string branches)
+    {
+        // Arrange
+        var input = Input(
+            "generated-union-declaration-collision.idl",
+            $$"""
+            union {{declarationName}} switch(long) {
+                {{branches}}
+            };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain($"IDL union declaration '{declarationName}'");
+    }
+
+    [Fact]
+    public void RejectsBooleanDefaultBranchesWhenBothDiscriminatorValuesAreOccupied()
+    {
+        // Arrange
+        var input = Input(
+            "boolean-default-discriminator-collision.idl",
+            """
+            union Choice switch(boolean) {
+                case FALSE: long no;
+                case TRUE: long yes;
+                default: long other;
+            };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("must leave either TRUE or FALSE unoccupied");
+    }
+
+    [Fact]
+    public void RejectsOctetDefaultBranchesWhenEveryDiscriminatorValueIsOccupied()
+    {
+        // Arrange
+        var branches = string.Join(
+            Environment.NewLine,
+            Enumerable.Range(0, byte.MaxValue + 1).Select(value => $"case {value}: long value{value};"));
+        var source = $$"""
+        union Choice switch(octet) {
+            {{branches}}
+            default: long other;
+        };
+        """;
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(Input(
+            "octet-default-discriminator-collision.idl",
+            source)));
+
+        // Assert
+        exception.Message.ShouldContain("has no representable discriminator value");
+    }
+
+    [Fact]
+    public void AllowsUnionBackingFieldsToUseAlternativeNamesWhenNeeded()
+    {
+        // Arrange
+        var input = Input(
+            "generated-union-backing-collision.idl",
+            """
+            union Choice switch(long) {
+                case 1: long value;
+                case 2: long _value;
+                default: long other;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Choice.g.cs"].Source;
+        managed.ShouldContain("private int __value;");
+        managed.ShouldContain("private int ___value;");
+    }
+
+    [Fact]
+    public void EscapesTheCompleteUnionSetterNameForKeywordBranches()
+    {
+        // Arrange
+        var input = Input(
+            "generated-union-setter-keyword.idl",
+            """
+            union Choice switch(long) {
+                case 1: case 2: long event;
+                default: boolean flag;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Choice.g.cs"].Source;
+        managed.ShouldContain("private int _event;");
+        managed.ShouldContain("public void Setevent(int value, int discriminator)");
+        managed.ShouldNotContain("Set@event");
+
+        var native = documents["Implementation.ChoiceUnmanaged.g.cs"].Source;
+        native.ShouldContain("sample.Setevent(@event, _discriminator);");
+        native.ShouldNotContain("Set@event");
+    }
+
+    [Fact]
+    public void EscapesTheCompleteDefaultUnionSetterNameForKeywordBranches()
+    {
+        // Arrange
+        var input = Input(
+            "generated-default-union-setter-keyword.idl",
+            """
+            union Choice switch(long) {
+                case 1: boolean flag;
+                default: long event;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Choice.g.cs"].Source;
+        managed.ShouldContain("public void Setevent(int value, int discriminator)");
+        managed.ShouldNotContain("Set@event");
+    }
+
+    [Fact]
+    public void RejectsUnionBranchesThatCollideWithTheCompleteGeneratedSetterName()
+    {
+        // Arrange
+        var input = Input(
+            "generated-union-setter-collision.idl",
+            """
+            union Choice switch(long) {
+                case 1: case 2: long event;
+                case 3: long Setevent;
+                default: boolean flag;
+            };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("IDL union branch 'Setevent'");
     }
 }

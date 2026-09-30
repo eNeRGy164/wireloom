@@ -13,6 +13,7 @@ The status snapshot below comes from the corpus compliance run on 2026-09-27. It
 - `mismatch`: a negative probe is accepted unexpectedly.
 - `isolated`: the probe is present but must be run in an isolated process because the current compiler overflows in-process.
 - `accepted`: the managed generator accepts the case, but no generated evidence is committed.
+- `pending`: the case is reserved for an RTI probe; managed output is generated, but no RTI oracle is claimed yet.
 
 RTI oracle links point to the licensee-generated C# source under `corpus/oracles`. Rejected RTI cases have no generated C# source.
 
@@ -132,6 +133,7 @@ RTI oracle links point to the licensee-generated C# source under `corpus/oracles
 | C105 | `12-error-directive`              | preprocessor error directive               | [idl/negative/12-error-directive.idl](idl/negative/12-error-directive.idl)                           | — (no C# output)                                                                                                                                               | rejected        | rejected                                                 |
 | C106 | `12-angle-missing`                | missing angle include                      | [idl/negative/12-angle-missing.idl](idl/negative/12-angle-missing.idl)                               | — (no C# output)                                                                                                                                               | rejected        | rejected                                                 |
 | C107 | `12-included-error`               | diagnostic in included file                | [idl/negative/12-included-error.idl](idl/negative/12-included-error.idl)                             | — (no C# output)                                                                                                                                               | rejected        | rejected                                                 |
+| C112 | `12-name-collisions`             | generated-name collision probes              | [idl/negative/12-name-collisions.idl](idl/negative/12-name-collisions.idl)                         | [source](oracles/negative/12-name-collisions/12-name-collisions.cs), [plugin](oracles/negative/12-name-collisions/12-name-collisionsPlugin.cs)                    | accepted        | rejected (collision guard)                              |
 
 ## Integration cases
 
@@ -155,14 +157,15 @@ Use the stable tag together with the case ID when referring to coverage, for exa
 | Category                               |   Cases |
 | -------------------------------------- | ------: |
 | Positive                               |      54 |
-| Negative                               |      53 |
+| Negative                               |      54 |
 | Integration                            |       4 |
-| Total                                  |     111 |
+| Total                                  |     112 |
 | Fully implemented positive/integration | 58 / 58 |
-| Compliance test invocations            |     226 |
-| Succeeded                              |     226 |
+| Compliance test invocations            |     227 |
+| Succeeded                              |     227 |
 | Failed                                 |       0 |
 
 The positive/integration statistic covers the 54 positive cases and 4
-integration cases. Negative rejection probes are excluded because their
-expected outcome is rejection rather than implementation.
+integration cases. Negative rejection probes, including the RTI-accepted
+collision probe, are excluded because their expected outcome is rejection
+rather than implementation.

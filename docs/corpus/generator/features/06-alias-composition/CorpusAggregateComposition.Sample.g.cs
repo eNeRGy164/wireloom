@@ -6,15 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
-using System.Linq;
 
 namespace CorpusAggregateComposition;
 
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>06-alias-composition.idl</c>. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Sample : IEquatable<Sample>
+public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets or sets the <c>id</c> member.
@@ -72,7 +70,7 @@ public partial class Sample : IEquatable<Sample>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(id);
         hash.Add(state);
@@ -93,14 +91,14 @@ public partial class Sample : IEquatable<Sample>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }
 
         return id.Equals(other.id)
             && state.Equals(other.state)
-            && values.SequenceEqual(other.values);
+            && global::System.Linq.Enumerable.SequenceEqual(values, other.values);
     }
 
     /// <inheritdoc />

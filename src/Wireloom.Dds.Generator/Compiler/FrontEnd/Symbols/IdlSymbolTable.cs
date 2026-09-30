@@ -6,6 +6,7 @@ namespace Wireloom.Compiler.FrontEnd.Symbols;
 internal sealed class IdlSymbolTable
 {
     private readonly HashSet<string> names = new(StringComparer.Ordinal);
+    private readonly HashSet<string> generatedIdentities = new(StringComparer.Ordinal);
     private readonly Dictionary<string, IdlEnum> enums = new(StringComparer.Ordinal);
     private readonly Dictionary<string, IdlUnion> unions = new(StringComparer.Ordinal);
     private readonly Dictionary<string, IdlTypedef> typedefs = new(StringComparer.Ordinal);
@@ -13,9 +14,42 @@ internal sealed class IdlSymbolTable
 
     public IEnumerable<string> TypedefNames => typedefs.Keys;
 
-    public IEnumerable<IdlConstantDeclaration> Constants => constants.Values;
-
     public bool AddName(string name) => names.Add(name);
+
+    public bool AddGeneratedIdentity(string name)
+    {
+        if (generatedIdentities.Any(existing => Conflicts(existing, name)))
+        {
+            return false;
+        }
+
+        generatedIdentities.Add(name);
+
+        return true;
+    }
+
+    public bool AddGeneratedIdentities(IReadOnlyList<string> generatedNames)
+    {
+        if (generatedNames
+            .SelectMany((name, index) => generatedNames.Skip(index + 1).Select(other => (name, other)))
+            .Any(pair => Conflicts(pair.name, pair.other))
+            || generatedNames.Any(name => generatedIdentities.Any(existing => Conflicts(existing, name))))
+        {
+            return false;
+        }
+
+        foreach (var name in generatedNames)
+        {
+            generatedIdentities.Add(name);
+        }
+
+        return true;
+    }
+
+    private static bool Conflicts(string first, string second) =>
+        string.Equals(first, second, StringComparison.Ordinal)
+        || first.StartsWith($"{second}.", StringComparison.Ordinal)
+        || second.StartsWith($"{first}.", StringComparison.Ordinal);
 
     public bool ContainsName(string name) => names.Contains(name);
 

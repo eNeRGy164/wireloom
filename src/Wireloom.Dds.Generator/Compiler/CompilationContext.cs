@@ -1,4 +1,3 @@
-using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.FrontEnd.Symbols;
 
 namespace Wireloom.Compiler;
@@ -16,7 +15,8 @@ internal sealed class CompilationContext
 
     public IReadOnlyList<GeneratedIdlSource> Sources => sources;
 
-    public IEnumerable<IdlConstantDeclaration> Constants => resolver.Constants;
+    public bool TryResolveConstant(string reference, string? currentNamespace, out string qualifiedName) =>
+        resolver.TryResolveConstant(reference, currentNamespace, out qualifiedName);
 
     public void AddSource(GeneratedIdlSource source) => sources.Add(source);
 

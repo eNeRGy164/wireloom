@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusUnionKeys;
 
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>08-key-union.idl</c>. Its key members form the DDS instance key. It is marked as <c>extensible</c>.
 /// </summary>
-public partial class Sample : IEquatable<Sample>
+public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets or sets the <c>identity</c> member. This member forms part of the DDS instance key.
@@ -62,7 +61,7 @@ public partial class Sample : IEquatable<Sample>
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        var hash = new global::System.HashCode();
 
         hash.Add(identity);
         hash.Add(payload);
@@ -82,7 +81,7 @@ public partial class Sample : IEquatable<Sample>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

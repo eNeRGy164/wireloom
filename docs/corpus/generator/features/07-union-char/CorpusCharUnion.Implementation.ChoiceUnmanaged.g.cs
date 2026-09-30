@@ -6,7 +6,6 @@
 
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
-using System;
 
 namespace CorpusCharUnion.Implementation;
 
@@ -53,7 +52,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
                 break;
 
             default:
-                sample.other = Convert.ToBoolean(other);
+                sample.Setother(global::System.Convert.ToBoolean(other), NativeChar.FromUtf8(_discriminator));
                 break;
         }
     }
@@ -93,7 +92,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
                 break;
 
             default:
-                other = Convert.ToByte(sample.other);
+                other = global::System.Convert.ToByte(sample.other);
                 break;
         }
     }

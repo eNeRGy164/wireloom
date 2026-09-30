@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusCollections;
 
@@ -21,7 +20,7 @@ public class BoundedLongsSupport : TypeSupport<BoundedLongs>
     /// </summary>
     public BoundedLongsSupport() : base(
         new Implementation.BoundedLongsPlugin(),
-        new Lazy<DynamicType>(() => Implementation.BoundedLongsPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.BoundedLongsPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

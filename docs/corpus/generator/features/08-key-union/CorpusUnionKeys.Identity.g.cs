@@ -6,14 +6,13 @@
 
 using Omg.Types;
 using Rti.Types;
-using System;
 
 namespace CorpusUnionKeys;
 
 /// <summary>
 /// Represents the <c>Identity</c> DDS union declared in <c>08-key-union.idl</c>. Exactly one branch is selected by <see cref="Discriminator"/>.
 /// </summary>
-public partial class Identity : IEquatable<Identity>
+public partial class Identity : global::System.IEquatable<Identity>
 {
     private int _number;
     private string _text = string.Empty;
@@ -37,7 +36,7 @@ public partial class Identity : IEquatable<Identity>
         {
             if (Discriminator != 0)
             {
-                throw new InvalidOperationException("number not selected");
+                throw new global::System.InvalidOperationException("number not selected");
             }
 
             return _number;
@@ -60,7 +59,7 @@ public partial class Identity : IEquatable<Identity>
         {
             if (Discriminator != 1)
             {
-                throw new InvalidOperationException("text not selected");
+                throw new global::System.InvalidOperationException("text not selected");
             }
 
             return _text;
@@ -111,7 +110,7 @@ public partial class Identity : IEquatable<Identity>
     /// Gets the currently active union-branch value.
     /// </summary>
     /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
-    public object Get()
+    public object? Get()
     {
         return Discriminator switch
         {
@@ -126,9 +125,9 @@ public partial class Identity : IEquatable<Identity>
     {
         return Discriminator switch
         {
-            0 => HashCode.Combine(Discriminator, number),
-            1 => HashCode.Combine(Discriminator, text),
-            _ => HashCode.Combine(Discriminator),
+            0 => global::System.HashCode.Combine(Discriminator, number),
+            1 => global::System.HashCode.Combine(Discriminator, text),
+            _ => global::System.HashCode.Combine(Discriminator),
         };
     }
 
@@ -144,7 +143,7 @@ public partial class Identity : IEquatable<Identity>
             return false;
         }
 
-        if (ReferenceEquals(this, other))
+        if (global::System.Object.ReferenceEquals(this, other))
         {
             return true;
         }

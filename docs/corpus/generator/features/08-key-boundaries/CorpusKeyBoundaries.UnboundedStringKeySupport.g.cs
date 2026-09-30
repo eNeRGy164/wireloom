@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusKeyBoundaries;
 
@@ -21,7 +20,7 @@ public class UnboundedStringKeySupport : TypeSupport<UnboundedStringKey>
     /// </summary>
     public UnboundedStringKeySupport() : base(
         new Implementation.UnboundedStringKeyPlugin(),
-        new Lazy<DynamicType>(() => Implementation.UnboundedStringKeyPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.UnboundedStringKeyPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

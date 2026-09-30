@@ -80,7 +80,9 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
 
     public bool ExpectedToCompile => ManagedAcceptedCaseIds.Contains(Id);
 
-    public bool HasOracleOutput => !string.Equals(Classification, "rejected", StringComparison.OrdinalIgnoreCase);
+    public bool HasOracleOutput =>
+        !string.Equals(Classification, "rejected", StringComparison.OrdinalIgnoreCase) &&
+        !string.Equals(Classification, "pending", StringComparison.OrdinalIgnoreCase);
 
 }
 
@@ -112,6 +114,9 @@ internal sealed class ManifestEntry
 
     [JsonPropertyName("observedOutcome")]
     public string? ObservedOutcome { get; init; }
+
+    [JsonPropertyName("tag")]
+    public string Tag { get; init; } = string.Empty;
 }
 
 internal sealed class OracleManifest
@@ -215,7 +220,27 @@ internal static class CorpusRepository
                 Path.Combine(corpusRoot, "oracles", "integration", group, id)));
         }
 
-        cases = [.. cases.Select((corpusCase, index) => corpusCase with { Tag = $"C{index + 1:D3}" })];
+        var explicitTagNumbers = cases
+            .Where(corpusCase => corpusCase.Tag.Length > 0)
+            .Select(corpusCase => int.Parse(corpusCase.Tag[1..], System.Globalization.CultureInfo.InvariantCulture))
+            .ToHashSet();
+        var nextTagNumber = 1;
+        cases = [.. cases
+            .Select(corpusCase =>
+            {
+                if (corpusCase.Tag.Length > 0)
+                {
+                    return corpusCase;
+                }
+
+                while (explicitTagNumbers.Contains(nextTagNumber))
+                {
+                    nextTagNumber++;
+                }
+
+                return corpusCase with { Tag = $"C{nextTagNumber++:D3}" };
+            })
+            .OrderBy(corpusCase => int.Parse(corpusCase.Tag[1..], System.Globalization.CultureInfo.InvariantCulture))];
 
         var manifestRoots = manifest.PositiveCases
             .Concat(manifest.NegativeCases)
@@ -246,7 +271,8 @@ internal static class CorpusRepository
             entry.Idl,
             entry.Defines,
             classifications[entry.Id],
-            Path.Combine(corpusRoot, "oracles", sourceKind, entry.Id));
+            Path.Combine(corpusRoot, "oracles", sourceKind, entry.Id),
+            entry.Tag);
     }
 
     private static T Read<T>(string path) =>

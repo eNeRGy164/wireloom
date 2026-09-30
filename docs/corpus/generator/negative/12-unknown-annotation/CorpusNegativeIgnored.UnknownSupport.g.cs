@@ -7,7 +7,6 @@
 using Rti.Dds.Core;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using System;
 
 namespace CorpusNegativeIgnored;
 
@@ -21,7 +20,7 @@ public class UnknownSupport : TypeSupport<Unknown>
     /// </summary>
     public UnknownSupport() : base(
         new Implementation.UnknownPlugin(),
-        new Lazy<DynamicType>(() => Implementation.UnknownPlugin.CreateDynamicType(isPublic: true)))
+        new global::System.Lazy<DynamicType>(() => Implementation.UnknownPlugin.CreateDynamicType(isPublic: true)))
     {
     }
 

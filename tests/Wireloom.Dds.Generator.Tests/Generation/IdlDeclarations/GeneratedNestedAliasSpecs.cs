@@ -59,7 +59,7 @@ public sealed class GeneratedNestedAliasSpecs
         correlation.ShouldContain("if (other is not null)\n        {\n            Value = other.Value;\n        }");
 
         var derived = documents["Envelope.Metadata.Derived.g.cs"].Source;
-        derived.ShouldContain("public partial class Derived : Base, IEquatable<Derived>");
+        derived.ShouldContain("public partial class Derived : Base, global::System.IEquatable<Derived>");
         derived.ShouldContain("public Context context { get; set; } = new Context();");
         derived.ShouldNotContain("public Derived()\n    {\n        context = new Context();\n    }");
         derived.ShouldContain("public Derived(string state, Context context) : base(state)");
