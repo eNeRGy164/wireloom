@@ -8,37 +8,6 @@ using static Wireloom.Compiler.Naming.IdlNaming;
 
 namespace Wireloom.Compiler.Emission.Planning;
 
-/// <summary>Classifies the projected shape of a member value.</summary>
-internal enum FieldEmissionShape
-{
-    Primitive,
-    String,
-    Enum,
-    Struct,
-    Alias,
-    Sequence,
-    Array
-}
-
-/// <summary>Identifies the managed initialization strategy for a member.</summary>
-internal enum ManagedInitializationKind
-{
-    None,
-    Sequence,
-    Array,
-    Aggregate
-}
-
-/// <summary>Identifies the native cleanup strategy for a member.</summary>
-internal enum NativeDestroyKind
-{
-    None,
-    Nested,
-    Collection,
-    String,
-    OptionalPrimitive
-}
-
 /// <summary>
 /// Per-member emission decisions shared by managed and native source emitters.
 /// The plan retains the typed emission type and builds context-sensitive source
@@ -48,7 +17,7 @@ internal enum NativeDestroyKind
 [PublicAPI]
 internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string? currentNamespace, string? managedBackingFieldName = null)
 {
-    private readonly FieldEmissionShape shape = GetShape(field.Type);
+    private readonly FieldEmissionShape shape = MemberEmissionPolicies.GetShape(field.Type);
 
     public IdlEmissionField Field { get; } = field;
     public string? CurrentNamespace => currentNamespace;
@@ -158,42 +127,19 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         }
     }
 
-    public ManagedInitializationKind ManagedInitialization => shape switch
-    {
-        _ when IsOptional && (IsSequence || IsArray) => ManagedInitializationKind.None,
-        FieldEmissionShape.Sequence => ManagedInitializationKind.Sequence,
-        FieldEmissionShape.Array => ManagedInitializationKind.Array,
-        _ when IsAggregate => ManagedInitializationKind.Aggregate,
-        _ => ManagedInitializationKind.None
-    };
+    public ManagedInitializationKind ManagedInitialization => MemberEmissionPolicies.GetManagedInitialization(
+        shape,
+        IsOptional,
+        IsSequence,
+        IsArray,
+        IsAggregate);
 
-    public NativeDestroyKind DestroyKind
-    {
-        get
-        {
-            if (IsAggregate && !IsSequence && !IsArray)
-            {
-                return NativeDestroyKind.Nested;
-            }
-
-            if (IsSequence || IsArray)
-            {
-                return NativeDestroyKind.Collection;
-            }
-
-            if (IsString)
-            {
-                return NativeDestroyKind.String;
-            }
-
-            if (IsOptionalScalar)
-            {
-                return NativeDestroyKind.OptionalPrimitive;
-            }
-
-            return NativeDestroyKind.None;
-        }
-    }
+    public NativeDestroyKind DestroyKind => MemberEmissionPolicies.GetDestroyKind(
+        IsAggregate,
+        IsSequence,
+        IsArray,
+        IsString,
+        IsOptionalScalar);
 
     public bool HasTypeSupport => Bound is null || EmissionTypeProjector.HasSequenceType(Type) || IsString;
 
@@ -530,16 +476,4 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
     private string NullableValueType() => CSharpType.TrimEnd('?');
 
-    private static FieldEmissionShape GetShape(EmissionTypePlan type) =>
-        EmissionTypeProjector.UnwrapOptionalEmissionType(type) switch
-        {
-            PrimitiveEmissionType => FieldEmissionShape.Primitive,
-            StringEmissionType => FieldEmissionShape.String,
-            EnumEmissionType => FieldEmissionShape.Enum,
-            StructEmissionType or UnionEmissionType => FieldEmissionShape.Struct,
-            AliasEmissionType => FieldEmissionShape.Alias,
-            SequenceEmissionType => FieldEmissionShape.Sequence,
-            ArrayEmissionType => FieldEmissionShape.Array,
-            _ => throw new InvalidOperationException("Unknown emission type plan.")
-        };
 }

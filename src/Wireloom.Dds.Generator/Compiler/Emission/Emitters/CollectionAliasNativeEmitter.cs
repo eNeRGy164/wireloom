@@ -1,4 +1,5 @@
 using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -6,28 +7,24 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits the native representation for a collection or value typedef.</summary>
 internal static class CollectionAliasNativeEmitter
 {
-    public static void Emit(CompilationContext compilation, IdlTypedef declaration, string elementType, string sourceIdlFileName)
+    public static void Emit(CompilationContext compilation, EmissionResult result, IdlTypedef declaration, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
     {
+        var elementType = plan.ElementType;
         var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
         var implementation = declaration.Namespace is null ? "Implementation" : $"{declaration.Namespace}.Implementation";
         var implementationTypeName = IdlNaming.TypeReference(typeName, declaration.Namespace, implementation);
-        var elementIdlType = declaration.IsCollection
-            ? declaration.ElementType!
-            : compilation.ResolveUnderlyingType(declaration.Target, declaration.Namespace);
+        var elementIdlType = plan.ElementIdlType;
         var implementationElementType = IdlNaming.TypeReference(elementType, implementation);
-        var isString = declaration.IsString;
-        var isStringSequence = declaration.IsSequence && IsStringType(elementIdlType);
-        var stringSequenceNativeType = isStringSequence && elementIdlType.StartsWith("wstring", StringComparison.Ordinal)
+        var isString = plan.IsString;
+        var isStringSequence = declaration.IsSequence && plan.IsString;
+        var stringSequenceNativeType = isStringSequence && plan.IsWideString
             ? "NativeWstringSeq"
             : "NativeStringSeq";
-        var stringSequenceBound = isStringSequence ? ParseStringBound(elementIdlType) : 0;
-        var isAggregate = !declaration.IsCollection && !isString && !IdlNaming.IsPrimitive(elementType) && !IsCSharpPrimitive(elementType) && !compilation.IsEnum(elementType, declaration.Namespace);
-        var isUnion = !declaration.IsCollection && !isString && compilation.IsUnion(elementType, declaration.Namespace);
+        var stringSequenceBound = isStringSequence ? plan.StringBound : 0;
+        var isAggregate = plan.IsAggregate;
+        var isUnion = plan.IsUnion;
         var collectionElementIsAggregate = declaration.IsCollection &&
-            !IsStringType(elementIdlType) &&
-            !IdlNaming.IsPrimitive(elementType) &&
-            !IsCSharpPrimitive(elementType) &&
-            !compilation.IsEnum(elementType, declaration.Namespace);
+            plan.CollectionElementIsAggregate;
 
         var collectionElementUnmanagedType = string.Empty;
         if (collectionElementIsAggregate)
@@ -225,7 +222,7 @@ internal static class CollectionAliasNativeEmitter
                 }
                 else
                 {
-                    writer.WriteLine($"Value = {NativeDefaultValue(elementIdlType, elementType, implementationElementType)};");
+                    writer.WriteLine($"Value = {NativeDefaultValue(elementIdlType, elementType, implementationElementType, plan)};");
                 }
             }
         }
@@ -285,10 +282,10 @@ internal static class CollectionAliasNativeEmitter
 
         writer.CloseBlock();
         writer.CloseBlock();
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementation, $"{declaration.Name}Unmanaged"), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(implementation, $"{declaration.Name}Unmanaged"), writer.ToString());
     }
 
-    private static string NativeDefaultValue(string elementIdlType, string elementType, string implementationElementType)
+    private static string NativeDefaultValue(string elementIdlType, string elementType, string implementationElementType, CollectionAliasEmissionPlan plan)
     {
         var normalizedElementIdlType = IdlNaming.NormalizeIdlType(elementIdlType);
         if (normalizedElementIdlType is "boolean")
@@ -306,7 +303,7 @@ internal static class CollectionAliasNativeEmitter
             return "0L";
         }
 
-        if (!IdlNaming.IsPrimitive(elementType))
+        if (plan.NativeValueRequiresCast)
         {
             return $"({implementationElementType})0";
         }
@@ -322,19 +319,5 @@ internal static class CollectionAliasNativeEmitter
             "long double" => "(LongDouble)0",
             _ => "0"
         };
-    }
-    private static bool IsStringType(string? typeName) =>
-        typeName is not null
-        && (typeName.StartsWith("string", StringComparison.Ordinal) || typeName.StartsWith("wstring", StringComparison.Ordinal));
-
-    private static bool IsCSharpPrimitive(string typeName) => typeName is
-        "sbyte" or "byte" or "short" or "ushort" or "int" or "uint" or "long" or
-        "ulong" or "char" or "bool" or "float" or "double";
-    private static int ParseStringBound(string typeName)
-    {
-        var open = typeName.IndexOf('<');
-        return open < 0 || !int.TryParse(typeName[(open + 1)..^1].Trim(), out var bound)
-            ? 255
-            : bound;
     }
 }

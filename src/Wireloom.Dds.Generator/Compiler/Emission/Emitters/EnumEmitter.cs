@@ -6,7 +6,7 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits managed enum, plugin, and type-support documents.</summary>
 internal static class EnumEmitter
 {
-    public static void Emit(CompilationContext compilation, IdlEnum declaration, string sourceIdlFileName)
+    public static void Emit(EmissionResult result, IdlEnum declaration, string sourceIdlFileName)
     {
         var writer = EmissionSupport.CreateSource(declaration.Namespace, [], sourceIdlFileName);
 
@@ -29,13 +29,13 @@ internal static class EnumEmitter
 
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(declaration.Namespace, declaration.Name), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(declaration.Namespace, declaration.Name), writer.ToString());
 
-        EmitPlugin(compilation, declaration, sourceIdlFileName);
-        EmitTypeSupport(compilation, declaration, sourceIdlFileName);
+        EmitPlugin(result, declaration, sourceIdlFileName);
+        EmitTypeSupport(result, declaration, sourceIdlFileName);
     }
 
-    private static void EmitPlugin(CompilationContext compilation, IdlEnum declaration, string sourceIdlFileName)
+    private static void EmitPlugin(EmissionResult result, IdlEnum declaration, string sourceIdlFileName)
     {
         var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
         var runtimeName = declaration.Namespace is null ? typeName : $"{IdlNaming.EscapeQualifiedIdentifier(declaration.Namespace)}.{typeName}";
@@ -78,10 +78,10 @@ internal static class EnumEmitter
         writer.CloseBlock();
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementation, $"{declaration.Name}Plugin"), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(implementation, $"{declaration.Name}Plugin"), writer.ToString());
     }
 
-    private static void EmitTypeSupport(CompilationContext compilation, IdlEnum declaration, string sourceIdlFileName)
+    private static void EmitTypeSupport(EmissionResult result, IdlEnum declaration, string sourceIdlFileName)
     {
         var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
 
@@ -107,6 +107,6 @@ internal static class EnumEmitter
         writer.Unindent();
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(declaration.Namespace, declaration.Name + "Support"), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(declaration.Namespace, declaration.Name + "Support"), writer.ToString());
     }
 }

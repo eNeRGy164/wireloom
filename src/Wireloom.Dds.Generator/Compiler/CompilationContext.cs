@@ -6,19 +6,13 @@ namespace Wireloom.Compiler;
 internal sealed class CompilationContext
 {
     private readonly CompilationResolver resolver;
-    private readonly List<GeneratedIdlSource> sources = [];
-
     internal CompilationContext(IdlSymbolTable symbols)
     {
         resolver = new CompilationResolver(symbols);
     }
 
-    public IReadOnlyList<GeneratedIdlSource> Sources => sources;
-
     public bool TryResolveConstant(string reference, string? currentNamespace, out string qualifiedName) =>
         resolver.TryResolveConstant(reference, currentNamespace, out qualifiedName);
-
-    public void AddSource(GeneratedIdlSource source) => sources.Add(source);
 
     public bool IsEnum(string typeName, string? currentNamespace) =>
         resolver.IsEnum(typeName, currentNamespace);
