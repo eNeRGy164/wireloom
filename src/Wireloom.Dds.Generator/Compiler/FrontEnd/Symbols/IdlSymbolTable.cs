@@ -12,8 +12,6 @@ internal sealed class IdlSymbolTable
     private readonly Dictionary<string, IdlTypedef> typedefs = new(StringComparer.Ordinal);
     private readonly Dictionary<string, IdlConstantDeclaration> constants = new(StringComparer.Ordinal);
 
-    public IEnumerable<string> TypedefNames => typedefs.Keys;
-
     public bool AddName(string name) => names.Add(name);
 
     public bool AddGeneratedIdentity(string name)

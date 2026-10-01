@@ -44,7 +44,7 @@ internal sealed class IdlTypeParser
         {
             var (ElementType, Bound) = ParseSequenceType(input, memberSourceOffset, kind, currentNamespace);
 
-            var element = context.ResolveFieldType(ElementType, currentNamespace, input, memberSourceOffset);
+            var element = context.BindFieldType(ElementType, currentNamespace, input, memberSourceOffset);
             if (element is null)
             {
                 throw new IdlException(input, context.MapOffset(memberSourceOffset), $"Unknown collection element type: {ElementType}");
@@ -54,7 +54,7 @@ internal sealed class IdlTypeParser
         }
         else if (dimensions.Count > 0)
         {
-            var element = context.ResolveFieldType(kind, currentNamespace, input, memberSourceOffset);
+            var element = context.BindFieldType(kind, currentNamespace, input, memberSourceOffset);
             if (element is null)
             {
                 throw new IdlException(input, context.MapOffset(memberSourceOffset), $"Unknown collection element type: {kind}");
@@ -79,7 +79,7 @@ internal sealed class IdlTypeParser
         }
         else
         {
-            var resolved = context.ResolveFieldType(kind, currentNamespace, input, memberSourceOffset);
+            var resolved = context.BindFieldType(kind, currentNamespace, input, memberSourceOffset);
             if (resolved is null)
             {
                 throw new IdlException(input, context.MapOffset(memberSourceOffset), $"Unknown struct type: {kind}");

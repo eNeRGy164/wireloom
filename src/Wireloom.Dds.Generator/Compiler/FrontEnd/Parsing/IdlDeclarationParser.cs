@@ -125,11 +125,10 @@ internal sealed class IdlDeclarationParser
             position += structParser.Parse(declarations, input, baseOffset, currentNamespace, position);
         }
 
-        foreach (var typedefName in context.Symbols.TypedefNames.ToArray())
-        {
-            typedefParser.Validate(input, baseOffset, typedefName);
-        }
     }
+
+    /// <summary>Validates cross-declaration typedef references after the input graph is complete.</summary>
+    internal void ValidateTypedefs() => context.ValidateTypedefs();
 
     private static readonly HashSet<string> UnsupportedAnnotationNames =
         ["position", "bit_bound", "service"];

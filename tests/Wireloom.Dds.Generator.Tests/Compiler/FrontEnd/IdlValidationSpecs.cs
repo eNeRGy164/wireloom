@@ -431,6 +431,21 @@ public sealed class IdlValidationSpecs
         exception.Message.ShouldContain("Typedef alias cycle");
     }
 
+    [Fact]
+    public void ResolvesTypedefTargetsDeclaredLaterInTheCompilation()
+    {
+        // Arrange
+        var input = Input("forward-typedef.idl",
+            "module P03 { typedef Later Alias; typedef long Later; }; ");
+
+        // Act
+        var source = Compile(input);
+
+        // Assert
+        source.ShouldContain("class Alias");
+        source.ShouldContain("Value { get; set; }");
+    }
+
     [Theory]
     [InlineData("enum Broken { RED, };", "Malformed enum member")]
     [InlineData("typedef sequence<Missing, 3> Values;", "Unknown typedef target")]
