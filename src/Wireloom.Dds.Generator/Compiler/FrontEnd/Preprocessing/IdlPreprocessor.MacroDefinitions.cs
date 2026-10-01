@@ -29,7 +29,7 @@ internal sealed partial class IdlPreprocessor
         // after the name. Whitespace instead starts an object-like body.
         if (index < text.Length && text[index] == '(')
         {
-            if (!TryReadBalancedText(text, index, out var parameterText, out var end))
+            if (!macroTokens.TryReadBalancedText(text, index, out var parameterText, out var end))
             {
                 throw new IdlException(input, offset, "Malformed #define parameter list.");
             }
@@ -44,7 +44,7 @@ internal sealed partial class IdlPreprocessor
         }
 
         var body = index < text.Length ? text[index..] : string.Empty;
-        macros[name] = new Macro(parameters, body, parameters is not null && variadic, variadicParameterName);
+        macros[name] = new PreprocessorMacro(parameters, body, parameters is not null && variadic, variadicParameterName);
     }
 
     private static List<string> ParseParameters(IdlInput input, int offset, string text, out bool variadic, out string? variadicParameterName)
@@ -107,11 +107,4 @@ internal sealed partial class IdlPreprocessor
         return result;
     }
 
-    private sealed class Macro(List<string>? parameters, string body, bool variadic, string? variadicParameterName = null)
-    {
-        public List<string>? Parameters { get; } = parameters;
-        public string Body { get; } = body;
-        public bool Variadic { get; } = variadic;
-        public string? VariadicParameterName { get; } = variadicParameterName;
-    }
 }

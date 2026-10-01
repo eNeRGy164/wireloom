@@ -12,7 +12,7 @@ internal sealed partial class IdlPreprocessor
             open++;
         }
 
-        if (open >= text.Length || text[open] != '(' || !TryReadArguments(text, open, out var arguments, out var end))
+        if (open >= text.Length || text[open] != '(' || !macroTokens.TryReadArguments(text, open, out var arguments, out var end))
         {
             return false;
         }
@@ -58,7 +58,7 @@ internal sealed partial class IdlPreprocessor
             open++;
         }
 
-        if (open >= text.Length || text[open] != '(' || !TryReadArguments(text, open, out var arguments, out var end))
+        if (open >= text.Length || text[open] != '(' || !macroTokens.TryReadArguments(text, open, out var arguments, out var end))
         {
             return false;
         }
