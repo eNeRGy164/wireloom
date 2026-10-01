@@ -8,7 +8,7 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class DynamicTypeEmitter
 {
     public static void EmitStructPlugin(
-        CompilationContext compilation,
+        EmissionResult result,
         string name,
         string? currentNamespace,
         IReadOnlyList<MemberEmissionPlan> fields,
@@ -122,6 +122,6 @@ internal static class DynamicTypeEmitter
         writer.CloseBlock();
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementationNamespace, name + "Plugin"), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(implementationNamespace, name + "Plugin"), writer.ToString());
     }
 }

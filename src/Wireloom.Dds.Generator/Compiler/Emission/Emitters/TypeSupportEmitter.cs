@@ -8,7 +8,7 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class TypeSupportEmitter
 {
     public static void Emit(
-        CompilationContext compilation,
+        EmissionResult result,
         string name,
         string? currentNamespace,
         IReadOnlyList<MemberEmissionPlan> fields,
@@ -17,10 +17,10 @@ internal static class TypeSupportEmitter
         string sourceIdlFileName,
         string? baseType,
         bool isRecursive) =>
-        EmitDocuments(compilation, name, currentNamespace, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive);
+        EmitDocuments(result, name, currentNamespace, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive);
 
     private static void EmitDocuments(
-        CompilationContext compilation,
+        EmissionResult result,
         string name,
         string? currentNamespace,
         IReadOnlyList<MemberEmissionPlan> fields,
@@ -52,9 +52,9 @@ internal static class TypeSupportEmitter
         NativeTypeEmitter.Emit(writer, implementationTypeName, fields, inheritedFields, implementationNamespace, baseUnmanagedType);
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementationNamespace, $"{name}Unmanaged"), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(implementationNamespace, $"{name}Unmanaged"), writer.ToString());
 
-        DynamicTypeEmitter.EmitStructPlugin(compilation, name, currentNamespace, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive);
+        DynamicTypeEmitter.EmitStructPlugin(result, name, currentNamespace, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive);
 
         writer = EmissionSupport.CreateSource(currentNamespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
 
@@ -94,6 +94,6 @@ internal static class TypeSupportEmitter
 
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(currentNamespace, $"{name}Support"), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(currentNamespace, $"{name}Support"), writer.ToString());
     }
 }

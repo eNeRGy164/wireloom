@@ -8,7 +8,7 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class ClassEmitter
 {
     public static void Emit(
-        CompilationContext compilation,
+        EmissionResult result,
         string name,
         string? currentNamespace,
         IReadOnlyList<IdlMember> fields,
@@ -70,12 +70,12 @@ internal static class ClassEmitter
         }
 
         writer.CloseBlock();
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(currentNamespace, name), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(currentNamespace, name), writer.ToString());
 
         if (hasTypeSupport)
         {
             TypeSupportEmitter.Emit(
-                compilation,
+                result,
                 name,
                 currentNamespace,
                 fieldPlans,

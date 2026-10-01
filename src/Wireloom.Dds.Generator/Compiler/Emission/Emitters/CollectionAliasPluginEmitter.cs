@@ -1,5 +1,6 @@
 using Wireloom.Compiler.Emission.Writers;
 using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -7,18 +8,16 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits the RTI plugin and dynamic type for a collection or value typedef.</summary>
 internal static class CollectionAliasPluginEmitter
 {
-    public static void Emit(CompilationContext compilation, IdlTypedef declaration, string elementType, string sourceIdlFileName)
+    public static void Emit(CompilationContext compilation, EmissionResult result, IdlTypedef declaration, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
     {
+        var elementType = plan.ElementType;
         var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
         var implementation = declaration.Namespace is null ? "Implementation" : $"{declaration.Namespace}.Implementation";
         var implementationTypeName = IdlNaming.TypeReference(typeName, declaration.Namespace, implementation);
-        var elementIdlType = declaration.IsCollection ? declaration.ElementType! : elementType;
-        var isString = declaration.IsString;
+        var elementIdlType = plan.ElementIdlType;
+        var isString = plan.IsString;
         var collectionElementIsAggregate = declaration.IsCollection &&
-            !IsStringType(elementIdlType) &&
-            !IdlNaming.IsPrimitive(elementType) &&
-            !IsCSharpPrimitive(elementType) &&
-            !compilation.IsEnum(elementType, declaration.Namespace);
+            plan.CollectionElementIsAggregate;
 
         var collectionElementUnmanagedType = string.Empty;
         if (collectionElementIsAggregate)
@@ -70,7 +69,7 @@ internal static class CollectionAliasPluginEmitter
                 dynamicType = $"dtf.GetPrimitiveType<{IdlNaming.TypeReference(elementType, implementation)}>()";
             }
 
-            if (declaration.IsString || IdlNaming.IsPrimitive(declaration.Target))
+            if (plan.IsString || plan.IsPrimitive)
             {
                 writer.WriteLine($"var aliasType = tsf.CreateAliasWithAccessInfo<{typeName}Unmanaged>(dtf, \"{typeName}\", {dynamicType});");
             }
@@ -80,7 +79,7 @@ internal static class CollectionAliasPluginEmitter
             }
         }
 
-        if (!declaration.IsCollection && (declaration.IsString || IdlNaming.IsPrimitive(declaration.Target)))
+        if (!declaration.IsCollection && (plan.IsString || plan.IsPrimitive))
         {
             EmitAliasAnnotations(writer, declaration);
 
@@ -90,7 +89,7 @@ internal static class CollectionAliasPluginEmitter
 
         writer.CloseBlock();
         writer.CloseBlock();
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementation, declaration.Name + "Plugin"), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(implementation, declaration.Name + "Plugin"), writer.ToString());
     }
 
     private static void EmitAliasAnnotations(GeneratedSourceWriter writer, IdlTypedef declaration)

@@ -109,8 +109,8 @@ internal static class IdlNaming
             currentNamespace);
 
     /// <summary>Creates the deterministic generated-document hint name.</summary>
-    internal static string CreateHintName(string? currentNamespace, string typeName) =>
-        (currentNamespace is null ? string.Empty : currentNamespace + ".") + typeName + ".g.cs";
+    internal static GeneratedName CreateGeneratedName(string? currentNamespace, string typeName) =>
+        new(currentNamespace ?? string.Empty, EscapeIdentifier(typeName));
 
     /// <summary>Escapes each segment of a qualified C# identifier.</summary>
     internal static string EscapeQualifiedIdentifier(string identifier) =>

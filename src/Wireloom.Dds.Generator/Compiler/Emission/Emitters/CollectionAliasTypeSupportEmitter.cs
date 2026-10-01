@@ -6,7 +6,7 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits RTI type-support registration for a collection or value typedef.</summary>
 internal static class CollectionAliasTypeSupportEmitter
 {
-    public static void Emit(CompilationContext compilation, IdlTypedef declaration, string sourceIdlFileName)
+    public static void Emit(EmissionResult result, IdlTypedef declaration, string sourceIdlFileName)
     {
         var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
         var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
@@ -31,6 +31,6 @@ internal static class CollectionAliasTypeSupportEmitter
         writer.Unindent();
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(declaration.Namespace, $"{declaration.Name}Support"), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(declaration.Namespace, $"{declaration.Name}Support"), writer.ToString());
     }
 }

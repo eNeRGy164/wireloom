@@ -10,14 +10,14 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class UnionEmitter
 {
     /// <summary>Emits the managed, native, plugin, and type-support documents for an IDL union.</summary>
-    public static void Emit(CompilationContext compilation, IdlUnion declaration, string sourceIdlFileName) =>
-        EmitUnionCore(compilation, EmissionTypeProjector.ToEmissionUnion(declaration), sourceIdlFileName);
+    public static void Emit(EmissionResult result, IdlUnion declaration, string sourceIdlFileName) =>
+        EmitUnionCore(result, EmissionTypeProjector.ToEmissionUnion(declaration), sourceIdlFileName);
 
-    private static void EmitUnionCore(CompilationContext compilation, IdlEmissionUnion declaration, string sourceIdlFileName)
+    private static void EmitUnionCore(EmissionResult result, IdlEmissionUnion declaration, string sourceIdlFileName)
     {
         var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
         var implementationNamespace = declaration.Namespace is null ? "Implementation" : $"{declaration.Namespace}.Implementation";
-        var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
+        var defaultBranch = declaration.DefaultBranch;
 
         var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.DataTypeUsings, sourceIdlFileName);
 
@@ -118,9 +118,9 @@ internal static class UnionEmitter
         writer.WriteLine($"public override string ToString() => {typeName}Support.Instance.ToString(this);");
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(declaration.Namespace, declaration.Name), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(declaration.Namespace, declaration.Name), writer.ToString());
 
-        UnionTypeSupportEmitter.Emit(compilation, declaration, sourceIdlFileName, implementationNamespace);
+        UnionTypeSupportEmitter.Emit(result, declaration, sourceIdlFileName, implementationNamespace);
     }
 
     /// <summary>Emits one public union branch and its discriminator guard.</summary>
@@ -184,7 +184,7 @@ internal static class UnionEmitter
     private static void EmitDefaultBranchSetter(GeneratedSourceWriter writer, IdlEmissionUnion declaration, UnionBranchEmissionPlan defaultBranch)
     {
         var methodName = IdlNaming.EscapeIdentifier($"Set{defaultBranch.Field.Name}");
-        var explicitLabels = declaration.Branches.Where(branch => !branch.IsDefault)
+        var explicitLabels = declaration.ExplicitBranches
             .SelectMany(branch => branch.Labels).Select(label => $"discriminator == {ManagedDiscriminatorLabel(label, declaration)}").ToArray();
 
         writer.WriteXmlSummary("Sets the default branch with an explicit discriminator value.");
@@ -206,7 +206,7 @@ internal static class UnionEmitter
     {
         writer.OpenBlock("switch (Discriminator)");
 
-        foreach (var branch in declaration.Branches.Where(branch => !branch.IsDefault))
+        foreach (var branch in declaration.ExplicitBranches)
         {
             foreach (var label in branch.Labels)
             {
@@ -220,7 +220,7 @@ internal static class UnionEmitter
             writer.Unindent();
         }
 
-        var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
+        var defaultBranch = declaration.DefaultBranch;
         if (defaultBranch is null && IsExhaustiveBooleanUnion(declaration, defaultBranch))
         {
             writer.CloseBlock();
@@ -247,13 +247,13 @@ internal static class UnionEmitter
         writer.WriteLine("return Discriminator switch");
         writer.OpenBrace();
 
-        foreach (var branch in declaration.Branches.Where(branch => !branch.IsDefault))
+        foreach (var branch in declaration.ExplicitBranches)
         {
             var labels = string.Join(" or ", branch.Labels.Select(label => ManagedDiscriminatorLabel(label, declaration)));
             writer.WriteLine($"{labels} => {IdlNaming.EscapeIdentifier(branch.Field.Name)},");
         }
 
-        var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
+        var defaultBranch = declaration.DefaultBranch;
         if (!IsExhaustiveBooleanUnion(declaration, defaultBranch))
         {
             var fallback = defaultBranch is null ? "null" : IdlNaming.EscapeIdentifier(defaultBranch.Field.Name);
@@ -269,13 +269,13 @@ internal static class UnionEmitter
         writer.WriteLine("return Discriminator switch");
         writer.OpenBrace();
 
-        foreach (var branch in declaration.Branches.Where(branch => !branch.IsDefault))
+        foreach (var branch in declaration.ExplicitBranches)
         {
             var labels = string.Join(" or ", branch.Labels.Select(label => ManagedDiscriminatorLabel(label, declaration)));
             writer.WriteLine($"{labels} => global::System.HashCode.Combine(Discriminator, {branch.Plan.HashValue()}),");
         }
 
-        var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
+        var defaultBranch = declaration.DefaultBranch;
         string fallback;
         if (defaultBranch is not null)
         {
@@ -300,14 +300,14 @@ internal static class UnionEmitter
         writer.WriteLine("return Discriminator switch");
         writer.OpenBrace();
 
-        foreach (var branch in declaration.Branches.Where(branch => !branch.IsDefault))
+        foreach (var branch in declaration.ExplicitBranches)
         {
             var labels = string.Join(" or ", branch.Labels.Select(label => ManagedDiscriminatorLabel(label, declaration)));
             var thisPrefix = ManagedFieldPrefix(branch.Plan, "other");
             writer.WriteLine($"{labels} => {branch.Plan.EqualityExpression(thisPrefix: thisPrefix)},");
         }
 
-        var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
+        var defaultBranch = declaration.DefaultBranch;
         var fallback = defaultBranch is null
             ? "true"
             : defaultBranch.Plan.EqualityExpression(thisPrefix: ManagedFieldPrefix(defaultBranch.Plan, "other"));
@@ -329,7 +329,7 @@ internal static class UnionEmitter
             return string.Join(join, branch.Labels.Select(label => $"Discriminator {comparison} {ManagedDiscriminatorLabel(label, declaration)}"));
         }
 
-        var operators = declaration.Branches.Where(candidate => !candidate.IsDefault)
+        var operators = declaration.ExplicitBranches
             .SelectMany(candidate => candidate.Labels)
             .Select(label => $"Discriminator {(negated ? "==" : "!=")} {ManagedDiscriminatorLabel(label, declaration)}");
 

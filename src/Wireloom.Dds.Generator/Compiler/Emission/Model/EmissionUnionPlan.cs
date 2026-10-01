@@ -23,4 +23,12 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
     public int? DiscriminatorDefaultValue { get; } = discriminatorDefaultValue;
     public IReadOnlyList<UnionBranchEmissionPlan> Branches { get; } = branches;
     public IdlExtensibilityKind Extensibility { get; } = extensibility;
+    public IReadOnlyList<UnionBranchEmissionPlan> ExplicitBranches =>
+        Branches.Where(branch => !branch.IsDefault).ToArray();
+
+    public UnionBranchEmissionPlan? DefaultBranch =>
+        Branches.SingleOrDefault(branch => branch.IsDefault);
+
+    public bool IsExhaustiveBoolean =>
+        DiscriminatorCSharpType == "bool" && DefaultBranch is null;
 }

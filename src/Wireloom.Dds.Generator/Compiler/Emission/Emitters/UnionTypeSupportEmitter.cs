@@ -9,7 +9,7 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class UnionTypeSupportEmitter
 {
     /// <summary>Emits the RTI native representation, plugin, and type support for an IDL union.</summary>
-    public static void Emit(CompilationContext compilation, IdlEmissionUnion declaration, string sourceIdlFileName, string implementationNamespace)
+    public static void Emit(EmissionResult result, IdlEmissionUnion declaration, string sourceIdlFileName, string implementationNamespace)
     {
         var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
         var unmanagedName = IdlNaming.EscapeIdentifier(declaration.Name + "Unmanaged");
@@ -62,7 +62,7 @@ internal static class UnionTypeSupportEmitter
         EmitUnionNativeConversion(writer, declaration, implementationTypeName, implementationNamespace, fromNative: false);
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementationNamespace, $"{declaration.Name}Unmanaged"), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(implementationNamespace, $"{declaration.Name}Unmanaged"), writer.ToString());
 
         writer = EmissionSupport.CreateSource(implementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
 
@@ -125,7 +125,7 @@ internal static class UnionTypeSupportEmitter
         writer.CloseBlock();
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementationNamespace, $"{declaration.Name}Plugin"), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(implementationNamespace, $"{declaration.Name}Plugin"), writer.ToString());
 
         writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
         writer.WriteXmlSummary($"Provides RTI Connext DDS type support for <see cref=\"{typeName}\"/>.");
@@ -146,7 +146,7 @@ internal static class UnionTypeSupportEmitter
         writer.Unindent();
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(declaration.Namespace, $"{declaration.Name}Support"), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(declaration.Namespace, $"{declaration.Name}Support"), writer.ToString());
     }
 
     /// <summary>Emits native-to-managed or managed-to-native conversion for the selected branch.</summary>
@@ -173,7 +173,7 @@ internal static class UnionTypeSupportEmitter
 
         writer.OpenBlock($"switch ({NativeDiscriminatorReadExpression(declaration)})");
 
-        foreach (var branch in declaration.Branches.Where(branch => !branch.IsDefault))
+        foreach (var branch in declaration.ExplicitBranches)
         {
             foreach (var label in branch.Labels)
             {
@@ -213,12 +213,12 @@ internal static class UnionTypeSupportEmitter
             writer.Unindent();
         }
 
-        if (!IsExhaustiveBooleanUnion(declaration))
+        if (!declaration.IsExhaustiveBoolean)
         {
             writer.WriteLine("default:");
             writer.Indent();
 
-            var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
+            var defaultBranch = declaration.DefaultBranch;
             if (defaultBranch is not null)
             {
                 if (fromNative)
@@ -320,6 +320,4 @@ internal static class UnionTypeSupportEmitter
             _ => source
         };
 
-    private static bool IsExhaustiveBooleanUnion(IdlEmissionUnion declaration) =>
-        declaration.DiscriminatorCSharpType == "bool" && !declaration.Branches.Any(branch => branch.IsDefault);
 }

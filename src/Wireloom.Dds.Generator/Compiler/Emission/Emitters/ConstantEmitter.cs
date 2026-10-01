@@ -10,7 +10,7 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits documented C# representations of IDL constants.</summary>
 internal static class ConstantEmitter
 {
-    public static void Emit(CompilationContext compilation, IdlConstantDeclaration declaration, string sourceIdlFileName)
+    public static void Emit(CompilationContext compilation, EmissionResult result, IdlConstantDeclaration declaration, string sourceIdlFileName)
     {
         var name = declaration.Name;
         var currentNamespace = declaration.Namespace;
@@ -29,7 +29,7 @@ internal static class ConstantEmitter
         writer.WriteLine($"public const {type} Value = {expression};");
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(currentNamespace, name), writer.ToString()));
+        result.Add(IdlNaming.CreateGeneratedName(currentNamespace, name), writer.ToString());
     }
 
     private static string MapConstantType(string type) => type switch
