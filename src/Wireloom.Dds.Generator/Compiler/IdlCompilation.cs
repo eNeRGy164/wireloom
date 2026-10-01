@@ -24,6 +24,7 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, Cancellatio
         var roots = inputs.Where(input => input.Generate).ToArray();
         var graph = new IdlInputGraph(files, roots.SelectMany(input => input.Defines), roots.SelectMany(input => input.Undefines), roots.SelectMany(input => input.IncludeDirectories), cancellationToken);
         var parser = new IdlDeclarationParser(symbols, cancellationToken, diagnostics);
+        var result = new EmissionResult();
         var compilation = new CompilationContext(symbols);
 
         // Roots are sorted by path so generation is stable even when the build
@@ -34,8 +35,8 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, Cancellatio
             graph.Visit(input, parser.Parse, diagnostics);
         }
 
-        new IdlDeclarationEmitter(compilation, parser, inputs.Any(input => input.Generate && input.Strict)).Emit();
+        parser.ValidateTypedefs();
 
-        return compilation.Sources;
+        return new IdlDeclarationEmitter(compilation, parser, inputs.Any(input => input.Generate && input.Strict), result).Emit();
     }
 }

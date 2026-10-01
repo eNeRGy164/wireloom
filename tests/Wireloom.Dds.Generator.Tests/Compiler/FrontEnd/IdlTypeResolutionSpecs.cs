@@ -1,10 +1,25 @@
+using Wireloom.Compiler.FrontEnd.Symbols;
+
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
-using Wireloom;
 
 namespace Wireloom.Compiler.FrontEnd.Semantic.Tests;
 
 public sealed class IdlTypeResolutionSpecs
 {
+    [Fact]
+    public void BindsRawTypeReferencesThroughTheSemanticBinder()
+    {
+        // Arrange
+        var binder = new IdlTypeBinder(new IdlSymbolTable());
+        var reference = new IdlTypeReference("long", "Example", Input("binder.idl", string.Empty), 0);
+
+        // Act
+        var bound = binder.Bind(reference);
+
+        // Assert
+        bound.ShouldBeOfType<IdlType.Primitive>().Name.ShouldBe("long");
+    }
+
     [Fact]
     [Trait("Corpus", "C009")]
     public void ResolvesPrimitiveAliasChainsToUnderlyingValuesAndDistinctRuntimeMetadata()

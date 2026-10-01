@@ -28,7 +28,7 @@ internal sealed class IdlTypedefParser
                 ? context.TypeParser.ResolveBound(input, baseOffset + position, sequenceTypedef.Groups[2].Value, currentNamespace)
                 : (int?)null;
             var parsedSequence = new IdlTypedef(sequenceName, currentNamespace, "sequence", target, bound);
-            context.Symbols.AddTypedef(qualified, parsedSequence);
+            context.AddTypedef(qualified, parsedSequence, input, baseOffset + position);
             context.Declarations.Add(new IdlTypedefDeclaration(parsedSequence, Path.GetFileName(input.Path)));
 
             position += sequenceTypedef.Length;
@@ -52,7 +52,7 @@ internal sealed class IdlTypedefParser
                 NormalizeIdlType(arrayTypedef.Groups[1].Value),
                 null,
                 dimensions);
-            context.Symbols.AddTypedef(qualified, parsedArray);
+            context.AddTypedef(qualified, parsedArray, input, baseOffset + position);
             context.Declarations.Add(new IdlTypedefDeclaration(parsedArray, Path.GetFileName(input.Path)));
 
             position += arrayTypedef.Length;
@@ -90,7 +90,7 @@ internal sealed class IdlTypedefParser
                 null,
                 stringBound: bound,
                 isWideString: isWideString);
-            context.Symbols.AddTypedef(typeName, parsedStringTypedef);
+            context.AddTypedef(typeName, parsedStringTypedef, input, baseOffset + position);
             context.Declarations.Add(new IdlTypedefDeclaration(parsedStringTypedef, Path.GetFileName(input.Path)));
 
             position += typedefDeclaration.Length;
@@ -104,16 +104,13 @@ internal sealed class IdlTypedefParser
             typedefTarget,
             null,
             null);
-        context.Symbols.AddTypedef(typeName, parsedTypedef);
+        context.AddTypedef(typeName, parsedTypedef, input, baseOffset + position);
         context.Declarations.Add(new IdlTypedefDeclaration(parsedTypedef, Path.GetFileName(input.Path)));
 
         position += typedefDeclaration.Length;
 
         return true;
     }
-
-    internal void Validate(IdlInput input, int offset, string name) =>
-        context.Validator.ValidateTypedef(input, context.MapOffset(offset), name);
 
     private static readonly string[] GeneratedTypedefMemberNames =
     [

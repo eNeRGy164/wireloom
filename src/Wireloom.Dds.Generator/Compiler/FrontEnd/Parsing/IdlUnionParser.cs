@@ -184,7 +184,7 @@ internal sealed class IdlUnionParser
         {
             var (ElementType, Bound) = context.TypeParser.ParseSequenceType(input, sourceOffset, branchType, currentNamespace);
 
-            var element = context.ResolveFieldType(ElementType, currentNamespace, input, sourceOffset);
+            var element = context.BindFieldType(ElementType, currentNamespace, input, sourceOffset);
             if (element is null)
             {
                 throw new IdlException(input, context.MapOffset(sourceOffset), $"Unknown union collection element type: {ElementType}");
@@ -206,7 +206,7 @@ internal sealed class IdlUnionParser
             return new IdlMember(branchName, new IdlType.Primitive(NormalizeIdlType(branchType)));
         }
 
-        var resolved = context.ResolveFieldType(branchType, currentNamespace, input, sourceOffset);
+        var resolved = context.BindFieldType(branchType, currentNamespace, input, sourceOffset);
         if (resolved is null)
         {
             throw new IdlException(input, context.MapOffset(sourceOffset), $"Unknown union branch type: {branchType}");
