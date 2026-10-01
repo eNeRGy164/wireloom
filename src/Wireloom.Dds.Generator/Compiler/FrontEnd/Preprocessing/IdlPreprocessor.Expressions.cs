@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Wireloom.Compiler.FrontEnd.Preprocessing;
@@ -10,130 +9,12 @@ internal sealed partial class IdlPreprocessor
         @"^\s*(?<left>[^<>=!]+?)\s*(?<operator>==|!=|<=|>=|<|>)\s*(?<right>[^<>=!]+?)\s*$",
         RegexOptions.Compiled);
 
-    private bool EvaluateCondition(string text, IdlInput input, int sourceOffset, int diagnosticOffset)
+    private static (bool Matched, bool Result) EvaluateUnsignedComparison(string expression)
     {
-        text = ReplaceDefinedOperators(text, input, diagnosticOffset);
-
-        var expression = Expand(text, sourceOffset, sourceOffsetMap).Trim();
-        try
-        {
-            if (expression.Contains("++", StringComparison.Ordinal)
-                || expression.Contains("--", StringComparison.Ordinal))
-            {
-                throw new InvalidOperationException("increment and decrement operators are not valid in preprocessor conditions");
-            }
-
-            if (TryEvaluateUnsignedComparison(expression, out var unsignedResult))
-            {
-                return unsignedResult;
-            }
-
-            return new ConditionalExpression(expression).Evaluate() != 0;
-        }
-        catch (InvalidOperationException exception)
-        {
-            throw new IdlException(input, diagnosticOffset, $"Invalid preprocessor condition: {exception.Message}");
-        }
-        catch (ArithmeticException exception)
-        {
-            throw new IdlException(input, diagnosticOffset, $"Invalid preprocessor condition: {exception.Message}");
-        }
+        return TryEvaluateUnsignedComparison(expression, out var result)
+            ? (true, result)
+            : (false, false);
     }
-
-    private string ReplaceDefinedOperators(string text, IdlInput input, int offset)
-    {
-        var output = new StringBuilder(text.Length);
-        var copiedThrough = 0;
-        var scanIndex = 0;
-
-        while (scanIndex < text.Length)
-        {
-            if (StartsPrefixedLiteral(text, scanIndex) || IsLiteralStart(text, scanIndex))
-            {
-                scanIndex = SkipLiteral(text, scanIndex);
-                continue;
-            }
-
-            if (!IsDefinedOperatorAt(text, scanIndex))
-            {
-                scanIndex++;
-                continue;
-            }
-
-            output.Append(text, copiedThrough, scanIndex - copiedThrough);
-
-            var position = scanIndex + "defined".Length;
-            while (position < text.Length && char.IsWhiteSpace(text[position]))
-            {
-                position++;
-            }
-
-            string name;
-            if (position < text.Length && text[position] == '(')
-            {
-                position++;
-                while (position < text.Length && char.IsWhiteSpace(text[position]))
-                {
-                    position++;
-                }
-
-                var nameStart = position;
-                if (position >= text.Length || !IsIdentifierStart(text[position]))
-                {
-                    throw InvalidDefinedOperator(input, offset);
-                }
-
-                while (position < text.Length && IsIdentifierPart(text[position]))
-                {
-                    position++;
-                }
-
-                name = text[nameStart..position];
-                while (position < text.Length && char.IsWhiteSpace(text[position]))
-                {
-                    position++;
-                }
-
-                if (position >= text.Length || text[position] != ')')
-                {
-                    throw InvalidDefinedOperator(input, offset);
-                }
-
-                position++;
-            }
-            else
-            {
-                var nameStart = position;
-                if (position >= text.Length || !IsIdentifierStart(text[position]))
-                {
-                    throw InvalidDefinedOperator(input, offset);
-                }
-
-                while (position < text.Length && IsIdentifierPart(text[position]))
-                {
-                    position++;
-                }
-
-                name = text[nameStart..position];
-            }
-
-            output.Append(macros.ContainsKey(name) ? '1' : '0');
-            copiedThrough = position;
-            scanIndex = position;
-        }
-
-        output.Append(text, copiedThrough, text.Length - copiedThrough);
-        return output.ToString();
-    }
-
-    private static bool IsDefinedOperatorAt(string text, int index) =>
-        text.AsSpan(index).StartsWith("defined", StringComparison.Ordinal)
-        && (index == 0 || !IsIdentifierPart(text[index - 1]))
-        && (index + "defined".Length == text.Length
-            || !IsIdentifierPart(text[index + "defined".Length]));
-
-    private static IdlException InvalidDefinedOperator(IdlInput input, int offset) =>
-        new(input, offset, "Invalid preprocessor condition: malformed defined operator.");
 
     private static bool TryEvaluateUnsignedComparison(string expression, out bool result)
     {
@@ -344,17 +225,9 @@ internal sealed partial class IdlPreprocessor
         return true;
     }
 
-    private sealed class ConditionalFrame(bool parentActive, bool branchTaken, bool elseSeen)
-    {
-        public bool ParentActive { get; } = parentActive;
-        public bool BranchTaken { get; } = branchTaken;
-        public bool ElseSeen { get; } = elseSeen;
-    }
-
     /// <summary>Evaluates the integer expression subset used by #if.</summary>
     private sealed class ConditionalExpression(string text)
     {
-        private const int MaximumExpressionNesting = 256;
         private int position;
         private int nestingDepth;
 
@@ -602,9 +475,9 @@ internal sealed partial class IdlPreprocessor
 
         private void EnterNesting()
         {
-            if (nestingDepth >= MaximumExpressionNesting)
+            if (nestingDepth >= PreprocessorLimits.MaximumExpressionNesting)
             {
-                throw Invalid($"expression nesting exceeds the {MaximumExpressionNesting}-level limit");
+                throw Invalid($"expression nesting exceeds the {PreprocessorLimits.MaximumExpressionNesting}-level limit");
             }
 
             nestingDepth++;
