@@ -1,37 +1,23 @@
 # Wireloom
 
+[![Quality](https://github.com/eNeRGy164/wireloom/actions/workflows/quality.yml/badge.svg)](https://github.com/eNeRGy164/wireloom/actions/workflows/quality.yml)
 [![Coverage Status](https://coveralls.io/repos/github/eNeRGy164/wireloom/badge.svg?branch=main)](https://coveralls.io/github/eNeRGy164/wireloom?branch=main)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/eNeRGy164/wireloom/badge)](https://scorecard.dev/viewer/?uri=github.com/eNeRGy164/wireloom)
 
-Wireloom is a managed .NET source generator for the RTI Connext DDS IDL subset.
-It turns IDL generation roots into C# data types and the RTI type-specific
-support needed by a consuming application—at build time, inside the Roslyn
-compiler, without launching Java, a native compiler, or `rtiddsgen`.
+Wireloom is a preview .NET source generator for the RTI Connext DDS IDL subset.
+It generates C# data types and RTI type-specific support during a normal .NET
+build, inside the Roslyn compiler. Consumer builds do not need Java, a native
+C/C++ compiler, or `rtiddsgen` for IDL generation.
 
-The project is deliberately evidence-driven. It is a preview implementation
-with a growing compatibility surface, not a claim of drop-in replacement or
-complete wire interoperability.
+The RTI Connext DDS runtime still provides serialization and DDS communication.
+Wireloom handles IDL preprocessing, parsing, validation, and C# generation; it
+does not sit in the DDS data path.
 
-## Why Wireloom?
+## Get started
 
-Traditional DDS code generation adds an external toolchain to a .NET build.
-Wireloom keeps the generation step in the project that consumes the types:
-
-```text
-Connext IDL ──► Roslyn incremental generator ──► C# data contract
-                                             ├──► native conversion helpers
-                                             ├──► TypeSupport and plugin
-                                             └──► DynamicType metadata
-```
-
-The RTI Connext DDS runtime remains responsible for DDS communication,
-serialization, and representation negotiation. Wireloom owns parsing,
-preprocessing, semantic validation, and generated C# source.
-
-## Quick start
-
-A consumer references the RTI runtime explicitly and declares each IDL generation
-root explicitly:
+Add the generator and RTI runtime to the project that owns your DDS contracts.
+The runtime reference is explicit because your application controls its runtime
+version and configuration.
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
@@ -45,15 +31,8 @@ root explicitly:
     <PackageReference Include="Wireloom.Dds.Generator"
                       Version="0.2.0"
                       PrivateAssets="all" />
-
     <DdsIdl Include="Contracts\Telemetry.idl" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <DdsIdlIncludeDirectories>
-      $(MSBuildProjectDirectory)\Contracts\Shared
-    </DdsIdlIncludeDirectories>
-  </PropertyGroup>
 </Project>
 ```
 
@@ -69,15 +48,12 @@ module Telemetry {
 };
 ```
 
-`DdsIdl` is an explicit generation root. Files reached through `#include` are
-tracked inputs, but are not independently generated as roots. Project-level
-`DdsIdlIncludeDirectories` and root-item `IncludeDirectories` contribute to the
-project-wide generation batch. Likewise, `Defines`, `Undefines`, and `Strict`
-are collected from the generating roots: roots are explicit, but these settings
-are not isolated per root in the current implementation.
+The `DdsIdl` item identifies a generation root. Files included by that root are
+tracked as inputs but are not generated as independent roots. For include
+directories and preprocessing options, see the [package usage guide](src/Wireloom.Dds.Generator/README.md).
 
-Generated documents appear as normal Roslyn generated documents. To write them
-to disk for inspection, use the standard compiler options:
+Generated source appears in the IDE as Roslyn generated documents. To write it
+under `obj` for inspection, add:
 
 ```xml
 <PropertyGroup>
@@ -86,127 +62,34 @@ to disk for inspection, use the standard compiler options:
 </PropertyGroup>
 ```
 
-## What is implemented
+## Support and compatibility
 
-The managed front end and emitters currently cover substantial parts of the
-Connext IDL data-type surface, including:
+Wireloom is a preview implementation with a growing, feature-specific
+compatibility surface. It supports substantial parts of the Connext IDL data
+type model, including modules, structs, aliases, enums, unions, constants,
+collections, arrays, and preprocessing. Unsupported declarations are reported
+with diagnostics instead of being silently omitted.
 
-- modules, structs, nested declarations, aliases, enums, unions, and constants;
-- primitive values, narrow and wide strings, bounded strings, sequences, and
-  fixed or multidimensional arrays;
-- collection composition, include graphs, conditional preprocessing, and
-  configured macros;
-- generated managed types with constructors, equality, hashing, and C# keyword
-  escaping;
-- RTI-native companion types, type support, interpreted plugins, DynamicType
-  metadata, keys, bounds, and extensibility where the retained compatibility
-  evidence supports the shape;
-- source-located diagnostics for unsupported syntax and invalid input.
+Check the [feature coverage index](docs/corpus/FEATURE-COVERAGE.md) for the
+current status of individual IDL shapes. The checked compatibility corpus uses
+RTI Connext DDS 7.7.0 / `rtiddsgen` 4.7.0 reference output; the documented
+runtime compatibility floor is RTI 7.3.1. Current consumer evidence targets
+`net10.0` and C# 12 or later.
 
-The exact status is maintained in the [feature coverage index](docs/corpus/FEATURE-COVERAGE.md).
-“Implemented” there means source-generation behavior and, where applicable,
-generated contract shape—not automatic proof of runtime or wire compatibility.
+Corpus results compare source-generation behavior and generated C# shape. They
+do not establish serialization-byte equivalence, live DDS behavior, or C++
+interoperability. Those require separate runtime and interoperability evidence.
 
-## Compatibility evidence
+## Documentation
 
-Wireloom compares small, attributable IDL cases with retained RTI Connext
-7.7.0 / `rtiddsgen` 4.7.0 reference output. The compatibility floor is RTI
-7.3.1 and later because 7.3.1 ships the same `rtiddsgen` version. The checked-in corpus currently
-contains:
+- [Package usage and configuration](src/Wireloom.Dds.Generator/README.md)
+- [Feature coverage](docs/corpus/FEATURE-COVERAGE.md)
+- [Preprocessor feature matrix](docs/PREPROCESSOR-FEATURES.md)
+- [Contributing and maintainer guide](CONTRIBUTING.md)
 
-The corpus is source-generation evidence. It does not by itself establish
-serialization-byte equivalence, live DDS behavior, or C++ interoperability.
-Those claims require additional runtime and interoperability verification; see
-the [corpus compliance test guide](tests/Wireloom.Dds.Generator.CorpusCompliance/README.md)
-and [feature coverage index](docs/corpus/FEATURE-COVERAGE.md) for the current
-evidence boundary.
+## License
 
-## Build and test
-
-Restore the locked dependencies, then run the focused unit and corpus suites:
-
-```shell
-dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
-dotnet test tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --no-restore --configuration Release
-
-dotnet restore tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --locked-mode
-dotnet test tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --no-restore --configuration Release
-```
-
-Pack the analyzer/source-generator package with:
-
-```shell
-dotnet restore src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --locked-mode
-dotnet pack src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --no-restore --configuration Release --output artifacts
-```
-
-The package integration suite consumes that packed `.nupkg` from an isolated
-local feed. Its complete restore and test procedure is documented in
-[`tests/Wireloom.Dds.Generator.PackageIntegration/README.md`](tests/Wireloom.Dds.Generator.PackageIntegration/README.md).
-
-## Architecture
-
-The implementation is organized as a small compiler pipeline:
-
-```text
-Generator
-  └── IdlCompiler
-      ├── IdlInputGraph
-      ├── preprocessor and parser
-      ├── symbol table, type resolver, and semantic validator
-      ├── resolved emission plans
-      └── managed/native/type-support emitters
-```
-
-The parser and semantic model are independent of Roslyn. Roslyn integration is
-kept at the generator boundary, where it supplies AdditionalFiles, compiler
-diagnostics, cancellation, and generated documents. The source layout mirrors
-these responsibilities under [`src/Wireloom.Dds.Generator`](src/Wireloom.Dds.Generator).
-
-The architecture is documented with a compact [arc42 baseline](docs/architecture/arc42/index.md).
-
-## Repository map
-
-| Path                                                                                                 | Purpose                                                    |
-| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [`src/Wireloom.Dds.Generator`](src/Wireloom.Dds.Generator)                                           | Packable Roslyn incremental generator and managed compiler |
-| [`tests/Wireloom.Dds.Generator.Tests`](tests/Wireloom.Dds.Generator.Tests)                           | Fast in-memory front-end and emitter tests                 |
-| [`tests/Wireloom.Dds.Generator.CorpusCompliance`](tests/Wireloom.Dds.Generator.CorpusCompliance)     | Manifest-driven corpus and RTI C# shape checks             |
-| [`tests/Wireloom.Dds.Generator.PackageIntegration`](tests/Wireloom.Dds.Generator.PackageIntegration) | Tests against the packed NuGet analyzer                    |
-| [`docs/corpus`](docs/corpus)                                                                         | Authored IDL cases, oracle sources, and feature status     |
-| [`docs/architecture`](docs/architecture)                                                             | Architecture baseline and terminology                      |
-
-The design grows out of the managed-generator research in the companion
-`rtiddsgen-gen` repository. That research established the Roslyn-hosted,
-managed front end and the feature-level oracle approach used here.
-
-## Boundaries and expectations
-
-- The consumer owns the `Rti.ConnextDds` runtime reference; Wireloom does not
-  bundle or transitively add the runtime.
-- A resolved RTI runtime reference of version 7.3.1 or later and C# 12 or later
-  are required by the generator host.
-- Unsupported declarations and directives are rejected with diagnostics rather
-  than silently omitted.
-- Support status is feature- and evidence-specific. Collections, unions, keys,
-  annotations, and extensibility are not blanket compatibility claims.
-- The project does not currently promise verified Visual Studio live behavior,
-  Linux builds, or C++ peer interoperability for every supported feature.
-
-## Package publishing
-
-Preview packages are produced from `main` and published to GitHub Packages.
-Release packages are published to NuGet.org only from validated `v*.*.*` tags.
-The workflows also run the test suites, generate an SBOM, and attest package
-and provenance artifacts.
-
-## License and RTI reference material
-
-Wireloom is licensed under the MIT License; see [`LICENSE`](LICENSE). This
-license applies to Wireloom's original code, documentation, and authored IDL
-corpus inputs. It does not apply to RTI-generated oracle sources in
-[`docs/corpus/oracles`](docs/corpus/oracles)
-or other third-party material, which retain their own applicable rights and
-terms. Those oracle sources are reference artifacts provided as-is for
-compatibility testing. Review the [corpus guidance](docs/corpus/README.md)
-before adding, regenerating, or redistributing reference artifacts.
+Wireloom is licensed under the [MIT License](LICENSE). That license does not
+apply to the RTI-generated oracle sources in [`docs/corpus/oracles`](docs/corpus/oracles)
+or other third-party materials. Review the [corpus guidance](docs/corpus/README.md)
+before redistributing or changing those reference artifacts.
