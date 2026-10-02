@@ -34,13 +34,15 @@ internal sealed partial class MemberEmissionPlan
         _ => throw new InvalidOperationException("Expected a string emission type.")
     };
 
-    private string PrimitiveDynamicType() => ValueType switch
+    private string PrimitiveDynamicType()
     {
-        EnumEmissionType => NullableValueType(),
-        PrimitiveEmissionType { IdlName: "octet" } => "Octet",
-        PrimitiveEmissionType { IdlName: "wchar" } => "DynamicTypeFactory.WideCharType",
-        _ => NullableValueType()
-    };
+        if (ValueType is PrimitiveEmissionType primitive)
+        {
+            return PrimitiveTypeMapping.Resolve(primitive.IdlName).DynamicType;
+        }
+
+        return NullableValueType();
+    }
 
     private string BuildCollectionDynamicType(string implementationNamespace)
     {
