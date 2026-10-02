@@ -10,10 +10,10 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class UnionEmitter
 {
     /// <summary>Emits the managed, native, plugin, and type-support documents for an IDL union.</summary>
-    public static void Emit(EmissionResult result, IdlUnion declaration, string sourceIdlFileName) =>
-        EmitUnionCore(result, EmissionTypeProjector.ToEmissionUnion(declaration), sourceIdlFileName);
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlUnion declaration, string sourceIdlFileName) =>
+        EmitUnionCore(EmissionTypeProjector.ToEmissionUnion(declaration), sourceIdlFileName);
 
-    private static void EmitUnionCore(EmissionResult result, IdlEmissionUnion declaration, string sourceIdlFileName)
+    private static IReadOnlyList<GeneratedIdlSource> EmitUnionCore(IdlEmissionUnion declaration, string sourceIdlFileName)
     {
         var names = IdlNaming.CreateGeneratedTypeNames(declaration.Namespace, declaration.Name);
         var typeName = names.ManagedTypeName;
@@ -118,9 +118,10 @@ internal static class UnionEmitter
         writer.WriteLine($"public override string ToString() => {typeName}Support.Instance.ToString(this);");
         writer.CloseBlock();
 
-        result.Add(names.Managed, writer.ToString());
-
-        UnionTypeSupportEmitter.Emit(result, declaration, names, sourceIdlFileName);
+        return [
+            new GeneratedIdlSource(names.Managed.HintName, writer.ToString()),
+            .. UnionTypeSupportEmitter.Emit(declaration, names, sourceIdlFileName)
+        ];
     }
 
     /// <summary>Emits one public union branch and its discriminator guard.</summary>
