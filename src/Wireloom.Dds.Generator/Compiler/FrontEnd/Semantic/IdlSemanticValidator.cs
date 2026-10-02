@@ -7,10 +7,21 @@ namespace Wireloom.Compiler.FrontEnd.Semantic;
 /// <summary>Owns front-end validation that does not produce target code.</summary>
 internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
 {
-    /// <summary>Ensures that a declaration name is unique.</summary>
-    public void EnsureNewName(IdlInput input, int offset, string name)
+    private readonly HashSet<string> duplicateNames = new(StringComparer.Ordinal);
+
+    /// <summary>Registers a declaration name while retaining duplicate evidence for validation.</summary>
+    public void RegisterName(string name)
     {
-        if (!symbols.AddName(name) || symbols.ContainsEnum(name) || symbols.ContainsTypedef(name))
+        if (!symbols.AddName(name))
+        {
+            duplicateNames.Add(name);
+        }
+    }
+
+    /// <summary>Validates a declaration name after parsing has registered all symbols.</summary>
+    public void ValidateNewName(IdlInput input, int offset, string name)
+    {
+        if (duplicateNames.Contains(name))
         {
             throw new IdlException(input, offset, $"Duplicate type: {name}");
         }
@@ -303,11 +314,19 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
             && !IdlNaming.IsPrimitive(target))
         {
             var qualifiedTarget = IdlNaming.ResolveTypeName(target, alias.Namespace);
+            if (!HasKnownType(qualifiedTarget)
+                && alias.Namespace is not null
+                && !target.StartsWith("::", StringComparison.Ordinal)
+                && !target.Contains('.'))
+            {
+                qualifiedTarget = IdlNaming.ResolveTypeName(target, null);
+            }
+
             if (symbols.ContainsTypedef(qualifiedTarget))
             {
                 ValidateTypedef(input, offset, qualifiedTarget, activeAliases);
             }
-            else if (!symbols.ContainsEnum(qualifiedTarget) && !symbols.ContainsName(qualifiedTarget))
+            else if (!HasKnownType(qualifiedTarget))
             {
                 throw new IdlException(input, offset, $"Unknown typedef target: {target}");
             }
@@ -315,4 +334,9 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
 
         activeAliases.Remove(name);
     }
+
+    private bool HasKnownType(string qualifiedName) =>
+        symbols.ContainsTypedef(qualifiedName)
+        || symbols.ContainsEnum(qualifiedName)
+        || symbols.ContainsName(qualifiedName);
 }

@@ -18,7 +18,10 @@ internal abstract class IdlType
         : IdlType
     {
         public bool IsWide { get; } = isWide;
-        public int Bound { get; } = bound;
+        public int Bound { get; private set; } = bound;
+
+        /// <summary>Applies a bound resolved after parsing.</summary>
+        internal void SetBound(int value) => Bound = value;
     }
 
     /// <summary>Represents a reference to an IDL enum type.</summary>
@@ -51,13 +54,24 @@ internal abstract class IdlType
         public IdlType Target { get; } = target;
     }
 
+    /// <summary>Retains a parsed named type until the complete symbol set is available.</summary>
+    public sealed class Reference(IdlTypeReference reference, string errorPrefix)
+        : IdlType
+    {
+        public IdlTypeReference TypeReference { get; } = reference;
+        public string ErrorPrefix { get; } = errorPrefix;
+    }
+
     /// <summary>Represents an IDL sequence type, optionally bounded and multidimensional.</summary>
     public sealed class Sequence(IdlType element, int? bound, IReadOnlyList<int>? dimensions = null)
         : IdlType
     {
         public IdlType Element { get; } = element;
-        public int? Bound { get; } = bound;
+        public int? Bound { get; private set; } = bound;
         public IReadOnlyList<int> Dimensions { get; } = dimensions ?? [];
+
+        /// <summary>Applies a bound resolved after parsing.</summary>
+        internal void SetBound(int value) => Bound = value;
     }
 
     /// <summary>Represents a fixed-size IDL array type.</summary>
@@ -66,5 +80,6 @@ internal abstract class IdlType
     {
         public IdlType Element { get; } = element;
         public IReadOnlyList<int> Dimensions { get; } = dimensions;
+
     }
 }

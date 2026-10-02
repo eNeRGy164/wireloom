@@ -1,11 +1,87 @@
-using Wireloom.Compiler.FrontEnd.Symbols;
-
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
+using Wireloom;
+using Wireloom.Compiler.FrontEnd.Parsing;
+using Wireloom.Compiler.FrontEnd.Preprocessing;
+using Wireloom.Compiler.FrontEnd.Symbols;
 
 namespace Wireloom.Compiler.FrontEnd.Semantic.Tests;
 
 public sealed class IdlTypeResolutionSpecs
 {
+    [Fact]
+    public void DefersSemanticValidationUntilTheValidationPhase()
+    {
+        // Arrange
+        var input = Input("deferred-validation.idl", "struct Broken { long Destroy; };");
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+
+        // Act
+        parser.Parse(input.Text, input, 0, currentNamespace: null);
+
+        // Assert
+        Should.NotThrow(parser.Bind);
+        Should.Throw<IdlException>(parser.Validate).Message.ShouldContain("collides with a generated member");
+    }
+
+    [Fact]
+    [Trait("Preprocessor", "PP050")]
+    public void CapturesDeferredValidationOriginsBeforeParsingAnotherInput()
+    {
+        // Arrange
+        var first = Input("first.idl", "struct Duplicate { long value; };");
+        var second = Input("second.idl", "struct Duplicate { long value; };");
+        var third = Input("third.idl", "struct Other { long value; };");
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        IReadOnlyList<SourceOriginSpan> firstOrigins = [new SourceOriginSpan(0, first.Text.Length, 100, first.Text.Length)];
+        IReadOnlyList<SourceOriginSpan> secondOrigins = [new SourceOriginSpan(0, second.Text.Length, 200, second.Text.Length)];
+        IReadOnlyList<SourceOriginSpan> thirdOrigins = [new SourceOriginSpan(0, third.Text.Length, 300, third.Text.Length)];
+
+        parser.Parse(first.Text, first, 0, currentNamespace: null, firstOrigins);
+        parser.Parse(second.Text, second, 0, currentNamespace: null, secondOrigins);
+        parser.Parse(third.Text, third, 0, currentNamespace: null, thirdOrigins);
+        parser.Bind();
+
+        // Act
+        var exception = Should.Throw<IdlException>(parser.Validate);
+
+        // Assert
+        exception.Input.ShouldBe(first);
+        exception.Offset.ShouldBe(100);
+    }
+
+    [Fact]
+    public void ResolvesForwardConstantBoundsAfterTheCompleteSymbolGraphIsParsed()
+    {
+        // Arrange
+        var input = Input(
+            "forward-bound.idl",
+            "typedef string<Bound> Name; const long Bound = 9; struct Sample { Name value; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Sample.g.cs"].Source.ShouldContain("Its maximum length is <c>9</c>.");
+    }
+
+    [Fact]
+    public void BindsForwardMemberReferencesAfterTheCompleteDeclarationGraphIsParsed()
+    {
+        // Arrange
+        var input = Input(
+            "forward-member-reference.idl",
+            "struct Holder { Payload payload; }; struct Payload { long value; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Holder.g.cs"].Source.ShouldContain("Payload payload");
+
+        // The reference is resolved only after Payload has been added to the symbol graph.
+        documents["Holder.g.cs"].Source.ShouldContain("public Payload Payload");
+    }
+
     [Fact]
     public void BindsRawTypeReferencesThroughTheSemanticBinder()
     {
@@ -14,7 +90,7 @@ public sealed class IdlTypeResolutionSpecs
         var reference = new IdlTypeReference("long", "Example", Input("binder.idl", string.Empty), 0);
 
         // Act
-        var bound = binder.Bind(reference);
+        var bound = binder.Bind(new IdlType.Reference(reference, "Unknown type"));
 
         // Assert
         bound.ShouldBeOfType<IdlType.Primitive>().Name.ShouldBe("long");

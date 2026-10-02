@@ -190,6 +190,28 @@ public sealed class UnionSpecs
     }
 
     [Fact]
+    public void ResolvesForwardEnumUnionDiscriminatorDuringBinding()
+    {
+        // Arrange
+        var input = Input("forward-enum-union.idl",
+            """
+            module Example {
+                union Choice switch(Kind) {
+                    case First: long value;
+                };
+                enum Kind { First };
+            };
+            """);
+
+        // Act
+        var managed = CompileSources(input)["Example.Choice.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("public Kind Discriminator { get; private set; }");
+        managed.ShouldContain("Discriminator != Kind.First");
+    }
+
+    [Fact]
     public void InitializesEnumDiscriminatorToTheFirstLiteralValue()
     {
         // Arrange

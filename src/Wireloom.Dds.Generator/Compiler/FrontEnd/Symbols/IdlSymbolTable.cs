@@ -12,6 +12,7 @@ internal sealed class IdlSymbolTable
     private readonly Dictionary<string, IdlTypedef> typedefs = new(StringComparer.Ordinal);
     private readonly Dictionary<string, IdlConstantDeclaration> constants = new(StringComparer.Ordinal);
 
+    /// <summary>Registers a declaration name and reports whether it was new.</summary>
     public bool AddName(string name) => names.Add(name);
 
     public bool AddGeneratedIdentity(string name)
@@ -49,14 +50,19 @@ internal sealed class IdlSymbolTable
         || first.StartsWith($"{second}.", StringComparison.Ordinal)
         || second.StartsWith($"{first}.", StringComparison.Ordinal);
 
+    /// <summary>Checks whether a declaration name has been registered.</summary>
     public bool ContainsName(string name) => names.Contains(name);
 
+    /// <summary>Checks whether an enum has been registered.</summary>
     public bool ContainsEnum(string name) => enums.ContainsKey(name);
 
+    /// <summary>Checks whether a union has been registered.</summary>
     public bool ContainsUnion(string name) => unions.ContainsKey(name);
 
+    /// <summary>Checks whether a typedef has been registered.</summary>
     public bool ContainsTypedef(string name) => typedefs.ContainsKey(name);
 
+    /// <summary>Checks whether a constant has been registered.</summary>
     public bool ContainsConstant(string name) => constants.ContainsKey(name);
 
     public bool TryGetConstant(string name, out IdlConstantDeclaration declaration) =>
@@ -66,11 +72,15 @@ internal sealed class IdlSymbolTable
 
     public bool TryGetTypedef(string name, out IdlTypedef declaration) => typedefs.TryGetValue(name, out declaration!);
 
-    public void AddEnum(string name, IdlEnum declaration) => enums.Add(name, declaration);
+    /// <summary>Registers an enum while retaining the first declaration for binding.</summary>
+    public void AddEnum(string name, IdlEnum declaration) => enums.TryAdd(name, declaration);
 
-    public void AddUnion(string name, IdlUnion declaration) => unions.Add(name, declaration);
+    /// <summary>Registers a union while retaining the first declaration for binding.</summary>
+    public void AddUnion(string name, IdlUnion declaration) => unions.TryAdd(name, declaration);
 
-    public void AddTypedef(string name, IdlTypedef declaration) => typedefs.Add(name, declaration);
+    /// <summary>Registers a typedef while retaining the first declaration for binding.</summary>
+    public void AddTypedef(string name, IdlTypedef declaration) => typedefs.TryAdd(name, declaration);
 
-    public void AddConstant(string name, IdlConstantDeclaration declaration) => constants.Add(name, declaration);
+    /// <summary>Registers a constant while retaining the first declaration for binding.</summary>
+    public void AddConstant(string name, IdlConstantDeclaration declaration) => constants.TryAdd(name, declaration);
 }
