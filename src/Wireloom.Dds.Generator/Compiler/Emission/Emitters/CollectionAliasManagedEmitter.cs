@@ -7,9 +7,9 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits managed collection and value typedef declarations.</summary>
 internal static class CollectionAliasManagedEmitter
 {
-    public static void Emit(EmissionResult result, IdlTypedef declaration, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
+    public static void Emit(EmissionResult result, IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
     {
-        var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
+        var typeName = names.ManagedTypeName;
         string? resolvedElement;
         if (plan.IsString)
         {
@@ -244,7 +244,7 @@ internal static class CollectionAliasManagedEmitter
         }
         writer.CloseBlock();
 
-        result.Add(IdlNaming.CreateGeneratedName(declaration.Namespace, declaration.Name), writer.ToString());
+        result.Add(names.Managed, writer.ToString());
     }
 
 }

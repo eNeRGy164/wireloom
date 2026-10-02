@@ -18,11 +18,12 @@ internal static class ClassEmitter
         IReadOnlyList<IdlMember> inheritedFields,
         bool isTopic)
     {
-        var escapedName = IdlNaming.EscapeIdentifier(name);
+        var names = IdlNaming.CreateGeneratedTypeNames(currentNamespace, name);
+        var escapedName = names.ManagedTypeName;
         var emissionFields = fields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace)).ToArray();
         var emissionInheritedFields = inheritedFields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace)).ToArray();
         var initialFieldPlans = emissionFields.Select(field => new MemberEmissionPlan(field, currentNamespace)).ToArray();
-        var managedBackingNames = ResolveManagedBackingNames(escapedName: IdlNaming.EscapeIdentifier(name), initialFieldPlans);
+        var managedBackingNames = ResolveManagedBackingNames(escapedName: names.ManagedTypeName, initialFieldPlans);
         var fieldPlans = initialFieldPlans
             .Select((field, index) => new MemberEmissionPlan(field.Field, currentNamespace, managedBackingNames[index]))
             .ToArray();
@@ -70,14 +71,13 @@ internal static class ClassEmitter
         }
 
         writer.CloseBlock();
-        result.Add(IdlNaming.CreateGeneratedName(currentNamespace, name), writer.ToString());
+        result.Add(names.Managed, writer.ToString());
 
         if (hasTypeSupport)
         {
             TypeSupportEmitter.Emit(
                 result,
-                name,
-                currentNamespace,
+                names,
                 fieldPlans,
                 inheritedFieldPlans,
                 extensibility,

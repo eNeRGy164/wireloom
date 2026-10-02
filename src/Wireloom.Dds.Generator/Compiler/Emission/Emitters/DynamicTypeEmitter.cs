@@ -9,8 +9,7 @@ internal static class DynamicTypeEmitter
 {
     public static void EmitStructPlugin(
         EmissionResult result,
-        string name,
-        string? currentNamespace,
+        GeneratedTypeNames names,
         IReadOnlyList<MemberEmissionPlan> fields,
         IReadOnlyList<MemberEmissionPlan> inheritedFields,
         IdlExtensibilityKind extensibility,
@@ -18,18 +17,15 @@ internal static class DynamicTypeEmitter
         string? baseType,
         bool isRecursive)
     {
-        var typeName = IdlNaming.EscapeIdentifier(name);
-        var unmanagedName = IdlNaming.EscapeIdentifier(name + "Unmanaged");
-        var pluginName = IdlNaming.EscapeIdentifier(name + "Plugin");
-        var runtimeTypeName = currentNamespace is null ? typeName : $"{IdlNaming.EscapeQualifiedIdentifier(currentNamespace)}.{typeName}";
-        var idlTypeName = currentNamespace is null ? name : $"{currentNamespace.Replace(".", "::")}::{name}";
-        var implementationNamespace = currentNamespace is null ? "Implementation" : $"{currentNamespace}.Implementation";
-        var implementationTypeName = IdlNaming.TypeReference(typeName, currentNamespace, implementationNamespace);
+        var typeName = names.ManagedTypeName;
+        var runtimeTypeName = names.RuntimeTypeName;
+        var idlTypeName = names.IdlTypeName;
+        var implementationTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.ImplementationNamespace);
 
-        var writer = EmissionSupport.CreateSource(implementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI interpreted type plugin for <see cref=\"{typeName}\"/>.");
-        writer.OpenBlock($"internal class {pluginName} : InterpretedTypePlugin<{implementationTypeName}, {unmanagedName}>");
+        writer.OpenBlock($"internal class {names.PluginTypeName} : InterpretedTypePlugin<{implementationTypeName}, {names.UnmanagedTypeName}>");
 
         if (isRecursive)
         {
@@ -38,7 +34,7 @@ internal static class DynamicTypeEmitter
             writer.BlankLine();
         }
 
-        writer.OpenBlock($"internal {pluginName}() : base(\"{runtimeTypeName}\", isKeyed: {(inheritedFields.Concat(fields).Any(field => field.IsKey) ? "true" : "false")}, CreateDynamicType(isPublic: false))");
+        writer.OpenBlock($"internal {names.PluginTypeName}() : base(\"{runtimeTypeName}\", isKeyed: {(inheritedFields.Concat(fields).Any(field => field.IsKey) ? "true" : "false")}, CreateDynamicType(isPublic: false))");
 
         if (isRecursive)
         {
@@ -63,7 +59,7 @@ internal static class DynamicTypeEmitter
             writer.CloseBlock();
             writer.BlankLine();
             writer.OpenBlock("if (isInitialized)");
-            writer.WriteLine($"dynamicType = tsf.CreateTypeWithAccessInfo<{unmanagedName}>(dtf.BuildStruct()\n    .WithExtensibility(ExtensibilityKind.{extensibility})\n    .WithName(\"{idlTypeName}\"));");
+            writer.WriteLine($"dynamicType = tsf.CreateTypeWithAccessInfo<{names.UnmanagedTypeName}>(dtf.BuildStruct()\n    .WithExtensibility(ExtensibilityKind.{extensibility})\n    .WithName(\"{idlTypeName}\"));");
             writer.WriteLine("return dynamicType;");
             writer.CloseBlock();
             writer.WriteLine("isInitialized = true;");
@@ -82,19 +78,19 @@ internal static class DynamicTypeEmitter
             var mustUnderstand = field.IsMustUnderstand ? ", isMustUnderstand: true" : string.Empty;
             var comma = index == fields.Count - 1 ? string.Empty : ",";
 
-            writer.WriteLine($"new StructMember(\"{field.Name}\", {field.BuildDynamicTypeExpression(implementationNamespace, runtimeTypeName, isRecursive)}{key}{optional}{mustUnderstand}, id: {field.MemberId ?? inheritedFields.Count + index}){comma}");
+            writer.WriteLine($"new StructMember(\"{field.Name}\", {field.BuildDynamicTypeExpression(names.ImplementationNamespace, runtimeTypeName, isRecursive)}{key}{optional}{mustUnderstand}, id: {field.MemberId ?? inheritedFields.Count + index}){comma}");
         }
 
         writer.CloseBlock(";");
         writer.BlankLine();
-        writer.WriteLine($"var result = tsf.CreateTypeWithAccessInfo<{unmanagedName}>(");
+        writer.WriteLine($"var result = tsf.CreateTypeWithAccessInfo<{names.UnmanagedTypeName}>(");
         writer.Indent();
         writer.WriteLine("dtf.BuildStruct()");
         writer.Indent();
 
         if (baseType is not null)
         {
-            writer.WriteLine($".WithParent((StructType) {EmissionSupport.GetSupportType(baseType, implementationNamespace)}.GetDynamicTypeInternal(isPublic))");
+            writer.WriteLine($".WithParent((StructType) {EmissionSupport.GetSupportType(baseType, names.ImplementationNamespace)}.GetDynamicTypeInternal(isPublic))");
         }
 
         writer.WriteLine($".WithExtensibility(ExtensibilityKind.{extensibility})");
@@ -122,6 +118,6 @@ internal static class DynamicTypeEmitter
         writer.CloseBlock();
         writer.CloseBlock();
 
-        result.Add(IdlNaming.CreateGeneratedName(implementationNamespace, name + "Plugin"), writer.ToString());
+        result.Add(names.Plugin, writer.ToString());
     }
 }

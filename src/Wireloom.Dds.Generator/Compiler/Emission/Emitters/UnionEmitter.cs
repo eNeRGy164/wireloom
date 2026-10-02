@@ -15,8 +15,8 @@ internal static class UnionEmitter
 
     private static void EmitUnionCore(EmissionResult result, IdlEmissionUnion declaration, string sourceIdlFileName)
     {
-        var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
-        var implementationNamespace = declaration.Namespace is null ? "Implementation" : $"{declaration.Namespace}.Implementation";
+        var names = IdlNaming.CreateGeneratedTypeNames(declaration.Namespace, declaration.Name);
+        var typeName = names.ManagedTypeName;
         var defaultBranch = declaration.DefaultBranch;
 
         var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.DataTypeUsings, sourceIdlFileName);
@@ -118,9 +118,9 @@ internal static class UnionEmitter
         writer.WriteLine($"public override string ToString() => {typeName}Support.Instance.ToString(this);");
         writer.CloseBlock();
 
-        result.Add(IdlNaming.CreateGeneratedName(declaration.Namespace, declaration.Name), writer.ToString());
+        result.Add(names.Managed, writer.ToString());
 
-        UnionTypeSupportEmitter.Emit(result, declaration, sourceIdlFileName, implementationNamespace);
+        UnionTypeSupportEmitter.Emit(result, declaration, names, sourceIdlFileName);
     }
 
     /// <summary>Emits one public union branch and its discriminator guard.</summary>
