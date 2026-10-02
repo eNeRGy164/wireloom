@@ -8,6 +8,7 @@ namespace Wireloom.Compiler.Emission.Planning;
 /// <summary>Builds managed lifecycle operations for a member emission plan.</summary>
 internal sealed partial class MemberEmissionPlan
 {
+    /// <summary>Builds initialization code for a union member's default value.</summary>
     public string UnionDefaultInitializationStatement(string? namespaceOverride, string nativeFieldPrefix = "")
     {
         var namespaceName = namespaceOverride ?? currentNamespace;
@@ -57,24 +58,19 @@ internal sealed partial class MemberEmissionPlan
             return value;
         }
 
+        if (ValueType is PrimitiveEmissionType primitive)
+        {
+            return PrimitiveTypeMapping.Resolve(primitive.IdlName).NativeDefaultLiteral;
+        }
+
         return ValueType switch
         {
-            PrimitiveEmissionType primitive => primitive.IdlName switch
-            {
-                "long" or "int32" => "0",
-                "long long" or "int64" => "0L",
-                "unsigned long" or "uint32" => "0U",
-                "unsigned long long" or "uint64" => "0UL",
-                "float" => "0.0F",
-                "double" => "0.0D",
-                "long double" => "(LongDouble)0",
-                _ => "0"
-            },
             EnumEmissionType enumType => $"({IdlNaming.TypeReference(CSharpType, namespaceName)}){enumType.DefaultValue}",
             _ => throw new InvalidOperationException("Expected a scalar native value.")
         };
     }
 
+    /// <summary>Builds native initialization code for this member.</summary>
     public string? BuildInitializeStatement(string? namespaceOverride = null, string nativeFieldPrefix = "")
     {
         var namespaceName = namespaceOverride ?? currentNamespace;
@@ -146,6 +142,7 @@ internal sealed partial class MemberEmissionPlan
         return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, allocateMemory: allocateMemory);";
     }
 
+    /// <summary>Builds native destruction code for this member.</summary>
     public string? BuildDestroyStatement(string? namespaceOverride = null, string nativeFieldPrefix = "")
     {
         var namespaceName = namespaceOverride ?? currentNamespace;
