@@ -24,6 +24,7 @@ internal sealed class IdlSymbolTable
     /// <summary>Registers one generated identity when it does not collide.</summary>
     public bool AddGeneratedIdentity(string name) => generatedIdentities.TryAdd(name);
 
+    /// <summary>Registers generated identities atomically when none collide.</summary>
     public bool AddGeneratedIdentities(IReadOnlyList<string> generatedNames)
     {
         if (generatedNames.Count == 1)
