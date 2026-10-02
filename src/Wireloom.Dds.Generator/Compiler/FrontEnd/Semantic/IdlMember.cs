@@ -16,17 +16,28 @@ internal sealed class IdlMemberMetadata(bool isKey = false, bool isOptional = fa
     public bool IsKey { get; } = isKey;
     public bool IsOptional { get; } = isOptional;
     public int? MemberId { get; } = memberId;
-    public IdlMemberValueMetadata? ValueMetadata { get; } = valueMetadata;
+    public IdlMemberValueMetadata? ValueMetadata { get; private set; } = valueMetadata;
     public bool IsExternal { get; } = isExternal;
     public bool IsMustUnderstand { get; } = isMustUnderstand;
     public string? MemberIdHashSource { get; } = memberIdHashSource;
     public bool UsesAutoIdHash { get; } = usesAutoIdHash;
+
+    /// <summary>Applies value metadata resolved after type binding.</summary>
+    internal void SetValueMetadata(IdlMemberValueMetadata? valueMetadata) => ValueMetadata = valueMetadata;
 }
 
 /// <summary>Represents an IDL member independently of any target language.</summary>
-internal sealed class IdlMember(string name, IdlType type, IdlMemberMetadata? metadata = null)
+internal sealed class IdlMember(string name, IdlType type, IdlMemberMetadata? metadata = null, IdlInput? sourceInput = null, int sourceOffset = 0)
 {
     public string Name { get; } = name;
-    public IdlType Type { get; } = type;
+    public IdlType Type { get; private set; } = type;
     public IdlMemberMetadata Metadata { get; } = metadata ?? new();
+    internal IdlInput? SourceInput { get; } = sourceInput;
+    internal int SourceOffset { get; } = sourceOffset;
+
+    /// <summary>Replaces this member's deferred type with its bound type.</summary>
+    internal void Bind(IdlType type) => Type = type;
+
+    /// <summary>Applies value metadata resolved after type binding.</summary>
+    internal void SetValueMetadata(IdlMemberValueMetadata? valueMetadata) => Metadata.SetValueMetadata(valueMetadata);
 }

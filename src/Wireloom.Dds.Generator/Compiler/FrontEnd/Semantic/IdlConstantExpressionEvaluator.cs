@@ -1,7 +1,7 @@
 using System.Globalization;
 using Wireloom.Compiler.FrontEnd.Symbols;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing;
+namespace Wireloom.Compiler.FrontEnd.Semantic;
 
 /// <summary>Evaluates the integral subset of IDL constant expressions.</summary>
 internal sealed class IdlConstantExpressionEvaluator
@@ -18,6 +18,7 @@ internal sealed class IdlConstantExpressionEvaluator
         this.currentNamespace = currentNamespace;
     }
 
+    /// <summary>Evaluates an integral expression against the known constant declarations.</summary>
     public static BigInteger Evaluate(string text, IdlSymbolTable symbols, string? currentNamespace)
     {
         var evaluator = new IdlConstantExpressionEvaluator(text, symbols, currentNamespace);

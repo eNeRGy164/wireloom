@@ -54,12 +54,7 @@ internal sealed class CompilationResolver(IdlSymbolTable symbols)
 
         while (!IdlNaming.IsPrimitive(type))
         {
-            var qualified = IdlNaming.ResolveTypeName(type, currentNamespace);
-
-            if (currentNamespace is not null
-                && !type.StartsWith("::", StringComparison.Ordinal)
-                && !type.Contains(".", StringComparison.Ordinal)
-                && !IsKnownType(qualified))
+            if (!symbols.TryResolveTypeName(type, currentNamespace, out var qualified))
             {
                 qualified = IdlNaming.ResolveTypeName(type, null);
             }
@@ -87,11 +82,6 @@ internal sealed class CompilationResolver(IdlSymbolTable symbols)
         // primitive is represented as C# int, short, etc.
         return IdlNaming.NormalizeIdlType(type);
     }
-
-    private bool IsKnownType(string qualifiedName) =>
-        symbols.ContainsName(qualifiedName)
-        || symbols.ContainsEnum(qualifiedName)
-        || symbols.ContainsTypedef(qualifiedName);
 
     /// <summary>Maps a resolved semantic type to its native C# reference.</summary>
     public string ResolveNativeType(IdlType type, string? currentNamespace)

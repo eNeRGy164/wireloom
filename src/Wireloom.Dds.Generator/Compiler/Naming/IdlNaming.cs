@@ -57,6 +57,42 @@ internal static class IdlNaming
         return $"{currentNamespace}.{normalized}";
     }
 
+    /// <summary>Enumerates relative and enclosing-module candidates for an IDL type name.</summary>
+    internal static IEnumerable<string> GetTypeNameCandidates(string idlType, string? currentNamespace)
+    {
+        var normalized = NormalizeIdlType(idlType).Replace("::", ".");
+        var isAbsolute = normalized.StartsWith(".", StringComparison.Ordinal);
+        normalized = normalized.TrimStart('.');
+
+        if (isAbsolute || currentNamespace is null)
+        {
+            yield return normalized;
+            yield break;
+        }
+
+        if (normalized.StartsWith($"{currentNamespace}.", StringComparison.Ordinal))
+        {
+            yield return normalized;
+            yield break;
+        }
+
+        var scope = currentNamespace;
+        while (true)
+        {
+            yield return $"{scope}.{normalized}";
+
+            var separator = scope.LastIndexOf('.');
+            if (separator < 0)
+            {
+                break;
+            }
+
+            scope = scope[..separator];
+        }
+
+        yield return normalized;
+    }
+
     /// <summary>Normalizes whitespace in an IDL type spelling.</summary>
     internal static string NormalizeIdlType(string idlType) =>
         IdlGrammar.WhitespacePattern.Replace(idlType, " ").Trim();

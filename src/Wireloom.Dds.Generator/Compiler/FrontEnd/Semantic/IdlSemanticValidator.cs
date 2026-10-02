@@ -1,4 +1,3 @@
-using Wireloom.Compiler.FrontEnd.Parsing;
 using Wireloom.Compiler.FrontEnd.Symbols;
 using Wireloom.Compiler.Naming;
 
@@ -7,10 +6,26 @@ namespace Wireloom.Compiler.FrontEnd.Semantic;
 /// <summary>Owns front-end validation that does not produce target code.</summary>
 internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
 {
-    /// <summary>Ensures that a declaration name is unique.</summary>
-    public void EnsureNewName(IdlInput input, int offset, string name)
+    private readonly HashSet<string> duplicateNames = new(StringComparer.Ordinal);
+
+    /// <summary>Registers a declaration name while retaining duplicate evidence for validation.</summary>
+    public void RegisterName(string name, bool isType)
     {
-        if (!symbols.AddName(name) || symbols.ContainsEnum(name) || symbols.ContainsTypedef(name))
+        if (!symbols.AddName(name))
+        {
+            duplicateNames.Add(name);
+        }
+
+        if (isType)
+        {
+            symbols.AddTypeName(name);
+        }
+    }
+
+    /// <summary>Validates a declaration name after parsing has registered all symbols.</summary>
+    public void ValidateNewName(IdlInput input, int offset, string name)
+    {
+        if (duplicateNames.Contains(name))
         {
             throw new IdlException(input, offset, $"Duplicate type: {name}");
         }
@@ -54,25 +69,7 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
 
     /// <summary>Resolves and validates a collection bound.</summary>
     public int ResolveBound(IdlInput input, int offset, string text, string? currentNamespace, string diagnosticName = "Collection bound")
-    {
-        BigInteger value;
-
-        try
-        {
-            value = IdlConstantExpressionEvaluator.Evaluate(text, symbols, currentNamespace);
-        }
-        catch (FormatException)
-        {
-            throw new IdlException(input, offset, $"{diagnosticName} must resolve to a positive constant: {text.Trim()}");
-        }
-
-        if (value <= 0 || value > int.MaxValue)
-        {
-            throw new IdlException(input, offset, $"{diagnosticName} must be a positive Int32: {text.Trim()}");
-        }
-
-        return (int)value;
-    }
+        => IdlBoundResolver.Resolve(input, offset, text, currentNamespace, symbols, diagnosticName);
 
     /// <summary>Validates member identifiers within a declaration.</summary>
     public static void ValidateMemberIds(IdlInput input, int offset, IReadOnlyList<IdlMember> fields)
@@ -86,6 +83,26 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         {
             throw new IdlException(input, offset, $"Duplicate member ID: {duplicateId.Key}");
         }
+    }
+
+    /// <summary>Validates keys declared directly on a derived aggregate when strict validation is enabled.</summary>
+    public static void ValidateDerivedKeyFields(IdlClassDeclaration declaration, bool strict)
+    {
+        if (!strict || declaration.BaseType is null)
+        {
+            return;
+        }
+
+        var keyField = declaration.Fields.FirstOrDefault(field => field.Metadata.IsKey);
+        if (keyField is null)
+        {
+            return;
+        }
+
+        throw new IdlException(
+            keyField.SourceInput ?? declaration.SourceInput,
+            keyField.SourceOffset,
+            "struct/valuetype derived from a struct/valuetype can not contain @key fields. This check is only enforced when using strict validation.");
     }
 
     /// <summary>Validates the generated declaration name.</summary>
@@ -298,18 +315,17 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         }
 
         var target = alias.IsCollection ? alias.ElementType! : alias.Target;
-        if (!target.StartsWith("string", StringComparison.Ordinal)
-            && !target.StartsWith("wstring", StringComparison.Ordinal)
+        if (!IdlBuiltinTypeSyntax.TryParseStringType(target, out _, out _)
             && !IdlNaming.IsPrimitive(target))
         {
-            var qualifiedTarget = IdlNaming.ResolveTypeName(target, alias.Namespace);
+            if (!symbols.TryResolveTypeName(target, alias.Namespace, out var qualifiedTarget))
+            {
+                throw new IdlException(input, offset, $"Unknown typedef target: {target}");
+            }
+
             if (symbols.ContainsTypedef(qualifiedTarget))
             {
                 ValidateTypedef(input, offset, qualifiedTarget, activeAliases);
-            }
-            else if (!symbols.ContainsEnum(qualifiedTarget) && !symbols.ContainsName(qualifiedTarget))
-            {
-                throw new IdlException(input, offset, $"Unknown typedef target: {target}");
             }
         }
 

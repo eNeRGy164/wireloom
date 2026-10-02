@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Wireloom.Compiler.FrontEnd.Preprocessing;
 using Wireloom.Compiler.FrontEnd.Semantic;
 
 using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
@@ -12,6 +13,7 @@ namespace Wireloom.Compiler.FrontEnd.Parsing;
 internal sealed class IdlTypeParser
 {
     private readonly IdlParseContext context;
+    private readonly List<(IdlMember Member, IdlInput Input, int Offset, string? Namespace, MemberAnnotationState Annotations, IdlType Type, IReadOnlyList<SourceOriginSpan>? SourceOrigins)> deferredMetadata = [];
 
     internal IdlTypeParser(IdlParseContext context) =>
         this.context = context;
@@ -40,38 +42,31 @@ internal sealed class IdlTypeParser
             : [];
         IdlType parsedType;
 
-        if (kind.StartsWith("sequence", StringComparison.Ordinal))
+        if (IdlBuiltinTypeSyntax.IsSequenceType(kind))
         {
             var (ElementType, Bound) = ParseSequenceType(input, memberSourceOffset, kind, currentNamespace);
 
-            var element = context.BindFieldType(ElementType, currentNamespace, input, memberSourceOffset);
-            if (element is null)
-            {
-                throw new IdlException(input, context.MapOffset(memberSourceOffset), $"Unknown collection element type: {ElementType}");
-            }
-
-            parsedType = new IdlType.Sequence(element, Bound, dimensions);
+            var element = ParseCollectionElementType(input, memberSourceOffset, ElementType, currentNamespace, "Unknown collection element type");
+            var sequence = new IdlType.Sequence(element, Bound?.Value, dimensions);
+            Bound?.AddConsumer(sequence.SetBound);
+            parsedType = sequence;
         }
         else if (dimensions.Count > 0)
         {
-            var element = context.BindFieldType(kind, currentNamespace, input, memberSourceOffset);
-            if (element is null)
-            {
-                throw new IdlException(input, context.MapOffset(memberSourceOffset), $"Unknown collection element type: {kind}");
-            }
-
+            var element = ParseCollectionElementType(input, memberSourceOffset, kind, currentNamespace, "Unknown collection element type");
             parsedType = new IdlType.Array(element, dimensions);
         }
-        else if (kind.StartsWith("string", StringComparison.Ordinal) || kind.StartsWith("wstring", StringComparison.Ordinal))
+        else if (IdlBuiltinTypeSyntax.TryParseStringType(kind, out var isWideString, out _))
         {
-            var bound = 255;
+            var stringType = new IdlType.StringType(isWideString, 255);
 
             if (member.Groups[2].Success)
             {
-                bound = ResolveBound(input, memberSourceOffset, member.Groups[2].Value, currentNamespace, "String bound");
+                var deferredBound = ResolveBound(input, memberSourceOffset, member.Groups[2].Value, currentNamespace, "String bound");
+                deferredBound.AddConsumer(stringType.SetBound);
             }
 
-            parsedType = new IdlType.StringType(kind.StartsWith("wstring", StringComparison.Ordinal), bound);
+            parsedType = stringType;
         }
         else if (IsPrimitive(kind))
         {
@@ -79,18 +74,12 @@ internal sealed class IdlTypeParser
         }
         else
         {
-            var resolved = context.BindFieldType(kind, currentNamespace, input, memberSourceOffset);
-            if (resolved is null)
-            {
-                throw new IdlException(input, context.MapOffset(memberSourceOffset), $"Unknown struct type: {kind}");
-            }
+            parsedType = context.ReferenceType(kind, currentNamespace, input, memberSourceOffset, "Unknown struct type");
+        }
 
-            if (annotations.IsOptional && !IsOptionalScalar(resolved))
-            {
-                throw new IdlException(input, context.MapOffset(memberSourceOffset), "Optional aggregate members are not supported yet.");
-            }
-
-            parsedType = resolved;
+        if (annotations.IsOptional && parsedType is not IdlType.Reference && !IsOptionalScalar(parsedType))
+        {
+            throw new IdlException(input, context.MapOffset(memberSourceOffset), "Optional aggregate members are not supported yet.");
         }
 
         if (parsedType is IdlType.Sequence { Dimensions.Count: > 0 })
@@ -119,7 +108,24 @@ internal sealed class IdlTypeParser
             memberIdHashSource,
             usesAutoIdHash);
 
-        return (new IdlMember(field, parsedType, metadata), annotationsLength + member.Length);
+        var result = new IdlMember(field, parsedType, metadata, input, context.MapOffset(memberSourceOffset));
+        if (ContainsUnboundReference(parsedType) && HasValueMetadata(annotations))
+        {
+            deferredMetadata.Add((result, input, memberSourceOffset, currentNamespace, annotations, parsedType, context.CurrentSourceOrigins));
+        }
+
+        return (result, annotationsLength + member.Length);
+    }
+
+    /// <summary>Resolves member metadata that depends on completed type binding.</summary>
+    internal void ResolveDeferredMemberMetadata()
+    {
+        foreach (var deferred in deferredMetadata)
+        {
+            deferred.Member.SetValueMetadata(ResolveMemberValueMetadata(deferred.Input, deferred.Offset, deferred.Namespace, deferred.Member.Type, deferred.Annotations, deferred.SourceOrigins));
+        }
+
+        deferredMetadata.Clear();
     }
 
     private (MemberAnnotationState Annotations, int Length) ParseMemberAnnotations(IdlInput input, string body, int offset, int sourceOffset)
@@ -311,7 +317,13 @@ internal sealed class IdlTypeParser
         }
     }
 
-    private IdlMemberValueMetadata? ResolveMemberValueMetadata(IdlInput input, int offset, string? currentNamespace, IdlType type, MemberAnnotationState annotations)
+    private IdlMemberValueMetadata? ResolveMemberValueMetadata(
+        IdlInput input,
+        int offset,
+        string? currentNamespace,
+        IdlType type,
+        MemberAnnotationState annotations,
+        IReadOnlyList<SourceOriginSpan>? sourceOrigins = null)
     {
         if (annotations.MinimumExpression is null &&
             annotations.MaximumExpression is null &&
@@ -321,10 +333,15 @@ internal sealed class IdlTypeParser
             return null;
         }
 
+        if (ContainsUnboundReference(type))
+        {
+            return null;
+        }
+
         var valueType = UnwrapAliases(type);
         if (valueType is not IdlType.Primitive and not IdlType.Enum)
         {
-            throw new IdlException(input, context.MapOffset(offset), "@min, @max, @range, and @default are only supported on primitive and enum members.");
+            throw new IdlException(input, MapOffset(offset, sourceOrigins), "@min, @max, @range, and @default are only supported on primitive and enum members.");
         }
 
         BigInteger? minimum = null;
@@ -335,29 +352,29 @@ internal sealed class IdlTypeParser
         {
             if (valueType is not IdlType.Primitive primitive)
             {
-                throw new IdlException(input, context.MapOffset(offset), "@min, @max, and @range require a primitive member.");
+                throw new IdlException(input, MapOffset(offset, sourceOrigins), "@min, @max, and @range require a primitive member.");
             }
 
             minimum = annotations.MinimumExpression is null
                 ? null
-                : EvaluateMemberInteger(input, offset, currentNamespace, annotations.MinimumExpression, "minimum");
+                : EvaluateMemberInteger(input, offset, currentNamespace, annotations.MinimumExpression, "minimum", sourceOrigins);
             maximum = annotations.MaximumExpression is null
                 ? null
-                : EvaluateMemberInteger(input, offset, currentNamespace, annotations.MaximumExpression, "maximum");
+                : EvaluateMemberInteger(input, offset, currentNamespace, annotations.MaximumExpression, "maximum", sourceOrigins);
 
             if (minimum is { } minimumValue)
             {
-                IdlConstantParser.ValidateConstantRange(input, context.MapOffset(offset), primitive.Name, minimumValue);
+                IdlConstantParser.ValidateConstantRange(input, MapOffset(offset, sourceOrigins), primitive.Name, minimumValue);
             }
 
             if (maximum is { } maximumValue)
             {
-                IdlConstantParser.ValidateConstantRange(input, context.MapOffset(offset), primitive.Name, maximumValue);
+                IdlConstantParser.ValidateConstantRange(input, MapOffset(offset, sourceOrigins), primitive.Name, maximumValue);
             }
 
             if (minimum is { } lower && maximum is { } upper && lower > upper)
             {
-                throw new IdlException(input, context.MapOffset(offset), "Member minimum value cannot be greater than its maximum value.");
+                throw new IdlException(input, MapOffset(offset, sourceOrigins), "Member minimum value cannot be greater than its maximum value.");
             }
         }
 
@@ -365,21 +382,21 @@ internal sealed class IdlTypeParser
         {
             if (valueType is IdlType.Primitive primitive)
             {
-                defaultValue = EvaluateMemberInteger(input, offset, currentNamespace, annotations.DefaultExpression, "default");
-                IdlConstantParser.ValidateConstantRange(input, context.MapOffset(offset), primitive.Name, defaultValue.Value);
+                defaultValue = EvaluateMemberInteger(input, offset, currentNamespace, annotations.DefaultExpression, "default", sourceOrigins);
+                IdlConstantParser.ValidateConstantRange(input, MapOffset(offset, sourceOrigins), primitive.Name, defaultValue.Value);
             }
             else if (valueType is IdlType.Enum @enum)
             {
                 if (!context.Symbols.TryGetEnum(@enum.QualifiedName, out var enumDeclaration))
                 {
-                    throw new IdlException(input, context.MapOffset(offset), $"Unknown enum type: {@enum.QualifiedName}");
+                    throw new IdlException(input, MapOffset(offset, sourceOrigins), $"Unknown enum type: {@enum.QualifiedName}");
                 }
 
                 var defaultName = annotations.DefaultExpression.Replace("::", ".").Split('.').Last();
                 var enumMember = enumDeclaration.Members.SingleOrDefault(member => member.Name == defaultName);
                 if (enumMember is null)
                 {
-                    throw new IdlException(input, context.MapOffset(offset), $"Unknown default enum value: {annotations.DefaultExpression}");
+                    throw new IdlException(input, MapOffset(offset, sourceOrigins), $"Unknown default enum value: {annotations.DefaultExpression}");
                 }
 
                 defaultValue = enumMember.Value;
@@ -388,13 +405,24 @@ internal sealed class IdlTypeParser
 
         if (defaultValue is { } value && ((minimum is { } defaultLower && value < defaultLower) || (maximum is { } defaultUpper && value > defaultUpper)))
         {
-            throw new IdlException(input, context.MapOffset(offset), "Member default value is outside its declared range.");
+            throw new IdlException(input, MapOffset(offset, sourceOrigins), "Member default value is outside its declared range.");
         }
 
         return new IdlMemberValueMetadata(defaultValue, minimum, maximum, annotations.DefaultExpression, annotations.UnitExpression);
     }
 
-    private BigInteger EvaluateMemberInteger(IdlInput input, int offset, string? currentNamespace, string expression, string valueName)
+    private int MapOffset(int offset, IReadOnlyList<SourceOriginSpan>? sourceOrigins) =>
+        sourceOrigins is null
+            ? context.MapOffset(offset)
+            : IdlParseContext.MapOffset(offset, sourceOrigins);
+
+    private BigInteger EvaluateMemberInteger(
+        IdlInput input,
+        int offset,
+        string? currentNamespace,
+        string expression,
+        string valueName,
+        IReadOnlyList<SourceOriginSpan>? sourceOrigins)
     {
         try
         {
@@ -402,7 +430,7 @@ internal sealed class IdlTypeParser
         }
         catch (FormatException exception)
         {
-            throw new IdlException(input, context.MapOffset(offset), $"Invalid {valueName} expression: {exception.Message}");
+            throw new IdlException(input, MapOffset(offset, sourceOrigins), $"Invalid {valueName} expression: {exception.Message}");
         }
     }
 
@@ -441,16 +469,21 @@ internal sealed class IdlTypeParser
         return (int)(littleEndian & 0x0FFFFFFF);
     }
 
-    internal int ResolveBound(IdlInput input, int offset, string text, string? currentNamespace, string diagnosticName = "Collection bound") =>
-        context.Validator.ResolveBound(input, context.MapOffset(offset), text, currentNamespace, diagnosticName);
+    /// <summary>Resolves and validates a collection bound.</summary>
+    internal IdlDeferredBound ResolveBound(IdlInput input, int offset, string text, string? currentNamespace, string diagnosticName = "Collection bound") =>
+        context.DeferBound(input, offset, text, currentNamespace, diagnosticName);
 
+    /// <summary>Parses array dimensions from an IDL declaration.</summary>
     internal IReadOnlyList<int> ParseDimensions(IdlInput input, int offset, string text, string? currentNamespace)
     {
         var result = new List<int>();
 
         foreach (Match match in Regex.Matches(text, @"\[([^\]]+)\]"))
         {
-            result.Add(ResolveBound(input, offset, match.Groups[1].Value, currentNamespace, "Array dimensions"));
+            var bound = ResolveBound(input, offset, match.Groups[1].Value, currentNamespace, "Array dimensions");
+            var index = result.Count;
+            result.Add(bound.Value);
+            bound.AddConsumer(value => result[index] = value);
         }
 
         if (result.Count == 0)
@@ -461,20 +494,38 @@ internal sealed class IdlTypeParser
         return result;
     }
 
-    internal int ParseStringBound(IdlInput input, int offset, string type, string? currentNamespace, string errorMessage)
+    /// <summary>Parses and validates a bounded string type.</summary>
+    internal IdlDeferredBound? ParseStringBound(IdlInput input, int offset, string type, string? currentNamespace, string errorMessage)
     {
-        var bound = 255;
-
-        var open = type.IndexOf('<');
-        if (open >= 0)
+        if (IdlBuiltinTypeSyntax.TryParseStringType(type, out _, out var boundExpression)
+            && boundExpression is not null)
         {
-            bound = ResolveBound(input, offset, type.Substring(open + 1, type.Length - open - 2), currentNamespace, errorMessage.TrimEnd('.'));
+            return ResolveBound(input, offset, boundExpression, currentNamespace, errorMessage.TrimEnd('.'));
         }
 
-        return bound;
+        return null;
     }
 
-    internal (string ElementType, int? Bound) ParseSequenceType(IdlInput input, int offset, string type, string? currentNamespace)
+    /// <summary>Parses a collection element while retaining bounds on inline string types.</summary>
+    internal IdlType ParseCollectionElementType(
+        IdlInput input,
+        int offset,
+        string elementType,
+        string? currentNamespace,
+        string errorPrefix)
+    {
+        if (!IdlBuiltinTypeSyntax.TryParseStringType(elementType, out var isWideString, out _))
+        {
+            return context.ReferenceType(elementType, currentNamespace, input, offset, errorPrefix);
+        }
+
+        var stringType = new IdlType.StringType(isWideString, 255);
+        var bound = ParseStringBound(input, offset, elementType, currentNamespace, "String bound must be a positive Int32.");
+        bound?.AddConsumer(stringType.SetBound);
+        return stringType;
+    }
+
+    internal (string ElementType, IdlDeferredBound? Bound) ParseSequenceType(IdlInput input, int offset, string type, string? currentNamespace)
     {
         var inner = type.Substring(type.IndexOf('<') + 1, type.LastIndexOf('>') - type.IndexOf('<') - 1);
         var parts = inner.Split(',');
@@ -488,8 +539,19 @@ internal sealed class IdlTypeParser
 
     private static bool IsOptionalScalar(IdlType type) => type switch
     {
-        IdlType.Primitive or IdlType.StringType or IdlType.Enum => true,
+        IdlType.Primitive or IdlType.StringType or IdlType.Enum or IdlType.Sequence or IdlType.Array => true,
         IdlType.Alias alias => IsOptionalScalar(alias.Target),
+        _ => false
+    };
+
+    private static bool HasValueMetadata(MemberAnnotationState annotations) =>
+        annotations.MinimumExpression is not null || annotations.MaximumExpression is not null || annotations.DefaultExpression is not null || annotations.UnitExpression is not null;
+
+    private static bool ContainsUnboundReference(IdlType type) => type switch
+    {
+        IdlType.Reference => true,
+        IdlType.Sequence sequence => ContainsUnboundReference(sequence.Element),
+        IdlType.Array array => ContainsUnboundReference(array.Element),
         _ => false
     };
 

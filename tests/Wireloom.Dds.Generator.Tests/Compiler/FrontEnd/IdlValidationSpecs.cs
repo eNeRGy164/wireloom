@@ -608,6 +608,24 @@ public sealed class IdlValidationSpecs
         exception.Message.ShouldContain("Duplicate member: value");
     }
 
+    [Theory]
+    [InlineData("struct Value { long first; }; struct Value { long second; }; ")]
+    [InlineData("enum Value { First }; enum Value { Second }; ")]
+    [InlineData("typedef long Value; typedef long Value; ")]
+    [InlineData("union Value switch(long) { case 0: long first; }; union Value switch(long) { case 1: long second; }; ")]
+    [InlineData("const long Value = 1; const long Value = 2; ")]
+    public void RejectsDuplicateDeclarationsWithoutThrowingDuringRegistration(string declarations)
+    {
+        // Arrange
+        var input = Input("duplicate-declaration.idl", declarations);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Duplicate type: Value");
+    }
+
     [Fact]
     public void RejectsOptionalAggregateMembers()
     {

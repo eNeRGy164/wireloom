@@ -49,11 +49,15 @@ internal sealed class IdlStructDeclarationParser
         };
         var useHashIds = autoId.Success && string.Equals(autoId.Groups["value"].Value, "HASH", StringComparison.OrdinalIgnoreCase);
         var fields = ParseMembers(input, body.Value, baseOffset + declarationStart + body.Index, currentNamespace, useHashIds);
-        IdlSemanticValidator.ValidateMemberIds(input, context.MapOffset(baseOffset + declarationStart), fields);
+        var validationOffset = context.MapOffset(baseOffset + declarationStart);
+        context.DeferMemberIdValidation(input, validationOffset, fields);
         var baseType = declaration.Groups["base"].Success
-            ? EscapeQualifiedIdentifier(ResolveTypeName(declaration.Groups["base"].Value, currentNamespace))
+            ? NormalizeIdlType(declaration.Groups["base"].Value)
             : null;
-        IdlSemanticValidator.ValidateGeneratedNameCollisions(input, context.MapOffset(baseOffset + declarationStart), name, fields, baseType);
+        var baseTypeOffset = declaration.Groups["base"].Success
+            ? context.MapOffset(baseOffset + declarationStart + declaration.Groups["base"].Index)
+            : validationOffset;
+        context.DeferGeneratedNameCollisionValidation(input, validationOffset, name, fields, baseType);
 
         var parsedDeclaration = new IdlClassDeclaration(
             name,
@@ -62,6 +66,7 @@ internal sealed class IdlStructDeclarationParser
             extensibility,
             input,
             baseType,
+            baseTypeOffset,
             isTopic);
         context.Declarations.Add(parsedDeclaration);
 

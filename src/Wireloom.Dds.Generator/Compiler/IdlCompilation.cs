@@ -35,8 +35,10 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, Cancellatio
             graph.Visit(input, parser.Parse, diagnostics);
         }
 
-        parser.ValidateTypedefs();
+        parser.Bind();
+        var strict = inputs.Any(input => input.Generate && input.Strict);
+        parser.Validate(strict);
 
-        return new IdlDeclarationEmitter(compilation, parser, inputs.Any(input => input.Generate && input.Strict), result).Emit();
+        return new IdlDeclarationEmitter(compilation, parser.Declarations, result).Emit();
     }
 }

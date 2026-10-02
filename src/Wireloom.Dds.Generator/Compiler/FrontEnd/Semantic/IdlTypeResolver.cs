@@ -13,19 +13,20 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
     {
         var normalized = IdlNaming.NormalizeIdlType(idlType);
 
-        if (normalized.StartsWith("string", StringComparison.Ordinal)
-            || normalized.StartsWith("wstring", StringComparison.Ordinal))
+        if (IdlBuiltinTypeSyntax.TryParseStringType(normalized, out var isWide, out var boundExpression))
         {
-            var isWide = normalized.StartsWith("wstring", StringComparison.Ordinal);
-            var bound = 255;
-
-            var open = normalized.IndexOf('<');
-            if (open >= 0 && normalized.EndsWith(">", StringComparison.Ordinal)
-                && int.TryParse(normalized[(open + 1)..^1].Trim(), out var parsedBound))
+            if (boundExpression is null)
             {
-                bound = parsedBound;
+                return new IdlType.StringType(isWide, 255);
             }
 
+            var bound = IdlBoundResolver.Resolve(
+                input,
+                offset,
+                boundExpression,
+                currentNamespace,
+                symbols,
+                "String bound");
             return new IdlType.StringType(isWide, bound);
         }
 
@@ -34,13 +35,7 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
             return new IdlType.Primitive(normalized);
         }
 
-        var qualified = IdlNaming.ResolveTypeName(idlType, currentNamespace);
-        if (currentNamespace is not null
-            && !idlType.StartsWith("::", StringComparison.Ordinal)
-            && !idlType.Contains(".", StringComparison.Ordinal)
-            && !symbols.ContainsName(qualified)
-            && !symbols.ContainsEnum(qualified)
-            && !symbols.ContainsTypedef(qualified))
+        if (!symbols.TryResolveTypeName(idlType, currentNamespace, out var qualified))
         {
             qualified = IdlNaming.ResolveTypeName(idlType, null);
         }
@@ -97,6 +92,6 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
             }
         }
 
-        return symbols.ContainsName(qualified) ? new IdlType.Struct(qualified) : null;
+        return symbols.ContainsTypeName(qualified) ? new IdlType.Struct(qualified) : null;
     }
 }
