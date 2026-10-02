@@ -5,6 +5,7 @@ namespace Wireloom.Compiler.FrontEnd.Preprocessing;
 /// <summary>Provides shared lexical rules and comment/literal scanning for preprocessing.</summary>
 internal sealed class PreprocessorLexicalService(Func<int, int> originalOffset, CancellationToken cancellationToken)
 {
+    /// <summary>Joins continued source lines and returns their offset map.</summary>
     internal static string JoinContinuations(string source, out int[] offsetMap)
     {
         var output = new StringBuilder(source.Length);
@@ -43,6 +44,7 @@ internal sealed class PreprocessorLexicalService(Func<int, int> originalOffset, 
         return output.ToString();
     }
 
+    /// <summary>Removes comments while preserving source offsets.</summary>
     internal string RemoveComments(IdlInput input, string source)
     {
         var output = new StringBuilder(source.Length);
@@ -116,9 +118,11 @@ internal sealed class PreprocessorLexicalService(Func<int, int> originalOffset, 
         return output.ToString();
     }
 
+    /// <summary>Determines whether text is an identifier.</summary>
     internal static bool IsIdentifier(string text) =>
         text.Length != 0 && IsIdentifierStart(text[0]) && (text.Length == 1 || IsIdentifierPart(text[1..]));
 
+    /// <summary>Determines whether a literal begins at an index.</summary>
     internal static bool IsLiteralStart(string text, int index)
     {
         if (text[index] == '"')
@@ -134,6 +138,7 @@ internal sealed class PreprocessorLexicalService(Func<int, int> originalOffset, 
         return IsEncodingPrefix(text, index) || !LooksLikeAnApostrophe(text, index);
     }
 
+    /// <summary>Determines whether a prefixed literal begins at an index.</summary>
     internal static bool StartsPrefixedLiteral(string text, int index)
     {
         if (index + 1 < text.Length
@@ -149,6 +154,7 @@ internal sealed class PreprocessorLexicalService(Func<int, int> originalOffset, 
             && IsLiteralQuote(text[index + 2]);
     }
 
+    /// <summary>Gets the quote index for a literal beginning at an index.</summary>
     internal static int LiteralQuoteIndex(string text, int index)
     {
         if (!StartsPrefixedLiteral(text, index))
@@ -161,6 +167,7 @@ internal sealed class PreprocessorLexicalService(Func<int, int> originalOffset, 
             : index + 1;
     }
 
+    /// <summary>Skips a literal and returns the first following index.</summary>
     internal static int SkipLiteral(string text, int index) => SkipLiteral(text, index, out _);
 
     private static int SkipLiteral(string text, int index, out bool closed)
@@ -188,6 +195,7 @@ internal sealed class PreprocessorLexicalService(Func<int, int> originalOffset, 
         return index;
     }
 
+    /// <summary>Determines whether a character can start an identifier.</summary>
     internal static bool IsIdentifierStart(char character) => character == '_' || char.IsLetter(character);
 
     private static bool IsIdentifierPart(string text)
@@ -203,6 +211,7 @@ internal sealed class PreprocessorLexicalService(Func<int, int> originalOffset, 
         return true;
     }
 
+    /// <summary>Determines whether a character can continue an identifier.</summary>
     internal static bool IsIdentifierPart(char character) => character == '_' || char.IsLetterOrDigit(character);
 
     private static bool IsLiteralQuote(char character) => character is '\'' or '"';

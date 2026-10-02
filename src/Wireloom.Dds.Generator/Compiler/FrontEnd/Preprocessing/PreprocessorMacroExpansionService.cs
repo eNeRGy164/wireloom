@@ -5,6 +5,7 @@ namespace Wireloom.Compiler.FrontEnd.Preprocessing;
 /// <summary>Owns the recursive macro-expansion scan and delegates replacement rescanning.</summary>
 internal sealed class PreprocessorMacroExpansionService(
     PreprocessorMacroTable macros,
+    PreprocessorMacroTokenService macroTokens,
     PreprocessorExpansionState expansionState,
     CancellationToken cancellationToken,
     Func<IdlInput> currentInput,
@@ -17,9 +18,11 @@ internal sealed class PreprocessorMacroExpansionService(
     Func<int, IReadOnlyList<int>?, int> logicalLine,
     Func<int> nextCounter)
 {
+    /// <summary>Expands macros in source text and preserves source offsets.</summary>
     internal string Expand(string text, int offset = 0, IReadOnlyList<int>? sourceOffsets = null) =>
         Expand(text, new HashSet<string>(StringComparer.Ordinal), 0, offset, sourceOffsets);
 
+    /// <summary>Expands macros recursively using the supplied expansion state.</summary>
     internal string Expand(string text, HashSet<string> expanding, int depth, int offset, IReadOnlyList<int>? sourceOffsets)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -142,7 +145,7 @@ internal sealed class PreprocessorMacroExpansionService(
 
                 if (open >= text.Length
                     || text[open] != '('
-                    || !TryReadArguments(text, open, out var arguments, out var end))
+                    || !macroTokens.TryReadArguments(text, open, out var arguments, out var end))
                 {
                     AppendExpansion(output, name, offset + tokenStart, sourceOffsets);
                     continue;
@@ -210,51 +213,6 @@ internal sealed class PreprocessorMacroExpansionService(
 
     private void AppendExpansion(StringBuilder output, int value, int offset, IReadOnlyList<int>? offsets) =>
         AppendExpansion(output, value.ToString(), offset, offsets);
-
-    private static bool TryReadArguments(string text, int open, out List<string> arguments, out int end)
-    {
-        arguments = [];
-        end = open;
-        var depth = 0;
-        var start = open + 1;
-        for (var index = open; index < text.Length; index++)
-        {
-            if (PreprocessorLexicalService.StartsPrefixedLiteral(text, index)
-                || PreprocessorLexicalService.IsLiteralStart(text, index))
-            {
-                index = PreprocessorLexicalService.SkipLiteral(text, index) - 1;
-                continue;
-            }
-
-            switch (text[index])
-            {
-                case '(':
-                    depth++;
-                    break;
-                case ')':
-                    depth--;
-                    if (depth == 0)
-                    {
-                        var argument = text.Substring(start, index - start).Trim();
-                        if (argument.Length != 0 || arguments.Count != 0)
-                        {
-                            arguments.Add(argument);
-                        }
-
-                        end = index + 1;
-                        return true;
-                    }
-
-                    break;
-                case ',' when depth == 1:
-                    arguments.Add(text.Substring(start, index - start).Trim());
-                    start = index + 1;
-                    break;
-            }
-        }
-
-        return false;
-    }
 
     private static int ExpansionSourceOffset(int offset, IReadOnlyList<int>? offsets) => MapOffset(offset, offsets);
 

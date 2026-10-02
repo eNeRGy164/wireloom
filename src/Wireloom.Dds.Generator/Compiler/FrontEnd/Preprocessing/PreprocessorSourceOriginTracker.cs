@@ -5,6 +5,7 @@ internal sealed class PreprocessorSourceOriginTracker(
     Func<int, int> originalOffset,
     CancellationToken cancellationToken)
 {
+    /// <summary>Appends source-origin entries for expanded text.</summary>
     internal void AppendExpandedOrigins(List<int> origins, string source, string expanded, int sourceOffset)
     {
         var sourceTokens = Tokenize(source);
@@ -47,6 +48,7 @@ internal sealed class PreprocessorSourceOriginTracker(
         }
     }
 
+    /// <summary>Appends physical output offsets for generated text.</summary>
     internal void AppendOutputOffsets(List<int> offsets, int count, int sourceOffset, int sourceLineEnd)
     {
         for (var index = 0; index < count; index++)
@@ -55,6 +57,7 @@ internal sealed class PreprocessorSourceOriginTracker(
         }
     }
 
+    /// <summary>Compresses per-character origins into contiguous source spans.</summary>
     internal static IReadOnlyList<SourceOriginSpan> Compress(IReadOnlyList<int> origins)
     {
         var spans = new List<SourceOriginSpan>();
