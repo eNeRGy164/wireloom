@@ -1,17 +1,14 @@
 <Project>
   <ItemGroup>
-    <!-- DdsIdl contains generation roots. The remaining inputs only track the
-         include graph so Roslyn invalidates when an include is edited. Keep
-         project-level include directories in this evaluation-time item group;
-         adding them only before CoreCompile is too late for incremental checks. -->
-    <AdditionalFiles Include="@(DdsIdl)" />
-    <AdditionalFiles Include="**/*.idl" Exclude="@(DdsIdl)" Generate="false" />
+    <_DdsIdlProjectIncludeDirectory Include="$(DdsIdlIncludeDirectories)" />
+
+    <_DdsIdlIncludeDirectory Include="@(_DdsIdlProjectIncludeDirectory)" />
+    <_DdsIdlIncludeDirectory Include="@(DdsIdl->'%(IncludeDirectories)')" />
     <AdditionalFiles
       Include="$(DdsIdlIncludeDirectories)\**\*.idl"
       Exclude="@(DdsIdl);@(AdditionalFiles)"
       Condition="'$(DdsIdlIncludeDirectories)' != ''"
       Generate="false" />
-    <_DdsIdlIncludeDirectory Include="@(DdsIdl->'%(IncludeDirectories)')" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Generate" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IncludeDirectories" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Defines" />
@@ -20,12 +17,43 @@
     <AvailableItemName Include="DdsIdl" />
   </ItemGroup>
 
-  <Target Name="WireloomTrackPerRootIncludedIdl" BeforeTargets="CoreCompile">
+  <Target Name="WireloomPrepareIdlInputs" BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile">
     <ItemGroup>
+      <!-- DdsIdl items are declared by the consumer project after package
+           targets are evaluated, so mark matching AdditionalFiles items and
+           add any missing generation roots at compile time. -->
+      <AdditionalFiles Remove="@(DdsIdl);@(DdsIdl->'%(FullPath)')" />
+      <AdditionalFiles
+        Include="@(DdsIdl)"
+        Generate="true">
+        <IncludeDirectories>$([System.String]::Copy('$(DdsIdlIncludeDirectories)').Replace(';', '|'))|$([System.String]::Copy('%(DdsIdl.IncludeDirectories)').Replace(';', '|'))</IncludeDirectories>
+        <Defines>%(DdsIdl.Defines)</Defines>
+        <Undefines>%(DdsIdl.Undefines)</Undefines>
+        <Strict>%(DdsIdl.Strict)</Strict>
+      </AdditionalFiles>
+
+      <AdditionalFiles
+        Include="**/*.idl"
+        Exclude="@(DdsIdl);@(DdsIdl->'%(FullPath)');@(AdditionalFiles);@(AdditionalFiles->'%(FullPath)')"
+        Generate="false" />
+      <AdditionalFiles
+        Include="%(_DdsIdlProjectIncludeDirectory.FullPath)\**\*.idl"
+        Exclude="@(DdsIdl);@(DdsIdl->'%(FullPath)');@(AdditionalFiles);@(AdditionalFiles->'%(FullPath)')"
+        Condition="'$(DdsIdlIncludeDirectories)' != ''"
+        Generate="false" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="WireloomTrackPerRootIncludedIdl" BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile">
+    <ItemGroup>
+      <_DdsIdlIncludeDirectory Include="@(DdsIdl->'%(IncludeDirectories)')" />
       <_DdsIdlIncludedFile
-        Include="%(_DdsIdlIncludeDirectory.Identity)\**\*.idl"
-        Condition="'%(_DdsIdlIncludeDirectory.Identity)' != ''" />
-      <AdditionalFiles Include="@(_DdsIdlIncludedFile)" Generate="false" />
+        Include="%(_DdsIdlIncludeDirectory.FullPath)\**\*.idl"
+        Condition="'%(_DdsIdlIncludeDirectory.FullPath)' != ''" />
+      <AdditionalFiles
+        Include="@(_DdsIdlIncludedFile)"
+        Exclude="@(DdsIdl);@(DdsIdl->'%(FullPath)');@(AdditionalFiles);@(AdditionalFiles->'%(FullPath)')"
+        Generate="false" />
     </ItemGroup>
   </Target>
 </Project>

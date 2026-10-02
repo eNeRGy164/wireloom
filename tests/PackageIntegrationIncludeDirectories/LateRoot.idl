@@ -1,0 +1,7 @@
+#include "late-included.idl"
+
+module PackageIntegrationIncludes {
+    struct LateRoot {
+        LateIncluded value;
+    };
+};

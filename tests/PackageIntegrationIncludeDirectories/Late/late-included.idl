@@ -1,0 +1,5 @@
+module PackageIntegrationIncludes {
+    struct LateIncluded {
+        string text;
+    };
+};

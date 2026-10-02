@@ -1,0 +1,7 @@
+#include <first-included.idl>
+
+module PackageIntegrationIncludes {
+    struct FirstRoot {
+        FirstIncluded value;
+    };
+};

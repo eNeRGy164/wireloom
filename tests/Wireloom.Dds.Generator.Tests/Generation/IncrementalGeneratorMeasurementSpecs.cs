@@ -97,7 +97,7 @@ public sealed class IncrementalGeneratorMeasurementSpecs(ITestOutputHelper outpu
         var additionalTexts = new List<AdditionalText> { root, included };
         var options = new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
         {
-            [root.Path] = new Dictionary<string, string>(),
+            [root.Path] = new Dictionary<string, string> { ["Generate"] = "true" },
             [included.Path] = new Dictionary<string, string> { ["Generate"] = "false" }
         };
 
@@ -113,7 +113,7 @@ public sealed class IncrementalGeneratorMeasurementSpecs(ITestOutputHelper outpu
         {
             secondRoot = new TestAdditionalText("second.idl", "module Second { struct Value { long value; }; };");
             additionalTexts.Add(secondRoot);
-            options[secondRoot.Path] = new Dictionary<string, string>();
+            options[secondRoot.Path] = new Dictionary<string, string> { ["Generate"] = "true" };
         }
 
         var parseOptions = new CSharpParseOptions(LanguageVersion.CSharp12);
