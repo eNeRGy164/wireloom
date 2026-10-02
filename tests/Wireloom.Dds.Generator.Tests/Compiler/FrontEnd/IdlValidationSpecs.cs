@@ -756,8 +756,13 @@ public sealed class IdlValidationSpecs
     [InlineData("union Choice switch(long) { invalid; };", "Unsupported union branch declaration")]
     [InlineData("union Choice switch(long) { case 1: long value; case 2: long value; };", "Duplicate union branch")]
     [InlineData("union Choice switch(long) { case Missing: long value; };", "Unknown union discriminator label")]
+    [InlineData("union Choice switch(Missing) { case 0: long value; };", "Unknown union discriminator type")]
+    [InlineData("struct Payload { long value; }; union Choice switch(Payload) { case 0: long value; };", "Unsupported union discriminator type")]
+    [InlineData("union Choice switch(float) { case 0: long value; };", "Unsupported union discriminator type")]
+    [InlineData("typedef float Kind; union Choice switch(Kind) { case 0: long value; };", "Unsupported union discriminator type")]
     [InlineData("union Choice switch(char) { case '\\a': long value; };", "Unknown union discriminator label")]
     [InlineData("union Choice switch(char) { case '\\0': long value; };", "Unknown union discriminator label")]
+    [InlineData("union Choice switch(char) { case L'a': long value; };", "Unknown union discriminator label")]
     [InlineData("union Choice switch(long) { case 1: sequence<Missing> values; };", "Unknown union collection element type")]
     [InlineData("union Choice switch(long) { case 1: Missing value; };", "Unknown union branch type")]
     public void RejectsInvalidUnionBranches(string source, string expectedMessage)
@@ -773,6 +778,21 @@ public sealed class IdlValidationSpecs
     }
 
     [Fact]
+    public void ReportsInvalidUnionDiscriminatorAtTheDiscriminatorType()
+    {
+        // Arrange
+        var input = Input(
+            "invalid-union-discriminator-location.idl",
+            "union Choice switch(Missing) { case 0: long value; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Offset.ShouldBe(input.Text.IndexOf("Missing", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void AcceptsTheSupportedCharacterUnionLabels()
     {
         // Arrange
@@ -785,6 +805,63 @@ public sealed class IdlValidationSpecs
 
         // Assert
         output.ShouldContain("public class Choice");
+    }
+
+    [Fact]
+    public void AcceptsCharacterLiteralsForWideCharacterUnionDiscriminators()
+    {
+        // Arrange
+        var input = Input(
+            "wide-character-union-label.idl",
+            "union Choice switch(wchar) { case L'a': long wideValue; case 'z': long narrowValue; };");
+
+        // Act
+        var output = Compile(input);
+
+        // Assert
+        output.ShouldContain("public class Choice");
+        output.ShouldContain("'a' =>");
+        output.ShouldContain("'z' =>");
+    }
+
+    [Theory]
+    [InlineData("boolean", "2")]
+    [InlineData("int8", "128")]
+    [InlineData("uint8", "-1")]
+    [InlineData("char", "65536")]
+    [InlineData("wchar", "65536")]
+    [InlineData("short", "32768")]
+    [InlineData("int16", "32768")]
+    [InlineData("unsigned short", "65536")]
+    [InlineData("uint16", "65536")]
+    [InlineData("long", "4294967296")]
+    public void RejectsPrimitiveUnionLabelsOutsideDiscriminatorRange(string discriminatorType, string label)
+    {
+        // Arrange
+        var input = Input(
+            "out-of-range-union-label.idl",
+            $"union Choice switch({discriminatorType}) {{ case {label}: long value; }};");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Numeric union discriminator label");
+    }
+
+    [Fact]
+    public void RejectsNumericLabelsForEnumDiscriminators()
+    {
+        // Arrange
+        var input = Input(
+            "numeric-enum-union-label.idl",
+            "enum Kind { First }; union Choice switch(Kind) { case 1: long value; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Unknown union discriminator label");
     }
 
     [Theory]
@@ -952,6 +1029,21 @@ public sealed class IdlValidationSpecs
                 default: long other;
             };
             """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("must leave either TRUE or FALSE unoccupied");
+    }
+
+    [Fact]
+    public void ValidatesDefaultDiscriminatorsAfterResolvingPrimitiveTypedefs()
+    {
+        // Arrange
+        var input = Input(
+            "boolean-typedef-default-discriminator.idl",
+            "typedef boolean Kind; union Choice switch(Kind) { case FALSE: long no; case TRUE: long yes; default: long other; };");
 
         // Act
         var exception = Should.Throw<IdlException>(() => Compile(input));

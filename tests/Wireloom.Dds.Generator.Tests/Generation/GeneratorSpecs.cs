@@ -32,6 +32,31 @@ public sealed class GeneratorSpecs
     }
 
     [Fact]
+    public void CompilesBooleanUnionWithNonScalarBranch()
+    {
+        // Arrange
+        var input =
+            """
+            module BooleanUnion {
+                union Choice switch(boolean) {
+                    case TRUE: long enabled;
+                    case FALSE: sequence<long, 2> disabled;
+                };
+            };
+            """;
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldBeEmpty();
+        result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(d => d.Severity == DiagnosticSeverity.Error)
+            .ShouldBeEmpty();
+    }
+
+    [Fact]
     public void ReportsMissingRuntimeReferenceBeforeParsingIdl()
     {
         // Arrange

@@ -27,7 +27,9 @@ internal sealed class IdlUnionParser
         var qualified = context.Qualify(unionName, currentNamespace);
         context.EnsureNewName(input, baseOffset + position, qualified);
         context.EnsureGeneratedCompanionNames(input, baseOffset + position, unionName, currentNamespace, includeUnmanaged: true);
-        var discriminatorIdlType = NormalizeIdlType(unionDeclaration.Groups["discriminator"].Value);
+        var discriminator = unionDeclaration.Groups["discriminator"];
+        var discriminatorIdlType = NormalizeIdlType(discriminator.Value);
+        var discriminatorOffset = context.MapOffset(baseOffset + position + discriminator.Index);
         var unionBody = unionDeclaration.Groups["body"];
         var branches = new List<IdlUnionBranch>();
         var branchNames = new HashSet<string>(StringComparer.Ordinal);
@@ -59,13 +61,14 @@ internal sealed class IdlUnionParser
         }
 
         var validationOffset = context.MapOffset(baseOffset + position);
-        context.DeferUnionDefaultDiscriminatorValidation(input, validationOffset, discriminatorIdlType, branches);
         context.DeferUnionGeneratedNameCollisionValidation(input, validationOffset, unionName, branches);
 
         var parsedUnion = new IdlUnion(
             unionName,
             currentNamespace,
             discriminatorIdlType,
+            input,
+            discriminatorOffset,
             discriminatorIsEnum: false,
             discriminatorDefaultValue: null,
             branches,

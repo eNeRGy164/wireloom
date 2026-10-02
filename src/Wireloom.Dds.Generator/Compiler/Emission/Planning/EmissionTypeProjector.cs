@@ -95,7 +95,7 @@ internal static class EmissionTypeProjector
     {
         if (union.DiscriminatorIsEnum)
         {
-            return IdlNaming.ResolvedTypeReference(union.DiscriminatorEnumQualifiedName!, union.Namespace);
+            return IdlNaming.EscapeQualifiedIdentifier(union.DiscriminatorEnumQualifiedName!);
         }
 
         return IdlNaming.MapPrimitive(union.DiscriminatorPrimitiveIdlType!);
