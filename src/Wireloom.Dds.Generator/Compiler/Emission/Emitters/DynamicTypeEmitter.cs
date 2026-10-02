@@ -7,8 +7,8 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits DynamicType plugin documents for generated data types.</summary>
 internal static class DynamicTypeEmitter
 {
-    public static void EmitStructPlugin(
-        EmissionResult result,
+    /// <summary>Emits the dynamic-type plugin document for a data type.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> EmitStructPlugin(
         GeneratedTypeNames names,
         IReadOnlyList<MemberEmissionPlan> fields,
         IReadOnlyList<MemberEmissionPlan> inheritedFields,
@@ -118,6 +118,6 @@ internal static class DynamicTypeEmitter
         writer.CloseBlock();
         writer.CloseBlock();
 
-        result.Add(names.Plugin, writer.ToString());
+        return [new GeneratedIdlSource(names.Plugin.HintName, writer.ToString())];
     }
 }

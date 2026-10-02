@@ -7,8 +7,8 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits the managed data class and its RTI type-support documents.</summary>
 internal static class ClassEmitter
 {
-    public static void Emit(
-        EmissionResult result,
+    /// <summary>Emits the managed class and optional type-support documents.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(
         string name,
         string? currentNamespace,
         IReadOnlyList<IdlMember> fields,
@@ -71,20 +71,24 @@ internal static class ClassEmitter
         }
 
         writer.CloseBlock();
-        result.Add(names.Managed, writer.ToString());
+        var documents = new List<GeneratedIdlSource>
+        {
+            new(names.Managed.HintName, writer.ToString())
+        };
 
         if (hasTypeSupport)
         {
-            TypeSupportEmitter.Emit(
-                result,
+            documents.AddRange(TypeSupportEmitter.Emit(
                 names,
                 fieldPlans,
                 inheritedFieldPlans,
                 extensibility,
                 sourceIdlFileName,
                 baseType,
-                isRecursive);
+                isRecursive));
         }
+
+        return documents;
     }
 
     private static string?[] ResolveManagedBackingNames(string escapedName, IReadOnlyList<MemberEmissionPlan> fields)
