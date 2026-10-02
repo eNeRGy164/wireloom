@@ -7,6 +7,7 @@ namespace Wireloom.Compiler.Emission.Planning;
 /// <summary>Builds native conversion operations for a member emission plan.</summary>
 internal sealed partial class MemberEmissionPlan
 {
+    /// <summary>Builds a statement that copies this member from native storage.</summary>
     public string BuildFromNativeStatement(bool forwardKeysOnly, string? namespaceOverride = null, string nativeFieldPrefix = "")
     {
         var namespaceName = namespaceOverride ?? currentNamespace;
@@ -34,6 +35,7 @@ internal sealed partial class MemberEmissionPlan
         return BuildPrimitiveFromNativeStatement(nativeFieldPrefix);
     }
 
+    /// <summary>Builds the expression that reads this member from native storage.</summary>
     public string? BuildFromNativeValueExpression(string nativeFieldPrefix = "")
     {
         if (IsArray || IsSequence || IsAggregate || IsOptional)
@@ -119,13 +121,7 @@ internal sealed partial class MemberEmissionPlan
             return name;
         }
 
-        return primitive.IdlName switch
-        {
-            "boolean" => $"global::System.Convert.ToBoolean({name})",
-            "char" => $"NativeChar.FromUtf8({name})",
-            "wchar" => $"(char){name}",
-            _ => name
-        };
+        return PrimitiveTypeMapping.Resolve(primitive.IdlName).FromNativeExpression(name);
     }
 
     private string PrimitiveToNativeExpression()
@@ -137,15 +133,10 @@ internal sealed partial class MemberEmissionPlan
             return name;
         }
 
-        return primitive.IdlName switch
-        {
-            "boolean" => $"global::System.Convert.ToByte({name})",
-            "char" => $"NativeChar.ToUtf8({name})",
-            "wchar" => $"(short){name}",
-            _ => name
-        };
+        return PrimitiveTypeMapping.Resolve(primitive.IdlName).ToNativeExpression(name);
     }
 
+    /// <summary>Builds a statement that copies this member to native storage.</summary>
     public string BuildToNativeStatement(bool forwardKeysOnly, string? namespaceOverride = null, string nativeFieldPrefix = "")
     {
         var namespaceName = namespaceOverride ?? currentNamespace;

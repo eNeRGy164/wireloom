@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using Wireloom.Compiler.Emission.Emitters;
 using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Writers;
+using Wireloom.Compiler.Naming;
 
 using static Wireloom.Compiler.Naming.IdlNaming;
 
@@ -144,6 +145,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
     public bool HasTypeSupport => Bound is null || EmissionTypeProjector.HasSequenceType(Type) || IsString;
 
+    /// <summary>Determines whether this member recursively refers to the containing runtime type.</summary>
     public bool IsRecursive(string runtimeTypeName) =>
         IsSequence && string.Equals(ElementCSharpType, runtimeTypeName, StringComparison.Ordinal);
 
@@ -198,6 +200,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         _ => FormatCSharpValue(CSharpType.TrimEnd('?'), DefaultValue!.Value)
     };
 
+    /// <summary>Formats an IDL constant value as a C# literal for the requested type.</summary>
     public string FormatCSharpValue(string typeName, BigInteger value) => typeName switch
     {
         "long" when value == long.MinValue => "long.MinValue",
@@ -213,6 +216,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     };
 
 
+    /// <summary>Resolves the native storage type for this member.</summary>
     public string NativeStorageTypeFor(string? namespaceOverride)
     {
         var namespaceName = namespaceOverride ?? currentNamespace;
@@ -250,17 +254,21 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
     private string BuildScalarNativeStorageType(string? namespaceName)
     {
-        return ValueType switch
+        if (ValueType is PrimitiveEmissionType primitive)
         {
-            StringEmissionType { IsWide: true } => "NativeWstring",
-            StringEmissionType => "NativeString",
-            PrimitiveEmissionType { IdlName: "boolean" or "char" } => "byte",
-            PrimitiveEmissionType { IdlName: "wchar" } => "short",
-            _ => TypeReference(CSharpType, namespaceName)
-        };
+            return PrimitiveTypeMapping.Resolve(primitive.IdlName).NativeStorageType;
+        }
+
+        if (ValueType is StringEmissionType stringType)
+        {
+            return stringType.IsWide ? "NativeWstring" : "NativeString";
+        }
+
+        return TypeReference(CSharpType, namespaceName);
     }
 
 
+    /// <summary>Builds the managed copy expression for this member.</summary>
     public string BuildCopyExpression(string sourcePrefix = "other.")
     {
         var source = sourcePrefix + EscapedName;
@@ -293,6 +301,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         return source;
     }
 
+    /// <summary>Builds the managed union copy expression for this member.</summary>
     public string BuildUnionCopyExpression(string sourcePrefix = "other.")
     {
         var source = sourcePrefix + EscapedName;
@@ -310,6 +319,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         return source;
     }
 
+    /// <summary>Emits initialization code for an aggregate array member.</summary>
     public void EmitAggregateArrayInitialization(GeneratedSourceWriter writer, string target, bool hasFollowingStatements)
     {
         if (!IsArray || !HasAggregateElement)
@@ -329,6 +339,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         }
     }
 
+    /// <summary>Emits copy code for an aggregate array member.</summary>
     public void EmitAggregateArrayCopy(GeneratedSourceWriter writer, string target, bool hasFollowingStatements)
     {
         if (!IsArray || !HasAggregateElement)
@@ -359,6 +370,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         }
     }
 
+    /// <summary>Builds the hash expression for this member.</summary>
     public string HashValue(string targetPrefix = "")
     {
         if (IsOptional && IsSequence)
@@ -383,6 +395,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
     private IReadOnlyList<string> ZeroIndices() => Enumerable.Repeat("0", Dimensions.Count).ToArray();
 
+    /// <summary>Builds the equality expression for this member.</summary>
     public string EqualityExpression(string otherPrefix = "other.", string thisPrefix = "")
     {
         if (IsArray)
@@ -428,32 +441,78 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         return $"{thisPrefix}{EscapedName}.Equals({otherPrefix}{EscapedName})";
     }
 
-    public (string TypeKind, string ValueProperty, string DefaultValue, string? Minimum, string? Maximum, string? Unit)? PrimitiveAnnotation() =>
-        ValueType switch
+    /// <summary>Builds the annotation metadata for a supported primitive member.</summary>
+    public (string TypeKind, string ValueProperty, string DefaultValue, string? Minimum, string? Maximum, string? Unit)? PrimitiveAnnotation()
+    {
+        switch (ValueType)
         {
-            StringEmissionType { IsWide: true } => ("WideString", "WideStringValue", "\"\"", null, null, null),
-            StringEmissionType => ("String", "StringValue", "\"\"", null, null, null),
-            EnumEmissionType enumType => ("Enumeration", "EnumValue", HasExplicitDefault ? DefaultValue!.Value.ToString(CultureInfo.InvariantCulture) : enumType.DefaultValue.ToString(CultureInfo.InvariantCulture), null, null, UnitLiteral),
-            PrimitiveEmissionType primitive => primitive.IdlName switch
-            {
-                "short" or "int16" => ("Int16", "Int16Value", HasExplicitDefault ? FormatCSharpValue("short", DefaultValue!.Value) : "(short)0", MinimumValue is null ? "short.MinValue" : FormatCSharpValue("short", MinimumValue.Value), MaximumValue is null ? "short.MaxValue" : FormatCSharpValue("short", MaximumValue.Value), UnitLiteral),
-                "long" or "int32" => ("Int32", "Int32Value", HasExplicitDefault ? FormatCSharpValue("int", DefaultValue!.Value) : "0", MinimumValue is null ? "int.MinValue" : FormatCSharpValue("int", MinimumValue.Value), MaximumValue is null ? "int.MaxValue" : FormatCSharpValue("int", MaximumValue.Value), UnitLiteral),
-                "long long" or "int64" => ("Int64", "Int64Value", HasExplicitDefault ? FormatCSharpValue("long", DefaultValue!.Value) : "0L", MinimumValue is null ? "long.MinValue" : FormatCSharpValue("long", MinimumValue.Value), MaximumValue is null ? "long.MaxValue" : FormatCSharpValue("long", MaximumValue.Value), UnitLiteral),
-                "unsigned short" or "uint16" => ("Uint16", "Uint16Value", HasExplicitDefault ? FormatCSharpValue("ushort", DefaultValue!.Value) : "(ushort)0", MinimumValue is null ? "ushort.MinValue" : FormatCSharpValue("ushort", MinimumValue.Value), MaximumValue is null ? "ushort.MaxValue" : FormatCSharpValue("ushort", MaximumValue.Value), UnitLiteral),
-                "unsigned long" or "uint32" => ("UInt32", "Uint32Value", HasExplicitDefault ? FormatCSharpValue("uint", DefaultValue!.Value) : "0U", MinimumValue is null ? "uint.MinValue" : FormatCSharpValue("uint", MinimumValue.Value), MaximumValue is null ? "uint.MaxValue" : FormatCSharpValue("uint", MaximumValue.Value), UnitLiteral),
-                "unsigned long long" or "uint64" => ("UInt64", "Uint64Value", HasExplicitDefault ? FormatCSharpValue("ulong", DefaultValue!.Value) : "0UL", MinimumValue is null ? "ulong.MinValue" : FormatCSharpValue("ulong", MinimumValue.Value), MaximumValue is null ? "ulong.MaxValue" : FormatCSharpValue("ulong", MaximumValue.Value), UnitLiteral),
-                "int8" => ("Int8", "Int8Value", HasExplicitDefault ? FormatCSharpValue("sbyte", DefaultValue!.Value) : "(sbyte)0", MinimumValue is null ? "sbyte.MinValue" : FormatCSharpValue("sbyte", MinimumValue.Value), MaximumValue is null ? "sbyte.MaxValue" : FormatCSharpValue("sbyte", MaximumValue.Value), UnitLiteral),
-                "uint8" => ("Uint8", "Uint8Value", HasExplicitDefault ? FormatCSharpValue("byte", DefaultValue!.Value) : "(byte)0", MinimumValue is null ? "byte.MinValue" : FormatCSharpValue("byte", MinimumValue.Value), MaximumValue is null ? "byte.MaxValue" : FormatCSharpValue("byte", MaximumValue.Value), UnitLiteral),
-                "octet" => ("Octet", "OctetValue", HasExplicitDefault ? FormatCSharpValue("byte", DefaultValue!.Value) : "(byte)0", MinimumValue is null ? "byte.MinValue" : FormatCSharpValue("byte", MinimumValue.Value), MaximumValue is null ? "byte.MaxValue" : FormatCSharpValue("byte", MaximumValue.Value), UnitLiteral),
-                "boolean" => ("Boolean", "BoolValue", "false", null, null, UnitLiteral),
-                "char" => ("Char8", "Char8Value", "'\\0'", null, null, UnitLiteral),
-                "wchar" => ("Char16", "Char16Value", "'\\0'", null, null, UnitLiteral),
-                "float" => ("Float32", "Float32Value", "0.0F", "float.MinValue", "float.MaxValue", UnitLiteral),
-                "double" => ("Float64", "Float64Value", "0.0D", "double.MinValue", "double.MaxValue", UnitLiteral),
-                _ => null
-            },
-            _ => null
-        };
+            case StringEmissionType { IsWide: true }:
+                return ("WideString", "WideStringValue", "\"\"", null, null, null);
+            case StringEmissionType:
+                return ("String", "StringValue", "\"\"", null, null, null);
+            case EnumEmissionType enumType:
+                var enumDefault = enumType.DefaultValue.ToString(CultureInfo.InvariantCulture);
+                if (HasExplicitDefault)
+                {
+                    enumDefault = DefaultValue!.Value.ToString(CultureInfo.InvariantCulture);
+                }
+
+                return ("Enumeration", "EnumValue", enumDefault, null, null, UnitLiteral);
+            case PrimitiveEmissionType primitive:
+                return PrimitiveAnnotation(primitive);
+            default:
+                return null;
+        }
+    }
+
+    private (string TypeKind, string ValueProperty, string DefaultValue, string? Minimum, string? Maximum, string? Unit)? PrimitiveAnnotation(PrimitiveEmissionType primitive)
+    {
+        var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
+
+        if (mapping.AnnotationTypeKind is null || mapping.AnnotationValueProperty is null)
+        {
+            return null;
+        }
+
+        var defaultValue = mapping.NativeDefaultLiteral;
+        if (HasExplicitDefault && IsIntegralAnnotation(mapping.AnnotationTypeKind))
+        {
+            defaultValue = FormatCSharpValue(mapping.ManagedType, DefaultValue!.Value);
+        }
+
+        var minimum = mapping.MinimumLiteral;
+        if (MinimumValue is not null)
+        {
+            minimum = FormatCSharpValue(mapping.ManagedType, MinimumValue.Value);
+        }
+
+        var maximum = mapping.MaximumLiteral;
+        if (MaximumValue is not null)
+        {
+            maximum = FormatCSharpValue(mapping.ManagedType, MaximumValue.Value);
+        }
+
+        return (mapping.AnnotationTypeKind, mapping.AnnotationValueProperty, defaultValue, minimum, maximum, UnitLiteral);
+    }
+
+    private static bool IsIntegralAnnotation(string typeKind)
+    {
+        switch (typeKind)
+        {
+            case "Int16":
+            case "Int32":
+            case "Int64":
+            case "Uint16":
+            case "UInt32":
+            case "UInt64":
+            case "Int8":
+            case "Uint8":
+            case "Octet":
+                return true;
+            default:
+                return false;
+        }
+    }
 
     private string? UnitLiteral => Unit is null
         ? null
