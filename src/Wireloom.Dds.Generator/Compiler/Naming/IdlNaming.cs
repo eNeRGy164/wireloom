@@ -131,6 +131,10 @@ internal static class IdlNaming
     internal static GeneratedName CreateGeneratedName(string? currentNamespace, string typeName) =>
         new(currentNamespace ?? string.Empty, EscapeIdentifier(typeName));
 
+    /// <summary>Creates the authoritative generated identities for a declaration.</summary>
+    internal static GeneratedTypeNames CreateGeneratedTypeNames(string? currentNamespace, string declarationName) =>
+        new(currentNamespace, declarationName);
+
     /// <summary>Escapes each segment of a qualified C# identifier.</summary>
     internal static string EscapeQualifiedIdentifier(string identifier) =>
         string.Join(".", identifier.Split('.').Select(EscapeIdentifier));

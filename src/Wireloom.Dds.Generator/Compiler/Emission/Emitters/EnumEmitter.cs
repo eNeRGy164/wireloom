@@ -8,10 +8,11 @@ internal static class EnumEmitter
 {
     public static void Emit(EmissionResult result, IdlEnum declaration, string sourceIdlFileName)
     {
+        var names = IdlNaming.CreateGeneratedTypeNames(declaration.Namespace, declaration.Name);
         var writer = EmissionSupport.CreateSource(declaration.Namespace, [], sourceIdlFileName);
 
         writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> enumeration declared in <c>{sourceIdlFileName}</c>.");
-        writer.OpenBlock($"public enum {IdlNaming.EscapeIdentifier(declaration.Name)}");
+        writer.OpenBlock($"public enum {names.ManagedTypeName}");
 
         for (var index = 0; index < declaration.Members.Count; index++)
         {
@@ -29,19 +30,18 @@ internal static class EnumEmitter
 
         writer.CloseBlock();
 
-        result.Add(IdlNaming.CreateGeneratedName(declaration.Namespace, declaration.Name), writer.ToString());
+        result.Add(names.Managed, writer.ToString());
 
-        EmitPlugin(result, declaration, sourceIdlFileName);
-        EmitTypeSupport(result, declaration, sourceIdlFileName);
+        EmitPlugin(result, declaration, names, sourceIdlFileName);
+        EmitTypeSupport(result, declaration, names, sourceIdlFileName);
     }
 
-    private static void EmitPlugin(EmissionResult result, IdlEnum declaration, string sourceIdlFileName)
+    private static void EmitPlugin(EmissionResult result, IdlEnum declaration, GeneratedTypeNames names, string sourceIdlFileName)
     {
-        var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
-        var runtimeName = declaration.Namespace is null ? typeName : $"{IdlNaming.EscapeQualifiedIdentifier(declaration.Namespace)}.{typeName}";
-        var implementation = declaration.Namespace is null ? "Implementation" : $"{declaration.Namespace}.Implementation";
+        var typeName = names.ManagedTypeName;
+        var runtimeName = names.RuntimeTypeName;
 
-        var writer = EmissionSupport.CreateSource(implementation, EmissionSupport.PluginUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI interpreted type plugin for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"internal class {typeName}Plugin : EnumTypePlugin");
@@ -78,35 +78,35 @@ internal static class EnumEmitter
         writer.CloseBlock();
         writer.CloseBlock();
 
-        result.Add(IdlNaming.CreateGeneratedName(implementation, $"{declaration.Name}Plugin"), writer.ToString());
+        result.Add(names.Plugin, writer.ToString());
     }
 
-    private static void EmitTypeSupport(EmissionResult result, IdlEnum declaration, string sourceIdlFileName)
+    private static void EmitTypeSupport(EmissionResult result, IdlEnum declaration, GeneratedTypeNames names, string sourceIdlFileName)
     {
-        var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
+        var typeName = names.ManagedTypeName;
 
         var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides RTI Connext DDS type support for <see cref=\"{typeName}\"/>.");
-        writer.OpenBlock($"public class {typeName}Support : TypeSupport<{typeName}>");
+        writer.OpenBlock($"public class {names.SupportTypeName} : TypeSupport<{typeName}>");
 
-        writer.WriteXmlSummary($"Initializes a new instance of the <see cref=\"{typeName}Support\"/> class.");
-        writer.WriteLine($"public {typeName}Support() : base(");
+        writer.WriteXmlSummary($"Initializes a new instance of the <see cref=\"{names.SupportTypeName}\"/> class.");
+        writer.WriteLine($"public {names.SupportTypeName}() : base(");
         writer.Indent();
-        writer.WriteLine($"new Implementation.{typeName}Plugin(),");
-        writer.WriteLine($"new global::System.Lazy<DynamicType>(() => Implementation.{typeName}Plugin.CreateDynamicType(isPublic: true)))");
+        writer.WriteLine($"new Implementation.{names.PluginTypeName}(),");
+        writer.WriteLine($"new global::System.Lazy<DynamicType>(() => Implementation.{names.PluginTypeName}.CreateDynamicType(isPublic: true)))");
         writer.Unindent();
         writer.OpenBrace();
         writer.CloseBlock();
         writer.BlankLine();
 
         writer.WriteXmlSummary("Gets the cached RTI Connext DDS type-support instance.");
-        writer.WriteLine($"public static {typeName}Support Instance {{ get; }} = ");
+        writer.WriteLine($"public static {names.SupportTypeName} Instance {{ get; }} = ");
         writer.Indent();
-        writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{typeName}Support, {typeName}>();");
+        writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{names.SupportTypeName}, {typeName}>();");
         writer.Unindent();
         writer.CloseBlock();
 
-        result.Add(IdlNaming.CreateGeneratedName(declaration.Namespace, declaration.Name + "Support"), writer.ToString());
+        result.Add(names.Support, writer.ToString());
     }
 }

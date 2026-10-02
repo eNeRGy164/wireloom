@@ -7,6 +7,7 @@ namespace Wireloom.Compiler.FrontEnd.Semantic;
 /// <summary>Owns front-end validation that does not produce target code.</summary>
 internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
 {
+    /// <summary>Ensures that a declaration name is unique.</summary>
     public void EnsureNewName(IdlInput input, int offset, string name)
     {
         if (!symbols.AddName(name) || symbols.ContainsEnum(name) || symbols.ContainsTypedef(name))
@@ -21,6 +22,7 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         }
     }
 
+    /// <summary>Ensures generated companion names do not collide.</summary>
     public void EnsureGeneratedCompanionNames(
         IdlInput input,
         int offset,
@@ -28,21 +30,16 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         string? currentNamespace,
         bool includeUnmanaged)
     {
-        var escapedNamespace = currentNamespace is null
-            ? string.Empty
-            : IdlNaming.EscapeQualifiedIdentifier(currentNamespace) + ".";
-        var implementationNamespace = currentNamespace is null
-            ? "Implementation"
-            : IdlNaming.EscapeQualifiedIdentifier($"{currentNamespace}.Implementation");
+        var names = IdlNaming.CreateGeneratedTypeNames(currentNamespace, declarationName);
         var companions = new List<string>
         {
-            $"{escapedNamespace}{IdlNaming.EscapeIdentifier($"{declarationName}Support")}",
-            $"{implementationNamespace}.{IdlNaming.EscapeIdentifier($"{declarationName}Plugin")}"
+            names.SupportIdentity,
+            names.PluginIdentity
         };
 
         if (includeUnmanaged)
         {
-            companions.Add($"{implementationNamespace}.{IdlNaming.EscapeIdentifier($"{declarationName}Unmanaged")}");
+            companions.Add(names.UnmanagedIdentity);
         }
 
         if (!symbols.AddGeneratedIdentities(companions))
@@ -51,9 +48,11 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         }
     }
 
+    /// <summary>Validates a typedef declaration name.</summary>
     public void ValidateTypedef(IdlInput input, int offset, string name) =>
         ValidateTypedef(input, offset, name, new(StringComparer.Ordinal));
 
+    /// <summary>Resolves and validates a collection bound.</summary>
     public int ResolveBound(IdlInput input, int offset, string text, string? currentNamespace, string diagnosticName = "Collection bound")
     {
         BigInteger value;
@@ -75,6 +74,7 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         return (int)value;
     }
 
+    /// <summary>Validates member identifiers within a declaration.</summary>
     public static void ValidateMemberIds(IdlInput input, int offset, IReadOnlyList<IdlMember> fields)
     {
         var duplicateId = fields
@@ -88,6 +88,7 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         }
     }
 
+    /// <summary>Validates the generated declaration name.</summary>
     public static void ValidateGeneratedDeclarationName(
         IdlInput input,
         int offset,
@@ -101,6 +102,7 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         }
     }
 
+    /// <summary>Validates generated member-name collisions.</summary>
     public static void ValidateGeneratedNameCollisions(IdlInput input, int offset, string declarationName, IReadOnlyList<IdlMember> fields, string? baseType)
     {
         var escapedDeclarationName = IdlNaming.EscapeIdentifier(declarationName);
@@ -147,6 +149,7 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         _ => false
     };
 
+    /// <summary>Validates generated union-branch name collisions.</summary>
     public static void ValidateUnionGeneratedNameCollisions(IdlInput input, int offset, string declarationName, IReadOnlyList<IdlUnionBranch> branches)
     {
         var escapedDeclarationName = IdlNaming.EscapeIdentifier(declarationName);
@@ -194,6 +197,7 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         }
     }
 
+    /// <summary>Validates a union's default discriminator.</summary>
     public static void ValidateUnionDefaultDiscriminator(IdlInput input, int offset, string discriminatorType, IReadOnlyList<IdlUnionBranch> branches)
     {
         if (!branches.Any(branch => branch.IsDefault)

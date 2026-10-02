@@ -11,11 +11,12 @@ internal static class CollectionAliasEmitter
     public static void Emit(CompilationContext compilation, EmissionResult result, IdlTypedef declaration, string sourceIdlFileName)
     {
         var plan = CreatePlan(compilation, declaration);
+        var names = IdlNaming.CreateGeneratedTypeNames(declaration.Namespace, declaration.Name);
 
-        CollectionAliasManagedEmitter.Emit(result, declaration, plan, sourceIdlFileName);
-        CollectionAliasPluginEmitter.Emit(compilation, result, declaration, plan, sourceIdlFileName);
-        CollectionAliasNativeEmitter.Emit(compilation, result, declaration, plan, sourceIdlFileName);
-        CollectionAliasTypeSupportEmitter.Emit(result, declaration, sourceIdlFileName);
+        CollectionAliasManagedEmitter.Emit(result, declaration, names, plan, sourceIdlFileName);
+        CollectionAliasPluginEmitter.Emit(compilation, result, declaration, names, plan, sourceIdlFileName);
+        CollectionAliasNativeEmitter.Emit(compilation, result, declaration, names, plan, sourceIdlFileName);
+        CollectionAliasTypeSupportEmitter.Emit(result, declaration, names, sourceIdlFileName);
     }
 
     private static CollectionAliasEmissionPlan CreatePlan(CompilationContext compilation, IdlTypedef declaration)
