@@ -73,18 +73,10 @@ as the primary signal for control-flow-heavy code and line coverage as a
 secondary signal.
 
 After a successful build and test run, run Community Qodana from the repository
-root with `global.json` visible and the CI image and fail threshold:
+root with `global.json` visible:
 
-```powershell
-$repoRoot = (Get-Location).Path
-$qodanaCache = Join-Path $repoRoot '.qodana\cache'
-docker run --rm `
-  --volume "${repoRoot}:/data/project" `
-  --volume "${qodanaCache}:/data/cache" `
-  jetbrains/qodana-cdnet:2026.2-privileged `
-  --cache-dir /data/cache `
-  --results-dir /data/project/.qodana/results `
-  --fail-threshold 0
+```bash
+wslc run --rm --volume "${PWD}:/data/project" --volume "${PWD}/.qodana/cache:/data/cache" -e DOTNET_NOLOGO=1 jetbrains/qodana-cdnet:2026.2-privileged --results-dir /data/project/.qodana/results
 ```
 
 The CI Qodana cache is separate from NuGet's cache. The mounted local cache
