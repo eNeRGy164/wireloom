@@ -2,6 +2,7 @@ using System.Text;
 
 namespace Wireloom.Compiler.FrontEnd.Preprocessing;
 
+/// <summary>Provides macro operations for IDL preprocessing.</summary>
 internal sealed partial class IdlPreprocessor
 {
     private string Expand(string text, int offset = 0, IReadOnlyList<int>? sourceOffsets = null) =>
@@ -15,14 +16,11 @@ internal sealed partial class IdlPreprocessor
         var remaining = PreprocessorLimits.MaximumOutputLength - expansionState.BaseOutputLength - output.Length;
         if (value.Length > remaining)
         {
-            throw new IdlException(currentInput!, ExpansionSourceOffset(offset, offsets), $"Preprocessor output exceeds the {PreprocessorLimits.MaximumOutputLength}-character limit.");
+            throw new IdlException(currentInput!, offsets is null ? sourceLocations.OriginalOffset(offset) : MapOffset(offset, offsets), $"Preprocessor output exceeds the {PreprocessorLimits.MaximumOutputLength}-character limit.");
         }
 
         output.Append(value);
     }
-
-    private int ExpansionSourceOffset(int offset, IReadOnlyList<int>? offsets) =>
-        offsets is null ? offset : MapOffset(offset, offsets);
 
     private static int MapOffset(int offset, IReadOnlyList<int>? offsets) =>
         offsets is not null && offset >= 0 && offset < offsets.Count
@@ -45,7 +43,7 @@ internal sealed partial class IdlPreprocessor
 
     private void EnsureExpansionLength(int length, int offset)
     {
-        expansionState.EnsureOutputLength(currentInput!, length, offset);
+        expansionState.EnsureOutputLength(currentInput!, length, sourceLocations.OriginalOffset(offset));
     }
 
     private static bool NeedsExpandedParameter(string body, string parameter)

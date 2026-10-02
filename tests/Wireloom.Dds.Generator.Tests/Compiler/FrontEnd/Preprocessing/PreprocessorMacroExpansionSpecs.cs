@@ -36,4 +36,26 @@ public sealed class PreprocessorMacroExpansionSpecs
         // Assert
         exception.ShouldNotBeNull();
     }
+
+    [Fact]
+    public void HonorsCancellationDuringLongReplacementScans()
+    {
+        // Arrange
+        var input = Input("expansion.idl", "__has_include(\"missing.idl\") " + new string('x', 100_000));
+        using var cancellation = new CancellationTokenSource();
+        var preprocessor = new IdlPreprocessor([], [], cancellation.Token);
+
+        // Act
+        Action act = () => preprocessor.ProcessWithMetadata(
+            input,
+            (_, _, _) => { },
+            includeProbe: (_, _) =>
+            {
+                cancellation.Cancel();
+                return false;
+            });
+
+        // Assert
+        Should.Throw<OperationCanceledException>(act);
+    }
 }

@@ -7,6 +7,7 @@ internal sealed class PreprocessorExpansionState
 
     internal int BaseOutputLength { get; set; }
 
+    /// <summary>Counts an expansion operation and enforces configured limits.</summary>
     internal void CountOperation(IdlInput input, int offset, IReadOnlyList<int>? sourceOffsets, int depth)
     {
         MacroWork = checked(MacroWork + 1);
@@ -21,6 +22,7 @@ internal sealed class PreprocessorExpansionState
         }
     }
 
+    /// <summary>Ensures expanded output remains within configured limits.</summary>
     internal void EnsureOutputLength(IdlInput input, int length, int offset)
     {
         if (length > PreprocessorLimits.MaximumOutputLength - BaseOutputLength)
