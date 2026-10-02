@@ -99,14 +99,21 @@ public sealed class GeneratorSpecs
         // Assert
         var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0001");
         diagnostic.GetMessage().ShouldNotBeNullOrWhiteSpace();
-        diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
+        var lineSpan = diagnostic.Location.GetLineSpan();
+        lineSpan.Path.ShouldBe("sample.idl");
+        lineSpan.StartLinePosition.Line.ShouldBe(0);
     }
 
     [Fact]
     public void ReportsUnknownAnnotationWarningAndContinuesGeneration()
     {
         // Arrange
-        var input = """module Sample { @custom_unknown struct Value { long value; }; };""";
+        var input = """
+        module Sample {
+            @custom_unknown
+            struct Value { long value; };
+        };
+        """;
         var metadata = new Dictionary<string, string>();
 
         // Act
@@ -116,7 +123,11 @@ public sealed class GeneratorSpecs
         var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0101");
         diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
         diagnostic.GetMessage().ShouldBe("Annotation '@custom_unknown' is not recognized and will be ignored.");
-        diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
+        var lineSpan = diagnostic.Location.GetLineSpan();
+        lineSpan.Path.ShouldBe("sample.idl");
+        lineSpan.StartLinePosition.Line.ShouldBe(1);
+        lineSpan.StartLinePosition.Character.ShouldBe(4);
+        diagnostic.Location.SourceSpan.Start.ShouldBe(input.IndexOf("@custom_unknown", StringComparison.Ordinal));
 
         result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeTrue();
     }
