@@ -5,7 +5,8 @@
    require a second generator toolchain.
 2. **Separate input discovery, semantic meaning, and emission.**  
    Include resolution and preprocessing feed a target-independent semantic model;
-   resolved emission plans then feed managed, native, and type-support emitters.
+   the front end moves through explicit parse, bind, and validate phases before
+   resolved emission plans feed managed, native, and type-support emitters.
 3. **Make roots and include behavior explicit.**  
    `DdsIdl` starts generation; included IDL is tracked for invalidation but
    does not become another root.

@@ -14,10 +14,10 @@ package "Input graph and preprocessing" {
 }
 
 package "Target-independent compiler" {
-  rectangle "Parser\nIdlDeclarationParser + specialized parsers" as parser
+  rectangle "Parser\nIdlDeclarationParser + specialized parsers\nsyntax + source context" as parser
   rectangle "Symbols and semantic model\nIdlSymbolTable + semantic types" as semantic
-  rectangle "Compilation state\nIdlCompilation + CompilationContext" as compilation
-  rectangle "Resolution and validation\nCompilationResolver + type resolver + validator" as resolution
+  rectangle "Compilation state\nIdlCompilation + CompilationContext\nparse -> bind -> validate" as compilation
+  rectangle "Resolution and validation\nCompilationResolver + type resolver + validator\ndeferred semantic checks" as resolution
   rectangle "Emission model and plans\nEmissionTypeProjector + plans" as plans
 }
 
@@ -29,10 +29,10 @@ idl --> includes : root/include files
 graph --> includes : include graph
 includes --> preprocessor : resolved files
 preprocessor --> preprocessed : bounded text + source map
-preprocessed --> parser
-parser --> semantic
-semantic --> compilation
-compilation --> resolution
+preprocessed --> parser : parse
+parser --> semantic : declarations + source context
+semantic --> compilation : target-independent model
+compilation --> resolution : bind + validate
 resolution --> plans
 corpus --> parser : compatibility cases
 plans --> level1 : validated handoff

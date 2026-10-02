@@ -19,7 +19,11 @@ generated file. Unsupported constructs are errors, not silently ignored output.
 
 Physical IDL files are canonical inputs. Shared files are emitted once per
 project, generated hint names are deterministic, and edits to tracked includes
-invalidate generation. Per-root incremental caching is not yet implemented.
+invalidate generation. The current measured behavior is recorded in the
+[incremental generator baseline](../../performance/incremental-generator-baseline.md):
+unchanged and unrelated non-IDL inputs remain cached, while tracked IDL edits
+invalidate the shared source-output batch. Per-root incremental caching is not
+yet implemented.
 
 ## 8.4 Dependency and supply-chain boundaries
 
@@ -30,11 +34,12 @@ package path.
 
 ## 8.5 Test separation
 
-Fast in-memory tests validate compiler invariants; corpus tests validate
-feature-level acceptance and required public output shape; packed-package tests
-validate the actual NuGet consumption path. The corpus shape comparison does
-not establish exact generated-source, native support, runtime, or wire
-equivalence.
+Fast in-memory tests validate compiler invariants and the independent emission
+plans; characterization tests protect current diagnostic and generated-output
+contracts; corpus tests validate feature-level acceptance and required public
+output shape; packed-package tests validate the actual NuGet consumption path.
+The corpus shape comparison does not establish exact generated-source, native
+support, runtime, or wire equivalence.
 
 ## 8.6 RTI-compatible generated value semantics
 
