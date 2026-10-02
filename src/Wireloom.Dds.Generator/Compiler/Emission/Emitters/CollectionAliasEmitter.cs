@@ -1,5 +1,6 @@
 using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -42,34 +43,40 @@ internal static class CollectionAliasEmitter
             element = compilation.ResolveUnderlyingType(element, declaration.Namespace);
         }
 
-        var elementIdlType = element;
-
-        if (declaration is { IsString: true } || IsStringType(element))
+        IdlType? resolvedElementType = null;
+        EmissionTypePlan elementPlan;
+        if (declaration.IsString)
         {
-            element = "string";
+            elementPlan = new StringEmissionType(declaration.IsWideString, declaration.StringBound);
+        }
+        else
+        {
+            resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
+            elementPlan = EmissionTypeProjector.ToCollectionElementType(resolvedElementType, declaration.Namespace);
         }
 
-        var resolvedElement = IdlNaming.IsPrimitive(element)
-            ? IdlNaming.MapPrimitive(element)
-            : IdlNaming.EscapeQualifiedIdentifier(IdlNaming.ResolveTypeName(element, declaration.Namespace));
-
-        var isString = declaration.IsString || IsStringType(elementIdlType);
-        var isPrimitive = IdlNaming.IsPrimitive(element);
-        var isEnum = compilation.IsEnum(element, declaration.Namespace);
+        string? elementNativeType = null;
+        if (resolvedElementType is not null and not IdlType.StringType)
+        {
+            elementNativeType = compilation.ResolveNativeType(resolvedElementType, declaration.Namespace);
+        }
 
         return new CollectionAliasEmissionPlan(
-            resolvedElement,
-            elementIdlType,
-            isString,
-            isPrimitive,
-            isEnum,
-            !isString && !isPrimitive && !isEnum,
-            declaration is { IsCollection: false, IsString: false } && compilation.IsUnion(element, declaration.Namespace),
-            !IdlNaming.IsPrimitive(resolvedElement));
+            elementPlan,
+            declaration.IsSequence,
+            declaration.IsArray,
+            RequiresNativeValueCast(elementPlan),
+            elementNativeType);
     }
 
-    private static bool IsStringType(string? typeName) =>
-        typeName is not null
-        && (typeName.StartsWith("string", StringComparison.Ordinal) || typeName.StartsWith("wstring", StringComparison.Ordinal));
+    private static bool RequiresNativeValueCast(EmissionTypePlan elementPlan)
+    {
+        if (elementPlan is PrimitiveEmissionType primitive)
+        {
+            return PrimitiveTypeMapping.Resolve(primitive.IdlName).NativeValueRequiresCast;
+        }
+
+        return true;
+    }
 
 }

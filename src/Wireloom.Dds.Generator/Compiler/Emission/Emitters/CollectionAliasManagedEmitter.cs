@@ -27,7 +27,7 @@ internal static class CollectionAliasManagedEmitter
         writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> IDL typedef declared in <c>{sourceIdlFileName}</c>.");
         writer.OpenBlock($"public partial class {typeName} : global::System.IEquatable<{typeName}>");
 
-        if (declaration.IsSequence)
+        if (plan.IsSequence)
         {
             var sequenceSummary = $"Gets the sequence value represented by this typedef.{(declaration.Bound is int bound ? $" Its maximum number of elements is <c>{bound}</c>." : string.Empty)}";
             writer.WriteXmlSummary(sequenceSummary);
@@ -86,7 +86,7 @@ internal static class CollectionAliasManagedEmitter
             writer.WriteXmlSummary("Returns the RTI Connext DDS representation of this typedef.");
             writer.WriteLine($"public override string ToString() => {typeName}Support.Instance.ToString(this);");
         }
-        else if (declaration.IsArray)
+        else if (plan.IsArray)
         {
             var arrayElementIsAggregate = plan.CollectionElementIsAggregate;
             var arrayType = $"{elementReference}[{new string(',', declaration.Dimensions.Count - 1)}]";

@@ -1,4 +1,5 @@
 using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler;
@@ -6,6 +7,16 @@ namespace Wireloom.Compiler;
 /// <summary>Resolves IDL symbols and typedef representations for the compiler pipeline.</summary>
 internal sealed class CompilationResolver(IdlSymbolTable symbols)
 {
+    private readonly IdlTypeResolver typeResolver = new(symbols);
+
+    /// <summary>Resolves an IDL type into the target-independent semantic type model.</summary>
+    public IdlType ResolveType(string idlType, string? currentNamespace)
+    {
+        var input = new IdlInput("<generated>", string.Empty, generate: false);
+        return typeResolver.Resolve(idlType, currentNamespace, input, 0)
+            ?? throw new InvalidOperationException($"Unsupported IDL type: {idlType}");
+    }
+
     /// <summary>Resolves an IDL constant reference using lexical module scope.</summary>
     public bool TryResolveConstant(string reference, string? currentNamespace, out string qualifiedName)
     {
@@ -35,14 +46,6 @@ internal sealed class CompilationResolver(IdlSymbolTable symbols)
         return false;
     }
 
-    /// <summary>Determines whether a type resolves to an enum.</summary>
-    public bool IsEnum(string typeName, string? currentNamespace) =>
-        symbols.ContainsEnum(IdlNaming.ResolveTypeName(typeName, currentNamespace));
-
-    /// <summary>Determines whether a type resolves to a union.</summary>
-    public bool IsUnion(string typeName, string? currentNamespace) =>
-        symbols.ContainsUnion(IdlNaming.ResolveTypeName(typeName, currentNamespace));
-
     /// <summary>Resolves a scalar typedef chain in IDL type space.</summary>
     public string ResolveUnderlyingType(string idlType, string? currentNamespace)
     {
@@ -53,9 +56,17 @@ internal sealed class CompilationResolver(IdlSymbolTable symbols)
         {
             var qualified = IdlNaming.ResolveTypeName(type, currentNamespace);
 
+            if (currentNamespace is not null
+                && !type.StartsWith("::", StringComparison.Ordinal)
+                && !type.Contains(".", StringComparison.Ordinal)
+                && !IsKnownType(qualified))
+            {
+                qualified = IdlNaming.ResolveTypeName(type, null);
+            }
+
             if (!symbols.TryGetTypedef(qualified, out var alias) || alias.IsCollection)
             {
-                return IdlNaming.EscapeQualifiedIdentifier(qualified);
+                return qualified;
             }
 
             if (alias.IsString)
@@ -65,7 +76,7 @@ internal sealed class CompilationResolver(IdlSymbolTable symbols)
 
             if (!active.Add(qualified))
             {
-                return IdlNaming.EscapeQualifiedIdentifier(qualified);
+                return qualified;
             }
 
             type = alias.Target;
@@ -77,32 +88,64 @@ internal sealed class CompilationResolver(IdlSymbolTable symbols)
         return IdlNaming.NormalizeIdlType(type);
     }
 
-    /// <summary>Maps a scalar alias value type to its native storage type.</summary>
-    public string ResolveAliasNativeType(string resolvedType, string? currentNamespace)
+    private bool IsKnownType(string qualifiedName) =>
+        symbols.ContainsName(qualifiedName)
+        || symbols.ContainsEnum(qualifiedName)
+        || symbols.ContainsTypedef(qualifiedName);
+
+    /// <summary>Maps a resolved semantic type to its native C# reference.</summary>
+    public string ResolveNativeType(IdlType type, string? currentNamespace)
     {
-        if (IdlNaming.IsPrimitive(resolvedType))
+        if (type is IdlType.Primitive primitive)
         {
-            return IdlNaming.MapPrimitive(resolvedType);
+            return PrimitiveTypeMapping.Resolve(primitive.Name).NativeStorageType;
         }
 
-        if (resolvedType is "bool" or "byte" or "sbyte" or "short" or "ushort" or
-            "int" or "uint" or "long" or "ulong" or "char" or "float" or "double")
+        if (type is IdlType.Enum enumType)
         {
-            return resolvedType;
+            string? implementationNamespace;
+            if (currentNamespace is null)
+            {
+                implementationNamespace = null;
+            }
+            else
+            {
+                implementationNamespace = $"{currentNamespace}.Implementation";
+            }
+
+            return IdlNaming.ResolvedTypeReference(enumType.QualifiedName, implementationNamespace);
         }
 
-        var qualified = IdlNaming.ResolveTypeName(resolvedType, currentNamespace);
-        if (symbols.ContainsEnum(qualified))
+        var qualifiedName = type switch
         {
-            return IdlNaming.EscapeQualifiedIdentifier(qualified);
-        }
+            IdlType.Alias alias => alias.QualifiedName,
+            IdlType.Struct structure => structure.QualifiedName,
+            IdlType.Union union => union.QualifiedName,
+            _ => throw new InvalidOperationException($"Cannot resolve native type for {type.GetType().Name}.")
+        };
 
-        var lastDot = qualified.LastIndexOf('.');
+        var normalized = qualifiedName.Replace("::", ".");
+        var lastDot = normalized.LastIndexOf('.');
+        string nativeName;
         if (lastDot < 0)
         {
-            return $"{IdlNaming.EscapeQualifiedIdentifier(qualified)}Unmanaged";
+            nativeName = $"Implementation.{normalized}Unmanaged";
+        }
+        else
+        {
+            nativeName = $"{normalized[..lastDot]}.Implementation.{normalized[(lastDot + 1)..]}Unmanaged";
         }
 
-        return IdlNaming.EscapeQualifiedIdentifier($"{qualified[..lastDot]}.Implementation.{qualified[(lastDot + 1)..]}Unmanaged");
+        string currentImplementationNamespace;
+        if (currentNamespace is null)
+        {
+            currentImplementationNamespace = "Implementation";
+        }
+        else
+        {
+            currentImplementationNamespace = $"{currentNamespace}.Implementation";
+        }
+
+        return IdlNaming.ResolvedTypeReference(nativeName, currentImplementationNamespace);
     }
 }

@@ -217,6 +217,31 @@ public sealed class IdlConstantSpecs
     }
 
     [Fact]
+    public void PreservesResolvedConstantQualificationAgainstShadowingNamespaces()
+    {
+        // Arrange
+        var input = Input("constant-shadowing.idl",
+            """
+            module Shared {
+                const long Base = 1;
+            };
+            module Example {
+                module Shared {
+                    struct Item { long value; };
+                };
+                const long Result = Shared::Base;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var result = documents["Example.Result.g.cs"].Source;
+        result.ShouldContain("public const int Value = global::Shared.Base.Value;");
+    }
+
+    [Fact]
     public void DoesNotReplaceConstantNamesInsideStringOrCharacterLiterals()
     {
         // Arrange

@@ -64,6 +64,11 @@ internal static class IdlNaming
     /// <summary>Shortens a generated type reference when the file already imports its namespace.</summary>
     internal static string TypeReference(string typeName, string? currentNamespace)
     {
+        if (typeName.StartsWith("global::", StringComparison.Ordinal))
+        {
+            return typeName;
+        }
+
         if (currentNamespace is null || typeName.IndexOf('.') < 0)
         {
             return typeName;
@@ -107,6 +112,44 @@ internal static class IdlNaming
                 ? EscapeIdentifier(typeName)
                 : EscapeQualifiedIdentifier($"{declaringNamespace}.{typeName}"),
             currentNamespace);
+
+    /// <summary>Creates an unambiguous C# reference for a resolved IDL type name.</summary>
+    internal static string ResolvedTypeReference(string qualifiedName, string? currentNamespace)
+    {
+        var normalized = qualifiedName.Replace("::", ".");
+        var escaped = EscapeQualifiedIdentifier(normalized);
+
+        if (currentNamespace is not null && normalized.StartsWith($"{currentNamespace}.", StringComparison.Ordinal))
+        {
+            return TypeReference(escaped, currentNamespace);
+        }
+
+        if (currentNamespace is null)
+        {
+            return escaped;
+        }
+
+        return $"global::{escaped}";
+    }
+
+    /// <summary>Creates a shadowing-safe reference to a generated type-support class.</summary>
+    internal static string GeneratedSupportTypeReference(string typeName, string? implementationNamespace)
+    {
+        if (typeName.StartsWith("global::", StringComparison.Ordinal)
+            || typeName.IndexOf('.') < 0)
+        {
+            return typeName;
+        }
+
+        const string implementationSuffix = ".Implementation";
+        var declarationNamespace = implementationNamespace;
+        if (declarationNamespace?.EndsWith(implementationSuffix, StringComparison.Ordinal) == true)
+        {
+            declarationNamespace = declarationNamespace[..^implementationSuffix.Length];
+        }
+
+        return ResolvedTypeReference(typeName, declarationNamespace);
+    }
 
     /// <summary>Creates the deterministic generated-document hint name.</summary>
     internal static GeneratedName CreateGeneratedName(string? currentNamespace, string typeName) =>
