@@ -114,6 +114,8 @@ public sealed class IdlPreprocessorConditionalSpecs : IdlPreprocessorTestBase
     [InlineData("0b11111111111111111111111111111111111111111111111111111111111111111")]
     [InlineData("0b1111111111111111111111111111111111111111111111111111111111111111")]
     [InlineData("1''000")]
+    [InlineData("1ZZ > 0ULL")]
+    [InlineData("0bULL > 0")]
     [InlineData("1'U")]
     [InlineData("0x'1")]
     [InlineData("0'x1")]
@@ -302,6 +304,19 @@ public sealed class IdlPreprocessorConditionalSpecs : IdlPreprocessorTestBase
     }
 
     [Fact]
+    public void RejectsInvalidUnsignedComparisonSeparators()
+    {
+        // Arrange
+        const string expression = "1' > 0ULL";
+
+        // Act
+        var result = PreprocessorUnsignedComparison.Evaluate(expression);
+
+        // Assert
+        result.Matched.ShouldBeFalse();
+    }
+
+    [Fact]
     [Trait("Preprocessor", "PP023")]
     public void AcceptsWhitespaceInBothFormsOfDefined()
     {
@@ -331,6 +346,11 @@ public sealed class IdlPreprocessorConditionalSpecs : IdlPreprocessorTestBase
     [InlineData("2ULL > 1", true)]
     [InlineData("2ULL > 2", false)]
     [InlineData("+1ULL == 1", true)]
+    [InlineData("1U > -1", false)]
+    [InlineData("1UL > -1", false)]
+    [InlineData("1LU > -1", false)]
+    [InlineData("1ULL > -1", false)]
+    [InlineData("1LLU > -1", false)]
     [Trait("Preprocessor", "PP027")]
     public void EvaluatesAllUnsignedComparisonOperators(string expression, bool expected)
     {

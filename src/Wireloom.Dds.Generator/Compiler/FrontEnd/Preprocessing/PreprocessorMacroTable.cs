@@ -10,10 +10,13 @@ internal sealed class PreprocessorMacroTable
         set => definitions[name] = value;
     }
 
+    /// <summary>Determines whether a macro with the supplied name exists.</summary>
     internal bool ContainsKey(string name) => definitions.ContainsKey(name);
 
+    /// <summary>Removes a macro definition when present.</summary>
     internal void Remove(string name) => definitions.Remove(name);
 
+    /// <summary>Gets a macro definition by name when present.</summary>
     internal bool TryGetValue(string name, out PreprocessorMacro macro) =>
         definitions.TryGetValue(name, out macro!);
 }

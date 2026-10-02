@@ -14,6 +14,7 @@ internal sealed class PreprocessorExpressionEvaluator(
     Func<string, (bool Matched, bool Result)> evaluateUnsignedComparison,
     CancellationToken cancellationToken)
 {
+    /// <summary>Evaluates a preprocessor expression and reports diagnostics against the input.</summary>
     internal bool Evaluate(string text, IdlInput input, int sourceOffset, int diagnosticOffset)
     {
         var expanded = ReplaceDefinedOperators(text, input, diagnosticOffset);

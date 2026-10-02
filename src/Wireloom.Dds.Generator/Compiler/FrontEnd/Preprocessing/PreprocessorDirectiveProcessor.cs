@@ -21,6 +21,7 @@ internal sealed class PreprocessorDirectiveProcessor(
         @"^(?<line>[0-9]+)(?:\s+""(?<file>[^""]*)""\s*)?$",
         RegexOptions.Compiled);
 
+    /// <summary>Processes one preprocessor directive.</summary>
     internal void Process(
         Match directive,
         IdlInput input,
