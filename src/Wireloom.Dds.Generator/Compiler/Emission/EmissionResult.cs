@@ -8,9 +8,9 @@ internal sealed class EmissionResult
 
     public IReadOnlyList<GeneratedIdlSource> Sources => orderedSources;
 
-    public void Add(GeneratedName name, string source)
+    /// <summary>Adds one generated document after validating its hint name.</summary>
+    private void Add(GeneratedIdlSource generated)
     {
-        var generated = new GeneratedIdlSource(name.HintName, source);
         if (sources.ContainsKey(generated.HintName))
         {
             throw new InvalidOperationException($"Generated hint name '{generated.HintName}' was produced more than once.");
@@ -18,5 +18,14 @@ internal sealed class EmissionResult
 
         sources.Add(generated.HintName, generated);
         orderedSources.Add(generated);
+    }
+
+    /// <summary>Adds generated documents in their emission order.</summary>
+    public void AddRange(IEnumerable<GeneratedIdlSource> generated)
+    {
+        foreach (var document in generated)
+        {
+            Add(document);
+        }
     }
 }

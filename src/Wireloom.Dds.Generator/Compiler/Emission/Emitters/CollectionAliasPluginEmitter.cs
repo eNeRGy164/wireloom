@@ -9,7 +9,8 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits the RTI plugin and dynamic type for a collection or value typedef.</summary>
 internal static class CollectionAliasPluginEmitter
 {
-    public static void Emit(CompilationContext compilation, EmissionResult result, IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
+    /// <summary>Emits the typedef plugin document.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
     {
         var typeName = names.ManagedTypeName;
         var implementationTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.ImplementationNamespace);
@@ -93,7 +94,7 @@ internal static class CollectionAliasPluginEmitter
 
         writer.CloseBlock();
         writer.CloseBlock();
-        result.Add(names.Plugin, writer.ToString());
+        return [new GeneratedIdlSource(names.Plugin.HintName, writer.ToString())];
     }
 
     private static void EmitAliasAnnotations(GeneratedSourceWriter writer, IdlTypedef declaration, CollectionAliasEmissionPlan plan)

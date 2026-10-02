@@ -25,11 +25,29 @@ public sealed class EmissionResultSpecs
         var duplicateName = new GeneratedName(string.Empty, "first");
 
         // Act
-        result.Add(firstName, "first");
+        result.AddRange([new GeneratedIdlSource(firstName.HintName, "first")]);
 
         // Assert
         result.Sources[0].Source.ShouldBe("first");
-        Should.Throw<InvalidOperationException>(() => result.Add(duplicateName, "duplicate"));
+        Should.Throw<InvalidOperationException>(() => result.AddRange([new GeneratedIdlSource(duplicateName.HintName, "duplicate")]));
+    }
+
+    [Fact]
+    public void EmissionResultAggregatesReturnedDocumentsInOrder()
+    {
+        // Arrange
+        var result = new EmissionResult();
+        var documents = new[]
+        {
+            new GeneratedIdlSource("first.g.cs", "first"),
+            new GeneratedIdlSource("second.g.cs", "second")
+        };
+
+        // Act
+        result.AddRange(documents);
+
+        // Assert
+        result.Sources.Select(document => document.HintName).ShouldBe(["first.g.cs", "second.g.cs"]);
     }
 
     [Fact]

@@ -8,7 +8,8 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits the native representation for a collection or value typedef.</summary>
 internal static class CollectionAliasNativeEmitter
 {
-    public static void Emit(CompilationContext compilation, EmissionResult result, IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
+    /// <summary>Emits the native typedef document.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
     {
         var elementType = plan.ElementType;
         var typeName = names.ManagedTypeName;
@@ -280,7 +281,7 @@ internal static class CollectionAliasNativeEmitter
 
         writer.CloseBlock();
         writer.CloseBlock();
-        result.Add(names.Unmanaged, writer.ToString());
+        return [new GeneratedIdlSource(names.Unmanaged.HintName, writer.ToString())];
     }
 
     private static string NativeDefaultValue(string implementationElementType, CollectionAliasEmissionPlan plan)

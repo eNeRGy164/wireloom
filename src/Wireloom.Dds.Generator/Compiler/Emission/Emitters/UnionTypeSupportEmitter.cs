@@ -9,7 +9,8 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class UnionTypeSupportEmitter
 {
     /// <summary>Emits the RTI native representation, plugin, and type support for an IDL union.</summary>
-    public static void Emit(EmissionResult result, IdlEmissionUnion declaration, GeneratedTypeNames names, string sourceIdlFileName)
+    /// <summary>Emits native, plugin, and type-support documents for a union.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlEmissionUnion declaration, GeneratedTypeNames names, string sourceIdlFileName)
     {
         var typeName = names.ManagedTypeName;
         var runtimeTypeName = names.RuntimeTypeName;
@@ -59,7 +60,10 @@ internal static class UnionTypeSupportEmitter
         EmitUnionNativeConversion(writer, declaration, implementationTypeName, names.ImplementationNamespace, fromNative: false);
         writer.CloseBlock();
 
-        result.Add(names.Unmanaged, writer.ToString());
+        var documents = new List<GeneratedIdlSource>
+        {
+            new(names.Unmanaged.HintName, writer.ToString())
+        };
 
         writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
 
@@ -122,7 +126,7 @@ internal static class UnionTypeSupportEmitter
         writer.CloseBlock();
         writer.CloseBlock();
 
-        result.Add(names.Plugin, writer.ToString());
+        documents.Add(new GeneratedIdlSource(names.Plugin.HintName, writer.ToString()));
 
         writer = EmissionSupport.CreateSource(names.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
         writer.WriteXmlSummary($"Provides RTI Connext DDS type support for <see cref=\"{typeName}\"/>.");
@@ -143,7 +147,8 @@ internal static class UnionTypeSupportEmitter
         writer.Unindent();
         writer.CloseBlock();
 
-        result.Add(names.Support, writer.ToString());
+        documents.Add(new GeneratedIdlSource(names.Support.HintName, writer.ToString()));
+        return documents;
     }
 
     /// <summary>Emits native-to-managed or managed-to-native conversion for the selected branch.</summary>
