@@ -1,5 +1,3 @@
-using Wireloom.Compiler.Naming;
-
 namespace Wireloom.Compiler.FrontEnd.Semantic;
 
 /// <summary>Represents one branch of an IDL union and its discriminator labels.</summary>
@@ -13,11 +11,10 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
     private IReadOnlyList<string> RawLabels { get; } = rawLabels ?? [];
 
     /// <summary>Resolves raw discriminator labels after all declarations are known.</summary>
-    internal void BindLabels(string discriminatorIdlType, string? currentNamespace, IdlEnum? discriminatorEnum)
+    internal void BindLabels(string? discriminatorIdlType, IdlEnum? discriminatorEnum)
     {
         var labels = new List<string>();
         var labelValues = new List<int>();
-        var discriminatorQualified = IdlNaming.ResolveTypeName(discriminatorIdlType, currentNamespace);
 
         foreach (var label in RawLabels)
         {
@@ -28,12 +25,12 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
             }
             else if (discriminatorIdlType == "boolean" && label == "TRUE")
             {
-                labels.Add("true");
+                labels.Add(label);
                 labelValues.Add(1);
             }
             else if (discriminatorIdlType == "boolean" && label == "FALSE")
             {
-                labels.Add("false");
+                labels.Add(label);
                 labelValues.Add(0);
             }
             else if (int.TryParse(label, out var numericLabel))
@@ -52,7 +49,7 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
                         $"Unknown union discriminator label: {label}");
                 }
 
-                labels.Add($"{IdlNaming.EscapeQualifiedIdentifier(discriminatorQualified)}.{IdlNaming.EscapeIdentifier(label)}");
+                labels.Add(label);
                 labelValues.Add(enumMember.Value);
             }
         }
@@ -93,20 +90,90 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
 }
 
 /// <summary>Represents the target-independent semantic form of an IDL union.</summary>
-internal sealed class IdlUnion(string name, string? @namespace, string discriminatorIdlType, bool discriminatorIsEnum, int? discriminatorDefaultValue, IReadOnlyList<IdlUnionBranch> branches, IdlExtensibilityKind extensibility)
+internal sealed class IdlUnion(
+    string name,
+    string? @namespace,
+    string discriminatorIdlType,
+    IdlInput discriminatorInput,
+    int discriminatorOffset,
+    bool discriminatorIsEnum,
+    int? discriminatorDefaultValue,
+    IReadOnlyList<IdlUnionBranch> branches,
+    IdlExtensibilityKind extensibility)
 {
+    private static readonly HashSet<string> SupportedDiscriminatorPrimitives =
+    [
+        "boolean",
+        "char",
+        "wchar",
+        "int8",
+        "uint8",
+        "octet",
+        "short",
+        "int16",
+        "unsigned short",
+        "uint16",
+        "long",
+        "int32",
+        "unsigned long",
+        "uint32",
+        "long long",
+        "int64",
+        "unsigned long long",
+        "uint64"
+    ];
+
     public string Name { get; } = name;
     public string? Namespace { get; } = @namespace;
     public string DiscriminatorIdlType { get; } = discriminatorIdlType;
+    internal IdlInput DiscriminatorInput { get; } = discriminatorInput;
+    internal int DiscriminatorOffset { get; } = discriminatorOffset;
     public bool DiscriminatorIsEnum { get; private set; } = discriminatorIsEnum;
     public int? DiscriminatorDefaultValue { get; private set; } = discriminatorDefaultValue;
+    public string? DiscriminatorEnumQualifiedName { get; private set; }
+    public string? DiscriminatorPrimitiveIdlType { get; private set; }
     public IReadOnlyList<IdlUnionBranch> Branches { get; } = branches;
     public IdlExtensibilityKind Extensibility { get; } = extensibility;
 
     /// <summary>Applies discriminator information resolved during binding.</summary>
-    internal void BindDiscriminator(bool isEnum, int? defaultValue)
+    internal void BindDiscriminator(IdlType resolvedType, IdlEnum? discriminatorEnum)
     {
-        DiscriminatorIsEnum = isEnum;
-        DiscriminatorDefaultValue = defaultValue;
+        var underlyingType = UnwrapAlias(resolvedType);
+
+        if (underlyingType is IdlType.Enum enumType && discriminatorEnum is not null)
+        {
+            DiscriminatorIsEnum = true;
+            DiscriminatorDefaultValue = enumType.DefaultValue;
+            DiscriminatorEnumQualifiedName = enumType.QualifiedName;
+            return;
+        }
+
+        if (underlyingType is IdlType.Primitive primitive)
+        {
+            if (!IsSupportedDiscriminatorPrimitive(primitive.Name))
+            {
+                throw new IdlException(DiscriminatorInput, DiscriminatorOffset, $"Unsupported union discriminator type: {DiscriminatorIdlType}");
+            }
+
+            DiscriminatorIsEnum = false;
+            DiscriminatorDefaultValue = null;
+            DiscriminatorPrimitiveIdlType = primitive.Name;
+            return;
+        }
+
+        throw new IdlException(DiscriminatorInput, DiscriminatorOffset, $"Unsupported union discriminator type: {DiscriminatorIdlType}");
+    }
+
+    private static bool IsSupportedDiscriminatorPrimitive(string name) =>
+        SupportedDiscriminatorPrimitives.Contains(name);
+
+    private static IdlType UnwrapAlias(IdlType type)
+    {
+        if (type is IdlType.Alias alias)
+        {
+            return UnwrapAlias(alias.Target);
+        }
+
+        return type;
     }
 }

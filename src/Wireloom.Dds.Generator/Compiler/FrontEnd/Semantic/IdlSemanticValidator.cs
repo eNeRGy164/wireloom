@@ -209,9 +209,10 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
     }
 
     /// <summary>Validates a union's default discriminator.</summary>
-    public static void ValidateUnionDefaultDiscriminator(IdlInput input, int offset, string discriminatorType, IReadOnlyList<IdlUnionBranch> branches)
+    public static void ValidateUnionDefaultDiscriminator(IdlInput input, int offset, string? discriminatorType, IReadOnlyList<IdlUnionBranch> branches)
     {
         if (!branches.Any(branch => branch.IsDefault)
+            || discriminatorType is null
             || !TryGetDiscriminatorRange(discriminatorType, out var minimum, out var maximum))
         {
             return;

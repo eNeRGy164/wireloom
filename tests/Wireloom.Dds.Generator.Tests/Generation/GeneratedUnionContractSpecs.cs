@@ -194,7 +194,6 @@ public sealed class GeneratedUnionContractSpecs
         unmanaged.ShouldContain("switch ((char)_discriminator)");
         unmanaged.ShouldContain("_discriminator = (short)sample.Discriminator;");
         unmanaged.ShouldContain("_discriminator = (short)Choice.DefaultDiscriminator;");
-
         var plugin = documents["WideCharacterUnion.Implementation.ChoicePlugin.g.cs"].Source;
         plugin.ShouldContain("WithDiscriminator(dtf.GetPrimitiveType<DynamicTypeFactory.WideCharType>())");
     }

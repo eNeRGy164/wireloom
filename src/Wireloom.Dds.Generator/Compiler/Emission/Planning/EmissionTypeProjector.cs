@@ -64,9 +64,8 @@ internal static class EmissionTypeProjector
         new(
             union.Name,
             union.Namespace,
-            union.DiscriminatorIsEnum
-                ? IdlNaming.EscapeQualifiedIdentifier(IdlNaming.ResolveTypeName(union.DiscriminatorIdlType, union.Namespace))
-                : IdlNaming.MapPrimitive(union.DiscriminatorIdlType),
+            ProjectDiscriminatorIdlType(union),
+            ProjectDiscriminatorCSharpType(union),
             union.DiscriminatorIsEnum,
             union.DiscriminatorDefaultValue,
             [.. union.Branches.Select(branch =>
@@ -75,11 +74,54 @@ internal static class EmissionTypeProjector
                 return new UnionBranchEmissionPlan(
                     field,
                     new MemberEmissionPlan(field, union.Namespace),
-                    branch.Labels,
+                    ProjectUnionLabels(union, branch),
                     branch.LabelValues,
                     branch.IsDefault);
             })],
             union.Extensibility);
+
+    private static string ProjectDiscriminatorIdlType(IdlUnion union)
+    {
+        if (union.DiscriminatorIsEnum)
+        {
+            return union.DiscriminatorIdlType;
+        }
+
+        return union.DiscriminatorPrimitiveIdlType!;
+    }
+
+    private static string ProjectDiscriminatorCSharpType(IdlUnion union)
+    {
+        if (union.DiscriminatorIsEnum)
+        {
+            return IdlNaming.EscapeQualifiedIdentifier(union.DiscriminatorEnumQualifiedName!);
+        }
+
+        return IdlNaming.MapPrimitive(union.DiscriminatorPrimitiveIdlType!);
+    }
+
+    private static IReadOnlyList<string> ProjectUnionLabels(IdlUnion union, IdlUnionBranch branch) =>
+        branch.Labels.Select(label => ProjectUnionLabel(union, label)).ToArray();
+
+    private static string ProjectUnionLabel(IdlUnion union, string label)
+    {
+        if (union.DiscriminatorIsEnum)
+        {
+            return $"{IdlNaming.EscapeQualifiedIdentifier(union.DiscriminatorEnumQualifiedName!)}.{IdlNaming.EscapeIdentifier(label)}";
+        }
+
+        if (union.DiscriminatorPrimitiveIdlType == "boolean")
+        {
+            if (label == "TRUE")
+            {
+                return "true";
+            }
+
+            return "false";
+        }
+
+        return label;
+    }
 
     private static EmissionTypePlan ProjectType(IdlType type, string? currentNamespace) =>
         type switch

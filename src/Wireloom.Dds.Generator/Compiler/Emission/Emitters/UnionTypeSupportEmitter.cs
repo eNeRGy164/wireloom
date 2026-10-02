@@ -16,7 +16,7 @@ internal static class UnionTypeSupportEmitter
         var idlTypeName = names.IdlTypeName;
         var implementationTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.ImplementationNamespace);
         var supportTypeName = IdlNaming.TypeReference(typeName, declaration.Namespace, declaration.Namespace);
-        var nativeDiscriminatorType = NativeDiscriminatorType(declaration);
+        var nativeDiscriminatorType = declaration.NativeDiscriminatorType;
 
         var writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.UnmanagedTypeUsings, sourceIdlFileName);
 
@@ -164,11 +164,11 @@ internal static class UnionTypeSupportEmitter
             writer.WriteXmlParam("sample", "The managed sample to copy.");
             writer.WriteXmlParam("keysOnly", "Whether to copy only key members.");
             writer.OpenBlock($"public void ToNative({typeName} sample, bool keysOnly = false)");
-            writer.WriteLine($"_discriminator = {NativeDiscriminatorWriteExpression(declaration, "sample.Discriminator")};");
+            writer.WriteLine($"_discriminator = {declaration.NativeDiscriminatorWriteExpression("sample.Discriminator")};");
             writer.BlankLine();
         }
 
-        writer.OpenBlock($"switch ({NativeDiscriminatorReadExpression(declaration)})");
+        writer.OpenBlock($"switch ({declaration.NativeDiscriminatorReadExpression("_discriminator")})");
 
         foreach (var branch in declaration.ExplicitBranches)
         {
@@ -181,7 +181,7 @@ internal static class UnionTypeSupportEmitter
 
             if (fromNative)
             {
-                EmitManagedBranchInitialization(writer, branch);
+                EmitManagedBranchInitialization(writer, declaration, branch);
 
                 var nativeFieldPrefix = NativeFieldPrefix(branch.Plan, "sample", "keysOnly");
                 var statement = branch.Plan.BuildFromNativeStatement(false, implementationNamespace, nativeFieldPrefix);
@@ -195,7 +195,7 @@ internal static class UnionTypeSupportEmitter
                         valueExpression = $"sample.{branch.Plan.EscapedName}";
                     }
 
-                    statement = $"sample.{IdlNaming.EscapeIdentifier($"Set{branch.Field.Name}")}({valueExpression}, {NativeDiscriminatorReadExpression(declaration)});";
+                    statement = $"sample.{IdlNaming.EscapeIdentifier($"Set{branch.Field.Name}")}({valueExpression}, {declaration.NativeDiscriminatorReadExpression("_discriminator")});";
                 }
 
                 writer.WriteLine(statement);
@@ -220,7 +220,7 @@ internal static class UnionTypeSupportEmitter
             {
                 if (fromNative)
                 {
-                    EmitManagedBranchInitialization(writer, defaultBranch);
+                    EmitManagedBranchInitialization(writer, declaration, defaultBranch);
                     var nativeFieldPrefix = NativeFieldPrefix(defaultBranch.Plan, "sample", "keysOnly");
                     var statement = defaultBranch.Plan.BuildFromNativeStatement(false, implementationNamespace, nativeFieldPrefix);
                     var valueExpression = defaultBranch.Plan.BuildFromNativeValueExpression(nativeFieldPrefix);
@@ -230,7 +230,7 @@ internal static class UnionTypeSupportEmitter
                         valueExpression = $"sample.{defaultBranch.Plan.EscapedName}";
                     }
 
-                    writer.WriteLine($"sample.{IdlNaming.EscapeIdentifier($"Set{defaultBranch.Field.Name}")}({valueExpression}, {NativeDiscriminatorReadExpression(declaration)});");
+                    writer.WriteLine($"sample.{IdlNaming.EscapeIdentifier($"Set{defaultBranch.Field.Name}")}({valueExpression}, {declaration.NativeDiscriminatorReadExpression("_discriminator")});");
                 }
                 else
                 {
@@ -246,7 +246,7 @@ internal static class UnionTypeSupportEmitter
         writer.CloseBlock();
     }
 
-    private static void EmitManagedBranchInitialization(GeneratedSourceWriter writer, UnionBranchEmissionPlan branch)
+    private static void EmitManagedBranchInitialization(GeneratedSourceWriter writer, IdlEmissionUnion declaration, UnionBranchEmissionPlan branch)
     {
         var initialization = branch.Plan.ManagedDefaultInitializationStatement;
         if (initialization is null)
@@ -254,7 +254,8 @@ internal static class UnionTypeSupportEmitter
             return;
         }
 
-        writer.OpenBlock("if (sample.Discriminator != _discriminator)");
+        var discriminator = declaration.NativeDiscriminatorReadExpression("_discriminator");
+        writer.OpenBlock($"if (sample.Discriminator != {discriminator})");
         writer.WriteLine($"sample.{initialization}");
         writer.CloseBlock();
         writer.BlankLine();
@@ -271,7 +272,7 @@ internal static class UnionTypeSupportEmitter
         writer.WriteXmlParam("allocatePointers", "Whether pointer members should be allocated.");
         writer.WriteXmlParam("allocateMemory", "Whether native memory should be allocated.");
         writer.OpenBlock("public void Initialize(bool allocatePointers = true, bool allocateMemory = true)");
-        writer.WriteLine($"_discriminator = {NativeDiscriminatorWriteExpression(declaration, defaultDiscriminator)};");
+        writer.WriteLine($"_discriminator = {declaration.NativeDiscriminatorWriteExpression(defaultDiscriminator)};");
 
         var initializationStatements = declaration.Branches
             .Select(branch => branch.Plan.UnionDefaultInitializationStatement(implementationNamespace, NativeFieldPrefix(branch.Plan, "allocatePointers", "allocateMemory")))
@@ -297,24 +298,5 @@ internal static class UnionTypeSupportEmitter
 
     private static string NativeFieldPrefix(MemberEmissionPlan field, params string[] parameterNames) =>
         parameterNames.Contains(field.Name, StringComparer.Ordinal) ? "this." : string.Empty;
-
-    private static string NativeDiscriminatorType(IdlEmissionUnion declaration) =>
-        declaration.DiscriminatorCSharpType is "char" or "bool" ? "byte" : declaration.DiscriminatorCSharpType;
-
-    private static string NativeDiscriminatorReadExpression(IdlEmissionUnion declaration) =>
-        declaration.DiscriminatorCSharpType switch
-        {
-            "char" => "NativeChar.FromUtf8(_discriminator)",
-            "bool" => "global::System.Convert.ToBoolean(_discriminator)",
-            _ => "_discriminator"
-        };
-
-    private static string NativeDiscriminatorWriteExpression(IdlEmissionUnion declaration, string source) =>
-        declaration.DiscriminatorCSharpType switch
-        {
-            "char" => $"NativeChar.ToUtf8({source})",
-            "bool" => $"global::System.Convert.ToByte({source})",
-            _ => source
-        };
 
 }

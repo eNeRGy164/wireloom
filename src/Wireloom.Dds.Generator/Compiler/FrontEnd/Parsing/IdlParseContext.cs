@@ -1,7 +1,6 @@
 using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.FrontEnd.Symbols;
 using Wireloom.Compiler.FrontEnd.Preprocessing;
-using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing;
 
@@ -144,32 +143,53 @@ internal sealed class IdlParseContext
 
                     break;
                 case IdlUnionDeclaration union:
-                    var discriminatorQualified = IdlNaming.ResolveTypeName(
-                        union.Declaration.DiscriminatorIdlType,
-                        union.Declaration.Namespace);
-                    var discriminatorIsEnum = Symbols.TryGetEnum(discriminatorQualified, out var discriminatorEnum);
-                    int? discriminatorDefaultValue = null;
-                    if (discriminatorIsEnum)
-                    {
-                        discriminatorDefaultValue = discriminatorEnum.DefaultMember.Value;
-                    }
-
-                    union.Declaration.BindDiscriminator(discriminatorIsEnum, discriminatorDefaultValue);
+                    var discriminatorReference = new IdlType.Reference(
+                        new IdlTypeReference(
+                            union.Declaration.DiscriminatorIdlType,
+                            union.Declaration.Namespace,
+                            union.Declaration.DiscriminatorInput,
+                            union.Declaration.DiscriminatorOffset),
+                        "Unknown union discriminator type");
+                    var resolvedDiscriminator = TypeBinder.Bind(discriminatorReference);
+                    var discriminatorEnum = FindEnum(resolvedDiscriminator);
+                    union.Declaration.BindDiscriminator(
+                        resolvedDiscriminator,
+                        discriminatorEnum);
 
                     foreach (var branch in union.Declaration.Branches)
                     {
                         branch.BindLabels(
-                            union.Declaration.DiscriminatorIdlType,
-                            union.Declaration.Namespace,
+                            union.Declaration.DiscriminatorPrimitiveIdlType,
                             discriminatorEnum);
                         branch.Field.Bind(TypeBinder.Bind(branch.Field.Type));
                     }
+
+                    DeferUnionDefaultDiscriminatorValidation(
+                        union.Declaration.DiscriminatorInput,
+                        union.Declaration.DiscriminatorOffset,
+                        union.Declaration.DiscriminatorPrimitiveIdlType,
+                        union.Declaration.Branches);
 
                     break;
             }
         }
 
         TypeParser.ResolveDeferredMemberMetadata();
+    }
+
+    private IdlEnum? FindEnum(IdlType type)
+    {
+        if (type is IdlType.Alias alias)
+        {
+            return FindEnum(alias.Target);
+        }
+
+        if (type is IdlType.Enum enumType && Symbols.TryGetEnum(enumType.QualifiedName, out var enumDeclaration))
+        {
+            return enumDeclaration;
+        }
+
+        return null;
     }
 
     /// <summary>Records a declaration name and defers its semantic validation.</summary>
@@ -215,7 +235,7 @@ internal sealed class IdlParseContext
         DeferValidation(() => IdlSemanticValidator.ValidateUnionGeneratedNameCollisions(input, offset, name, branches));
 
     /// <summary>Queues union default-discriminator validation for the validation phase.</summary>
-    internal void DeferUnionDefaultDiscriminatorValidation(IdlInput input, int offset, string discriminatorType, IReadOnlyList<IdlUnionBranch> branches) =>
+    private void DeferUnionDefaultDiscriminatorValidation(IdlInput input, int offset, string? discriminatorType, IReadOnlyList<IdlUnionBranch> branches) =>
         DeferValidation(() => IdlSemanticValidator.ValidateUnionDefaultDiscriminator(input, offset, discriminatorType, branches));
 
     /// <summary>Creates a bound type or a deferred reference with source context.</summary>
