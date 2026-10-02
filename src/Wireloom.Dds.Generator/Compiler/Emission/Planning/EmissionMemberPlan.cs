@@ -1,4 +1,3 @@
-using System.Globalization;
 using JetBrains.Annotations;
 using Wireloom.Compiler.Emission.Emitters;
 using Wireloom.Compiler.Emission.Model;
@@ -19,7 +18,8 @@ namespace Wireloom.Compiler.Emission.Planning;
 internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string? currentNamespace, string? managedBackingFieldName = null)
 {
     private readonly MemberEmissionFacts facts = new(field, currentNamespace);
-    private readonly EmissionShape shape = field.Type.Shape;
+    private readonly MemberEmissionShape shape = new(field.Type);
+    private MemberEmissionRenderer Renderer => new(facts, currentNamespace);
 
     public IdlEmissionField Field { get; } = field;
     public string? CurrentNamespace => facts.CurrentNamespace;
@@ -77,57 +77,9 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public bool IsUnion => facts.IsUnion;
     public bool HasAggregateElement => facts.HasAggregateElement;
     public bool HasSequenceElement => IsArray && ElementType is not null && EmissionTypeProjector.HasSequenceType(ElementType);
-    public string? BoundSummary
-    {
-        get
-        {
-            if (Bound is not int bound)
-            {
-                return null;
-            }
+    public string? BoundSummary => Renderer.BoundSummary;
 
-            if (IsString)
-            {
-                return $"Its maximum length is <c>{bound}</c>.";
-            }
-
-            if (EmissionTypeProjector.HasSequenceType(Type))
-            {
-                return $"Its maximum number of elements is <c>{bound}</c>.";
-            }
-
-            return $"Its DDS bound is <c>{bound}</c>.";
-        }
-    }
-
-    public string? ValueConstraintSummary
-    {
-        get
-        {
-            var constraints = new List<string>();
-
-            if (MinimumValue is { } minimum && MaximumValue is { } maximum)
-            {
-                constraints.Add($"Its value must be between <c>{FormatCSharpValue(CSharpType.TrimEnd('?'), minimum)}</c> and <c>{FormatCSharpValue(CSharpType.TrimEnd('?'), maximum)}</c>.");
-            }
-            else if (MinimumValue is { } lower)
-            {
-                constraints.Add($"Its minimum value is <c>{FormatCSharpValue(CSharpType.TrimEnd('?'), lower)}</c>.");
-            }
-            else if (MaximumValue is { } upper)
-            {
-                constraints.Add($"Its maximum value is <c>{FormatCSharpValue(CSharpType.TrimEnd('?'), upper)}</c>.");
-            }
-
-            if (DefaultValue is not null)
-            {
-                var defaultText = DefaultExpression ?? FormatCSharpValue(CSharpType.TrimEnd('?'), DefaultValue.Value);
-                constraints.Add($"Its default value is <c>{System.Security.SecurityElement.Escape(defaultText)}</c>.");
-            }
-
-            return constraints.Count == 0 ? null : string.Join(" ", constraints);
-        }
-    }
+    public string? ValueConstraintSummary => Renderer.ValueConstraintSummary;
 
     public ManagedInitializationKind ManagedInitialization => MemberEmissionPolicies.GetManagedInitialization(
         shape.Kind,
@@ -152,68 +104,14 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public string ManagedPropertyAccessors => IsSequence && !IsOptional ? " { get; }" : " { get; set; }";
     public string ManagedPropertySummaryVerb => IsSequence && !IsOptional ? "Gets" : "Gets or sets";
 
-    public string? ManagedPropertyInitializer
-    {
-        get
-        {
-            if (HasExplicitDefault)
-            {
-                return null;
-            }
+    public string? ManagedPropertyInitializer => Renderer.ManagedPropertyInitializer;
 
-            if (CSharpType == "string")
-            {
-                return " = string.Empty;";
-            }
+    public string? ManagedDefaultInitializationStatement => Renderer.ManagedDefaultInitializationStatement(ManagedInitialization);
 
-            if (Type.IsEnum)
-            {
-                return $" = ({TypeReference(CSharpType, currentNamespace)}){EnumDefaultValue};";
-            }
-
-            if (IsSequence || IsArray)
-            {
-                return IsOptional ? null : " = null!;";
-            }
-
-            if (IsAggregate)
-            {
-                return $" = new {TypeReference(CSharpType, currentNamespace)}();";
-            }
-
-            return null;
-        }
-    }
-
-    public string? ManagedDefaultInitializationStatement => ManagedInitialization switch
-    {
-        _ when HasExplicitDefault => $"{EscapedName} = {ManagedDefaultValue};",
-        ManagedInitializationKind.Sequence => $"{EscapedName} = new Sequence<{TypeReference(ElementCSharpType!, currentNamespace)}>();",
-        ManagedInitializationKind.Array => $"{EscapedName} = new {TypeReference(ElementCSharpType!, currentNamespace)}[{string.Join(", ", Dimensions)}];",
-        ManagedInitializationKind.Aggregate => $"{EscapedName} = new {TypeReference(CSharpType, currentNamespace)}();",
-        _ => null
-    };
-
-    public string ManagedDefaultValue => ValueType switch
-    {
-        EnumEmissionType => $"({TypeReference(CSharpType, currentNamespace)}){DefaultValue!.Value.ToString(CultureInfo.InvariantCulture)}",
-        _ => FormatCSharpValue(CSharpType.TrimEnd('?'), DefaultValue!.Value)
-    };
+    public string ManagedDefaultValue => Renderer.ManagedDefaultValue;
 
     /// <summary>Formats an IDL constant value as a C# literal for the requested type.</summary>
-    public string FormatCSharpValue(string typeName, BigInteger value) => typeName switch
-    {
-        "long" when value == long.MinValue => "long.MinValue",
-        "long" => $"{value.ToString(CultureInfo.InvariantCulture)}L",
-        "ulong" when value == ulong.MaxValue => "ulong.MaxValue",
-        "ulong" => $"{value.ToString(CultureInfo.InvariantCulture)}UL",
-        "uint" => $"{value.ToString(CultureInfo.InvariantCulture)}U",
-        "short" => $"(short){value.ToString(CultureInfo.InvariantCulture)}",
-        "ushort" => $"(ushort){value.ToString(CultureInfo.InvariantCulture)}",
-        "sbyte" => $"(sbyte){value.ToString(CultureInfo.InvariantCulture)}",
-        "byte" => $"(byte){value.ToString(CultureInfo.InvariantCulture)}",
-        _ => value.ToString(CultureInfo.InvariantCulture)
-    };
+    public string FormatCSharpValue(string typeName, BigInteger value) => Renderer.FormatCSharpValue(typeName, value);
 
 
     /// <summary>Resolves the native storage type for this member.</summary>
@@ -442,81 +340,8 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     }
 
     /// <summary>Builds the annotation metadata for a supported primitive member.</summary>
-    public (string TypeKind, string ValueProperty, string DefaultValue, string? Minimum, string? Maximum, string? Unit)? PrimitiveAnnotation()
-    {
-        switch (ValueType)
-        {
-            case StringEmissionType { IsWide: true }:
-                return ("WideString", "WideStringValue", "\"\"", null, null, null);
-            case StringEmissionType:
-                return ("String", "StringValue", "\"\"", null, null, null);
-            case EnumEmissionType enumType:
-                var enumDefault = enumType.DefaultValue.ToString(CultureInfo.InvariantCulture);
-                if (HasExplicitDefault)
-                {
-                    enumDefault = DefaultValue!.Value.ToString(CultureInfo.InvariantCulture);
-                }
-
-                return ("Enumeration", "EnumValue", enumDefault, null, null, UnitLiteral);
-            case PrimitiveEmissionType primitive:
-                return PrimitiveAnnotation(primitive);
-            default:
-                return null;
-        }
-    }
-
-    private (string TypeKind, string ValueProperty, string DefaultValue, string? Minimum, string? Maximum, string? Unit)? PrimitiveAnnotation(PrimitiveEmissionType primitive)
-    {
-        var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
-
-        if (mapping.AnnotationTypeKind is null || mapping.AnnotationValueProperty is null)
-        {
-            return null;
-        }
-
-        var defaultValue = mapping.NativeDefaultLiteral;
-        if (HasExplicitDefault && IsIntegralAnnotation(mapping.AnnotationTypeKind))
-        {
-            defaultValue = FormatCSharpValue(mapping.ManagedType, DefaultValue!.Value);
-        }
-
-        var minimum = mapping.MinimumLiteral;
-        if (MinimumValue is not null)
-        {
-            minimum = FormatCSharpValue(mapping.ManagedType, MinimumValue.Value);
-        }
-
-        var maximum = mapping.MaximumLiteral;
-        if (MaximumValue is not null)
-        {
-            maximum = FormatCSharpValue(mapping.ManagedType, MaximumValue.Value);
-        }
-
-        return (mapping.AnnotationTypeKind, mapping.AnnotationValueProperty, defaultValue, minimum, maximum, UnitLiteral);
-    }
-
-    private static bool IsIntegralAnnotation(string typeKind)
-    {
-        switch (typeKind)
-        {
-            case "Int16":
-            case "Int32":
-            case "Int64":
-            case "Uint16":
-            case "UInt32":
-            case "UInt64":
-            case "Int8":
-            case "Uint8":
-            case "Octet":
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    private string? UnitLiteral => Unit is null
-        ? null
-        : $"\"{Unit.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
+    public (string TypeKind, string ValueProperty, string DefaultValue, string? Minimum, string? Maximum, string? Unit)? PrimitiveAnnotation() =>
+        Renderer.PrimitiveAnnotation();
 
     private bool IsOptionalScalar => IsOptional && !IsSequence && !IsArray && !IsString && !IsAggregate;
 
