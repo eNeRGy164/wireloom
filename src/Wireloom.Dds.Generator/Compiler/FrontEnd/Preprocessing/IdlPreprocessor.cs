@@ -7,12 +7,23 @@ namespace Wireloom.Compiler.FrontEnd.Preprocessing;
 /// </summary>
 internal sealed partial class IdlPreprocessor
 {
+    /// <summary>Initializes the deterministic preprocessor with its command-line macro state.</summary>
+    /// <param name="defines">Macro definitions to register before processing.</param>
+    /// <param name="undefines">Macro names to remove from the initial state.</param>
+    /// <param name="cancellationToken">Token used to cancel preprocessing.</param>
     public IdlPreprocessor(IEnumerable<string> defines, IEnumerable<string> undefines, CancellationToken cancellationToken = default)
     {
         this.cancellationToken = cancellationToken;
-        lexical = new(OriginalOffset, cancellationToken);
-        originTracker = new(OriginalOffset, cancellationToken);
+        sourceLocations = new(() => currentInput!, () => sourceOffsetMap, () => logicalLineOffset);
+        lexical = new(offset => sourceLocations.OriginalOffset(offset), cancellationToken);
+        originTracker = new(offset => sourceLocations.OriginalOffset(offset), cancellationToken);
         macroTokens = new();
+        inlineDirectiveService = new(
+            macroTokens,
+            text => Expand(text),
+            (name, angle) => includeProbeCallback?.Invoke(name, angle) == true,
+            () => pragmaOnceCallback?.Invoke());
+        macroDefinitionService = new(macros, macroTokens);
         argumentBinder = new(
             (text, expanding, depth, offset) => Expand(text, expanding, depth, offset, sourceOffsetMap),
             NeedsExpandedParameter);
@@ -33,25 +44,25 @@ internal sealed partial class IdlPreprocessor
             (text, index) =>
             {
                 var nextIndex = index;
-                var handled = TryExpandHasInclude(text, ref nextIndex, out var value);
+                var handled = inlineDirectiveService.TryExpandHasInclude(text, ref nextIndex, out var value);
                 return (Handled: handled, Index: nextIndex, Value: value);
             },
             (text, index) =>
             {
                 var nextIndex = index;
-                var handled = TryConsumeInlinePragma(text, ref nextIndex);
+                var handled = inlineDirectiveService.TryConsumePragma(text, ref nextIndex);
                 return (Handled: handled, Index: nextIndex);
             },
             ExpandFunctionMacro,
             rescanService.RescanReplacementAndSuffix,
             () => macroTokens.Stringify(logicalFileName ?? currentInput!.Path),
-            (offset, _) => GetLogicalLineNumber(offset),
+            (offset, _) => sourceLocations.GetLogicalLineNumber(offset, physicalLineStarts),
             () => counter++);
         directiveProcessor = new(
             macros,
             EvaluateCondition,
             (text, offset) => Expand(text, offset, sourceOffsetMap),
-            Define,
+            macroDefinitionService.Define,
             (lineOffset, fileName) =>
             {
                 logicalLineOffset = lineOffset;
@@ -60,7 +71,7 @@ internal sealed partial class IdlPreprocessor
                     logicalFileName = fileName;
                 }
             },
-            GetPhysicalLineNumber,
+            offset => sourceLocations.GetPhysicalLineNumber(offset, physicalLineStarts),
             () => diagnostics);
         conditionEvaluator = new(
             macros,
@@ -70,8 +81,8 @@ internal sealed partial class IdlPreprocessor
             PreprocessorLexicalService.SkipLiteral,
             PreprocessorLexicalService.IsIdentifierStart,
             PreprocessorLexicalService.IsIdentifierPart,
-            text => new ConditionalExpression(text).Evaluate(),
-            EvaluateUnsignedComparison,
+            text => new PreprocessorConditionalExpressionParser(text).Evaluate(),
+            PreprocessorUnsignedComparison.Evaluate,
             cancellationToken);
 
         foreach (var define in defines)
@@ -102,6 +113,7 @@ internal sealed partial class IdlPreprocessor
     /// <summary>
     /// Processes an input and reports preprocessing metadata needed by the include graph.
     /// </summary>
+    /// <summary>Processes one input and reports include and source-location metadata.</summary>
     internal PreprocessedIdl ProcessWithMetadata(
         IdlInput input,
         Action<string, bool, int> include,
@@ -139,38 +151,23 @@ internal sealed partial class IdlPreprocessor
             var outputOffsets = new List<int>(source.Length);
             var conditionals = new PreprocessorConditionalState();
             var hasPragmaOnce = false;
-            var offset = 0;
-
-            while (offset < source.Length)
+            foreach (var inputLine in inputLineScanner.Scan(source, sourceLocations.OriginalOffset))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
-                var lineEnd = source.IndexOf('\n', offset);
-                if (lineEnd < 0)
-                {
-                    lineEnd = source.Length;
-                }
-
-                var contentEnd = lineEnd;
-                if (contentEnd > offset && source[contentEnd - 1] == '\r')
-                {
-                    contentEnd--;
-                }
-
-                var line = source.Substring(offset, contentEnd - offset);
+                var line = inputLine.Text;
                 var directive = DirectivePattern.Match(line);
                 var outputLength = output.Length;
                 expansionState.BaseOutputLength = output.Length;
 
                 if (directive.Success)
                 {
-                    ProcessDirective(directive, input, OriginalOffset(offset), offset, include, conditionals, ref hasPragmaOnce, pragmaOnceEncountered, output, line.Length);
+                    ProcessDirective(directive, input, inputLine.OriginalOffset, inputLine.Offset, include, conditionals, ref hasPragmaOnce, pragmaOnceEncountered, output, line.Length);
                 }
                 else if (conditionals.IsActive)
                 {
-                    var expanded = Expand(line, offset, sourceOffsetMap);
+                    var expanded = Expand(line, inputLine.Offset, sourceOffsetMap);
                     output.Append(expanded);
-                    originTracker.AppendExpandedOrigins(outputOffsets, line, expanded, offset);
+                    originTracker.AppendExpandedOrigins(outputOffsets, line, expanded, inputLine.Offset);
                 }
                 else
                 {
@@ -179,23 +176,18 @@ internal sealed partial class IdlPreprocessor
 
                 if (directive.Success || !conditionals.IsActive)
                 {
-                    originTracker.AppendOutputOffsets(outputOffsets, output.Length - outputLength, offset, lineEnd);
+                    originTracker.AppendOutputOffsets(outputOffsets, output.Length - outputLength, inputLine.Offset, inputLine.End);
                 }
 
-                if (lineEnd < source.Length)
+                if (inputLine.End < source.Length)
                 {
                     output.Append('\n');
-                    outputOffsets.Add(OriginalOffset(lineEnd));
-                    offset = lineEnd + 1;
-                }
-                else
-                {
-                    offset = source.Length;
+                    outputOffsets.Add(sourceLocations.OriginalOffset(inputLine.End));
                 }
 
                 if (output.Length > PreprocessorLimits.MaximumOutputLength)
                 {
-                    throw new IdlException(input, OriginalOffset(offset), $"Preprocessor output exceeds the {PreprocessorLimits.MaximumOutputLength}-character limit.");
+                    throw new IdlException(input, sourceLocations.OriginalOffset(inputLine.End), $"Preprocessor output exceeds the {PreprocessorLimits.MaximumOutputLength}-character limit.");
                 }
             }
 

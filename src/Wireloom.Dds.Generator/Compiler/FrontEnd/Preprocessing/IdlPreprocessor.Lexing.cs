@@ -1,5 +1,6 @@
 namespace Wireloom.Compiler.FrontEnd.Preprocessing;
 
+/// <summary>Provides lexical operations for IDL preprocessing.</summary>
 internal sealed partial class IdlPreprocessor
 {
     private static bool IsIdentifier(string text) => PreprocessorLexicalService.IsIdentifier(text);

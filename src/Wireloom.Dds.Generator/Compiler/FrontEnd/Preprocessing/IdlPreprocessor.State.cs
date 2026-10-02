@@ -1,5 +1,6 @@
 namespace Wireloom.Compiler.FrontEnd.Preprocessing;
 
+/// <summary>Stores mutable state used by IDL preprocessing.</summary>
 internal sealed partial class IdlPreprocessor
 {
     private readonly PreprocessorMacroTable macros = new();
@@ -22,4 +23,8 @@ internal sealed partial class IdlPreprocessor
     private readonly PreprocessorMacroExpansionService expansionService;
     private readonly PreprocessorMacroArgumentBinder argumentBinder;
     private readonly PreprocessorMacroRescanService rescanService;
+    private readonly PreprocessorInlineDirectiveService inlineDirectiveService;
+    private readonly PreprocessorMacroDefinitionService macroDefinitionService;
+    private readonly PreprocessorInputLineScanner inputLineScanner = new();
+    private readonly PreprocessorSourceLocationService sourceLocations;
 }

@@ -7,6 +7,7 @@ internal sealed class PreprocessorConditionalState
 
     internal bool IsActive { get; private set; } = true;
 
+    /// <summary>Enters a nested conditional branch.</summary>
     internal void Enter(bool condition)
     {
         var parentActive = IsActive;
@@ -15,6 +16,7 @@ internal sealed class PreprocessorConditionalState
         IsActive = branchActive;
     }
 
+    /// <summary>Selects an else-if branch and validates its nesting.</summary>
     internal void SelectElseIf(Func<bool> condition, IdlInput input, int offset)
     {
         if (frames.Count == 0)
@@ -33,6 +35,7 @@ internal sealed class PreprocessorConditionalState
         IsActive = branchActive;
     }
 
+    /// <summary>Selects the else branch and validates its nesting.</summary>
     internal void SelectElse(IdlInput input, int offset)
     {
         if (frames.Count == 0)
@@ -51,6 +54,7 @@ internal sealed class PreprocessorConditionalState
         IsActive = branchActive;
     }
 
+    /// <summary>Closes the current conditional branch.</summary>
     internal void End(IdlInput input, int offset)
     {
         if (frames.Count == 0)
@@ -61,6 +65,7 @@ internal sealed class PreprocessorConditionalState
         IsActive = frames.Pop().ParentActive;
     }
 
+    /// <summary>Ensures that all conditional branches have been closed.</summary>
     internal void EnsureComplete(IdlInput input)
     {
         if (frames.Count != 0)

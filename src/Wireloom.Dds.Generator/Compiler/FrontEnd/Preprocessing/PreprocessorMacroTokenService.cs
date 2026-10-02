@@ -18,6 +18,7 @@ internal sealed class PreprocessorMacroTokenService
         @"(?<left>[^\s#]+)\s*##\s*(?<right>[^\s#]+)",
         RegexOptions.Compiled);
 
+    /// <summary>Transforms a macro replacement body using parameter substitutions.</summary>
     internal string TransformReplacement(
         string body,
         bool variadic,
@@ -60,6 +61,7 @@ internal sealed class PreprocessorMacroTokenService
         return ReplaceMacroParameters(replacement, substitutions);
     }
 
+    /// <summary>Reads balanced parenthesized text from a macro invocation.</summary>
     internal bool TryReadBalancedText(string text, int open, out string contents, out int end)
     {
         contents = string.Empty;
@@ -95,6 +97,7 @@ internal sealed class PreprocessorMacroTokenService
         return false;
     }
 
+    /// <summary>Reads macro arguments while respecting nested delimiters and literals.</summary>
     internal bool TryReadArguments(string text, int open, out List<string> arguments, out int end)
     {
         arguments = [];
@@ -141,6 +144,7 @@ internal sealed class PreprocessorMacroTokenService
         return false;
     }
 
+    /// <summary>Converts replacement text into a C preprocessor string literal.</summary>
     internal string Stringify(string text)
     {
         var normalizedBuilder = new StringBuilder(text.Length);

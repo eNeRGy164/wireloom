@@ -3,14 +3,11 @@ using System.Text.RegularExpressions;
 
 namespace Wireloom.Compiler.FrontEnd.Preprocessing;
 
+/// <summary>Processes preprocessor directives for the IDL source.</summary>
 internal sealed partial class IdlPreprocessor
 {
     private static readonly Regex DirectivePattern = new(
         @"^\s*#\s*(?<name>[A-Za-z_]\w*)\b(?<rest>.*)$",
-        RegexOptions.Compiled);
-
-    private static readonly Regex IncludePattern = new(
-        @"^(?:""(?<quoted>[^""]+)""|<(?<angle>[^>]+)>)\s*$",
         RegexOptions.Compiled);
 
     private void ProcessDirective(

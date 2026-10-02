@@ -17,9 +17,11 @@ internal sealed class PreprocessorMacroExpansionService(
     Func<int, IReadOnlyList<int>?, int> logicalLine,
     Func<int> nextCounter)
 {
+    /// <summary>Expands macros in source text and preserves source offsets.</summary>
     internal string Expand(string text, int offset = 0, IReadOnlyList<int>? sourceOffsets = null) =>
         Expand(text, new HashSet<string>(StringComparer.Ordinal), 0, offset, sourceOffsets);
 
+    /// <summary>Expands macros recursively using the supplied expansion state.</summary>
     internal string Expand(string text, HashSet<string> expanding, int depth, int offset, IReadOnlyList<int>? sourceOffsets)
     {
         cancellationToken.ThrowIfCancellationRequested();
