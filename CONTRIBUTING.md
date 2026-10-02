@@ -113,6 +113,10 @@ Coveralls GitHub check to pass after CI. Review Coveralls run details to confirm
 branch tracking is included when enabled. A successful local test run alone is
 not sufficient quality evidence.
 
+When changing generator inputs or invalidation behavior, also run the focused
+[incremental generator baseline](docs/performance/incremental-generator-baseline.md)
+and update its evidence before considering a caching redesign.
+
 ## Pull requests
 
 - Describe the behavior or evidence change and the reason for it.

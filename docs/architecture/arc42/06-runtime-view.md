@@ -17,9 +17,10 @@ The source for the build-time sequence diagram is
    at least 7.3.1.
    The retained oracle corpus is captured with RTI 7.7.0 / `rtiddsgen` 4.7.0;
    this is an evidence baseline, not the minimum runtime version.
-4. `IdlCompiler` resolves the include graph, preprocesses input, parses
-   declarations, resolves symbols and types, and validates semantics.
-5. Emitters add generated C# documents. An invalid or unsupported input instead
+4. `IdlCompiler` resolves the include graph and preprocesses input. The front
+   end then parses declarations, binds references and deferred bounds against
+   the complete symbol graph, and validates semantics.
+5. Emitters return generated C# documents to the central emission result. An invalid or unsupported input instead
    produces `DDSG0001` at the original IDL location.
 6. The consumer compiles generated types together with its hand-written code.
 

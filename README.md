@@ -85,6 +85,8 @@ interoperability. Those require separate runtime and interoperability evidence.
 - [Package usage and configuration](src/Wireloom.Dds.Generator/README.md)
 - [Feature coverage](docs/corpus/FEATURE-COVERAGE.md)
 - [Preprocessor feature matrix](docs/PREPROCESSOR-FEATURES.md)
+- [Architecture overview](docs/architecture/arc42/index.md)
+- [Incremental generator baseline](docs/performance/incremental-generator-baseline.md)
 - [Contributing and maintainer guide](CONTRIBUTING.md)
 
 ## License
