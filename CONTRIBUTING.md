@@ -73,23 +73,32 @@ as the primary signal for control-flow-heavy code and line coverage as a
 secondary signal.
 
 After a successful build and test run, run Community Qodana from the repository
-root with `global.json` visible and the CI image and fail threshold:
+root with `global.json` visible. The command below reuses the host NuGet global
+packages cache. Qodana's Linux restore outputs are kept in ignored directories
+under `.qodana`; do not let them overwrite the Windows `obj` or `bin` folders.
 
 ```powershell
-$repoRoot = (Get-Location).Path
-$qodanaCache = Join-Path $repoRoot '.qodana\cache'
-docker run --rm `
-  --volume "${repoRoot}:/data/project" `
-  --volume "${qodanaCache}:/data/cache" `
+$nugetCache = Join-Path $env:USERPROFILE '.nuget\packages'
+$qodanaObj = Join-Path $PWD '.qodana\obj'
+$qodanaBin = Join-Path $PWD '.qodana\bin'
+New-Item -ItemType Directory -Force -Path $qodanaObj, $qodanaBin | Out-Null
+
+wslc run --rm `
+  --volume "${PWD}:/data/project" `
+  --volume "${PWD}\.qodana\cache:/data/cache" `
+  --volume "${qodanaObj}:/data/project/src/Wireloom.Dds.Generator/obj" `
+  --volume "${qodanaBin}:/data/project/src/Wireloom.Dds.Generator/bin" `
+  --volume "${nugetCache}:/root/.nuget/packages:ro" `
+  -e NUGET_PACKAGES=/root/.nuget/packages `
+  -e DOTNET_NOLOGO=1 `
   jetbrains/qodana-cdnet:2026.2-privileged `
-  --cache-dir /data/cache `
-  --results-dir /data/project/.qodana/results `
-  --fail-threshold 0
+  --results-dir /data/project/.qodana/results
 ```
 
 The CI Qodana cache is separate from NuGet's cache. The mounted local cache
 stores analysis state, not the bootstrapped SDK; keep `global.json` visible so
-analysis uses the pinned SDK.
+analysis uses the pinned SDK. The NuGet package cache is safe to share, but
+restore and build intermediates are platform-specific and must remain isolated.
 
 For local coverage, the Cobertura report must contain both branch and line
 rates and a positive `branches-valid` count. Check its counters with:

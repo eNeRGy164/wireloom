@@ -14,6 +14,4 @@ dotnet:
 bootstrap: |
   set -eu
 
-  curl --fail --silent --show-error --location https://dot.net/v1/dotnet-install.sh --output /tmp/dotnet-install.sh
-  bash /tmp/dotnet-install.sh --jsonfile /data/project/global.json --install-dir /usr/share/dotnet
-  rm -f /tmp/dotnet-install.sh
+  dotnet restore src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --locked-mode
