@@ -23,6 +23,11 @@ internal static class EmissionSupport
 
     internal static string GetUnmanagedType(string typeName, string? currentNamespace)
     {
+        if (typeName.StartsWith("global::", StringComparison.Ordinal))
+        {
+            typeName = typeName["global::".Length..];
+        }
+
         var lastDot = typeName.LastIndexOf('.');
         if (lastDot < 0)
         {

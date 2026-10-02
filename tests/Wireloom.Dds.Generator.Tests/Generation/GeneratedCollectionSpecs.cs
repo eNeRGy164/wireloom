@@ -145,6 +145,26 @@ public sealed class GeneratedCollectionSpecs
     }
 
     [Fact]
+    public void QualifiesRootCollectionReferencesAgainstImplementationShadowing()
+    {
+        // Arrange
+        var input = Input(
+            "root-collection-shadowing.idl",
+            "struct Item { long value; }; module Implementation { struct Item { long value; }; }; typedef sequence<Item, 2> Items;");
+
+        // Act
+        var documents = CompileSources(input);
+        var plugin = documents["Implementation.ItemsPlugin.g.cs"].Source;
+        var unmanaged = documents["Implementation.ItemsUnmanaged.g.cs"].Source;
+
+        // Assert
+        plugin.ShouldContain("InterpretedTypePlugin<global::Items, ItemsUnmanaged>");
+        plugin.ShouldContain("global::ItemSupport.Instance");
+        unmanaged.ShouldContain("INativeTopicType<global::Items>");
+        unmanaged.ShouldContain("Value.Initialize<global::Item, ItemUnmanaged>");
+    }
+
+    [Fact]
     [Trait("Corpus", "C016")]
     public void PrimitiveArraysPreserveRankAndDimensionLogic()
     {
