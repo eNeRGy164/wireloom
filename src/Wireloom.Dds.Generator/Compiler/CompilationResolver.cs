@@ -1,4 +1,5 @@
 using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler;
@@ -6,6 +7,16 @@ namespace Wireloom.Compiler;
 /// <summary>Resolves IDL symbols and typedef representations for the compiler pipeline.</summary>
 internal sealed class CompilationResolver(IdlSymbolTable symbols)
 {
+    private readonly IdlTypeResolver typeResolver = new(symbols);
+
+    /// <summary>Resolves an IDL type into the target-independent semantic type model.</summary>
+    public IdlType ResolveType(string idlType, string? currentNamespace)
+    {
+        var input = new IdlInput("<generated>", string.Empty, generate: false);
+        return typeResolver.Resolve(idlType, currentNamespace, input, 0)
+            ?? throw new InvalidOperationException($"Unsupported IDL type: {idlType}");
+    }
+
     /// <summary>Resolves an IDL constant reference using lexical module scope.</summary>
     public bool TryResolveConstant(string reference, string? currentNamespace, out string qualifiedName)
     {
@@ -34,14 +45,6 @@ internal sealed class CompilationResolver(IdlSymbolTable symbols)
         qualifiedName = normalized;
         return false;
     }
-
-    /// <summary>Determines whether a type resolves to an enum.</summary>
-    public bool IsEnum(string typeName, string? currentNamespace) =>
-        symbols.ContainsEnum(IdlNaming.ResolveTypeName(typeName, currentNamespace));
-
-    /// <summary>Determines whether a type resolves to a union.</summary>
-    public bool IsUnion(string typeName, string? currentNamespace) =>
-        symbols.ContainsUnion(IdlNaming.ResolveTypeName(typeName, currentNamespace));
 
     /// <summary>Resolves a scalar typedef chain in IDL type space.</summary>
     public string ResolveUnderlyingType(string idlType, string? currentNamespace)

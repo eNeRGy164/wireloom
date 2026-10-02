@@ -17,38 +17,39 @@ namespace Wireloom.Compiler.Emission.Planning;
 [PublicAPI]
 internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string? currentNamespace, string? managedBackingFieldName = null)
 {
-    private readonly FieldEmissionShape shape = MemberEmissionPolicies.GetShape(field.Type);
+    private readonly MemberEmissionFacts facts = new(field, currentNamespace);
+    private readonly EmissionShape shape = field.Type.Shape;
 
     public IdlEmissionField Field { get; } = field;
-    public string? CurrentNamespace => currentNamespace;
-    public string Name => Field.Name;
+    public string? CurrentNamespace => facts.CurrentNamespace;
+    public string Name => facts.Name;
     public string EscapedName => EscapeIdentifier(Name);
-    public EmissionTypePlan Type => Field.Type;
-    public bool IsKey => Field.IsKey;
-    public int? MemberId => Field.MemberId;
-    public bool IsOptional => Field.IsOptional;
-    public string CSharpType => Field.CSharpType;
-    public int? Bound => Field.Bound;
-    public string? SupportType => Field.SupportType;
-    public EmissionTypePlan? ElementType => Field.ElementType;
-    public string? ElementCSharpType => Field.ElementCSharpType;
-    public string? ElementSupportType => Field.ElementSupportType;
-    public IReadOnlyList<int> Dimensions => Field.Dimensions;
-    public BigInteger? DefaultValue => Field.ValueMetadata?.DefaultValue;
-    public BigInteger? MinimumValue => Field.ValueMetadata?.Minimum;
-    public BigInteger? MaximumValue => Field.ValueMetadata?.Maximum;
-    public string? DefaultExpression => Field.ValueMetadata?.DefaultExpression;
-    public string? Unit => Field.ValueMetadata?.Unit;
-    public bool IsExternal => Field.IsExternal;
-    public bool IsMustUnderstand => Field.IsMustUnderstand;
-    public string? MemberIdHashSource => Field.MemberIdHashSource;
-    public bool UsesAutoIdHash => Field.UsesAutoIdHash;
+    public EmissionTypePlan Type => facts.Type;
+    public bool IsKey => facts.IsKey;
+    public int? MemberId => facts.MemberId;
+    public bool IsOptional => facts.IsOptional;
+    public string CSharpType => facts.CSharpType;
+    public int? Bound => facts.Bound;
+    public string? SupportType => facts.SupportType;
+    public EmissionTypePlan? ElementType => facts.ElementType;
+    public string? ElementCSharpType => facts.ElementCSharpType;
+    public string? ElementSupportType => facts.ElementSupportType;
+    public IReadOnlyList<int> Dimensions => facts.Dimensions;
+    public BigInteger? DefaultValue => facts.ValueMetadata?.DefaultValue;
+    public BigInteger? MinimumValue => facts.ValueMetadata?.Minimum;
+    public BigInteger? MaximumValue => facts.ValueMetadata?.Maximum;
+    public string? DefaultExpression => facts.ValueMetadata?.DefaultExpression;
+    public string? Unit => facts.ValueMetadata?.Unit;
+    public bool IsExternal => facts.IsExternal;
+    public bool IsMustUnderstand => facts.IsMustUnderstand;
+    public string? MemberIdHashSource => facts.MemberIdHashSource;
+    public bool UsesAutoIdHash => facts.UsesAutoIdHash;
     public bool HasExplicitDefault => DefaultValue is not null;
     public bool HasManagedRange => MinimumValue is not null || MaximumValue is not null;
     public string ManagedBackingFieldName => managedBackingFieldName ?? EscapeIdentifier("_" + Name);
-    public bool IsString => ValueType is StringEmissionType;
-    public bool IsSequence => shape == FieldEmissionShape.Sequence;
-    public bool IsArray => shape == FieldEmissionShape.Array;
+    public bool IsString => facts.IsString;
+    public bool IsSequence => facts.IsSequence;
+    public bool IsArray => facts.IsArray;
     public bool IsSequenceArray => IsSequence && Dimensions.Count > 0;
     public bool IsArrayLoopLocalCollision
     {
@@ -70,10 +71,10 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
                 && dimension < Dimensions.Count;
         }
     }
-    public bool IsStringSequence => IsSequence && ElementType is StringEmissionType;
-    public bool IsAggregate => Type.IsAggregate;
-    public bool IsUnion => Type.IsUnion;
-    public bool HasAggregateElement => ElementType?.IsAggregate == true;
+    public bool IsStringSequence => facts.IsStringSequence;
+    public bool IsAggregate => facts.IsAggregate;
+    public bool IsUnion => facts.IsUnion;
+    public bool HasAggregateElement => facts.HasAggregateElement;
     public bool HasSequenceElement => IsArray && ElementType is not null && EmissionTypeProjector.HasSequenceType(ElementType);
     public string? BoundSummary
     {
@@ -128,7 +129,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     }
 
     public ManagedInitializationKind ManagedInitialization => MemberEmissionPolicies.GetManagedInitialization(
-        shape,
+        shape.Kind,
         IsOptional,
         IsSequence,
         IsArray,
@@ -216,16 +217,16 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     {
         var namespaceName = namespaceOverride ?? currentNamespace;
 
-        switch (shape)
+        switch (shape.Kind)
         {
-            case FieldEmissionShape.Sequence:
+            case EmissionShapeKind.Sequence:
                 if (IsStringSequence && IsSequenceArray)
                 {
                     return "NativeStringSeq";
                 }
 
                 return IsOptional ? "NativeOptionalSeq" : "NativeSeq";
-            case FieldEmissionShape.Array:
+            case EmissionShapeKind.Array:
                 if (IsOptional)
                 {
                     return HasAggregateElement ? "NativeManagedOptionalArray" : "NativeUnmanagedOptionalArray";
@@ -370,10 +371,10 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
             return $"{targetPrefix}{EscapedName} is null ? -1 : {targetPrefix}{EscapedName}{ArraySourceEmitter.IndexExpression(ZeroIndices())}";
         }
 
-        var suffix = shape switch
+        var suffix = shape.Kind switch
         {
-            FieldEmissionShape.Array => ArraySourceEmitter.IndexExpression(ZeroIndices()),
-            FieldEmissionShape.Sequence => ".Count",
+            EmissionShapeKind.Array => ArraySourceEmitter.IndexExpression(ZeroIndices()),
+            EmissionShapeKind.Sequence => ".Count",
             _ => string.Empty
         };
 

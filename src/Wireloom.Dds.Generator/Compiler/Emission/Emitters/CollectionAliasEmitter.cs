@@ -1,5 +1,6 @@
 using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -43,33 +44,26 @@ internal static class CollectionAliasEmitter
         }
 
         var elementIdlType = element;
-
-        if (declaration is { IsString: true } || IsStringType(element))
-        {
-            element = "string";
-        }
-
-        var resolvedElement = IdlNaming.IsPrimitive(element)
-            ? IdlNaming.MapPrimitive(element)
-            : IdlNaming.EscapeQualifiedIdentifier(IdlNaming.ResolveTypeName(element, declaration.Namespace));
-
-        var isString = declaration.IsString || IsStringType(elementIdlType);
-        var isPrimitive = IdlNaming.IsPrimitive(element);
-        var isEnum = compilation.IsEnum(element, declaration.Namespace);
+        var elementPlan = declaration.IsString
+            ? new StringEmissionType(declaration.IsWideString, declaration.StringBound)
+            : EmissionTypeProjector.ToCollectionElementType(compilation.ResolveType(element, declaration.Namespace), declaration.Namespace);
 
         return new CollectionAliasEmissionPlan(
-            resolvedElement,
+            elementPlan,
             elementIdlType,
-            isString,
-            isPrimitive,
-            isEnum,
-            !isString && !isPrimitive && !isEnum,
-            declaration is { IsCollection: false, IsString: false } && compilation.IsUnion(element, declaration.Namespace),
-            !IdlNaming.IsPrimitive(resolvedElement));
+            declaration.IsSequence,
+            declaration.IsArray,
+            RequiresNativeValueCast(elementPlan));
     }
 
-    private static bool IsStringType(string? typeName) =>
-        typeName is not null
-        && (typeName.StartsWith("string", StringComparison.Ordinal) || typeName.StartsWith("wstring", StringComparison.Ordinal));
+    private static bool RequiresNativeValueCast(EmissionTypePlan elementPlan)
+    {
+        if (elementPlan is PrimitiveEmissionType primitive)
+        {
+            return PrimitiveTypeMapping.Resolve(primitive.IdlName).NativeValueRequiresCast;
+        }
+
+        return true;
+    }
 
 }

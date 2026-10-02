@@ -2,42 +2,39 @@ namespace Wireloom.Compiler.Emission.Model;
 
 /// <summary>Resolved facts shared by every emitter for one IDL typedef.</summary>
 internal sealed class CollectionAliasEmissionPlan(
-    string elementType,
+    EmissionTypePlan elementPlan,
     string elementIdlType,
-    bool isString,
-    bool isPrimitive,
-    bool isEnum,
-    bool isAggregate,
-    bool isUnion,
+    bool isSequence,
+    bool isArray,
     bool nativeValueRequiresCast)
 {
-    public string ElementType { get; } = elementType;
+    public EmissionTypePlan ElementPlan { get; } = elementPlan;
+
+    public string ElementType => ElementPlan.CSharpType;
 
     public string ElementIdlType { get; } = elementIdlType;
 
-    public bool IsString { get; } = isString;
+    public bool IsSequence { get; } = isSequence;
 
-    public bool IsPrimitive { get; } = isPrimitive;
+    public bool IsArray { get; } = isArray;
 
-    public bool IsEnum { get; } = isEnum;
+    public bool IsCollection => IsSequence || IsArray;
 
-    public bool IsAggregate { get; } = isAggregate;
+    public bool IsString => ElementPlan.Shape.IsString;
 
-    public bool IsUnion { get; } = isUnion;
+    public bool IsPrimitive => ElementPlan.Shape.IsPrimitive;
+
+    public bool IsEnum => ElementPlan.Shape.IsEnum;
+
+    public bool IsAggregate => ElementPlan.Shape.IsAggregate;
+
+    public bool IsUnion => ElementPlan.Shape.IsUnion;
 
     public bool NativeValueRequiresCast { get; } = nativeValueRequiresCast;
 
-    public bool CollectionElementIsAggregate { get; } = isAggregate && !isString;
+    public bool CollectionElementIsAggregate => ElementPlan.Shape is { IsAggregate: true, IsString: false };
 
-    public bool IsWideString { get; } = elementIdlType.StartsWith("wstring", StringComparison.Ordinal);
+    public bool IsWideString => ElementPlan.IsWideString;
 
-    public int StringBound { get; } = ParseStringBound(elementIdlType);
-
-    private static int ParseStringBound(string typeName)
-    {
-        var open = typeName.IndexOf('<');
-        return open < 0 || !int.TryParse(typeName[(open + 1)..^1].Trim(), out var bound)
-            ? 255
-            : bound;
-    }
+    public int StringBound => ElementPlan.Bound ?? 255;
 }

@@ -1,4 +1,5 @@
 using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Compiler.FrontEnd.Semantic;
 
 namespace Wireloom.Compiler;
 
@@ -11,14 +12,12 @@ internal sealed class CompilationContext
         resolver = new CompilationResolver(symbols);
     }
 
+    /// <summary>Resolves an IDL type into the target-independent semantic type model.</summary>
+    internal IdlType ResolveType(string idlType, string? currentNamespace) =>
+        resolver.ResolveType(idlType, currentNamespace);
+
     public bool TryResolveConstant(string reference, string? currentNamespace, out string qualifiedName) =>
         resolver.TryResolveConstant(reference, currentNamespace, out qualifiedName);
-
-    public bool IsEnum(string typeName, string? currentNamespace) =>
-        resolver.IsEnum(typeName, currentNamespace);
-
-    public bool IsUnion(string typeName, string? currentNamespace) =>
-        resolver.IsUnion(typeName, currentNamespace);
 
     /// <summary>Resolves a scalar typedef chain for source emitters.</summary>
     public string ResolveUnderlyingType(string idlType, string? currentNamespace) =>

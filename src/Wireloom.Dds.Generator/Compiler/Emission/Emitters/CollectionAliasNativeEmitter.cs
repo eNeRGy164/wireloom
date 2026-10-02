@@ -1,5 +1,6 @@
 using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -7,37 +8,35 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits the native representation for a collection or value typedef.</summary>
 internal static class CollectionAliasNativeEmitter
 {
-    public static void Emit(CompilationContext compilation, EmissionResult result, IdlTypedef declaration, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
+    public static void Emit(CompilationContext compilation, EmissionResult result, IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
     {
         var elementType = plan.ElementType;
-        var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
-        var implementation = declaration.Namespace is null ? "Implementation" : $"{declaration.Namespace}.Implementation";
-        var implementationTypeName = IdlNaming.TypeReference(typeName, declaration.Namespace, implementation);
+        var typeName = names.ManagedTypeName;
+        var implementationTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.ImplementationNamespace);
         var elementIdlType = plan.ElementIdlType;
-        var implementationElementType = IdlNaming.TypeReference(elementType, implementation);
+        var implementationElementType = IdlNaming.TypeReference(elementType, names.ImplementationNamespace);
         var isString = plan.IsString;
-        var isStringSequence = declaration.IsSequence && plan.IsString;
+        var isStringSequence = plan is { IsSequence: true, IsString: true };
         var stringSequenceNativeType = isStringSequence && plan.IsWideString
             ? "NativeWstringSeq"
             : "NativeStringSeq";
         var stringSequenceBound = isStringSequence ? plan.StringBound : 0;
         var isAggregate = plan.IsAggregate;
         var isUnion = plan.IsUnion;
-        var collectionElementIsAggregate = declaration.IsCollection &&
-            plan.CollectionElementIsAggregate;
+        var collectionElementIsAggregate = plan is { IsCollection: true, CollectionElementIsAggregate: true };
 
         var collectionElementUnmanagedType = string.Empty;
         if (collectionElementIsAggregate)
         {
-            collectionElementUnmanagedType = IdlNaming.TypeReference(compilation.ResolveAliasNativeType(elementType, declaration.Namespace), implementation);
+            collectionElementUnmanagedType = IdlNaming.TypeReference(compilation.ResolveAliasNativeType(elementType, declaration.Namespace), names.ImplementationNamespace);
         }
 
-        var writer = EmissionSupport.CreateSource(implementation, EmissionSupport.UnmanagedTypeUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.UnmanagedTypeUsings, sourceIdlFileName);
 
         writer.OpenBlock($"public struct {typeName}Unmanaged : INativeTopicType<{implementationTypeName}>");
 
         string? nativeElementType;
-        if (declaration.IsCollection)
+        if (plan.IsCollection)
         {
             nativeElementType = implementationElementType;
         }
@@ -49,18 +48,18 @@ internal static class CollectionAliasNativeEmitter
             }
             else
             {
-                nativeElementType = IdlNaming.TypeReference(compilation.ResolveAliasNativeType(elementIdlType, declaration.Namespace), implementation);
+                nativeElementType = IdlNaming.TypeReference(compilation.ResolveAliasNativeType(elementIdlType, declaration.Namespace), names.ImplementationNamespace);
             }
         }
 
         string? collectionNative;
-        if (declaration.IsSequence)
+        if (plan.IsSequence)
         {
             collectionNative = isStringSequence ? stringSequenceNativeType : "NativeSeq";
         }
         else
         {
-            if (declaration.IsArray)
+            if (plan.IsArray)
             {
                 collectionNative = collectionElementIsAggregate ? "NativeManagedArray" : "NativeUnmanagedArray";
             }
@@ -77,7 +76,7 @@ internal static class CollectionAliasNativeEmitter
         writer.WriteXmlParam("optionalsOnly", "Indicates whether only optional members should be released.");
         writer.OpenBlock("public void Destroy(bool optionalsOnly)");
 
-        if (declaration.IsCollection)
+        if (plan.IsCollection)
         {
             if (isStringSequence)
             {
@@ -87,7 +86,7 @@ internal static class CollectionAliasNativeEmitter
                 writer.BlankLine();
                 writer.WriteLine("Value.Destroy();");
             }
-            else if (declaration.IsArray && collectionElementIsAggregate)
+            else if (plan.IsArray && collectionElementIsAggregate)
             {
                 writer.WriteLine($"Value.Destroy<{implementationElementType}, {collectionElementUnmanagedType}>(dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, optionalsOnly: optionalsOnly);");
             }
@@ -129,7 +128,7 @@ internal static class CollectionAliasNativeEmitter
         writer.WriteXmlParam("keysOnly", "Whether to copy only key members.");
         writer.OpenBlock($"public void FromNative({implementationTypeName} sample, bool keysOnly = false)");
 
-        if (declaration.IsSequence)
+        if (plan.IsSequence)
         {
             if (isStringSequence)
             {
@@ -146,7 +145,7 @@ internal static class CollectionAliasNativeEmitter
         }
         else
         {
-            if (declaration.IsArray)
+            if (plan.IsArray)
             {
                 if (collectionElementIsAggregate)
                 {
@@ -182,7 +181,7 @@ internal static class CollectionAliasNativeEmitter
         writer.WriteXmlParam("allocateMemory", "Whether native memory should be allocated.");
         writer.OpenBlock("public void Initialize(bool allocatePointers = true, bool allocateMemory = true)");
 
-        if (declaration.IsSequence)
+        if (plan.IsSequence)
         {
             if (isStringSequence)
             {
@@ -199,7 +198,7 @@ internal static class CollectionAliasNativeEmitter
         }
         else
         {
-            if (declaration.IsArray)
+            if (plan.IsArray)
             {
                 if (collectionElementIsAggregate)
                 {
@@ -222,7 +221,7 @@ internal static class CollectionAliasNativeEmitter
                 }
                 else
                 {
-                    writer.WriteLine($"Value = {NativeDefaultValue(elementIdlType, elementType, implementationElementType, plan)};");
+                    writer.WriteLine($"Value = {NativeDefaultValue(implementationElementType, plan)};");
                 }
             }
         }
@@ -235,7 +234,7 @@ internal static class CollectionAliasNativeEmitter
         writer.WriteXmlParam("keysOnly", "Whether to copy only key members.");
         writer.OpenBlock($"public void ToNative({implementationTypeName} sample, bool keysOnly = false)");
 
-        if (declaration.IsSequence)
+        if (plan.IsSequence)
         {
             if (isStringSequence)
             {
@@ -252,7 +251,7 @@ internal static class CollectionAliasNativeEmitter
         }
         else
         {
-            if (declaration.IsArray)
+            if (plan.IsArray)
             {
                 if (collectionElementIsAggregate)
                 {
@@ -282,25 +281,24 @@ internal static class CollectionAliasNativeEmitter
 
         writer.CloseBlock();
         writer.CloseBlock();
-        result.Add(IdlNaming.CreateGeneratedName(implementation, $"{declaration.Name}Unmanaged"), writer.ToString());
+        result.Add(names.Unmanaged, writer.ToString());
     }
 
-    private static string NativeDefaultValue(string elementIdlType, string elementType, string implementationElementType, CollectionAliasEmissionPlan plan)
+    private static string NativeDefaultValue(string implementationElementType, CollectionAliasEmissionPlan plan)
     {
-        var normalizedElementIdlType = IdlNaming.NormalizeIdlType(elementIdlType);
-        if (normalizedElementIdlType is "boolean")
+        var elementPlan = EmissionTypeProjector.UnwrapValueEmissionType(plan.ElementPlan);
+        if (elementPlan is PrimitiveEmissionType primitive)
         {
-            return "false";
-        }
+            var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
+            if (primitive.IdlName is "boolean" or "char" or "wchar" or "long long" or "int64")
+            {
+                return mapping.NativeDefaultLiteral;
+            }
 
-        if (normalizedElementIdlType is "char" or "wchar")
-        {
-            return "'\\0'";
-        }
-
-        if (normalizedElementIdlType is "long long" or "int64")
-        {
-            return "0L";
+            if (!plan.NativeValueRequiresCast)
+            {
+                return mapping.UncastNativeDefaultLiteral;
+            }
         }
 
         if (plan.NativeValueRequiresCast)
@@ -308,16 +306,6 @@ internal static class CollectionAliasNativeEmitter
             return $"({implementationElementType})0";
         }
 
-        return IdlNaming.NormalizeIdlType(elementType) switch
-        {
-            "long" or "int32" => "0",
-            "long long" or "int64" => "0L",
-            "unsigned long" or "uint32" => "0U",
-            "unsigned long long" or "uint64" => "0UL",
-            "float" => "0.0F",
-            "double" => "0.0D",
-            "long double" => "(LongDouble)0",
-            _ => "0"
-        };
+        return "0";
     }
 }

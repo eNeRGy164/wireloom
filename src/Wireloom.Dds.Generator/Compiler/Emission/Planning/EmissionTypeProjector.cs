@@ -7,6 +7,7 @@ namespace Wireloom.Compiler.Emission.Planning;
 /// <summary>Projects semantic IDL types into target-specific emission plans.</summary>
 internal static class EmissionTypeProjector
 {
+    /// <summary>Projects a semantic member into an emission field.</summary>
     internal static IdlEmissionField ToEmissionField(IdlMember member, string? currentNamespace)
     {
         var type = ProjectType(member.Type, currentNamespace);
@@ -44,6 +45,20 @@ internal static class EmissionTypeProjector
                 member.Metadata.UsesAutoIdHash));
     }
 
+    /// <summary>Projects a collection element while preserving a named alias identity.</summary>
+    internal static EmissionTypePlan ToCollectionElementType(IdlType type, string? currentNamespace)
+    {
+        if (type is IdlType.Alias alias)
+        {
+            var target = ToCollectionElementType(alias.Target, currentNamespace);
+            var aliasName = IdlNaming.EscapeQualifiedIdentifier(alias.QualifiedName);
+            return new AliasEmissionType(alias.QualifiedName, target, aliasName);
+        }
+
+        return ProjectType(type, currentNamespace);
+    }
+
+    /// <summary>Projects a semantic union into an emission union.</summary>
     internal static IdlEmissionUnion ToEmissionUnion(IdlUnion union) =>
         new(
             union.Name,
@@ -109,9 +124,10 @@ internal static class EmissionTypeProjector
         _ => false
     };
 
-    internal static EmissionTypePlan UnwrapOptionalEmissionType(EmissionTypePlan type) =>
+    private static EmissionTypePlan UnwrapOptionalEmissionType(EmissionTypePlan type) =>
         type is OptionalEmissionType optional ? optional.Target : type;
 
+    /// <summary>Unwraps optional and alias plans to their underlying value plan.</summary>
     internal static EmissionTypePlan UnwrapValueEmissionType(EmissionTypePlan type)
     {
         type = UnwrapOptionalEmissionType(type);
@@ -119,6 +135,7 @@ internal static class EmissionTypeProjector
         return type is AliasEmissionType alias ? UnwrapValueEmissionType(alias.Target) : type;
     }
 
+    /// <summary>Determines whether a plan contains a sequence type.</summary>
     internal static bool HasSequenceType(EmissionTypePlan type)
     {
         type = UnwrapOptionalEmissionType(type);
