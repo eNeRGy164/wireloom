@@ -115,6 +115,36 @@ public sealed class GeneratedCollectionSpecs
     }
 
     [Fact]
+    public void QualifiesNamedCollectionElementsAgainstShadowingNamespaces()
+    {
+        // Arrange
+        var input = Input(
+            "collection-type-shadowing.idl",
+            """
+            module Shared {
+                struct Item { long value; };
+            };
+            module Example {
+                module Shared {
+                    struct Item { long value; };
+                };
+                struct Sample { sequence<::Shared::Item> items; };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+        var managed = documents["Example.Sample.g.cs"].Source;
+        var plugin = documents["Example.Implementation.SamplePlugin.g.cs"].Source;
+        var unmanaged = documents["Example.Implementation.SampleUnmanaged.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("public ISequence<global::Shared.Item> items");
+        plugin.ShouldContain("global::Shared.ItemSupport.Instance");
+        unmanaged.ShouldContain("global::Shared.Implementation.ItemUnmanaged");
+    }
+
+    [Fact]
     [Trait("Corpus", "C016")]
     public void PrimitiveArraysPreserveRankAndDimensionLogic()
     {

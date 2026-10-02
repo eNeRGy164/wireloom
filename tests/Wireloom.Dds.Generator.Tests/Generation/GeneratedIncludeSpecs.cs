@@ -36,7 +36,7 @@ public sealed class GeneratedIncludeSpecs
         includedType.ShouldContain("public partial class IncludedType");
 
         var sample = documents["IncludedConsumer.Sample.g.cs"].Source;
-        sample.ShouldContain("public IncludedType item");
+        sample.ShouldContain("public global::IncludedType item");
 
         var sampleUnmanaged = documents["IncludedConsumer.Implementation.SampleUnmanaged.g.cs"].Source;
         sampleUnmanaged.ShouldContain("global::Implementation.IncludedTypeUnmanaged item;");

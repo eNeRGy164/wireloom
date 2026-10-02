@@ -204,9 +204,12 @@ internal static class ConstantEmitter
             }
 
             var isAbsolute = reference.StartsWith("::", StringComparison.Ordinal);
-            return isAbsolute
-                ? $"global::{IdlNaming.EscapeQualifiedIdentifier(qualifiedName)}.Value"
-                : $"{IdlNaming.TypeReference(IdlNaming.EscapeQualifiedIdentifier(qualifiedName), currentNamespace)}.Value";
+            if (isAbsolute)
+            {
+                return $"global::{IdlNaming.EscapeQualifiedIdentifier(qualifiedName)}.Value";
+            }
+
+            return $"{IdlNaming.ResolvedTypeReference(qualifiedName, currentNamespace)}.Value";
         });
 
     private static int FindLiteralEnd(string expression, int literalStart)

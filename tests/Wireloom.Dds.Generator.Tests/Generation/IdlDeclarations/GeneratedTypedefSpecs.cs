@@ -7,6 +7,60 @@ namespace Wireloom.Generation.IdlDeclarations.Tests;
 public sealed class GeneratedTypedefSpecs
 {
     [Fact]
+    public void ResolvesTypedefsThatTargetKeywordNamedAggregates()
+    {
+        // Arrange
+        var input = Input("keyword-aggregate-typedef.idl",
+            """
+            module Example {
+                struct class { long value; };
+                typedef class Alias;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var alias = documents["Example.Alias.g.cs"].Source;
+        alias.ShouldContain("public partial class Alias");
+        alias.ShouldContain("public @class Value");
+    }
+
+    [Fact]
+    public void EmitsAggregateValueAliasesThroughAggregateSupport()
+    {
+        // Arrange
+        var input = Input(
+            "aggregate-value-alias.idl",
+            "module AggregateAliases { struct Item { long value; }; typedef Item ItemAlias; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var plugin = documents["AggregateAliases.Implementation.ItemAliasPlugin.g.cs"].Source;
+        plugin.ShouldContain("ItemSupport.Instance.GetDynamicTypeInternal(isPublic)");
+        plugin.ShouldNotContain("GetPrimitiveType<Item>");
+    }
+
+    [Fact]
+    public void ResolvesNestedScalarAliasesAgainstRootScope()
+    {
+        // Arrange
+        var input = Input(
+            "nested-root-scalar-alias.idl",
+            "typedef long Scalar; module Nested { typedef Scalar Alias; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Nested.Alias.g.cs"].Source.ShouldContain("public int Value");
+        documents["Nested.Implementation.AliasPlugin.g.cs"].Source.ShouldContain("GetPrimitiveType<int>()");
+    }
+
+    [Fact]
     public void EmitsPrimitiveAndAggregateCollectionAliasesWithMatchingNativeContracts()
     {
         // Arrange
@@ -78,6 +132,36 @@ public sealed class GeneratedTypedefSpecs
         itemArrayNative.ShouldContain("Value.Initialize<Item, ItemUnmanaged>(dimension: 2, allocatePointers: allocatePointers, allocateMemory: allocateMemory);");
         itemArrayNative.ShouldContain("Value.FromNative<Item, ItemUnmanaged>(sample.Value, keysOnly: false, dimension: 2);");
         itemArrayNative.ShouldContain("Value.ToNative<Item, ItemUnmanaged>(sample.Value, keysOnly: false, dimension: 2);");
+    }
+
+    [Fact]
+    public void QualifiesNamedCollectionAliasElementsAgainstShadowingNamespaces()
+    {
+        // Arrange
+        var input = Input(
+            "collection-alias-type-shadowing.idl",
+            """
+            module Shared {
+                struct Item { long value; };
+            };
+            module Example {
+                module Shared {
+                    struct Item { long value; };
+                };
+                typedef sequence<::Shared::Item, 2> Items;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+        var managed = documents["Example.Items.g.cs"].Source;
+        var plugin = documents["Example.Implementation.ItemsPlugin.g.cs"].Source;
+        var unmanaged = documents["Example.Implementation.ItemsUnmanaged.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("public ISequence<global::Shared.Item> Value");
+        plugin.ShouldContain("global::Shared.ItemSupport.Instance");
+        unmanaged.ShouldContain("global::Shared.Implementation.ItemUnmanaged");
     }
 
     [Fact]

@@ -19,7 +19,9 @@ internal static class UnionTypeSupportEmitter
         var idlTypeName = declaration.Namespace is null ? declaration.Name : $"{declaration.Namespace.Replace(".", "::")}::{declaration.Name}";
         var implementationTypeName = IdlNaming.TypeReference(typeName, declaration.Namespace, implementationNamespace);
         var supportTypeName = IdlNaming.TypeReference(typeName, declaration.Namespace, declaration.Namespace);
-        var nativeDiscriminatorType = NativeDiscriminatorType(declaration);
+        var nativeDiscriminatorType = declaration.DiscriminatorIsEnum
+            ? IdlNaming.ResolvedTypeReference(declaration.DiscriminatorCSharpType, implementationNamespace)
+            : NativeDiscriminatorType(declaration);
 
         var writer = EmissionSupport.CreateSource(implementationNamespace, EmissionSupport.UnmanagedTypeUsings, sourceIdlFileName);
 
@@ -102,11 +104,22 @@ internal static class UnionTypeSupportEmitter
 
         if (declaration.DiscriminatorIsEnum)
         {
-            writer.WriteLine($".WithDiscriminator({IdlNaming.TypeReference(declaration.DiscriminatorCSharpType, implementationNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic))");
+            string discriminatorTypeName;
+            if (declaration.DiscriminatorEnumQualifiedName is { } qualifiedName)
+            {
+                discriminatorTypeName = IdlNaming.SupportTypeName(qualifiedName, declaration.Namespace);
+            }
+            else
+            {
+                discriminatorTypeName = declaration.DiscriminatorCSharpType;
+            }
+
+            var discriminatorType = IdlNaming.GeneratedSupportTypeReference(discriminatorTypeName, implementationNamespace);
+            writer.WriteLine($".WithDiscriminator({discriminatorType}Support.Instance.GetDynamicTypeInternal(isPublic))");
         }
         else
         {
-            writer.WriteLine($".WithDiscriminator(dtf.GetPrimitiveType<{declaration.DiscriminatorCSharpType}>())");
+            writer.WriteLine($".WithDiscriminator(dtf.GetPrimitiveType<{declaration.PrimitiveDiscriminatorDynamicType}>())");
         }
 
         writer.WriteLine($".WithExtensibility(ExtensibilityKind.{declaration.Extensibility})");

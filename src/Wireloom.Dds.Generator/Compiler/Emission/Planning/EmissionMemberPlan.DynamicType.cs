@@ -6,11 +6,12 @@ namespace Wireloom.Compiler.Emission.Planning;
 /// <summary>Builds dynamic-type expressions for a member emission plan.</summary>
 internal sealed partial class MemberEmissionPlan
 {
-    public string BuildDynamicTypeExpression(string implementationNamespace, string? recursiveTypeName = null, bool isRecursive = false) => shape switch
+    /// <summary>Builds the dynamic-type expression for this member.</summary>
+    public string BuildDynamicTypeExpression(string implementationNamespace, string? recursiveTypeName = null, bool isRecursive = false) => shape.Kind switch
     {
-        FieldEmissionShape.Sequence or FieldEmissionShape.Array => BuildCollectionDynamicType(implementationNamespace, recursiveTypeName, isRecursive),
-        FieldEmissionShape.Struct or FieldEmissionShape.Enum or FieldEmissionShape.Alias => ReferencedSupportType(implementationNamespace) + ".GetDynamicTypeInternal(isPublic)",
-        FieldEmissionShape.String => BuildStringDynamicType(),
+        EmissionShapeKind.Sequence or EmissionShapeKind.Array => BuildCollectionDynamicType(implementationNamespace, recursiveTypeName, isRecursive),
+        EmissionShapeKind.Struct or EmissionShapeKind.Union or EmissionShapeKind.Enum or EmissionShapeKind.Alias => ReferencedSupportType(implementationNamespace) + ".GetDynamicTypeInternal(isPublic)",
+        EmissionShapeKind.String => BuildStringDynamicType(),
         _ => $"dtf.GetPrimitiveType<{PrimitiveDynamicType()}>()",
     };
 
@@ -18,7 +19,7 @@ internal sealed partial class MemberEmissionPlan
     {
         if (isRecursive && IsRecursive(recursiveTypeName!))
         {
-            var supportType = $"{IdlNaming.TypeReference(recursiveTypeName!, implementationNamespace)}Support.GetOrCreateInstanceImpl()";
+            var supportType = $"{IdlNaming.GeneratedSupportTypeReference(recursiveTypeName!, implementationNamespace)}Support.GetOrCreateInstanceImpl()";
 
             return $"tsf.CreateSequenceWithAccessInfo(dtf, {supportType}.GetDynamicTypeInternal(isPublic), {Bound})";
         }
@@ -59,12 +60,12 @@ internal sealed partial class MemberEmissionPlan
     {
         if (HasAggregateElement || ElementType?.IsEnum == true || ElementSupportType is not null)
         {
-            return $"{IdlNaming.TypeReference(ElementSupportType ?? ElementCSharpType!, implementationNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic)";
+            return $"{IdlNaming.GeneratedSupportTypeReference(ElementSupportType ?? ElementCSharpType!, implementationNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic)";
         }
 
         return $"dtf.GetPrimitiveType<{IdlNaming.TypeReference(ElementCSharpType!, implementationNamespace)}>()";
     }
 
     private string ReferencedSupportType(string implementationNamespace) =>
-        $"{IdlNaming.TypeReference(SupportType ?? CSharpType, implementationNamespace)}Support.Instance";
+        $"{IdlNaming.GeneratedSupportTypeReference(SupportType ?? CSharpType, implementationNamespace)}Support.Instance";
 }

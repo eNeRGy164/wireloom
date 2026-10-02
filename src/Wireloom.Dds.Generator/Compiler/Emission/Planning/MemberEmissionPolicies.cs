@@ -2,17 +2,7 @@ using Wireloom.Compiler.Emission.Model;
 
 namespace Wireloom.Compiler.Emission.Planning;
 
-internal enum FieldEmissionShape
-{
-    Primitive,
-    String,
-    Enum,
-    Struct,
-    Alias,
-    Sequence,
-    Array
-}
-
+/// <summary>Identifies the managed initialization required by a member shape.</summary>
 internal enum ManagedInitializationKind
 {
     None,
@@ -21,6 +11,7 @@ internal enum ManagedInitializationKind
     Aggregate
 }
 
+/// <summary>Identifies the native cleanup required by a member shape.</summary>
 internal enum NativeDestroyKind
 {
     None,
@@ -33,21 +24,9 @@ internal enum NativeDestroyKind
 /// <summary>Classifies the target shape and lifecycle policies of a member.</summary>
 internal static class MemberEmissionPolicies
 {
-    internal static FieldEmissionShape GetShape(EmissionTypePlan type) =>
-        EmissionTypeProjector.UnwrapOptionalEmissionType(type) switch
-        {
-            PrimitiveEmissionType => FieldEmissionShape.Primitive,
-            StringEmissionType => FieldEmissionShape.String,
-            EnumEmissionType => FieldEmissionShape.Enum,
-            StructEmissionType or UnionEmissionType => FieldEmissionShape.Struct,
-            AliasEmissionType => FieldEmissionShape.Alias,
-            SequenceEmissionType => FieldEmissionShape.Sequence,
-            ArrayEmissionType => FieldEmissionShape.Array,
-            _ => throw new InvalidOperationException("Unknown emission type plan.")
-        };
-
+    /// <summary>Determines the managed initialization policy for a member.</summary>
     internal static ManagedInitializationKind GetManagedInitialization(
-        FieldEmissionShape shape,
+        EmissionShapeKind shape,
         bool isOptional,
         bool isSequence,
         bool isArray,
@@ -58,12 +37,12 @@ internal static class MemberEmissionPolicies
             return ManagedInitializationKind.None;
         }
 
-        if (shape == FieldEmissionShape.Sequence)
+        if (shape == EmissionShapeKind.Sequence)
         {
             return ManagedInitializationKind.Sequence;
         }
 
-        if (shape == FieldEmissionShape.Array)
+        if (shape == EmissionShapeKind.Array)
         {
             return ManagedInitializationKind.Array;
         }
@@ -71,6 +50,7 @@ internal static class MemberEmissionPolicies
         return isAggregate ? ManagedInitializationKind.Aggregate : ManagedInitializationKind.None;
     }
 
+    /// <summary>Determines the native destruction policy for a member.</summary>
     internal static NativeDestroyKind GetDestroyKind(
         bool isAggregate,
         bool isSequence,

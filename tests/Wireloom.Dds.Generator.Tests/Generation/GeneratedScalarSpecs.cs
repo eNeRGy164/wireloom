@@ -151,6 +151,21 @@ public sealed class GeneratedScalarSpecs
     }
 
     [Fact]
+    public void QualifiesRootEnumNativeStorageAgainstImplementationShadowing()
+    {
+        // Arrange
+        var input = Input(
+            "root-enum-shadowing.idl",
+            "enum Color { Red }; module Implementation { struct Color { long value; }; }; struct Sample { Color color; };");
+
+        // Act
+        var native = CompileSources(input)["Implementation.SampleUnmanaged.g.cs"].Source;
+
+        // Assert
+        native.ShouldContain("private global::Color color;");
+    }
+
+    [Fact]
     [Trait("Corpus", "C009")]
     public void EnumsEmitManagedNativePluginAndSupportSurfaces()
     {
