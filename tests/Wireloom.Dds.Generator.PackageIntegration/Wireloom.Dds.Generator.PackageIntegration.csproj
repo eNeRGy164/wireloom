@@ -35,5 +35,6 @@
 
   <ItemGroup>
     <AdditionalFiles Include="..\..\docs\corpus\idl\integration\shared\13-status.idl" Generate="false" />
+    <AdditionalFiles Include="..\UnmarkedAdditionalFile.idl" Generate="false" />
   </ItemGroup>
 </Project>

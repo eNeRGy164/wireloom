@@ -66,4 +66,12 @@ public sealed class PackageConsumptionSpecs
         sample.rows[0].Value[0].ShouldBe(11);
         sample.sequenceOfArrays.Count.ShouldBe(1);
     }
+
+    [Fact]
+    public void DoesNotGenerateAnUnmarkedAdditionalFile()
+    {
+        var type = new UnmarkedAdditionalFileType();
+
+        type.ShouldNotBeNull();
+    }
 }

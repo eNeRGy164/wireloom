@@ -36,7 +36,7 @@ public sealed class GeneratorSpecs
     {
         // Arrange
         var input = """module Sample { struct Value { long value; }; };""";
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: false);
@@ -51,7 +51,7 @@ public sealed class GeneratorSpecs
     {
         // Arrange
         var input = """module Sample { struct Value { long value; }; };""";
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp11, metadata, includeRuntime: true);
@@ -66,7 +66,7 @@ public sealed class GeneratorSpecs
     {
         // Arrange
         var input = """module Sample { struct Value { long value; }""";
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -89,7 +89,7 @@ public sealed class GeneratorSpecs
             struct Value { long value; };
         };
         """;
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -112,7 +112,7 @@ public sealed class GeneratorSpecs
     {
         // Arrange
         var input = """module Sample { @position(1) struct Value { long value; }; };""";
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -132,7 +132,7 @@ public sealed class GeneratorSpecs
     {
         // Arrange
         var input = """module Sample { interface Service { void ping(); }; };""";
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -155,7 +155,7 @@ public sealed class GeneratorSpecs
         #define CORPUS_PAIR(a, b) a
         const long Constant = CORPUS_PAIR(1);
         """;
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -178,7 +178,7 @@ public sealed class GeneratorSpecs
         #warning prefer the supported IDL form
         const long Value = 1;
         """;
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -199,7 +199,7 @@ public sealed class GeneratorSpecs
         #pragma message("build note")
         const long Value = 1;
         """;
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -216,7 +216,7 @@ public sealed class GeneratorSpecs
     {
         // Arrange
         var input = """module Sample { struct Value { sequence<long> values[2]; sequence<string<16>, 3> names[2]; }; };""";
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);

@@ -19,7 +19,7 @@ internal static class GeneratorInputFactory
         return new(
             input.Path,
             input.GetText(cancellationToken)?.ToString() ?? string.Empty,
-            !string.Equals(generate, "false", StringComparison.OrdinalIgnoreCase),
+            string.Equals(generate, "true", StringComparison.OrdinalIgnoreCase),
             string.Equals(strict, "true", StringComparison.OrdinalIgnoreCase),
             ParseSymbols(defines),
             ParseSymbols(undefines),

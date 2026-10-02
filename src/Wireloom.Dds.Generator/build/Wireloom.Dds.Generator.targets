@@ -4,7 +4,7 @@
          include graph so Roslyn invalidates when an include is edited. Keep
          project-level include directories in this evaluation-time item group;
          adding them only before CoreCompile is too late for incremental checks. -->
-    <AdditionalFiles Include="@(DdsIdl)" />
+    <AdditionalFiles Include="@(DdsIdl)" Generate="true" />
     <AdditionalFiles Include="**/*.idl" Exclude="@(DdsIdl)" Generate="false" />
     <AdditionalFiles
       Include="$(DdsIdlIncludeDirectories)\**\*.idl"
