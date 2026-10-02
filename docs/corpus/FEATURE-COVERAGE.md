@@ -2,7 +2,10 @@
 
 This is the feature index for the managed-generator compatibility corpus. Each case has a stable `C###` tag that can be used in test names, issues, and implementation work. The numbering follows the corpus manifest: positive features first, negative probes second, and integration entry points last.
 
-The status snapshot below comes from the corpus compliance run on 2026-09-27. It is source-generation coverage only; runtime, serialization, wire, and live DDS behavior are excluded.
+The status snapshot below was re-verified by the corpus compliance run on
+2026-10-02. The run passed 228 case checks; the export-only test remains skipped
+unless `CORPUS_GENERATOR_EXPORT_ROOT` is configured. This is source-generation
+coverage only; runtime, serialization, wire, and live DDS behavior are excluded.
 
 ## Status meanings
 

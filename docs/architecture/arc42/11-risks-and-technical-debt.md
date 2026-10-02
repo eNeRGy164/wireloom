@@ -14,12 +14,16 @@
 
 | Item                                                      | Impact                                                               | Priority | Notes                                                          |
 | :-------------------------------------------------------- | :------------------------------------------------------------------- | :------- | :------------------------------------------------------------- |
-| All inputs currently form one collected incremental batch | Unrelated roots may invalidate together and caching is less granular | Medium   | Introduce per-root graph caching when measurement justifies it |
+| All inputs currently form one collected incremental batch | Unrelated roots may invalidate together and caching is less granular | Medium   | The [incremental generator baseline](../../performance/incremental-generator-baseline.md) confirms current reuse and shared source-output invalidation; introduce per-root graph caching only when further measurement justifies it |
 | Some chapter and requirement details remain compact       | Future changes may need more explicit decision and quality records   | Medium   | Expand chapters or add ADRs when architecture changes          |
 
 A fixed preprocessing ceiling can reject unusually generated but finite IDL.
 The exact limits are therefore published and should only be raised with
 adversarial evidence that preserves deterministic build safety.
+
+The incremental baseline is measurement evidence rather than a caching design.
+It records current tracked-step reuse, elapsed timings, and the fact that a
+changed root or include still invalidates the shared source-output batch.
 
 The current deterministic limits are:
 
