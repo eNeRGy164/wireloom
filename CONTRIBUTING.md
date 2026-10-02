@@ -6,6 +6,8 @@ and maintenance. For consumer setup, see the [package usage guide](src/Wireloom.
 ## Before changing code
 
 - Read the root [`AGENTS.md`](AGENTS.md) for repository-wide working rules.
+- Follow the [code style guide](docs/CODE-STYLE.md) for formatting,
+  readability, API documentation, and maintainability conventions.
 - Read [architecture memory](.agents/architecture-memory.yaml) before changing
   architecture. Consult the linked [arc42 chapters](docs/architecture/arc42/index.md),
   decisions, and contracts when the change affects documented boundaries.
