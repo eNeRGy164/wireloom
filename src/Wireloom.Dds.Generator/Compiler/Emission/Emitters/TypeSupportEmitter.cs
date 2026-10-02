@@ -7,8 +7,8 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Owns the output entry point for native/plugin/type-support documents.</summary>
 internal static class TypeSupportEmitter
 {
-    public static void Emit(
-        EmissionResult result,
+    /// <summary>Emits native, plugin, and type-support documents for a data type.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(
         GeneratedTypeNames names,
         IReadOnlyList<MemberEmissionPlan> fields,
         IReadOnlyList<MemberEmissionPlan> inheritedFields,
@@ -16,10 +16,9 @@ internal static class TypeSupportEmitter
         string sourceIdlFileName,
         string? baseType,
         bool isRecursive) =>
-        EmitDocuments(result, names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive);
+        EmitDocuments(names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive);
 
-    private static void EmitDocuments(
-        EmissionResult result,
+    private static IReadOnlyList<GeneratedIdlSource> EmitDocuments(
         GeneratedTypeNames names,
         IReadOnlyList<MemberEmissionPlan> fields,
         IReadOnlyList<MemberEmissionPlan> inheritedFields,
@@ -46,9 +45,12 @@ internal static class TypeSupportEmitter
         NativeTypeEmitter.Emit(writer, implementationTypeName, fields, inheritedFields, names.ImplementationNamespace, baseUnmanagedType);
         writer.CloseBlock();
 
-        result.Add(names.Unmanaged, writer.ToString());
+        var documents = new List<GeneratedIdlSource>
+        {
+            new(names.Unmanaged.HintName, writer.ToString())
+        };
 
-        DynamicTypeEmitter.EmitStructPlugin(result, names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive);
+        documents.AddRange(DynamicTypeEmitter.EmitStructPlugin(names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive));
 
         writer = EmissionSupport.CreateSource(names.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
 
@@ -88,6 +90,7 @@ internal static class TypeSupportEmitter
 
         writer.CloseBlock();
 
-        result.Add(names.Support, writer.ToString());
+        documents.Add(new GeneratedIdlSource(names.Support.HintName, writer.ToString()));
+        return documents;
     }
 }

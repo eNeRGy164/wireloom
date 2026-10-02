@@ -17,23 +17,23 @@ internal sealed class IdlDeclarationEmitter(
             switch (declaration)
             {
                 case IdlConstantDeclaration constant:
-                    ConstantEmitter.Emit(compilation, result, constant, constant.SourceIdlFileName);
+                    result.AddRange(ConstantEmitter.Emit(compilation, constant, constant.SourceIdlFileName));
                     break;
 
                 case IdlEnumDeclaration @enum:
-                    EnumEmitter.Emit(result, @enum.Declaration, @enum.SourceIdlFileName);
+                    result.AddRange(EnumEmitter.Emit(@enum.Declaration, @enum.SourceIdlFileName));
                     break;
 
                 case IdlTypedefDeclaration typedef:
-                    CollectionAliasEmitter.Emit(compilation, result, typedef.Declaration, typedef.SourceIdlFileName);
+                    result.AddRange(CollectionAliasEmitter.Emit(compilation, typedef.Declaration, typedef.SourceIdlFileName));
                     break;
 
                 case IdlClassDeclaration @class:
-                    ClassEmitter.Emit(result, @class.Name, @class.Namespace, @class.Fields, @class.Extensibility, @class.SourceIdlFileName, @class.BaseType, @class.InheritedFields, @class.IsTopic);
+                    result.AddRange(ClassEmitter.Emit(@class.Name, @class.Namespace, @class.Fields, @class.Extensibility, @class.SourceIdlFileName, @class.BaseType, @class.InheritedFields, @class.IsTopic));
                     break;
 
                 case IdlUnionDeclaration union:
-                    UnionEmitter.Emit(result, union.Declaration, union.SourceIdlFileName);
+                    result.AddRange(UnionEmitter.Emit(union.Declaration, union.SourceIdlFileName));
                     break;
             }
         }

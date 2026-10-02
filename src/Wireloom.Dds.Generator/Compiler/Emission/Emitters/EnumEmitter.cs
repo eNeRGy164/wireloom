@@ -6,7 +6,8 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits managed enum, plugin, and type-support documents.</summary>
 internal static class EnumEmitter
 {
-    public static void Emit(EmissionResult result, IdlEnum declaration, string sourceIdlFileName)
+    /// <summary>Emits the managed enum, plugin, and type-support documents.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlEnum declaration, string sourceIdlFileName)
     {
         var names = IdlNaming.CreateGeneratedTypeNames(declaration.Namespace, declaration.Name);
         var writer = EmissionSupport.CreateSource(declaration.Namespace, [], sourceIdlFileName);
@@ -30,13 +31,14 @@ internal static class EnumEmitter
 
         writer.CloseBlock();
 
-        result.Add(names.Managed, writer.ToString());
-
-        EmitPlugin(result, declaration, names, sourceIdlFileName);
-        EmitTypeSupport(result, declaration, names, sourceIdlFileName);
+        return [
+            new GeneratedIdlSource(names.Managed.HintName, writer.ToString()),
+            .. EmitPlugin(declaration, names, sourceIdlFileName),
+            .. EmitTypeSupport(declaration, names, sourceIdlFileName)
+        ];
     }
 
-    private static void EmitPlugin(EmissionResult result, IdlEnum declaration, GeneratedTypeNames names, string sourceIdlFileName)
+    private static IReadOnlyList<GeneratedIdlSource> EmitPlugin(IdlEnum declaration, GeneratedTypeNames names, string sourceIdlFileName)
     {
         var typeName = names.ManagedTypeName;
         var runtimeName = names.RuntimeTypeName;
@@ -78,10 +80,10 @@ internal static class EnumEmitter
         writer.CloseBlock();
         writer.CloseBlock();
 
-        result.Add(names.Plugin, writer.ToString());
+        return [new GeneratedIdlSource(names.Plugin.HintName, writer.ToString())];
     }
 
-    private static void EmitTypeSupport(EmissionResult result, IdlEnum declaration, GeneratedTypeNames names, string sourceIdlFileName)
+    private static IReadOnlyList<GeneratedIdlSource> EmitTypeSupport(IdlEnum declaration, GeneratedTypeNames names, string sourceIdlFileName)
     {
         var typeName = names.ManagedTypeName;
 
@@ -107,6 +109,6 @@ internal static class EnumEmitter
         writer.Unindent();
         writer.CloseBlock();
 
-        result.Add(names.Support, writer.ToString());
+        return [new GeneratedIdlSource(names.Support.HintName, writer.ToString())];
     }
 }
