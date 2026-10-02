@@ -8,7 +8,7 @@ internal sealed class MemberEmissionFacts(IdlEmissionField field, string? curren
 {
     internal string? CurrentNamespace { get; } = currentNamespace;
     internal EmissionTypePlan Type { get; } = field.Type;
-    private EmissionShape Shape { get; } = field.Type.Shape;
+    private MemberEmissionShape Shape { get; } = new(field.Type);
     internal string Name { get; } = field.Name;
     internal string CSharpType { get; } = field.CSharpType;
     internal bool IsKey { get; } = field.IsKey;
@@ -19,6 +19,7 @@ internal sealed class MemberEmissionFacts(IdlEmissionField field, string? curren
     internal EmissionTypePlan? ElementType { get; } = field.ElementType;
     internal string? ElementCSharpType { get; } = field.ElementCSharpType;
     internal string? ElementSupportType { get; } = field.ElementSupportType;
+    internal EmissionTypePlan ValueType => EmissionTypeProjector.UnwrapValueEmissionType(Type);
     internal IReadOnlyList<int> Dimensions { get; } = field.Dimensions;
     internal IdlMemberValueMetadata? ValueMetadata { get; } = field.ValueMetadata;
     internal bool IsExternal { get; } = field.IsExternal;
@@ -31,6 +32,6 @@ internal sealed class MemberEmissionFacts(IdlEmissionField field, string? curren
     internal bool IsArray => Shape.IsArray;
     internal bool IsAggregate => Shape.IsAggregate;
     internal bool IsUnion => Shape.IsUnion;
-    internal bool IsStringSequence => IsSequence && Shape.Element?.IsString == true;
+    internal bool IsStringSequence => Shape.IsStringSequence;
     internal bool HasAggregateElement => Shape.HasAggregateElement;
 }
