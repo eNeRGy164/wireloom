@@ -29,7 +29,6 @@ tab_width = 4
 charset = utf-8
 end_of_line = crlf
 indent_style = space
-indent_size = 4
 
 # Layout: keep generated-source behavior easy to review.
 csharp_new_line_before_open_brace = all
@@ -46,7 +45,7 @@ csharp_space_between_method_declaration_parameter_list_parentheses = false
 csharp_space_between_parentheses = false
 csharp_space_before_open_square_brackets = false
 csharp_space_between_empty_square_brackets = false
-csharp_preserve_single_line_blocks = true
+csharp_preserve_single_line_blocks = false
 csharp_preserve_single_line_statements = false
 dotnet_style_operator_placement_when_wrapping = end_of_line
 csharp_style_namespace_declarations = file_scoped:suggestion
@@ -60,8 +59,9 @@ csharp_style_expression_bodied_properties = when_on_single_line:suggestion
 csharp_style_expression_bodied_indexers = when_on_single_line:suggestion
 csharp_style_expression_bodied_accessors = when_on_single_line:suggestion
 csharp_style_expression_bodied_operators = when_on_single_line:suggestion
-csharp_style_prefer_braces = true:suggestion
+csharp_style_prefer_braces = true:warning
 csharp_style_prefer_switch_expression = true:suggestion
+csharp_style_prefer_primary_constructors = true:suggestion
 csharp_style_prefer_pattern_matching = true:suggestion
 csharp_style_prefer_not_pattern = true:suggestion
 csharp_style_prefer_extended_property_pattern = true:suggestion
@@ -86,6 +86,10 @@ dotnet_style_qualification_for_event = false:suggestion
 dotnet_separate_import_directive_groups = false
 dotnet_sort_system_directives_first = true
 csharp_using_directive_placement = outside_namespace:suggestion
+
+# Public and internal APIs are part of the maintained generator surface. The
+# generator already emits its XML documentation file for package consumers.
+dotnet_diagnostic.CS1591.severity = warning
 
 # The generator targets netstandard2.0, which does not provide
 # GeneratedRegexAttribute without adding compatibility infrastructure.

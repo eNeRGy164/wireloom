@@ -21,5 +21,8 @@
   branch coverage, run Community Qodana, and confirm Coveralls passes after CI.
   See [CONTRIBUTING.md](CONTRIBUTING.md#quality-evidence) for commands and
   report checks. Keep `global.json` visible during Qodana.
+- Follow [the repository code style](docs/CODE-STYLE.md) for readability,
+  namespaces, API documentation, modern C# usage, and review-only conventions
+  that cannot be expressed reliably in `.editorconfig`.
 - Follow [the repository Git workflow](.agents/instructions/git-commit-workflow.md)
   for commit subjects and history.
