@@ -136,6 +136,8 @@ pre-generation step.
 | `DDSG0103` | A non-DDS IDL interface was ignored                                  | Use a DDS service interface when interface generation is required                                |
 | `DDSG0104` | A function-like macro was invoked with the wrong number of arguments | Correct the macro invocation; RTI-compatible expansion continues after the warning               |
 | `DDSG0105` | A direct array of sequences may not preserve IDL semantics           | Use a typedef for the sequence before declaring the array                                        |
+| `DDSG0106` | An active `#warning` directive was encountered                       | Review the warning in the IDL or included file; preprocessing and generation continue             |
+| `DDSG0107` | An active `#pragma message` directive was encountered                | Review the informational message in the IDL or included file; generation continues               |
 
 Diagnostics are owned by the generator and use the original IDL/include
 location where one is available. Configure severity through standard
