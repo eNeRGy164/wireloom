@@ -106,16 +106,24 @@ internal static class IdlNaming
     }
 
     /// <summary>Resolves a generated type from its declaring namespace in a generated document.</summary>
-    internal static string TypeReference(string typeName, string? declaringNamespace, string? currentNamespace) =>
-        TypeReference(
-            declaringNamespace is null
-                ? EscapeIdentifier(typeName)
-                : EscapeQualifiedIdentifier($"{declaringNamespace}.{typeName}"),
-            currentNamespace);
+    internal static string TypeReference(string typeName, string? declaringNamespace, string? currentNamespace)
+    {
+        if (declaringNamespace is null)
+        {
+            return ResolvedTypeReference(typeName, currentNamespace);
+        }
+
+        return TypeReference(EscapeQualifiedIdentifier($"{declaringNamespace}.{typeName}"), currentNamespace);
+    }
 
     /// <summary>Creates an unambiguous C# reference for a resolved IDL type name.</summary>
     internal static string ResolvedTypeReference(string qualifiedName, string? currentNamespace)
     {
+        if (qualifiedName.StartsWith("global::", StringComparison.Ordinal))
+        {
+            return qualifiedName;
+        }
+
         var normalized = qualifiedName.Replace("::", ".");
         var escaped = EscapeQualifiedIdentifier(normalized);
 
@@ -132,16 +140,43 @@ internal static class IdlNaming
         return $"global::{escaped}";
     }
 
+    /// <summary>Preserves the declaring scope needed to resolve a generated support type.</summary>
+    internal static string SupportTypeName(string qualifiedName, string? currentNamespace)
+    {
+        var escaped = EscapeQualifiedIdentifier(qualifiedName);
+        if (currentNamespace is not null && qualifiedName.IndexOf('.') < 0)
+        {
+            return $"global::{escaped}";
+        }
+
+        return escaped;
+    }
+
     /// <summary>Creates a shadowing-safe reference to a generated type-support class.</summary>
     internal static string GeneratedSupportTypeReference(string typeName, string? implementationNamespace)
     {
-        if (typeName.StartsWith("global::", StringComparison.Ordinal)
-            || typeName.IndexOf('.') < 0)
+        const string implementationSuffix = ".Implementation";
+
+        if (typeName.StartsWith("global::", StringComparison.Ordinal))
         {
             return typeName;
         }
 
-        const string implementationSuffix = ".Implementation";
+        if (typeName.IndexOf('.') < 0)
+        {
+            if (implementationNamespace is null)
+            {
+                return typeName;
+            }
+
+            if (string.Equals(implementationNamespace, "Implementation", StringComparison.Ordinal))
+            {
+                return $"global::{EscapeIdentifier(typeName)}";
+            }
+
+            return typeName;
+        }
+
         var declarationNamespace = implementationNamespace;
         if (declarationNamespace?.EndsWith(implementationSuffix, StringComparison.Ordinal) == true)
         {
@@ -154,6 +189,10 @@ internal static class IdlNaming
     /// <summary>Creates the deterministic generated-document hint name.</summary>
     internal static GeneratedName CreateGeneratedName(string? currentNamespace, string typeName) =>
         new(currentNamespace ?? string.Empty, EscapeIdentifier(typeName));
+
+    /// <summary>Creates the authoritative generated identities for a declaration.</summary>
+    internal static GeneratedTypeNames CreateGeneratedTypeNames(string? currentNamespace, string declarationName) =>
+        new(currentNamespace, declarationName);
 
     /// <summary>Escapes each segment of a qualified C# identifier.</summary>
     internal static string EscapeQualifiedIdentifier(string identifier) =>

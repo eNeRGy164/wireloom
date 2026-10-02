@@ -106,7 +106,7 @@ internal sealed class CompilationResolver(IdlSymbolTable symbols)
             string? implementationNamespace;
             if (currentNamespace is null)
             {
-                implementationNamespace = null;
+                implementationNamespace = "Implementation";
             }
             else
             {

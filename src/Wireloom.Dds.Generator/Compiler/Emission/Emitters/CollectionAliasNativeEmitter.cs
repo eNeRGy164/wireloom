@@ -13,7 +13,18 @@ internal static class CollectionAliasNativeEmitter
         var elementType = plan.ElementType;
         var typeName = names.ManagedTypeName;
         var implementationTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.ImplementationNamespace);
-        var implementationElementType = IdlNaming.TypeReference(elementType, names.ImplementationNamespace);
+        var elementPlan = EmissionTypeProjector.UnwrapValueEmissionType(plan.ElementPlan);
+        string implementationElementType;
+        if (names.Namespace is null
+            && elementPlan is not PrimitiveEmissionType
+            && elementPlan is not StringEmissionType)
+        {
+            implementationElementType = IdlNaming.TypeReference(elementType, names.Namespace, names.ImplementationNamespace);
+        }
+        else
+        {
+            implementationElementType = IdlNaming.TypeReference(elementType, names.ImplementationNamespace);
+        }
         var isString = plan.IsString;
         var isStringSequence = plan is { IsSequence: true, IsString: true };
         var stringSequenceNativeType = isStringSequence && plan.IsWideString
