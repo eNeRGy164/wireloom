@@ -6,6 +6,7 @@ using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing;
 
+/// <summary>Parses top-level IDL declarations and coordinates semantic binding.</summary>
 internal sealed class IdlDeclarationParser
 {
     private readonly IdlParseContext context;
@@ -15,6 +16,7 @@ internal sealed class IdlDeclarationParser
     private readonly IdlStructDeclarationParser structParser;
     private readonly IdlEnumDeclarationParser enumParser;
 
+    /// <summary>Initializes a declaration parser with symbol and diagnostic services.</summary>
     internal IdlDeclarationParser(IdlSymbolTable symbols, CancellationToken cancellationToken, ICollection<IdlDiagnostic>? diagnostics = null)
     {
         context = new IdlParseContext(symbols, cancellationToken, diagnostics);
@@ -28,10 +30,7 @@ internal sealed class IdlDeclarationParser
     internal IReadOnlyList<IdlDeclaration> Declarations =>
         context.Declarations;
 
-    internal bool TryGetClass(string name, out IdlClassDeclaration declaration) =>
-        context.Classes.TryGetValue(name, out declaration);
-
-    /// <summary>Parses declarations in one module and emits their documents.</summary>
+    /// <summary>Parses declarations from an IDL input.</summary>
     public void Parse(
         string declarations,
         IdlInput input,
@@ -127,8 +126,11 @@ internal sealed class IdlDeclarationParser
 
     }
 
-    /// <summary>Validates cross-declaration typedef references after the input graph is complete.</summary>
-    internal void ValidateTypedefs() => context.ValidateTypedefs();
+    /// <summary>Binds all parsed declarations.</summary>
+    internal void Bind() => context.BindDeclarations();
+
+    /// <summary>Validates all parsed declarations after binding completes with the requested strictness.</summary>
+    internal void Validate(bool strict) => context.Validate(strict);
 
     private static readonly HashSet<string> UnsupportedAnnotationNames =
         ["position", "bit_bound", "service"];

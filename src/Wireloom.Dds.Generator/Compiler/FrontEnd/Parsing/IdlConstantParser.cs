@@ -23,13 +23,13 @@ internal sealed class IdlConstantParser
 
         var name = constant.Groups["name"].Value;
         var qualified = context.Qualify(name, currentNamespace);
-        context.EnsureNewName(input, baseOffset + position, qualified);
+        context.EnsureNewName(input, baseOffset + position, qualified, isType: false);
 
         var type = NormalizeIdlType(constant.Groups["type"].Value);
         var expression = constant.Groups["expression"].Value.Trim();
-        var integerValue = TryEvaluateIntegerConstant(input, baseOffset + position, type, expression, currentNamespace);
-        IdlSemanticValidator.ValidateGeneratedDeclarationName(input, context.MapOffset(baseOffset + position), name, ["Value"]);
-        var declaration = new IdlConstantDeclaration(name, type, expression, currentNamespace, Path.GetFileName(input.Path), integerValue);
+        var declarationOffset = context.MapOffset(baseOffset + position);
+        context.DeferGeneratedDeclarationNameValidation(input, declarationOffset, name, ["Value"]);
+        var declaration = new IdlConstantDeclaration(name, type, expression, currentNamespace, Path.GetFileName(input.Path), integerValue: null, input, declarationOffset);
 
         context.Symbols.AddConstant(qualified, declaration);
         context.Declarations.Add(declaration);
@@ -37,27 +37,6 @@ internal sealed class IdlConstantParser
         position += constant.Length;
 
         return true;
-    }
-
-    private BigInteger? TryEvaluateIntegerConstant(IdlInput input, int offset, string type, string expression, string? currentNamespace)
-    {
-        if (type is "string" or "wstring" or "float" or "double" or "long double" or "boolean" or "char" or "wchar")
-        {
-            return null;
-        }
-
-        try
-        {
-            var value = IdlConstantExpressionEvaluator.Evaluate(expression, context.Symbols, currentNamespace);
-
-            ValidateConstantRange(input, context.MapOffset(offset), type, value);
-
-            return value;
-        }
-        catch (FormatException exception)
-        {
-            throw new IdlException(input, context.MapOffset(offset), $"Invalid {type} constant expression: {exception.Message}");
-        }
     }
 
     internal static void ValidateConstantRange(IdlInput input, int offset, string type, BigInteger value)

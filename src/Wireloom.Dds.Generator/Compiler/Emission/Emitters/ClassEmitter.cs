@@ -41,7 +41,7 @@ internal static class ClassEmitter
 
         if (baseType is not null)
         {
-            typeSummary += $" It derives from <see cref=\"{IdlNaming.TypeReference(baseType, currentNamespace)}\"/>.";
+            typeSummary += $" It derives from <see cref=\"{IdlNaming.ResolvedTypeReference(baseType, currentNamespace)}\"/>.";
         }
 
         typeSummary += $" It is marked as <c>{extensibility.ToString().ToLowerInvariant()}</c>.";
@@ -51,7 +51,7 @@ internal static class ClassEmitter
         }
 
         writer.WriteXmlSummary(typeSummary);
-        var baseReference = baseType is null ? null : IdlNaming.TypeReference(baseType, currentNamespace);
+        var baseReference = baseType is null ? null : IdlNaming.ResolvedTypeReference(baseType, currentNamespace);
         writer.OpenBlock($"public partial class {escapedName} : {(baseReference is null ? "" : baseReference + ", ")}global::System.IEquatable<{escapedName}>");
 
         ManagedDataTypeEmitter.Emit(

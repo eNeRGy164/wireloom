@@ -10,9 +10,16 @@ internal sealed class IdlTypedef(string name, string? @namespace, string target,
     public bool IsArray => Target == "array";
     public bool IsCollection => IsSequence || IsArray;
     public string? ElementType { get; } = elementType;
-    public int? Bound { get; } = bound;
+    public int? Bound { get; private set; } = bound;
     public IReadOnlyList<int> Dimensions { get; } = dimensions ?? [];
     public bool IsString => Target is "string" or "wstring";
     public bool IsWideString { get; } = isWideString;
-    public int StringBound { get; } = stringBound ?? 255;
+    public int StringBound { get; private set; } = stringBound ?? 255;
+
+    /// <summary>Applies a sequence bound resolved after parsing.</summary>
+    internal void SetBound(int value) => Bound = value;
+
+    /// <summary>Applies a string bound resolved after parsing.</summary>
+    internal void SetStringBound(int value) => StringBound = value;
+
 }

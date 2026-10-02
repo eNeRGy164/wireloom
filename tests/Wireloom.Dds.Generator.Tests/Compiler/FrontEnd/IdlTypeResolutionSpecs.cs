@@ -20,7 +20,7 @@ public sealed class IdlTypeResolutionSpecs
 
         // Assert
         Should.NotThrow(parser.Bind);
-        Should.Throw<IdlException>(parser.Validate).Message.ShouldContain("collides with a generated member");
+        Should.Throw<IdlException>(() => parser.Validate(strict: false)).Message.ShouldContain("collides with a generated member");
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public sealed class IdlTypeResolutionSpecs
         parser.Bind();
 
         // Act
-        var exception = Should.Throw<IdlException>(parser.Validate);
+        var exception = Should.Throw<IdlException>(() => parser.Validate(strict: false));
 
         // Assert
         exception.Input.ShouldBe(first);
@@ -129,6 +129,21 @@ public sealed class IdlTypeResolutionSpecs
     }
 
     [Fact]
+    public void DoesNotBindAConstantAsAForwardMemberType()
+    {
+        // Arrange
+        var input = Input(
+            "constant-member-type.idl",
+            "struct Holder { Later value; }; const long Later = 1;");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => CompileSources(input));
+
+        // Assert
+        exception.Message.ShouldContain("Unknown struct type: Later");
+    }
+
+    [Fact]
     public void BindsRawTypeReferencesThroughTheSemanticBinder()
     {
         // Arrange
@@ -140,6 +155,57 @@ public sealed class IdlTypeResolutionSpecs
 
         // Assert
         bound.ShouldBeOfType<IdlType.Primitive>().Name.ShouldBe("long");
+    }
+
+    [Fact]
+    public void ResolvesUserDefinedTypeNamesWithBuiltinPrefixes()
+    {
+        // Arrange
+        var input = Input(
+            "builtin-prefixes.idl",
+            """
+            struct stringRecord { long value; };
+            struct wstringRecord { long value; };
+            struct sequenceRecord { long value; };
+            typedef stringRecord StringAlias;
+            typedef wstringRecord WideStringAlias;
+            struct Holder { StringAlias text; WideStringAlias wideText; sequenceRecord values; };
+            union Choice switch(long) { case 1: stringRecord text; default: sequenceRecord values; };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var holder = documents["Holder.g.cs"].Source;
+        holder.ShouldContain("public stringRecord Text");
+        holder.ShouldContain("public wstringRecord WideText");
+        holder.ShouldContain("public sequenceRecord Values");
+
+        var choice = documents["Choice.g.cs"].Source;
+        choice.ShouldContain("public stringRecord text");
+        choice.ShouldContain("public sequenceRecord values");
+    }
+
+    [Fact]
+    public void ResolvesConstantAndDefaultBoundsOnStringsNestedInCollectionAliases()
+    {
+        // Arrange
+        var input = Input(
+            "nested-string-bound.idl",
+            """
+            const long Bound = 9;
+            typedef sequence<string<Bound>, 2> Names;
+            typedef sequence<string, 2> PlainNames;
+            struct Holder { sequence<string, 2> values; };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Implementation.NamesUnmanaged.g.cs"].Source.ShouldContain("maxStrLen: 9");
+        documents["Implementation.PlainNamesUnmanaged.g.cs"].Source.ShouldContain("maxStrLen: 255");
     }
 
     [Fact]
@@ -385,6 +451,128 @@ public sealed class IdlTypeResolutionSpecs
 
         // Assert
         var baseType = documents["D.E.F.Base.g.cs"].Source;
-        baseType.ShouldContain("public partial class Base : A.B.C.Header");
+        baseType.ShouldContain("public partial class Base : global::A.B.C.Header");
+    }
+
+    [Fact]
+    public void QualifiesAbsoluteStructBaseNamesAgainstShadowingNamespaces()
+    {
+        // Arrange
+        var input = Input(
+            "base-shadowing.idl",
+            """
+            module Shared {
+                struct Base { long rootValue; };
+            };
+            module Example {
+                module Shared {
+                    struct Base { long shadowValue; };
+                };
+                struct Derived : ::Shared::Base { long localValue; };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var derived = documents["Example.Derived.g.cs"].Source;
+        derived.ShouldContain("public partial class Derived : global::Shared.Base");
+        derived.ShouldContain("public Derived(int rootValue, int localValue) : base(rootValue)");
+    }
+
+    [Fact]
+    public void BindsAggregateInheritanceBeforeEmission()
+    {
+        // Arrange
+        var input = Input(
+            "inheritance-binding.idl",
+            "struct Derived : Missing { long value; };");
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        parser.Parse(input.Text, input, 0, currentNamespace: null);
+
+        // Act
+        var exception = Should.Throw<IdlException>(parser.Bind);
+
+        // Assert
+        exception.Message.ShouldContain("Unknown struct base type: Missing");
+        exception.Input.ShouldBe(input);
+        exception.Offset.ShouldBe(input.Text.IndexOf("Missing", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RejectsNonAggregateBaseTypesBeforeEmission()
+    {
+        // Arrange
+        var input = Input(
+            "non-aggregate-base.idl",
+            "enum Base { Value }; struct Derived : Base { long value; };");
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        parser.Parse(input.Text, input, 0, currentNamespace: null);
+
+        // Act
+        var exception = Should.Throw<IdlException>(parser.Bind);
+
+        // Assert
+        exception.Message.ShouldContain("Unknown struct base type: Base");
+        exception.Input.ShouldBe(input);
+        exception.Offset.ShouldBe(input.Text.LastIndexOf("Base", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RejectsCyclicAggregateInheritanceBeforeEmission()
+    {
+        // Arrange
+        var input = Input(
+            "cyclic-inheritance.idl",
+            "struct First : Second { long first; }; struct Second : First { long second; };");
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        parser.Parse(input.Text, input, 0, currentNamespace: null);
+
+        // Act
+        var exception = Should.Throw<IdlException>(parser.Bind);
+
+        // Assert
+        exception.Message.ShouldContain("Cyclic struct inheritance detected: First");
+        exception.Input.ShouldBe(input);
+        exception.Offset.ShouldBe(input.Text.IndexOf("Second", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ValidatesDerivedKeysBeforeEmission()
+    {
+        // Arrange
+        var input = Input(
+            "strict-inheritance.idl",
+            "struct Base { @key long tenant; }; struct Derived : Base { @key long localId; };");
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        parser.Parse(input.Text, input, 0, currentNamespace: null);
+        parser.Bind();
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => parser.Validate(strict: true));
+
+        // Assert
+        exception.Message.ShouldContain("derived from a struct/valuetype can not contain @key fields");
+        exception.Input.ShouldBe(input);
+        exception.Offset.ShouldBe(input.Text.IndexOf("long localId", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void StrictValidationAllowsDerivedAggregatesWithoutDirectKeys()
+    {
+        // Arrange
+        var input = Input(
+            "strict-inheritance-without-key.idl",
+            "struct Base { @key long tenant; }; struct Derived : Base { long localId; };");
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        parser.Parse(input.Text, input, 0, currentNamespace: null);
+        parser.Bind();
+
+        // Act
+        var exception = Record.Exception(() => parser.Validate(strict: true));
+
+        // Assert
+        exception.ShouldBeNull();
     }
 }
