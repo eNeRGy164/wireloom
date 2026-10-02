@@ -30,6 +30,11 @@ internal sealed class IdlUnionParser
         var discriminatorIdlType = NormalizeIdlType(unionDeclaration.Groups["discriminator"].Value);
         var discriminatorQualified = ResolveTypeName(discriminatorIdlType, currentNamespace);
         var discriminatorIsEnum = context.Symbols.TryGetEnum(discriminatorQualified, out var discriminatorEnum);
+        if (!discriminatorIsEnum && !IsPrimitive(discriminatorIdlType))
+        {
+            throw new IdlException(input, context.MapOffset(baseOffset + position), $"Unknown union discriminator type: {discriminatorIdlType}");
+        }
+
         var unionBody = unionDeclaration.Groups["body"];
         var branches = new List<IdlUnionBranch>();
         var branchNames = new HashSet<string>(StringComparer.Ordinal);

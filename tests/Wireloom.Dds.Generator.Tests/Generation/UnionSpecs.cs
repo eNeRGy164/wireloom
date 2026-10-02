@@ -7,6 +7,20 @@ namespace Wireloom.Generation.Tests;
 public sealed class UnionSpecs
 {
     [Fact]
+    public void RejectsUnknownUnionDiscriminatorTypes()
+    {
+        // Arrange
+        var input = Input("unknown-discriminator.idl",
+            "module Example { union Choice switch(lo_ng) { case 1: long value; default: boolean flag; }; };");
+
+        // Act
+        var action = () => CompileSources(input);
+
+        // Assert
+        Should.Throw<IdlException>(action).Message.ShouldBe("Unknown union discriminator type: lo_ng");
+    }
+
+    [Fact]
     public void EmitsUnionManagedNativePluginAndTypeSupportDocuments()
     {
         // Arrange
