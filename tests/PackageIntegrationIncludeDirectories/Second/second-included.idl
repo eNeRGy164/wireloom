@@ -1,0 +1,5 @@
+module PackageIntegrationIncludes {
+    struct SecondIncluded {
+        string text;
+    };
+};

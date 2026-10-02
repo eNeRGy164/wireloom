@@ -11,7 +11,7 @@
     <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
     <!-- Keep this packed-analyzer integration test isolated from stale global package contents. -->
     <RestorePackagesPath>$(MSBuildProjectDirectory)\obj\packages</RestorePackagesPath>
-    <DdsIdlIncludeDirectories>$(MSBuildProjectDirectory)\..\..\docs\corpus\idl\integration</DdsIdlIncludeDirectories>
+    <DdsIdlIncludeDirectories>$(MSBuildProjectDirectory)\..\..\docs\corpus\idl\integration;$(MSBuildProjectDirectory)\..\PackageIntegrationIncludeDirectories\First;$(MSBuildProjectDirectory)\..\PackageIntegrationIncludeDirectories\Second</DdsIdlIncludeDirectories>
   </PropertyGroup>
   <ItemGroup>
     <!-- Intentionally no ProjectReference: this test consumes the packed analyzer. -->
@@ -31,9 +31,15 @@
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-modules.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-alias-inheritance.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\collections\13-compositions.idl" />
+    <DdsIdl Include="..\PackageIntegrationIncludeDirectories\FirstRoot.idl" />
+    <DdsIdl Include="..\PackageIntegrationIncludeDirectories\SecondRoot.idl" />
   </ItemGroup>
 
   <ItemGroup>
     <AdditionalFiles Include="..\..\docs\corpus\idl\integration\shared\13-status.idl" Generate="false" />
+    <AdditionalFiles Include="..\UnmarkedAdditionalFile.idl" Generate="false" />
+    <!-- This root is intentionally also listed as AdditionalFiles. The
+         package target must preserve its DdsIdl generation-root semantics. -->
+    <AdditionalFiles Include="..\PackageIntegrationIncludeDirectories\FirstRoot.idl" />
   </ItemGroup>
 </Project>

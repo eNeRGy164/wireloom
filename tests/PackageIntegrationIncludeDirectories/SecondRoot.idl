@@ -1,0 +1,7 @@
+#include <second-included.idl>
+
+module PackageIntegrationIncludes {
+    struct SecondRoot {
+        SecondIncluded value;
+    };
+};

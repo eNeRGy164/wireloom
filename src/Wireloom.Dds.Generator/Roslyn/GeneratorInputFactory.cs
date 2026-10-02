@@ -19,15 +19,24 @@ internal static class GeneratorInputFactory
         return new(
             input.Path,
             input.GetText(cancellationToken)?.ToString() ?? string.Empty,
-            !string.Equals(generate, "false", StringComparison.OrdinalIgnoreCase),
+            string.Equals(generate, "true", StringComparison.OrdinalIgnoreCase),
             string.Equals(strict, "true", StringComparison.OrdinalIgnoreCase),
             ParseSymbols(defines),
             ParseSymbols(undefines),
-            ParseSymbols(includeDirectories));
+            ParseIncludeDirectories(includeDirectories));
     }
 
-    private static List<string> ParseSymbols(string? value) =>
-        string.IsNullOrWhiteSpace(value)
-            ? []
-            : [.. value!.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).Where(s => s.Length > 0)];
+    private static List<string> ParseSymbols(string? value) => ParseValues(value, [';']);
+
+    private static List<string> ParseIncludeDirectories(string? value) => ParseValues(value, [';', '|']);
+
+    private static List<string> ParseValues(string? value, char[] separators)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return [];
+        }
+
+        return [.. value!.Split(separators, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).Where(s => s.Length > 0)];
+    }
 }

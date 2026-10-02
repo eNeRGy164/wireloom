@@ -66,4 +66,34 @@ public sealed class PackageConsumptionSpecs
         sample.rows[0].Value[0].ShouldBe(11);
         sample.sequenceOfArrays.Count.ShouldBe(1);
     }
+
+    [Fact]
+    public void ResolvesAngleIncludesFromMultipleProjectDirectories()
+    {
+        // Arrange
+        var first = new PackageIntegrationIncludes.FirstRoot
+        {
+            value = new PackageIntegrationIncludes.FirstIncluded { text = "first" }
+        };
+        var second = new PackageIntegrationIncludes.SecondRoot
+        {
+            value = new PackageIntegrationIncludes.SecondIncluded { text = "second" }
+        };
+
+        // Act
+        var firstText = first.value.text;
+        var secondText = second.value.text;
+
+        // Assert
+        firstText.ShouldBe("first");
+        secondText.ShouldBe("second");
+    }
+
+    [Fact]
+    public void DoesNotGenerateAnUnmarkedAdditionalFile()
+    {
+        var type = new UnmarkedAdditionalFileType();
+
+        type.ShouldNotBeNull();
+    }
 }
