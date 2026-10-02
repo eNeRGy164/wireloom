@@ -108,6 +108,25 @@ internal static class IdlNaming
                 : EscapeQualifiedIdentifier($"{declaringNamespace}.{typeName}"),
             currentNamespace);
 
+    /// <summary>Creates an unambiguous C# reference for a resolved IDL type name.</summary>
+    internal static string ResolvedTypeReference(string qualifiedName, string? currentNamespace)
+    {
+        var normalized = qualifiedName.Replace("::", ".");
+        var escaped = EscapeQualifiedIdentifier(normalized);
+
+        if (currentNamespace is not null && normalized.StartsWith($"{currentNamespace}.", StringComparison.Ordinal))
+        {
+            return TypeReference(escaped, currentNamespace);
+        }
+
+        if (currentNamespace is null)
+        {
+            return escaped;
+        }
+
+        return $"global::{escaped}";
+    }
+
     /// <summary>Creates the deterministic generated-document hint name.</summary>
     internal static GeneratedName CreateGeneratedName(string? currentNamespace, string typeName) =>
         new(currentNamespace ?? string.Empty, EscapeIdentifier(typeName));

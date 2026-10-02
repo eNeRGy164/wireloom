@@ -36,10 +36,10 @@ public sealed class EmissionResultSpecs
     public void MemberPoliciesKeepCollectionInitializationAndLifecycleDecisionsTogether()
     {
         // Arrange
-        var sequenceShape = MemberEmissionPolicies.GetShape(new SequenceEmissionType(
+        var sequenceShape = new SequenceEmissionType(
             new PrimitiveEmissionType("long", "int"),
             3,
-            "ISequence<int>"));
+            "ISequence<int>").Shape.Kind;
 
         // Act
         var initialization = MemberEmissionPolicies.GetManagedInitialization(

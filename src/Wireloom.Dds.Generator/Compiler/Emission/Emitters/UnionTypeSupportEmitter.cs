@@ -106,7 +106,7 @@ internal static class UnionTypeSupportEmitter
         }
         else
         {
-            writer.WriteLine($".WithDiscriminator(dtf.GetPrimitiveType<{declaration.DiscriminatorCSharpType}>())");
+            writer.WriteLine($".WithDiscriminator(dtf.GetPrimitiveType<{declaration.PrimitiveDiscriminatorDynamicType}>())");
         }
 
         writer.WriteLine($".WithExtensibility(ExtensibilityKind.{declaration.Extensibility})");

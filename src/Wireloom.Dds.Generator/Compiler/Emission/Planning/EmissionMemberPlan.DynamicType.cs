@@ -6,11 +6,12 @@ namespace Wireloom.Compiler.Emission.Planning;
 /// <summary>Builds dynamic-type expressions for a member emission plan.</summary>
 internal sealed partial class MemberEmissionPlan
 {
-    public string BuildDynamicTypeExpression(string implementationNamespace, string? recursiveTypeName = null, bool isRecursive = false) => shape switch
+    /// <summary>Builds the dynamic-type expression for this member.</summary>
+    public string BuildDynamicTypeExpression(string implementationNamespace, string? recursiveTypeName = null, bool isRecursive = false) => shape.Kind switch
     {
-        FieldEmissionShape.Sequence or FieldEmissionShape.Array => BuildCollectionDynamicType(implementationNamespace, recursiveTypeName, isRecursive),
-        FieldEmissionShape.Struct or FieldEmissionShape.Enum or FieldEmissionShape.Alias => ReferencedSupportType(implementationNamespace) + ".GetDynamicTypeInternal(isPublic)",
-        FieldEmissionShape.String => BuildStringDynamicType(),
+        EmissionShapeKind.Sequence or EmissionShapeKind.Array => BuildCollectionDynamicType(implementationNamespace, recursiveTypeName, isRecursive),
+        EmissionShapeKind.Struct or EmissionShapeKind.Union or EmissionShapeKind.Enum or EmissionShapeKind.Alias => ReferencedSupportType(implementationNamespace) + ".GetDynamicTypeInternal(isPublic)",
+        EmissionShapeKind.String => BuildStringDynamicType(),
         _ => $"dtf.GetPrimitiveType<{PrimitiveDynamicType()}>()",
     };
 

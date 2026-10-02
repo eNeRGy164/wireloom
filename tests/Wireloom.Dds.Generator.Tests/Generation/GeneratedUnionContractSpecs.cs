@@ -172,6 +172,71 @@ public sealed class GeneratedUnionContractSpecs
     }
 
     [Fact]
+    public void WideCharacterDiscriminatorsPreserveNativeStorageAndConversions()
+    {
+        // Arrange
+        var input = Input("wide-character-union.idl",
+            """
+            module WideCharacterUnion {
+                union Choice switch(wchar) {
+                    case 97: long letter;
+                    default: string text;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var unmanaged = documents["WideCharacterUnion.Implementation.ChoiceUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("private short _discriminator");
+        unmanaged.ShouldContain("switch ((char)_discriminator)");
+        unmanaged.ShouldContain("_discriminator = (short)sample.Discriminator;");
+        unmanaged.ShouldContain("_discriminator = (short)Choice.DefaultDiscriminator;");
+
+        var plugin = documents["WideCharacterUnion.Implementation.ChoicePlugin.g.cs"].Source;
+        plugin.ShouldContain("WithDiscriminator(dtf.GetPrimitiveType<DynamicTypeFactory.WideCharType>())");
+    }
+
+    [Fact]
+    public void OctetDiscriminatorsUseTheDdsPrimitiveDynamicType()
+    {
+        // Arrange
+        var input = Input("octet-union.idl",
+            """
+            module OctetUnion {
+                union Choice switch(octet) {
+                    case 0: long zero;
+                    default: string other;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var plugin = documents["OctetUnion.Implementation.ChoicePlugin.g.cs"].Source;
+        plugin.ShouldContain("WithDiscriminator(dtf.GetPrimitiveType<Octet>())");
+        plugin.ShouldNotContain("WithDiscriminator(dtf.GetPrimitiveType<byte>())");
+    }
+
+    [Fact]
+    public void DefaultOnlyUnionsGenerateUnconditionalBranchAccess()
+    {
+        // Arrange
+        var input = Input("default-only-union.idl", "union Choice switch(long) { default: long value; };");
+
+        // Act
+        var managed = CompileSources(input)["Choice.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("if (false)");
+        managed.ShouldNotContain("if ()");
+    }
+
+    [Fact]
     [Trait("Corpus", "C028")]
     public void BooleanDiscriminatorsPreserveManagedAndNativeRepresentations()
     {
@@ -181,7 +246,7 @@ public sealed class GeneratedUnionContractSpecs
             module BooleanUnion {
                 union Choice switch(boolean) {
                     case TRUE: long enabled;
-                    case FALSE: string disabled;
+                    case FALSE: sequence<long, 2> disabled;
                 };
             };
             """);
@@ -205,6 +270,7 @@ public sealed class GeneratedUnionContractSpecs
         unmanaged.ShouldContain("switch (global::System.Convert.ToBoolean(_discriminator))");
         unmanaged.ShouldContain("_discriminator = global::System.Convert.ToByte(sample.Discriminator);");
         unmanaged.ShouldContain("_discriminator = global::System.Convert.ToByte(Choice.DefaultDiscriminator);");
+        unmanaged.ShouldContain("if (sample.Discriminator != global::System.Convert.ToBoolean(_discriminator))");
         unmanaged.ShouldNotContain("default:");
 
         var plugin = documents["BooleanUnion.Implementation.ChoicePlugin.g.cs"].Source;
