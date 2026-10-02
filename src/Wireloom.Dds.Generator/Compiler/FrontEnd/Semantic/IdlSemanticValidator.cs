@@ -7,10 +7,21 @@ namespace Wireloom.Compiler.FrontEnd.Semantic;
 /// <summary>Owns front-end validation that does not produce target code.</summary>
 internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
 {
-    /// <summary>Ensures that a declaration name is unique.</summary>
-    public void EnsureNewName(IdlInput input, int offset, string name)
+    private readonly HashSet<string> duplicateNames = new(StringComparer.Ordinal);
+
+    /// <summary>Registers a declaration name while retaining duplicate evidence for validation.</summary>
+    public void RegisterName(string name)
     {
-        if (!symbols.AddName(name) || symbols.ContainsEnum(name) || symbols.ContainsTypedef(name))
+        if (!symbols.AddName(name))
+        {
+            duplicateNames.Add(name);
+        }
+    }
+
+    /// <summary>Validates a declaration name after parsing has registered all symbols.</summary>
+    public void ValidateNewName(IdlInput input, int offset, string name)
+    {
+        if (duplicateNames.Contains(name))
         {
             throw new IdlException(input, offset, $"Duplicate type: {name}");
         }

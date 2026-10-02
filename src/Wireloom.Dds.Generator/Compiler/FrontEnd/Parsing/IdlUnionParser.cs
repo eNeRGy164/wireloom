@@ -14,6 +14,7 @@ internal sealed class IdlUnionParser
     internal IdlUnionParser(IdlParseContext context) =>
         this.context = context;
 
+    /// <summary>Parses a union declaration when one begins at the current position.</summary>
     internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, ref int position)
     {
         var unionDeclaration = UnionPattern.Match(declarations.Substring(position));
@@ -64,8 +65,8 @@ internal sealed class IdlUnionParser
         }
 
         var validationOffset = context.MapOffset(baseOffset + position);
-        IdlSemanticValidator.ValidateUnionDefaultDiscriminator(input, validationOffset, discriminatorIdlType, branches);
-        IdlSemanticValidator.ValidateUnionGeneratedNameCollisions(input, validationOffset, unionName, branches);
+        context.DeferUnionDefaultDiscriminatorValidation(input, validationOffset, discriminatorIdlType, branches);
+        context.DeferUnionGeneratedNameCollisionValidation(input, validationOffset, unionName, branches);
 
         var parsedUnion = new IdlUnion(
             unionName,
@@ -184,13 +185,10 @@ internal sealed class IdlUnionParser
         {
             var (ElementType, Bound) = context.TypeParser.ParseSequenceType(input, sourceOffset, branchType, currentNamespace);
 
-            var element = context.BindFieldType(ElementType, currentNamespace, input, sourceOffset);
-            if (element is null)
-            {
-                throw new IdlException(input, context.MapOffset(sourceOffset), $"Unknown union collection element type: {ElementType}");
-            }
-
-            return new IdlMember(branchName, new IdlType.Sequence(element, Bound ?? 100));
+            var element = context.ReferenceType(ElementType, currentNamespace, input, sourceOffset, "Unknown union collection element type");
+            var sequence = new IdlType.Sequence(element, Bound?.Value ?? 100, dimensions: null);
+            Bound?.AddConsumer(sequence.SetBound);
+            return new IdlMember(branchName, sequence, sourceInput: input, sourceOffset: context.MapOffset(sourceOffset));
         }
 
         if (branchType.StartsWith("string", StringComparison.Ordinal) ||
@@ -198,20 +196,16 @@ internal sealed class IdlUnionParser
         {
             var bound = context.TypeParser.ParseStringBound(input, sourceOffset, branchType, currentNamespace, "Union string bound must be a positive Int32.");
 
-            return new IdlMember(branchName, new IdlType.StringType(branchType.StartsWith("wstring", StringComparison.Ordinal), bound));
+            var stringType = new IdlType.StringType(branchType.StartsWith("wstring", StringComparison.Ordinal), bound?.Value ?? 255);
+            bound?.AddConsumer(stringType.SetBound);
+            return new IdlMember(branchName, stringType, sourceInput: input, sourceOffset: context.MapOffset(sourceOffset));
         }
 
         if (IsPrimitive(branchType))
         {
-            return new IdlMember(branchName, new IdlType.Primitive(NormalizeIdlType(branchType)));
+            return new IdlMember(branchName, new IdlType.Primitive(NormalizeIdlType(branchType)), sourceInput: input, sourceOffset: context.MapOffset(sourceOffset));
         }
 
-        var resolved = context.BindFieldType(branchType, currentNamespace, input, sourceOffset);
-        if (resolved is null)
-        {
-            throw new IdlException(input, context.MapOffset(sourceOffset), $"Unknown union branch type: {branchType}");
-        }
-
-        return new IdlMember(branchName, resolved);
+        return new IdlMember(branchName, context.ReferenceType(branchType, currentNamespace, input, sourceOffset, "Unknown union branch type"), sourceInput: input, sourceOffset: context.MapOffset(sourceOffset));
     }
 }

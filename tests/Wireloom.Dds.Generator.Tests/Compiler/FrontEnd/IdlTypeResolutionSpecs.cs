@@ -1,11 +1,60 @@
-using Wireloom.Compiler.FrontEnd.Symbols;
-
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
+using Wireloom;
+using Wireloom.Compiler.FrontEnd.Parsing;
+using Wireloom.Compiler.FrontEnd.Symbols;
 
 namespace Wireloom.Compiler.FrontEnd.Semantic.Tests;
 
 public sealed class IdlTypeResolutionSpecs
 {
+    [Fact]
+    public void DefersSemanticValidationUntilTheValidationPhase()
+    {
+        // Arrange
+        var input = Input("deferred-validation.idl", "struct Broken { long Destroy; };");
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+
+        // Act
+        parser.Parse(input.Text, input, 0, currentNamespace: null);
+
+        // Assert
+        Should.NotThrow(parser.Bind);
+        Should.Throw<IdlException>(parser.Validate).Message.ShouldContain("collides with a generated member");
+    }
+
+    [Fact]
+    public void ResolvesForwardConstantBoundsAfterTheCompleteSymbolGraphIsParsed()
+    {
+        // Arrange
+        var input = Input(
+            "forward-bound.idl",
+            "typedef string<Bound> Name; const long Bound = 9; struct Sample { Name value; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Sample.g.cs"].Source.ShouldContain("Its maximum length is <c>9</c>.");
+    }
+
+    [Fact]
+    public void BindsForwardMemberReferencesAfterTheCompleteDeclarationGraphIsParsed()
+    {
+        // Arrange
+        var input = Input(
+            "forward-member-reference.idl",
+            "struct Holder { Payload payload; }; struct Payload { long value; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Holder.g.cs"].Source.ShouldContain("Payload payload");
+
+        // The reference is resolved only after Payload has been added to the symbol graph.
+        documents["Holder.g.cs"].Source.ShouldContain("public Payload Payload");
+    }
+
     [Fact]
     public void BindsRawTypeReferencesThroughTheSemanticBinder()
     {
@@ -14,7 +63,7 @@ public sealed class IdlTypeResolutionSpecs
         var reference = new IdlTypeReference("long", "Example", Input("binder.idl", string.Empty), 0);
 
         // Act
-        var bound = binder.Bind(reference);
+        var bound = binder.Bind(new IdlType.Reference(reference, "Unknown type"));
 
         // Assert
         bound.ShouldBeOfType<IdlType.Primitive>().Name.ShouldBe("long");
