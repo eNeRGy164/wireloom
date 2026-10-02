@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-09-29T18:47:35Z
+  generated_at: 2026-10-02T11:47:53Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -23,6 +23,8 @@ sources:
   contracts:
     - docs/corpus/README.md
     - docs/corpus/FEATURE-COVERAGE.md
+  evidence:
+    - docs/performance/incremental-generator-baseline.md
   defaults:
     - skill: dotnet-bootstrap
       resource: attachments/dotnet-defaults.yaml
@@ -45,7 +47,7 @@ summary:
     sources:
       - docs/architecture/arc42/04-solution-strategy.md
   building_blocks:
-    text: Separate Roslyn hosting, input graph and preprocessing, front-end parsing and semantics, compilation orchestration and resolution, emission models and plans, and output emitters.
+    text: Separate Roslyn hosting, input graph and preprocessing, explicit parse-bind-validate front-end phases, compilation orchestration and resolution, emission models and plans, and output emitters.
     sources:
       - docs/architecture/arc42/05-building-block-view.md
   runtime:
@@ -57,19 +59,19 @@ summary:
     sources:
       - docs/architecture/arc42/07-deployment-view.md
   cross_cutting:
-    text: Evidence vocabulary, deterministic inputs, diagnostics, test separation, separated compiler stages, deterministic preprocessing limits, and supply-chain controls apply across the system.
+    text: Evidence vocabulary, deterministic inputs and invalidation, explicit compiler stages, diagnostics, test separation, deterministic preprocessing limits, and supply-chain controls apply across the system.
     sources:
       - docs/architecture/arc42/08-crosscutting-concepts.md
   decisions:
-    text: Roslyn hosting, explicit roots, independent semantic modeling, project-wide root metadata, explicit runtime ownership, case-level evidence, separated compiler orchestration/resolution/emission, and bounded preprocessing work are current decisions.
+    text: Roslyn hosting, explicit roots, independent semantic modeling, project-wide root metadata, explicit parse-bind-validate phases, explicit runtime ownership, case-level evidence, separated compiler orchestration/resolution/emission, and bounded preprocessing work are current decisions.
     sources:
       - docs/architecture/arc42/09-architectural-decisions.md
   quality:
-    text: Compatibility shape, diagnostics, package integration, maintainability, and supply-chain integrity are the primary quality goals.
+    text: Compatibility shape, diagnostics, package integration, maintainability, incremental build evidence, and supply-chain integrity are the primary quality goals.
     sources:
       - docs/architecture/arc42/10-quality-requirements.md
   risks:
-    text: Coverage outside the retained corpus, fixed-limit compatibility, runtime and C++ evidence, and host qualification remain open risks.
+    text: Coverage outside the retained corpus, coarse per-root output invalidation, fixed-limit compatibility, runtime and C++ evidence, and host qualification remain open risks.
     sources:
       - docs/architecture/arc42/11-risks-and-technical-debt.md
   glossary:
@@ -91,9 +93,15 @@ defaults:
       source: chapter-2
       status: explicit
     sdk:
-      value: 10.0.401
-      source: brownfield-detection
-      status: detected
+      value: 10.0.400
+      source: global.json
+      status: explicit
+    sdk_policy:
+      version: 10.0.400
+      allow_prerelease: false
+      roll_forward: latestFeature
+      source: global.json
+      status: explicit
     package_type:
       value: nuget-analyzer-source-generator
       source: chapter-7

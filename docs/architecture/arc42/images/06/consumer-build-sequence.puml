@@ -17,15 +17,15 @@ msbuild -> roslyn : Add AdditionalFiles\nand visible item metadata
 roslyn -> generator : Execute with IDL,\noptions, and references
 generator -> preprocess : Resolve roots/includes\nand preprocess input
 preprocess --> generator : Preprocessed IDL\nand source locations
-generator -> compiler : Parse declarations,\nbuild symbols, resolve, validate
+generator -> compiler : Parse declarations\nBind references and bounds\nValidate complete graph
 
 alt Invalid or unsupported input
   compiler --> generator : Source-located diagnostic
   generator --> roslyn : Report diagnostic
   roslyn --> build : Fail compilation
 else Valid input
-  compiler -> emitters : Create emission plans
-  emitters --> roslyn : Add generated documents
+  compiler -> emitters : Create resolved emission plans
+  emitters --> roslyn : Return generated documents
   roslyn --> compilation : Generated and\nhand-written C#
   compilation -> application : Build application
   application -> runtime : DDS runtime calls
