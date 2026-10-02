@@ -102,6 +102,9 @@ When changing generator inputs or invalidation behavior, also run the focused
 [incremental generator baseline](docs/performance/incremental-generator-baseline.md)
 and update its evidence before considering a caching redesign.
 
+For the bounded IDL compiler fuzzing gate, run the [fuzzing guide](docs/testing/fuzzing.md)
+and preserve FsCheck's reported input and replay information when investigating a failure.
+
 ## Pull requests
 
 - Describe the behavior or evidence change and the reason for it.
