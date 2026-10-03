@@ -32,11 +32,51 @@ public sealed class GeneratorSpecs
     }
 
     [Fact]
+    public void SkipsPrerequisiteChecksWhenNoIdlRootIsMarkedForGeneration()
+    {
+        // Arrange
+        var input = "module Sample { struct Value { long value; }; };";
+        var metadata = new Dictionary<string, string>();
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp11, metadata, includeRuntime: false);
+
+        // Assert
+        result.Diagnostics.ShouldBeEmpty();
+        result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void CompilesBooleanUnionWithNonScalarBranch()
+    {
+        // Arrange
+        var input =
+            """
+            module BooleanUnion {
+                union Choice switch(boolean) {
+                    case TRUE: long enabled;
+                    case FALSE: sequence<long, 2> disabled;
+                };
+            };
+            """;
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldBeEmpty();
+        result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(d => d.Severity == DiagnosticSeverity.Error)
+            .ShouldBeEmpty();
+    }
+
+    [Fact]
     public void ReportsMissingRuntimeReferenceBeforeParsingIdl()
     {
         // Arrange
         var input = """module Sample { struct Value { long value; }; };""";
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: false);
@@ -51,7 +91,7 @@ public sealed class GeneratorSpecs
     {
         // Arrange
         var input = """module Sample { struct Value { long value; }; };""";
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp11, metadata, includeRuntime: true);
@@ -66,7 +106,7 @@ public sealed class GeneratorSpecs
     {
         // Arrange
         var input = """module Sample { struct Value { long value; }""";
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -74,15 +114,22 @@ public sealed class GeneratorSpecs
         // Assert
         var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0001");
         diagnostic.GetMessage().ShouldNotBeNullOrWhiteSpace();
-        diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
+        var lineSpan = diagnostic.Location.GetLineSpan();
+        lineSpan.Path.ShouldBe("sample.idl");
+        lineSpan.StartLinePosition.Line.ShouldBe(0);
     }
 
     [Fact]
     public void ReportsUnknownAnnotationWarningAndContinuesGeneration()
     {
         // Arrange
-        var input = """module Sample { @custom_unknown struct Value { long value; }; };""";
-        var metadata = new Dictionary<string, string>();
+        var input = """
+        module Sample {
+            @custom_unknown
+            struct Value { long value; };
+        };
+        """;
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -91,7 +138,11 @@ public sealed class GeneratorSpecs
         var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0101");
         diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
         diagnostic.GetMessage().ShouldBe("Annotation '@custom_unknown' is not recognized and will be ignored.");
-        diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
+        var lineSpan = diagnostic.Location.GetLineSpan();
+        lineSpan.Path.ShouldBe("sample.idl");
+        lineSpan.StartLinePosition.Line.ShouldBe(1);
+        lineSpan.StartLinePosition.Character.ShouldBe(4);
+        diagnostic.Location.SourceSpan.Start.ShouldBe(input.IndexOf("@custom_unknown", StringComparison.Ordinal));
 
         result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeTrue();
     }
@@ -101,7 +152,7 @@ public sealed class GeneratorSpecs
     {
         // Arrange
         var input = """module Sample { @position(1) struct Value { long value; }; };""";
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -121,7 +172,7 @@ public sealed class GeneratorSpecs
     {
         // Arrange
         var input = """module Sample { interface Service { void ping(); }; };""";
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -144,7 +195,7 @@ public sealed class GeneratorSpecs
         #define CORPUS_PAIR(a, b) a
         const long Constant = CORPUS_PAIR(1);
         """;
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -167,7 +218,7 @@ public sealed class GeneratorSpecs
         #warning prefer the supported IDL form
         const long Value = 1;
         """;
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -188,7 +239,7 @@ public sealed class GeneratorSpecs
         #pragma message("build note")
         const long Value = 1;
         """;
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
@@ -205,7 +256,7 @@ public sealed class GeneratorSpecs
     {
         // Arrange
         var input = """module Sample { struct Value { sequence<long> values[2]; sequence<string<16>, 3> names[2]; }; };""";
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);

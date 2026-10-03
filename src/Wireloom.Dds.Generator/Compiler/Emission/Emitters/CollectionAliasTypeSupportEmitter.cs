@@ -6,9 +6,10 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits RTI type-support registration for a collection or value typedef.</summary>
 internal static class CollectionAliasTypeSupportEmitter
 {
-    public static void Emit(CompilationContext compilation, IdlTypedef declaration, string sourceIdlFileName)
+    /// <summary>Emits the typedef type-support document.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, GeneratedTypeNames names, string sourceIdlFileName)
     {
-        var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
+        var typeName = names.ManagedTypeName;
         var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides RTI Connext DDS type support for <see cref=\"{typeName}\"/>.");
@@ -31,6 +32,6 @@ internal static class CollectionAliasTypeSupportEmitter
         writer.Unindent();
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(declaration.Namespace, $"{declaration.Name}Support"), writer.ToString()));
+        return [new GeneratedIdlSource(names.Support.HintName, writer.ToString())];
     }
 }

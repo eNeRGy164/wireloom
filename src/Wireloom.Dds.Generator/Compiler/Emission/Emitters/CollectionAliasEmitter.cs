@@ -1,4 +1,6 @@
 using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -6,17 +8,21 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Coordinates emission of collection and value typedef documents.</summary>
 internal static class CollectionAliasEmitter
 {
-    public static void Emit(CompilationContext compilation, IdlTypedef declaration, string sourceIdlFileName)
+    /// <summary>Emits all documents for a collection or value typedef.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(CompilationContext compilation, IdlTypedef declaration, string sourceIdlFileName)
     {
-        var elementType = ResolveElementType(compilation, declaration);
+        var plan = CreatePlan(compilation, declaration);
+        var names = IdlNaming.CreateGeneratedTypeNames(declaration.Namespace, declaration.Name);
 
-        CollectionAliasManagedEmitter.Emit(compilation, declaration, sourceIdlFileName);
-        CollectionAliasPluginEmitter.Emit(compilation, declaration, elementType, sourceIdlFileName);
-        CollectionAliasNativeEmitter.Emit(compilation, declaration, elementType, sourceIdlFileName);
-        CollectionAliasTypeSupportEmitter.Emit(compilation, declaration, sourceIdlFileName);
+        return [
+            .. CollectionAliasManagedEmitter.Emit(declaration, names, plan, sourceIdlFileName),
+            .. CollectionAliasPluginEmitter.Emit(declaration, names, plan, sourceIdlFileName),
+            .. CollectionAliasNativeEmitter.Emit(declaration, names, plan, sourceIdlFileName),
+            .. CollectionAliasTypeSupportEmitter.Emit(declaration, names, sourceIdlFileName)
+        ];
     }
 
-    private static string ResolveElementType(CompilationContext compilation, IdlTypedef declaration)
+    private static CollectionAliasEmissionPlan CreatePlan(CompilationContext compilation, IdlTypedef declaration)
     {
         string? element;
         if (declaration.IsString)
@@ -41,17 +47,40 @@ internal static class CollectionAliasEmitter
             element = compilation.ResolveUnderlyingType(element, declaration.Namespace);
         }
 
-        if (declaration.IsString || IsStringType(element))
+        IdlType? resolvedElementType = null;
+        EmissionTypePlan elementPlan;
+        if (declaration.IsString)
         {
-            return "string";
+            elementPlan = new StringEmissionType(declaration.IsWideString, declaration.StringBound);
+        }
+        else
+        {
+            resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
+            elementPlan = EmissionTypeProjector.ToCollectionElementType(resolvedElementType, declaration.Namespace);
         }
 
-        return IdlNaming.IsPrimitive(element)
-            ? IdlNaming.MapPrimitive(element)
-            : IdlNaming.EscapeQualifiedIdentifier(IdlNaming.ResolveTypeName(element, declaration.Namespace));
+        string? elementNativeType = null;
+        if (resolvedElementType is not null and not IdlType.StringType)
+        {
+            elementNativeType = compilation.ResolveNativeType(resolvedElementType, declaration.Namespace);
+        }
+
+        return new CollectionAliasEmissionPlan(
+            elementPlan,
+            declaration.IsSequence,
+            declaration.IsArray,
+            RequiresNativeValueCast(elementPlan),
+            elementNativeType);
     }
 
-    private static bool IsStringType(string? typeName) =>
-        typeName is not null
-        && (typeName.StartsWith("string", StringComparison.Ordinal) || typeName.StartsWith("wstring", StringComparison.Ordinal));
+    private static bool RequiresNativeValueCast(EmissionTypePlan elementPlan)
+    {
+        if (elementPlan is PrimitiveEmissionType primitive)
+        {
+            return PrimitiveTypeMapping.Resolve(primitive.IdlName).NativeValueRequiresCast;
+        }
+
+        return true;
+    }
+
 }

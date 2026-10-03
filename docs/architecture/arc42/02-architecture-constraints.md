@@ -12,7 +12,7 @@
 | Constraint                                                                   | Rationale                                            |
 | :--------------------------------------------------------------------------- | :--------------------------------------------------- |
 | The generator targets `netstandard2.0`                                       | Roslyn analyzer compatibility boundary               |
-| Consumer and test projects use .NET 10; SDK `10.0.401` is pinned             | Repository build baseline                            |
+| Consumer and test projects use .NET 10; SDK `10.0.400`                       | Repository and Qodana-compatible SDK policy          |
 | A resolved `Rti.ConnextDds` reference of at least 7.3.1 is required          | Generated support targets the RTI runtime surface    |
 | Retained RTI oracle sources use Connext DDS 7.7.0 / `rtiddsgen` 4.7.0        | Compatibility evidence capture baseline              |
 | C# 12 or later is required by the generator host                             | Current emitted-source baseline                      |

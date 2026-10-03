@@ -7,8 +7,8 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits the managed data class and its RTI type-support documents.</summary>
 internal static class ClassEmitter
 {
-    public static void Emit(
-        CompilationContext compilation,
+    /// <summary>Emits the managed class and optional type-support documents.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(
         string name,
         string? currentNamespace,
         IReadOnlyList<IdlMember> fields,
@@ -18,11 +18,12 @@ internal static class ClassEmitter
         IReadOnlyList<IdlMember> inheritedFields,
         bool isTopic)
     {
-        var escapedName = IdlNaming.EscapeIdentifier(name);
+        var names = IdlNaming.CreateGeneratedTypeNames(currentNamespace, name);
+        var escapedName = names.ManagedTypeName;
         var emissionFields = fields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace)).ToArray();
         var emissionInheritedFields = inheritedFields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace)).ToArray();
         var initialFieldPlans = emissionFields.Select(field => new MemberEmissionPlan(field, currentNamespace)).ToArray();
-        var managedBackingNames = ResolveManagedBackingNames(escapedName: IdlNaming.EscapeIdentifier(name), initialFieldPlans);
+        var managedBackingNames = ResolveManagedBackingNames(escapedName: names.ManagedTypeName, initialFieldPlans);
         var fieldPlans = initialFieldPlans
             .Select((field, index) => new MemberEmissionPlan(field.Field, currentNamespace, managedBackingNames[index]))
             .ToArray();
@@ -70,21 +71,24 @@ internal static class ClassEmitter
         }
 
         writer.CloseBlock();
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(currentNamespace, name), writer.ToString()));
+        var documents = new List<GeneratedIdlSource>
+        {
+            new(names.Managed.HintName, writer.ToString())
+        };
 
         if (hasTypeSupport)
         {
-            TypeSupportEmitter.Emit(
-                compilation,
-                name,
-                currentNamespace,
+            documents.AddRange(TypeSupportEmitter.Emit(
+                names,
                 fieldPlans,
                 inheritedFieldPlans,
                 extensibility,
                 sourceIdlFileName,
                 baseType,
-                isRecursive);
+                isRecursive));
         }
+
+        return documents;
     }
 
     private static string?[] ResolveManagedBackingNames(string escapedName, IReadOnlyList<MemberEmissionPlan> fields)

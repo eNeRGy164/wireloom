@@ -1,43 +1,12 @@
-using System.Globalization;
 using JetBrains.Annotations;
 using Wireloom.Compiler.Emission.Emitters;
 using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Writers;
+using Wireloom.Compiler.Naming;
 
 using static Wireloom.Compiler.Naming.IdlNaming;
 
 namespace Wireloom.Compiler.Emission.Planning;
-
-/// <summary>Classifies the projected shape of a member value.</summary>
-internal enum FieldEmissionShape
-{
-    Primitive,
-    String,
-    Enum,
-    Struct,
-    Alias,
-    Sequence,
-    Array
-}
-
-/// <summary>Identifies the managed initialization strategy for a member.</summary>
-internal enum ManagedInitializationKind
-{
-    None,
-    Sequence,
-    Array,
-    Aggregate
-}
-
-/// <summary>Identifies the native cleanup strategy for a member.</summary>
-internal enum NativeDestroyKind
-{
-    None,
-    Nested,
-    Collection,
-    String,
-    OptionalPrimitive
-}
 
 /// <summary>
 /// Per-member emission decisions shared by managed and native source emitters.
@@ -48,38 +17,40 @@ internal enum NativeDestroyKind
 [PublicAPI]
 internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string? currentNamespace, string? managedBackingFieldName = null)
 {
-    private readonly FieldEmissionShape shape = GetShape(field.Type);
+    private readonly MemberEmissionFacts facts = new(field, currentNamespace);
+    private readonly MemberEmissionShape shape = new(field.Type);
+    private MemberEmissionRenderer Renderer => new(facts, currentNamespace);
 
     public IdlEmissionField Field { get; } = field;
-    public string? CurrentNamespace => currentNamespace;
-    public string Name => Field.Name;
+    public string? CurrentNamespace => facts.CurrentNamespace;
+    public string Name => facts.Name;
     public string EscapedName => EscapeIdentifier(Name);
-    public EmissionTypePlan Type => Field.Type;
-    public bool IsKey => Field.IsKey;
-    public int? MemberId => Field.MemberId;
-    public bool IsOptional => Field.IsOptional;
-    public string CSharpType => Field.CSharpType;
-    public int? Bound => Field.Bound;
-    public string? SupportType => Field.SupportType;
-    public EmissionTypePlan? ElementType => Field.ElementType;
-    public string? ElementCSharpType => Field.ElementCSharpType;
-    public string? ElementSupportType => Field.ElementSupportType;
-    public IReadOnlyList<int> Dimensions => Field.Dimensions;
-    public BigInteger? DefaultValue => Field.ValueMetadata?.DefaultValue;
-    public BigInteger? MinimumValue => Field.ValueMetadata?.Minimum;
-    public BigInteger? MaximumValue => Field.ValueMetadata?.Maximum;
-    public string? DefaultExpression => Field.ValueMetadata?.DefaultExpression;
-    public string? Unit => Field.ValueMetadata?.Unit;
-    public bool IsExternal => Field.IsExternal;
-    public bool IsMustUnderstand => Field.IsMustUnderstand;
-    public string? MemberIdHashSource => Field.MemberIdHashSource;
-    public bool UsesAutoIdHash => Field.UsesAutoIdHash;
+    public EmissionTypePlan Type => facts.Type;
+    public bool IsKey => facts.IsKey;
+    public int? MemberId => facts.MemberId;
+    public bool IsOptional => facts.IsOptional;
+    public string CSharpType => facts.CSharpType;
+    public int? Bound => facts.Bound;
+    public string? SupportType => facts.SupportType;
+    public EmissionTypePlan? ElementType => facts.ElementType;
+    public string? ElementCSharpType => facts.ElementCSharpType;
+    public string? ElementSupportType => facts.ElementSupportType;
+    public IReadOnlyList<int> Dimensions => facts.Dimensions;
+    public BigInteger? DefaultValue => facts.ValueMetadata?.DefaultValue;
+    public BigInteger? MinimumValue => facts.ValueMetadata?.Minimum;
+    public BigInteger? MaximumValue => facts.ValueMetadata?.Maximum;
+    public string? DefaultExpression => facts.ValueMetadata?.DefaultExpression;
+    public string? Unit => facts.ValueMetadata?.Unit;
+    public bool IsExternal => facts.IsExternal;
+    public bool IsMustUnderstand => facts.IsMustUnderstand;
+    public string? MemberIdHashSource => facts.MemberIdHashSource;
+    public bool UsesAutoIdHash => facts.UsesAutoIdHash;
     public bool HasExplicitDefault => DefaultValue is not null;
     public bool HasManagedRange => MinimumValue is not null || MaximumValue is not null;
     public string ManagedBackingFieldName => managedBackingFieldName ?? EscapeIdentifier("_" + Name);
-    public bool IsString => ValueType is StringEmissionType;
-    public bool IsSequence => shape == FieldEmissionShape.Sequence;
-    public bool IsArray => shape == FieldEmissionShape.Array;
+    public bool IsString => facts.IsString;
+    public bool IsSequence => facts.IsSequence;
+    public bool IsArray => facts.IsArray;
     public bool IsSequenceArray => IsSequence && Dimensions.Count > 0;
     public bool IsArrayLoopLocalCollision
     {
@@ -101,185 +72,63 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
                 && dimension < Dimensions.Count;
         }
     }
-    public bool IsStringSequence => IsSequence && ElementType is StringEmissionType;
-    public bool IsAggregate => Type.IsAggregate;
-    public bool IsUnion => Type.IsUnion;
-    public bool HasAggregateElement => ElementType?.IsAggregate == true;
+    public bool IsStringSequence => facts.IsStringSequence;
+    public bool IsAggregate => facts.IsAggregate;
+    public bool IsUnion => facts.IsUnion;
+    public bool HasAggregateElement => facts.HasAggregateElement;
     public bool HasSequenceElement => IsArray && ElementType is not null && EmissionTypeProjector.HasSequenceType(ElementType);
-    public string? BoundSummary
-    {
-        get
-        {
-            if (Bound is not int bound)
-            {
-                return null;
-            }
+    public string? BoundSummary => Renderer.BoundSummary;
 
-            if (IsString)
-            {
-                return $"Its maximum length is <c>{bound}</c>.";
-            }
+    public string? ValueConstraintSummary => Renderer.ValueConstraintSummary;
 
-            if (EmissionTypeProjector.HasSequenceType(Type))
-            {
-                return $"Its maximum number of elements is <c>{bound}</c>.";
-            }
+    public ManagedInitializationKind ManagedInitialization => MemberEmissionPolicies.GetManagedInitialization(
+        shape.Kind,
+        IsOptional,
+        IsSequence,
+        IsArray,
+        IsAggregate);
 
-            return $"Its DDS bound is <c>{bound}</c>.";
-        }
-    }
-
-    public string? ValueConstraintSummary
-    {
-        get
-        {
-            var constraints = new List<string>();
-
-            if (MinimumValue is { } minimum && MaximumValue is { } maximum)
-            {
-                constraints.Add($"Its value must be between <c>{FormatCSharpValue(CSharpType.TrimEnd('?'), minimum)}</c> and <c>{FormatCSharpValue(CSharpType.TrimEnd('?'), maximum)}</c>.");
-            }
-            else if (MinimumValue is { } lower)
-            {
-                constraints.Add($"Its minimum value is <c>{FormatCSharpValue(CSharpType.TrimEnd('?'), lower)}</c>.");
-            }
-            else if (MaximumValue is { } upper)
-            {
-                constraints.Add($"Its maximum value is <c>{FormatCSharpValue(CSharpType.TrimEnd('?'), upper)}</c>.");
-            }
-
-            if (DefaultValue is not null)
-            {
-                var defaultText = DefaultExpression ?? FormatCSharpValue(CSharpType.TrimEnd('?'), DefaultValue.Value);
-                constraints.Add($"Its default value is <c>{System.Security.SecurityElement.Escape(defaultText)}</c>.");
-            }
-
-            return constraints.Count == 0 ? null : string.Join(" ", constraints);
-        }
-    }
-
-    public ManagedInitializationKind ManagedInitialization => shape switch
-    {
-        _ when IsOptional && (IsSequence || IsArray) => ManagedInitializationKind.None,
-        FieldEmissionShape.Sequence => ManagedInitializationKind.Sequence,
-        FieldEmissionShape.Array => ManagedInitializationKind.Array,
-        _ when IsAggregate => ManagedInitializationKind.Aggregate,
-        _ => ManagedInitializationKind.None
-    };
-
-    public NativeDestroyKind DestroyKind
-    {
-        get
-        {
-            if (IsAggregate && !IsSequence && !IsArray)
-            {
-                return NativeDestroyKind.Nested;
-            }
-
-            if (IsSequence || IsArray)
-            {
-                return NativeDestroyKind.Collection;
-            }
-
-            if (IsString)
-            {
-                return NativeDestroyKind.String;
-            }
-
-            if (IsOptionalScalar)
-            {
-                return NativeDestroyKind.OptionalPrimitive;
-            }
-
-            return NativeDestroyKind.None;
-        }
-    }
+    public NativeDestroyKind DestroyKind => MemberEmissionPolicies.GetDestroyKind(
+        IsAggregate,
+        IsSequence,
+        IsArray,
+        IsString,
+        IsOptionalScalar);
 
     public bool HasTypeSupport => Bound is null || EmissionTypeProjector.HasSequenceType(Type) || IsString;
 
+    /// <summary>Determines whether this member recursively refers to the containing runtime type.</summary>
     public bool IsRecursive(string runtimeTypeName) =>
         IsSequence && string.Equals(ElementCSharpType, runtimeTypeName, StringComparison.Ordinal);
 
     public string ManagedPropertyAccessors => IsSequence && !IsOptional ? " { get; }" : " { get; set; }";
     public string ManagedPropertySummaryVerb => IsSequence && !IsOptional ? "Gets" : "Gets or sets";
 
-    public string? ManagedPropertyInitializer
-    {
-        get
-        {
-            if (HasExplicitDefault)
-            {
-                return null;
-            }
+    public string? ManagedPropertyInitializer => Renderer.ManagedPropertyInitializer;
 
-            if (CSharpType == "string")
-            {
-                return " = string.Empty;";
-            }
+    public string? ManagedDefaultInitializationStatement => Renderer.ManagedDefaultInitializationStatement(ManagedInitialization);
 
-            if (Type.IsEnum)
-            {
-                return $" = ({TypeReference(CSharpType, currentNamespace)}){EnumDefaultValue};";
-            }
+    public string ManagedDefaultValue => Renderer.ManagedDefaultValue;
 
-            if (IsSequence || IsArray)
-            {
-                return IsOptional ? null : " = null!;";
-            }
-
-            if (IsAggregate)
-            {
-                return $" = new {TypeReference(CSharpType, currentNamespace)}();";
-            }
-
-            return null;
-        }
-    }
-
-    public string? ManagedDefaultInitializationStatement => ManagedInitialization switch
-    {
-        _ when HasExplicitDefault => $"{EscapedName} = {ManagedDefaultValue};",
-        ManagedInitializationKind.Sequence => $"{EscapedName} = new Sequence<{TypeReference(ElementCSharpType!, currentNamespace)}>();",
-        ManagedInitializationKind.Array => $"{EscapedName} = new {TypeReference(ElementCSharpType!, currentNamespace)}[{string.Join(", ", Dimensions)}];",
-        ManagedInitializationKind.Aggregate => $"{EscapedName} = new {TypeReference(CSharpType, currentNamespace)}();",
-        _ => null
-    };
-
-    public string ManagedDefaultValue => ValueType switch
-    {
-        EnumEmissionType => $"({TypeReference(CSharpType, currentNamespace)}){DefaultValue!.Value.ToString(CultureInfo.InvariantCulture)}",
-        _ => FormatCSharpValue(CSharpType.TrimEnd('?'), DefaultValue!.Value)
-    };
-
-    public string FormatCSharpValue(string typeName, BigInteger value) => typeName switch
-    {
-        "long" when value == long.MinValue => "long.MinValue",
-        "long" => $"{value.ToString(CultureInfo.InvariantCulture)}L",
-        "ulong" when value == ulong.MaxValue => "ulong.MaxValue",
-        "ulong" => $"{value.ToString(CultureInfo.InvariantCulture)}UL",
-        "uint" => $"{value.ToString(CultureInfo.InvariantCulture)}U",
-        "short" => $"(short){value.ToString(CultureInfo.InvariantCulture)}",
-        "ushort" => $"(ushort){value.ToString(CultureInfo.InvariantCulture)}",
-        "sbyte" => $"(sbyte){value.ToString(CultureInfo.InvariantCulture)}",
-        "byte" => $"(byte){value.ToString(CultureInfo.InvariantCulture)}",
-        _ => value.ToString(CultureInfo.InvariantCulture)
-    };
+    /// <summary>Formats an IDL constant value as a C# literal for the requested type.</summary>
+    public string FormatCSharpValue(string typeName, BigInteger value) => Renderer.FormatCSharpValue(typeName, value);
 
 
+    /// <summary>Resolves the native storage type for this member.</summary>
     public string NativeStorageTypeFor(string? namespaceOverride)
     {
         var namespaceName = namespaceOverride ?? currentNamespace;
 
-        switch (shape)
+        switch (shape.Kind)
         {
-            case FieldEmissionShape.Sequence:
+            case EmissionShapeKind.Sequence:
                 if (IsStringSequence && IsSequenceArray)
                 {
                     return "NativeStringSeq";
                 }
 
                 return IsOptional ? "NativeOptionalSeq" : "NativeSeq";
-            case FieldEmissionShape.Array:
+            case EmissionShapeKind.Array:
                 if (IsOptional)
                 {
                     return HasAggregateElement ? "NativeManagedOptionalArray" : "NativeUnmanagedOptionalArray";
@@ -303,17 +152,21 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
     private string BuildScalarNativeStorageType(string? namespaceName)
     {
-        return ValueType switch
+        if (ValueType is PrimitiveEmissionType primitive)
         {
-            StringEmissionType { IsWide: true } => "NativeWstring",
-            StringEmissionType => "NativeString",
-            PrimitiveEmissionType { IdlName: "boolean" or "char" } => "byte",
-            PrimitiveEmissionType { IdlName: "wchar" } => "short",
-            _ => TypeReference(CSharpType, namespaceName)
-        };
+            return PrimitiveTypeMapping.Resolve(primitive.IdlName).NativeStorageType;
+        }
+
+        if (ValueType is StringEmissionType stringType)
+        {
+            return stringType.IsWide ? "NativeWstring" : "NativeString";
+        }
+
+        return TypeReference(CSharpType, namespaceName);
     }
 
 
+    /// <summary>Builds the managed copy expression for this member.</summary>
     public string BuildCopyExpression(string sourcePrefix = "other.")
     {
         var source = sourcePrefix + EscapedName;
@@ -346,6 +199,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         return source;
     }
 
+    /// <summary>Builds the managed union copy expression for this member.</summary>
     public string BuildUnionCopyExpression(string sourcePrefix = "other.")
     {
         var source = sourcePrefix + EscapedName;
@@ -363,6 +217,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         return source;
     }
 
+    /// <summary>Emits initialization code for an aggregate array member.</summary>
     public void EmitAggregateArrayInitialization(GeneratedSourceWriter writer, string target, bool hasFollowingStatements)
     {
         if (!IsArray || !HasAggregateElement)
@@ -382,6 +237,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         }
     }
 
+    /// <summary>Emits copy code for an aggregate array member.</summary>
     public void EmitAggregateArrayCopy(GeneratedSourceWriter writer, string target, bool hasFollowingStatements)
     {
         if (!IsArray || !HasAggregateElement)
@@ -412,6 +268,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         }
     }
 
+    /// <summary>Builds the hash expression for this member.</summary>
     public string HashValue(string targetPrefix = "")
     {
         if (IsOptional && IsSequence)
@@ -424,10 +281,10 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
             return $"{targetPrefix}{EscapedName} is null ? -1 : {targetPrefix}{EscapedName}{ArraySourceEmitter.IndexExpression(ZeroIndices())}";
         }
 
-        var suffix = shape switch
+        var suffix = shape.Kind switch
         {
-            FieldEmissionShape.Array => ArraySourceEmitter.IndexExpression(ZeroIndices()),
-            FieldEmissionShape.Sequence => ".Count",
+            EmissionShapeKind.Array => ArraySourceEmitter.IndexExpression(ZeroIndices()),
+            EmissionShapeKind.Sequence => ".Count",
             _ => string.Empty
         };
 
@@ -436,6 +293,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
     private IReadOnlyList<string> ZeroIndices() => Enumerable.Repeat("0", Dimensions.Count).ToArray();
 
+    /// <summary>Builds the equality expression for this member.</summary>
     public string EqualityExpression(string otherPrefix = "other.", string thisPrefix = "")
     {
         if (IsArray)
@@ -481,36 +339,9 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         return $"{thisPrefix}{EscapedName}.Equals({otherPrefix}{EscapedName})";
     }
 
+    /// <summary>Builds the annotation metadata for a supported primitive member.</summary>
     public (string TypeKind, string ValueProperty, string DefaultValue, string? Minimum, string? Maximum, string? Unit)? PrimitiveAnnotation() =>
-        ValueType switch
-        {
-            StringEmissionType { IsWide: true } => ("WideString", "WideStringValue", "\"\"", null, null, null),
-            StringEmissionType => ("String", "StringValue", "\"\"", null, null, null),
-            EnumEmissionType enumType => ("Enumeration", "EnumValue", HasExplicitDefault ? DefaultValue!.Value.ToString(CultureInfo.InvariantCulture) : enumType.DefaultValue.ToString(CultureInfo.InvariantCulture), null, null, UnitLiteral),
-            PrimitiveEmissionType primitive => primitive.IdlName switch
-            {
-                "short" or "int16" => ("Int16", "Int16Value", HasExplicitDefault ? FormatCSharpValue("short", DefaultValue!.Value) : "(short)0", MinimumValue is null ? "short.MinValue" : FormatCSharpValue("short", MinimumValue.Value), MaximumValue is null ? "short.MaxValue" : FormatCSharpValue("short", MaximumValue.Value), UnitLiteral),
-                "long" or "int32" => ("Int32", "Int32Value", HasExplicitDefault ? FormatCSharpValue("int", DefaultValue!.Value) : "0", MinimumValue is null ? "int.MinValue" : FormatCSharpValue("int", MinimumValue.Value), MaximumValue is null ? "int.MaxValue" : FormatCSharpValue("int", MaximumValue.Value), UnitLiteral),
-                "long long" or "int64" => ("Int64", "Int64Value", HasExplicitDefault ? FormatCSharpValue("long", DefaultValue!.Value) : "0L", MinimumValue is null ? "long.MinValue" : FormatCSharpValue("long", MinimumValue.Value), MaximumValue is null ? "long.MaxValue" : FormatCSharpValue("long", MaximumValue.Value), UnitLiteral),
-                "unsigned short" or "uint16" => ("Uint16", "Uint16Value", HasExplicitDefault ? FormatCSharpValue("ushort", DefaultValue!.Value) : "(ushort)0", MinimumValue is null ? "ushort.MinValue" : FormatCSharpValue("ushort", MinimumValue.Value), MaximumValue is null ? "ushort.MaxValue" : FormatCSharpValue("ushort", MaximumValue.Value), UnitLiteral),
-                "unsigned long" or "uint32" => ("UInt32", "Uint32Value", HasExplicitDefault ? FormatCSharpValue("uint", DefaultValue!.Value) : "0U", MinimumValue is null ? "uint.MinValue" : FormatCSharpValue("uint", MinimumValue.Value), MaximumValue is null ? "uint.MaxValue" : FormatCSharpValue("uint", MaximumValue.Value), UnitLiteral),
-                "unsigned long long" or "uint64" => ("UInt64", "Uint64Value", HasExplicitDefault ? FormatCSharpValue("ulong", DefaultValue!.Value) : "0UL", MinimumValue is null ? "ulong.MinValue" : FormatCSharpValue("ulong", MinimumValue.Value), MaximumValue is null ? "ulong.MaxValue" : FormatCSharpValue("ulong", MaximumValue.Value), UnitLiteral),
-                "int8" => ("Int8", "Int8Value", HasExplicitDefault ? FormatCSharpValue("sbyte", DefaultValue!.Value) : "(sbyte)0", MinimumValue is null ? "sbyte.MinValue" : FormatCSharpValue("sbyte", MinimumValue.Value), MaximumValue is null ? "sbyte.MaxValue" : FormatCSharpValue("sbyte", MaximumValue.Value), UnitLiteral),
-                "uint8" => ("Uint8", "Uint8Value", HasExplicitDefault ? FormatCSharpValue("byte", DefaultValue!.Value) : "(byte)0", MinimumValue is null ? "byte.MinValue" : FormatCSharpValue("byte", MinimumValue.Value), MaximumValue is null ? "byte.MaxValue" : FormatCSharpValue("byte", MaximumValue.Value), UnitLiteral),
-                "octet" => ("Octet", "OctetValue", HasExplicitDefault ? FormatCSharpValue("byte", DefaultValue!.Value) : "(byte)0", MinimumValue is null ? "byte.MinValue" : FormatCSharpValue("byte", MinimumValue.Value), MaximumValue is null ? "byte.MaxValue" : FormatCSharpValue("byte", MaximumValue.Value), UnitLiteral),
-                "boolean" => ("Boolean", "BoolValue", "false", null, null, UnitLiteral),
-                "char" => ("Char8", "Char8Value", "'\\0'", null, null, UnitLiteral),
-                "wchar" => ("Char16", "Char16Value", "'\\0'", null, null, UnitLiteral),
-                "float" => ("Float32", "Float32Value", "0.0F", "float.MinValue", "float.MaxValue", UnitLiteral),
-                "double" => ("Float64", "Float64Value", "0.0D", "double.MinValue", "double.MaxValue", UnitLiteral),
-                _ => null
-            },
-            _ => null
-        };
-
-    private string? UnitLiteral => Unit is null
-        ? null
-        : $"\"{Unit.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
+        Renderer.PrimitiveAnnotation();
 
     private bool IsOptionalScalar => IsOptional && !IsSequence && !IsArray && !IsString && !IsAggregate;
 
@@ -530,16 +361,4 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
     private string NullableValueType() => CSharpType.TrimEnd('?');
 
-    private static FieldEmissionShape GetShape(EmissionTypePlan type) =>
-        EmissionTypeProjector.UnwrapOptionalEmissionType(type) switch
-        {
-            PrimitiveEmissionType => FieldEmissionShape.Primitive,
-            StringEmissionType => FieldEmissionShape.String,
-            EnumEmissionType => FieldEmissionShape.Enum,
-            StructEmissionType or UnionEmissionType => FieldEmissionShape.Struct,
-            AliasEmissionType => FieldEmissionShape.Alias,
-            SequenceEmissionType => FieldEmissionShape.Sequence,
-            ArrayEmissionType => FieldEmissionShape.Array,
-            _ => throw new InvalidOperationException("Unknown emission type plan.")
-        };
 }

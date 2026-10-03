@@ -13,7 +13,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>Wireloom managed IDL source generation for RTI Connext DDS.</Description>
-    <MeziantouPolyfill_IncludedPolyfills>T:System.Range|T:System.Index|T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute|T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute</MeziantouPolyfill_IncludedPolyfills>
+    <MeziantouPolyfill_IncludedPolyfills>T:System.Range|T:System.Index|T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute|T:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute|T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute|M:System.Collections.Generic.Dictionary|M:System.Linq.Enumerable.ToHashSet</MeziantouPolyfill_IncludedPolyfills>
   </PropertyGroup>
 
   <ItemGroup>

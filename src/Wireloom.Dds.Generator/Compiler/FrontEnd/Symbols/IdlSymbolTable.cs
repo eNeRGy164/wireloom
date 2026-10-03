@@ -6,59 +6,52 @@ namespace Wireloom.Compiler.FrontEnd.Symbols;
 internal sealed class IdlSymbolTable
 {
     private readonly HashSet<string> names = new(StringComparer.Ordinal);
-    private readonly HashSet<string> generatedIdentities = new(StringComparer.Ordinal);
+    private GeneratedIdentityIndex generatedIdentities = new();
     private readonly Dictionary<string, IdlEnum> enums = new(StringComparer.Ordinal);
     private readonly Dictionary<string, IdlUnion> unions = new(StringComparer.Ordinal);
     private readonly Dictionary<string, IdlTypedef> typedefs = new(StringComparer.Ordinal);
     private readonly Dictionary<string, IdlConstantDeclaration> constants = new(StringComparer.Ordinal);
 
-    public IEnumerable<string> TypedefNames => typedefs.Keys;
-
+    /// <summary>Registers a declaration name and reports whether it was new.</summary>
     public bool AddName(string name) => names.Add(name);
 
-    public bool AddGeneratedIdentity(string name)
-    {
-        if (generatedIdentities.Any(existing => Conflicts(existing, name)))
-        {
-            return false;
-        }
+    /// <summary>Registers one generated identity when it does not collide.</summary>
+    public bool AddGeneratedIdentity(string name) => generatedIdentities.TryAdd(name);
 
-        generatedIdentities.Add(name);
-
-        return true;
-    }
-
+    /// <summary>Registers generated identities atomically when none collide.</summary>
     public bool AddGeneratedIdentities(IReadOnlyList<string> generatedNames)
     {
-        if (generatedNames
-            .SelectMany((name, index) => generatedNames.Skip(index + 1).Select(other => (name, other)))
-            .Any(pair => Conflicts(pair.name, pair.other))
-            || generatedNames.Any(name => generatedIdentities.Any(existing => Conflicts(existing, name))))
+        if (generatedNames.Count == 1)
         {
-            return false;
+            return AddGeneratedIdentity(generatedNames[0]);
         }
 
+        var candidateIndex = generatedIdentities.Clone();
         foreach (var name in generatedNames)
         {
-            generatedIdentities.Add(name);
+            if (!candidateIndex.TryAdd(name))
+            {
+                return false;
+            }
         }
 
+        generatedIdentities = candidateIndex;
         return true;
     }
 
-    private static bool Conflicts(string first, string second) =>
-        string.Equals(first, second, StringComparison.Ordinal)
-        || first.StartsWith($"{second}.", StringComparison.Ordinal)
-        || second.StartsWith($"{first}.", StringComparison.Ordinal);
-
+    /// <summary>Checks whether a declaration name has been registered.</summary>
     public bool ContainsName(string name) => names.Contains(name);
 
+    /// <summary>Checks whether an enum has been registered.</summary>
     public bool ContainsEnum(string name) => enums.ContainsKey(name);
 
+    /// <summary>Checks whether a union has been registered.</summary>
     public bool ContainsUnion(string name) => unions.ContainsKey(name);
 
+    /// <summary>Checks whether a typedef has been registered.</summary>
     public bool ContainsTypedef(string name) => typedefs.ContainsKey(name);
 
+    /// <summary>Checks whether a constant has been registered.</summary>
     public bool ContainsConstant(string name) => constants.ContainsKey(name);
 
     public bool TryGetConstant(string name, out IdlConstantDeclaration declaration) =>
@@ -68,11 +61,85 @@ internal sealed class IdlSymbolTable
 
     public bool TryGetTypedef(string name, out IdlTypedef declaration) => typedefs.TryGetValue(name, out declaration!);
 
-    public void AddEnum(string name, IdlEnum declaration) => enums.Add(name, declaration);
+    /// <summary>Registers an enum while retaining the first declaration for binding.</summary>
+    public void AddEnum(string name, IdlEnum declaration) => enums.TryAdd(name, declaration);
 
-    public void AddUnion(string name, IdlUnion declaration) => unions.Add(name, declaration);
+    /// <summary>Registers a union while retaining the first declaration for binding.</summary>
+    public void AddUnion(string name, IdlUnion declaration) => unions.TryAdd(name, declaration);
 
-    public void AddTypedef(string name, IdlTypedef declaration) => typedefs.Add(name, declaration);
+    /// <summary>Registers a typedef while retaining the first declaration for binding.</summary>
+    public void AddTypedef(string name, IdlTypedef declaration) => typedefs.TryAdd(name, declaration);
 
-    public void AddConstant(string name, IdlConstantDeclaration declaration) => constants.Add(name, declaration);
+    /// <summary>Registers a constant while retaining the first declaration for binding.</summary>
+    public void AddConstant(string name, IdlConstantDeclaration declaration) => constants.TryAdd(name, declaration);
+
+    private sealed class GeneratedIdentityIndex
+    {
+        private readonly IdentityNode root = new();
+
+        private GeneratedIdentityIndex(IdentityNode root)
+        {
+            this.root = root;
+        }
+
+        public GeneratedIdentityIndex()
+        {
+        }
+
+        public GeneratedIdentityIndex Clone() => new(root.Clone());
+
+        public bool TryAdd(string identity)
+        {
+            var node = root;
+            var segments = identity.Split('.');
+
+            foreach (var segment in segments)
+            {
+                if (node.IsIdentity)
+                {
+                    return false;
+                }
+
+                if (!node.Children.TryGetValue(segment, out var child))
+                {
+                    child = AddChild(node, segment);
+                }
+
+                node = child;
+            }
+
+            if (node.IsIdentity || node.Children.Count > 0)
+            {
+                return false;
+            }
+
+            node.IsIdentity = true;
+            return true;
+        }
+
+        private static IdentityNode AddChild(IdentityNode parent, string segment)
+        {
+            var child = new IdentityNode();
+            parent.Children.Add(segment, child);
+            return child;
+        }
+
+        private sealed class IdentityNode
+        {
+            public Dictionary<string, IdentityNode> Children { get; } = new(StringComparer.Ordinal);
+
+            public bool IsIdentity { get; set; }
+
+            public IdentityNode Clone()
+            {
+                var clone = new IdentityNode { IsIdentity = IsIdentity };
+                foreach (var child in Children)
+                {
+                    clone.Children.Add(child.Key, child.Value.Clone());
+                }
+
+                return clone;
+            }
+        }
+    }
 }

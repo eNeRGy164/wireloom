@@ -8,25 +8,26 @@ namespace Wireloom.Compiler.Emission;
 internal sealed class IdlDeclarationEmitter(
     CompilationContext compilation,
     IdlDeclarationParser parser,
-    bool strict)
+    bool strict,
+    EmissionResult result)
 {
     /// <summary>Emits source documents for all declarations collected by the parser.</summary>
-    public void Emit()
+    public IReadOnlyList<GeneratedIdlSource> Emit()
     {
         foreach (var declaration in parser.Declarations)
         {
             switch (declaration)
             {
                 case IdlConstantDeclaration constant:
-                    ConstantEmitter.Emit(compilation, constant, constant.SourceIdlFileName);
+                    result.AddRange(ConstantEmitter.Emit(compilation, constant, constant.SourceIdlFileName));
                     break;
 
                 case IdlEnumDeclaration @enum:
-                    EnumEmitter.Emit(compilation, @enum.Declaration, @enum.SourceIdlFileName);
+                    result.AddRange(EnumEmitter.Emit(@enum.Declaration, @enum.SourceIdlFileName));
                     break;
 
                 case IdlTypedefDeclaration typedef:
-                    CollectionAliasEmitter.Emit(compilation, typedef.Declaration, typedef.SourceIdlFileName);
+                    result.AddRange(CollectionAliasEmitter.Emit(compilation, typedef.Declaration, typedef.SourceIdlFileName));
                     break;
 
                 case IdlClassDeclaration @class:
@@ -37,14 +38,16 @@ internal sealed class IdlDeclarationEmitter(
                         throw new IdlException(@class.SourceInput, 0, "struct/valuetype derived from a struct/valuetype can not contain @key fields. This check is only enforced when using strict validation.");
                     }
 
-                    ClassEmitter.Emit(compilation, @class.Name, @class.Namespace, @class.Fields, @class.Extensibility, @class.SourceIdlFileName, @class.BaseType, inheritedFields, @class.IsTopic);
+                    result.AddRange(ClassEmitter.Emit(@class.Name, @class.Namespace, @class.Fields, @class.Extensibility, @class.SourceIdlFileName, @class.BaseType, inheritedFields, @class.IsTopic));
                     break;
 
                 case IdlUnionDeclaration union:
-                    UnionEmitter.Emit(compilation, union.Declaration, union.SourceIdlFileName);
+                    result.AddRange(UnionEmitter.Emit(union.Declaration, union.SourceIdlFileName));
                     break;
             }
         }
+
+        return result.Sources;
     }
 
     private IReadOnlyList<IdlMember> GetInheritedFields(IdlClassDeclaration declaration) =>

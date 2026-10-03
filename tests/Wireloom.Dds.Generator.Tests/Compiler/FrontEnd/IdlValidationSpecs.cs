@@ -431,6 +431,21 @@ public sealed class IdlValidationSpecs
         exception.Message.ShouldContain("Typedef alias cycle");
     }
 
+    [Fact]
+    public void ResolvesTypedefTargetsDeclaredLaterInTheCompilation()
+    {
+        // Arrange
+        var input = Input("forward-typedef.idl",
+            "module P03 { typedef Later Alias; typedef long Later; }; ");
+
+        // Act
+        var source = Compile(input);
+
+        // Assert
+        source.ShouldContain("class Alias");
+        source.ShouldContain("Value { get; set; }");
+    }
+
     [Theory]
     [InlineData("enum Broken { RED, };", "Malformed enum member")]
     [InlineData("typedef sequence<Missing, 3> Values;", "Unknown typedef target")]
@@ -593,6 +608,24 @@ public sealed class IdlValidationSpecs
         exception.Message.ShouldContain("Duplicate member: value");
     }
 
+    [Theory]
+    [InlineData("struct Value { long first; }; struct Value { long second; }; ")]
+    [InlineData("enum Value { First }; enum Value { Second }; ")]
+    [InlineData("typedef long Value; typedef long Value; ")]
+    [InlineData("union Value switch(long) { case 0: long first; }; union Value switch(long) { case 1: long second; }; ")]
+    [InlineData("const long Value = 1; const long Value = 2; ")]
+    public void RejectsDuplicateDeclarationsWithoutThrowingDuringRegistration(string declarations)
+    {
+        // Arrange
+        var input = Input("duplicate-declaration.idl", declarations);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Duplicate type: Value");
+    }
+
     [Fact]
     public void RejectsOptionalAggregateMembers()
     {
@@ -723,8 +756,13 @@ public sealed class IdlValidationSpecs
     [InlineData("union Choice switch(long) { invalid; };", "Unsupported union branch declaration")]
     [InlineData("union Choice switch(long) { case 1: long value; case 2: long value; };", "Duplicate union branch")]
     [InlineData("union Choice switch(long) { case Missing: long value; };", "Unknown union discriminator label")]
+    [InlineData("union Choice switch(Missing) { case 0: long value; };", "Unknown union discriminator type")]
+    [InlineData("struct Payload { long value; }; union Choice switch(Payload) { case 0: long value; };", "Unsupported union discriminator type")]
+    [InlineData("union Choice switch(float) { case 0: long value; };", "Unsupported union discriminator type")]
+    [InlineData("typedef float Kind; union Choice switch(Kind) { case 0: long value; };", "Unsupported union discriminator type")]
     [InlineData("union Choice switch(char) { case '\\a': long value; };", "Unknown union discriminator label")]
     [InlineData("union Choice switch(char) { case '\\0': long value; };", "Unknown union discriminator label")]
+    [InlineData("union Choice switch(char) { case L'a': long value; };", "Unknown union discriminator label")]
     [InlineData("union Choice switch(long) { case 1: sequence<Missing> values; };", "Unknown union collection element type")]
     [InlineData("union Choice switch(long) { case 1: Missing value; };", "Unknown union branch type")]
     public void RejectsInvalidUnionBranches(string source, string expectedMessage)
@@ -740,6 +778,21 @@ public sealed class IdlValidationSpecs
     }
 
     [Fact]
+    public void ReportsInvalidUnionDiscriminatorAtTheDiscriminatorType()
+    {
+        // Arrange
+        var input = Input(
+            "invalid-union-discriminator-location.idl",
+            "union Choice switch(Missing) { case 0: long value; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Offset.ShouldBe(input.Text.IndexOf("Missing", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void AcceptsTheSupportedCharacterUnionLabels()
     {
         // Arrange
@@ -752,6 +805,23 @@ public sealed class IdlValidationSpecs
 
         // Assert
         output.ShouldContain("public class Choice");
+    }
+
+    [Fact]
+    public void AcceptsCharacterLiteralsForWideCharacterUnionDiscriminators()
+    {
+        // Arrange
+        var input = Input(
+            "wide-character-union-label.idl",
+            "union Choice switch(wchar) { case L'a': long wideValue; case 'z': long narrowValue; };");
+
+        // Act
+        var output = Compile(input);
+
+        // Assert
+        output.ShouldContain("public class Choice");
+        output.ShouldContain("'a' =>");
+        output.ShouldContain("'z' =>");
     }
 
     [Theory]
@@ -919,6 +989,21 @@ public sealed class IdlValidationSpecs
                 default: long other;
             };
             """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("must leave either TRUE or FALSE unoccupied");
+    }
+
+    [Fact]
+    public void ValidatesDefaultDiscriminatorsAfterResolvingPrimitiveTypedefs()
+    {
+        // Arrange
+        var input = Input(
+            "boolean-typedef-default-discriminator.idl",
+            "typedef boolean Kind; union Choice switch(Kind) { case FALSE: long no; case TRUE: long yes; default: long other; };");
 
         // Act
         var exception = Should.Throw<IdlException>(() => Compile(input));

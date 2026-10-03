@@ -24,38 +24,42 @@ or ADRs first, then refresh this file and
 - **Building blocks:** The pipeline separates Roslyn hosting, input graph and
   preprocessing, front-end parsing and semantics, compilation orchestration and
   resolution, emission models and plans, and managed/native/support emitters.
-  Chapter 5 includes a level-2 zoom of the compiler and preprocessing boundary.
+  Parsing, binding, and validation are explicit front-end phases, and chapter 5
+  includes a level-2 zoom of the compiler and preprocessing boundary.
   See [chapter 5](arc42/05-building-block-view.md).
 - **Runtime and deployment:** The meaningful runtime scenario is the consumer
   build; the output is packaged into the application, which uses its selected
   RTI runtime. See [chapters 6](arc42/06-runtime-view.md) and
   [7](arc42/07-deployment-view.md).
 - **Cross-cutting concerns:** Evidence vocabulary, deterministic source
-  identity, diagnostics, test separation, and supply-chain controls apply
-  across the system. See [chapter 8](arc42/08-crosscutting-concepts.md).
+  identity, explicit compiler phases, diagnostics, test separation, measured
+  invalidation, and supply-chain controls apply across the system. See
+  [chapter 8](arc42/08-crosscutting-concepts.md) and the [incremental baseline](../performance/incremental-generator-baseline.md).
 - **Decisions:** Roslyn hosting, explicit roots, independent semantic models,
-  project-wide root metadata, explicit runtime ownership, case-level
-  compatibility evidence, and separated compiler orchestration/resolution/
-  emission are current decisions. See [chapter 9](arc42/09-architectural-decisions.md).
+  project-wide root metadata, explicit parse/bind/validate phases, explicit
+  runtime ownership, case-level compatibility evidence, and separated
+  compiler orchestration/resolution/emission are current decisions. See
+  [chapter 9](arc42/09-architectural-decisions.md).
 - **Quality and risk:** Corpus shape checks are stronger than the current
-  runtime/interoperability evidence; coverage outside the retained corpus
-  remains a visible risk. See [chapters 10](arc42/10-quality-requirements.md)
+  runtime/interoperability evidence; incremental build behavior is measured but
+  per-root output invalidation remains coarse, and coverage outside the retained
+  corpus remains a visible risk. See [chapters 10](arc42/10-quality-requirements.md)
   and [11](arc42/11-risks-and-technical-debt.md).
 
 ## Repository defaults and decisions
 
-| Area                        | Value                                       | Provenance                                    |
-| :-------------------------- | :------------------------------------------ | :-------------------------------------------- |
-| Consumer/test target        | `net10.0`                                   | `global.json`, chapter 2                      |
-| Generator target            | `netstandard2.0`                            | `Wireloom.Dds.Generator.csproj`, chapter 2    |
-| SDK                         | `10.0.401`                                  | `global.json`                                 |
-| Package output              | NuGet analyzer/source-generator package     | Generator project and workflows               |
-| Runtime compatibility floor | RTI Connext DDS `7.3.1+`                    | Generator diagnostic `DDSG0003`, chapter 2    |
-| Oracle capture baseline     | RTI Connext DDS `7.7.0` / `rtiddsgen 4.7.0` | Corpus manifest, chapter 2                    |
-| Runtime identifiers         | None; generator is runtime-neutral          | Architecture memory and project configuration |
-| Test platform               | Microsoft Testing Platform with xUnit v3    | Project files and chapter 2                   |
-| Assertions                  | Shouldly                                    | Central package management                    |
-| Package management          | Central versions, lock files, NuGet audit   | `Directory.Packages.props`, chapter 8         |
+| Area                        | Value                                                         | Provenance                                    |
+| :-------------------------- | :------------------------------------------------------------ | :-------------------------------------------- |
+| Consumer/test target        | `net10.0`                                                     | `global.json`, chapter 2                      |
+| Generator target            | `netstandard2.0`                                              | `Wireloom.Dds.Generator.csproj`, chapter 2    |
+| SDK policy                  | `10.0.400`; prerelease disabled; `latestFeature` roll-forward | `global.json`; Qodana compatibility           |
+| Package output              | NuGet analyzer/source-generator package                       | Generator project and workflows               |
+| Runtime compatibility floor | RTI Connext DDS `7.3.1+`                                      | Generator diagnostic `DDSG0003`, chapter 2    |
+| Oracle capture baseline     | RTI Connext DDS `7.7.0` / `rtiddsgen 4.7.0`                   | Corpus manifest, chapter 2                    |
+| Runtime identifiers         | None; generator is runtime-neutral                            | Architecture memory and project configuration |
+| Test platform               | Microsoft Testing Platform with xUnit v3                      | Project files and chapter 2                   |
+| Assertions                  | Shouldly                                                      | Central package management                    |
+| Package management          | Central versions, lock files, NuGet audit                     | `Directory.Packages.props`, chapter 8         |
 
 No provisional stack defaults are currently carried forward when the repository
 does not use them.
@@ -73,5 +77,6 @@ does not use them.
 
 - [arc42 index](arc42/index.md) and chapters 1–12
 - [corpus guide](../corpus/README.md) and [feature coverage](../corpus/FEATURE-COVERAGE.md)
+- [incremental generator baseline](../performance/incremental-generator-baseline.md)
 - [repository architecture guidance](../../AGENTS.md)
 - [machine-readable architecture memory](../../.agents/architecture-memory.yaml)

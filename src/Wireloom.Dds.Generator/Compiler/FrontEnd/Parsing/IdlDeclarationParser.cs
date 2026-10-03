@@ -6,6 +6,7 @@ using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing;
 
+/// <summary>Parses top-level IDL declarations and coordinates semantic binding.</summary>
 internal sealed class IdlDeclarationParser
 {
     private readonly IdlParseContext context;
@@ -15,6 +16,7 @@ internal sealed class IdlDeclarationParser
     private readonly IdlStructDeclarationParser structParser;
     private readonly IdlEnumDeclarationParser enumParser;
 
+    /// <summary>Initializes a declaration parser with symbol and diagnostic services.</summary>
     internal IdlDeclarationParser(IdlSymbolTable symbols, CancellationToken cancellationToken, ICollection<IdlDiagnostic>? diagnostics = null)
     {
         context = new IdlParseContext(symbols, cancellationToken, diagnostics);
@@ -28,10 +30,11 @@ internal sealed class IdlDeclarationParser
     internal IReadOnlyList<IdlDeclaration> Declarations =>
         context.Declarations;
 
+    /// <summary>Gets a parsed class declaration by name when present.</summary>
     internal bool TryGetClass(string name, out IdlClassDeclaration declaration) =>
         context.Classes.TryGetValue(name, out declaration);
 
-    /// <summary>Parses declarations in one module and emits their documents.</summary>
+    /// <summary>Parses declarations from an IDL input.</summary>
     public void Parse(
         string declarations,
         IdlInput input,
@@ -125,11 +128,13 @@ internal sealed class IdlDeclarationParser
             position += structParser.Parse(declarations, input, baseOffset, currentNamespace, position);
         }
 
-        foreach (var typedefName in context.Symbols.TypedefNames.ToArray())
-        {
-            typedefParser.Validate(input, baseOffset, typedefName);
-        }
     }
+
+    /// <summary>Binds all parsed declarations.</summary>
+    internal void Bind() => context.BindDeclarations();
+
+    /// <summary>Validates all parsed declarations after binding completes.</summary>
+    internal void Validate() => context.Validate();
 
     private static readonly HashSet<string> UnsupportedAnnotationNames =
         ["position", "bit_bound", "service"];

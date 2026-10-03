@@ -1,4 +1,5 @@
 using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -6,51 +7,28 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits managed collection and value typedef declarations.</summary>
 internal static class CollectionAliasManagedEmitter
 {
-    public static void Emit(CompilationContext compilation, IdlTypedef declaration, string sourceIdlFileName)
+    /// <summary>Emits the managed typedef document.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
     {
-        var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
-        string? element;
-
-        if (declaration.IsString)
-        {
-            element = "string";
-        }
-        else if (declaration.IsCollection)
-        {
-            element = declaration.ElementType!;
-        }
-        else
-        {
-            element = declaration.Target;
-        }
-
-        if (declaration is { IsCollection: false, IsString: false })
-        {
-            element = compilation.ResolveUnderlyingType(element, declaration.Namespace);
-        }
-
+        var typeName = names.ManagedTypeName;
         string? resolvedElement;
-        if (declaration.IsString || IsStringType(element))
+        if (plan.IsString)
         {
             resolvedElement = "string";
         }
-        else if (IdlNaming.IsPrimitive(element))
-        {
-            resolvedElement = IdlNaming.MapPrimitive(element);
-        }
         else
         {
-            resolvedElement = IdlNaming.EscapeQualifiedIdentifier(IdlNaming.ResolveTypeName(element, declaration.Namespace));
+            resolvedElement = plan.ElementType;
         }
 
         var elementReference = IdlNaming.TypeReference(resolvedElement, declaration.Namespace);
-        var requiresNullForgivingValueInitializer = !declaration.IsCollection && !IdlNaming.IsPrimitive(element) && !compilation.IsEnum(element, declaration.Namespace);
+        var requiresNullForgivingValueInitializer = !declaration.IsCollection && plan is { IsAggregate: true, IsPrimitive: false, IsEnum: false };
         var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.DataTypeUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> IDL typedef declared in <c>{sourceIdlFileName}</c>.");
         writer.OpenBlock($"public partial class {typeName} : global::System.IEquatable<{typeName}>");
 
-        if (declaration.IsSequence)
+        if (plan.IsSequence)
         {
             var sequenceSummary = $"Gets the sequence value represented by this typedef.{(declaration.Bound is int bound ? $" Its maximum number of elements is <c>{bound}</c>." : string.Empty)}";
             writer.WriteXmlSummary(sequenceSummary);
@@ -109,9 +87,9 @@ internal static class CollectionAliasManagedEmitter
             writer.WriteXmlSummary("Returns the RTI Connext DDS representation of this typedef.");
             writer.WriteLine($"public override string ToString() => {typeName}Support.Instance.ToString(this);");
         }
-        else if (declaration.IsArray)
+        else if (plan.IsArray)
         {
-            var arrayElementIsAggregate = !IdlNaming.IsPrimitive(element) && !IsCSharpPrimitive(element) && !compilation.IsEnum(element, declaration.Namespace);
+            var arrayElementIsAggregate = plan.CollectionElementIsAggregate;
             var arrayType = $"{elementReference}[{new string(',', declaration.Dimensions.Count - 1)}]";
 
             writer.WriteXmlSummary("Gets or sets the array value represented by this typedef.");
@@ -267,14 +245,7 @@ internal static class CollectionAliasManagedEmitter
         }
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(declaration.Namespace, declaration.Name), writer.ToString()));
+        return [new GeneratedIdlSource(names.Managed.HintName, writer.ToString())];
     }
 
-    private static bool IsStringType(string? typeName) =>
-        typeName is not null
-        && (typeName.StartsWith("string", StringComparison.Ordinal) || typeName.StartsWith("wstring", StringComparison.Ordinal));
-
-    private static bool IsCSharpPrimitive(string typeName) => typeName is
-        "sbyte" or "byte" or "short" or "ushort" or "int" or "uint" or "long" or
-        "ulong" or "char" or "bool" or "float" or "double";
 }

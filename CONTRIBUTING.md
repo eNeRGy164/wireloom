@@ -6,6 +6,8 @@ and maintenance. For consumer setup, see the [package usage guide](src/Wireloom.
 ## Before changing code
 
 - Read the root [`AGENTS.md`](AGENTS.md) for repository-wide working rules.
+- Follow the [code style guide](docs/CODE-STYLE.md) for formatting,
+  readability, API documentation, and maintainability conventions.
 - Read [architecture memory](.agents/architecture-memory.yaml) before changing
   architecture. Consult the linked [arc42 chapters](docs/architecture/arc42/index.md),
   decisions, and contracts when the change affects documented boundaries.
@@ -73,18 +75,10 @@ as the primary signal for control-flow-heavy code and line coverage as a
 secondary signal.
 
 After a successful build and test run, run Community Qodana from the repository
-root with `global.json` visible and the CI image and fail threshold:
+root with `global.json` visible:
 
-```powershell
-$repoRoot = (Get-Location).Path
-$qodanaCache = Join-Path $repoRoot '.qodana\cache'
-docker run --rm `
-  --volume "${repoRoot}:/data/project" `
-  --volume "${qodanaCache}:/data/cache" `
-  jetbrains/qodana-cdnet:2026.2-privileged `
-  --cache-dir /data/cache `
-  --results-dir /data/project/.qodana/results `
-  --fail-threshold 0
+```bash
+wslc run --rm --volume "${PWD}:/data/project" --volume "${PWD}/.qodana/cache:/data/cache" -e DOTNET_NOLOGO=1 jetbrains/qodana-cdnet:2026.2-privileged --results-dir /data/project/.qodana/results
 ```
 
 The CI Qodana cache is separate from NuGet's cache. The mounted local cache
@@ -103,6 +97,10 @@ Coverage validation also requires the local coverage command to succeed and the
 Coveralls GitHub check to pass after CI. Review Coveralls run details to confirm
 branch tracking is included when enabled. A successful local test run alone is
 not sufficient quality evidence.
+
+When changing generator inputs or invalidation behavior, also run the focused
+[incremental generator baseline](docs/performance/incremental-generator-baseline.md)
+and update its evidence before considering a caching redesign.
 
 ## Pull requests
 

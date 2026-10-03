@@ -9,28 +9,26 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class UnionTypeSupportEmitter
 {
     /// <summary>Emits the RTI native representation, plugin, and type support for an IDL union.</summary>
-    public static void Emit(CompilationContext compilation, IdlEmissionUnion declaration, string sourceIdlFileName, string implementationNamespace)
+    /// <summary>Emits native, plugin, and type-support documents for a union.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlEmissionUnion declaration, GeneratedTypeNames names, string sourceIdlFileName)
     {
-        var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
-        var unmanagedName = IdlNaming.EscapeIdentifier(declaration.Name + "Unmanaged");
-        var pluginName = IdlNaming.EscapeIdentifier(declaration.Name + "Plugin");
-        var supportName = IdlNaming.EscapeIdentifier(declaration.Name + "Support");
-        var runtimeTypeName = declaration.Namespace is null ? typeName : $"{IdlNaming.EscapeQualifiedIdentifier(declaration.Namespace)}.{typeName}";
-        var idlTypeName = declaration.Namespace is null ? declaration.Name : $"{declaration.Namespace.Replace(".", "::")}::{declaration.Name}";
-        var implementationTypeName = IdlNaming.TypeReference(typeName, declaration.Namespace, implementationNamespace);
+        var typeName = names.ManagedTypeName;
+        var runtimeTypeName = names.RuntimeTypeName;
+        var idlTypeName = names.IdlTypeName;
+        var implementationTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.ImplementationNamespace);
         var supportTypeName = IdlNaming.TypeReference(typeName, declaration.Namespace, declaration.Namespace);
-        var nativeDiscriminatorType = NativeDiscriminatorType(declaration);
+        var nativeDiscriminatorType = declaration.NativeDiscriminatorType;
 
-        var writer = EmissionSupport.CreateSource(implementationNamespace, EmissionSupport.UnmanagedTypeUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.UnmanagedTypeUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI native representation for <see cref=\"{typeName}\"/>.");
-        writer.OpenBlock($"public struct {unmanagedName} : INativeTopicType<{implementationTypeName}>");
+        writer.OpenBlock($"public struct {names.UnmanagedTypeName} : INativeTopicType<{implementationTypeName}>");
         writer.WriteLine($"private {nativeDiscriminatorType} _discriminator;");
         writer.BlankLine();
 
         foreach (var branch in declaration.Branches)
         {
-            writer.WriteLine($"private {branch.Plan.NativeStorageTypeFor(implementationNamespace)} {branch.Plan.EscapedName};");
+            writer.WriteLine($"private {branch.Plan.NativeStorageTypeFor(names.ImplementationNamespace)} {branch.Plan.EscapedName};");
         }
 
         writer.BlankLine();
@@ -43,7 +41,7 @@ internal static class UnionTypeSupportEmitter
         writer.CloseBlock();
 
         var destroyableBranches = declaration.Branches
-            .Select(branch => (Branch: branch, Statement: branch.Plan.BuildDestroyStatement(implementationNamespace, NativeFieldPrefix(branch.Plan, "optionalsOnly"))))
+            .Select(branch => (Branch: branch, Statement: branch.Plan.BuildDestroyStatement(names.ImplementationNamespace, NativeFieldPrefix(branch.Plan, "optionalsOnly"))))
             .Where(item => item.Statement is not null)
             .ToArray();
         if (destroyableBranches.Length > 0)
@@ -57,18 +55,21 @@ internal static class UnionTypeSupportEmitter
         }
 
         writer.CloseBlock();
-        EmitUnionNativeConversion(writer, declaration, implementationTypeName, implementationNamespace, fromNative: true);
-        EmitUnionNativeInitialization(writer, declaration, implementationNamespace);
-        EmitUnionNativeConversion(writer, declaration, implementationTypeName, implementationNamespace, fromNative: false);
+        EmitUnionNativeConversion(writer, declaration, implementationTypeName, names.ImplementationNamespace, fromNative: true);
+        EmitUnionNativeInitialization(writer, declaration, names.ImplementationNamespace);
+        EmitUnionNativeConversion(writer, declaration, implementationTypeName, names.ImplementationNamespace, fromNative: false);
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementationNamespace, $"{declaration.Name}Unmanaged"), writer.ToString()));
+        var documents = new List<GeneratedIdlSource>
+        {
+            new(names.Unmanaged.HintName, writer.ToString())
+        };
 
-        writer = EmissionSupport.CreateSource(implementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
+        writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI interpreted type plugin for <see cref=\"{typeName}\"/>.");
-        writer.OpenBlock($"internal class {pluginName} : InterpretedTypePlugin<{implementationTypeName}, {unmanagedName}>");
-        writer.OpenBlock($"internal {pluginName}() : base(\"{runtimeTypeName}\", isKeyed: false, CreateDynamicType(isPublic: false))");
+        writer.OpenBlock($"internal class {names.PluginTypeName} : InterpretedTypePlugin<{implementationTypeName}, {names.UnmanagedTypeName}>");
+        writer.OpenBlock($"internal {names.PluginTypeName}() : base(\"{runtimeTypeName}\", isKeyed: false, CreateDynamicType(isPublic: false))");
         writer.CloseBlock();
         writer.BlankLine();
 
@@ -85,7 +86,7 @@ internal static class UnionTypeSupportEmitter
         for (var index = 0; index < declaration.Branches.Count; index++)
         {
             var branch = declaration.Branches[index];
-            var dynamicType = branch.Plan.BuildDynamicTypeExpression(implementationNamespace);
+            var dynamicType = branch.Plan.BuildDynamicTypeExpression(names.ImplementationNamespace);
             var labels = branch.IsDefault
                 ? "new int[] { (int)UnionMember.DefaultLabel }"
                 : $"new int[] {{ {string.Join(", ", branch.LabelValues)} }}";
@@ -95,18 +96,18 @@ internal static class UnionTypeSupportEmitter
 
         writer.CloseBlock(";");
         writer.BlankLine();
-        writer.WriteLine($"var result = tsf.CreateTypeWithAccessInfo<{unmanagedName}>(");
+        writer.WriteLine($"var result = tsf.CreateTypeWithAccessInfo<{names.UnmanagedTypeName}>(");
         writer.Indent();
         writer.WriteLine("dtf.BuildUnion()");
         writer.Indent();
 
         if (declaration.DiscriminatorIsEnum)
         {
-            writer.WriteLine($".WithDiscriminator({IdlNaming.TypeReference(declaration.DiscriminatorCSharpType, implementationNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic))");
+            writer.WriteLine($".WithDiscriminator({IdlNaming.TypeReference(declaration.DiscriminatorCSharpType, names.ImplementationNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic))");
         }
         else
         {
-            writer.WriteLine($".WithDiscriminator(dtf.GetPrimitiveType<{declaration.DiscriminatorCSharpType}>())");
+            writer.WriteLine($".WithDiscriminator(dtf.GetPrimitiveType<{declaration.PrimitiveDiscriminatorDynamicType}>())");
         }
 
         writer.WriteLine($".WithExtensibility(ExtensibilityKind.{declaration.Extensibility})");
@@ -125,28 +126,29 @@ internal static class UnionTypeSupportEmitter
         writer.CloseBlock();
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementationNamespace, $"{declaration.Name}Plugin"), writer.ToString()));
+        documents.Add(new GeneratedIdlSource(names.Plugin.HintName, writer.ToString()));
 
-        writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
+        writer = EmissionSupport.CreateSource(names.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
         writer.WriteXmlSummary($"Provides RTI Connext DDS type support for <see cref=\"{typeName}\"/>.");
-        writer.OpenBlock($"public class {supportName} : TypeSupport<{supportTypeName}>");
-        writer.WriteXmlSummary($"Initializes a new instance of the <see cref=\"{supportName}\"/> class.");
-        writer.WriteLine($"public {supportName}() : base(");
+        writer.OpenBlock($"public class {names.SupportTypeName} : TypeSupport<{supportTypeName}>");
+        writer.WriteXmlSummary($"Initializes a new instance of the <see cref=\"{names.SupportTypeName}\"/> class.");
+        writer.WriteLine($"public {names.SupportTypeName}() : base(");
         writer.Indent();
-        writer.WriteLine($"new Implementation.{pluginName}(),");
-        writer.WriteLine($"new global::System.Lazy<DynamicType>(() => Implementation.{pluginName}.CreateDynamicType(isPublic: true)))");
+        writer.WriteLine($"new Implementation.{names.PluginTypeName}(),");
+        writer.WriteLine($"new global::System.Lazy<DynamicType>(() => Implementation.{names.PluginTypeName}.CreateDynamicType(isPublic: true)))");
         writer.Unindent();
         writer.OpenBrace();
         writer.CloseBlock();
         writer.BlankLine();
         writer.WriteXmlSummary("Gets the cached RTI Connext DDS type-support instance.");
-        writer.WriteLine($"public static {supportName} Instance {{ get; }} =");
+        writer.WriteLine($"public static {names.SupportTypeName} Instance {{ get; }} =");
         writer.Indent();
-        writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{supportName}, {supportTypeName}>();");
+        writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{names.SupportTypeName}, {supportTypeName}>();");
         writer.Unindent();
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(declaration.Namespace, $"{declaration.Name}Support"), writer.ToString()));
+        documents.Add(new GeneratedIdlSource(names.Support.HintName, writer.ToString()));
+        return documents;
     }
 
     /// <summary>Emits native-to-managed or managed-to-native conversion for the selected branch.</summary>
@@ -167,13 +169,13 @@ internal static class UnionTypeSupportEmitter
             writer.WriteXmlParam("sample", "The managed sample to copy.");
             writer.WriteXmlParam("keysOnly", "Whether to copy only key members.");
             writer.OpenBlock($"public void ToNative({typeName} sample, bool keysOnly = false)");
-            writer.WriteLine($"_discriminator = {NativeDiscriminatorWriteExpression(declaration, "sample.Discriminator")};");
+            writer.WriteLine($"_discriminator = {declaration.NativeDiscriminatorWriteExpression("sample.Discriminator")};");
             writer.BlankLine();
         }
 
-        writer.OpenBlock($"switch ({NativeDiscriminatorReadExpression(declaration)})");
+        writer.OpenBlock($"switch ({declaration.NativeDiscriminatorReadExpression("_discriminator")})");
 
-        foreach (var branch in declaration.Branches.Where(branch => !branch.IsDefault))
+        foreach (var branch in declaration.ExplicitBranches)
         {
             foreach (var label in branch.Labels)
             {
@@ -184,7 +186,7 @@ internal static class UnionTypeSupportEmitter
 
             if (fromNative)
             {
-                EmitManagedBranchInitialization(writer, branch);
+                EmitManagedBranchInitialization(writer, declaration, branch);
 
                 var nativeFieldPrefix = NativeFieldPrefix(branch.Plan, "sample", "keysOnly");
                 var statement = branch.Plan.BuildFromNativeStatement(false, implementationNamespace, nativeFieldPrefix);
@@ -198,7 +200,7 @@ internal static class UnionTypeSupportEmitter
                         valueExpression = $"sample.{branch.Plan.EscapedName}";
                     }
 
-                    statement = $"sample.{IdlNaming.EscapeIdentifier($"Set{branch.Field.Name}")}({valueExpression}, {NativeDiscriminatorReadExpression(declaration)});";
+                    statement = $"sample.{IdlNaming.EscapeIdentifier($"Set{branch.Field.Name}")}({valueExpression}, {declaration.NativeDiscriminatorReadExpression("_discriminator")});";
                 }
 
                 writer.WriteLine(statement);
@@ -213,17 +215,17 @@ internal static class UnionTypeSupportEmitter
             writer.Unindent();
         }
 
-        if (!IsExhaustiveBooleanUnion(declaration))
+        if (!declaration.IsExhaustiveBoolean)
         {
             writer.WriteLine("default:");
             writer.Indent();
 
-            var defaultBranch = declaration.Branches.SingleOrDefault(branch => branch.IsDefault);
+            var defaultBranch = declaration.DefaultBranch;
             if (defaultBranch is not null)
             {
                 if (fromNative)
                 {
-                    EmitManagedBranchInitialization(writer, defaultBranch);
+                    EmitManagedBranchInitialization(writer, declaration, defaultBranch);
                     var nativeFieldPrefix = NativeFieldPrefix(defaultBranch.Plan, "sample", "keysOnly");
                     var statement = defaultBranch.Plan.BuildFromNativeStatement(false, implementationNamespace, nativeFieldPrefix);
                     var valueExpression = defaultBranch.Plan.BuildFromNativeValueExpression(nativeFieldPrefix);
@@ -233,7 +235,7 @@ internal static class UnionTypeSupportEmitter
                         valueExpression = $"sample.{defaultBranch.Plan.EscapedName}";
                     }
 
-                    writer.WriteLine($"sample.{IdlNaming.EscapeIdentifier($"Set{defaultBranch.Field.Name}")}({valueExpression}, {NativeDiscriminatorReadExpression(declaration)});");
+                    writer.WriteLine($"sample.{IdlNaming.EscapeIdentifier($"Set{defaultBranch.Field.Name}")}({valueExpression}, {declaration.NativeDiscriminatorReadExpression("_discriminator")});");
                 }
                 else
                 {
@@ -249,7 +251,7 @@ internal static class UnionTypeSupportEmitter
         writer.CloseBlock();
     }
 
-    private static void EmitManagedBranchInitialization(GeneratedSourceWriter writer, UnionBranchEmissionPlan branch)
+    private static void EmitManagedBranchInitialization(GeneratedSourceWriter writer, IdlEmissionUnion declaration, UnionBranchEmissionPlan branch)
     {
         var initialization = branch.Plan.ManagedDefaultInitializationStatement;
         if (initialization is null)
@@ -257,7 +259,8 @@ internal static class UnionTypeSupportEmitter
             return;
         }
 
-        writer.OpenBlock("if (sample.Discriminator != _discriminator)");
+        var discriminator = declaration.NativeDiscriminatorReadExpression("_discriminator");
+        writer.OpenBlock($"if (sample.Discriminator != {discriminator})");
         writer.WriteLine($"sample.{initialization}");
         writer.CloseBlock();
         writer.BlankLine();
@@ -274,7 +277,7 @@ internal static class UnionTypeSupportEmitter
         writer.WriteXmlParam("allocatePointers", "Whether pointer members should be allocated.");
         writer.WriteXmlParam("allocateMemory", "Whether native memory should be allocated.");
         writer.OpenBlock("public void Initialize(bool allocatePointers = true, bool allocateMemory = true)");
-        writer.WriteLine($"_discriminator = {NativeDiscriminatorWriteExpression(declaration, defaultDiscriminator)};");
+        writer.WriteLine($"_discriminator = {declaration.NativeDiscriminatorWriteExpression(defaultDiscriminator)};");
 
         var initializationStatements = declaration.Branches
             .Select(branch => branch.Plan.UnionDefaultInitializationStatement(implementationNamespace, NativeFieldPrefix(branch.Plan, "allocatePointers", "allocateMemory")))
@@ -301,25 +304,4 @@ internal static class UnionTypeSupportEmitter
     private static string NativeFieldPrefix(MemberEmissionPlan field, params string[] parameterNames) =>
         parameterNames.Contains(field.Name, StringComparer.Ordinal) ? "this." : string.Empty;
 
-    private static string NativeDiscriminatorType(IdlEmissionUnion declaration) =>
-        declaration.DiscriminatorCSharpType is "char" or "bool" ? "byte" : declaration.DiscriminatorCSharpType;
-
-    private static string NativeDiscriminatorReadExpression(IdlEmissionUnion declaration) =>
-        declaration.DiscriminatorCSharpType switch
-        {
-            "char" => "NativeChar.FromUtf8(_discriminator)",
-            "bool" => "global::System.Convert.ToBoolean(_discriminator)",
-            _ => "_discriminator"
-        };
-
-    private static string NativeDiscriminatorWriteExpression(IdlEmissionUnion declaration, string source) =>
-        declaration.DiscriminatorCSharpType switch
-        {
-            "char" => $"NativeChar.ToUtf8({source})",
-            "bool" => $"global::System.Convert.ToByte({source})",
-            _ => source
-        };
-
-    private static bool IsExhaustiveBooleanUnion(IdlEmissionUnion declaration) =>
-        declaration.DiscriminatorCSharpType == "bool" && !declaration.Branches.Any(branch => branch.IsDefault);
 }

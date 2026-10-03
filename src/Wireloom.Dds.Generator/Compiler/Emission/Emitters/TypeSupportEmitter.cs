@@ -7,22 +7,19 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Owns the output entry point for native/plugin/type-support documents.</summary>
 internal static class TypeSupportEmitter
 {
-    public static void Emit(
-        CompilationContext compilation,
-        string name,
-        string? currentNamespace,
+    /// <summary>Emits native, plugin, and type-support documents for a data type.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(
+        GeneratedTypeNames names,
         IReadOnlyList<MemberEmissionPlan> fields,
         IReadOnlyList<MemberEmissionPlan> inheritedFields,
         IdlExtensibilityKind extensibility,
         string sourceIdlFileName,
         string? baseType,
         bool isRecursive) =>
-        EmitDocuments(compilation, name, currentNamespace, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive);
+        EmitDocuments(names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive);
 
-    private static void EmitDocuments(
-        CompilationContext compilation,
-        string name,
-        string? currentNamespace,
+    private static IReadOnlyList<GeneratedIdlSource> EmitDocuments(
+        GeneratedTypeNames names,
         IReadOnlyList<MemberEmissionPlan> fields,
         IReadOnlyList<MemberEmissionPlan> inheritedFields,
         IdlExtensibilityKind extensibility,
@@ -30,42 +27,41 @@ internal static class TypeSupportEmitter
         string? baseType,
         bool isRecursive)
     {
-        var typeName = IdlNaming.EscapeIdentifier(name);
-        var supportName = IdlNaming.EscapeIdentifier($"{name}Support");
-        var unmanagedName = IdlNaming.EscapeIdentifier($"{name}Unmanaged");
-        var pluginName = IdlNaming.EscapeIdentifier($"{name}Plugin");
-        var implementationNamespace = currentNamespace is null ? "Implementation" : $"{currentNamespace}.Implementation";
-        var implementationTypeName = IdlNaming.TypeReference(name, currentNamespace, implementationNamespace);
-        var supportTypeName = IdlNaming.TypeReference(name, currentNamespace, currentNamespace);
-        var baseUnmanagedType = baseType is null ? null : EmissionSupport.GetUnmanagedType(baseType, implementationNamespace);
+        var typeName = names.ManagedTypeName;
+        var implementationTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.ImplementationNamespace);
+        var supportTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.Namespace);
+        var baseUnmanagedType = baseType is null ? null : EmissionSupport.GetUnmanagedType(baseType, names.ImplementationNamespace);
 
-        var writer = EmissionSupport.CreateSource(implementationNamespace, EmissionSupport.UnmanagedTypeUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.UnmanagedTypeUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI native representation for <see cref=\"{typeName}\"/>.");
-        writer.OpenBlock($"public struct {unmanagedName} : INativeTopicType<{implementationTypeName}>");
+        writer.OpenBlock($"public struct {names.UnmanagedTypeName} : INativeTopicType<{implementationTypeName}>");
 
         if (baseUnmanagedType is not null)
         {
             writer.WriteLine($"private {baseUnmanagedType} parent;");
         }
 
-        NativeTypeEmitter.Emit(writer, implementationTypeName, fields, inheritedFields, implementationNamespace, baseUnmanagedType);
+        NativeTypeEmitter.Emit(writer, implementationTypeName, fields, inheritedFields, names.ImplementationNamespace, baseUnmanagedType);
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementationNamespace, $"{name}Unmanaged"), writer.ToString()));
+        var documents = new List<GeneratedIdlSource>
+        {
+            new(names.Unmanaged.HintName, writer.ToString())
+        };
 
-        DynamicTypeEmitter.EmitStructPlugin(compilation, name, currentNamespace, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive);
+        documents.AddRange(DynamicTypeEmitter.EmitStructPlugin(names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive));
 
-        writer = EmissionSupport.CreateSource(currentNamespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
+        writer = EmissionSupport.CreateSource(names.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides RTI Connext DDS type support for <see cref=\"{typeName}\"/>.");
-        writer.OpenBlock($"public class {supportName} : TypeSupport<{supportTypeName}>");
+        writer.OpenBlock($"public class {names.SupportTypeName} : TypeSupport<{supportTypeName}>");
 
-        writer.WriteXmlSummary($"Initializes a new instance of the <see cref=\"{supportName}\"/> class.");
-        writer.WriteLine($"public {supportName}() : base(");
+        writer.WriteXmlSummary($"Initializes a new instance of the <see cref=\"{names.SupportTypeName}\"/> class.");
+        writer.WriteLine($"public {names.SupportTypeName}() : base(");
         writer.Indent();
-        writer.WriteLine($"new Implementation.{pluginName}(),");
-        writer.WriteLine($"new global::System.Lazy<DynamicType>(() => Implementation.{pluginName}.CreateDynamicType(isPublic: true)))");
+        writer.WriteLine($"new Implementation.{names.PluginTypeName}(),");
+        writer.WriteLine($"new global::System.Lazy<DynamicType>(() => Implementation.{names.PluginTypeName}.CreateDynamicType(isPublic: true)))");
         writer.Unindent();
         writer.OpenBrace();
         writer.CloseBlock();
@@ -73,9 +69,9 @@ internal static class TypeSupportEmitter
 
         var instanceAccessors = isRecursive ? "{ get; private set; }" : "{ get; }";
         writer.WriteXmlSummary("Gets the cached RTI Connext DDS type-support instance.");
-        writer.WriteLine($"public static {supportName} Instance {instanceAccessors} =");
+        writer.WriteLine($"public static {names.SupportTypeName} Instance {instanceAccessors} =");
         writer.Indent();
-        writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{supportName}, {supportTypeName}>();");
+        writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{names.SupportTypeName}, {supportTypeName}>();");
         writer.Unindent();
 
         if (isRecursive)
@@ -83,9 +79,9 @@ internal static class TypeSupportEmitter
             writer.BlankLine();
 
             writer.WriteXmlSummary("Gets or creates the recursive type-support instance without forcing its public dynamic type.");
-            writer.OpenBlock($"internal static {supportName} GetOrCreateInstanceImpl()");
+            writer.OpenBlock($"internal static {names.SupportTypeName} GetOrCreateInstanceImpl()");
             writer.OpenBlock("if (Instance is null)");
-            writer.WriteLine($"Instance = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{supportName}, {supportTypeName}>();");
+            writer.WriteLine($"Instance = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{names.SupportTypeName}, {supportTypeName}>();");
             writer.CloseBlock();
             writer.BlankLine();
             writer.WriteLine("return Instance;");
@@ -94,6 +90,7 @@ internal static class TypeSupportEmitter
 
         writer.CloseBlock();
 
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(currentNamespace, $"{name}Support"), writer.ToString()));
+        documents.Add(new GeneratedIdlSource(names.Support.HintName, writer.ToString()));
+        return documents;
     }
 }

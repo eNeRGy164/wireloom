@@ -41,11 +41,34 @@ public sealed class GeneratedPrimitiveAliasCoverageSpecs
         AssertPrimitiveAlias(documents, "Int8Alias", "Int8", "Int8Value", "(sbyte)0", "sbyte.MinValue", "sbyte.MaxValue", "(sbyte)0");
         AssertPrimitiveAlias(documents, "Uint8Alias", "Uint8", "Uint8Value", "(byte)0", "byte.MinValue", "byte.MaxValue", "(byte)0");
         AssertPrimitiveAlias(documents, "OctetAlias", "Octet", "OctetValue", "(byte)0", "byte.MinValue", "byte.MaxValue", "(byte)0");
-        AssertPrimitiveAlias(documents, "BooleanAlias", "Boolean", "BoolValue", "false", "null", "null", "false");
-        AssertPrimitiveAlias(documents, "CharAlias", "Char8", "Char8Value", "'\\0'", "null", "null", "'\\0'");
-        AssertPrimitiveAlias(documents, "WcharAlias", "Char16", "Char16Value", "'\\0'", "null", "null", "'\\0'");
+        AssertPrimitiveAlias(documents, "BooleanAlias", "Boolean", "BoolValue", "false", "null", "null", "0");
+        AssertPrimitiveAlias(documents, "CharAlias", "Char8", "Char8Value", "'\\0'", "null", "null", "(byte)0");
+        AssertPrimitiveAlias(documents, "WcharAlias", "Char16", "Char16Value", "'\\0'", "null", "null", "(short)0");
         AssertPrimitiveAlias(documents, "FloatAlias", "Float32", "Float32Value", "0F", "float.MinValue", "float.MaxValue", "0.0F");
         AssertPrimitiveAlias(documents, "DoubleAlias", "Float64", "Float64Value", "0D", "double.MinValue", "double.MaxValue", "0.0D");
+
+        var booleanNative = documents["PrimitiveAliases.Implementation.BooleanAliasUnmanaged.g.cs"].Source;
+        booleanNative.ShouldContain("private byte Value;");
+        booleanNative.ShouldContain("sample.Value = global::System.Convert.ToBoolean(Value);");
+        booleanNative.ShouldContain("Value = global::System.Convert.ToByte(sample.Value);");
+
+        var charNative = documents["PrimitiveAliases.Implementation.CharAliasUnmanaged.g.cs"].Source;
+        charNative.ShouldContain("private byte Value;");
+        charNative.ShouldContain("sample.Value = NativeChar.FromUtf8(Value);");
+        charNative.ShouldContain("Value = NativeChar.ToUtf8(sample.Value);");
+
+        var wcharNative = documents["PrimitiveAliases.Implementation.WcharAliasUnmanaged.g.cs"].Source;
+        wcharNative.ShouldContain("private short Value;");
+        wcharNative.ShouldContain("sample.Value = (char)Value;");
+        wcharNative.ShouldContain("Value = (short)sample.Value;");
+
+        var octetPlugin = documents["PrimitiveAliases.Implementation.OctetAliasPlugin.g.cs"].Source;
+        octetPlugin.ShouldContain("dtf.GetPrimitiveType<Octet>()");
+        octetPlugin.ShouldNotContain("dtf.GetPrimitiveType<byte>()");
+
+        var wcharPlugin = documents["PrimitiveAliases.Implementation.WcharAliasPlugin.g.cs"].Source;
+        wcharPlugin.ShouldContain("dtf.GetPrimitiveType<DynamicTypeFactory.WideCharType>()");
+        wcharPlugin.ShouldNotContain("dtf.GetPrimitiveType<char>()");
 
         var longLongNative = documents["PrimitiveAliases.Implementation.LongLongAliasUnmanaged.g.cs"].Source;
         longLongNative.ShouldContain("private long Value;");
@@ -117,6 +140,68 @@ public sealed class GeneratedPrimitiveAliasCoverageSpecs
         wideTextsNative.ShouldContain("Value.Initialize(max: 2, absoluteMax: 2, maxStrLen: 4, allocateMemory: allocateMemory);");
         wideTextsNative.ShouldContain("Value.FromNative(sample.Value);");
         wideTextsNative.ShouldContain("Value.ToNative(sample.Value, 4);");
+    }
+
+    [Fact]
+    public void NamedPrimitiveAndStringAliasesUseAggregateCollectionContracts()
+    {
+        // Arrange
+        var input = Input("named-collection-aliases.idl",
+            """
+            module NamedCollectionAliases {
+                typedef long Scalar;
+                typedef sequence<Scalar, 2> Scalars;
+                typedef string<8> Name;
+                typedef sequence<Name, 3> Names;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var scalarsPlugin = documents["NamedCollectionAliases.Implementation.ScalarsPlugin.g.cs"].Source;
+        scalarsPlugin.ShouldContain("ScalarSupport.Instance.GetDynamicTypeInternal(isPublic)");
+
+        var scalarsNative = documents["NamedCollectionAliases.Implementation.ScalarsUnmanaged.g.cs"].Source;
+        scalarsNative.ShouldContain("private NativeSeq Value;");
+        scalarsNative.ShouldContain("Value.Initialize<Scalar, ScalarUnmanaged>");
+        scalarsNative.ShouldContain("Value.FromNative<Scalar, ScalarUnmanaged>");
+
+        var namesPlugin = documents["NamedCollectionAliases.Implementation.NamesPlugin.g.cs"].Source;
+        namesPlugin.ShouldContain("NameSupport.Instance.GetDynamicTypeInternal(isPublic)");
+
+        var namesNative = documents["NamedCollectionAliases.Implementation.NamesUnmanaged.g.cs"].Source;
+        namesNative.ShouldContain("private NativeSeq Value;");
+        namesNative.ShouldContain("Value.Initialize<Name, NameUnmanaged>");
+        namesNative.ShouldContain("Value.FromNative<Name, NameUnmanaged>");
+    }
+
+    [Fact]
+    public void PreservesRootAliasIdentityForNamespacedCollectionAliases()
+    {
+        // Arrange
+        var input = Input(
+            "cross-namespace-collection-alias.idl",
+            """
+            typedef long Scalar;
+            module Nested {
+                typedef sequence<Scalar, 2> Values;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Nested.Values.g.cs"].Source;
+        managed.ShouldContain("ISequence<global::Scalar>");
+
+        var plugin = documents["Nested.Implementation.ValuesPlugin.g.cs"].Source;
+        plugin.ShouldContain("ScalarSupport.Instance.GetDynamicTypeInternal(isPublic)");
+
+        var native = documents["Nested.Implementation.ValuesUnmanaged.g.cs"].Source;
+        native.ShouldContain("Value.Initialize<global::Scalar, global::Implementation.ScalarUnmanaged>");
     }
 
     private static void AssertPrimitiveAlias(

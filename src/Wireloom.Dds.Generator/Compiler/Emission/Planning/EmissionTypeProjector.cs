@@ -7,6 +7,7 @@ namespace Wireloom.Compiler.Emission.Planning;
 /// <summary>Projects semantic IDL types into target-specific emission plans.</summary>
 internal static class EmissionTypeProjector
 {
+    /// <summary>Projects a semantic member into an emission field.</summary>
     internal static IdlEmissionField ToEmissionField(IdlMember member, string? currentNamespace)
     {
         var type = ProjectType(member.Type, currentNamespace);
@@ -44,13 +45,27 @@ internal static class EmissionTypeProjector
                 member.Metadata.UsesAutoIdHash));
     }
 
+    /// <summary>Projects a collection element while preserving a named alias identity.</summary>
+    internal static EmissionTypePlan ToCollectionElementType(IdlType type, string? currentNamespace)
+    {
+        if (type is IdlType.Alias alias)
+        {
+            var target = ToCollectionElementType(alias.Target, currentNamespace);
+            var aliasName = IdlNaming.ResolvedTypeReference(alias.QualifiedName, currentNamespace);
+            var supportName = IdlNaming.EscapeQualifiedIdentifier(alias.QualifiedName);
+            return new AliasEmissionType(alias.QualifiedName, target, aliasName, supportName);
+        }
+
+        return ProjectType(type, currentNamespace);
+    }
+
+    /// <summary>Projects a semantic union into an emission union.</summary>
     internal static IdlEmissionUnion ToEmissionUnion(IdlUnion union) =>
         new(
             union.Name,
             union.Namespace,
-            union.DiscriminatorIsEnum
-                ? IdlNaming.EscapeQualifiedIdentifier(IdlNaming.ResolveTypeName(union.DiscriminatorIdlType, union.Namespace))
-                : IdlNaming.MapPrimitive(union.DiscriminatorIdlType),
+            ProjectDiscriminatorIdlType(union),
+            ProjectDiscriminatorCSharpType(union),
             union.DiscriminatorIsEnum,
             union.DiscriminatorDefaultValue,
             [.. union.Branches.Select(branch =>
@@ -59,11 +74,60 @@ internal static class EmissionTypeProjector
                 return new UnionBranchEmissionPlan(
                     field,
                     new MemberEmissionPlan(field, union.Namespace),
-                    branch.Labels,
+                    ProjectUnionLabels(union, branch),
                     branch.LabelValues,
                     branch.IsDefault);
             })],
             union.Extensibility);
+
+    private static string ProjectDiscriminatorIdlType(IdlUnion union)
+    {
+        if (union.DiscriminatorIsEnum)
+        {
+            return union.DiscriminatorIdlType;
+        }
+
+        return union.DiscriminatorPrimitiveIdlType!;
+    }
+
+    private static string ProjectDiscriminatorCSharpType(IdlUnion union)
+    {
+        if (union.DiscriminatorIsEnum)
+        {
+            return IdlNaming.EscapeQualifiedIdentifier(union.DiscriminatorEnumQualifiedName!);
+        }
+
+        return IdlNaming.MapPrimitive(union.DiscriminatorPrimitiveIdlType!);
+    }
+
+    private static IReadOnlyList<string> ProjectUnionLabels(IdlUnion union, IdlUnionBranch branch) =>
+        branch.Labels.Select(label => ProjectUnionLabel(union, label)).ToArray();
+
+    private static string ProjectUnionLabel(IdlUnion union, string label)
+    {
+        if (union.DiscriminatorIsEnum)
+        {
+            return $"{IdlNaming.EscapeQualifiedIdentifier(union.DiscriminatorEnumQualifiedName!)}.{IdlNaming.EscapeIdentifier(label)}";
+        }
+
+        if (union.DiscriminatorPrimitiveIdlType == "boolean")
+        {
+            if (label == "TRUE")
+            {
+                return "true";
+            }
+
+            return "false";
+        }
+
+        if (union.DiscriminatorPrimitiveIdlType == "wchar"
+            && label.StartsWith("L'", StringComparison.Ordinal))
+        {
+            return label[1..];
+        }
+
+        return label;
+    }
 
     private static EmissionTypePlan ProjectType(IdlType type, string? currentNamespace) =>
         type switch
@@ -82,10 +146,11 @@ internal static class EmissionTypeProjector
     private static EmissionTypePlan ProjectAlias(IdlType.Alias alias, string? currentNamespace)
     {
         var target = ProjectType(alias.Target, currentNamespace);
-        var aliasName = IdlNaming.EscapeQualifiedIdentifier(alias.QualifiedName);
+        var aliasName = IdlNaming.ResolvedTypeReference(alias.QualifiedName, currentNamespace);
+        var supportName = IdlNaming.EscapeQualifiedIdentifier(alias.QualifiedName);
         var cSharpType = target is SequenceEmissionType or ArrayEmissionType ? aliasName : target.CSharpType;
 
-        return new AliasEmissionType(alias.QualifiedName, target, cSharpType);
+        return new AliasEmissionType(alias.QualifiedName, target, cSharpType, supportName);
     }
 
     private static SequenceEmissionType ProjectSequence(IdlType.Sequence sequence, string? currentNamespace)
@@ -109,9 +174,10 @@ internal static class EmissionTypeProjector
         _ => false
     };
 
-    internal static EmissionTypePlan UnwrapOptionalEmissionType(EmissionTypePlan type) =>
+    private static EmissionTypePlan UnwrapOptionalEmissionType(EmissionTypePlan type) =>
         type is OptionalEmissionType optional ? optional.Target : type;
 
+    /// <summary>Unwraps optional and alias plans to their underlying value plan.</summary>
     internal static EmissionTypePlan UnwrapValueEmissionType(EmissionTypePlan type)
     {
         type = UnwrapOptionalEmissionType(type);
@@ -119,6 +185,7 @@ internal static class EmissionTypeProjector
         return type is AliasEmissionType alias ? UnwrapValueEmissionType(alias.Target) : type;
     }
 
+    /// <summary>Determines whether a plan contains a sequence type.</summary>
     internal static bool HasSequenceType(EmissionTypePlan type)
     {
         type = UnwrapOptionalEmissionType(type);

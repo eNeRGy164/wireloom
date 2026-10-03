@@ -1,8 +1,9 @@
 namespace Wireloom.Compiler.FrontEnd.Preprocessing;
 
+/// <summary>Stores mutable state used by IDL preprocessing.</summary>
 internal sealed partial class IdlPreprocessor
 {
-    private readonly Dictionary<string, Macro> macros = new(StringComparer.Ordinal);
+    private readonly PreprocessorMacroTable macros = new();
     private IdlInput? currentInput;
     private ICollection<IdlDiagnostic>? diagnostics;
     private Action? pragmaOnceCallback;
@@ -12,12 +13,18 @@ internal sealed partial class IdlPreprocessor
     private int[]? sourceOffsetMap;
     private int counter;
     private readonly CancellationToken cancellationToken;
-    private int macroWork;
-    private int expansionBaseOutputLength;
+    private readonly PreprocessorExpansionState expansionState = new();
     private int[] physicalLineStarts = [0];
-
-    private const int MaximumMacroWork = 100_000;
-    private const int MaximumMacroDepth = 64;
-    private const int MaximumOriginAlignmentWork = 100_000;
-    private const int MaximumOutputLength = 4 * 1024 * 1024;
+    private readonly PreprocessorExpressionEvaluator conditionEvaluator;
+    private readonly PreprocessorLexicalService lexical;
+    private readonly PreprocessorSourceOriginTracker originTracker;
+    private readonly PreprocessorDirectiveProcessor directiveProcessor;
+    private readonly PreprocessorMacroTokenService macroTokens;
+    private readonly PreprocessorMacroExpansionService expansionService;
+    private readonly PreprocessorMacroArgumentBinder argumentBinder;
+    private readonly PreprocessorMacroRescanService rescanService;
+    private readonly PreprocessorInlineDirectiveService inlineDirectiveService;
+    private readonly PreprocessorMacroDefinitionService macroDefinitionService;
+    private readonly PreprocessorInputLineScanner inputLineScanner = new();
+    private readonly PreprocessorSourceLocationService sourceLocations;
 }

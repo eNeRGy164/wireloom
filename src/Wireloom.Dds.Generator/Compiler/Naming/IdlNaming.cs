@@ -9,38 +9,11 @@ internal static class IdlNaming
     /// <summary>Maps an IDL primitive spelling to its managed C# type.</summary>
     internal static string MapPrimitive(string idlType)
     {
-        var normalized = NormalizeIdlType(idlType);
-
-        // Managed primitive types are deliberately separate from the native and
-        // dynamic RTI mappings used by the type-support emitter.
-        return normalized switch
-        {
-            "short" or "int16" => "short",
-            "long" or "int32" => "int",
-            "long long" or "int64" => "long",
-            "unsigned short" or "uint16" => "ushort",
-            "unsigned long" or "uint32" => "uint",
-            "unsigned long long" or "uint64" => "ulong",
-            "int8" => "sbyte",
-            "uint8" or "octet" => "byte",
-            "boolean" => "bool",
-            "char" or "wchar" => "char",
-            "float" => "float",
-            "double" => "double",
-            "long double" => "LongDouble",
-            _ => throw new InvalidOperationException($"Unsupported primitive type: {idlType}")
-        };
+        return PrimitiveTypeMapping.Resolve(idlType).ManagedType;
     }
 
     /// <summary>Determines whether an IDL type spelling is a supported primitive.</summary>
-    internal static bool IsPrimitive(string idlType) => NormalizeIdlType(idlType) switch
-    {
-        "short" or "int16" or "long" or "int32" or "long long" or "int64" or
-        "unsigned short" or "uint16" or "unsigned long" or "uint32" or
-        "unsigned long long" or "uint64" or "int8" or "uint8" or "octet" or
-        "boolean" or "char" or "wchar" or "float" or "double" or "long double" => true,
-        _ => false
-    };
+    internal static bool IsPrimitive(string idlType) => PrimitiveTypeMapping.IsPrimitive(idlType);
 
     /// <summary>Resolves an IDL type spelling against the current module namespace.</summary>
     internal static string ResolveTypeName(string idlType, string? currentNamespace)
@@ -108,9 +81,32 @@ internal static class IdlNaming
                 : EscapeQualifiedIdentifier($"{declaringNamespace}.{typeName}"),
             currentNamespace);
 
+    /// <summary>Creates an unambiguous C# reference for a resolved IDL type name.</summary>
+    internal static string ResolvedTypeReference(string qualifiedName, string? currentNamespace)
+    {
+        var normalized = qualifiedName.Replace("::", ".");
+        var escaped = EscapeQualifiedIdentifier(normalized);
+
+        if (currentNamespace is not null && normalized.StartsWith($"{currentNamespace}.", StringComparison.Ordinal))
+        {
+            return TypeReference(escaped, currentNamespace);
+        }
+
+        if (currentNamespace is null)
+        {
+            return escaped;
+        }
+
+        return $"global::{escaped}";
+    }
+
     /// <summary>Creates the deterministic generated-document hint name.</summary>
-    internal static string CreateHintName(string? currentNamespace, string typeName) =>
-        (currentNamespace is null ? string.Empty : currentNamespace + ".") + typeName + ".g.cs";
+    internal static GeneratedName CreateGeneratedName(string? currentNamespace, string typeName) =>
+        new(currentNamespace ?? string.Empty, EscapeIdentifier(typeName));
+
+    /// <summary>Creates the authoritative generated identities for a declaration.</summary>
+    internal static GeneratedTypeNames CreateGeneratedTypeNames(string? currentNamespace, string declarationName) =>
+        new(currentNamespace, declarationName);
 
     /// <summary>Escapes each segment of a qualified C# identifier.</summary>
     internal static string EscapeQualifiedIdentifier(string identifier) =>

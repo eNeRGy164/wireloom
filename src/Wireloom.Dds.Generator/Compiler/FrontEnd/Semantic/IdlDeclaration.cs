@@ -4,14 +4,19 @@ namespace Wireloom.Compiler.FrontEnd.Semantic;
 internal abstract class IdlDeclaration;
 
 /// <summary>Represents an IDL constant declaration and its evaluated value.</summary>
-internal sealed class IdlConstantDeclaration(string name, string type, string expression, string? @namespace, string sourceIdlFileName, BigInteger? integerValue) : IdlDeclaration
+internal sealed class IdlConstantDeclaration(string name, string type, string expression, string? @namespace, string sourceIdlFileName, BigInteger? integerValue, IdlInput sourceInput, int sourceOffset) : IdlDeclaration
 {
     public string Name { get; } = name;
     public string Type { get; } = type;
     public string Expression { get; } = expression;
     public string? Namespace { get; } = @namespace;
     public string SourceIdlFileName { get; } = sourceIdlFileName;
-    public BigInteger? IntegerValue { get; } = integerValue;
+    public BigInteger? IntegerValue { get; private set; } = integerValue;
+    internal IdlInput SourceInput { get; } = sourceInput;
+    internal int SourceOffset { get; } = sourceOffset;
+
+    /// <summary>Applies the value evaluated after all constants have been registered.</summary>
+    internal void SetIntegerValue(BigInteger? value) => IntegerValue = value;
 }
 
 /// <summary>Represents an IDL enum declaration and its source file.</summary>

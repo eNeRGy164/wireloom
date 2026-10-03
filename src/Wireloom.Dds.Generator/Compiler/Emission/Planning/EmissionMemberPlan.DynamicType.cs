@@ -6,11 +6,12 @@ namespace Wireloom.Compiler.Emission.Planning;
 /// <summary>Builds dynamic-type expressions for a member emission plan.</summary>
 internal sealed partial class MemberEmissionPlan
 {
-    public string BuildDynamicTypeExpression(string implementationNamespace, string? recursiveTypeName = null, bool isRecursive = false) => shape switch
+    /// <summary>Builds the dynamic-type expression for this member.</summary>
+    public string BuildDynamicTypeExpression(string implementationNamespace, string? recursiveTypeName = null, bool isRecursive = false) => shape.Kind switch
     {
-        FieldEmissionShape.Sequence or FieldEmissionShape.Array => BuildCollectionDynamicType(implementationNamespace, recursiveTypeName, isRecursive),
-        FieldEmissionShape.Struct or FieldEmissionShape.Enum or FieldEmissionShape.Alias => ReferencedSupportType(implementationNamespace) + ".GetDynamicTypeInternal(isPublic)",
-        FieldEmissionShape.String => BuildStringDynamicType(),
+        EmissionShapeKind.Sequence or EmissionShapeKind.Array => BuildCollectionDynamicType(implementationNamespace, recursiveTypeName, isRecursive),
+        EmissionShapeKind.Struct or EmissionShapeKind.Union or EmissionShapeKind.Enum or EmissionShapeKind.Alias => ReferencedSupportType(implementationNamespace) + ".GetDynamicTypeInternal(isPublic)",
+        EmissionShapeKind.String => BuildStringDynamicType(),
         _ => $"dtf.GetPrimitiveType<{PrimitiveDynamicType()}>()",
     };
 
@@ -33,13 +34,15 @@ internal sealed partial class MemberEmissionPlan
         _ => throw new InvalidOperationException("Expected a string emission type.")
     };
 
-    private string PrimitiveDynamicType() => ValueType switch
+    private string PrimitiveDynamicType()
     {
-        EnumEmissionType => NullableValueType(),
-        PrimitiveEmissionType { IdlName: "octet" } => "Octet",
-        PrimitiveEmissionType { IdlName: "wchar" } => "DynamicTypeFactory.WideCharType",
-        _ => NullableValueType()
-    };
+        if (ValueType is PrimitiveEmissionType primitive)
+        {
+            return PrimitiveTypeMapping.Resolve(primitive.IdlName).DynamicType;
+        }
+
+        return NullableValueType();
+    }
 
     private string BuildCollectionDynamicType(string implementationNamespace)
     {

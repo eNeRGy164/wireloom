@@ -1,5 +1,7 @@
 using Wireloom.Compiler.Emission.Writers;
 using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -7,29 +9,24 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits the RTI plugin and dynamic type for a collection or value typedef.</summary>
 internal static class CollectionAliasPluginEmitter
 {
-    public static void Emit(CompilationContext compilation, IdlTypedef declaration, string elementType, string sourceIdlFileName)
+    /// <summary>Emits the typedef plugin document.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
     {
-        var typeName = IdlNaming.EscapeIdentifier(declaration.Name);
-        var implementation = declaration.Namespace is null ? "Implementation" : $"{declaration.Namespace}.Implementation";
-        var implementationTypeName = IdlNaming.TypeReference(typeName, declaration.Namespace, implementation);
-        var elementIdlType = declaration.IsCollection ? declaration.ElementType! : elementType;
-        var isString = declaration.IsString;
-        var collectionElementIsAggregate = declaration.IsCollection &&
-            !IsStringType(elementIdlType) &&
-            !IdlNaming.IsPrimitive(elementType) &&
-            !IsCSharpPrimitive(elementType) &&
-            !compilation.IsEnum(elementType, declaration.Namespace);
+        var typeName = names.ManagedTypeName;
+        var implementationTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.ImplementationNamespace);
+        var isString = plan.IsString;
+        var collectionElementIsAggregate = plan is { IsCollection: true, CollectionElementIsAggregate: true };
 
         var collectionElementUnmanagedType = string.Empty;
         if (collectionElementIsAggregate)
         {
-            collectionElementUnmanagedType = IdlNaming.TypeReference(compilation.ResolveAliasNativeType(elementType, declaration.Namespace), implementation);
+            collectionElementUnmanagedType = IdlNaming.TypeReference(plan.ElementNativeType, names.ImplementationNamespace);
         }
 
-        var writer = EmissionSupport.CreateSource(implementation, EmissionSupport.PluginUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
 
-        writer.OpenBlock($"internal class {typeName}Plugin : InterpretedTypePlugin<{implementationTypeName}, {typeName}Unmanaged>");
-        writer.OpenBlock($"internal {typeName}Plugin() : base(\"{(declaration.Namespace is null ? typeName : $"{IdlNaming.EscapeQualifiedIdentifier(declaration.Namespace)}.{typeName}")}\", isKeyed: false, CreateDynamicType(isPublic: false))");
+        writer.OpenBlock($"internal class {names.PluginTypeName} : InterpretedTypePlugin<{implementationTypeName}, {names.UnmanagedTypeName}>");
+        writer.OpenBlock($"internal {names.PluginTypeName}() : base(\"{names.RuntimeTypeName}\", isKeyed: false, CreateDynamicType(isPublic: false))");
         writer.CloseBlock();
         writer.BlankLine();
         writer.WriteXmlSummary($"Creates the RTI dynamic type description for <see cref=\"{typeName}\"/>.");
@@ -40,13 +37,20 @@ internal static class CollectionAliasPluginEmitter
         writer.WriteLine("var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;");
         writer.BlankLine();
 
-        if (declaration.IsSequence)
+        if (plan.IsSequence)
         {
-            writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{typeName}Unmanaged>(dtf, \"{typeName}\", tsf.CreateSequenceWithAccessInfo(dtf, {GetDynamicElementType(elementIdlType, implementation)}, {declaration.Bound}));");
+            writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{names.UnmanagedTypeName}>(dtf, \"{typeName}\", tsf.CreateSequenceWithAccessInfo(dtf, {GetDynamicElementType(plan, names.ImplementationNamespace)}, {declaration.Bound}));");
         }
-        else if (declaration.IsArray)
+        else if (plan.IsArray)
         {
-            writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{typeName}Unmanaged>(dtf, \"{typeName}\", tsf.CreateArrayWithAccessInfo<{(collectionElementIsAggregate ? collectionElementUnmanagedType : IdlNaming.TypeReference(elementType, implementation))}>(dtf, {GetDynamicElementType(elementIdlType, implementation)}, new uint[] {{ {string.Join(", ", declaration.Dimensions)} }}));");
+            var arrayElementType = collectionElementUnmanagedType;
+            if (!collectionElementIsAggregate)
+            {
+                arrayElementType = IdlNaming.TypeReference(plan.ElementNativeType, names.ImplementationNamespace);
+            }
+
+            var dimensions = string.Join(", ", declaration.Dimensions);
+            writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{names.UnmanagedTypeName}>(dtf, \"{typeName}\", tsf.CreateArrayWithAccessInfo<{arrayElementType}>(dtf, {GetDynamicElementType(plan, names.ImplementationNamespace)}, new uint[] {{ {dimensions} }}));");
         }
         else
         {
@@ -67,22 +71,22 @@ internal static class CollectionAliasPluginEmitter
             }
             else
             {
-                dynamicType = $"dtf.GetPrimitiveType<{IdlNaming.TypeReference(elementType, implementation)}>()";
+                dynamicType = GetDynamicElementType(plan, names.ImplementationNamespace);
             }
 
-            if (declaration.IsString || IdlNaming.IsPrimitive(declaration.Target))
+            if (plan.IsString || plan.IsPrimitive)
             {
-                writer.WriteLine($"var aliasType = tsf.CreateAliasWithAccessInfo<{typeName}Unmanaged>(dtf, \"{typeName}\", {dynamicType});");
+                writer.WriteLine($"var aliasType = tsf.CreateAliasWithAccessInfo<{names.UnmanagedTypeName}>(dtf, \"{typeName}\", {dynamicType});");
             }
             else
             {
-                writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{typeName}Unmanaged>(dtf, \"{typeName}\", {dynamicType});");
+                writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{names.UnmanagedTypeName}>(dtf, \"{typeName}\", {dynamicType});");
             }
         }
 
-        if (!declaration.IsCollection && (declaration.IsString || IdlNaming.IsPrimitive(declaration.Target)))
+        if (!plan.IsCollection && (plan.IsString || plan.IsPrimitive))
         {
-            EmitAliasAnnotations(writer, declaration);
+            EmitAliasAnnotations(writer, declaration, plan);
 
             writer.BlankLine();
             writer.WriteLine("return aliasType;");
@@ -90,10 +94,10 @@ internal static class CollectionAliasPluginEmitter
 
         writer.CloseBlock();
         writer.CloseBlock();
-        compilation.AddSource(new GeneratedIdlSource(IdlNaming.CreateHintName(implementation, declaration.Name + "Plugin"), writer.ToString()));
+        return [new GeneratedIdlSource(names.Plugin.HintName, writer.ToString())];
     }
 
-    private static void EmitAliasAnnotations(GeneratedSourceWriter writer, IdlTypedef declaration)
+    private static void EmitAliasAnnotations(GeneratedSourceWriter writer, IdlTypedef declaration, CollectionAliasEmissionPlan plan)
     {
         if (declaration.IsString)
         {
@@ -112,26 +116,14 @@ internal static class CollectionAliasPluginEmitter
             return;
         }
 
-        var annotation = declaration.Target switch
+        var primitive = EmissionTypeProjector.UnwrapValueEmissionType(plan.ElementPlan) as PrimitiveEmissionType;
+        if (primitive is null)
         {
-            "short" or "int16" => ("Int16", "Int16Value", "(short)0", "short.MinValue", "short.MaxValue"),
-            "long" or "int32" => ("Int32", "Int32Value", "0", "int.MinValue", "int.MaxValue"),
-            "long long" or "int64" => ("Int64", "Int64Value", "0L", "long.MinValue", "long.MaxValue"),
-            "unsigned short" or "uint16" => ("Uint16", "Uint16Value", "(ushort)0", "ushort.MinValue", "ushort.MaxValue"),
-            "unsigned long" or "uint32" => ("UInt32", "Uint32Value", "0U", "uint.MinValue", "uint.MaxValue"),
-            "unsigned long long" or "uint64" => ("UInt64", "Uint64Value", "0UL", "ulong.MinValue", "ulong.MaxValue"),
-            "int8" => ("Int8", "Int8Value", "(sbyte)0", "sbyte.MinValue", "sbyte.MaxValue"),
-            "uint8" => ("Uint8", "Uint8Value", "(byte)0", "byte.MinValue", "byte.MaxValue"),
-            "octet" => ("Octet", "OctetValue", "(byte)0", "byte.MinValue", "byte.MaxValue"),
-            "float" => ("Float32", "Float32Value", "0F", "float.MinValue", "float.MaxValue"),
-            "double" => ("Float64", "Float64Value", "0D", "double.MinValue", "double.MaxValue"),
-            "boolean" => ("Boolean", "BoolValue", "false", "null", "null"),
-            "char" => ("Char8", "Char8Value", "'\\0'", "null", "null"),
-            "wchar" => ("Char16", "Char16Value", "'\\0'", "null", "null"),
-            _ => default
-        };
+            return;
+        }
 
-        if (annotation == default)
+        var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
+        if (mapping.AnnotationTypeKind is null || mapping.AnnotationValueProperty is null)
         {
             return;
         }
@@ -140,55 +132,41 @@ internal static class CollectionAliasPluginEmitter
         writer.OpenBrace();
         writer.WriteLine("var annotations = new Annotations(");
         writer.Indent();
-        writer.WriteLine($"TypeKind.{annotation.Item1},");
-        writer.WriteLine($"defaultValue: new AnnotationParameterValue {{ {annotation.Item2} = {annotation.Item3} }},");
-        writer.WriteLine($"minValue: {(annotation.Item4 == "null" ? "null" : $"new AnnotationParameterValue {{ {annotation.Item2} = {annotation.Item4} }}")},");
-        writer.WriteLine($"maxValue: {(annotation.Item5 == "null" ? "null" : $"new AnnotationParameterValue {{ {annotation.Item2} = {annotation.Item5} }}")},");
+        writer.WriteLine($"TypeKind.{mapping.AnnotationTypeKind},");
+        writer.WriteLine($"defaultValue: new AnnotationParameterValue {{ {mapping.AnnotationValueProperty} = {mapping.AnnotationDefaultLiteral} }},");
+        writer.WriteLine($"minValue: {BuildAnnotationValue(mapping.AnnotationValueProperty, mapping.MinimumLiteral)},");
+        writer.WriteLine($"maxValue: {BuildAnnotationValue(mapping.AnnotationValueProperty, mapping.MaximumLiteral)},");
         writer.WriteLine("unit: null);");
         writer.Unindent();
         writer.WriteLine("aliasType.SetAnnotations(annotations);");
         writer.CloseBlock();
     }
 
-    private static string GetDynamicElementType(string typeName, string? currentNamespace)
+    private static string BuildAnnotationValue(string property, string? value)
     {
-        if (IsStringType(typeName))
+        if (value is null)
         {
-            var isWide = typeName.StartsWith("wstring", StringComparison.Ordinal);
-            var bound = ParseStringBound(typeName);
-
-            return isWide
-                ? $"dtf.CreateWideString({bound})"
-                : $"dtf.CreateString({bound})";
+            return "null";
         }
 
-        if (IdlNaming.IsPrimitive(typeName))
-        {
-            return $"dtf.GetPrimitiveType<{IdlNaming.MapPrimitive(typeName)}>()";
-        }
-
-        if (IsCSharpPrimitive(typeName))
-        {
-            return $"dtf.GetPrimitiveType<{typeName}>()";
-        }
-
-        return $"{IdlNaming.TypeReference(IdlNaming.EscapeQualifiedIdentifier(IdlNaming.ResolveTypeName(typeName, null)), currentNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic)";
+        return $"new AnnotationParameterValue {{ {property} = {value} }}";
     }
 
-    /// <summary>Determines whether a type is already expressed as a C# primitive keyword.</summary>
-    private static bool IsCSharpPrimitive(string typeName) => typeName is
-        "sbyte" or "byte" or "short" or "ushort" or "int" or "uint" or "long" or
-        "ulong" or "char" or "bool" or "float" or "double";
-
-    private static bool IsStringType(string? typeName) =>
-        typeName is not null
-        && (typeName.StartsWith("string", StringComparison.Ordinal) || typeName.StartsWith("wstring", StringComparison.Ordinal));
-
-    private static int ParseStringBound(string typeName)
+    private static string GetDynamicElementType(CollectionAliasEmissionPlan plan, string? currentNamespace)
     {
-        var open = typeName.IndexOf('<');
-        return open < 0 || !int.TryParse(typeName[(open + 1)..^1].Trim(), out var bound)
-            ? 255
-            : bound;
+        if (plan.IsString)
+        {
+            return plan.IsWideString
+                ? $"dtf.CreateWideString({plan.StringBound})"
+                : $"dtf.CreateString({plan.StringBound})";
+        }
+
+        if (plan.IsPrimitive)
+        {
+            return $"dtf.GetPrimitiveType<{plan.PrimitiveDynamicType}>()";
+        }
+
+        var supportType = plan.ElementPlan.SupportType ?? plan.ElementType;
+        return $"{IdlNaming.TypeReference(supportType, currentNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic)";
     }
 }
