@@ -54,7 +54,7 @@ internal static class IdlGrammar
         RegexOptions.Compiled);
 
     internal static readonly Regex UnionBranchPattern = new(
-        @"^(?:(?<labels>(?:case\s+(?:-?[0-9]+|'(?:\\.|[^'])'|[A-Za-z_]\w*)\s*:\s*)+)|(?<default>default\s*:\s*))(?<type>(?:sequence\s*<\s*[^>]+\s*>|(?:string|wstring)(?:\s*<\s*[0-9]+\s*>)?|unsigned\s+long\s+long|unsigned\s+short|unsigned\s+long|long\s+long|short|long|boolean|char|wchar|float|double|(?:::)?[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*))\s+(?<name>[A-Za-z_]\w*)\s*;",
+        @"^(?:(?<labels>(?:case\s+(?:-?[0-9]+|L'(?:\\.|[^'])'|'(?:\\.|[^'])'|[A-Za-z_]\w*)\s*:\s*)+)|(?<default>default\s*:\s*))(?<type>(?:sequence\s*<\s*[^>]+\s*>|(?:string|wstring)(?:\s*<\s*[0-9]+\s*>)?|unsigned\s+long\s+long|unsigned\s+short|unsigned\s+long|long\s+long|short|long|boolean|char|wchar|float|double|(?:::)?[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*))\s+(?<name>[A-Za-z_]\w*)\s*;",
         RegexOptions.Compiled);
 
     internal static readonly Regex EnumPattern = new(

@@ -42,6 +42,7 @@
     { "id": "07-union-multilabel", "theme": "multi-label unions without default", "idl": "idl/features/07-union-multilabel.idl", "defines": [] },
     { "id": "07-union-short", "theme": "short union discriminator", "idl": "idl/features/07-union-short.idl", "defines": [] },
     { "id": "07-union-char", "theme": "character union discriminator", "idl": "idl/features/07-union-char.idl", "defines": [] },
+    { "id": "07-union-wchar-label", "theme": "wide-character union label RTI probe", "idl": "idl/features/07-union-wchar-label.idl", "defines": [], "observedOutcome": "pending", "tag": "C113" },
     { "id": "07-union-boolean", "theme": "boolean union discriminator", "idl": "idl/features/07-union-boolean.idl", "defines": [] },
     { "id": "07-union-aliases", "theme": "explicit enum and union alias chains", "idl": "idl/features/07-union-aliases.idl", "defines": [] },
     { "id": "08-keys", "theme": "multiple, nested and simple keys", "idl": "idl/features/08-keys.idl", "defines": [] },
@@ -116,7 +117,7 @@
     ,{ "id": "12-interface", "theme": "unsupported interface and operation", "idl": "idl/negative/12-interface.idl", "observedOutcome": "warning/ignored", "observedDiagnostics": ["warning: interface Service ignored because it is not a service(\"DDS\")"] }
     ,{ "id": "12-import", "theme": "unsupported IDL import", "idl": "idl/negative/12-import.idl" }
     ,{ "id": "12-module-idl", "theme": "known module idl ambiguity", "idl": "idl/negative/12-module-idl.idl", "observedOutcome": "accepted" }
-    ,{ "id": "12-union-64bit-label", "theme": "known 64-bit union label limitation", "idl": "idl/negative/12-union-64bit-label.idl" }
+    ,{ "id": "12-union-64bit-label", "theme": "64-bit union label RTI probe", "idl": "idl/negative/12-union-64bit-label.idl", "observedOutcome": "pending" }
     ,{ "id": "12-unterminated-string", "theme": "unterminated string literal", "idl": "idl/negative/12-unterminated-string.idl" }
     ,{ "id": "12-unterminated-comment", "theme": "unterminated comment", "idl": "idl/negative/12-unterminated-comment.idl" }
     ,{ "id": "12-macro-recursion", "theme": "recursive macro expansion", "idl": "idl/negative/12-macro-recursion.idl", "observedOutcome": "accepted" }

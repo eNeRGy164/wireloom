@@ -37,10 +37,10 @@ The current inventory contains:
 
 | Group                    | Count | Location                             |
 | ------------------------ | ----: | ------------------------------------ |
-| Positive feature cases   |    54 | [`idl/features`](idl/features)       |
+| Positive feature cases   |    55 | [`idl/features`](idl/features)       |
 | Negative cases           |    54 | [`idl/negative`](idl/negative)       |
 | Integration entry points |     4 | [`idl/integration`](idl/integration) |
-| Total                    |   112 | —                                    |
+| Total                    |   113 | —                                    |
 
 Each case has a manifest ID, such as `01-primitives`, and a stable `C###`
 provenance tag. Tags are used by the feature index and test diagnostics.

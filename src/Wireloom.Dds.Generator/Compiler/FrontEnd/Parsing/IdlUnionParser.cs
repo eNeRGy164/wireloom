@@ -107,7 +107,7 @@ internal sealed class IdlUnionParser
 
         if (branch.Groups[1].Success)
         {
-            foreach (Match match in Regex.Matches(branch.Groups[1].Value, @"case\s+(-?[0-9]+|'(?:\\.|[^'])'|[A-Za-z_]\w*)"))
+            foreach (Match match in Regex.Matches(branch.Groups[1].Value, @"case\s+(-?[0-9]+|L'(?:\\.|[^'])'|'(?:\\.|[^'])'|[A-Za-z_]\w*)"))
             {
                 labels.Add(match.Groups[1].Value);
             }

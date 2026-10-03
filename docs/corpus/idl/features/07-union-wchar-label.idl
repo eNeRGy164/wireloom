@@ -1,0 +1,7 @@
+module CorpusWideCharacterUnion {
+    union Choice switch(wchar) {
+        case L'a': long letter;
+        case 'z': string text;
+        default: boolean other;
+    };
+};
