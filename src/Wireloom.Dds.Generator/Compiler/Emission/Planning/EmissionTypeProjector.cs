@@ -120,6 +120,12 @@ internal static class EmissionTypeProjector
             return "false";
         }
 
+        if (union.DiscriminatorPrimitiveIdlType == "wchar"
+            && label.StartsWith("L'", StringComparison.Ordinal))
+        {
+            return label[1..];
+        }
+
         return label;
     }
 

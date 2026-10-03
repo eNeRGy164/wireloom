@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Wireloom.Compiler.FrontEnd.Semantic;
 
 /// <summary>Represents one branch of an IDL union and its discriminator labels.</summary>
@@ -18,7 +20,8 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
 
         foreach (var label in RawLabels)
         {
-            if (discriminatorIdlType == "char" && TryParseCharacterLabel(label, out var characterLabel))
+            if ((discriminatorIdlType is "char" or "wchar")
+                && TryParseCharacterLabel(label, discriminatorIdlType == "wchar", out var characterLabel))
             {
                 labels.Add(label);
                 labelValues.Add(characterLabel);
@@ -35,7 +38,7 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
             }
             else if (int.TryParse(label, out var numericLabel))
             {
-                labels.Add(numericLabel.ToString());
+                labels.Add(numericLabel.ToString(CultureInfo.InvariantCulture));
                 labelValues.Add(numericLabel);
             }
             else
@@ -58,15 +61,22 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
         LabelValues = labelValues;
     }
 
-    private static bool TryParseCharacterLabel(string label, out int value)
+    private static bool TryParseCharacterLabel(string label, bool allowWideLiteral, out int value)
     {
         value = 0;
-        if (label.Length < 3 || label[0] != '\'' || label[^1] != '\'')
+        var isWideLiteral = label.StartsWith("L'", StringComparison.Ordinal);
+        if (isWideLiteral && !allowWideLiteral)
         {
             return false;
         }
 
-        var content = label[1..^1];
+        var contentStart = isWideLiteral ? 2 : 1;
+        if (label.Length < contentStart + 2 || label[contentStart - 1] != '\'' || label[^1] != '\'')
+        {
+            return false;
+        }
+
+        var content = label[contentStart..^1];
         var character = content switch
         {
             "\\n" => '\n',

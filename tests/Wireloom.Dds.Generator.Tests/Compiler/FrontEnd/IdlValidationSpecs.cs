@@ -762,6 +762,7 @@ public sealed class IdlValidationSpecs
     [InlineData("typedef float Kind; union Choice switch(Kind) { case 0: long value; };", "Unsupported union discriminator type")]
     [InlineData("union Choice switch(char) { case '\\a': long value; };", "Unknown union discriminator label")]
     [InlineData("union Choice switch(char) { case '\\0': long value; };", "Unknown union discriminator label")]
+    [InlineData("union Choice switch(char) { case L'a': long value; };", "Unknown union discriminator label")]
     [InlineData("union Choice switch(long) { case 1: sequence<Missing> values; };", "Unknown union collection element type")]
     [InlineData("union Choice switch(long) { case 1: Missing value; };", "Unknown union branch type")]
     public void RejectsInvalidUnionBranches(string source, string expectedMessage)
@@ -804,6 +805,23 @@ public sealed class IdlValidationSpecs
 
         // Assert
         output.ShouldContain("public class Choice");
+    }
+
+    [Fact]
+    public void AcceptsCharacterLiteralsForWideCharacterUnionDiscriminators()
+    {
+        // Arrange
+        var input = Input(
+            "wide-character-union-label.idl",
+            "union Choice switch(wchar) { case L'a': long wideValue; case 'z': long narrowValue; };");
+
+        // Act
+        var output = Compile(input);
+
+        // Assert
+        output.ShouldContain("public class Choice");
+        output.ShouldContain("'a' =>");
+        output.ShouldContain("'z' =>");
     }
 
     [Theory]
