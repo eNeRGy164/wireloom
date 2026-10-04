@@ -34,8 +34,8 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
 
         var members = new StructMember[]
         {
-            new StructMember("narrowValues", tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<string>(), 4), isOptional: true, id: 1),
-            new StructMember("wideValues", tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<string>(), 4), isOptional: true, id: 2)
+            new StructMember("narrowValues", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateString(16), 4), isOptional: true, id: 1),
+            new StructMember("wideValues", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(16), 4), isOptional: true, id: 2)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<SampleUnmanaged>(

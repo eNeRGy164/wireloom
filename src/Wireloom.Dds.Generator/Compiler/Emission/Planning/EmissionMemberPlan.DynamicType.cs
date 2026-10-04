@@ -60,6 +60,13 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildCollectionElementDynamicType(string implementationNamespace)
     {
+        if (ElementType is StringEmissionType stringType)
+        {
+            return stringType.IsWide
+                ? $"dtf.CreateWideString({stringType.Bound})"
+                : $"dtf.CreateString({stringType.Bound})";
+        }
+
         if (HasAggregateElement || ElementType?.IsEnum == true || ElementSupportType is not null)
         {
             return $"{IdlNaming.GeneratedSupportTypeReference(ElementSupportType ?? ElementCSharpType!, implementationNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic)";
