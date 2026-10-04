@@ -7,6 +7,19 @@ namespace Wireloom.Generation.Tests;
 public sealed class GeneratedCollectionSpecs
 {
     [Fact]
+    public void WideStringSequencesUseWideNativeStorage()
+    {
+        // Arrange
+        var input = Input("wide-string-sequence.idl", "module Sample { struct Value { sequence<wstring<8>, 3> values; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Sample.Implementation.ValueUnmanaged.g.cs"].Source.ShouldContain("private NativeWstringSeq values;");
+    }
+
+    [Fact]
     [Trait("Corpus", "C016")]
     [Trait("Corpus", "C017")]
     public void CollectionsEmitTypedBoundedAndMultidimensionalContracts()
