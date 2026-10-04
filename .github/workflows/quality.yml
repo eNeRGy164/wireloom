@@ -59,7 +59,7 @@ jobs:
           --no-build
           --configuration Release
           --
-          -namespace Wireloom.Compiler.FrontEnd.Preprocessing.Tests
+          --filter-namespace Wireloom.Compiler.FrontEnd.Preprocessing.Tests
         shell: pwsh
 
       - name: Run IDL FsCheck fuzzing gate

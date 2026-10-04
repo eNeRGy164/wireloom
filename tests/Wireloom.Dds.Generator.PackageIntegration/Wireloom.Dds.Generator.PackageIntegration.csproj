@@ -1,10 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <OutputType>Exe</OutputType>
-    <IsTestProject>true</IsTestProject>
     <RootNamespace>Wireloom.Dds.Generator.PackageIntegration</RootNamespace>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <!-- This consumer is restored only after the package-under-test is created. -->
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
@@ -17,13 +13,8 @@
     <!-- Intentionally no ProjectReference: this test consumes the packed analyzer. -->
     <PackageReference Include="Wireloom.Dds.Generator" Version="$(WireloomDdsGeneratorPackageVersion)" PrivateAssets="all" />
     <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
-    <PackageReference Include="Shouldly" Version="4.3.0" />
-    <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Xunit" />
-    <Using Include="Shouldly" />
+    <PackageReference Update="Shouldly" Version="4.3.0" />
+    <PackageReference Update="xunit.v3.mtp-v2" Version="3.2.2" />
   </ItemGroup>
 
   <ItemGroup>
