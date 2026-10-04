@@ -124,6 +124,11 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
             case EmissionShapeKind.Sequence:
                 if (IsStringSequence)
                 {
+                    if (IsOptional)
+                    {
+                        return ElementType!.IsWideString ? "NativeOptionalWstringSeq" : "NativeOptionalStringSeq";
+                    }
+
                     return ElementType!.IsWideString ? "NativeWstringSeq" : "NativeStringSeq";
                 }
 
