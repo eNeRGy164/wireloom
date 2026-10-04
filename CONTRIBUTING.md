@@ -45,6 +45,13 @@ procedure in the [package integration guide](tests/Wireloom.Dds.Generator.Packag
 The repository uses Microsoft.Testing.Platform; pass test runner options after
 `--` and use its `--filter-method`, `--filter-class`, `--filter-namespace`, or
 `--filter-trait` options. Do not use the legacy `--filter` option.
+For example, run the focused preprocessor review gate with:
+
+```powershell
+dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
+  --no-build --configuration Release -- `
+  --filter-namespace Wireloom.Compiler.FrontEnd.Preprocessing.Tests
+```
 
 ## Tests and fixtures
 

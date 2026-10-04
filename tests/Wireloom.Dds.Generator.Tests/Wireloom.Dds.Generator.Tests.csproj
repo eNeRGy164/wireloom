@@ -1,9 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <IsTestProject>true</IsTestProject>
     <RootNamespace>Wireloom.Dds.Generator.Tests</RootNamespace>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
@@ -16,12 +13,5 @@
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" PrivateAssets="all" />
     <PackageReference Include="Rti.ConnextDds" />
     <PackageReference Include="FsCheck" PrivateAssets="all" />
-    <PackageReference Include="Shouldly" />
-    <PackageReference Include="xunit.v3.mtp-v2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Xunit" />
-    <Using Include="Shouldly" />
   </ItemGroup>
 </Project>
