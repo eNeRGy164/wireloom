@@ -147,6 +147,10 @@ public sealed class GeneratedCollectionSpecs
         var documents = CompileSources(input);
 
         // Assert
+        var plugin = documents["OptionalStringSequences.Implementation.SamplePlugin.g.cs"].Source;
+        plugin.ShouldContain("dtf.CreateString(16)");
+        plugin.ShouldContain("dtf.CreateWideString(16)");
+
         var unmanaged = documents["OptionalStringSequences.Implementation.SampleUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("private NativeOptionalStringSeq narrowValues;");
         unmanaged.ShouldContain("private NativeOptionalWstringSeq wideValues;");
