@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Naming;
@@ -18,7 +19,9 @@ internal static class ConstantEmitter
         var type = MapConstantType(declaration.Type);
         var expression = ShouldEmitEvaluatedLiteral(declaration)
             ? FormatIntegerLiteral(declaration.Type, declaration.IntegerValue!.Value)
-            : FormatExpression(ReplaceConstantReferences(declaration.Expression, currentNamespace, compilation), declaration.Type);
+            : FormatExpression(
+                NormalizeRepeatedAdditiveOperators(ReplaceConstantReferences(declaration.Expression, currentNamespace, compilation)),
+                declaration.Type);
 
         var writer = EmissionSupport.CreateSource(currentNamespace, [], sourceIdlFileName);
 
@@ -51,13 +54,81 @@ internal static class ConstantEmitter
         "unsigned long long" or "uint64" when value == ulong.MaxValue => "ulong.MaxValue",
         "unsigned long long" or "uint64" => $"{value}UL",
         "unsigned long" or "uint32" => $"{value}U",
-        _ => value.ToString()
+        _ => value.ToString(CultureInfo.InvariantCulture)
     };
 
     private static bool ShouldEmitEvaluatedLiteral(IdlConstantDeclaration declaration)
     {
-        return (declaration.IntegerValue is not null && declaration.Type is "long long" or "int64" or "unsigned long" or "uint32" or "unsigned long long" or "uint64")
+        return declaration.IntegerValue is not null &&
+            (declaration.Type is "long long" or "int64" or "unsigned long" or "uint32" or "unsigned long long" or "uint64"
+                || ContainsRepeatedAdditiveOperator(declaration.Expression))
             || declaration.IntegerValue is { } value && value == long.MinValue;
+    }
+
+    private static bool ContainsRepeatedAdditiveOperator(string expression)
+    {
+        for (var index = 0; index < expression.Length; index++)
+        {
+            if (expression[index] is not ('+' or '-'))
+            {
+                continue;
+            }
+
+            var next = index + 1;
+            while (next < expression.Length && char.IsWhiteSpace(expression[next]))
+            {
+                next++;
+            }
+
+            if (next < expression.Length && expression[next] == expression[index])
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static string NormalizeRepeatedAdditiveOperators(string expression)
+    {
+        var result = new System.Text.StringBuilder(expression.Length);
+        var codeStart = 0;
+
+        for (var index = 0; index < expression.Length; index++)
+        {
+            if (expression[index] is not ('\'' or '"'))
+            {
+                continue;
+            }
+
+            result.Append(NormalizeRepeatedAdditiveOperatorsInCode(expression[codeStart..index]));
+            var literalEnd = FindLiteralEnd(expression, index);
+            result.Append(expression[index..literalEnd]);
+            index = literalEnd - 1;
+            codeStart = literalEnd;
+        }
+
+        result.Append(NormalizeRepeatedAdditiveOperatorsInCode(expression[codeStart..]));
+        return result.ToString();
+    }
+
+    private static string NormalizeRepeatedAdditiveOperatorsInCode(string expression)
+    {
+        var result = new System.Text.StringBuilder(expression.Length);
+        char? previous = null;
+        foreach (var character in expression)
+        {
+            if (character is ('+' or '-')
+                && previous == character)
+            {
+                result.Append(' ');
+            }
+
+            result.Append(character);
+            previous = character;
+        }
+
+        return result.ToString();
     }
 
     private static string ReplaceConstantReferences(string expression, string? currentNamespace, CompilationContext compilation)
@@ -132,6 +203,18 @@ internal static class ConstantEmitter
             }
 
             return base.VisitLiteralExpression(node)!;
+        }
+
+        public override SyntaxNode VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax node)
+        {
+            var visited = (PrefixUnaryExpressionSyntax)base.VisitPrefixUnaryExpression(node)!;
+            if (visited.Operand is PrefixUnaryExpressionSyntax nested
+                && visited.Kind() == nested.Kind())
+            {
+                return visited.WithOperand(SyntaxFactory.ParenthesizedExpression(nested));
+            }
+
+            return visited;
         }
     }
 

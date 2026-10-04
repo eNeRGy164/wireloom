@@ -130,6 +130,8 @@ internal sealed class IdlParseContext
         {
             IdlSemanticValidator.ValidateDerivedKeyFields(declaration, strict);
         }
+
+        IdlSemanticValidator.ValidateValueTypeCycles(Declarations);
     }
 
     /// <summary>Binds all deferred type references after parsing completes.</summary>
@@ -177,6 +179,10 @@ internal sealed class IdlParseContext
                             discriminatorEnum);
                         branch.Field.Bind(TypeBinder.Bind(branch.Field.Type));
                     }
+
+                    DeferUnionDiscriminatorLabelValidation(
+                        union.Declaration.DiscriminatorInput,
+                        union.Declaration.Branches);
 
                     DeferUnionDefaultDiscriminatorValidation(
                         union.Declaration.DiscriminatorInput,
@@ -251,6 +257,10 @@ internal sealed class IdlParseContext
     /// <summary>Queues union default-discriminator validation for the validation phase.</summary>
     private void DeferUnionDefaultDiscriminatorValidation(IdlInput input, int offset, string? discriminatorType, IReadOnlyList<IdlUnionBranch> branches) =>
         DeferValidation(() => IdlSemanticValidator.ValidateUnionDefaultDiscriminator(input, offset, discriminatorType, branches));
+
+    /// <summary>Queues duplicate union-discriminator-label validation for the validation phase.</summary>
+    private void DeferUnionDiscriminatorLabelValidation(IdlInput input, IReadOnlyList<IdlUnionBranch> branches) =>
+        DeferValidation(() => IdlSemanticValidator.ValidateUnionDiscriminatorLabels(input, branches));
 
     /// <summary>Creates a bound type or a deferred reference with source context.</summary>
     /// <summary>Records an IDL type reference for resolution during binding.</summary>

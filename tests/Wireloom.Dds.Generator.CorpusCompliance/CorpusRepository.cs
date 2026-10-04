@@ -67,7 +67,6 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "11-include-search",
         "11-comments",
         "12-legacy-name",
-        "07-duplicate-label",
         "12-module-idl",
         "13-integration",
         "13-modules",
