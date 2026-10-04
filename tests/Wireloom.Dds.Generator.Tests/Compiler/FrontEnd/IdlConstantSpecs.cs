@@ -1,3 +1,4 @@
+using System.Globalization;
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
 using Wireloom;
 
@@ -345,5 +346,78 @@ public sealed class IdlConstantSpecs
 
         // Assert
         exception.Message.ShouldContain("Expected an integer literal");
+    }
+
+    [Theory]
+    [InlineData("++2")]
+    [InlineData("+ +2")]
+    [InlineData("--2")]
+    [InlineData("- -2")]
+    public void EmitsEvaluatedLiteralForRepeatedUnaryOperators(string expression)
+    {
+        // Arrange
+        var input = Input("constant-repeated-operator.idl", $"const long Constant = {expression};");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Constant.g.cs"].Source.ShouldContain("public const int Value = 2;");
+    }
+
+    [Fact]
+    public void FormatsRepeatedOperatorIntegerLiteralsUsingInvariantCulture()
+    {
+        // Arrange
+        var input = Input("constant-repeated-operator-culture.idl", "const long Constant = -- -2;");
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.NumberFormat.NegativeSign = "~";
+        var previousCulture = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = culture;
+
+            // Act
+            var source = CompileSources(input)["Constant.g.cs"].Source;
+
+            // Assert
+            source.ShouldContain("public const int Value = -2;");
+            source.ShouldNotContain("Value = ~2");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+        }
+    }
+
+    [Theory]
+    [InlineData("double", "++2.0")]
+    [InlineData("double", "1--2.0")]
+    [InlineData("float", "- -2.0")]
+    public void NormalizesRepeatedUnaryOperatorsForFloatingPointConstants(string type, string expression)
+    {
+        // Arrange
+        var input = Input("constant-floating-repeated-operator.idl", $"const {type} Constant = {expression};");
+
+        // Act
+        var source = CompileSources(input)["Constant.g.cs"].Source;
+
+        // Assert
+        source.ShouldNotContain("++");
+        source.ShouldNotContain("--");
+    }
+
+    [Fact]
+    public void PreservesRepeatedOperatorsInsideStringConstants()
+    {
+        // Arrange
+        var input = Input("constant-string-repeated-operator.idl", "const string Text = \"a++b--c\";");
+
+        // Act
+        var source = CompileSources(input)["Text.g.cs"].Source;
+
+        // Assert
+        source.ShouldContain("public const string Value = \"a++b--c\";");
     }
 }

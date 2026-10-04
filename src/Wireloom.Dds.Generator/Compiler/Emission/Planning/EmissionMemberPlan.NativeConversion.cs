@@ -77,7 +77,7 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildSequenceFromNativeStatement(string? namespaceName, string nativeFieldPrefix)
     {
-        if (IsStringSequence && IsSequenceArray)
+        if (IsStringSequence)
         {
             return $"{nativeFieldPrefix}{EscapedName}.FromNative(sample.{EscapedName});";
         }
@@ -190,7 +190,7 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildSequenceToNativeStatement(string? namespaceName, string nativeFieldPrefix)
     {
-        if (IsStringSequence && IsSequenceArray)
+        if (IsStringSequence)
         {
             return $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName}, {ElementType!.Bound});";
         }

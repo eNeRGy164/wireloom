@@ -31,7 +31,11 @@
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-modules.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-alias-inheritance.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\collections\13-compositions.idl" />
-    <DdsIdl Include="..\PackageIntegrationIncludeDirectories\FirstRoot.idl" />
+    <DdsIdl
+      Include="..\PackageIntegrationIncludeDirectories\FirstRoot.idl"
+      Defines="PACKAGE_FEATURE"
+      Undefines="PACKAGE_DISABLED"
+      Strict="true" />
     <DdsIdl Include="..\PackageIntegrationIncludeDirectories\SecondRoot.idl" />
     <DdsIdl
       Include="..\PackageIntegrationIncludeDirectories\LateRoot.idl"
@@ -56,5 +60,16 @@
     <Error
       Condition="'@(_TrackedLateIncludedFile)' == ''"
       Text="The package target did not track the included IDL file from a late DdsIdl include directory." />
+  </Target>
+
+  <Target Name="VerifyDdsIdlBuildMetadata" AfterTargets="WireloomPrepareIdlInputs" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_MetadataRoot Include="@(AdditionalFiles)"
+                     Condition="'%(AdditionalFiles.Filename)%(AdditionalFiles.Extension)' == 'FirstRoot.idl'" />
+    </ItemGroup>
+
+    <Error
+      Condition="'@(_MetadataRoot)' == '' or '%(_MetadataRoot.Generate)' != 'true' or '%(_MetadataRoot.Strict)' != 'true' or '%(_MetadataRoot.Defines)' != 'PACKAGE_FEATURE' or '%(_MetadataRoot.Undefines)' != 'PACKAGE_DISABLED'"
+      Text="The package target did not preserve DdsIdl generation metadata." />
   </Target>
 </Project>

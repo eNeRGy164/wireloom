@@ -117,7 +117,7 @@ internal sealed partial class MemberEmissionPlan
     {
         var element = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
 
-        if (IsStringSequence && IsSequenceArray)
+        if (IsStringSequence)
         {
             return $"{nativeFieldPrefix}{EscapedName}.Initialize(max: {Bound}, absoluteMax: {Bound}, maxStrLen: {ElementType!.Bound}, allocateMemory: allocateMemory);";
         }
@@ -167,7 +167,7 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildCollectionDestroyStatement(string? namespaceName, string nativeFieldPrefix)
     {
-        if (IsStringSequence && IsSequenceArray)
+        if (IsStringSequence)
         {
             return $"{nativeFieldPrefix}{EscapedName}.Destroy();";
         }

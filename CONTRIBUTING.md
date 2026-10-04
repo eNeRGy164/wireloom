@@ -119,11 +119,21 @@ When changing generator inputs or invalidation behavior, also run the focused
 [incremental generator baseline](docs/performance/incremental-generator-baseline.md)
 and update its evidence before considering a caching redesign.
 
+For the bounded IDL compiler fuzzing gate, run the [fuzzing guide](docs/testing/fuzzing.md)
+and preserve FsCheck's reported input and replay information when investigating a failure.
+
 ## Pull requests
 
 - Describe the behavior or evidence change and the reason for it.
 - Link relevant feature cases, diagnostics, or architecture decisions.
 - Include the validation performed and any compatibility limits that remain.
+- Investigate review feedback against the current source and tests before
+  acting on it. Check related code for equivalent defects rather than fixing
+  only the reported line. Keep fixes that are part of the PR's purpose in the
+  PR; record intentional limitations and unrelated capability work as issues.
+- Do not resolve a review conversation merely because a newer commit exists.
+  Resolve it only after verifying that the relevant behavior and quality gates
+  pass, and only when authorized to update GitHub.
 - Keep commit subjects short, imperative, and sentence case. Use one logical
   concern per commit; repository commit guidance is in
   [`.agents/instructions/git-commit-workflow.md`](.agents/instructions/git-commit-workflow.md).

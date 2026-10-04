@@ -85,6 +85,67 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         }
     }
 
+    /// <summary>Rejects recursive aggregate members that would create a target-language value cycle.</summary>
+    public static void ValidateValueTypeCycles(IReadOnlyList<IdlDeclaration> declarations)
+    {
+        var classes = declarations
+            .OfType<IdlClassDeclaration>()
+            .ToDictionary(declaration => IdlNaming.ResolveTypeName(declaration.Name, declaration.Namespace), StringComparer.Ordinal);
+        var unions = declarations
+            .OfType<IdlUnionDeclaration>()
+            .ToDictionary(declaration => IdlNaming.ResolveTypeName(declaration.Declaration.Name, declaration.Declaration.Namespace), StringComparer.Ordinal);
+        var visiting = new HashSet<string>(StringComparer.Ordinal);
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var name in classes.Keys.Concat(unions.Keys))
+        {
+            Visit(name);
+        }
+
+        void Visit(string name)
+        {
+            if (!visited.Add(name))
+            {
+                return;
+            }
+
+            visiting.Add(name);
+            var fields = classes.TryGetValue(name, out var classDeclaration)
+                ? classDeclaration.Fields.Concat(classDeclaration.InheritedFields)
+                : unions[name].Declaration.Branches.Select(branch => branch.Field);
+
+            foreach (var field in fields)
+            {
+                var target = GetValueTypeName(field.Type);
+                if (target is null)
+                {
+                    continue;
+                }
+
+                if (visiting.Contains(target))
+                {
+                    throw new IdlException(
+                        field.SourceInput!,
+                        field.SourceOffset,
+                        $"Recursive value-type member '{field.Name}' creates a type cycle through '{target}'. Use a sequence to represent recursive data.");
+                }
+
+                Visit(target);
+            }
+
+            visiting.Remove(name);
+        }
+    }
+
+    private static string? GetValueTypeName(IdlType type) => type switch
+    {
+        IdlType.Struct structure => structure.QualifiedName,
+        IdlType.Union union => union.QualifiedName,
+        IdlType.Alias alias => GetValueTypeName(alias.Target),
+        IdlType.Array array => GetValueTypeName(array.Element),
+        _ => null
+    };
+
     /// <summary>Validates keys declared directly on a derived aggregate when strict validation is enabled.</summary>
     public static void ValidateDerivedKeyFields(IdlClassDeclaration declaration, bool strict)
     {
@@ -210,6 +271,28 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
             if (branches.Any(candidate => string.Equals(IdlNaming.EscapeIdentifier(candidate.Field.Name), setterName, StringComparison.Ordinal)))
             {
                 throw new IdlException(input, offset, $"IDL union branch '{setterName}' in '{declarationName}' collides with a generated branch setter.");
+            }
+        }
+    }
+
+    /// <summary>Rejects duplicate explicit discriminator values across union branches.</summary>
+    public static void ValidateUnionDiscriminatorLabels(
+        IdlInput input,
+        IReadOnlyList<IdlUnionBranch> branches)
+    {
+        var labels = new HashSet<int>();
+
+        foreach (var branch in branches.Where(branch => !branch.IsDefault))
+        {
+            foreach (var label in branch.LabelValues)
+            {
+                if (!labels.Add(label))
+                {
+                    throw new IdlException(
+                        input,
+                        branch.Field.SourceOffset,
+                        $"Duplicate union discriminator label: {label}");
+                }
             }
         }
     }

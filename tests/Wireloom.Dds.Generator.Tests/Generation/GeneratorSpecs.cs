@@ -36,7 +36,11 @@ public sealed class GeneratorSpecs
     {
         // Arrange
         var input = "module Sample { struct Value { long value; }; };";
-        var metadata = new Dictionary<string, string>();
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "false",
+            ["Strict"] = "true"
+        };
 
         // Act
         var result = Run(input, LanguageVersion.CSharp11, metadata, includeRuntime: false);
@@ -117,6 +121,113 @@ public sealed class GeneratorSpecs
         var lineSpan = diagnostic.Location.GetLineSpan();
         lineSpan.Path.ShouldBe("sample.idl");
         lineSpan.StartLinePosition.Line.ShouldBe(0);
+    }
+
+    [Fact]
+    public void DoesNotEmitInvalidCSharpForMalformedUnionBranches()
+    {
+        // Arrange
+        var input = "module Sample { enum State { Idle, Running, Stopped }; union Choice switch(State) { case Idle: lo'g value; default: string<16> text; }; };";
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            ["Strict"] = "true",
+            ["Defines"] = "FEATURE_A; FEATURE_B"
+        };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldContain(d => d.Id == "DDSG0001");
+        result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(d => d.Severity == DiagnosticSeverity.Error)
+            .ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void DoesNotEmitInvalidCSharpForDuplicateUnionDiscriminatorLabels()
+    {
+        // Arrange
+        var input = "module Sample { union Choice switch(long) { case 0: long value; case 0: string<16> text; default: boolean flag; }; };";
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            ["Strict"] = "true"
+        };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldContain(d => d.Id == "DDSG0001");
+        result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(d => d.Severity == DiagnosticSeverity.Error)
+            .ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void DoesNotEmitInvalidCSharpForStrictBoundedStringSequences()
+    {
+        // Arrange
+        var input = "module Sample { struct Value { sequence<string<16>, 4> values; }; };";
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            ["Strict"] = "true"
+        };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldBeEmpty();
+        result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(d => d.Severity == DiagnosticSeverity.Error)
+            .ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void DoesNotEmitInvalidCSharpForDirectlyRecursiveStructMembers()
+    {
+        // Arrange
+        var input = "module Sample { typedef sequence<long, 4> Values; struct Value { Value values; }; };";
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            ["Strict"] = "true"
+        };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldContain(d => d.Id == "DDSG0001");
+        result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(d => d.Severity == DiagnosticSeverity.Error)
+            .ShouldBeEmpty();
+    }
+
+    [Fact]
+    [Trait("Preprocessor", "PP020")]
+    public void DoesNotEmitInvalidCSharpForMacroExpandedAdjacentUnarySigns()
+    {
+        // Arrange
+        var input = "#define ADD(a, b) + + b\nconst long Constant = ADD(1, 2);";
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            ["Strict"] = "true"
+        };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldBeEmpty();
+        result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(d => d.Severity == DiagnosticSeverity.Error)
+            .ShouldBeEmpty();
     }
 
     [Fact]

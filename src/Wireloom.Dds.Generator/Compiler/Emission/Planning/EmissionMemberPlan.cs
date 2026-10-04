@@ -122,7 +122,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         switch (shape.Kind)
         {
             case EmissionShapeKind.Sequence:
-                if (IsStringSequence && IsSequenceArray)
+                if (IsStringSequence)
                 {
                     return "NativeStringSeq";
                 }

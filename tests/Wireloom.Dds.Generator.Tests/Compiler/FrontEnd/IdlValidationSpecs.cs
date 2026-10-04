@@ -431,6 +431,25 @@ public sealed class IdlValidationSpecs
         exception.Message.ShouldContain("Typedef alias cycle");
     }
 
+    [Theory]
+    [InlineData("union Choice switch(long) { case 0: Choice value; };", "Choice")]
+    [InlineData("union Choice switch(long) { case 0: Value value; }; struct Value { Choice choice; };", "Value")]
+    [InlineData("struct Base { Derived value; }; struct Derived : Base { long other; };", "Derived")]
+    [InlineData("typedef Value Alias; struct Value { Alias value; };", "Value")]
+    [InlineData("struct Value { Value values[2]; };", "Value")]
+    public void ReportsRecursiveValueTypeCycles(string source, string targetType)
+    {
+        // Arrange
+        var input = Input("recursive-value-cycle.idl", source);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Recursive value-type member");
+        exception.Message.ShouldContain(targetType);
+    }
+
     [Fact]
     public void ResolvesTypedefTargetsDeclaredLaterInTheCompilation()
     {
@@ -755,6 +774,7 @@ public sealed class IdlValidationSpecs
     [Theory]
     [InlineData("union Choice switch(long) { invalid; };", "Unsupported union branch declaration")]
     [InlineData("union Choice switch(long) { case 1: long value; case 2: long value; };", "Duplicate union branch")]
+    [InlineData("union Choice switch(long) { case 0: long first; case 0: string second; };", "Duplicate union discriminator label")]
     [InlineData("union Choice switch(long) { case Missing: long value; };", "Unknown union discriminator label")]
     [InlineData("union Choice switch(Missing) { case 0: long value; };", "Unknown union discriminator type")]
     [InlineData("struct Payload { long value; }; union Choice switch(Payload) { case 0: long value; };", "Unsupported union discriminator type")]
