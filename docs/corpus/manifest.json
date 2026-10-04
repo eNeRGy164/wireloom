@@ -69,7 +69,8 @@
     { "id": "11-macro-operators", "theme": "macro stringification and token pasting", "idl": "idl/features/11-macro-operators.idl", "defines": [] },
     { "id": "11-preprocessor-advanced", "theme": "elif, continuations and advanced macros", "idl": "idl/features/11-preprocessor-advanced.idl", "defines": [] },
     { "id": "11-include-search", "theme": "quoted and angle include resolution", "idl": "idl/features/11-include-search.idl", "defines": [] },
-    { "id": "11-comments", "theme": "comments and source preservation", "idl": "idl/features/11-comments.idl", "defines": [] }
+    { "id": "11-comments", "theme": "comments and source preservation", "idl": "idl/features/11-comments.idl", "defines": [] },
+    { "id": "09-optional-string-sequences", "theme": "optional narrow and wide string sequences", "idl": "idl/features/09-optional-string-sequences.idl", "defines": [], "tag": "C114" }
   ],
   "negativeCases": [
     { "id": "12-lexical", "theme": "unterminated lexical input", "idl": "idl/negative/12-lexical.idl" },

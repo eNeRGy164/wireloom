@@ -79,6 +79,7 @@ RTI oracle links point to the licensee-generated C# source under `corpus/oracles
 | C052 | `11-preprocessor-advanced`       | elif, continuations and advanced macros       | [idl/features/11-preprocessor-advanced.idl](idl/features/11-preprocessor-advanced.idl)             | [source](oracles/features/11-preprocessor-advanced/11-preprocessor-advanced.cs), [plugin](oracles/features/11-preprocessor-advanced/11-preprocessor-advancedPlugin.cs)                         | accepted        | [implemented](generator/features/11-preprocessor-advanced/)       |
 | C053 | `11-include-search`              | quoted and angle include resolution           | [idl/features/11-include-search.idl](idl/features/11-include-search.idl)                           | [source](oracles/features/11-include-search/11-include-search.cs), [plugin](oracles/features/11-include-search/11-include-searchPlugin.cs)                                                     | accepted        | [implemented](generator/features/11-include-search/)              |
 | C054 | `11-comments`                    | comments and source preservation              | [idl/features/11-comments.idl](idl/features/11-comments.idl)                                       | [source](oracles/features/11-comments/11-comments.cs), [plugin](oracles/features/11-comments/11-commentsPlugin.cs)                                                                             | accepted        | [implemented](generator/features/11-comments/)                    |
+| C114 | `09-optional-string-sequences`   | optional narrow and wide string sequences     | [idl/features/09-optional-string-sequences.idl](idl/features/09-optional-string-sequences.idl)     | [source](oracles/features/09-optional-string-sequences/09-optional-string-sequences.cs), [plugin](oracles/features/09-optional-string-sequences/09-optional-string-sequencesPlugin.cs)       | accepted        | [implemented](generator/features/09-optional-string-sequences/)   |
 
 ## Negative cases
 
@@ -160,16 +161,16 @@ Use the stable tag together with the case ID when referring to coverage, for exa
 
 | Category                               |   Cases |
 | -------------------------------------- | ------: |
-| Positive                               |      54 |
+| Positive                               |      55 |
 | Negative                               |      54 |
 | Integration                            |       4 |
-| Total                                  |     112 |
-| Fully implemented positive/integration | 58 / 58 |
-| Compliance test invocations            |     227 |
-| Succeeded                              |     227 |
+| Total                                  |     113 |
+| Fully implemented positive/integration | 59 / 59 |
+| Compliance test invocations            |     233 |
+| Succeeded                              |     233 |
 | Failed                                 |       0 |
 
-The positive/integration statistic covers the 54 positive cases and 4
+The positive/integration statistic covers the 55 positive cases and 4
 integration cases. Negative rejection probes, including the RTI-accepted
 collision probe, are excluded because their expected outcome is rejection
 rather than implementation.

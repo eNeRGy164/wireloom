@@ -1,0 +1,6 @@
+module CorpusOptionalStringSequences {
+    @appendable struct Sample {
+        @id(1) @optional sequence<string<16>, 4> narrowValues;
+        @id(2) @optional sequence<wstring<16>, 4> wideValues;
+    };
+};
