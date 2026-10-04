@@ -77,6 +77,14 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildSequenceFromNativeStatement(string? namespaceName, string nativeFieldPrefix)
     {
+        if (IsStringSequence && IsOptional)
+        {
+            var temporary = $"{EscapedName}Temporary_";
+            var elementType = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
+
+            return $"{nativeFieldPrefix}{EscapedName}.FromNative(out ISequence<{elementType}> {temporary}); sample.{EscapedName} = {temporary};";
+        }
+
         if (IsStringSequence)
         {
             return $"{nativeFieldPrefix}{EscapedName}.FromNative(sample.{EscapedName});";
@@ -190,6 +198,11 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildSequenceToNativeStatement(string? namespaceName, string nativeFieldPrefix)
     {
+        if (IsStringSequence && IsOptional)
+        {
+            return $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName}, {Bound}, {ElementType!.Bound});";
+        }
+
         if (IsStringSequence)
         {
             return $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName}, {ElementType!.Bound});";

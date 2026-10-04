@@ -128,6 +128,39 @@ public sealed class GeneratedCollectionSpecs
     }
 
     [Fact]
+    [Trait("Corpus", "C114")]
+    public void OptionalStringSequencesPreserveOptionalNativeSemantics()
+    {
+        // Arrange
+        var input = Input(
+            "optional-string-sequences.idl",
+            """
+            module OptionalStringSequences {
+                @appendable struct Sample {
+                    @optional sequence<string<16>, 4> narrowValues;
+                    @optional sequence<wstring<16>, 4> wideValues;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var unmanaged = documents["OptionalStringSequences.Implementation.SampleUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("private NativeOptionalStringSeq narrowValues;");
+        unmanaged.ShouldContain("private NativeOptionalWstringSeq wideValues;");
+        unmanaged.ShouldContain("narrowValues.FromNative(out ISequence<string> narrowValuesTemporary_);");
+        unmanaged.ShouldContain("wideValues.FromNative(out ISequence<string> wideValuesTemporary_);");
+        unmanaged.ShouldContain("narrowValues.ToNative(sample.narrowValues, 4, 16);");
+        unmanaged.ShouldContain("wideValues.ToNative(sample.wideValues, 4, 16);");
+        unmanaged.ShouldContain("narrowValues.Destroy();");
+        unmanaged.ShouldContain("wideValues.Destroy();");
+        unmanaged.ShouldNotContain("narrowValues.FromNative(sample.narrowValues);");
+        unmanaged.ShouldNotContain("wideValues.FromNative(sample.wideValues);");
+    }
+
+    [Fact]
     public void QualifiesNamedCollectionElementsAgainstShadowingNamespaces()
     {
         // Arrange
