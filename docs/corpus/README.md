@@ -37,15 +37,16 @@ The current inventory contains:
 
 | Group                    | Count | Location                             |
 | ------------------------ | ----: | ------------------------------------ |
-| Positive feature cases   |    56 | [`idl/features`](idl/features)       |
+| Positive feature cases   |    57 | [`idl/features`](idl/features)       |
 | Negative cases           |    54 | [`idl/negative`](idl/negative)       |
 | Integration entry points |     4 | [`idl/integration`](idl/integration) |
-| Total                    |   114 | —                                    |
+| Total                    |   115 | —                                    |
 
 Each case has a manifest ID, such as `01-primitives`, and a stable `C###`
 provenance tag. Tags are used by the feature index and test diagnostics.
-Positive cases are numbered first, followed by negative cases, then integration
-cases.
+Tags normally follow positive, negative, and integration manifest order. An
+explicit `tag` preserves existing references when a classified case is added to
+an earlier group.
 
 The compliance loader derives tags from manifest order unless a case has an
 explicit `tag` in `manifest.json`. Give a newly inserted case an explicit next
@@ -64,6 +65,36 @@ case inventory so accepted, rejected, and observed outcomes stay explicit.
 An RTI-accepted case may still be deliberately rejected by Wireloom when its
 names would force invalid generated C#; the RTI oracle remains available as
 comparison evidence.
+
+Record RTI rejection details in `observedDiagnostics` as well as the outcome,
+so later investigations can reuse the exact diagnostic without rerunning the
+probe.
+
+## Reproducing RTI results
+
+Run `rtiddsgen` through `wslc` and the RTI container image; RTI does not need to
+be installed on the host. From PowerShell at the repository root, generate a
+case without preprocessor directives into a mounted workspace directory:
+
+```powershell
+New-Item -ItemType Directory -Force .tmp/rti-output | Out-Null
+wslc run --rm -v "${PWD}:/work" -w /work rticom/connext-base:7.7.0.1 rtiddsgen -ppDisable -language "C#" -d /work/.tmp/rti-output /work/docs/corpus/idl/features/09-optional-aggregate-member.idl
+```
+
+The container is removed after the run; output under `/work` remains in the
+mounted repository. `-ppDisable` is suitable for IDL without preprocessor
+directives. For IDL using `#include` or macros, enable the C/C++ preprocessor.
+If the image does not contain `cpp`, install `g++` inside the disposable
+container in the same invocation. This example records the preprocessor version
+and reproduces a preprocessor rejection without a host install:
+
+```powershell
+wslc run --rm -v "${PWD}:/work" -w /work rticom/connext-base:7.7.0.1 sh -lc 'apt-get update && apt-get install -y g++ && cpp --version && rtiddsgen -language "C#" -d /work/.tmp/rti-output /work/docs/corpus/idl/negative/12-error-directive.idl'
+```
+
+Record the RTI and `cpp` versions, outcome, and diagnostic in `manifest.json`.
+Copy generated sources into `oracles/` only when RTI accepts the case and the
+license permits retaining them.
 
 ## Test responsibilities
 

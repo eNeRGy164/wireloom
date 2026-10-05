@@ -17,7 +17,7 @@ public sealed class CorpusComplianceSpecs
     public void CorpusManifestAndOracleLibraryHaveTheSameCaseSet()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(114);
+        cases.Length.ShouldBe(115);
         cases.ShouldBeUnique();
         CorpusRepository.OracleCaseIds.ShouldBe(cases.OrderBy(id => id, StringComparer.Ordinal).ToArray());
 

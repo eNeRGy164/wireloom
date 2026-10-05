@@ -1,0 +1,9 @@
+module CorpusOptionalAggregate {
+    struct Payload {
+        long value;
+    };
+
+    struct Holder {
+        @optional Payload payload;
+    };
+};
