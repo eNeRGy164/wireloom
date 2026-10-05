@@ -2,6 +2,7 @@
 
 [![Quality](https://github.com/eNeRGy164/wireloom/actions/workflows/quality.yml/badge.svg)](https://github.com/eNeRGy164/wireloom/actions/workflows/quality.yml)
 [![Coverage Status](https://coveralls.io/repos/github/eNeRGy164/wireloom/badge.svg?branch=main)](https://coveralls.io/github/eNeRGy164/wireloom?branch=main)
+[![NuGet Version](https://img.shields.io/nuget/v/Wireloom.Dds.Generator)](https://www.nuget.org/packages/Wireloom.Dds.Generator)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/eNeRGy164/wireloom/badge)](https://scorecard.dev/viewer/?uri=github.com/eNeRGy164/wireloom)
 
 Wireloom is a preview .NET source generator for the RTI Connext DDS IDL subset.
@@ -29,7 +30,7 @@ version and configuration.
   <ItemGroup>
     <PackageReference Include="Rti.ConnextDds" Version="7.3.1" />
     <PackageReference Include="Wireloom.Dds.Generator"
-                      Version="0.2.0"
+                      Version="0.3.0"
                       PrivateAssets="all" />
     <DdsIdl Include="Contracts\Telemetry.idl" />
   </ItemGroup>
