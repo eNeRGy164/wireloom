@@ -19,7 +19,7 @@ version and configuration.
 <ItemGroup>
   <PackageReference Include="Rti.ConnextDds" Version="7.3.1" />
   <PackageReference Include="Wireloom.Dds.Generator"
-                    Version="0.2.0"
+                    Version="0.3.0"
                     PrivateAssets="all" />
 </ItemGroup>
 ```
