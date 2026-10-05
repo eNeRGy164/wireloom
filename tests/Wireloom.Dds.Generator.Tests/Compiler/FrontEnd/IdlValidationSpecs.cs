@@ -660,6 +660,34 @@ public sealed class IdlValidationSpecs
         exception.Message.ShouldContain("Optional aggregate members are not supported yet");
     }
 
+    [Fact]
+    public void AcceptsOptionalSequenceMemberInAnAggregateUnionBranch()
+    {
+        // Arrange
+        var input = Input(
+            "optional-sequence-union-branches.idl",
+            """
+            module Example {
+                struct Payload {
+                    @optional sequence<long> values;
+                };
+                union Choice switch(long) {
+                    case 0: Payload payload;
+                    case 1: string<32> label;
+                };
+            };
+            """);
+
+        // Act
+        var output = Compile(input);
+
+        // Assert
+        output.ShouldContain("class Payload");
+        output.ShouldContain("values");
+        output.ShouldContain("class Choice");
+        output.ShouldContain("string label");
+    }
+
     [Theory]
     [InlineData("@key @key long value;", "Duplicate @key annotation")]
     [InlineData("@optional @optional long value;", "Duplicate @optional annotation")]

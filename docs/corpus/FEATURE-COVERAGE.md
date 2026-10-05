@@ -2,6 +2,9 @@
 
 This is the feature index for the managed-generator compatibility corpus. Each case has a stable `C###` tag that can be used in test names, issues, and implementation work. The numbering follows the corpus manifest: positive features first, negative probes second, and integration entry points last.
 
+For the OMG IDL 4.2 and DDS-XTypes 1.3 coverage investigation and proposed
+follow-up gaps, see [OMG IDL and DDS-XTypes coverage](OMG-IDL-DDS-SPEC-COVERAGE.md).
+
 The status snapshot below was re-verified by the corpus compliance run on
 2026-10-03. The run passed 230 case checks; the export-only test remains skipped
 unless `CORPUS_GENERATOR_EXPORT_ROOT` is configured. This is source-generation
