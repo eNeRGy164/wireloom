@@ -1,0 +1,22 @@
+{
+  "git.rebaseWhenSync": true,
+  "git.pruneOnFetch": true,
+  "git.allowForcePush": true,
+  "[markdown]": {
+    "editor.wordWrap": "off",
+    "editor.rulers": [
+      {
+        "column": 120
+      }
+    ]
+  },
+  "markdown.extension.toc.updateOnSave": false,
+  "markdown.extension.italic.indicator": "_",
+  "markdown.extension.orderedList.autoRenumber": false,
+  "markdown.extension.showActionButtons": true,
+  "markdown.extension.toc.levels": "2..6",
+  "markdown.validate.enabled": true,
+  "markdown.validate.referenceLinks.enabled": "ignore",
+  "markdown.validate.fragmentLinks.enabled": "ignore",
+  "markdown.validate.fileLinks.enabled": "ignore",
+}
