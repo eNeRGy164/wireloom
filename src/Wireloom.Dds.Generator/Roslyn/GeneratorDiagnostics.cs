@@ -11,7 +11,7 @@ internal static class GeneratorDiagnostics
     internal static readonly DiagnosticDescriptor RuntimeReferenceError = new("DDSG0003", "Compatible RTI runtime not found", $"A resolved Rti.ConnextDds reference with version {RuntimeReferenceGuard.MinimumSupportedRtiVersion} or later is required", "DDS Source Generator", DiagnosticSeverity.Error, true);
     private static readonly DiagnosticDescriptor unknownAnnotationWarning = new("DDSG0101", "Unknown IDL annotation", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
     private static readonly DiagnosticDescriptor unsupportedAnnotationWarning = new("DDSG0102", "Unsupported IDL annotation", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
-    private static readonly DiagnosticDescriptor ignoredInterfaceWarning = new("DDSG0103", "Non-DDS interface ignored", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
+    private static readonly DiagnosticDescriptor ignoredInterfaceWarning = new("DDSG0103", "IDL interface ignored", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
     private static readonly DiagnosticDescriptor macroArityWarning = new("DDSG0104", "Macro argument count mismatch", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
     private static readonly DiagnosticDescriptor arrayOfSequenceWarning = new("DDSG0105", "Array of sequences may not preserve IDL semantics", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
     private static readonly DiagnosticDescriptor preprocessorWarning = new("DDSG0106", "Preprocessor warning", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);

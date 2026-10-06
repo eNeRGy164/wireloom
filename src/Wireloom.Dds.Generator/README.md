@@ -133,7 +133,7 @@ pre-generation step.
 | `DDSG0003` | A compatible RTI runtime was not found                               | Add an explicit `Rti.ConnextDds` reference at the tested compatible version                      |
 | `DDSG0101` | An unknown IDL annotation was ignored                                | Verify the annotation is supported by the managed generator if it affects the generated contract |
 | `DDSG0102` | A recognized but unsupported IDL annotation was ignored              | Remove the annotation or use a supported declaration context                                     |
-| `DDSG0103` | A non-DDS IDL interface was ignored                                  | Use a DDS service interface when interface generation is required                                |
+| `DDSG0103` | An IDL interface was ignored because no C# interface type is emitted | Interfaces are accepted as service declarations, but are not emitted as C# types                 |
 | `DDSG0104` | A function-like macro was invoked with the wrong number of arguments | Correct the macro invocation; RTI-compatible expansion continues after the warning               |
 | `DDSG0105` | A direct array of sequences may not preserve IDL semantics           | Use a typedef for the sequence before declaring the array                                        |
 | `DDSG0106` | An active `#warning` directive was encountered                       | Review the warning in the IDL or included file; preprocessing and generation continue             |
