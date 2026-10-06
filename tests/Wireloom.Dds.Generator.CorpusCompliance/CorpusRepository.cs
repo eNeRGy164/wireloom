@@ -75,7 +75,8 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "12-unknown-annotation",
         "12-interface",
         "12-macro-recursion",
-        "12-macro-arity",
+        "12-macro-arity-windows",
+        "12-macro-arity-linux",
         "13-compositions"
     ];
 

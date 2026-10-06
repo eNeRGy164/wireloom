@@ -38,15 +38,20 @@ The current inventory contains:
 | Group                    | Count | Location                             |
 | ------------------------ | ----: | ------------------------------------ |
 | Positive feature cases   |    57 | [`idl/features`](idl/features)       |
-| Negative cases           |    54 | [`idl/negative`](idl/negative)       |
+| Negative cases           |    55 | [`idl/negative`](idl/negative)       |
 | Integration entry points |     4 | [`idl/integration`](idl/integration) |
-| Total                    |   115 | —                                    |
+| Total                    |   116 | —                                    |
 
 Each case has a manifest ID, such as `01-primitives`, and a stable `C###`
 provenance tag. Tags are used by the feature index and test diagnostics.
 Tags normally follow positive, negative, and integration manifest order. An
 explicit `tag` preserves existing references when a classified case is added to
 an earlier group.
+
+When RTI results differ by host preprocessor or platform, record separate cases
+with distinct IDs and the same IDL path. Keep the environment and tool versions
+in each case's `theme` and `observedDiagnostics`; retain generated sources only
+for environments where RTI accepts the input.
 
 The compliance loader derives tags from manifest order unless a case has an
 explicit `tag` in `manifest.json`. Give a newly inserted case an explicit next
@@ -68,7 +73,9 @@ comparison evidence.
 
 Record RTI rejection details in `observedDiagnostics` as well as the outcome,
 so later investigations can reuse the exact diagnostic without rerunning the
-probe.
+probe. When source generation does not establish runtime behavior, record that
+separately with `runtimeSupport` (`uncertain` or an observed result) and a
+`runtimeSupportNote`; a code-generation rejection alone is not runtime evidence.
 
 ## Reproducing RTI results
 
