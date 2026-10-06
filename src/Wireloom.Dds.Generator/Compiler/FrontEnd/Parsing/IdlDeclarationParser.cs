@@ -89,6 +89,11 @@ internal sealed class IdlDeclarationParser
                 continue;
             }
 
+            if (TryParseServiceInterface(declarations, input, baseOffset, ref position))
+            {
+                continue;
+            }
+
             var unknownAnnotation = UnknownAnnotationPattern.Match(declarations[position..]);
             if (unknownAnnotation.Success && !KnownDeclarationAnnotationNames.Contains(unknownAnnotation.Groups["name"].Value))
             {
@@ -142,7 +147,68 @@ internal sealed class IdlDeclarationParser
         "allowed_data_representation", "default_nested"
     ];
 
-    private bool TryParseInterface(string declarations, IdlInput input, int baseOffset, ref int position)
+    private bool TryParseServiceInterface(string declarations, IdlInput input, int baseOffset, ref int position)
+    {
+        var serviceAnnotation = ServiceAnnotationPattern.Match(declarations[position..]);
+        if (!serviceAnnotation.Success || serviceAnnotation.Groups["value"].Value != "DDS")
+        {
+            return false;
+        }
+
+        var annotationOffset = position;
+        var declarationPosition = position + serviceAnnotation.Length;
+        List<IdlDiagnostic>? annotationWarnings = null;
+        while (declarationPosition < declarations.Length)
+        {
+            var interveningAnnotation = UnknownAnnotationPattern.Match(declarations[declarationPosition..]);
+            if (!interveningAnnotation.Success)
+            {
+                break;
+            }
+
+            var name = interveningAnnotation.Groups["name"].Value;
+            if (KnownDeclarationAnnotationNames.Contains(name) || UnsupportedAnnotationNames.Contains(name))
+            {
+                break;
+            }
+
+            annotationWarnings ??= [];
+            annotationWarnings.Add(new IdlDiagnostic(
+                "DDSG0101",
+                input,
+                context.MapOffset(baseOffset + declarationPosition),
+                $"Annotation '@{name}' is not recognized and will be ignored."));
+            declarationPosition += interveningAnnotation.Length;
+        }
+
+        if (!InterfacePattern.IsMatch(declarations[declarationPosition..]))
+        {
+            // Leave the annotation in place so the normal unsupported-context
+            // diagnostic is reported for @service on anything other than an
+            // interface declaration.
+            position = annotationOffset;
+            return false;
+        }
+
+        if (annotationWarnings is not null)
+        {
+            foreach (var warning in annotationWarnings)
+            {
+                context.Diagnostics?.Add(warning);
+            }
+        }
+
+        position = declarationPosition;
+        return TryParseInterface(declarations, input, baseOffset, ref position, isDdsService: true, annotationOffset: annotationOffset);
+    }
+
+    private bool TryParseInterface(
+        string declarations,
+        IdlInput input,
+        int baseOffset,
+        ref int position,
+        bool isDdsService = false,
+        int? annotationOffset = null)
     {
         var @interface = InterfacePattern.Match(declarations[position..]);
         if (!@interface.Success)
@@ -150,7 +216,15 @@ internal sealed class IdlDeclarationParser
             return false;
         }
 
-        context.Diagnostics?.Add(new IdlDiagnostic("DDSG0103", input, context.MapOffset(baseOffset + position), $"The interface '{@interface.Groups["name"].Value}' is ignored because it is not a DDS service."));
+        var interfaceName = @interface.Groups["name"].Value;
+        var message = isDdsService
+            ? $"The DDS service interface '{interfaceName}' is ignored because service interfaces are not emitted for C#."
+            : $"The interface '{interfaceName}' is ignored because it is not a DDS service.";
+        context.Diagnostics?.Add(new IdlDiagnostic(
+            "DDSG0103",
+            input,
+            context.MapOffset(baseOffset + (annotationOffset ?? position)),
+            message));
 
         position += @interface.Length;
 

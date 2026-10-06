@@ -299,6 +299,89 @@ public sealed class GeneratorSpecs
     }
 
     [Fact]
+    public void ReportsAndIgnoresDdsServiceInterface()
+    {
+        // Arrange
+        var input = """module Sample { @service("DDS") interface Service { void ping(); }; };""";
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0103");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
+        diagnostic.GetMessage().ShouldBe("The DDS service interface 'Service' is ignored because service interfaces are not emitted for C#.");
+        diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
+        diagnostic.Location.SourceSpan.Start.ShouldBe(input.IndexOf("@service", StringComparison.Ordinal));
+
+        result.Diagnostics.ShouldNotContain(d => d.Id == "DDSG0001");
+        result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Service", StringComparison.Ordinal)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ReportsUnsupportedDdsServiceAnnotationOnNonInterface()
+    {
+        // Arrange
+        var input = """module Sample { @service("DDS") struct Value { long value; }; };""";
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0102");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
+        diagnostic.GetMessage().ShouldBe("Annotation 'service' is recognized but unsupported and will be ignored.");
+        diagnostic.Location.GetLineSpan().Path.ShouldBe("sample.idl");
+        diagnostic.Location.SourceSpan.Start.ShouldBe(input.IndexOf("@service", StringComparison.Ordinal));
+
+        result.Diagnostics.ShouldContain(d => d.Id == "DDSG0001");
+        result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void RejectsNonDdsServiceAnnotation()
+    {
+        // Arrange
+        var input = """module Sample { @service("Other") interface Service { void ping(); }; };""";
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0102");
+        diagnostic.GetMessage().ShouldBe("Annotation 'service' is recognized but unsupported and will be ignored.");
+        diagnostic.Location.SourceSpan.Start.ShouldBe(input.IndexOf("@service", StringComparison.Ordinal));
+        result.Diagnostics.ShouldContain(d => d.Id == "DDSG0001");
+        result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Service", StringComparison.Ordinal)).ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData("@service(\"DDS\") @custom")]
+    [InlineData("@custom @service(\"DDS\")")]
+    public void ReportsAndIgnoresDdsServiceInterfaceWithUnknownAnnotation(string annotations)
+    {
+        // Arrange
+        var input = $"module Sample {{ {annotations} interface Service {{ void ping(); }}; }};";
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        var diagnostic = result.Diagnostics.Single(d => d.Id == "DDSG0103");
+        diagnostic.GetMessage().ShouldBe("The DDS service interface 'Service' is ignored because service interfaces are not emitted for C#.");
+        diagnostic.Location.SourceSpan.Start.ShouldBe(input.IndexOf("@service", StringComparison.Ordinal));
+
+        var annotationWarning = result.Diagnostics.Single(d => d.Id == "DDSG0101");
+        annotationWarning.GetMessage().ShouldBe("Annotation '@custom' is not recognized and will be ignored.");
+        result.Diagnostics.ShouldNotContain(d => d.Id == "DDSG0001");
+        result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Service", StringComparison.Ordinal)).ShouldBeFalse();
+    }
+
+    [Fact]
     public void ReportsMacroArityWarningAndContinuesExpansion()
     {
         // Arrange

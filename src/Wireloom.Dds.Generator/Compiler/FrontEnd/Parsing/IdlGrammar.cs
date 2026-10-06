@@ -37,6 +37,10 @@ internal static class IdlGrammar
         @"^@(?<name>[A-Za-z_]\w*)\b(?:\s*\([^()]*\))?\s*",
         RegexOptions.Compiled);
 
+    internal static readonly Regex ServiceAnnotationPattern = new(
+        @"^@service\s*\(\s*""(?<value>[^""]+)""\s*\)\s*",
+        RegexOptions.Compiled);
+
     internal static readonly Regex TopicAnnotationPattern = new(
         @"^@topic\b\s*",
         RegexOptions.Compiled);
