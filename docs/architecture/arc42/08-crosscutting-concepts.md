@@ -6,8 +6,11 @@ The project distinguishes RTI acceptance, managed implementation, generated
 contract shape, runtime eligibility, and verified wire compatibility. The
 corpus feature index is the authoritative status view for source generation.
 The retained oracle capture uses RTI 7.7.0 / `rtiddsgen` 4.7.0, while the
-generator's compatibility floor is RTI 7.3.1+ because that release ships the
-same `rtiddsgen` version.
+The generator accepts an RTI package reference from 7.3.1, but this is not a
+claim that current emitted source compiles against every accepted version.
+Wire evidence starts at exact 7.7.0. Future version-aware emission should use
+an explicit generator target API version, distinct from the runtime package
+version, and report unsupported target versions clearly.
 
 ## 8.2 Diagnostics and source locations
 

@@ -12,9 +12,10 @@ reachable include graph and emits C# source and RTI type-specific support.
   the RTI runtime.
 - Reject unsupported or invalid constructs with diagnostics at their IDL source
   locations; do not silently omit declarations.
-- Compare small, attributable cases with RTI 7.7.0 / `rtiddsgen` 4.7.0 output;
-  target compatibility is RTI 7.3.1 and later because 7.3.1 ships the same
-  `rtiddsgen` version.
+- Compare small, attributable cases with RTI 7.7.0 / `rtiddsgen` 4.7.0 output.
+- Keep the minimum accepted RTI package reference (currently 7.3.1) separate
+  from the generator target API version; 7.7.0 is the initial wire-evidence
+  baseline, and older API emission requires explicit target configuration.
 
 Explicit non-goals:
 

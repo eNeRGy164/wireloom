@@ -19,6 +19,13 @@ and writer handoff are expanded in the level-2 view below.
 | MSBuild package targets      | Converts `DdsIdl` roots and IDL include locations into compiler inputs                                | Consumer project             | Packed in the NuGet package                                   |
 | Corpus and integration tests | Checks acceptance, diagnostics, RTI C# shape, and packed-package consumption                          | Generator and fixtures       | Separate fast, corpus, and package layers                     |
 
+Emission planning uses the underlying struct or union type for aggregate
+members whose IDL type is a typedef chain. Standalone typedef declarations
+remain generated, while aggregate member APIs and native conversions use the
+underlying aggregate support. This matches RTI's generated C# member shape and
+keeps aggregate alias handling consistent across managed, native, and support
+emission.
+
 The input graph and preprocessor enforce deterministic work boundaries: macro
 expansion is capped at 100,000 expansion operations and each preprocessed file
 at 4 MiB of text, while conditional expressions are capped at 256 nested

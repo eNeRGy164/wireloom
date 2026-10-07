@@ -1,0 +1,6 @@
+#include "features/02-multiple.idl"
+
+struct WireloomWireCompatibilityMultipleTypes {
+    First first;
+    Second second;
+};

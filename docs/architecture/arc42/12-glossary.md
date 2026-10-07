@@ -20,3 +20,12 @@
   status index used for feature-level verification.
 - **Wire compatibility** — The ability of generated types to exchange DDS
   samples correctly under a defined runtime and representation profile.
+- **Wire compatibility matrix** — The manually dispatched set of DDS
+  producer/consumer scenarios across the positive Wireloom corpus, C#/C++
+  peers, curated fixtures, and named RTI runtime versions.
+- **Wire fixture** — A deterministic, complete sample variant for one corpus
+  case. Each fixture is exchanged independently and receives its own result
+  entry across the configured language pairings.
+- **Generator target API version** — The RTI API surface Wireloom is asked to
+  emit against; it is a future explicit configuration input and is distinct
+  from the RTI package version resolved by the consumer.
