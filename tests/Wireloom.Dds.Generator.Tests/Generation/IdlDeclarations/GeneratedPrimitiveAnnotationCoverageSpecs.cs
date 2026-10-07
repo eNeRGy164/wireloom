@@ -35,9 +35,9 @@ public sealed class GeneratedPrimitiveAnnotationCoverageSpecs
         var plugin = documents["PrimitiveAnnotations.Implementation.ValuesPlugin.g.cs"].Source;
         plugin.ShouldContainInOrder(
             "TypeKind.Int16,",
-            "defaultValue: new AnnotationParameterValue { Int16Value = (short)0 },",
-            "minValue: new AnnotationParameterValue { Int16Value = (short)-32768 },",
-            "maxValue: new AnnotationParameterValue { Int16Value = (short)32767 },",
+            "defaultValue: new AnnotationParameterValue { Int16Value = 0 },",
+            "minValue: new AnnotationParameterValue { Int16Value = -32768 },",
+            "maxValue: new AnnotationParameterValue { Int16Value = 32767 },",
             "unit: \"shorts\"");
         plugin.ShouldContainInOrder(
             "TypeKind.UInt32,",
@@ -47,20 +47,20 @@ public sealed class GeneratedPrimitiveAnnotationCoverageSpecs
             "unit: \"items\"");
         plugin.ShouldContainInOrder(
             "TypeKind.Int8,",
-            "defaultValue: new AnnotationParameterValue { Int8Value = (sbyte)0 },",
-            "minValue: new AnnotationParameterValue { Int8Value = (sbyte)-128 },",
-            "maxValue: new AnnotationParameterValue { Int8Value = (sbyte)127 },",
+            "defaultValue: new AnnotationParameterValue { Int8Value = 0 },",
+            "minValue: new AnnotationParameterValue { Int8Value = -128 },",
+            "maxValue: new AnnotationParameterValue { Int8Value = 127 },",
             "unit: \"bytes\"");
         plugin.ShouldContainInOrder(
             "TypeKind.Uint8,",
-            "defaultValue: new AnnotationParameterValue { Uint8Value = (byte)0 },",
-            "minValue: new AnnotationParameterValue { Uint8Value = (byte)0 },",
-            "maxValue: new AnnotationParameterValue { Uint8Value = (byte)255 },");
+            "defaultValue: new AnnotationParameterValue { Uint8Value = 0 },",
+            "minValue: new AnnotationParameterValue { Uint8Value = 0 },",
+            "maxValue: new AnnotationParameterValue { Uint8Value = 255 },");
         plugin.ShouldContainInOrder(
             "TypeKind.Octet,",
-            "defaultValue: new AnnotationParameterValue { OctetValue = (byte)0 },",
-            "minValue: new AnnotationParameterValue { OctetValue = (byte)0 },",
-            "maxValue: new AnnotationParameterValue { OctetValue = (byte)255 },",
+            "defaultValue: new AnnotationParameterValue { OctetValue = 0 },",
+            "minValue: new AnnotationParameterValue { OctetValue = 0 },",
+            "maxValue: new AnnotationParameterValue { OctetValue = 255 },",
             "unit: \"octets\"");
     }
 
@@ -130,15 +130,15 @@ public sealed class GeneratedPrimitiveAnnotationCoverageSpecs
 
         // Assert
         var managed = documents["PrimitiveDefaults.Values.g.cs"].Source;
-        managed.ShouldContain("signedShort = (short)-32768;");
-        managed.ShouldContain("unsignedShort = (ushort)65535;");
+        managed.ShouldContain("signedShort = -32768;");
+        managed.ShouldContain("unsignedShort = 65535;");
         managed.ShouldContain("signedLong = -2147483648;");
         managed.ShouldContain("unsignedLong = 4294967295U;");
         managed.ShouldContain("minimumLong = long.MinValue;");
         managed.ShouldContain("maximumUnsignedLong = ulong.MaxValue;");
-        managed.ShouldContain("signedByte = (sbyte)-128;");
-        managed.ShouldContain("unsignedByte = (byte)255;");
-        managed.ShouldContain("octetValue = (byte)255;");
+        managed.ShouldContain("signedByte = -128;");
+        managed.ShouldContain("unsignedByte = 255;");
+        managed.ShouldContain("octetValue = 255;");
 
         var plugin = documents["PrimitiveDefaults.Implementation.ValuesPlugin.g.cs"].Source;
         plugin.ShouldContain("Int64Value = long.MinValue");

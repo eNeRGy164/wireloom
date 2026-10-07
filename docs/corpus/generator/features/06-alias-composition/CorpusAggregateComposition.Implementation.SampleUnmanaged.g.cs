@@ -15,7 +15,7 @@ namespace CorpusAggregateComposition.Implementation;
 public struct SampleUnmanaged : INativeTopicType<Sample>
 {
     private int id;
-    private State state;
+    private global::CorpusAggregateComposition.State state;
     private NativeSeq values;
 
     /// <summary>
@@ -47,7 +47,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         id = 0;
-        state = (State)0;
+        state = (State)(0);
         values.Initialize<float>(max: 4, absoluteMax: 4, allocateMemory: allocateMemory);
     }
 

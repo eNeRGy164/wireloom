@@ -38,6 +38,7 @@ public sealed class GeneratedScalarSpecs
         unmanaged.ShouldContain("public void FromNative(Sample sample, bool keysOnly = false)");
         unmanaged.ShouldContain("public void Initialize(bool allocatePointers = true, bool allocateMemory = true)");
         unmanaged.ShouldContain("public void ToNative(Sample sample, bool keysOnly = false)");
+        unmanaged.ShouldNotContain("using Omg.Types;");
 
         var samplePlugin = documents["Primitive.Implementation.SamplePlugin.g.cs"].Source;
         samplePlugin.ShouldContain("""new StructMember("value", dtf.GetPrimitiveType<int>(), id: 0)""");
@@ -104,6 +105,22 @@ public sealed class GeneratedScalarSpecs
 
         var samplePlugin = documents["OptionalPrimitive.Implementation.SamplePlugin.g.cs"].Source;
         samplePlugin.ShouldContain("isOptional: true");
+    }
+
+    [Fact]
+    public void OptionalEnumMembersRemainAbsentByDefault()
+    {
+        // Arrange
+        var input = Input(
+            "optional-enum.idl",
+            "module OptionalEnum { enum Color { Red, Blue }; @appendable struct Sample { @optional Color color; }; };");
+
+        // Act
+        var sample = CompileSources(input)["OptionalEnum.Sample.g.cs"].Source;
+
+        // Assert
+        sample.ShouldContain("public Color? color { get; set; }");
+        sample.ShouldNotContain("= Color.Red;");
     }
 
     [Fact]
@@ -185,7 +202,7 @@ public sealed class GeneratedScalarSpecs
 
         var sample = documents["Enum.Sample.g.cs"].Source;
         sample.ShouldContain("public Color color");
-        sample.ShouldContain("color { get; set; } = (Color)0");
+        sample.ShouldContain("color { get; set; } = Color.Red;");
 
         var sampleUnmanaged = documents["Enum.Implementation.SampleUnmanaged.g.cs"].Source;
         sampleUnmanaged.ShouldContain("public struct SampleUnmanaged");
@@ -202,5 +219,40 @@ public sealed class GeneratedScalarSpecs
 
         var sampleSupport = documents["Enum.SampleSupport.g.cs"].Source;
         sampleSupport.ShouldContain("TypeSupport<Sample>");
+    }
+
+    [Fact]
+    public void NegativeEnumDefaultsUseDeclaredEnumMember()
+    {
+        // Arrange
+        var input = Input(
+            "negative-enum-default.idl",
+            "module NegativeEnum { enum Value { Before = -2, After = 0 }; struct Sample { Value value; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var sample = documents["NegativeEnum.Sample.g.cs"].Source;
+        sample.ShouldContain("public Value value { get; set; } = Value.Before;");
+
+        var unmanaged = documents["NegativeEnum.Implementation.SampleUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("(Value)(-2)");
+    }
+
+    [Fact]
+    public void LongDoubleUnmanagedTypesImportOmgTypes()
+    {
+        // Arrange
+        var input = Input(
+            "long-double.idl",
+            "module LongDoubleTypes { struct Sample { long double value; }; }; ");
+
+        // Act
+        var unmanaged = CompileSources(input)["LongDoubleTypes.Implementation.SampleUnmanaged.g.cs"].Source;
+
+        // Assert
+        unmanaged.ShouldContain("using Omg.Types;");
+        unmanaged.ShouldContain("private LongDouble value;");
     }
 }

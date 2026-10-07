@@ -25,11 +25,12 @@ internal abstract class IdlType
     }
 
     /// <summary>Represents a reference to an IDL enum type.</summary>
-    public sealed class Enum(string qualifiedName, int defaultValue)
+    public sealed class Enum(string qualifiedName, int defaultValue, string defaultMemberName)
         : IdlType
     {
         public string QualifiedName { get; } = qualifiedName;
         public int DefaultValue { get; } = defaultValue;
+        public string DefaultMemberName { get; } = defaultMemberName;
     }
 
     /// <summary>Represents a reference to an IDL struct type.</summary>

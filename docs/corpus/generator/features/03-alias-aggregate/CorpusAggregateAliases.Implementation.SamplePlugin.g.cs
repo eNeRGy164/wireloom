@@ -34,7 +34,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
 
         var members = new StructMember[]
         {
-            new StructMember("point", PointAlias2Support.Instance.GetDynamicTypeInternal(isPublic), id: 0)
+            new StructMember("point", PointSupport.Instance.GetDynamicTypeInternal(isPublic), id: 0)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<SampleUnmanaged>(

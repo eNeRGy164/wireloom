@@ -10,7 +10,7 @@ internal static class EmissionTypeProjector
     /// <summary>Projects a semantic member into an emission field.</summary>
     internal static IdlEmissionField ToEmissionField(IdlMember member, string? currentNamespace)
     {
-        var type = ProjectType(member.Type, currentNamespace);
+        var type = ProjectMemberType(member.Type, currentNamespace);
         var cSharpType = type.CSharpType;
 
         if (member.Metadata.IsOptional && type is StringEmissionType)
@@ -139,6 +139,7 @@ internal static class EmissionTypeProjector
             IdlType.Enum @enum => new EnumEmissionType(
                 IdlNaming.ResolvedTypeReference(@enum.QualifiedName, currentNamespace),
                 @enum.DefaultValue,
+                @enum.DefaultMemberName,
                 IdlNaming.SupportTypeName(@enum.QualifiedName, currentNamespace)),
             IdlType.Struct structure => new StructEmissionType(
                 IdlNaming.ResolvedTypeReference(structure.QualifiedName, currentNamespace),
@@ -152,12 +153,25 @@ internal static class EmissionTypeProjector
             _ => throw new InvalidOperationException($"Unknown semantic IDL type: {type.GetType().Name}")
         };
 
+    private static EmissionTypePlan ProjectMemberType(IdlType type, string? currentNamespace)
+    {
+        var memberType = ProjectType(type, currentNamespace);
+        while (memberType is AliasEmissionType alias && IsStructOrUnionType(alias.Target))
+        {
+            memberType = alias.Target;
+        }
+
+        return memberType;
+    }
+
     private static EmissionTypePlan ProjectAlias(IdlType.Alias alias, string? currentNamespace)
     {
         var target = ProjectType(alias.Target, currentNamespace);
         var aliasName = IdlNaming.ResolvedTypeReference(alias.QualifiedName, currentNamespace);
         var supportName = IdlNaming.SupportTypeName(alias.QualifiedName, currentNamespace);
-        var cSharpType = target is SequenceEmissionType or ArrayEmissionType ? aliasName : target.CSharpType;
+        var cSharpType = target is SequenceEmissionType or ArrayEmissionType || IsAggregateEmissionType(target)
+            ? aliasName
+            : target.CSharpType;
 
         return new AliasEmissionType(alias.QualifiedName, target, cSharpType, supportName);
     }
@@ -180,6 +194,13 @@ internal static class EmissionTypeProjector
     {
         StructEmissionType or UnionEmissionType => true,
         AliasEmissionType alias => alias.Target is SequenceEmissionType or ArrayEmissionType || IsAggregateEmissionType(alias.Target),
+        _ => false
+    };
+
+    private static bool IsStructOrUnionType(EmissionTypePlan type) => type switch
+    {
+        StructEmissionType or UnionEmissionType => true,
+        AliasEmissionType alias => IsStructOrUnionType(alias.Target),
         _ => false
     };
 

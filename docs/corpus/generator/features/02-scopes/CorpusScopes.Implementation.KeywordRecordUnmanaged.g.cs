@@ -15,8 +15,8 @@ namespace CorpusScopes.Implementation;
 public struct KeywordRecordUnmanaged : INativeTopicType<KeywordRecord>
 {
     private int @event;
-    private Nested.Implementation.PointUnmanaged relative;
-    private Nested.Implementation.PointUnmanaged absolute;
+    private global::CorpusScopes.Nested.Implementation.PointUnmanaged relative;
+    private global::CorpusScopes.Nested.Implementation.PointUnmanaged absolute;
     private NativeSeq values;
 
     /// <summary>

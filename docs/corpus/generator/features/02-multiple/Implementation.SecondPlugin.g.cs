@@ -16,7 +16,7 @@ namespace Implementation;
 /// <summary>
 /// Provides the RTI interpreted type plugin for <see cref="Second"/>.
 /// </summary>
-internal class SecondPlugin : InterpretedTypePlugin<Second, SecondUnmanaged>
+internal class SecondPlugin : InterpretedTypePlugin<global::Second, SecondUnmanaged>
 {
     internal SecondPlugin() : base("Second", isKeyed: false, CreateDynamicType(isPublic: false))
     {

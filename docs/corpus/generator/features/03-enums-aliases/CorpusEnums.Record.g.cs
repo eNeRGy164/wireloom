@@ -27,12 +27,12 @@ public partial class Record : global::System.IEquatable<Record>
     /// <summary>
     /// Gets or sets the <c>color</c> member.
     /// </summary>
-    public Color color { get; set; } = (Color)0;
+    public Color color { get; set; } = Color.RED;
 
     /// <summary>
     /// Gets or sets the <c>aliasColor</c> member.
     /// </summary>
-    public Color aliasColor { get; set; } = (Color)0;
+    public Color aliasColor { get; set; } = Color.RED;
 
     /// <summary>
     /// Gets or sets the <c>colors</c> member. Its maximum number of elements is <c>3</c>.

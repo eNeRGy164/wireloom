@@ -16,7 +16,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
 {
     private int value;
     private int ranged;
-    private Color color;
+    private global::CorpusDefaultsAndRanges.Color color;
 
     /// <summary>
     /// Releases native resources held by this instance.
@@ -47,7 +47,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     {
         value = 50;
         ranged = 0;
-        color = (Color)2;
+        color = (Color)(2);
     }
 
     /// <summary>

@@ -22,7 +22,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Gets or sets the <c>state</c> member.
     /// </summary>
-    public State state { get; set; } = (State)0;
+    public State state { get; set; } = State.idle;
 
     /// <summary>
     /// Gets the <c>values</c> member. Its maximum number of elements is <c>4</c>.

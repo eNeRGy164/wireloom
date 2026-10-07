@@ -42,7 +42,10 @@ internal static class CollectionAliasNativeEmitter
             collectionElementUnmanagedType = IdlNaming.TypeReference(plan.ElementNativeType, names.ImplementationNamespace);
         }
 
-        var writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.UnmanagedTypeUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(
+            names.ImplementationNamespace,
+            EmissionSupport.GetUnmanagedTypeUsings([plan.ElementPlan]),
+            sourceIdlFileName);
 
         writer.OpenBlock($"public struct {typeName}Unmanaged : INativeTopicType<{implementationTypeName}>");
 

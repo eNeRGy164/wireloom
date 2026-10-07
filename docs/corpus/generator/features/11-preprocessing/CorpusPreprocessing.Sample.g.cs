@@ -17,7 +17,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Gets or sets the <c>item</c> member.
     /// </summary>
-    public IncludedType item { get; set; } = new IncludedType();
+    public global::IncludedType item { get; set; } = new global::IncludedType();
 
     /// <summary>
     /// Gets or sets the <c>value</c> member.
@@ -36,7 +36,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// </summary>
     /// <param name="item">The value for the <c>item</c> member.</param>
     /// <param name="value">The value for the <c>value</c> member.</param>
-    public Sample(IncludedType item, int value)
+    public Sample(global::IncludedType item, int value)
     {
         this.item = item;
         this.value = value;
@@ -53,7 +53,7 @@ public partial class Sample : global::System.IEquatable<Sample>
             return;
         }
 
-        item = new IncludedType(other.item);
+        item = new global::IncludedType(other.item);
         value = other.value;
     }
 

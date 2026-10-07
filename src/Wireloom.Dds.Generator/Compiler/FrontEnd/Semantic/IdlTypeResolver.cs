@@ -42,7 +42,7 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
 
         if (symbols.TryGetEnum(qualified, out var enumDeclaration))
         {
-            return new IdlType.Enum(qualified, enumDeclaration.DefaultMember.Value);
+            return new IdlType.Enum(qualified, enumDeclaration.DefaultMember.Value, enumDeclaration.DefaultMember.Name);
         }
 
         if (symbols.ContainsUnion(qualified))

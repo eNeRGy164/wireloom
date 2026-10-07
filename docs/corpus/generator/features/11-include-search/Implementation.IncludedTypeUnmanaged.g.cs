@@ -12,7 +12,7 @@ namespace Implementation;
 /// <summary>
 /// Provides the RTI native representation for <see cref="IncludedType"/>.
 /// </summary>
-public struct IncludedTypeUnmanaged : INativeTopicType<IncludedType>
+public struct IncludedTypeUnmanaged : INativeTopicType<global::IncludedType>
 {
     private int value;
 
@@ -29,7 +29,7 @@ public struct IncludedTypeUnmanaged : INativeTopicType<IncludedType>
     /// </summary>
     /// <param name="sample">The managed sample to populate.</param>
     /// <param name="keysOnly">Whether to copy only key members.</param>
-    public void FromNative(IncludedType sample, bool keysOnly = false)
+    public void FromNative(global::IncludedType sample, bool keysOnly = false)
     {
         sample.value = value;
     }
@@ -49,7 +49,7 @@ public struct IncludedTypeUnmanaged : INativeTopicType<IncludedType>
     /// </summary>
     /// <param name="sample">The managed sample to copy.</param>
     /// <param name="keysOnly">Whether to copy only key members.</param>
-    public void ToNative(IncludedType sample, bool keysOnly = false)
+    public void ToNative(global::IncludedType sample, bool keysOnly = false)
     {
         value = sample.value;
     }

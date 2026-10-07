@@ -16,7 +16,7 @@ namespace Implementation;
 /// <summary>
 /// Provides the RTI interpreted type plugin for <see cref="First"/>.
 /// </summary>
-internal class FirstPlugin : InterpretedTypePlugin<First, FirstUnmanaged>
+internal class FirstPlugin : InterpretedTypePlugin<global::First, FirstUnmanaged>
 {
     internal FirstPlugin() : base("First", isKeyed: false, CreateDynamicType(isPublic: false))
     {

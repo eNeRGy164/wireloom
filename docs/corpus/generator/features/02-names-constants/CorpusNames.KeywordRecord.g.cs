@@ -22,7 +22,7 @@ public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
     /// <summary>
     /// Gets or sets the <c>state</c> member.
     /// </summary>
-    public State state { get; set; } = (State)0;
+    public State state { get; set; } = State.Idle;
 
     /// <summary>
     /// Gets or sets the <c>point</c> member.

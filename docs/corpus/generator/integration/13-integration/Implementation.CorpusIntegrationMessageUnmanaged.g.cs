@@ -12,7 +12,7 @@ namespace Implementation;
 /// <summary>
 /// Provides the RTI native representation for <see cref="CorpusIntegrationMessage"/>.
 /// </summary>
-public struct CorpusIntegrationMessageUnmanaged : INativeTopicType<CorpusIntegrationMessage>
+public struct CorpusIntegrationMessageUnmanaged : INativeTopicType<global::CorpusIntegrationMessage>
 {
     private NativeString text;
 
@@ -35,7 +35,7 @@ public struct CorpusIntegrationMessageUnmanaged : INativeTopicType<CorpusIntegra
     /// </summary>
     /// <param name="sample">The managed sample to populate.</param>
     /// <param name="keysOnly">Whether to copy only key members.</param>
-    public void FromNative(CorpusIntegrationMessage sample, bool keysOnly = false)
+    public void FromNative(global::CorpusIntegrationMessage sample, bool keysOnly = false)
     {
         sample.text = text.FromNative();
     }
@@ -55,7 +55,7 @@ public struct CorpusIntegrationMessageUnmanaged : INativeTopicType<CorpusIntegra
     /// </summary>
     /// <param name="sample">The managed sample to copy.</param>
     /// <param name="keysOnly">Whether to copy only key members.</param>
-    public void ToNative(CorpusIntegrationMessage sample, bool keysOnly = false)
+    public void ToNative(global::CorpusIntegrationMessage sample, bool keysOnly = false)
     {
         text.ToNative(sample.text, 255);
     }

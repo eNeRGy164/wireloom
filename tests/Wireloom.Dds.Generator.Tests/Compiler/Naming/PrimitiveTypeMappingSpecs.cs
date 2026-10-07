@@ -46,9 +46,9 @@ public sealed class PrimitiveTypeMappingSpecs
     /// <summary>Checks native defaults for representative primitive storage shapes.</summary>
     [Theory]
     [InlineData("boolean", "byte", "0")]
-    [InlineData("char", "byte", "(byte)0")]
-    [InlineData("wchar", "short", "(short)0")]
-    [InlineData("octet", "byte", "(byte)0")]
+    [InlineData("char", "byte", "0")]
+    [InlineData("wchar", "short", "0")]
+    [InlineData("octet", "byte", "0")]
     public void ResolvesNativeDefaultsForStorageShapes(string idlType, string expectedStorageType, string expectedDefault)
     {
         // Arrange

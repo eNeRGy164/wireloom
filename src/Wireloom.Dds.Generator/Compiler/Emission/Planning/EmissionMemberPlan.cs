@@ -358,8 +358,6 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
     private EmissionTypePlan ValueType => EmissionTypeProjector.UnwrapValueEmissionType(Type);
 
-    private int EnumDefaultValue => ValueType is EnumEmissionType enumType ? enumType.DefaultValue : 0;
-
     private string GetReferencedUnmanagedType(string? namespaceOverride) =>
         EmissionSupport.GetUnmanagedType(SupportType ?? CSharpType, namespaceOverride);
 

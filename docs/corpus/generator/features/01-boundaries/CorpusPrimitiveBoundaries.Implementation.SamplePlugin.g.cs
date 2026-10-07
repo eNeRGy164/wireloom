@@ -52,7 +52,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         {
             var annotations = new Annotations(
                 TypeKind.Int16,
-                defaultValue: new AnnotationParameterValue { Int16Value = (short)0 },
+                defaultValue: new AnnotationParameterValue { Int16Value = 0 },
                 minValue: new AnnotationParameterValue { Int16Value = short.MinValue },
                 maxValue: new AnnotationParameterValue { Int16Value = short.MaxValue },
                 unit: null);
@@ -82,7 +82,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         {
             var annotations = new Annotations(
                 TypeKind.Int8,
-                defaultValue: new AnnotationParameterValue { Int8Value = (sbyte)0 },
+                defaultValue: new AnnotationParameterValue { Int8Value = 0 },
                 minValue: new AnnotationParameterValue { Int8Value = sbyte.MinValue },
                 maxValue: new AnnotationParameterValue { Int8Value = sbyte.MaxValue },
                 unit: null);

@@ -85,9 +85,10 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
                 return " = string.Empty;";
             }
 
-            if (facts.Type.IsEnum)
+            if (facts.Type.IsEnum && !facts.IsOptional)
             {
-                return $" = ({TypeReference(facts.CSharpType, currentNamespace)}){EnumDefaultValue};";
+                var enumType = (EnumEmissionType)facts.ValueType;
+                return $" = {TypeReference(facts.CSharpType, currentNamespace)}.{EscapeIdentifier(enumType.DefaultMemberName)};";
             }
 
             if (facts.IsSequence || facts.IsArray)
@@ -124,7 +125,7 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
     /// <summary>Builds the managed default value expression.</summary>
     public string ManagedDefaultValue => facts.ValueType switch
     {
-        EnumEmissionType => $"({TypeReference(facts.CSharpType, currentNamespace)}){facts.ValueMetadata!.DefaultValue!.Value.ToString(CultureInfo.InvariantCulture)}",
+        EnumEmissionType => $"({TypeReference(facts.CSharpType, currentNamespace)})({facts.ValueMetadata!.DefaultValue!.Value.ToString(CultureInfo.InvariantCulture)})",
         _ => FormatCSharpValue(facts.CSharpType.TrimEnd('?'), facts.ValueMetadata!.DefaultValue!.Value)
     };
 
@@ -136,10 +137,6 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
         "ulong" when value == ulong.MaxValue => "ulong.MaxValue",
         "ulong" => $"{value.ToString(CultureInfo.InvariantCulture)}UL",
         "uint" => $"{value.ToString(CultureInfo.InvariantCulture)}U",
-        "short" => $"(short){value.ToString(CultureInfo.InvariantCulture)}",
-        "ushort" => $"(ushort){value.ToString(CultureInfo.InvariantCulture)}",
-        "sbyte" => $"(sbyte){value.ToString(CultureInfo.InvariantCulture)}",
-        "byte" => $"(byte){value.ToString(CultureInfo.InvariantCulture)}",
         _ => value.ToString(CultureInfo.InvariantCulture)
     };
 
@@ -204,8 +201,6 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
     private string? UnitLiteral => facts.ValueMetadata?.Unit is null
         ? null
         : $"\"{facts.ValueMetadata.Unit.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
-
-    private int EnumDefaultValue => facts.ValueType is EnumEmissionType enumType ? enumType.DefaultValue : 0;
 
     private static bool IsIntegralAnnotation(string typeKind)
     {

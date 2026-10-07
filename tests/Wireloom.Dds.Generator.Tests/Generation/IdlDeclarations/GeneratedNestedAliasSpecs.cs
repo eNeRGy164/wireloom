@@ -7,6 +7,25 @@ namespace Wireloom.Generation.IdlDeclarations.Tests;
 public sealed class GeneratedNestedAliasSpecs
 {
     [Fact]
+    public void AggregateAliasCopiesCloneTheirMutableValues()
+    {
+        // Arrange
+        var input = Input("aggregate-alias-copy.idl",
+            "module AggregateAliasCopy { struct Point { long x; }; typedef Point PointAlias; typedef PointAlias PointAlias2; struct Sample { PointAlias2 point; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var alias = documents["AggregateAliasCopy.PointAlias2.g.cs"].Source;
+        alias.ShouldContain("Value = other.Value is null ? null! : new Point(other.Value);");
+
+        var sample = documents["AggregateAliasCopy.Sample.g.cs"].Source;
+        sample.ShouldContain("public Point point { get; set; } = new Point();");
+        sample.ShouldContain("point = new Point(other.point);");
+    }
+
+    [Fact]
     public void SupportsGuardedNestedAppendableTypesWithBoundedStringAliases()
     {
         // Arrange

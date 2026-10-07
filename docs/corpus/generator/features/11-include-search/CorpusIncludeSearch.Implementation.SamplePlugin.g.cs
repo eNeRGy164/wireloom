@@ -34,7 +34,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
 
         var members = new StructMember[]
         {
-            new StructMember("item", IncludedTypeSupport.Instance.GetDynamicTypeInternal(isPublic), id: 0),
+            new StructMember("item", global::IncludedTypeSupport.Instance.GetDynamicTypeInternal(isPublic), id: 0),
             new StructMember("value", dtf.GetPrimitiveType<int>(), id: 1)
         };
 

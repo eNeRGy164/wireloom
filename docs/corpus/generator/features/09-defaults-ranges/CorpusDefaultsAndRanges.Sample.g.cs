@@ -64,7 +64,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     public Sample()
     {
         value = 50;
-        color = (Color)2;
+        color = (Color)(2);
     }
 
     /// <summary>

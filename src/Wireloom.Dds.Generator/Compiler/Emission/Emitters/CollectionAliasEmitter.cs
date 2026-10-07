@@ -75,7 +75,8 @@ internal static class CollectionAliasEmitter
 
     private static bool RequiresNativeValueCast(EmissionTypePlan elementPlan)
     {
-        if (elementPlan is PrimitiveEmissionType primitive)
+        var valueType = EmissionTypeProjector.UnwrapValueEmissionType(elementPlan);
+        if (valueType is PrimitiveEmissionType primitive)
         {
             return PrimitiveTypeMapping.Resolve(primitive.IdlName).NativeValueRequiresCast;
         }

@@ -1,3 +1,4 @@
+using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Writers;
 using Wireloom.Compiler.Naming;
 
@@ -7,7 +8,7 @@ namespace Wireloom.Compiler.Emission;
 internal static class EmissionSupport
 {
     internal static readonly string[] DataTypeUsings = ["Omg.Types", "Rti.Types"];
-    internal static readonly string[] UnmanagedTypeUsings = ["Rti.Dds.NativeInterface.TypePlugin", "Rti.Types"];
+    private static readonly string[] UnmanagedTypeUsingsWithoutOmg = ["Rti.Dds.NativeInterface.TypePlugin", "Rti.Types"];
     internal static readonly string[] PluginUsings = ["Omg.Types", "Omg.Types.Dynamic", "Rti.Dds.Core", "Rti.Dds.NativeInterface.TypePlugin", "Rti.Types", "Rti.Types.Dynamic"];
     internal static readonly string[] TypeSupportUsings = ["Rti.Dds.Core", "Rti.Dds.Topics", "Rti.Types.Dynamic"];
 
@@ -39,4 +40,26 @@ internal static class EmissionSupport
 
     internal static string GetSupportType(string typeName, string? currentNamespace) =>
         IdlNaming.GeneratedSupportTypeReference(typeName, currentNamespace) + "Support.Instance";
+
+    internal static IReadOnlyList<string> GetUnmanagedTypeUsings(IEnumerable<EmissionTypePlan> types) =>
+        types.Any(RequiresOmgTypes)
+            ? ["Omg.Types", .. UnmanagedTypeUsingsWithoutOmg]
+            : UnmanagedTypeUsingsWithoutOmg;
+
+    private static bool RequiresOmgTypes(EmissionTypePlan type) => type switch
+    {
+        PrimitiveEmissionType { IdlName: "long double" } => true,
+        OptionalEmissionType optional => RequiresOmgTypes(optional.Target) || UsesOmgSequence(optional.Target),
+        AliasEmissionType alias => RequiresOmgTypes(alias.Target),
+        SequenceEmissionType sequence => RequiresOmgTypes(sequence.Element),
+        ArrayEmissionType array => RequiresOmgTypes(array.Element),
+        _ => false
+    };
+
+    private static bool UsesOmgSequence(EmissionTypePlan type) => type switch
+    {
+        SequenceEmissionType => true,
+        AliasEmissionType alias => UsesOmgSequence(alias.Target),
+        _ => false
+    };
 }
