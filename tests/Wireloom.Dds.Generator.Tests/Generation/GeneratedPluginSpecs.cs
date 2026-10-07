@@ -42,7 +42,7 @@ public sealed class GeneratedPluginSpecs
         managed.ShouldContainInOrder(
             "public Sample()",
             "value = 50;",
-            "color = (Color)2;");
+            "color = (Color)(2);");
         managed.ShouldContainInOrder(
             "this._value = value;",
             "this._ranged = ranged;",
@@ -53,7 +53,7 @@ public sealed class GeneratedPluginSpecs
 
         var unmanaged = documents["DefaultsRanges.Implementation.SampleUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("value = 50;");
-        unmanaged.ShouldContain("color = (Color)2;");
+        unmanaged.ShouldContain("color = (Color)(2);");
 
         var plugin = documents["DefaultsRanges.Implementation.SamplePlugin.g.cs"].Source;
         plugin.ShouldContain("Int32Value = 50");

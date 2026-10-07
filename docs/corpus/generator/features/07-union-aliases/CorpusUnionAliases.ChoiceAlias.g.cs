@@ -43,7 +43,7 @@ public partial class ChoiceAlias : global::System.IEquatable<ChoiceAlias>
     {
         if (other is not null)
         {
-            Value = other.Value;
+            Value = other.Value is null ? null! : new Choice(other.Value);
         }
     }
 

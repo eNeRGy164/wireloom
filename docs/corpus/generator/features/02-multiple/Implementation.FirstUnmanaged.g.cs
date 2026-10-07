@@ -12,7 +12,7 @@ namespace Implementation;
 /// <summary>
 /// Provides the RTI native representation for <see cref="First"/>.
 /// </summary>
-public struct FirstUnmanaged : INativeTopicType<First>
+public struct FirstUnmanaged : INativeTopicType<global::First>
 {
     private int value;
 
@@ -29,7 +29,7 @@ public struct FirstUnmanaged : INativeTopicType<First>
     /// </summary>
     /// <param name="sample">The managed sample to populate.</param>
     /// <param name="keysOnly">Whether to copy only key members.</param>
-    public void FromNative(First sample, bool keysOnly = false)
+    public void FromNative(global::First sample, bool keysOnly = false)
     {
         sample.value = value;
     }
@@ -49,7 +49,7 @@ public struct FirstUnmanaged : INativeTopicType<First>
     /// </summary>
     /// <param name="sample">The managed sample to copy.</param>
     /// <param name="keysOnly">Whether to copy only key members.</param>
-    public void ToNative(First sample, bool keysOnly = false)
+    public void ToNative(global::First sample, bool keysOnly = false)
     {
         value = sample.value;
     }

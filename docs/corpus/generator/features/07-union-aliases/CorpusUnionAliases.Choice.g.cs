@@ -28,7 +28,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     public const Kind DefaultDiscriminator = (Kind)0;
 
     /// <summary>
-    /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>CorpusUnionAliases.Kind.Zero</c>.
+    /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>Kind.Zero</c>.
     /// </summary>
     public int zero
     {
@@ -50,7 +50,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     }
 
     /// <summary>
-    /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>CorpusUnionAliases.Kind.Ten</c>.
+    /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>Kind.Ten</c>.
     /// </summary>
     [Bound(255)]
     public string ten

@@ -14,7 +14,7 @@ namespace CorpusEnumUnion.Implementation;
 /// </summary>
 public struct ChoiceUnmanaged : INativeTopicType<Choice>
 {
-    private CorpusEnumUnion.Kind _discriminator;
+    private global::CorpusEnumUnion.Kind _discriminator;
 
     private int number;
     private NativeString text;
@@ -44,15 +44,15 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     {
         switch (_discriminator)
         {
-            case CorpusEnumUnion.Kind.Number:
+            case Kind.Number:
                 sample.number = number;
                 break;
 
-            case CorpusEnumUnion.Kind.Text:
+            case Kind.Text:
                 sample.text = text.FromNative();
                 break;
 
-            case CorpusEnumUnion.Kind.PayloadValue:
+            case Kind.PayloadValue:
                 if (sample.Discriminator != _discriminator)
                 {
                     sample.payload = new Payload();
@@ -92,15 +92,15 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
 
         switch (_discriminator)
         {
-            case CorpusEnumUnion.Kind.Number:
+            case Kind.Number:
                 number = sample.number;
                 break;
 
-            case CorpusEnumUnion.Kind.Text:
+            case Kind.Text:
                 text.ToNative(sample.text, 255);
                 break;
 
-            case CorpusEnumUnion.Kind.PayloadValue:
+            case Kind.PayloadValue:
                 payload.ToNative(sample.payload, keysOnly: false);
                 break;
 

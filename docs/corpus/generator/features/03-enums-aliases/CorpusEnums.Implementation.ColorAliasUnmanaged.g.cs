@@ -11,7 +11,7 @@ namespace CorpusEnums.Implementation;
 
 public struct ColorAliasUnmanaged : INativeTopicType<ColorAlias>
 {
-    private Color Value;
+    private global::CorpusEnums.Color Value;
 
     /// <summary>
     /// Releases native resources held by this instance.

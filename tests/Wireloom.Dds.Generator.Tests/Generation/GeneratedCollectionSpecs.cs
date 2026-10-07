@@ -152,6 +152,7 @@ public sealed class GeneratedCollectionSpecs
         plugin.ShouldContain("dtf.CreateWideString(16)");
 
         var unmanaged = documents["OptionalStringSequences.Implementation.SampleUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("using Omg.Types;");
         unmanaged.ShouldContain("private NativeOptionalStringSeq narrowValues;");
         unmanaged.ShouldContain("private NativeOptionalWstringSeq wideValues;");
         unmanaged.ShouldContain("narrowValues.FromNative(out ISequence<string> narrowValuesTemporary_);");

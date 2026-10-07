@@ -32,18 +32,18 @@ public sealed class GeneratedPrimitiveAliasCoverageSpecs
         var documents = CompileSources(input);
 
         // Assert
-        AssertPrimitiveAlias(documents, "ShortAlias", "Int16", "Int16Value", "(short)0", "short.MinValue", "short.MaxValue", "0");
+        AssertPrimitiveAlias(documents, "ShortAlias", "Int16", "Int16Value", "0", "short.MinValue", "short.MaxValue", "0");
         AssertPrimitiveAlias(documents, "LongAlias", "Int32", "Int32Value", "0", "int.MinValue", "int.MaxValue", "(int)0");
         AssertPrimitiveAlias(documents, "LongLongAlias", "Int64", "Int64Value", "0L", "long.MinValue", "long.MaxValue", "0L");
-        AssertPrimitiveAlias(documents, "UnsignedShortAlias", "Uint16", "Uint16Value", "(ushort)0", "ushort.MinValue", "ushort.MaxValue", "(ushort)0");
+        AssertPrimitiveAlias(documents, "UnsignedShortAlias", "Uint16", "Uint16Value", "0", "ushort.MinValue", "ushort.MaxValue", "0");
         AssertPrimitiveAlias(documents, "UnsignedLongAlias", "UInt32", "Uint32Value", "0U", "uint.MinValue", "uint.MaxValue", "(uint)0");
         AssertPrimitiveAlias(documents, "UnsignedLongLongAlias", "UInt64", "Uint64Value", "0UL", "ulong.MinValue", "ulong.MaxValue", "(ulong)0");
-        AssertPrimitiveAlias(documents, "Int8Alias", "Int8", "Int8Value", "(sbyte)0", "sbyte.MinValue", "sbyte.MaxValue", "(sbyte)0");
-        AssertPrimitiveAlias(documents, "Uint8Alias", "Uint8", "Uint8Value", "(byte)0", "byte.MinValue", "byte.MaxValue", "(byte)0");
-        AssertPrimitiveAlias(documents, "OctetAlias", "Octet", "OctetValue", "(byte)0", "byte.MinValue", "byte.MaxValue", "(byte)0");
+        AssertPrimitiveAlias(documents, "Int8Alias", "Int8", "Int8Value", "0", "sbyte.MinValue", "sbyte.MaxValue", "0");
+        AssertPrimitiveAlias(documents, "Uint8Alias", "Uint8", "Uint8Value", "0", "byte.MinValue", "byte.MaxValue", "0");
+        AssertPrimitiveAlias(documents, "OctetAlias", "Octet", "OctetValue", "0", "byte.MinValue", "byte.MaxValue", "0");
         AssertPrimitiveAlias(documents, "BooleanAlias", "Boolean", "BoolValue", "false", "null", "null", "0");
-        AssertPrimitiveAlias(documents, "CharAlias", "Char8", "Char8Value", "'\\0'", "null", "null", "(byte)0");
-        AssertPrimitiveAlias(documents, "WcharAlias", "Char16", "Char16Value", "'\\0'", "null", "null", "(short)0");
+        AssertPrimitiveAlias(documents, "CharAlias", "Char8", "Char8Value", "'\\0'", "null", "null", "0");
+        AssertPrimitiveAlias(documents, "WcharAlias", "Char16", "Char16Value", "'\\0'", "null", "null", "0");
         AssertPrimitiveAlias(documents, "FloatAlias", "Float32", "Float32Value", "0F", "float.MinValue", "float.MaxValue", "0.0F");
         AssertPrimitiveAlias(documents, "DoubleAlias", "Float64", "Float64Value", "0D", "double.MinValue", "double.MaxValue", "0.0D");
 

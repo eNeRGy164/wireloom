@@ -15,8 +15,8 @@ namespace CorpusNames.Implementation;
 public struct KeywordRecordUnmanaged : INativeTopicType<KeywordRecord>
 {
     private int @event;
-    private State state;
-    private Nested.Implementation.PointUnmanaged point;
+    private global::CorpusNames.State state;
+    private global::CorpusNames.Nested.Implementation.PointUnmanaged point;
 
     /// <summary>
     /// Releases native resources held by this instance.
@@ -52,7 +52,7 @@ public struct KeywordRecordUnmanaged : INativeTopicType<KeywordRecord>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         @event = 0;
-        state = (State)0;
+        state = (State)(0);
         point.Initialize(allocatePointers, allocateMemory);
     }
 

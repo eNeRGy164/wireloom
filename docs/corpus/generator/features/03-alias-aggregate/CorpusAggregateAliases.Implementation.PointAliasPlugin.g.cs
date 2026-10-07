@@ -29,6 +29,6 @@ internal class PointAliasPlugin : InterpretedTypePlugin<PointAlias, PointAliasUn
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<PointAliasUnmanaged>(dtf, "PointAlias", dtf.GetPrimitiveType<Point>());
+        return tsf.CreateAliasWithAccessInfo<PointAliasUnmanaged>(dtf, "PointAlias", PointSupport.Instance.GetDynamicTypeInternal(isPublic));
     }
 }

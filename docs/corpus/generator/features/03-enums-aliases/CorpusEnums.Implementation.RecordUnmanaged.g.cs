@@ -16,8 +16,8 @@ public struct RecordUnmanaged : INativeTopicType<Record>
 {
     private int value;
     private int aliasValue;
-    private Color color;
-    private Color aliasColor;
+    private global::CorpusEnums.Color color;
+    private global::CorpusEnums.Color aliasColor;
     private ColorSequenceUnmanaged colors;
 
     /// <summary>
@@ -57,8 +57,8 @@ public struct RecordUnmanaged : INativeTopicType<Record>
     {
         value = 0;
         aliasValue = 0;
-        color = (Color)0;
-        aliasColor = (Color)0;
+        color = (Color)(0);
+        aliasColor = (Color)(0);
         colors.Initialize(allocatePointers, allocateMemory);
     }
 

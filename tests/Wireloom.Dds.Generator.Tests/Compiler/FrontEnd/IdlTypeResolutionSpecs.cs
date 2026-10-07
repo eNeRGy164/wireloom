@@ -285,7 +285,7 @@ public sealed class IdlTypeResolutionSpecs
         output.ShouldContain("public Point Value { get; set; } = null!;");
         output.ShouldContain("public Point point { get; set; }");
         output.ShouldContain("CreateAliasWithAccessInfo<PointAlias2Unmanaged>");
-        output.ShouldContain("PointAlias2Support.Instance.GetDynamicTypeInternal(isPublic)");
+        output.ShouldContain("PointSupport.Instance.GetDynamicTypeInternal(isPublic)");
     }
 
     [Fact]
@@ -388,7 +388,7 @@ public sealed class IdlTypeResolutionSpecs
         // Assert
         output.ShouldContain("RED,");
         output.ShouldContain("EnumValue = 1");
-        output.ShouldContain("public Color color { get; set; } = (Color)1;");
+        output.ShouldContain("public Color color { get; set; } = Color.RED;");
     }
 
     [Fact]

@@ -43,7 +43,7 @@ public partial class PointAlias2 : global::System.IEquatable<PointAlias2>
     {
         if (other is not null)
         {
-            Value = other.Value;
+            Value = other.Value is null ? null! : new Point(other.Value);
         }
     }
 

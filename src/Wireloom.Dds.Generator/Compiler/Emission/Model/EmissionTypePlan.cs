@@ -47,10 +47,11 @@ internal sealed class StringEmissionType(bool isWide, int bound)
 }
 
 /// <summary>Represents an IDL enum projected to a C# type.</summary>
-internal sealed class EnumEmissionType(string cSharpType, int defaultValue, string? supportType = null)
+internal sealed class EnumEmissionType(string cSharpType, int defaultValue, string defaultMemberName, string? supportType = null)
     : EmissionTypePlan(cSharpType)
 {
     public int DefaultValue { get; } = defaultValue;
+    public string DefaultMemberName { get; } = defaultMemberName;
     public override string? SupportType { get; } = supportType;
     public override EmissionShape Shape { get; } = new(EmissionShapeKind.Enum);
 }

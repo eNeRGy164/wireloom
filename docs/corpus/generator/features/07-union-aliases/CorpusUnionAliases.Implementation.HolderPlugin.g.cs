@@ -34,7 +34,7 @@ internal class HolderPlugin : InterpretedTypePlugin<Holder, HolderUnmanaged>
 
         var members = new StructMember[]
         {
-            new StructMember("value", ChoiceAlias2Support.Instance.GetDynamicTypeInternal(isPublic), id: 0)
+            new StructMember("value", ChoiceSupport.Instance.GetDynamicTypeInternal(isPublic), id: 0)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<HolderUnmanaged>(

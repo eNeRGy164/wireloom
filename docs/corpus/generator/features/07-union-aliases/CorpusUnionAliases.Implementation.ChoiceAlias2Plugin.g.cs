@@ -29,6 +29,6 @@ internal class ChoiceAlias2Plugin : InterpretedTypePlugin<ChoiceAlias2, ChoiceAl
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<ChoiceAlias2Unmanaged>(dtf, "ChoiceAlias2", dtf.GetPrimitiveType<Choice>());
+        return tsf.CreateAliasWithAccessInfo<ChoiceAlias2Unmanaged>(dtf, "ChoiceAlias2", ChoiceSupport.Instance.GetDynamicTypeInternal(isPublic));
     }
 }

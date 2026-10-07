@@ -206,7 +206,15 @@ internal static class CollectionAliasManagedEmitter
             writer.WriteXmlParam("other", "The typedef to copy.");
             writer.OpenBlock($"public {typeName}({typeName}? other)");
             writer.OpenBlock("if (other is not null)");
-            writer.WriteLine("Value = other.Value;");
+            if (plan.IsAggregate)
+            {
+                writer.WriteLine($"Value = other.Value is null ? null! : new {elementReference}(other.Value);");
+            }
+            else
+            {
+                writer.WriteLine("Value = other.Value;");
+            }
+
             writer.CloseBlock();
             writer.CloseBlock();
             writer.BlankLine();

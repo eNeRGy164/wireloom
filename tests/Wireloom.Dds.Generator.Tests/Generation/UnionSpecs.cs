@@ -156,6 +156,40 @@ public sealed class UnionSpecs
     }
 
     [Fact]
+    public void AggregateMembersUseTheUnderlyingUnionForChainedTypedefs()
+    {
+        // Arrange
+        var input = Input("union-alias-chain.idl",
+            """
+            module Example {
+                union Choice switch(long) {
+                    case 0: long number;
+                    case 1: string text;
+                };
+                typedef Choice ChoiceAlias;
+                typedef ChoiceAlias ChoiceAlias2;
+                struct Holder { ChoiceAlias2 value; };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var holder = documents["Example.Holder.g.cs"].Source;
+        holder.ShouldContain("public Choice value { get; set; }");
+        holder.ShouldContain("value = new Choice(other.value);");
+
+        var choiceAlias2 = documents["Example.ChoiceAlias2.g.cs"].Source;
+        choiceAlias2.ShouldContain("Value = other.Value is null ? null! : new Choice(other.Value);");
+
+        var holderNative = documents["Example.Implementation.HolderUnmanaged.g.cs"].Source;
+        holderNative.ShouldContain("private ChoiceUnmanaged value;");
+        holderNative.ShouldContain("value.FromNative(sample.value, keysOnly: false);");
+        holderNative.ShouldContain("value.ToNative(sample.value, keysOnly: false);");
+    }
+
+    [Fact]
     public void EmitsEnumDiscriminatorAndUnionWithoutDefault()
     {
         // Arrange

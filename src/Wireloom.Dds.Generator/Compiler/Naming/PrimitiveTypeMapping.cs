@@ -104,7 +104,7 @@ internal sealed class PrimitiveTypeMapping(
         {
             case "short":
             case "int16":
-                return new("short", "short", "short", "short", "(short)0", "Int16", "Int16Value", "short.MinValue", "short.MaxValue", "0", nativeValueRequiresCast: false);
+                return new("short", "short", "short", "short", "0", "Int16", "Int16Value", "short.MinValue", "short.MaxValue", "0", nativeValueRequiresCast: false);
             case "long":
             case "int32":
                 return new("long", "int", "int", "int", "0", "Int32", "Int32Value", "int.MinValue", "int.MaxValue");
@@ -113,25 +113,25 @@ internal sealed class PrimitiveTypeMapping(
                 return new("long long", "long", "long", "long", "0L", "Int64", "Int64Value", "long.MinValue", "long.MaxValue");
             case "unsigned short":
             case "uint16":
-                return new("unsigned short", "ushort", "ushort", "ushort", "(ushort)0", "Uint16", "Uint16Value", "ushort.MinValue", "ushort.MaxValue");
+                return new("unsigned short", "ushort", "ushort", "ushort", "0", "Uint16", "Uint16Value", "ushort.MinValue", "ushort.MaxValue", nativeValueRequiresCast: false);
             case "unsigned long":
             case "uint32":
                 return new("unsigned long", "uint", "uint", "uint", "0U", "UInt32", "Uint32Value", "uint.MinValue", "uint.MaxValue");
             case "unsigned long long":
             case "uint64":
-                return new("unsigned long long", "ulong", "ulong", "ulong", "0UL", "UInt64", "UInt64Value", "ulong.MinValue", "ulong.MaxValue");
+                return new("unsigned long long", "ulong", "ulong", "ulong", "0UL", "UInt64", "Uint64Value", "ulong.MinValue", "ulong.MaxValue");
             case "int8":
-                return new("int8", "sbyte", "sbyte", "sbyte", "(sbyte)0", "Int8", "Int8Value", "sbyte.MinValue", "sbyte.MaxValue");
+                return new("int8", "sbyte", "sbyte", "sbyte", "0", "Int8", "Int8Value", "sbyte.MinValue", "sbyte.MaxValue", nativeValueRequiresCast: false);
             case "uint8":
-                return new("uint8", "byte", "byte", "byte", "(byte)0", "Uint8", "Uint8Value", "byte.MinValue", "byte.MaxValue");
+                return new("uint8", "byte", "byte", "byte", "0", "Uint8", "Uint8Value", "byte.MinValue", "byte.MaxValue", nativeValueRequiresCast: false);
             case "octet":
-                return new("octet", "byte", "byte", "Octet", "(byte)0", "Octet", "OctetValue", "byte.MinValue", "byte.MaxValue");
+                return new("octet", "byte", "byte", "Octet", "0", "Octet", "OctetValue", "byte.MinValue", "byte.MaxValue", nativeValueRequiresCast: false);
             case "boolean":
                 return new("boolean", "bool", "byte", "bool", "0", "Boolean", "BoolValue", annotationDefaultLiteral: "false");
             case "char":
-                return new("char", "char", "byte", "char", "(byte)0", "Char8", "Char8Value", annotationDefaultLiteral: "'\\0'");
+                return new("char", "char", "byte", "char", "0", "Char8", "Char8Value", annotationDefaultLiteral: "'\\0'");
             case "wchar":
-                return new("wchar", "char", "short", "DynamicTypeFactory.WideCharType", "(short)0", "Char16", "Char16Value", annotationDefaultLiteral: "'\\0'");
+                return new("wchar", "char", "short", "DynamicTypeFactory.WideCharType", "0", "Char16", "Char16Value", annotationDefaultLiteral: "'\\0'");
             case "float":
                 return new("float", "float", "float", "float", "0.0F", "Float32", "Float32Value", "float.MinValue", "float.MaxValue", annotationDefaultLiteral: "0F", nativeValueRequiresCast: false);
             case "double":

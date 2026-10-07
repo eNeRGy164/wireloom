@@ -21,7 +21,10 @@ internal static class UnionTypeSupportEmitter
             ? IdlNaming.ResolvedTypeReference(declaration.DiscriminatorCSharpType, names.ImplementationNamespace)
             : declaration.NativeDiscriminatorType;
 
-        var writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.UnmanagedTypeUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(
+            names.ImplementationNamespace,
+            EmissionSupport.GetUnmanagedTypeUsings(declaration.Branches.Select(branch => branch.Plan.Type)),
+            sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI native representation for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"public struct {names.UnmanagedTypeName} : INativeTopicType<{implementationTypeName}>");

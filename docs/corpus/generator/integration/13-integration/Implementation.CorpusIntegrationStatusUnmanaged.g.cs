@@ -12,7 +12,7 @@ namespace Implementation;
 /// <summary>
 /// Provides the RTI native representation for <see cref="CorpusIntegrationStatus"/>.
 /// </summary>
-public struct CorpusIntegrationStatusUnmanaged : INativeTopicType<CorpusIntegrationStatus>
+public struct CorpusIntegrationStatusUnmanaged : INativeTopicType<global::CorpusIntegrationStatus>
 {
     private byte active;
 
@@ -29,7 +29,7 @@ public struct CorpusIntegrationStatusUnmanaged : INativeTopicType<CorpusIntegrat
     /// </summary>
     /// <param name="sample">The managed sample to populate.</param>
     /// <param name="keysOnly">Whether to copy only key members.</param>
-    public void FromNative(CorpusIntegrationStatus sample, bool keysOnly = false)
+    public void FromNative(global::CorpusIntegrationStatus sample, bool keysOnly = false)
     {
         sample.active = global::System.Convert.ToBoolean(active);
     }
@@ -49,7 +49,7 @@ public struct CorpusIntegrationStatusUnmanaged : INativeTopicType<CorpusIntegrat
     /// </summary>
     /// <param name="sample">The managed sample to copy.</param>
     /// <param name="keysOnly">Whether to copy only key members.</param>
-    public void ToNative(CorpusIntegrationStatus sample, bool keysOnly = false)
+    public void ToNative(global::CorpusIntegrationStatus sample, bool keysOnly = false)
     {
         active = global::System.Convert.ToByte(sample.active);
     }

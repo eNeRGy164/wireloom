@@ -12,7 +12,7 @@ namespace Implementation;
 /// <summary>
 /// Provides the RTI native representation for <see cref="Second"/>.
 /// </summary>
-public struct SecondUnmanaged : INativeTopicType<Second>
+public struct SecondUnmanaged : INativeTopicType<global::Second>
 {
     private NativeString name;
 
@@ -35,7 +35,7 @@ public struct SecondUnmanaged : INativeTopicType<Second>
     /// </summary>
     /// <param name="sample">The managed sample to populate.</param>
     /// <param name="keysOnly">Whether to copy only key members.</param>
-    public void FromNative(Second sample, bool keysOnly = false)
+    public void FromNative(global::Second sample, bool keysOnly = false)
     {
         sample.name = name.FromNative();
     }
@@ -55,7 +55,7 @@ public struct SecondUnmanaged : INativeTopicType<Second>
     /// </summary>
     /// <param name="sample">The managed sample to copy.</param>
     /// <param name="keysOnly">Whether to copy only key members.</param>
-    public void ToNative(Second sample, bool keysOnly = false)
+    public void ToNative(global::Second sample, bool keysOnly = false)
     {
         name.ToNative(sample.name, 255);
     }

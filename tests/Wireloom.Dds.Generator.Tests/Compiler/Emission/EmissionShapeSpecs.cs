@@ -31,7 +31,7 @@ public sealed class EmissionShapeSpecs
         // Arrange
         var enumAlias = new AliasEmissionType(
             "Example::StatusAlias",
-            new EnumEmissionType("Example.Status", 1),
+            new EnumEmissionType("Example.Status", 1, "Ready"),
             "Example.Status");
         var unionAlias = new AliasEmissionType(
             "Example::ValueAlias",
