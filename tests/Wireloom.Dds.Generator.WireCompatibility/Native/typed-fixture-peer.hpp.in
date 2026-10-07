@@ -1,0 +1,125 @@
+#pragma once
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE)
+// RTI's generated DynamicData API omits some string template instantiations.
+// Use RTI-generated typed C++ endpoints for these fixtures and compare the
+// complete generated sample value at the reader.
+static int run_typed_fixture_peer(
+    dds::domain::DomainParticipant &participant,
+    const std::string &role,
+    const std::string &topic_name,
+    int timeout_seconds,
+    const std::string &case_id,
+    const std::string &fixture)
+{
+    DdsType expected;
+#ifdef WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE
+    if (case_id == "09-optional-string-sequences" && fixture != "optional-absent") {
+        ::omg::types::bounded_sequence<std::string, 4> narrow_values;
+        ::omg::types::bounded_sequence<std::wstring, 4> wide_values;
+        if (fixture == "optional-empty" || fixture == "optional-multiple"
+            || fixture == "optional-narrow-only") {
+            if (fixture == "optional-multiple") {
+                narrow_values.push_back("narrow-one");
+                narrow_values.push_back("narrow-two");
+                narrow_values.push_back("narrow-three");
+            } else if (fixture == "optional-narrow-only") {
+                narrow_values.push_back("narrow-only");
+            }
+            expected.narrowValues = narrow_values;
+        }
+        if (fixture == "optional-empty" || fixture == "optional-multiple"
+            || fixture == "optional-wide-only") {
+            if (fixture == "optional-multiple") {
+                wide_values.push_back(L"wide-one");
+                wide_values.push_back(L"wide-two");
+            } else if (fixture == "optional-wide-only") {
+                wide_values.push_back(L"wide-only");
+            }
+            expected.wideValues = wide_values;
+        }
+    }
+#endif
+#ifdef WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE
+    if (case_id == "04-strings") {
+        if (fixture == "string-empty") {
+            expected.unbounded = "";
+            expected.bounded = "";
+            expected.wideUnbounded = L"";
+            expected.wideBounded = L"";
+        } else if (fixture == "string-boundary") {
+            expected.unbounded = "unbounded-boundary";
+            expected.bounded = "12345678";
+            expected.wideUnbounded = L"wide-boundary";
+            expected.wideBounded = L"ABCDEFGH";
+        } else {
+            expected.unbounded = "narrow-unbounded";
+            expected.bounded = "bound801";
+            expected.wideUnbounded = L"wide-unbounded";
+            expected.wideBounded = L"wide801";
+        }
+    }
+#endif
+#ifdef WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE
+    if (case_id == "04-boundaries") {
+        expected.narrow = fixture == "string-boundary" ? "12345678" : "edge-8";
+        expected.wide = fixture == "string-boundary" ? L"ABCDEFGH" : L"wide-8";
+    }
+#endif
+
+    dds::topic::Topic<DdsType> topic(participant, topic_name);
+    if (role == "writer") {
+        dds::pub::Publisher publisher(participant);
+        auto writer_qos = publisher.default_datawriter_qos();
+        writer_qos << dds::core::policy::Reliability(
+            dds::core::policy::ReliabilityKind::RELIABLE);
+        dds::pub::DataWriter<DdsType> writer(publisher, topic, writer_qos);
+        const auto deadline = std::chrono::steady_clock::now()
+            + std::chrono::seconds(timeout_seconds);
+        while (writer.publication_matched_status().current_count() == 0
+            && std::chrono::steady_clock::now() < deadline) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+        if (writer.publication_matched_status().current_count() == 0) {
+            throw std::runtime_error(
+                "No reader discovered for " + case_id + " fixture " + fixture);
+        }
+        std::cout << "WRITER_MATCHED case=" << case_id
+                  << " fixture=" << fixture
+                  << " readers_current=1 readers_total=1" << std::endl;
+        writer.write(expected);
+        writer.wait_for_acknowledgments(dds::core::Duration(timeout_seconds, 0));
+        std::cout << "SENT" << std::endl;
+        return 0;
+    }
+
+    if (role == "reader") {
+        dds::sub::Subscriber subscriber(participant);
+        auto reader_qos = subscriber.default_datareader_qos();
+        reader_qos << dds::core::policy::Reliability(
+            dds::core::policy::ReliabilityKind::RELIABLE);
+        dds::sub::DataReader<DdsType> reader(subscriber, topic, reader_qos);
+        std::cout << "READY case=" << case_id << " fixture=" << fixture
+                  << " role=reader" << std::endl;
+        const auto deadline = std::chrono::steady_clock::now()
+            + std::chrono::seconds(timeout_seconds);
+        while (std::chrono::steady_clock::now() < deadline) {
+            auto samples = reader.take();
+            for (const auto &sample : samples) {
+                if (!sample.info().valid()) {
+                    continue;
+                }
+                if (!(sample.data() == expected)) {
+                    throw std::runtime_error("Received sample differs from the fixture");
+                }
+                std::cout << "RECEIVED" << std::endl;
+                return 0;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+        throw std::runtime_error(
+            "No sample received for " + case_id + " fixture " + fixture);
+    }
+
+    throw std::invalid_argument("role must be writer or reader");
+}
+#endif

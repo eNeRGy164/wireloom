@@ -1,0 +1,7 @@
+#include "features/03-enum-values-explicit.idl"
+
+module CorpusEnumValues {
+    struct EnumTopic {
+        Explicit value;
+    };
+};

@@ -1,0 +1,8 @@
+{
+  "cases": [
+    {
+      "id": "09-optional-aggregate-member",
+      "reason": "Wireloom rejects optional aggregate members with DDSG0001, so this RTI-positive case is not wire-testable until generator support is implemented."
+    }
+  ]
+}

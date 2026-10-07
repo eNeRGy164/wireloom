@@ -1,0 +1,82 @@
+name: Wire compatibility
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wire-compatibility-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  rti-7-7-0:
+    name: RTI Connext 7.7.0 wire matrix
+    runs-on: ubuntu-24.04
+    container:
+      image: rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca
+      options: --user 0:0
+    timeout-minutes: 360
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      WIRE_COMPATIBILITY_RTI_VERSION: 7.7.0
+      WIRE_COMPATIBILITY_OUTPUT_DIR: artifacts/wire-compatibility
+      RTI_LICENSE_FILE: /tmp/rti_license.dat
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install peer build tools
+        run: |
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            ca-certificates cmake g++ make python3
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.400
+
+      - name: Provide runtime RTI license file
+        shell: bash
+        env:
+          RTI_CONNEXT_LICENSE: ${{ secrets.RTI_CONNEXT_LICENSE }}
+        run: |
+          if [[ -z "$RTI_CONNEXT_LICENSE" ]]; then
+            echo "The RTI_CONNEXT_LICENSE secret is required for this manually dispatched workflow." >&2
+            exit 1
+          fi
+          umask 077
+          printf '%s' "$RTI_CONNEXT_LICENSE" > "$RTI_LICENSE_FILE"
+
+      - name: Verify RTI toolchain version
+        shell: bash
+        run: |
+          version="$($NDDSHOME/bin/rtiddsgen -version 2>&1 | sed -n 's/.*rtiddsgen version //p' | head -n 1)"
+          if [[ "$version" != "4.7.0" ]]; then
+            echo "Expected rtiddsgen 4.7.0 from the exact RTI 7.7.0 image." >&2
+            exit 1
+          fi
+
+      - name: Run 7.7.0 wire matrix
+        run: bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.sh
+
+      - name: Upload sanitized wire evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: wire-compatibility-rti-7.7.0
+          path: |
+            artifacts/wire-compatibility/results.json
+            artifacts/wire-compatibility/results.md
+            artifacts/wire-compatibility/logs/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Remove runtime license file
+        if: always()
+        run: rm -f "$RTI_LICENSE_FILE"

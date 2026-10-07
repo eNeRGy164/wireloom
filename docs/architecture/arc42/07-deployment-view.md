@@ -15,7 +15,19 @@ The source for the deployment diagram is
 | NuGet feed                 | `Wireloom.Dds.Generator` package and dependencies           | Supplies the analyzer and MSBuild targets                   |
 | Consumer output            | Application assembly plus generated source compiled into it | Runs the DDS application                                    |
 | RTI runtime environment    | Application-selected `Rti.ConnextDds` libraries             | Owns DDS communication and serialization                    |
-| Evidence repository        | Corpus IDL and retained oracle sources                      | Supports compatibility verification, not production runtime |
+| Evidence repository        | Corpus IDL, retained oracle sources, and wire-compatibility peers | Supports source-shape and DDS wire verification, not production runtime |
+
+The manually triggered wire-compatibility job starts with the exact
+`rticom/connext-base:7.7.0` toolchain and selects the matching C# runtime
+package through `WireCompatibilityRtiVersion`. The RTI license secret is
+written to a runtime-only file inside the job and is not included in artifacts.
+The runner builds one generated C# peer and one RTI-generated C++ peer per
+case, then launches separate producer/consumer processes for every fixture and
+language pairing. The scenario total is calculated from the fixture catalog.
+The job uploads only the structured scenario report and sanitized endpoint
+logs. Adding another RTI release requires an exact toolchain image and a
+compatible Wireloom emission target; 7.3.1 currently needs that
+target-compatibility work.
 
 Preview publication uses GitHub Packages. Validated release tags publish to
 NuGet.org with SBOM and provenance attestations.

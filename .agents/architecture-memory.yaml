@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-02T11:47:53Z
+  generated_at: 2026-10-07T22:58:23Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -47,15 +47,15 @@ summary:
     sources:
       - docs/architecture/arc42/04-solution-strategy.md
   building_blocks:
-    text: Separate Roslyn hosting, input graph and preprocessing, explicit parse-bind-validate front-end phases, compilation orchestration and resolution, emission models and plans, and output emitters.
+    text: Separate Roslyn hosting, input graph and preprocessing, explicit parse-bind-validate front-end phases, compilation orchestration and resolution, emission models and plans, and output emitters. Aggregate members declared through struct or union typedef chains use the underlying aggregate type in generated member APIs and native conversions while standalone typedef declarations remain generated.
     sources:
       - docs/architecture/arc42/05-building-block-view.md
   runtime:
-    text: Generation occurs during consumer compilation; the generated application uses its selected RTI runtime afterward.
+    text: Generation occurs during consumer compilation; the manual wire workflow covers Wireloom-positive, wire-testable cases on exact RTI 7.7.0. The expanded fixture catalog ran 372 scenarios with 364 passing and 8 failing. Remaining failures cover array-of-sequences cross-language discovery and present optional wide-string sequences. Aggregate alias members project to their underlying struct or union type; all four nested-alias aggregate pairings and all eight union-alias branch pairings pass. The RTI-positive optional-aggregate case is excluded because Wireloom reports DDSG0001. Each fixture runs as an independent exchange across C#→C#, C++→C++, C#→C++, and C++→C#; consumers compare the expected sample. Markdown summarizes status and defects while JSON and sanitized logs retain scenario metadata. Both peers request reliable delivery, and representation cases select XCDR2. The wchar union uses an RTI C++ DynamicType because rtiddsgen cannot parse it. The FlatData case uses standard C++ peer generation after removing its C#-ignored annotation; this does not validate RTI's FlatData-specific C++ layout. RTI 7.3.1 needs future target-version-aware emission.
     sources:
       - docs/architecture/arc42/06-runtime-view.md
   deployment:
-    text: The analyzer is delivered as a NuGet package and consumed on developer or CI build hosts.
+    text: The analyzer is delivered as a NuGet package; initial manual wire evidence requires exact RTI 7.7.0 tooling and a runtime-scoped license file. Add other releases only with a matching toolchain and compatible generator target.
     sources:
       - docs/architecture/arc42/07-deployment-view.md
   cross_cutting:
@@ -63,19 +63,19 @@ summary:
     sources:
       - docs/architecture/arc42/08-crosscutting-concepts.md
   decisions:
-    text: Roslyn hosting, explicit roots, independent semantic modeling, project-wide root metadata, explicit parse-bind-validate phases, explicit runtime ownership, case-level evidence, separated compiler orchestration/resolution/emission, and bounded preprocessing work are current decisions.
+    text: Roslyn hosting, explicit roots, independent semantic modeling, project-wide root metadata, explicit parse-bind-validate phases, explicit runtime ownership, case-level evidence, separated compiler orchestration/resolution/emission, bounded preprocessing work, manually triggered wire evidence, exact 7.7.0 as the initial wire baseline, and inclusion of warning-only Wireloom-positive cases are current decisions; RTI-positive cases rejected by Wireloom remain excluded.
     sources:
       - docs/architecture/arc42/09-architectural-decisions.md
   quality:
-    text: Compatibility shape, diagnostics, package integration, maintainability, incremental build evidence, and supply-chain integrity are the primary quality goals.
+    text: Compatibility shape, diagnostics, package integration, maintainability, incremental build evidence, wire compatibility across Wireloom-positive cases and the expanded exact 7.7.0 fixture matrix, and supply-chain integrity are the primary quality goals. The current matrix snapshot completed 372 scenarios with 364 passing and 8 failures; the failures cover array-of-sequences cross-language discovery and present optional wide-string sequences.
     sources:
       - docs/architecture/arc42/10-quality-requirements.md
   risks:
-    text: Coverage outside the retained corpus, coarse per-root output invalidation, fixed-limit compatibility, runtime and C++ evidence, and host qualification remain open risks.
+    text: Coverage outside the retained corpus, coarse per-root output invalidation, fixed-limit compatibility, licensed exact-version wire environments, RTI C# binding shape limitation for direct arrays of sequences, unsupported optional aggregate members (DDSG0001), present optional wide-string sequence interoperability, manually maintained C++ DynamicType metadata for the wchar union, RTI 7.3.1 target compatibility, time-sensitive reader match status, and host qualification remain open risks.
     sources:
       - docs/architecture/arc42/11-risks-and-technical-debt.md
   glossary:
-    text: Connext IDL, DdsIdl root, included IDL, type-specific support, RTI oracle, and wire compatibility have project-specific meanings.
+    text: Connext IDL, DdsIdl root, included IDL, type-specific support, RTI oracle, wire compatibility, and wire compatibility matrix have project-specific meanings.
     sources:
       - docs/architecture/arc42/12-glossary.md
 defaults:
@@ -140,6 +140,6 @@ defaults:
       source: chapter-2
       status: explicit
     rti_oracle_baseline:
-      value: "7.7.0 / rtiddsgen 4.7.0"
+      value: "7.7.0 / rtiddsgen 4.7.0; initial wire baseline"
       source: chapter-2
       status: explicit

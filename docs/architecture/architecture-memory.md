@@ -13,7 +13,9 @@ or ADRs first, then refresh this file and
   small oracle-backed cases. See [chapter 1](arc42/01-introduction-and-goals.md).
 - **Constraints:** The analyzer targets `netstandard2.0`; consumer and test
   projects use .NET 10; C# 12+ and an RTI runtime reference of at least 7.3.1
-  are required. Retained oracle sources use RTI 7.7.0 / `rtiddsgen` 4.7.0.
+  are required. That package floor is not proof that current generated source
+  compiles against 7.3.1. Retained oracle sources use RTI 7.7.0 /
+  `rtiddsgen` 4.7.0.
   See [chapter 2](arc42/02-architecture-constraints.md).
 - **Context:** Wireloom runs at compile time between the consumer project and
   generated C#; the RTI runtime remains outside the generator boundary. See
@@ -24,13 +26,19 @@ or ADRs first, then refresh this file and
 - **Building blocks:** The pipeline separates Roslyn hosting, input graph and
   preprocessing, front-end parsing and semantics, compilation orchestration and
   resolution, emission models and plans, and managed/native/support emitters.
-  Parsing, binding, and validation are explicit front-end phases, and chapter 5
-  includes a level-2 zoom of the compiler and preprocessing boundary.
+  Aggregate members declared through struct or union typedef chains use the
+  underlying aggregate type in generated member APIs and native conversions;
+  standalone typedef declarations remain generated. Parsing, binding, and
+  validation are explicit front-end phases, and chapter 5 includes a level-2
+  zoom of the compiler and preprocessing boundary.
   See [chapter 5](arc42/05-building-block-view.md).
-- **Runtime and deployment:** The meaningful runtime scenario is the consumer
-  build; the output is packaged into the application, which uses its selected
-  RTI runtime. See [chapters 6](arc42/06-runtime-view.md) and
-  [7](arc42/07-deployment-view.md).
+- **Runtime and deployment:** The wire workflow covers Wireloom-positive,
+  wire-testable cases with C#/C++ peers and exact RTI 7.7.0. The expanded
+  fixture catalog completed 372 scenarios: 364 passed and 8 failed. Each
+  case/fixture has an independent exchange for each language pairing; Markdown
+  summarizes pairing outcomes and defects while JSON and sanitized logs retain
+  details. RTI 7.3.1 needs future version-aware emission. See
+  [chapters 6](arc42/06-runtime-view.md) and [7](arc42/07-deployment-view.md).
 - **Cross-cutting concerns:** Evidence vocabulary, deterministic source
   identity, explicit compiler phases, diagnostics, test separation, measured
   invalidation, and supply-chain controls apply across the system. See
@@ -38,13 +46,36 @@ or ADRs first, then refresh this file and
 - **Decisions:** Roslyn hosting, explicit roots, independent semantic models,
   project-wide root metadata, explicit parse/bind/validate phases, explicit
   runtime ownership, case-level compatibility evidence, and separated
-  compiler orchestration/resolution/emission are current decisions. See
+  compiler orchestration/resolution/emission are current decisions. The
+  initial wire baseline is exact 7.7.0; future older-runtime support needs a
+  generator target API version distinct from the package version. Wire-level
+  compatibility remains a manual licensed evidence tier. See
   [chapter 9](arc42/09-architectural-decisions.md).
-- **Quality and risk:** Corpus shape checks are stronger than the current
-  runtime/interoperability evidence; incremental build behavior is measured but
-  per-root output invalidation remains coarse, and coverage outside the retained
-  corpus remains a visible risk. See [chapters 10](arc42/10-quality-requirements.md)
-  and [11](arc42/11-risks-and-technical-debt.md).
+- **Quality and risk:** The current exact 7.7.0 fixture matrix completed 372
+  scenarios with 364 passes and 8 failures.
+  `05-array-of-sequences` is included with defaults because DDSG0105 is a warning;
+  current C# output flattens its array-of-sequences members, so a wire pass does
+  not prove array-shape fidelity. Both same-language pairings pass, while both
+  C#↔C++ pairings fail endpoint discovery because the generated C# flat sequence
+  and C++ array-of-sequences have different type kinds. A direct probe using
+  RTI's retained C# oracle reproduces the same cross-language failure, so this
+  is an RTI C# binding limitation rather than a Wireloom-only regression.
+  `03-alias-aggregate` and both `07-union-aliases` variants now pass all four
+  pairings after aggregate member aliases were projected to their underlying
+  struct or union type. The RTI-positive `09-optional-aggregate-member` remains
+  excluded because Wireloom reports DDSG0001. Consumers verify expected
+  fixtures, and peers request reliable delivery.
+  The wchar union uses a manually constructed RTI C++ `DynamicType` matching
+  the discriminator, labels, IDs, and extensibility. FlatData uses standard
+  C++ peer generation after removing its C#-ignored mapping annotation; this
+  does not verify the RTI FlatData-specific C++ layout. Populated optional
+  wide-string sequences fail in specific pairings: C++ readers can time out or
+  C# readers can receive values that differ from the fixture. RTI 7.3.1 target
+  compatibility, licensed exact-version environments, unsupported optional
+  aggregate members, coarse per-root output invalidation, and coverage outside
+  the retained corpus remain open risks. See
+  [chapters 10](arc42/10-quality-requirements.md) and
+  [11](arc42/11-risks-and-technical-debt.md).
 
 ## Repository defaults and decisions
 
@@ -54,7 +85,7 @@ or ADRs first, then refresh this file and
 | Generator target            | `netstandard2.0`                                              | `Wireloom.Dds.Generator.csproj`, chapter 2    |
 | SDK policy                  | `10.0.400`; prerelease disabled; `latestFeature` roll-forward | `global.json`; Qodana compatibility           |
 | Package output              | NuGet analyzer/source-generator package                       | Generator project and workflows               |
-| Runtime compatibility floor | RTI Connext DDS `7.3.1+`                                      | Generator diagnostic `DDSG0003`, chapter 2    |
+| Runtime package reference floor | RTI Connext DDS `7.3.1+`                                  | Generator diagnostic `DDSG0003`, chapter 2; not wire-compatibility proof |
 | Oracle capture baseline     | RTI Connext DDS `7.7.0` / `rtiddsgen 4.7.0`                   | Corpus manifest, chapter 2                    |
 | Runtime identifiers         | None; generator is runtime-neutral                            | Architecture memory and project configuration |
 | Test platform               | Microsoft Testing Platform with xUnit v3                      | Project files and chapter 2                   |
@@ -69,7 +100,8 @@ does not use them.
 - Visual Studio live behavior, Linux builds, and C++ peer interoperability are
   not verified for every supported feature.
 - Runtime and wire-level evidence must be expanded before broader compatibility
-  claims are made.
+  claims are made. Current generation does not compile against 7.3.1 despite
+  the package reference floor; version-aware emission remains planned.
 - The retained oracle capture remains marked pending review in the corpus
   manifest; source-shape evidence must not be treated as runtime or wire proof.
 

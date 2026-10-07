@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.16)
+# Build the substituted C++ peer together with all files emitted by rtiddsgen.
+# The RTI toolchain is supplied by the caller's pinned container environment.
+project(WireloomWirePeer LANGUAGES CXX)
+
+find_package(RTIConnextDDS REQUIRED)
+
+file(GLOB_RECURSE RTI_GENERATED_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cxx")
+add_executable(wire-peer main.cpp ${RTI_GENERATED_SOURCES})
+target_compile_features(wire-peer PRIVATE cxx_std_11)
+target_link_libraries(wire-peer PRIVATE RTIConnextDDS::cpp2_api)
+if(WIRELOOM_DYNAMIC_WCHAR_UNION)
+    target_compile_definitions(wire-peer PRIVATE WIRELOOM_DYNAMIC_WCHAR_UNION)
+endif()
+if(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE)
+    target_compile_definitions(wire-peer PRIVATE WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE)
+endif()
+if(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE)
+    target_compile_definitions(wire-peer PRIVATE WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE)
+endif()
+if(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE)
+    target_compile_definitions(wire-peer PRIVATE WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE)
+endif()

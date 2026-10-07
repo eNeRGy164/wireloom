@@ -1,0 +1,502 @@
+// This template is the native reference peer for Wireloom's C# generator.
+// run-matrix.sh substitutes the RTI-generated IDL basename and fully qualified
+// C++ type, then builds the result with matching Connext C++ libraries.
+// RTI DynamicData normally keeps one peer reusable across IDL shapes; typed
+// specializations cover cases where DynamicData lacks needed string setters.
+#include <chrono>
+#include <cstdint>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <vector>
+
+#include <dds/dds.hpp>
+#include <rti/config/Logger.hpp>
+
+#ifndef WIRELOOM_DYNAMIC_WCHAR_UNION
+#include "@IDL_BASE@.hpp"
+#include "@IDL_BASE@Plugin.hpp"
+#else
+// rtiddsgen cannot parse this corpus union's wchar labels. For this single
+// case, run-matrix.sh selects DynamicData and this equivalent RTI type model.
+#include <dds/core/xtypes/MemberType.hpp>
+#include <dds/core/xtypes/PrimitiveTypes.hpp>
+#include <dds/core/xtypes/UnionType.hpp>
+#endif
+
+using DdsType = @CPP_TYPE@;
+using dds::core::xtypes::DynamicData;
+
+#include "typed-fixture-peer.hpp"
+
+int main(int argc, char **argv)
+{
+    if (argc != 6) {
+        std::cerr << "usage: wire-peer <writer|reader> <topic> <timeout-seconds> <case> <fixture>\n";
+        return 2;
+    }
+
+    try {
+        rti::config::Logger::instance().verbosity(rti::config::Verbosity::WARNING);
+        const std::string role(argv[1]);
+        const std::string topic_name(argv[2]);
+        const int timeout_seconds = std::stoi(argv[3]);
+        const std::string case_id(argv[4]);
+        const std::string fixture(argv[5]);
+#ifdef WIRELOOM_DYNAMIC_WCHAR_UNION
+        dds::core::xtypes::UnionType dynamic_type(
+            "CorpusWideCharacterUnion::Choice",
+            dds::core::xtypes::primitive_type<wchar_t>(),
+            {
+                dds::core::xtypes::UnionMember(
+                    "letter", dds::core::xtypes::primitive_type<int32_t>(), 97).id(1),
+                dds::core::xtypes::UnionMember(
+                    "text", dds::core::xtypes::StringType(255), 122).id(2),
+                dds::core::xtypes::UnionMember(
+                    "other",
+                    dds::core::xtypes::primitive_type<bool>(),
+                    dds::core::xtypes::UnionMember::DEFAULT_LABEL).id(3)
+            });
+        dynamic_type.extensibility_kind(
+            dds::core::xtypes::ExtensibilityKind::EXTENSIBLE);
+#else
+        // Normal cases use type metadata emitted by rtiddsgen. Only the
+        // wchar-label union above supplies a hand-built DynamicType.
+        const auto &dynamic_type = rti::topic::dynamic_type<DdsType>::get();
+#endif
+        dds::domain::DomainParticipant participant(0);
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE)
+        if (case_id == "09-optional-string-sequences"
+            || case_id == "04-strings" || case_id == "04-boundaries") {
+            return run_typed_fixture_peer(
+                participant, role, topic_name, timeout_seconds, case_id, fixture);
+        }
+#endif
+        dds::topic::Topic<DynamicData> topic(participant, topic_name, dynamic_type);
+        // The fixture is shared conceptually with the C# peer: writers send it,
+        // and readers compare the received DynamicData against this same
+        // expected value rather than treating discovery alone as a pass.
+        DynamicData expected(dynamic_type);
+        if (case_id == "01-boundaries" && fixture == "non-default") {
+            expected.value("shortValue", int16_t{INT16_MIN});
+            expected.value("longValue", int32_t{INT32_MAX});
+            expected.value("longLongValue", int64_t{INT64_MIN});
+            expected.value("int8Value", int8_t{INT8_MIN});
+            expected.value("int64Value", int64_t{INT64_MAX});
+            expected.value("floatValue", 1.25f);
+            expected.value("doubleValue", -2.5);
+        } else if (case_id == "01-full-widths" && fixture == "non-default") {
+            expected.value("i8", int8_t{-101});
+            expected.value("i16", int16_t{-16001});
+            expected.value("i32", int32_t{-320001});
+            expected.value("i64", int64_t{-6400001});
+            expected.value("u8", uint8_t{201});
+            expected.value("u16", uint16_t{52001});
+            expected.value("u32", uint32_t{3200001});
+            expected.value("u64", uint64_t{6400001});
+        } else if (case_id == "02-names-constants" && fixture == "non-default") {
+            expected.value("event", int32_t{401});
+            expected.value("point.x", int32_t{402});
+            expected.value("point.y", int32_t{403});
+        } else if (case_id == "03-enums-aliases" && fixture == "enum-alternate") {
+            expected.value("color", int32_t{2});
+            expected.value("aliasColor", int32_t{1});
+        } else if (case_id == "02-scopes"
+            && (fixture.rfind("sequence-", 0) == 0 || fixture == "non-default")) {
+            expected.value("event", int32_t{501});
+            expected.value("relative.x", int32_t{502});
+            expected.value("relative.y", int32_t{503});
+            expected.value("absolute.x", int32_t{504});
+            expected.value("absolute.y", int32_t{505});
+            expected.set_values("values", fixture == "sequence-empty"
+                ? std::vector<int32_t>{}
+                : fixture == "sequence-single"
+                    ? std::vector<int32_t>{506}
+                    : std::vector<int32_t>{506, 507, 508});
+        } else if (case_id == "02-constant-expressions"
+            && (fixture.rfind("sequence-", 0) == 0 || fixture == "non-default")) {
+            expected.set_values("values", fixture == "sequence-empty"
+                ? std::vector<int32_t>{}
+                : fixture == "sequence-single"
+                    ? std::vector<int32_t>{601}
+                    : std::vector<int32_t>{601, 602, 603, 604});
+            expected.value("array[0]", int32_t{611});
+            expected.value("array[1]", int32_t{612});
+            expected.value("array[2]", int32_t{613});
+            expected.value("array[3]", int32_t{614});
+            expected.value("array[4]", int32_t{615});
+        } else if (case_id == "02-formatting" && fixture == "non-default") {
+            expected.value("text", std::string("formatted-701"));
+        } else if (case_id == "02-multiple" && fixture == "non-default") {
+            expected.value("first.value", int32_t{801});
+            expected.value("second.name", std::string("second-801"));
+        } else if (case_id == "03-alias-aggregate" && fixture == "non-default") {
+            expected.value("point.x", int32_t{1001});
+            expected.value("point.y", int32_t{1002});
+        } else if (case_id == "03-alias-collections" && fixture == "sequence-single") {
+            expected.value("values[0][0]", int32_t{1101});
+        } else if (case_id == "03-alias-collections" && fixture == "non-default") {
+            expected.value("values[0][0]", int32_t{1101});
+            expected.value("values[0][1]", int32_t{1102});
+            expected.value("values[1][0]", int32_t{1111});
+            expected.value("values[1][1]", int32_t{1112});
+        } else if (case_id == "06-alias-composition" && fixture == "non-default") {
+            expected.value("id", int32_t{1201});
+            expected.value("values[0]", 1.25f);
+            expected.value("values[1]", -2.5f);
+            expected.value("values[2]", 3.75f);
+            expected.value("values[3]", 4.5f);
+        } else if ((case_id == "09-data-representation"
+                || case_id == "09-allowed-data-representation")
+            && fixture == "non-default") {
+            expected.value("value", int32_t{1301});
+        } else if (case_id == "07-unions" && fixture == "union-number") {
+            expected.value("number", int32_t{7301});
+        } else if (case_id == "07-unions" && fixture == "union-text") {
+            expected.value("text", std::string("union-text"));
+        } else if (case_id == "07-unions" && fixture == "union-default") {
+            expected.value("flag", true);
+        } else if (case_id == "07-union-wchar-label" && fixture == "union-number") {
+            expected.value("letter", int32_t{17701});
+        } else if (case_id == "07-union-wchar-label" && fixture == "union-text") {
+            expected.value("text", std::string("wide-union-text"));
+        } else if (case_id == "07-union-wchar-label" && fixture == "union-default") {
+            expected.value("other", true);
+        } else if (case_id == "07-union-enum" && fixture == "union-number") {
+            expected.value("number", int32_t{7401});
+        } else if (case_id == "07-union-enum" && fixture == "union-text") {
+            expected.value("text", std::string("enum-union-text"));
+        } else if (case_id == "07-union-enum" && fixture == "union-payload") {
+            expected.value("payload.code", int32_t{7401});
+            expected.value("payload.label", std::string("payload-7401"));
+        } else if (case_id == "07-union-multilabel" && fixture == "union-number") {
+            expected.value("number", int32_t{7501});
+        } else if (case_id == "07-union-multilabel" && fixture == "union-text") {
+            expected.value("text", std::string("multi-label-text"));
+        } else if (case_id == "07-union-short" && fixture == "union-number") {
+            expected.value("negative", int32_t{7601});
+        } else if (case_id == "07-union-short" && fixture == "union-text") {
+            expected.value("text", std::string("short-union-text"));
+        } else if (case_id == "07-union-short" && fixture == "union-default") {
+            expected.value("other", true);
+        } else if (case_id == "07-union-char" && fixture == "union-number") {
+            expected.value("letter", int32_t{7701});
+        } else if (case_id == "07-union-char" && fixture == "union-text") {
+            expected.value("text", std::string("char-union-text"));
+        } else if (case_id == "07-union-char" && fixture == "union-default") {
+            expected.value("other", true);
+        } else if (case_id == "07-union-scoped" && fixture == "union-payload") {
+            expected.value("qualifiedPayload.code", int32_t{7801});
+            expected.value("qualifiedPayload.label", std::string("scoped-7801"));
+        } else if (case_id == "07-union-scoped" && fixture == "sequence-empty") {
+            expected.set_values("values", std::vector<int32_t>{});
+        } else if (case_id == "07-union-scoped" && fixture == "sequence-single") {
+            expected.set_values("values", std::vector<int32_t>{7811});
+        } else if (case_id == "07-union-boolean" && fixture == "union-enabled") {
+            expected.value("enabled", int32_t{7901});
+        } else if (case_id == "07-union-boolean" && fixture == "union-disabled") {
+            expected.value("disabled", std::string("disabled"));
+        } else if (case_id == "07-union-aliases" && fixture == "union-zero") {
+            expected.value("value.zero", int32_t{8101});
+        } else if (case_id == "07-union-aliases" && fixture == "union-ten") {
+            expected.value("value.ten", std::string("alias-ten"));
+        } else if (case_id == "09-evolution-optional" && fixture == "optional-absent") {
+            expected.value("requiredValue", int32_t{9401});
+        } else if (case_id == "09-evolution-optional" && fixture == "optional-value-only") {
+            expected.value("requiredValue", int32_t{9401});
+            expected.value("optionalValue", int32_t{9402});
+        } else if (case_id == "09-evolution-optional" && fixture == "optional-text-only") {
+            expected.value("requiredValue", int32_t{9401});
+            expected.value("optionalText", std::string("optional-present"));
+        } else if (case_id == "09-evolution-optional" && fixture == "optional-present") {
+            expected.value("requiredValue", int32_t{9401});
+            expected.value("optionalValue", int32_t{9402});
+            expected.value("optionalText", std::string("optional-present"));
+        } else if (case_id == "09-optional-collections" && fixture == "optional-absent") {
+            // Both optional members stay absent in this explicit absence case.
+        } else if (case_id == "09-optional-collections" && fixture == "optional-empty") {
+            expected.set_values("values", std::vector<int32_t>{});
+        } else if (case_id == "09-optional-collections" && fixture == "optional-single") {
+            expected.set_values("values", std::vector<int32_t>{9501});
+            expected.value("items[0]", int32_t{9511});
+            expected.value("items[1]", int32_t{9512});
+        } else if (case_id == "09-optional-collections" && fixture == "optional-multiple") {
+            expected.set_values("values", std::vector<int32_t>{9501, 9502, 9503});
+            expected.value("items[0]", int32_t{9511});
+            expected.value("items[1]", int32_t{9512});
+        } else if (case_id == "09-optional-string-sequences" && fixture == "optional-absent") {
+            // Both optional string sequences stay absent.
+        } else if (case_id == "08-keys" && fixture == "non-default") {
+            expected.value("identity.tenant", int32_t{8201});
+            expected.value("identity.name", std::string("tenant-8201"));
+            expected.value("payload", int32_t{8202});
+        } else if (case_id == "08-key-nested" && fixture == "non-default") {
+            expected.value("identity.code", int32_t{8301});
+            expected.value("identity.revision", int32_t{8302});
+            expected.value("payload", int32_t{8303});
+        } else if (case_id == "08-key-inherited" && fixture == "non-default") {
+            expected.value("tenant", int32_t{8401});
+            expected.value("baseValue", int32_t{8402});
+            expected.value("localId", int32_t{8403});
+            expected.value("payload", int32_t{8404});
+        } else if (case_id == "08-key-boundaries" && fixture == "non-default") {
+            expected.value("coordinates[0]", int32_t{8501});
+            expected.value("coordinates[1]", int32_t{8502});
+            expected.value("payload", int32_t{8503});
+        } else if (case_id == "08-key-union" && fixture == "non-default") {
+            expected.value("identity.number", int32_t{8601});
+            expected.value("payload", int32_t{8602});
+        } else if (case_id == "09-extensibility" && fixture == "non-default") {
+            expected.value("id", int32_t{9101});
+            expected.value("text", std::string("appendable-9101"));
+        } else if (case_id == "09-default" && fixture == "non-default") {
+            expected.value("id", int32_t{9201});
+            expected.value("text", std::string("default-9201"));
+        } else if (case_id == "09-id-gaps" && fixture == "non-default") {
+            expected.value("first", int32_t{9301});
+            expected.value("seventh", int32_t{9307});
+        } else if (case_id == "09-autoid-hash" && fixture == "non-default") {
+            expected.value("id", int32_t{9601});
+            expected.value("text", std::string("autoid-9601"));
+        } else if (case_id == "09-defaults-ranges" && fixture == "non-default") {
+            expected.value("value", int32_t{97});
+            expected.value("ranged", int32_t{-17});
+        } else if (case_id == "10-annotations" && fixture == "non-default") {
+            expected.value("id", int32_t{10101});
+            expected.value("value", int32_t{10});
+        } else if (case_id == "10-annotations-extended" && fixture == "non-default") {
+            expected.value("id", int32_t{10201});
+            expected.value("value", int32_t{11});
+        } else if (case_id == "10-annotations-rti" && fixture == "non-default") {
+            expected.value("id", int32_t{10301});
+            expected.value("value", int32_t{-13});
+            expected.value("text", std::string("annotation-10301"));
+            expected.value("externalText", std::string("external-10301"));
+        } else if (case_id == "10-flat-data-binding" && fixture == "non-default") {
+            expected.value("id", int32_t{10401});
+            expected.value("value", int32_t{14});
+        } else if (case_id == "11-preprocessing" && fixture == "non-default") {
+            expected.value("item.value", int32_t{1101});
+            expected.value("value", int32_t{1102});
+        } else if (case_id == "11-include-search" && fixture == "non-default") {
+            expected.value("item.value", int32_t{1161});
+            expected.value("value", int32_t{1162});
+        } else if (case_id == "11-conditionals" && fixture == "non-default") {
+            expected.value("value", int32_t{1111});
+        } else if (case_id == "11-macros" && fixture == "non-default") {
+            expected.value("value", int32_t{1121});
+        } else if (case_id == "11-macro-operators" && fixture == "non-default") {
+            expected.value("field", int32_t{1131});
+        } else if (case_id == "11-preprocessor-advanced" && fixture == "non-default") {
+            expected.value("value", int32_t{1151});
+        } else if (case_id == "11-comments" && fixture == "non-default") {
+            expected.value("text", std::string("comment"));
+        } else if (case_id == "06-aggregates" && fixture == "non-default") {
+            expected.value("base.base", int32_t{6101});
+            expected.value("derived.base", int32_t{6201});
+            expected.value("derived.derived", std::string("derived-6201"));
+        } else if (case_id == "05-shapes" && fixture == "non-default") {
+            expected.value("unboundedItems[0].id", int32_t{701});
+            expected.value("unboundedItems[0].label", std::string("u701"));
+            expected.value("unboundedItems[1].id", int32_t{702});
+            expected.value("unboundedItems[1].label", std::string("u702"));
+            expected.value("boundedItems[0].id", int32_t{801});
+            expected.value("boundedItems[0].label", std::string("b801"));
+            expected.value("boundedItems[1].id", int32_t{802});
+            expected.value("boundedItems[1].label", std::string("b802"));
+            expected.value("nestedSequences[0][0]", int32_t{301});
+            expected.value("nestedSequences[0][1]", int32_t{302});
+            expected.value("nestedSequences[1][0]", int32_t{311});
+            expected.value("nestedSequences[1][1]", int32_t{312});
+            expected.value("nestedSequences[1][2]", int32_t{313});
+            expected.value("rows[0][0]", int32_t{101});
+            expected.value("rows[0][1]", int32_t{102});
+            expected.value("rows[0][2]", int32_t{103});
+            expected.value("rows[1][0]", int32_t{111});
+            expected.value("rows[1][1]", int32_t{112});
+            expected.value("rows[1][2]", int32_t{113});
+            expected.value("sequenceOfArrays[0][0]", int32_t{201});
+            expected.value("sequenceOfArrays[0][1]", int32_t{202});
+            expected.value("sequenceOfArrays[0][2]", int32_t{203});
+            expected.value("sequenceOfArrays[1][0]", int32_t{211});
+            expected.value("sequenceOfArrays[1][1]", int32_t{212});
+            expected.value("sequenceOfArrays[1][2]", int32_t{213});
+            expected.value("sequenceOfArrayAliases[0][0][0]", int32_t{401});
+            expected.value("sequenceOfArrayAliases[0][0][1]", int32_t{402});
+            expected.value("sequenceOfArrayAliases[0][0][2]", int32_t{403});
+            expected.value("sequenceOfArrayAliases[0][1][0]", int32_t{411});
+            expected.value("sequenceOfArrayAliases[0][1][1]", int32_t{412});
+            expected.value("sequenceOfArrayAliases[0][1][2]", int32_t{413});
+            expected.value("sequenceOfArrayAliases[1][0][0]", int32_t{421});
+            expected.value("sequenceOfArrayAliases[1][0][1]", int32_t{422});
+            expected.value("sequenceOfArrayAliases[1][0][2]", int32_t{423});
+            expected.value("sequenceOfArrayAliases[1][1][0]", int32_t{431});
+            expected.value("sequenceOfArrayAliases[1][1][1]", int32_t{432});
+            expected.value("sequenceOfArrayAliases[1][1][2]", int32_t{433});
+            expected.value("names[0]", std::string("name-1"));
+            expected.value("names[1]", std::string("name-2"));
+            expected.value("names[2]", std::string("name-3"));
+        } else if (case_id == "05-collections" && fixture.rfind("sequence-", 0) == 0) {
+            expected.set_values("unbounded", fixture == "sequence-empty"
+                ? std::vector<int32_t>{} : std::vector<int32_t>{301});
+            expected.set_values("bounded", fixture == "sequence-empty"
+                ? std::vector<int32_t>{} : std::vector<int32_t>{401});
+            if (fixture == "sequence-single") {
+                expected.value("items[0].id", int32_t{701});
+                expected.value("items[0].label", std::string("item-701"));
+            }
+        } else if (case_id == "05-collections" && fixture == "non-default") {
+            expected.value("values[0,0]", int32_t{101});
+            expected.value("values[0,1]", int32_t{102});
+            expected.value("values[0,2]", int32_t{103});
+            expected.value("values[1,0]", int32_t{201});
+            expected.value("values[1,1]", int32_t{202});
+            expected.value("values[1,2]", int32_t{203});
+            expected.set_values("unbounded", std::vector<int32_t>{301, 302});
+            expected.set_values("bounded", std::vector<int32_t>{401, 402});
+            expected.value("items[0].id", int32_t{701});
+            expected.value("items[0].label", std::string("item-701"));
+            expected.value("items[1].id", int32_t{702});
+            expected.value("items[1].label", std::string("item-702"));
+            expected.value("grid[0,0]", int32_t{501});
+            expected.value("grid[0,1]", int32_t{502});
+            expected.value("grid[0,2]", int32_t{503});
+            expected.value("grid[1,0]", int32_t{601});
+            expected.value("grid[1,1]", int32_t{602});
+            expected.value("grid[1,2]", int32_t{603});
+        }
+
+        if (role == "writer") {
+            dds::pub::Publisher publisher(participant);
+            auto writer_qos = publisher.default_datawriter_qos();
+            writer_qos << dds::core::policy::Reliability(
+                dds::core::policy::ReliabilityKind::RELIABLE);
+            if (case_id == "09-data-representation"
+                || case_id == "09-allowed-data-representation"
+                || case_id == "10-flat-data-binding") {
+                const std::vector<dds::core::policy::DataRepresentationId> representations{
+                    dds::core::policy::DataRepresentation::xcdr2()};
+                writer_qos << dds::core::policy::DataRepresentation(representations);
+            }
+
+            // Reliable delivery and a bounded match wait make a missing peer
+            // fail as a useful scenario result instead of silently dropping
+            // the single sample this process publishes.
+            dds::pub::DataWriter<DynamicData> writer(publisher, topic, writer_qos);
+            const auto deadline = std::chrono::steady_clock::now()
+                + std::chrono::seconds(timeout_seconds);
+
+            std::cout << "READY case=" << case_id << " fixture=" << fixture
+                      << " role=writer" << std::endl;
+            while (writer.publication_matched_status().current_count() == 0
+                && std::chrono::steady_clock::now() < deadline) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            }
+
+            const auto publication_status = writer.publication_matched_status();
+            const auto matched_readers = publication_status.current_count();
+            std::cout << "WRITER_MATCHED case=" << case_id << " fixture=" << fixture
+                      << " readers_current=" << matched_readers
+                      << " readers_total=" << publication_status.total_count()
+                      << std::endl;
+            if (matched_readers == 0) {
+                throw std::runtime_error(
+                    "No reader discovered for " + case_id + " fixture " + fixture);
+            }
+
+            writer.write(expected);
+            writer.wait_for_acknowledgments(dds::core::Duration(timeout_seconds, 0));
+        } else if (role == "reader") {
+            dds::sub::Subscriber subscriber(participant);
+            auto reader_qos = subscriber.default_datareader_qos();
+            reader_qos << dds::core::policy::Reliability(
+                dds::core::policy::ReliabilityKind::RELIABLE);
+            if (case_id == "09-data-representation"
+                || case_id == "09-allowed-data-representation"
+                || case_id == "10-flat-data-binding") {
+                const std::vector<dds::core::policy::DataRepresentationId> representations{
+                    dds::core::policy::DataRepresentation::xcdr2()};
+                reader_qos << dds::core::policy::DataRepresentation(representations);
+            }
+
+            // Check both valid sample state and the complete expected fixture;
+            // endpoint discovery by itself is not a successful wire exchange.
+            dds::sub::DataReader<DynamicData> reader(subscriber, topic, reader_qos);
+            const auto deadline = std::chrono::steady_clock::now()
+                + std::chrono::seconds(timeout_seconds);
+            uint64_t take_calls = 0;
+            uint64_t returned_samples = 0;
+            uint64_t valid_samples = 0;
+            uint64_t invalid_samples = 0;
+
+            const auto initial_match_status = reader.subscription_matched_status();
+            std::cout << "READY case=" << case_id
+                      << " fixture=" << fixture
+                      << " role=reader"
+                      << " matched_writers_current=" << initial_match_status.current_count()
+                      << " matched_writers_total=" << initial_match_status.total_count()
+                      << std::endl;
+            while (std::chrono::steady_clock::now() < deadline) {
+                auto samples = reader.take();
+
+                ++take_calls;
+                for (const auto &sample : samples) {
+                    ++returned_samples;
+                    if (!sample.info().valid()) {
+                        ++invalid_samples;
+                        continue;
+                    }
+
+                    ++valid_samples;
+                    if (!(sample.data() == expected)) {
+                        const auto match_status = reader.subscription_matched_status();
+                        std::cout << "READER_STATS case=" << case_id
+                                  << " matched_writers_current=" << match_status.current_count()
+                                  << " matched_writers_total=" << match_status.total_count()
+                                  << " take_calls=" << take_calls
+                                  << " returned_samples=" << returned_samples
+                                  << " valid_samples=" << valid_samples
+                                  << " invalid_samples=" << invalid_samples
+                                  << std::endl;
+                        throw std::runtime_error(
+                            "Received sample differs from " + case_id + " fixture " + fixture);
+                    }
+
+                    const auto match_status = reader.subscription_matched_status();
+                    std::cout << "READER_STATS case=" << case_id
+                              << " matched_writers_current=" << match_status.current_count()
+                              << " matched_writers_total=" << match_status.total_count()
+                              << " take_calls=" << take_calls
+                              << " returned_samples=" << returned_samples
+                              << " valid_samples=" << valid_samples
+                              << " invalid_samples=" << invalid_samples
+                              << std::endl;
+                    std::cout << "RECEIVED" << std::endl;
+                    return 0;
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            }
+
+            const auto final_match_status = reader.subscription_matched_status();
+            std::cout << "READER_STATS case=" << case_id
+                      << " matched_writers_current=" << final_match_status.current_count()
+                      << " matched_writers_total=" << final_match_status.total_count()
+                      << " take_calls=" << take_calls
+                      << " returned_samples=" << returned_samples
+                      << " valid_samples=" << valid_samples
+                      << " invalid_samples=" << invalid_samples
+                      << std::endl;
+            throw std::runtime_error(
+                "No sample received for " + case_id + " fixture " + fixture);
+        } else {
+            throw std::invalid_argument("role must be writer or reader");
+        }
+
+        std::cout << "SENT" << std::endl;
+        return 0;
+    } catch (const std::exception &error) {
+        std::cerr << "FAIL " << error.what() << std::endl;
+        return 1;
+    }
+}

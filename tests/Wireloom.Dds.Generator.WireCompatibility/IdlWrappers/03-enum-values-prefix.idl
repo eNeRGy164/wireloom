@@ -1,0 +1,7 @@
+#include "features/03-enum-values-prefix.idl"
+
+module CorpusEnumValuePrefix {
+    struct EnumTopic {
+        Annotated value;
+    };
+};

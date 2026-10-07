@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Wireloom.Dds.Generator.WireCompatibility</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <IsTestProject>false</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)wireloom-generated</CompilerGeneratedFilesOutputPath>
+    <WireCompatibilityCase Condition="'$(WireCompatibilityCase)' == ''">01-primitives</WireCompatibilityCase>
+    <WireCompatibilityRtiVersion Condition="'$(WireCompatibilityRtiVersion)' == ''">7.7.0</WireCompatibilityRtiVersion>
+    <AssemblyName>WireCompatibility.$(WireCompatibilityCase)</AssemblyName>
+    <WarningsNotAsErrors Condition="'$(WireCompatibilityCase)' == '05-array-of-sequences'">$(WarningsNotAsErrors);DDSG0105</WarningsNotAsErrors>
+    <DdsIdlIncludeDirectories>$(MSBuildProjectDirectory)\..\..\docs\corpus\idl;$(MSBuildProjectDirectory)\..\..\docs\corpus\idl\includes</DdsIdlIncludeDirectories>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The RTI control probe is a nested project. Do not compile its sources or generated obj files here. -->
+    <Compile Remove="RtiOracleProbe/**/*.cs" />
+    <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />
+    <Using Remove="Shouldly;Xunit" />
+    <ProjectReference Include="..\..\src\Wireloom.Dds.Generator\Wireloom.Dds.Generator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+    <PackageReference Include="Rti.ConnextDds" Version="$(WireCompatibilityRtiVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DdsIdl Include="..\..\docs\corpus\idl\features\$(WireCompatibilityCase).idl"
+            Condition="'$(WireCompatibilityCase)' != '02-multiple' and '$(WireCompatibilityCase)' != '03-enum-values-prefix' and '$(WireCompatibilityCase)' != '03-enum-values-explicit'" />
+    <DdsIdl Include="IdlWrappers\$(WireCompatibilityCase).idl"
+            Condition="'$(WireCompatibilityCase)' == '02-multiple' or '$(WireCompatibilityCase)' == '03-enum-values-prefix' or '$(WireCompatibilityCase)' == '03-enum-values-explicit'" />
+    <DdsIdl Update="..\..\docs\corpus\idl\features\11-preprocessing.idl"
+            Condition="'$(WireCompatibilityCase)' == '11-preprocessing'"
+            Defines="CORPUS_CAPTURE_DEFINE" />
+  </ItemGroup>
+
+  <Import Project="..\..\src\Wireloom.Dds.Generator\build\Wireloom.Dds.Generator.targets" />
+</Project>

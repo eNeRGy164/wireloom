@@ -1,0 +1,19 @@
+FROM rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca
+
+USER 0:0
+
+ARG DOTNET_VERSION=10.0.400
+
+ENV DOTNET_NOLOGO=1 \
+    DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+    DOTNET_ROOT=/usr/share/dotnet \
+    PATH="/usr/share/dotnet:${PATH}" \
+    RTI_LICENSE_FILE=/run/secrets/rti_license.dat
+
+RUN apt-get update -qq \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ca-certificates cmake curl g++ git make python3 \
+    && curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh \
+    && bash /tmp/dotnet-install.sh --version "${DOTNET_VERSION}" --install-dir /usr/share/dotnet \
+    && rm -f /tmp/dotnet-install.sh \
+    && rm -rf /var/lib/apt/lists/*
