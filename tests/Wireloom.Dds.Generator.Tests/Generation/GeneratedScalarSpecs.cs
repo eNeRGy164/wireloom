@@ -105,9 +105,9 @@ public sealed class GeneratedScalarSpecs
         managed.ShouldContain("public string text");
         managed.ShouldContain("[Bound(4)]");
         managed.ShouldContain("public string wide");
-        managed.ShouldContain("The bound on this narrow IDL string counts characters. RTI encodes narrow IDL strings as UTF-8 by default.");
-        managed.ShouldContain("The bound on this wide IDL string counts characters. RTI encodes wide IDL strings as UTF-16 by default.");
-        managed.ShouldNotContain("effective Wireloom limit of 255 characters");
+        managed.ShouldContain("The bound on this narrow IDL string is measured in UTF-8 bytes.");
+        managed.ShouldContain("The bound on this wide IDL string is measured in UTF-16 code units.");
+        managed.ShouldNotContain("effective limit of 255 UTF-8 bytes");
 
         var unmanaged = documents["Strings.Implementation.SampleUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("private NativeString text");
@@ -135,8 +135,8 @@ public sealed class GeneratedScalarSpecs
         var managed = CompileSources(input)["Strings.Sample.g.cs"].Source;
 
         // Assert
-        managed.ShouldContain("This unbounded narrow IDL string has an effective limit of 255 characters. RTI encodes narrow IDL strings as UTF-8 by default.");
-        managed.ShouldContain("This unbounded wide IDL string has an effective limit of 255 characters. RTI encodes wide IDL strings as UTF-16 by default.");
+        managed.ShouldContain("This unbounded narrow IDL string has an effective limit of 255 UTF-8 bytes.");
+        managed.ShouldContain("This unbounded wide IDL string has an effective limit of 255 UTF-16 code units.");
     }
 
     [Fact]

@@ -20,10 +20,10 @@ public partial class Sample : global::System.IEquatable<Sample>
     public int id { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>text</c> member. Its maximum length is <c>16</c> characters. Its DDS member ID is generated from the hash of <c>text</c> through <c>@hashid</c>. Its DDS member ID is <c>206680604</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
+    /// Gets or sets the <c>text</c> member. Its maximum length is <c>16</c> UTF-8 bytes. Its DDS member ID is generated from the hash of <c>text</c> through <c>@hashid</c>. Its DDS member ID is <c>206680604</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
-    /// <remarks>The bound on this narrow IDL string counts characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not check the bound when assigned.</remarks>
+    /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(16)]
     public string text { get; set; } = string.Empty;
 

@@ -15,7 +15,7 @@ namespace CorpusCollectionShapes;
 public partial class Names : global::System.IEquatable<Names>
 {
     /// <summary>
-    /// Gets the sequence value represented by this typedef. Its maximum number of elements is <c>4</c>.
+    /// Gets the sequence value represented by this typedef. Its maximum number of elements is <c>4</c>. Each narrow IDL string element is limited to <c>32</c> UTF-8 bytes.
     /// </summary>
     /// <remarks>Use the mutable sequence instance to add or remove elements; the property itself is getter-only. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>

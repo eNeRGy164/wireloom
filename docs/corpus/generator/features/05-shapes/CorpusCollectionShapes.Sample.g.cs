@@ -86,7 +86,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     public ISequence<Rows> sequenceOfArrayAliases { get; } = null!;
 
     /// <summary>
-    /// Gets or sets the <c>names</c> member. Its maximum number of elements is <c>4</c>. Each narrow IDL string element is limited to <c>32</c> characters.
+    /// Gets or sets the <c>names</c> member. Its maximum number of elements is <c>4</c>. Each narrow IDL string element is limited to <c>32</c> UTF-8 bytes.
     /// </summary>
     [Bound(4)]
     public Names names { get; set; } = new Names();

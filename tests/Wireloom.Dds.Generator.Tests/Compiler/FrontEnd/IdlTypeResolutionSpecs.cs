@@ -107,7 +107,7 @@ public sealed class IdlTypeResolutionSpecs
         var documents = CompileSources(input);
 
         // Assert
-        documents["Sample.g.cs"].Source.ShouldContain("Its maximum length is <c>9</c> characters.");
+        documents["Sample.g.cs"].Source.ShouldContain("Its maximum length is <c>9</c> UTF-8 bytes.");
     }
 
     [Fact]

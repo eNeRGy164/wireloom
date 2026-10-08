@@ -1,6 +1,8 @@
-using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.Emission.Planning;
+using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Naming;
+using BigInt = System.Numerics.BigInteger;
 
 namespace Wireloom.Compiler.Emission.Emitters;
 
@@ -31,6 +33,11 @@ internal static class CollectionAliasManagedEmitter
         if (plan.IsSequence)
         {
             var sequenceSummary = $"Gets the sequence value represented by this typedef.{(declaration.Bound is int bound ? $" Its maximum number of elements is <c>{bound}</c>." : string.Empty)}";
+            var elementConstraints = MemberEmissionRenderer.NestedCollectionConstraintSummary(plan.ElementPlan);
+            if (elementConstraints is not null)
+            {
+                sequenceSummary += $" {elementConstraints}";
+            }
             writer.WriteXmlSummary(sequenceSummary);
             writer.WriteXmlRemarks("Use the mutable sequence instance to add or remove elements; the property itself is getter-only. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.");
             writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html", "RTI Connext 7.7.0 ISequence API");
@@ -102,7 +109,7 @@ internal static class CollectionAliasManagedEmitter
             writer.WriteLine($"public {arrayType} Value {{ get; set; }} = new {elementReference}[{string.Join(", ", declaration.Dimensions)}];");
             writer.BlankLine();
 
-            var arrayElementCount = declaration.Dimensions.Aggregate(1, (count, dimension) => count * dimension);
+            var arrayElementCount = declaration.Dimensions.Aggregate(BigInt.One, (count, dimension) => count * dimension);
             writer.WriteXmlSummary($"Initializes a fixed-size array typedef with dimensions {string.Join(" × ", declaration.Dimensions)} ({arrayElementCount} elements); each element starts at its default value.");
             writer.OpenBlock($"public {typeName}()");
 
@@ -193,7 +200,7 @@ internal static class CollectionAliasManagedEmitter
             var valueSummary = "Gets or sets the value represented by this typedef.";
             if (declaration is { IsString: true, IsStringBounded: true })
             {
-                valueSummary += $" Its IDL bound is <c>{declaration.StringBound}</c> characters.";
+                valueSummary += $" Its IDL bound is <c>{declaration.StringBound}</c> {MemberEmissionRenderer.StringBoundUnit(declaration.IsWideString)}.";
             }
 
             writer.WriteXmlSummary(valueSummary);
@@ -201,10 +208,10 @@ internal static class CollectionAliasManagedEmitter
             if (declaration.IsString)
             {
                 var stringKind = declaration.IsWideString ? "wide" : "narrow";
-                var encoding = declaration.IsWideString ? "UTF-16" : "UTF-8";
+                var unit = MemberEmissionRenderer.StringBoundUnit(declaration.IsWideString);
                 var stringRemarks = declaration.IsStringBounded
-                    ? $"The bound on this {stringKind} IDL string counts characters. RTI encodes {stringKind} IDL strings as {encoding} by default. The generated C# property does not check the bound when assigned."
-                    : $"This unbounded {stringKind} IDL string has an effective limit of 255 characters. RTI encodes {stringKind} IDL strings as {encoding} by default. The generated C# property does not enforce the effective limit when assigned.";
+                    ? $"The bound on this {stringKind} IDL string is measured in {unit}. The generated C# property does not check the bound when assigned."
+                    : $"This unbounded {stringKind} IDL string has an effective limit of 255 {unit}. The generated C# property does not enforce the effective limit when assigned.";
                 writer.WriteXmlRemarks(stringRemarks);
                 writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", "RTI Connext 7.7.0 string and wide-string bounds");
             }

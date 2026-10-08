@@ -15,9 +15,9 @@ namespace CorpusIntegrationTrace;
 public partial class Producer : global::System.IEquatable<Producer>
 {
     /// <summary>
-    /// Gets or sets the value represented by this typedef. Its IDL bound is <c>16</c> characters.
+    /// Gets or sets the value represented by this typedef. Its IDL bound is <c>16</c> UTF-8 bytes.
     /// </summary>
-    /// <remarks>The bound on this narrow IDL string counts characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not check the bound when assigned.</remarks>
+    /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
     [Bound(16)]
     public string Value { get; set; } = string.Empty;

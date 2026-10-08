@@ -174,10 +174,10 @@ internal static class UnionEmitter
         if (branch.Plan.IsString)
         {
             var stringKind = branch.Plan.IsWideString ? "wide" : "narrow";
-            var encoding = branch.Plan.IsWideString ? "UTF-16" : "UTF-8";
+            var unit = MemberEmissionRenderer.StringBoundUnit(branch.Plan.IsWideString);
             branchRemarks += branch.Plan.IsBoundedString
-                ? $" The bound on this {stringKind} IDL string counts characters. RTI encodes {stringKind} IDL strings as {encoding} by default. The generated C# property does not check the bound when assigned."
-                : $" This unbounded {stringKind} IDL string has an effective limit of 255 characters. RTI encodes {stringKind} IDL strings as {encoding} by default. The generated C# property does not enforce the effective limit when assigned.";
+                ? $" The bound on this {stringKind} IDL string is measured in {unit}. The generated C# property does not check the bound when assigned."
+                : $" This unbounded {stringKind} IDL string has an effective limit of 255 {unit}. The generated C# property does not enforce the effective limit when assigned.";
         }
 
         writer.WriteXmlRemarks(branchRemarks);

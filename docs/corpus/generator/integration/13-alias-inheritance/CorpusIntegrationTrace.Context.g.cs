@@ -15,18 +15,18 @@ namespace CorpusIntegrationTrace;
 public partial class Context : global::System.IEquatable<Context>
 {
     /// <summary>
-    /// Gets or sets the <c>correlation</c> member. Its maximum length is <c>32</c> characters.
+    /// Gets or sets the <c>correlation</c> member. Its maximum length is <c>32</c> UTF-8 bytes.
     /// </summary>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
-    /// <remarks>The bound on this narrow IDL string counts characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not check the bound when assigned.</remarks>
+    /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(32)]
     public string correlation { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the <c>producer</c> member. This member is optional. Its maximum length is <c>16</c> characters. A null value means the member is absent.
+    /// Gets or sets the <c>producer</c> member. This member is optional. Its maximum length is <c>16</c> UTF-8 bytes. A null value means the member is absent.
     /// </summary>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
-    /// <remarks>The bound on this narrow IDL string counts characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not check the bound when assigned.</remarks>
+    /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>
     /// <example>
     /// <code>
     /// var sample = new Context();

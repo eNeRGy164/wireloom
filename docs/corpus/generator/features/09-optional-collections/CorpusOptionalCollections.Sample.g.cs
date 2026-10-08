@@ -22,6 +22,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <example>
     /// <code>
     /// var sample = new Sample();
+    /// sample.values = new Sequence&lt;int&gt;();
     /// sample.values.Add(default!);
     /// sample.values.RemoveAt(sample.values.Count - 1);
     /// </code>
