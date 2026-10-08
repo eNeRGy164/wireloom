@@ -14,9 +14,6 @@ using Rti.Types.Dynamic;
 namespace CorpusEnumValuePrefix.Implementation;
 
 /// <summary>
-/// Provides the RTI interpreted type plugin for <see cref="Annotated"/>.
-/// </summary>
-/// <summary>
 /// Provides the RTI runtime plugin for the <see cref="Annotated"/> enumeration. This implementation detail is not intended for application code.
 /// </summary>
 internal class AnnotatedPlugin : EnumTypePlugin

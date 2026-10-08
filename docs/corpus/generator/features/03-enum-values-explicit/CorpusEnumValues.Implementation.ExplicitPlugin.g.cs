@@ -14,9 +14,6 @@ using Rti.Types.Dynamic;
 namespace CorpusEnumValues.Implementation;
 
 /// <summary>
-/// Provides the RTI interpreted type plugin for <see cref="Explicit"/>.
-/// </summary>
-/// <summary>
 /// Provides the RTI runtime plugin for the <see cref="Explicit"/> enumeration. This implementation detail is not intended for application code.
 /// </summary>
 internal class ExplicitPlugin : EnumTypePlugin

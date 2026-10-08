@@ -10,7 +10,7 @@ using Rti.Types;
 namespace CorpusShortUnion;
 
 /// <summary>
-/// Represents the <c>Choice</c> DDS union declared in <c>07-union-short.idl</c>. The discriminator selects a branch when it matches a declared label; otherwise, no branch is active.
+/// Represents the <c>Choice</c> DDS union declared in <c>07-union-short.idl</c>. The discriminator selects a branch when it matches a declared label. An unmatched discriminator selects the default branch <see cref="other"/>.
 /// </summary>
 public partial class Choice : global::System.IEquatable<Choice>
 {
@@ -55,8 +55,9 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// <summary>
     /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>2</c>.
     /// </summary>
-    /// <remarks>Reading this property while another branch is active throws <see cref="global::System.InvalidOperationException"/>. Assigning it stores the value and changes <see cref="Discriminator"/> to a label for this branch.</remarks>
+    /// <remarks>Reading this property while another branch is active throws <see cref="global::System.InvalidOperationException"/>. Assigning it stores the value and changes <see cref="Discriminator"/> to a label for this branch. This unbounded narrow IDL string has an effective limit of 255 characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not enforce the effective limit when assigned.</remarks>
     /// <exception cref="global::System.InvalidOperationException">The discriminator selects another branch or selects no branch.</exception>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
     [Bound(255)]
     public string text
     {
@@ -81,7 +82,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// Gets or sets the default union branch, selected when the discriminator does not match an explicit case.
     /// </summary>
     /// <remarks>Reading this property while another branch is active throws <see cref="global::System.InvalidOperationException"/>. Assigning it stores the value and changes <see cref="Discriminator"/> to a label for this branch.</remarks>
-    /// <exception cref="global::System.InvalidOperationException">The discriminator selects another branch or selects no branch.</exception>
+    /// <exception cref="global::System.InvalidOperationException">The discriminator selects an explicit branch.</exception>
     public bool other
     {
         get
@@ -102,7 +103,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     }
 
     /// <summary>
-    /// Initializes a new union with its RTI default discriminator. A branch is active only when that discriminator matches a declared label or selects the default branch.
+    /// Initializes a new union with its RTI default discriminator. The discriminator selects a branch matching a declared label or falls back to the default branch <see cref="other"/>.
     /// </summary>
     public Choice()
     {
@@ -158,7 +159,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// <summary>
     /// Gets the value of the currently active union branch, if any.
     /// </summary>
-    /// <returns>The concrete value of the active branch, or <see langword="null"/> when the discriminator selects no declared branch.</returns>
+    /// <returns>The concrete value of the active branch, including the default branch <see cref="other"/> when no explicit label matches.</returns>
     public object? Get()
     {
         return Discriminator switch
@@ -183,7 +184,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     }
 
     /// <summary>
-    /// Determines whether this union has the same discriminator and active branch value as <paramref name="other"/>. When neither discriminator selects a branch, equality depends on the discriminator alone.
+    /// Determines whether this union has the same discriminator and active branch value as <paramref name="other"/>.
     /// </summary>
     /// <param name="other">The union to compare.</param>
     /// <returns><see langword="true"/> when both unions select equal values; otherwise <see langword="false"/>.</returns>

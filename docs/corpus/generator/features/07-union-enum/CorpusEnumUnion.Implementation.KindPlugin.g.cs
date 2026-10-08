@@ -14,9 +14,6 @@ using Rti.Types.Dynamic;
 namespace CorpusEnumUnion.Implementation;
 
 /// <summary>
-/// Provides the RTI interpreted type plugin for <see cref="Kind"/>.
-/// </summary>
-/// <summary>
 /// Provides the RTI runtime plugin for the <see cref="Kind"/> enumeration. This implementation detail is not intended for application code.
 /// </summary>
 internal class KindPlugin : EnumTypePlugin
