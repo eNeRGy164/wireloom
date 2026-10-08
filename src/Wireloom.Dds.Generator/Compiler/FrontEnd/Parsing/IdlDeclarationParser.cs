@@ -302,15 +302,14 @@ internal sealed class IdlDeclarationParser
                     }
                 }
 
-                continue;
+                // Let the for-loop advance from the closing quote to the next character.
+                index--;
             }
-
-            if (text[index] == '{')
+            else if (text[index] == '{')
             {
                 depth++;
             }
-
-            if (text[index] == '}' && --depth == 0)
+            else if (text[index] == '}' && --depth == 0)
             {
                 return index;
             }
@@ -337,11 +336,7 @@ internal sealed class IdlDeclarationParser
 
     private static bool HasCharacterLiteralPrefix(string text, int quoteIndex)
     {
-        if (quoteIndex == 0)
-        {
-            return false;
-        }
-
+        // The caller scans from a module's opening brace, so a quote is never at index zero.
         var prefixCharacter = text[quoteIndex - 1];
         if (prefixCharacter is 'L' or 'u' or 'U')
         {
