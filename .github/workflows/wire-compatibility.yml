@@ -39,16 +39,18 @@ jobs:
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             ca-certificates ccache cmake curl g++ make python3
 
-      - name: Cache C++ compiler outputs
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - name: Restore C++ compiler outputs
+        id: ccache-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /root/.cache/ccache
           key: ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
             ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-
 
-      - name: Cache NuGet packages
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - name: Restore NuGet packages
+        id: nuget-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /root/.nuget/packages
           key: nuget-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ hashFiles('Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json', 'src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj', 'tests/Wireloom.Dds.Generator.WireCompatibility/Wireloom.Dds.Generator.WireCompatibility.csproj') }}
@@ -83,6 +85,20 @@ jobs:
 
       - name: Run 7.7.0 wire matrix
         run: bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.sh
+
+      - name: Save C++ compiler outputs
+        if: always() && steps.ccache-cache.outcome == 'success' && steps.ccache-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /root/.cache/ccache
+          key: ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Save NuGet packages
+        if: always() && steps.nuget-cache.outcome == 'success' && steps.nuget-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /root/.nuget/packages
+          key: nuget-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ hashFiles('Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json', 'src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj', 'tests/Wireloom.Dds.Generator.WireCompatibility/Wireloom.Dds.Generator.WireCompatibility.csproj') }}
 
       - name: Publish wire matrix summary
         if: always()
