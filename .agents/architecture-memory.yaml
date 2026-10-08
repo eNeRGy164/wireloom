@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-08T05:27:27Z
+  generated_at: 2026-10-08T09:46:53Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -47,7 +47,7 @@ summary:
     sources:
       - docs/architecture/arc42/04-solution-strategy.md
   building_blocks:
-    text: Separate Roslyn hosting, input graph and preprocessing, explicit parse-bind-validate front-end phases, compilation orchestration and resolution, emission models and plans, and output emitters. Aggregate members declared through struct or union typedef chains use the underlying aggregate type in generated member APIs and native conversions while standalone typedef declarations remain generated.
+    text: Separate Roslyn hosting, input graph and preprocessing, explicit parse-bind-validate front-end phases, compilation orchestration and resolution, emission models and plans, and output emitters. Aggregate members and raw array or sequence elements declared through struct or union typedef chains use the underlying aggregate type in generated APIs and native conversions while standalone typedef declarations remain generated.
     sources:
       - docs/architecture/arc42/05-building-block-view.md
   runtime:

@@ -178,14 +178,14 @@ internal static class EmissionTypeProjector
 
     private static SequenceEmissionType ProjectSequence(IdlType.Sequence sequence, string? currentNamespace)
     {
-        var element = ProjectType(sequence.Element, currentNamespace);
+        var element = ProjectMemberType(sequence.Element, currentNamespace);
 
         return new SequenceEmissionType(element, sequence.Bound ?? 100, $"ISequence<{element.CSharpType}>", sequence.Dimensions);
     }
 
     private static ArrayEmissionType ProjectArray(IdlType.Array array, string? currentNamespace)
     {
-        var element = ProjectType(array.Element, currentNamespace);
+        var element = ProjectMemberType(array.Element, currentNamespace);
 
         return new ArrayEmissionType(element, array.Dimensions, BuildArrayType(element.CSharpType, array.Dimensions));
     }

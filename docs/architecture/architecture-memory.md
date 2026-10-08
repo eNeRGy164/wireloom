@@ -26,9 +26,10 @@ or ADRs first, then refresh this file and
 - **Building blocks:** The pipeline separates Roslyn hosting, input graph and
   preprocessing, front-end parsing and semantics, compilation orchestration and
   resolution, emission models and plans, and managed/native/support emitters.
-  Aggregate members declared through struct or union typedef chains use the
-  underlying aggregate type in generated member APIs and native conversions;
-  standalone typedef declarations remain generated. Parsing, binding, and
+  Aggregate members and raw collection elements declared through struct or
+  union typedef chains use the underlying aggregate type in generated APIs and
+  native conversions; standalone typedef declarations remain generated.
+  Parsing, binding, and
   validation are explicit front-end phases, and chapter 5 includes a level-2
   zoom of the compiler and preprocessing boundary.
   See [chapter 5](arc42/05-building-block-view.md).
