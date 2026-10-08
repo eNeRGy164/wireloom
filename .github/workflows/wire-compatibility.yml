@@ -24,6 +24,7 @@ jobs:
       WIRE_COMPATIBILITY_RTI_VERSION: 7.7.0
       WIRE_COMPATIBILITY_OUTPUT_DIR: artifacts/wire-compatibility
       RTI_LICENSE_FILE: /tmp/rti_license.dat
+      NUGET_PACKAGES: /root/.nuget/packages
       CCACHE_DIR: /root/.cache/ccache
       CCACHE_MAXSIZE: 2G
     steps:
@@ -42,22 +43,22 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /root/.cache/ccache
-          key: ccache-linux-rti-7.7.0-${{ github.run_id }}-${{ github.run_attempt }}
+          key: ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            ccache-linux-rti-7.7.0-
+            ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-
+
+      - name: Cache NuGet packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /root/.nuget/packages
+          key: nuget-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ hashFiles('Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json', 'src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj', 'tests/Wireloom.Dds.Generator.WireCompatibility/Wireloom.Dds.Generator.WireCompatibility.csproj') }}
+          restore-keys: |
+            nuget-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-
 
       - name: Set up .NET 10
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: 10.0.400
-          cache: true
-          cache-dependency-path: |
-            Directory.Build.props
-            Directory.Packages.props
-            NuGet.config
-            global.json
-            src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
-            tests/Wireloom.Dds.Generator.WireCompatibility/Wireloom.Dds.Generator.WireCompatibility.csproj
 
       - name: Provide runtime RTI license file
         shell: bash
