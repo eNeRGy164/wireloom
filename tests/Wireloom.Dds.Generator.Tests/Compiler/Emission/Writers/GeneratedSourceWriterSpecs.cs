@@ -44,4 +44,17 @@ public sealed class GeneratedSourceWriterSpecs
 
         source.ShouldBe(expected);
     }
+
+    [Fact]
+    public void EscapesCodeInsideXmlDocumentationExamples()
+    {
+        // Arrange
+        var writer = new GeneratedSourceWriter(null, [], "sample.idl");
+
+        // Act
+        writer.WriteXmlExample("if (value < 2 && value > 0) { }");
+
+        // Assert
+        writer.ToString().ShouldContain("/// if (value &lt; 2 &amp;&amp; value &gt; 0) { }");
+    }
 }

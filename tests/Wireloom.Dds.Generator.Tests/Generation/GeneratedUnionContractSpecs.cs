@@ -30,7 +30,10 @@ public sealed class GeneratedUnionContractSpecs
         managed.ShouldContain("public void Setnumber(int value, int discriminator)");
         managed.ShouldContain("Discriminator != 1 && Discriminator != 5");
         managed.ShouldContain("Assigning the <c>number</c> property selects the first label listed in its documentation.");
-        managed.ShouldContain("The concrete value of the active branch, or <see langword=\"null\"/> when the discriminator selects no declared branch.");
+        managed.ShouldContain("An unmatched discriminator selects the default branch <see cref=\"text\"/>.");
+        managed.ShouldContain("falls back to the default branch <see cref=\"text\"/>.");
+        managed.ShouldContain("The concrete value of the active branch, including the default branch <see cref=\"text\"/> when no explicit label matches.");
+        managed.ShouldContain("<exception cref=\"global::System.InvalidOperationException\">The discriminator selects an explicit branch.</exception>");
         managed.ShouldContain("Reading this property while another branch is active throws <see cref=\"global::System.InvalidOperationException\"/>.");
         managed.ShouldContain("choice.Setnumber(default!, 1);");
         managed.ShouldContain("<exception cref=\"global::System.ArgumentException\">");
@@ -44,6 +47,30 @@ public sealed class GeneratedUnionContractSpecs
 
         var choiceSupport = documents["MultiLabel.ChoiceSupport.g.cs"].Source;
         choiceSupport.ShouldContain("TypeSupport<Choice>");
+    }
+
+    [Fact]
+    public void CharacterUnionLabelsAreEscapedInXmlDocumentation()
+    {
+        // Arrange
+        var input = Input("character-label.idl",
+            """
+            module CharacterLabel {
+                union Choice switch(char) {
+                    case '&': case '+': long symbol;
+                    default: long other;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["CharacterLabel.Choice.g.cs"].Source;
+        managed.ShouldContain("<c>'&amp;', '+'</c>");
+        managed.ShouldContain("choice.Setsymbol(default!, '&amp;');");
+        managed.ShouldNotContain("<c>'&'</c>");
     }
 
     [Fact]
@@ -236,8 +263,24 @@ public sealed class GeneratedUnionContractSpecs
         var managed = CompileSources(input)["Choice.g.cs"].Source;
 
         // Assert
+        managed.ShouldContain("An unmatched discriminator selects the default branch <see cref=\"value\"/>.");
+        managed.ShouldContain("falls back to the default branch <see cref=\"value\"/>.");
         managed.ShouldContain("if (false)");
         managed.ShouldNotContain("if ()");
+    }
+
+    [Fact]
+    public void UnmatchedDiscriminatorsWithoutDefaultBranchesAreDocumentedAsInactive()
+    {
+        // Arrange
+        var input = Input("unmatched-union.idl", "union Choice switch(long) { case 1: long value; };");
+
+        // Act
+        var managed = CompileSources(input)["Choice.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("If it matches no declared label, no branch is active.");
+        managed.ShouldContain("If the default discriminator matches no declared label, no branch is active.");
     }
 
     [Fact]

@@ -89,7 +89,7 @@ internal sealed class GeneratedSourceWriter
 
         foreach (var line in code.Split('\n'))
         {
-            WriteLine($"/// {line}");
+            WriteLine($"/// {XmlDocumentationEscaping.EscapeText(line)}");
         }
 
         WriteLine("/// </code>");

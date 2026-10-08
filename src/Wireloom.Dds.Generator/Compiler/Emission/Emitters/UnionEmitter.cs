@@ -19,9 +19,24 @@ internal static class UnionEmitter
         var typeName = names.ManagedTypeName;
         var defaultBranch = declaration.DefaultBranch;
 
+        string branchSelectionSummary;
+        if (defaultBranch is not null)
+        {
+            branchSelectionSummary = $" An unmatched discriminator selects the default branch <see cref=\"{IdlNaming.EscapeIdentifier(defaultBranch.Field.Name)}\"/>.";
+        }
+        else if (declaration.IsExhaustiveBoolean)
+        {
+            branchSelectionSummary = " Every discriminator value selects a declared branch.";
+        }
+        else
+        {
+            branchSelectionSummary = " If it matches no declared label, no branch is active.";
+        }
+
+
         var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.DataTypeUsings, sourceIdlFileName);
 
-        writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> DDS union declared in <c>{sourceIdlFileName}</c>. The discriminator selects a branch when it matches a declared label; otherwise, no branch is active.");
+        writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> DDS union declared in <c>{sourceIdlFileName}</c>. The discriminator selects a branch when it matches a declared label.{branchSelectionSummary}");
         writer.OpenBlock($"public partial class {typeName} : global::System.IEquatable<{typeName}>");
 
         foreach (var branch in declaration.Branches)
@@ -56,7 +71,21 @@ internal static class UnionEmitter
 
         writer.BlankLine();
 
-        writer.WriteXmlSummary("Initializes a new union with its RTI default discriminator. A branch is active only when that discriminator matches a declared label or selects the default branch.");
+        string constructorBranchSummary;
+        if (defaultBranch is not null)
+        {
+            constructorBranchSummary = $"The discriminator selects a branch matching a declared label or falls back to the default branch <see cref=\"{IdlNaming.EscapeIdentifier(defaultBranch.Field.Name)}\"/>.";
+        }
+        else if (declaration.IsExhaustiveBoolean)
+        {
+            constructorBranchSummary = "The default discriminator selects a declared branch.";
+        }
+        else
+        {
+            constructorBranchSummary = "If the default discriminator matches no declared label, no branch is active.";
+        }
+
+        writer.WriteXmlSummary($"Initializes a new union with its RTI default discriminator. {constructorBranchSummary}");
         writer.OpenBlock($"public {typeName}()");
         writer.WriteLine("Discriminator = DefaultDiscriminator;");
         writer.CloseBlock();
@@ -83,7 +112,10 @@ internal static class UnionEmitter
         }
 
         writer.WriteXmlSummary("Gets the value of the currently active union branch, if any.");
-        writer.WriteXmlReturns("The concrete value of the active branch, or <see langword=\"null\"/> when the discriminator selects no declared branch.");
+        var getReturns = defaultBranch is null
+            ? "The concrete value of the active branch, or <see langword=\"null\"/> when the discriminator selects no declared branch."
+            : $"The concrete value of the active branch, including the default branch <see cref=\"{IdlNaming.EscapeIdentifier(defaultBranch.Field.Name)}\"/> when no explicit label matches.";
+        writer.WriteXmlReturns(getReturns);
         writer.OpenBlock("public object? Get()");
         EmitUnionReturnSwitch(writer, declaration);
         writer.CloseBlock();
@@ -95,7 +127,10 @@ internal static class UnionEmitter
         writer.CloseBlock();
         writer.BlankLine();
 
-        writer.WriteXmlSummary("Determines whether this union has the same discriminator and active branch value as <paramref name=\"other\"/>. When neither discriminator selects a branch, equality depends on the discriminator alone.");
+        var equalitySummary = defaultBranch is null
+            ? "Determines whether this union has the same discriminator and active branch value as <paramref name=\"other\"/>. When neither discriminator selects a branch, equality depends on the discriminator alone."
+            : "Determines whether this union has the same discriminator and active branch value as <paramref name=\"other\"/>.";
+        writer.WriteXmlSummary(equalitySummary);
         writer.WriteXmlParam("other", "The union to compare.");
         writer.WriteXmlReturns("<see langword=\"true\"/> when both unions select equal values; otherwise <see langword=\"false\"/>.");
         writer.OpenBlock($"public bool Equals({typeName}? other)");
@@ -132,11 +167,29 @@ internal static class UnionEmitter
         writer.BlankLine();
         var branchSummary = branch.IsDefault
             ? "Gets or sets the default union branch, selected when the discriminator does not match an explicit case."
-            : $"Gets or sets the union branch selected when <see cref=\"Discriminator\"/> is one of: <c>{string.Join(", ", branch.Labels)}</c>.";
+            : $"Gets or sets the union branch selected when <see cref=\"Discriminator\"/> is one of: <c>{XmlDocumentationEscaping.EscapeText(string.Join(", ", branch.Labels))}</c>.";
 
         writer.WriteXmlSummary(branchSummary);
-        writer.WriteXmlRemarks("Reading this property while another branch is active throws <see cref=\"global::System.InvalidOperationException\"/>. Assigning it stores the value and changes <see cref=\"Discriminator\"/> to a label for this branch.");
-        writer.WriteXmlException("global::System.InvalidOperationException", "The discriminator selects another branch or selects no branch.");
+        var branchRemarks = "Reading this property while another branch is active throws <see cref=\"global::System.InvalidOperationException\"/>. Assigning it stores the value and changes <see cref=\"Discriminator\"/> to a label for this branch.";
+        if (branch.Plan.IsString)
+        {
+            var stringKind = branch.Plan.IsWideString ? "wide" : "narrow";
+            var encoding = branch.Plan.IsWideString ? "UTF-16" : "UTF-8";
+            branchRemarks += branch.Plan.IsBoundedString
+                ? $" The bound on this {stringKind} IDL string counts characters. RTI encodes {stringKind} IDL strings as {encoding} by default. The generated C# property does not check the bound when assigned."
+                : $" This unbounded {stringKind} IDL string has an effective limit of 255 characters. RTI encodes {stringKind} IDL strings as {encoding} by default. The generated C# property does not enforce the effective limit when assigned.";
+        }
+
+        writer.WriteXmlRemarks(branchRemarks);
+        var branchException = branch.IsDefault
+            ? "The discriminator selects an explicit branch."
+            : "The discriminator selects another branch or selects no branch.";
+        writer.WriteXmlException("global::System.InvalidOperationException", branchException);
+
+        if (branch.Plan.IsString)
+        {
+            writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", "RTI Connext 7.7.0 string and wide-string bounds");
+        }
 
         if (branch.Plan.Bound is int bound)
         {
