@@ -527,6 +527,27 @@ public sealed class GeneratorSpecs
         documentationWarnings.ShouldBeEmpty();
     }
 
+    [Fact]
+    public void ArrayTypedefAtNativeDimensionLimitCompilesEveryGeneratedDocument()
+    {
+        // Arrange
+        const string input = "module Arrays { typedef long Grid[2147483647]; };";
+
+        // Act
+        var result = Run(
+            input,
+            LanguageVersion.CSharp12,
+            new Dictionary<string, string> { ["Generate"] = "true" },
+            includeRuntime: true,
+            documentationMode: DocumentationMode.Diagnose);
+        var errors = result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+
+        // Assert
+        errors.ShouldBeEmpty();
+    }
+
     private static GeneratorRunResult Run(
         string input,
         LanguageVersion languageVersion,
