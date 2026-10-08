@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusEnums.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the ColorAlias typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class ColorAliasPlugin : InterpretedTypePlugin<ColorAlias, ColorAliasUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="ColorAlias"/>.
+    /// </summary>
     internal ColorAliasPlugin() : base("CorpusEnums.ColorAlias", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

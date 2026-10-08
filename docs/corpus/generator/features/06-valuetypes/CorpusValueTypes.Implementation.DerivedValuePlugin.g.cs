@@ -18,6 +18,9 @@ namespace CorpusValueTypes.Implementation;
 /// </summary>
 internal class DerivedValuePlugin : InterpretedTypePlugin<DerivedValue, DerivedValueUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="DerivedValue"/>.
+    /// </summary>
     internal DerivedValuePlugin() : base("CorpusValueTypes.DerivedValue", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

@@ -11,8 +11,18 @@ using Rti.Types.Dynamic;
 namespace CorpusValueTypes;
 
 /// <summary>
-/// Provides RTI Connext DDS type support for <see cref="Holder"/>.
+/// Provides application-facing formatting, serialization, and dynamic-type utilities for <see cref="Holder"/>. RTI uses its internal plugin and native representation to process samples.
 /// </summary>
+/// <remarks>The referenced API documentation targets RTI Connext 7.7.0, Wireloom's current compatibility baseline. Verify API details against the runtime version used by the consuming project.</remarks>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Dds_1_1Topics_1_1TypeSupport.html">RTI Connext C# TypeSupport API (7.7.0)</seealso>
+/// <example>
+/// <code>
+/// var sample = new Holder();
+/// var text = HolderSupport.Instance.ToString(sample);
+/// var dynamicType = HolderSupport.Instance.DynamicType;
+/// var serializer = HolderSupport.Instance.CreateSerializer();
+/// </code>
+/// </example>
 public class HolderSupport : TypeSupport<Holder>
 {
     /// <summary>
@@ -25,8 +35,9 @@ public class HolderSupport : TypeSupport<Holder>
     }
 
     /// <summary>
-    /// Gets the cached RTI Connext DDS type-support instance.
+    /// Gets the shared type-support instance used by the generated utilities and DDS APIs for this type.
     /// </summary>
+    /// <remarks>Use this property to format or serialize samples and to inspect the dynamic type. The generated plugin and unmanaged type are runtime implementation details.</remarks>
     public static HolderSupport Instance { get; } =
         ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<HolderSupport, Holder>();
 }

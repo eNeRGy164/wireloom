@@ -18,6 +18,9 @@ namespace Implementation;
 /// </summary>
 internal class CorpusIntegrationMessagePlugin : InterpretedTypePlugin<global::CorpusIntegrationMessage, CorpusIntegrationMessageUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="CorpusIntegrationMessage"/>.
+    /// </summary>
     internal CorpusIntegrationMessagePlugin() : base("CorpusIntegrationMessage", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

@@ -18,6 +18,9 @@ namespace CorpusEnumUnion.Implementation;
 /// </summary>
 internal class ChoicePlugin : InterpretedTypePlugin<Choice, ChoiceUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Choice"/>.
+    /// </summary>
     internal ChoicePlugin() : base("CorpusEnumUnion.Choice", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

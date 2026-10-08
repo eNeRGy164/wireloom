@@ -10,12 +10,12 @@ using Rti.Types;
 namespace CorpusValueTypes;
 
 /// <summary>
-/// Represents the <c>BaseValue</c> DDS type declared in <c>06-valuetypes.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>BaseValue</c> DDS type declared in <c>06-valuetypes.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class BaseValue : global::System.IEquatable<BaseValue>
 {
     /// <summary>
-    /// Gets or sets the <c>baseValue</c> member.
+    /// Gets or sets the <c>baseValue</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int baseValue { get; set; }
 
@@ -39,6 +39,13 @@ public partial class BaseValue : global::System.IEquatable<BaseValue>
     /// Initializes a copy of the specified <see cref="BaseValue"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new BaseValue();
+    /// var copy = new BaseValue(original);
+    /// </code>
+    /// </example>
     public BaseValue(BaseValue? other)
     {
         if (other is null)
@@ -83,8 +90,8 @@ public partial class BaseValue : global::System.IEquatable<BaseValue>
     public override bool Equals(object? obj) => Equals(obj as BaseValue);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => BaseValueSupport.Instance.ToString(this);
 }

@@ -18,6 +18,9 @@ namespace CorpusIntegrationTrace.Implementation;
 /// </summary>
 internal class BasePlugin : InterpretedTypePlugin<Base, BaseUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Base"/>.
+    /// </summary>
     internal BasePlugin() : base("CorpusIntegrationTrace.Base", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

@@ -18,6 +18,9 @@ namespace CorpusInheritedKeys.Implementation;
 /// </summary>
 internal class BasePlugin : InterpretedTypePlugin<Base, BaseUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Base"/>.
+    /// </summary>
     internal BasePlugin() : base("CorpusInheritedKeys.Base", isKeyed: true, CreateDynamicType(isPublic: false))
     {
     }

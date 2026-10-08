@@ -47,6 +47,7 @@ internal static class CollectionAliasNativeEmitter
             EmissionSupport.GetUnmanagedTypeUsings([plan.ElementPlan]),
             sourceIdlFileName);
 
+        writer.WriteXmlSummary($"Provides native storage and conversion operations for the {typeName} typedef. This type is used by RTI runtime integration and is not an application-facing value type.");
         writer.OpenBlock($"public struct {typeName}Unmanaged : INativeTopicType<{implementationTypeName}>");
 
         string? nativeElementType;

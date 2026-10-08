@@ -35,6 +35,7 @@ internal static class NativeTypeEmitter
 
         writer.WriteXmlSummary("Releases native resources held by this instance.");
         writer.WriteXmlParam("optionalsOnly", "Indicates whether only optional members should be released.");
+        writer.WriteXmlRemarks("This method releases resources owned by the generated native representation. Pass <see langword=\"true\"/> to release optional members only, or <see langword=\"false\"/> to release all members.");
         writer.OpenBlock("public void Destroy(bool optionalsOnly)");
 
         if (baseUnmanagedType is not null)
@@ -111,7 +112,8 @@ internal static class NativeTypeEmitter
 
         writer.WriteXmlSummary("Copies native values into a managed DDS sample.");
         writer.WriteXmlParam("sample", "The managed sample to populate.");
-        writer.WriteXmlParam("keysOnly", "Whether to copy only key members.");
+        writer.WriteXmlParam("keysOnly", "When the type has key members, whether to copy only those members.");
+        writer.WriteXmlRemarks("The operation copies values into <paramref name=\"sample\"/>. For an unkeyed type, all members are copied even when <paramref name=\"keysOnly\"/> is true.");
         writer.OpenBlock($"public void FromNative({typeName} sample, bool keysOnly = false)");
 
         if (baseUnmanagedType is not null)
@@ -150,6 +152,7 @@ internal static class NativeTypeEmitter
         writer.WriteXmlSummary("Initializes this native representation to its IDL default values.");
         writer.WriteXmlParam("allocatePointers", "Whether pointer members should be allocated.");
         writer.WriteXmlParam("allocateMemory", "Whether native memory should be allocated.");
+        writer.WriteXmlRemarks("Use this method to prepare native storage before conversion. Call <see cref=\"Destroy\"/> when the native representation is no longer needed.");
         writer.OpenBlock("public void Initialize(bool allocatePointers = true, bool allocateMemory = true)");
 
         if (baseUnmanagedType is not null)
@@ -181,7 +184,8 @@ internal static class NativeTypeEmitter
 
         writer.WriteXmlSummary("Copies a managed DDS sample into this native representation.");
         writer.WriteXmlParam("sample", "The managed sample to copy.");
-        writer.WriteXmlParam("keysOnly", "Whether to copy only key members.");
+        writer.WriteXmlParam("keysOnly", "When the type has key members, whether to copy only those members.");
+        writer.WriteXmlRemarks("The operation copies values from <paramref name=\"sample\"/> into native storage. For an unkeyed type, all members are copied even when <paramref name=\"keysOnly\"/> is true.");
         writer.OpenBlock($"public void ToNative({typeName} sample, bool keysOnly = false)");
 
         if (baseUnmanagedType is not null)

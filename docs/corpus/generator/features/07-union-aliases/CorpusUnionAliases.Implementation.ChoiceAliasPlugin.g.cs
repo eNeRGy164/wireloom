@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusUnionAliases.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the ChoiceAlias typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class ChoiceAliasPlugin : InterpretedTypePlugin<ChoiceAlias, ChoiceAliasUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="ChoiceAlias"/>.
+    /// </summary>
     internal ChoiceAliasPlugin() : base("CorpusUnionAliases.ChoiceAlias", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

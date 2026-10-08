@@ -10,17 +10,17 @@ using Rti.Types;
 namespace CorpusNames.Nested;
 
 /// <summary>
-/// Represents the <c>Point</c> DDS type declared in <c>02-names-constants.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>Point</c> DDS type declared in <c>02-names-constants.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Point : global::System.IEquatable<Point>
 {
     /// <summary>
-    /// Gets or sets the <c>x</c> member.
+    /// Gets or sets the <c>x</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int x { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>y</c> member.
+    /// Gets or sets the <c>y</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int y { get; set; }
 
@@ -46,6 +46,13 @@ public partial class Point : global::System.IEquatable<Point>
     /// Initializes a copy of the specified <see cref="Point"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Point();
+    /// var copy = new Point(original);
+    /// </code>
+    /// </example>
     public Point(Point? other)
     {
         if (other is null)
@@ -93,8 +100,8 @@ public partial class Point : global::System.IEquatable<Point>
     public override bool Equals(object? obj) => Equals(obj as Point);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => PointSupport.Instance.ToString(this);
 }

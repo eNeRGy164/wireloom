@@ -49,6 +49,8 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public bool HasManagedRange => MinimumValue is not null || MaximumValue is not null;
     public string ManagedBackingFieldName => managedBackingFieldName ?? EscapeIdentifier("_" + Name);
     public bool IsString => facts.IsString;
+    public bool IsWideString => facts.IsString && ValueType is StringEmissionType { IsWide: true };
+    public bool IsBoundedString => ValueType is StringEmissionType { IsBounded: true };
     public bool IsSequence => facts.IsSequence;
     public bool IsArray => facts.IsArray;
     public bool IsSequenceArray => IsSequence && Dimensions.Count > 0;

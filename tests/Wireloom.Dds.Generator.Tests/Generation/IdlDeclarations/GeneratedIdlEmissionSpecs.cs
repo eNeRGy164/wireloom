@@ -261,7 +261,7 @@ public sealed class GeneratedIdlEmissionSpecs
 
         // Assert
         var sample = documents["Annotations.Sample.g.cs"].Source;
-        sample.ShouldContain("It is marked as a DDS topic type.");
+        sample.ShouldContain("It is marked for use as a DDS topic data type; the annotation does not create a Topic or publish data.");
 
         var plugin = documents["Annotations.Implementation.SamplePlugin.g.cs"].Source;
         plugin.ShouldContain("isKeyed: true");

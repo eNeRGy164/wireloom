@@ -10,29 +10,29 @@ using Rti.Types;
 namespace CorpusEnums;
 
 /// <summary>
-/// Represents the <c>Record</c> DDS type declared in <c>03-enums-aliases.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>Record</c> DDS type declared in <c>03-enums-aliases.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Record : global::System.IEquatable<Record>
 {
     /// <summary>
-    /// Gets or sets the <c>value</c> member.
+    /// Gets or sets the <c>value</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int value { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>aliasValue</c> member.
+    /// Gets or sets the <c>aliasValue</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int aliasValue { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>color</c> member.
     /// </summary>
-    public Color color { get; set; } = Color.RED;
+    public Color color { get; set; } = global::CorpusEnums.Color.RED;
 
     /// <summary>
     /// Gets or sets the <c>aliasColor</c> member.
     /// </summary>
-    public Color aliasColor { get; set; } = Color.RED;
+    public Color aliasColor { get; set; } = global::CorpusEnums.Color.RED;
 
     /// <summary>
     /// Gets or sets the <c>colors</c> member. Its maximum number of elements is <c>3</c>.
@@ -43,6 +43,7 @@ public partial class Record : global::System.IEquatable<Record>
     /// <summary>
     /// Initializes a new instance of the <see cref="Record"/> class.
     /// </summary>
+    /// <remarks>nested aggregate members start as new instances.</remarks>
     public Record()
     {
     }
@@ -55,6 +56,7 @@ public partial class Record : global::System.IEquatable<Record>
     /// <param name="color">The value for the <c>color</c> member.</param>
     /// <param name="aliasColor">The value for the <c>aliasColor</c> member.</param>
     /// <param name="colors">The value for the <c>colors</c> member.</param>
+    /// <remarks>The constructor stores supplied reference-type member values as provided. It does not clone their arrays, sequences, or nested objects.</remarks>
     public Record(int value, int aliasValue, Color color, Color aliasColor, ColorSequence colors)
     {
         this.value = value;
@@ -68,6 +70,13 @@ public partial class Record : global::System.IEquatable<Record>
     /// Initializes a copy of the specified <see cref="Record"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Record();
+    /// var copy = new Record(original);
+    /// </code>
+    /// </example>
     public Record(Record? other)
     {
         if (other is null)
@@ -124,8 +133,8 @@ public partial class Record : global::System.IEquatable<Record>
     public override bool Equals(object? obj) => Equals(obj as Record);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => RecordSupport.Instance.ToString(this);
 }

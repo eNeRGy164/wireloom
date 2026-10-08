@@ -18,6 +18,9 @@ namespace CorpusNestedKeys.Implementation;
 /// </summary>
 internal class InnerPlugin : InterpretedTypePlugin<Inner, InnerUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Inner"/>.
+    /// </summary>
     internal InnerPlugin() : base("CorpusNestedKeys.Inner", isKeyed: true, CreateDynamicType(isPublic: false))
     {
     }

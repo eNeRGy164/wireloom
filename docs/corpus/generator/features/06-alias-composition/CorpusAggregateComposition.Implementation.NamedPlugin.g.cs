@@ -18,6 +18,9 @@ namespace CorpusAggregateComposition.Implementation;
 /// </summary>
 internal class NamedPlugin : InterpretedTypePlugin<Named, NamedUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Named"/>.
+    /// </summary>
     internal NamedPlugin() : base("CorpusAggregateComposition.Named", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

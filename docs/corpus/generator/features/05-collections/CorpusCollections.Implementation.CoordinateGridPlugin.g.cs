@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusCollections.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the CoordinateGrid typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class CoordinateGridPlugin : InterpretedTypePlugin<CoordinateGrid, CoordinateGridUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="CoordinateGrid"/>.
+    /// </summary>
     internal CoordinateGridPlugin() : base("CorpusCollections.CoordinateGrid", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

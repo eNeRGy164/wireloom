@@ -10,18 +10,20 @@ using Rti.Types;
 namespace CorpusDefaultExtensibility;
 
 /// <summary>
-/// Represents the <c>Message</c> DDS type declared in <c>09-default.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>Message</c> DDS type declared in <c>09-default.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Message : global::System.IEquatable<Message>
 {
     /// <summary>
-    /// Gets or sets the <c>id</c> member.
+    /// Gets or sets the <c>id</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int id { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>text</c> member. Its maximum length is <c>16</c>.
+    /// Gets or sets the <c>text</c> member. Its maximum length is <c>16</c> characters.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
+    /// <remarks>The bound on this narrow IDL string counts characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(16)]
     public string text { get; set; } = string.Empty;
 
@@ -47,6 +49,13 @@ public partial class Message : global::System.IEquatable<Message>
     /// Initializes a copy of the specified <see cref="Message"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Message();
+    /// var copy = new Message(original);
+    /// </code>
+    /// </example>
     public Message(Message? other)
     {
         if (other is null)
@@ -94,8 +103,8 @@ public partial class Message : global::System.IEquatable<Message>
     public override bool Equals(object? obj) => Equals(obj as Message);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => MessageSupport.Instance.ToString(this);
 }

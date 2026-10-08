@@ -32,6 +32,8 @@ internal static class CollectionAliasManagedEmitter
         {
             var sequenceSummary = $"Gets the sequence value represented by this typedef.{(declaration.Bound is int bound ? $" Its maximum number of elements is <c>{bound}</c>." : string.Empty)}";
             writer.WriteXmlSummary(sequenceSummary);
+            writer.WriteXmlRemarks("Use the mutable sequence instance to add or remove elements; the property itself is getter-only. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.");
+            writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html", "RTI Connext 7.7.0 ISequence API");
             writer.WriteLine($"[Bound({declaration.Bound ?? 0})]");
             writer.WriteLine($"public ISequence<{elementReference}> Value {{ get; }} = null!;");
             writer.BlankLine();
@@ -44,6 +46,7 @@ internal static class CollectionAliasManagedEmitter
 
             writer.WriteXmlSummary("Initializes the typedef with a sequence value.");
             writer.WriteXmlParam("Value", "The sequence value to store.");
+            writer.WriteXmlRemarks("The typedef stores the supplied sequence reference; it does not make a copy.");
             writer.OpenBlock($"public {typeName}(ISequence<{elementReference}> Value)");
             writer.WriteLine("this.Value = Value;");
             writer.CloseBlock();
@@ -51,6 +54,7 @@ internal static class CollectionAliasManagedEmitter
 
             writer.WriteXmlSummary("Initializes a copy of another sequence typedef.");
             writer.WriteXmlParam("other", "The typedef to copy.");
+            writer.WriteXmlRemarks("The constructor creates a new sequence container. If <paramref name=\"other\"/> is null, it returns without creating the sequence and <see cref=\"Value\"/> remains null.");
             writer.OpenBlock($"public {typeName}({typeName}? other)");
             writer.OpenBlock("if (other is null)");
             writer.WriteLine("return;");
@@ -72,6 +76,7 @@ internal static class CollectionAliasManagedEmitter
 
             writer.WriteXmlSummary("Determines whether this typedef has the same sequence values as <paramref name=\"other\"/>.");
             writer.WriteXmlParam("other", "The typedef to compare.");
+            writer.WriteXmlReturns("<see langword=\"true\"/> when both sequences contain equal values in the same order; otherwise, <see langword=\"false\"/>.");
             writer.OpenBlock($"public bool Equals({typeName}? other)");
             writer.WriteLine("return other is not null");
             writer.Indent();
@@ -84,7 +89,8 @@ internal static class CollectionAliasManagedEmitter
             writer.WriteLine($"public override bool Equals(object? obj) => Equals(obj as {typeName});");
             writer.BlankLine();
 
-            writer.WriteXmlSummary("Returns the RTI Connext DDS representation of this typedef.");
+            writer.WriteXmlSummary("Formats this typedef as readable text.");
+            writer.WriteXmlReturns("A readable string formatted by this typedef's type-support instance.");
             writer.WriteLine($"public override string ToString() => {typeName}Support.Instance.ToString(this);");
         }
         else if (plan.IsArray)
@@ -96,7 +102,8 @@ internal static class CollectionAliasManagedEmitter
             writer.WriteLine($"public {arrayType} Value {{ get; set; }} = new {elementReference}[{string.Join(", ", declaration.Dimensions)}];");
             writer.BlankLine();
 
-            writer.WriteXmlSummary("Initializes an empty array typedef.");
+            var arrayElementCount = declaration.Dimensions.Aggregate(1, (count, dimension) => count * dimension);
+            writer.WriteXmlSummary($"Initializes a fixed-size array typedef with dimensions {string.Join(" × ", declaration.Dimensions)} ({arrayElementCount} elements); each element starts at its default value.");
             writer.OpenBlock($"public {typeName}()");
 
             if (arrayElementIsAggregate)
@@ -109,6 +116,7 @@ internal static class CollectionAliasManagedEmitter
 
             writer.WriteXmlSummary("Initializes the typedef with an array value.");
             writer.WriteXmlParam("Value", "The array value to store.");
+            writer.WriteXmlRemarks("The typedef stores the supplied array reference; it does not make a copy.");
             writer.OpenBlock($"public {typeName}({arrayType} Value)");
             writer.WriteLine("this.Value = Value;");
             writer.CloseBlock();
@@ -116,6 +124,7 @@ internal static class CollectionAliasManagedEmitter
 
             writer.WriteXmlSummary("Initializes a copy of another array typedef.");
             writer.WriteXmlParam("other", "The typedef to copy.");
+            writer.WriteXmlRemarks($"The constructor creates a new array container{(arrayElementIsAggregate ? " and copies aggregate elements into new instances" : string.Empty)}. When <paramref name=\"other\"/> is null, the initially allocated array remains in place.");
             writer.OpenBlock($"public {typeName}({typeName}? other)");
             writer.OpenBlock("if (other is null)");
             writer.WriteLine("return;");
@@ -144,6 +153,7 @@ internal static class CollectionAliasManagedEmitter
 
             writer.WriteXmlSummary("Determines whether this typedef has the same array values as <paramref name=\"other\"/>.");
             writer.WriteXmlParam("other", "The typedef to compare.");
+            writer.WriteXmlReturns("<see langword=\"true\"/> when both arrays have the same dimensions and equal values; otherwise, <see langword=\"false\"/>.");
             writer.OpenBlock($"public bool Equals({typeName}? other)");
             writer.OpenBlock("if (other is null)");
             writer.WriteLine("return false;");
@@ -174,13 +184,20 @@ internal static class CollectionAliasManagedEmitter
             writer.WriteLine($"public override bool Equals(object? obj) => Equals(obj as {typeName});");
             writer.BlankLine();
 
-            writer.WriteXmlSummary("Returns the RTI Connext DDS representation of this typedef.");
+            writer.WriteXmlSummary("Formats this typedef as readable text.");
+            writer.WriteXmlReturns("A readable string formatted by this typedef's type-support instance.");
             writer.WriteLine($"public override string ToString() => {typeName}Support.Instance.ToString(this);");
         }
         else
         {
-            var valueSummary = $"Gets or sets the value represented by this typedef.{(declaration.IsString ? $" Its maximum length is <c>{declaration.StringBound}</c>." : string.Empty)}";
+            var valueSummary = $"Gets or sets the value represented by this typedef.{(declaration.IsString ? $" Its maximum length is <c>{declaration.StringBound}</c> characters." : string.Empty)}";
             writer.WriteXmlSummary(valueSummary);
+
+            if (declaration.IsString)
+            {
+                writer.WriteXmlRemarks("The IDL bound counts characters. RTI encodes narrow IDL strings as UTF-8 and wide IDL strings as UTF-16 by default; assigning this property does not check the bound. For an unbounded IDL string, Wireloom currently generates an effective limit of 255 characters.");
+                writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", "RTI Connext 7.7.0 string and wide-string bounds");
+            }
 
             if (declaration.IsString)
             {
@@ -190,13 +207,17 @@ internal static class CollectionAliasManagedEmitter
             writer.WriteLine($"public {elementReference} Value {{ get; set; }}{(declaration.IsString ? " = string.Empty;" : requiresNullForgivingValueInitializer ? " = null!;" : string.Empty)}");
             writer.BlankLine();
 
-            writer.WriteXmlSummary("Initializes an empty typedef value.");
+            writer.WriteXmlSummary("Initializes the typedef value to its default value.");
             writer.OpenBlock($"public {typeName}()");
             writer.CloseBlock();
             writer.BlankLine();
 
             writer.WriteXmlSummary("Initializes the typedef with a value.");
             writer.WriteXmlParam("Value", "The value to store.");
+            if (requiresNullForgivingValueInitializer || plan.IsString)
+            {
+                writer.WriteXmlRemarks("The constructor stores the supplied reference as provided; it does not make a copy.");
+            }
             writer.OpenBlock($"public {typeName}({elementReference} Value)");
             writer.WriteLine("this.Value = Value;");
             writer.CloseBlock();
@@ -204,6 +225,7 @@ internal static class CollectionAliasManagedEmitter
 
             writer.WriteXmlSummary("Initializes a copy of another typedef value.");
             writer.WriteXmlParam("other", "The typedef to copy.");
+            writer.WriteXmlRemarks("When <paramref name=\"other\"/> is null, the constructor returns without copying and keeps its property initializer. An aggregate value is copied through its generated copy constructor.");
             writer.OpenBlock($"public {typeName}({typeName}? other)");
             writer.OpenBlock("if (other is not null)");
             if (plan.IsAggregate)
@@ -231,6 +253,7 @@ internal static class CollectionAliasManagedEmitter
 
             writer.WriteXmlSummary("Determines whether this typedef has the same value as <paramref name=\"other\"/>.");
             writer.WriteXmlParam("other", "The typedef to compare.");
+            writer.WriteXmlReturns("<see langword=\"true\"/> when both typedefs have equal values; otherwise, <see langword=\"false\"/>.");
             writer.OpenBlock($"public bool Equals({typeName}? other)");
             writer.OpenBlock("if (other is null)");
             writer.WriteLine("return false;");
@@ -248,7 +271,8 @@ internal static class CollectionAliasManagedEmitter
             writer.WriteLine($"public override bool Equals(object? obj) => Equals(obj as {typeName});");
             writer.BlankLine();
 
-            writer.WriteXmlSummary("Returns the RTI Connext DDS representation of this typedef.");
+            writer.WriteXmlSummary("Formats this typedef as readable text.");
+            writer.WriteXmlReturns("A readable string formatted by this typedef's type-support instance.");
             writer.WriteLine($"public override string ToString() => {typeName}Support.Instance.ToString(this);");
         }
         writer.CloseBlock();

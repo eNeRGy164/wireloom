@@ -37,11 +37,12 @@ internal sealed class PrimitiveEmissionType(string idlName, string cSharpType)
 }
 
 /// <summary>Represents a bounded IDL string projected to C#.</summary>
-internal sealed class StringEmissionType(bool isWide, int bound)
+internal sealed class StringEmissionType(bool isWide, int bound, bool isBounded = true)
     : EmissionTypePlan("string")
 {
     public override EmissionShape Shape { get; } = new(EmissionShapeKind.String);
     public bool IsWide { get; } = isWide;
+    public bool IsBounded { get; } = isBounded;
     public override bool IsWideString => IsWide;
     public override int? Bound { get; } = bound;
 }

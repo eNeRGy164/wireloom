@@ -18,6 +18,9 @@ namespace CorpusConditionals.Implementation;
 /// </summary>
 internal class UndefBranchPlugin : InterpretedTypePlugin<UndefBranch, UndefBranchUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="UndefBranch"/>.
+    /// </summary>
     internal UndefBranchPlugin() : base("CorpusConditionals.UndefBranch", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

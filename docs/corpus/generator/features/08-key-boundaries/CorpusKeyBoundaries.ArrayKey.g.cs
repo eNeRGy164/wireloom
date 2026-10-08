@@ -10,24 +10,25 @@ using Rti.Types;
 namespace CorpusKeyBoundaries;
 
 /// <summary>
-/// Represents the <c>ArrayKey</c> DDS type declared in <c>08-key-boundaries.idl</c>. Its key members form the DDS instance key. It is marked as <c>extensible</c>.
+/// Represents the <c>ArrayKey</c> DDS type declared in <c>08-key-boundaries.idl</c>. Its key members identify a DDS instance across samples; they do not determine whether two complete samples are equal. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class ArrayKey : global::System.IEquatable<ArrayKey>
 {
     /// <summary>
-    /// Gets or sets the <c>coordinates</c> member. This member forms part of the DDS instance key.
+    /// Gets or sets the <c>coordinates</c> member. This member forms part of the DDS instance key. It is a fixed array with dimensions 2.
     /// </summary>
     [Key]
     public int[] coordinates { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the <c>payload</c> member.
+    /// Gets or sets the <c>payload</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int payload { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ArrayKey"/> class.
     /// </summary>
+    /// <remarks>fixed arrays are allocated at their declared dimensions.</remarks>
     public ArrayKey()
     {
         coordinates = new int[2];
@@ -38,6 +39,7 @@ public partial class ArrayKey : global::System.IEquatable<ArrayKey>
     /// </summary>
     /// <param name="coordinates">The value for the <c>coordinates</c> member.</param>
     /// <param name="payload">The value for the <c>payload</c> member.</param>
+    /// <remarks>The constructor stores supplied reference-type member values as provided. It does not clone their arrays, sequences, or nested objects.</remarks>
     public ArrayKey(int[] coordinates, int payload)
     {
         this.coordinates = coordinates;
@@ -48,6 +50,13 @@ public partial class ArrayKey : global::System.IEquatable<ArrayKey>
     /// Initializes a copy of the specified <see cref="ArrayKey"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new ArrayKey();
+    /// var copy = new ArrayKey(original);
+    /// </code>
+    /// </example>
     public ArrayKey(ArrayKey? other)
     {
         if (other is null)
@@ -95,8 +104,8 @@ public partial class ArrayKey : global::System.IEquatable<ArrayKey>
     public override bool Equals(object? obj) => Equals(obj as ArrayKey);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => ArrayKeySupport.Instance.ToString(this);
 }

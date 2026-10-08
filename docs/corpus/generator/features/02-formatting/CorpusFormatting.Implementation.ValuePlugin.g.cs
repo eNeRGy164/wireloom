@@ -18,6 +18,9 @@ namespace CorpusFormatting.Implementation;
 /// </summary>
 internal class ValuePlugin : InterpretedTypePlugin<Value, ValueUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Value"/>.
+    /// </summary>
     internal ValuePlugin() : base("CorpusFormatting.Value", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

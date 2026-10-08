@@ -25,7 +25,8 @@ internal static class CollectionAliasTypeSupportEmitter
         writer.CloseBlock();
         writer.BlankLine();
 
-        writer.WriteXmlSummary("Gets the cached RTI Connext DDS type-support instance.");
+        writer.WriteXmlSummary("Gets the shared type-support instance for formatting, serialization, and dynamic-type utilities for this typedef.");
+        writer.WriteXmlRemarks("The generated plugin and unmanaged type are runtime implementation details; application code should use this support class and the managed typedef.");
         writer.WriteLine($"public static {typeName}Support Instance {{ get; }} =");
         writer.Indent();
         writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{typeName}Support, {typeName}>();");

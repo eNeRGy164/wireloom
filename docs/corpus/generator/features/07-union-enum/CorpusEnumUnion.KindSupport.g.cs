@@ -25,7 +25,7 @@ public class KindSupport : TypeSupport<Kind>
     }
 
     /// <summary>
-    /// Gets the cached RTI Connext DDS type-support instance.
+    /// Gets the shared type-support instance for this enumeration.
     /// </summary>
     public static KindSupport Instance { get; } = 
         ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<KindSupport, Kind>();

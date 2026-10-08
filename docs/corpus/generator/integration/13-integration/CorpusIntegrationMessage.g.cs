@@ -8,13 +8,15 @@ using Omg.Types;
 using Rti.Types;
 
 /// <summary>
-/// Represents the <c>CorpusIntegrationMessage</c> DDS type declared in <c>13-integration.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>CorpusIntegrationMessage</c> DDS type declared in <c>13-integration.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class CorpusIntegrationMessage : global::System.IEquatable<CorpusIntegrationMessage>
 {
     /// <summary>
-    /// Gets or sets the <c>text</c> member. Its maximum length is <c>255</c>.
+    /// Gets or sets the <c>text</c> member. Its maximum length is <c>255</c> characters.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
+    /// <remarks>This unbounded narrow IDL string has an effective limit of 255 characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not enforce the effective limit when assigned.</remarks>
     [Bound(255)]
     public string text { get; set; } = string.Empty;
 
@@ -38,6 +40,13 @@ public partial class CorpusIntegrationMessage : global::System.IEquatable<Corpus
     /// Initializes a copy of the specified <see cref="CorpusIntegrationMessage"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new CorpusIntegrationMessage();
+    /// var copy = new CorpusIntegrationMessage(original);
+    /// </code>
+    /// </example>
     public CorpusIntegrationMessage(CorpusIntegrationMessage? other)
     {
         if (other is null)
@@ -82,8 +91,8 @@ public partial class CorpusIntegrationMessage : global::System.IEquatable<Corpus
     public override bool Equals(object? obj) => Equals(obj as CorpusIntegrationMessage);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => CorpusIntegrationMessageSupport.Instance.ToString(this);
 }

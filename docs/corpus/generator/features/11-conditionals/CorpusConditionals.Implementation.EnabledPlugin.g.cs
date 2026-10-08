@@ -18,6 +18,9 @@ namespace CorpusConditionals.Implementation;
 /// </summary>
 internal class EnabledPlugin : InterpretedTypePlugin<Enabled, EnabledUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Enabled"/>.
+    /// </summary>
     internal EnabledPlugin() : base("CorpusConditionals.Enabled", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

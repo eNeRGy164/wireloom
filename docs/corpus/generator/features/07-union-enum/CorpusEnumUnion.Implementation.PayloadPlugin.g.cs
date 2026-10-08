@@ -18,6 +18,9 @@ namespace CorpusEnumUnion.Implementation;
 /// </summary>
 internal class PayloadPlugin : InterpretedTypePlugin<Payload, PayloadUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Payload"/>.
+    /// </summary>
     internal PayloadPlugin() : base("CorpusEnumUnion.Payload", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

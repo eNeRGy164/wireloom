@@ -121,13 +121,13 @@ public sealed class GeneratedNestedAliasSpecs
         // Assert
         var context = documents["Envelope.Metadata.Context.g.cs"].Source;
         context.ShouldContain("It is marked as <c>extensible</c>.");
-        context.ShouldContain("Its maximum length is <c>9</c>.");
+        context.ShouldContain("Its maximum length is <c>9</c> characters.");
         context.ShouldContain("[Bound(9)]\n    public string correlation");
-        context.ShouldContain("Its maximum length is <c>17</c>.");
+        context.ShouldContain("Its maximum length is <c>17</c> characters.");
         context.ShouldContain("[Optional]\n    [Bound(17)]\n    public string? producer");
 
         var correlation = documents["Envelope.Metadata.Correlation.g.cs"].Source;
-        correlation.ShouldContain("Its maximum length is <c>9</c>.");
+        correlation.ShouldContain("Its maximum length is <c>9</c> characters.");
         correlation.ShouldContain("[Bound(9)]");
         correlation.ShouldContain("if (other is not null)\n        {\n            Value = other.Value;\n        }");
 

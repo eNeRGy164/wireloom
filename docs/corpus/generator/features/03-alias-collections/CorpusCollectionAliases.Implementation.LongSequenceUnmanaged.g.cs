@@ -9,6 +9,9 @@ using Rti.Types;
 
 namespace CorpusCollectionAliases.Implementation;
 
+/// <summary>
+/// Provides native storage and conversion operations for the LongSequence typedef. This type is used by RTI runtime integration and is not an application-facing value type.
+/// </summary>
 public struct LongSequenceUnmanaged : INativeTopicType<LongSequence>
 {
     private NativeSeq Value;

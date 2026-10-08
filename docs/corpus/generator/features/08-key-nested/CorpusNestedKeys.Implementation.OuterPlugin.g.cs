@@ -18,6 +18,9 @@ namespace CorpusNestedKeys.Implementation;
 /// </summary>
 internal class OuterPlugin : InterpretedTypePlugin<Outer, OuterUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Outer"/>.
+    /// </summary>
     internal OuterPlugin() : base("CorpusNestedKeys.Outer", isKeyed: true, CreateDynamicType(isPublic: false))
     {
     }

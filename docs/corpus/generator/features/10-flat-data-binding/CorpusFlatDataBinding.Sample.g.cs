@@ -10,17 +10,17 @@ using Rti.Types;
 namespace CorpusFlatDataBinding;
 
 /// <summary>
-/// Represents the <c>Sample</c> DDS type declared in <c>10-flat-data-binding.idl</c>. It is marked as <c>extensible</c>. It is marked as a DDS topic type.
+/// Represents the <c>Sample</c> DDS type declared in <c>10-flat-data-binding.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution. It is marked for use as a DDS topic data type; the annotation does not create a Topic or publish data.
 /// </summary>
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
-    /// Gets or sets the <c>id</c> member.
+    /// Gets or sets the <c>id</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int id { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>value</c> member.
+    /// Gets or sets the <c>value</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int value { get; set; }
 
@@ -46,6 +46,13 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// Initializes a copy of the specified <see cref="Sample"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Sample();
+    /// var copy = new Sample(original);
+    /// </code>
+    /// </example>
     public Sample(Sample? other)
     {
         if (other is null)
@@ -93,8 +100,8 @@ public partial class Sample : global::System.IEquatable<Sample>
     public override bool Equals(object? obj) => Equals(obj as Sample);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => SampleSupport.Instance.ToString(this);
 }

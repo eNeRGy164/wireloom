@@ -21,7 +21,7 @@ internal static class UnionEmitter
 
         var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.DataTypeUsings, sourceIdlFileName);
 
-        writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> DDS union declared in <c>{sourceIdlFileName}</c>. Exactly one branch is selected by <see cref=\"Discriminator\"/>.");
+        writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> DDS union declared in <c>{sourceIdlFileName}</c>. The discriminator selects a branch when it matches a declared label; otherwise, no branch is active.");
         writer.OpenBlock($"public partial class {typeName} : global::System.IEquatable<{typeName}>");
 
         foreach (var branch in declaration.Branches)
@@ -46,7 +46,7 @@ internal static class UnionEmitter
         writer.WriteLine($"public {ManagedDiscriminatorType(declaration)} Discriminator {{ get; private set; }}");
         writer.BlankLine();
 
-        writer.WriteXmlSummary("Gets the discriminator value used to initialize this union.");
+        writer.WriteXmlSummary("Gets the discriminator value used by the parameterless constructor.");
         writer.WriteLine($"public const {ManagedDiscriminatorType(declaration)} DefaultDiscriminator = {declaration.ManagedDefaultDiscriminator};");
 
         foreach (var branch in declaration.Branches)
@@ -56,7 +56,7 @@ internal static class UnionEmitter
 
         writer.BlankLine();
 
-        writer.WriteXmlSummary("Initializes a new union with its RTI default discriminator.");
+        writer.WriteXmlSummary("Initializes a new union with its RTI default discriminator. A branch is active only when that discriminator matches a declared label or selects the default branch.");
         writer.OpenBlock($"public {typeName}()");
         writer.WriteLine("Discriminator = DefaultDiscriminator;");
         writer.CloseBlock();
@@ -64,6 +64,7 @@ internal static class UnionEmitter
 
         writer.WriteXmlSummary($"Initializes a copy of another <see cref=\"{typeName}\"/> union.");
         writer.WriteXmlParam("other", "The union to copy.");
+        writer.WriteXmlRemarks("When <paramref name=\"other\"/> is null, the constructor leaves the discriminator at its default and does not copy a branch value.");
         writer.OpenBlock($"public {typeName}({typeName}? other)");
         writer.OpenBlock("if (other is null)");
         writer.WriteLine("return;");
@@ -81,20 +82,20 @@ internal static class UnionEmitter
             writer.BlankLine();
         }
 
-        writer.WriteXmlSummary("Gets the currently active union-branch value.");
-        writer.WriteXmlReturns("The value of the branch selected by <see cref=\"Discriminator\"/>.");
+        writer.WriteXmlSummary("Gets the value of the currently active union branch, if any.");
+        writer.WriteXmlReturns("The concrete value of the active branch, or <see langword=\"null\"/> when the discriminator selects no declared branch.");
         writer.OpenBlock("public object? Get()");
         EmitUnionReturnSwitch(writer, declaration);
         writer.CloseBlock();
         writer.BlankLine();
 
-        writer.WriteXmlInheritdoc();
+        writer.WriteXmlSummary("Computes a hash from the discriminator and, when a branch is active, its value.");
         writer.OpenBlock("public override int GetHashCode()");
         EmitUnionHashSwitch(writer, declaration);
         writer.CloseBlock();
         writer.BlankLine();
 
-        writer.WriteXmlSummary("Determines whether this union has the same discriminator and active branch value as <paramref name=\"other\"/>.");
+        writer.WriteXmlSummary("Determines whether this union has the same discriminator and active branch value as <paramref name=\"other\"/>. When neither discriminator selects a branch, equality depends on the discriminator alone.");
         writer.WriteXmlParam("other", "The union to compare.");
         writer.WriteXmlReturns("<see langword=\"true\"/> when both unions select equal values; otherwise <see langword=\"false\"/>.");
         writer.OpenBlock($"public bool Equals({typeName}? other)");
@@ -114,7 +115,8 @@ internal static class UnionEmitter
         writer.WriteLine($"public override bool Equals(object? obj) => Equals(obj as {typeName});");
         writer.BlankLine();
 
-        writer.WriteXmlSummary("Returns the RTI Connext DDS representation of this union.");
+        writer.WriteXmlSummary("Formats this union as readable text.");
+        writer.WriteXmlReturns("A readable string formatted by the union's type-support instance.");
         writer.WriteLine($"public override string ToString() => {typeName}Support.Instance.ToString(this);");
         writer.CloseBlock();
 
@@ -133,6 +135,8 @@ internal static class UnionEmitter
             : $"Gets or sets the union branch selected when <see cref=\"Discriminator\"/> is one of: <c>{string.Join(", ", branch.Labels)}</c>.";
 
         writer.WriteXmlSummary(branchSummary);
+        writer.WriteXmlRemarks("Reading this property while another branch is active throws <see cref=\"global::System.InvalidOperationException\"/>. Assigning it stores the value and changes <see cref=\"Discriminator\"/> to a label for this branch.");
+        writer.WriteXmlException("global::System.InvalidOperationException", "The discriminator selects another branch or selects no branch.");
 
         if (branch.Plan.Bound is int bound)
         {
@@ -170,6 +174,9 @@ internal static class UnionEmitter
         writer.WriteXmlSummary($"Sets the {branch.Field.Name} branch with an explicit discriminator value.");
         writer.WriteXmlParam("value", $"The value for the {branch.Field.Name} branch.");
         writer.WriteXmlParam("discriminator", "A discriminator value selecting this branch.");
+        writer.WriteXmlRemarks($"Assigning the <c>{branch.Field.Name}</c> property selects the first label listed in its documentation. Use this method to select another valid label for the same branch.");
+        writer.WriteXmlExample($"var choice = new {IdlNaming.TypeReference(declaration.Name, declaration.Namespace)}();\nchoice.{branch.Plan.EscapedName} = default!;\nchoice.{methodName}(default!, {branch.Labels[0]});");
+        writer.WriteXmlException("global::System.ArgumentException", "The discriminator does not select this branch.");
         writer.OpenBlock($"public void {methodName}({IdlNaming.TypeReference(branch.Plan.CSharpType, declaration.Namespace)} value, {ManagedDiscriminatorType(declaration)} discriminator)");
         writer.OpenBlock($"if (!({validLabels}))");
         writer.WriteLine($"throw new global::System.ArgumentException(\"Invalid discriminator value for {branch.Field.Name}\", nameof(discriminator));");
@@ -188,6 +195,7 @@ internal static class UnionEmitter
         writer.WriteXmlSummary("Sets the default branch with an explicit discriminator value.");
         writer.WriteXmlParam("value", "The value for the default branch.");
         writer.WriteXmlParam("discriminator", "A discriminator value that does not select an explicit branch.");
+        writer.WriteXmlException("global::System.ArgumentException", "The discriminator selects an explicit branch.");
         writer.OpenBlock($"public void {methodName}({IdlNaming.TypeReference(defaultBranch.Plan.CSharpType, declaration.Namespace)} value, {ManagedDiscriminatorType(declaration)} discriminator)");
         writer.OpenBlock($"if ({declaration.SelectionCondition(defaultBranch, negated: true, discriminatorName: "discriminator")})");
         writer.WriteLine($"throw new global::System.ArgumentException(\"Invalid discriminator value for {defaultBranch.Field.Name}\", nameof(discriminator));");

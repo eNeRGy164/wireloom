@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusEnums.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the Scalar typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class ScalarPlugin : InterpretedTypePlugin<Scalar, ScalarUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Scalar"/>.
+    /// </summary>
     internal ScalarPlugin() : base("CorpusEnums.Scalar", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

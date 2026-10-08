@@ -7,6 +7,23 @@ namespace Wireloom.Generation.Tests;
 public sealed class GeneratedScalarSpecs
 {
     [Fact]
+    public void XmlParameterNamesUseUnescapedKeywordIdentifiers()
+    {
+        // Arrange
+        var input = Input("keyword-parameters.idl", "module Keywords { struct Sample { long event; long base; }; };");
+
+        // Act
+        var managed = CompileSources(input)["Keywords.Sample.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("<param name=\"event\">");
+        managed.ShouldContain("<param name=\"base\">");
+        managed.ShouldNotContain("<param name=\"@event\">");
+        managed.ShouldNotContain("<param name=\"@base\">");
+        managed.ShouldContain("public Sample(int @event, int @base)");
+    }
+
+    [Fact]
     [Trait("Corpus", "C001")]
     public void PrimitiveScalarEmitsAllManagedNativePluginAndSupportArtifacts()
     {
@@ -48,6 +65,28 @@ public sealed class GeneratedScalarSpecs
     }
 
     [Fact]
+    public void IntegerPropertiesDocumentTheirRepresentableRanges()
+    {
+        // Arrange
+        var input = Input(
+            "integer-ranges.idl",
+            "module IntegerRanges { struct Sample { int8 i8; int16 i16; int32 i32; uint8 u8; uint16 u16; uint32 u32; float f32; double f64; }; };");
+
+        // Act
+        var managed = CompileSources(input)["IntegerRanges.Sample.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("Representable values are in the inclusive range <c>sbyte.MinValue</c> through <c>sbyte.MaxValue</c>.");
+        managed.ShouldContain("Representable values are in the inclusive range <c>short.MinValue</c> through <c>short.MaxValue</c>.");
+        managed.ShouldContain("Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.");
+        managed.ShouldContain("Representable values are in the inclusive range <c>byte.MinValue</c> through <c>byte.MaxValue</c>.");
+        managed.ShouldContain("Representable values are in the inclusive range <c>ushort.MinValue</c> through <c>ushort.MaxValue</c>.");
+        managed.ShouldContain("Representable values are in the inclusive range <c>uint.MinValue</c> through <c>uint.MaxValue</c>.");
+        managed.ShouldContain("Finite values are in the inclusive range <c>float.MinValue</c> through <c>float.MaxValue</c>. NaN and positive or negative infinity are also representable.");
+        managed.ShouldContain("Finite values are in the inclusive range <c>double.MinValue</c> through <c>double.MaxValue</c>. NaN and positive or negative infinity are also representable.");
+    }
+
+    [Fact]
     [Trait("Corpus", "C014")]
     [Trait("Corpus", "C015")]
     public void BoundedStringsEmitBoundedManagedNativeAndPluginArtifacts()
@@ -66,6 +105,9 @@ public sealed class GeneratedScalarSpecs
         managed.ShouldContain("public string text");
         managed.ShouldContain("[Bound(4)]");
         managed.ShouldContain("public string wide");
+        managed.ShouldContain("The bound on this narrow IDL string counts characters. RTI encodes narrow IDL strings as UTF-8 by default.");
+        managed.ShouldContain("The bound on this wide IDL string counts characters. RTI encodes wide IDL strings as UTF-16 by default.");
+        managed.ShouldNotContain("effective Wireloom limit of 255 characters");
 
         var unmanaged = documents["Strings.Implementation.SampleUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("private NativeString text");
@@ -79,6 +121,22 @@ public sealed class GeneratedScalarSpecs
 
         var sampleSupport = documents["Strings.SampleSupport.g.cs"].Source;
         sampleSupport.ShouldContain("TypeSupport<Sample>");
+    }
+
+    [Fact]
+    public void UnboundedStringRemarksDescribeOnlyItsTypeAndEffectiveLimit()
+    {
+        // Arrange
+        var input = Input(
+            "unbounded-strings.idl",
+            "module Strings { struct Sample { string text; wstring wide; }; };");
+
+        // Act
+        var managed = CompileSources(input)["Strings.Sample.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("This unbounded narrow IDL string has an effective limit of 255 characters. RTI encodes narrow IDL strings as UTF-8 by default.");
+        managed.ShouldContain("This unbounded wide IDL string has an effective limit of 255 characters. RTI encodes wide IDL strings as UTF-16 by default.");
     }
 
     [Fact]

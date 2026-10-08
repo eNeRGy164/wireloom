@@ -10,7 +10,7 @@ using Rti.Types;
 namespace CorpusAggregateComposition;
 
 /// <summary>
-/// Represents the <c>Named</c> DDS type declared in <c>06-alias-composition.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>Named</c> DDS type declared in <c>06-alias-composition.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Named : global::System.IEquatable<Named>
 {
@@ -22,6 +22,7 @@ public partial class Named : global::System.IEquatable<Named>
     /// <summary>
     /// Initializes a new instance of the <see cref="Named"/> class.
     /// </summary>
+    /// <remarks>nested aggregate members start as new instances.</remarks>
     public Named()
     {
     }
@@ -30,6 +31,7 @@ public partial class Named : global::System.IEquatable<Named>
     /// Initializes a new instance of the <see cref="Named"/> class with the supplied member values.
     /// </summary>
     /// <param name="sample">The value for the <c>sample</c> member.</param>
+    /// <remarks>The constructor stores supplied reference-type member values as provided. It does not clone their arrays, sequences, or nested objects.</remarks>
     public Named(Sample sample)
     {
         this.sample = sample;
@@ -39,6 +41,13 @@ public partial class Named : global::System.IEquatable<Named>
     /// Initializes a copy of the specified <see cref="Named"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Named();
+    /// var copy = new Named(original);
+    /// </code>
+    /// </example>
     public Named(Named? other)
     {
         if (other is null)
@@ -83,8 +92,8 @@ public partial class Named : global::System.IEquatable<Named>
     public override bool Equals(object? obj) => Equals(obj as Named);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => NamedSupport.Instance.ToString(this);
 }

@@ -18,6 +18,9 @@ namespace CorpusAggregates.Implementation;
 /// </summary>
 internal class ComposedPlugin : InterpretedTypePlugin<Composed, ComposedUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Composed"/>.
+    /// </summary>
     internal ComposedPlugin() : base("CorpusAggregates.Composed", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

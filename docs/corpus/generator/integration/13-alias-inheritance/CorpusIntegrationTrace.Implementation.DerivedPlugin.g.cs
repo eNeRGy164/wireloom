@@ -18,6 +18,9 @@ namespace CorpusIntegrationTrace.Implementation;
 /// </summary>
 internal class DerivedPlugin : InterpretedTypePlugin<Derived, DerivedUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Derived"/>.
+    /// </summary>
     internal DerivedPlugin() : base("CorpusIntegrationTrace.Derived", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

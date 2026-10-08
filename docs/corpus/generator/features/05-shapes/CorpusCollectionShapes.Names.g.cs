@@ -17,6 +17,8 @@ public partial class Names : global::System.IEquatable<Names>
     /// <summary>
     /// Gets the sequence value represented by this typedef. Its maximum number of elements is <c>4</c>.
     /// </summary>
+    /// <remarks>Use the mutable sequence instance to add or remove elements; the property itself is getter-only. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
     [Bound(4)]
     public ISequence<string> Value { get; } = null!;
 
@@ -32,6 +34,7 @@ public partial class Names : global::System.IEquatable<Names>
     /// Initializes the typedef with a sequence value.
     /// </summary>
     /// <param name="Value">The sequence value to store.</param>
+    /// <remarks>The typedef stores the supplied sequence reference; it does not make a copy.</remarks>
     public Names(ISequence<string> Value)
     {
         this.Value = Value;
@@ -41,6 +44,7 @@ public partial class Names : global::System.IEquatable<Names>
     /// Initializes a copy of another sequence typedef.
     /// </summary>
     /// <param name="other">The typedef to copy.</param>
+    /// <remarks>The constructor creates a new sequence container. If <paramref name="other"/> is null, it returns without creating the sequence and <see cref="Value"/> remains null.</remarks>
     public Names(Names? other)
     {
         if (other is null)
@@ -65,6 +69,7 @@ public partial class Names : global::System.IEquatable<Names>
     /// Determines whether this typedef has the same sequence values as <paramref name="other"/>.
     /// </summary>
     /// <param name="other">The typedef to compare.</param>
+    /// <returns><see langword="true"/> when both sequences contain equal values in the same order; otherwise, <see langword="false"/>.</returns>
     public bool Equals(Names? other)
     {
         return other is not null
@@ -75,7 +80,8 @@ public partial class Names : global::System.IEquatable<Names>
     public override bool Equals(object? obj) => Equals(obj as Names);
 
     /// <summary>
-    /// Returns the RTI Connext DDS representation of this typedef.
+    /// Formats this typedef as readable text.
     /// </summary>
+    /// <returns>A readable string formatted by this typedef's type-support instance.</returns>
     public override string ToString() => NamesSupport.Instance.ToString(this);
 }

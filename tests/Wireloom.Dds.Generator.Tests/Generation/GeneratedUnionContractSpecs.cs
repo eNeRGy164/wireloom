@@ -29,6 +29,11 @@ public sealed class GeneratedUnionContractSpecs
         managed.ShouldContain("1 or 5 => global::System.HashCode.Combine(Discriminator, number)");
         managed.ShouldContain("public void Setnumber(int value, int discriminator)");
         managed.ShouldContain("Discriminator != 1 && Discriminator != 5");
+        managed.ShouldContain("Assigning the <c>number</c> property selects the first label listed in its documentation.");
+        managed.ShouldContain("The concrete value of the active branch, or <see langword=\"null\"/> when the discriminator selects no declared branch.");
+        managed.ShouldContain("Reading this property while another branch is active throws <see cref=\"global::System.InvalidOperationException\"/>.");
+        managed.ShouldContain("choice.Setnumber(default!, 1);");
+        managed.ShouldContain("<exception cref=\"global::System.ArgumentException\">");
 
         var unmanaged = documents["MultiLabel.Implementation.ChoiceUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("sample.Setnumber(number, _discriminator);");

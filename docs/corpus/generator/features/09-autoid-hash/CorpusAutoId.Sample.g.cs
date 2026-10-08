@@ -10,18 +10,20 @@ using Rti.Types;
 namespace CorpusAutoId;
 
 /// <summary>
-/// Represents the <c>Sample</c> DDS type declared in <c>09-autoid-hash.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>Sample</c> DDS type declared in <c>09-autoid-hash.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
-    /// Gets or sets the <c>id</c> member. Its DDS member ID is generated from the hash of <c>stable_id</c> through <c>@hashid</c>. This member is marked as must-understand by DDS.
+    /// Gets or sets the <c>id</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. Its DDS member ID is generated from the hash of <c>stable_id</c> through <c>@hashid</c>. A DDS reader that does not understand this member cannot safely read the sample. Its DDS member ID is <c>75475440</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
     public int id { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>text</c> member. Its maximum length is <c>16</c>. Its DDS member ID is generated from the hash of <c>text</c> through <c>@hashid</c>.
+    /// Gets or sets the <c>text</c> member. Its maximum length is <c>16</c> characters. Its DDS member ID is generated from the hash of <c>text</c> through <c>@hashid</c>. Its DDS member ID is <c>206680604</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
+    /// <remarks>The bound on this narrow IDL string counts characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(16)]
     public string text { get; set; } = string.Empty;
 
@@ -47,6 +49,13 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// Initializes a copy of the specified <see cref="Sample"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Sample();
+    /// var copy = new Sample(original);
+    /// </code>
+    /// </example>
     public Sample(Sample? other)
     {
         if (other is null)
@@ -94,8 +103,8 @@ public partial class Sample : global::System.IEquatable<Sample>
     public override bool Equals(object? obj) => Equals(obj as Sample);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => SampleSupport.Instance.ToString(this);
 }

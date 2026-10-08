@@ -10,12 +10,12 @@ using Rti.Types;
 namespace CorpusScopes;
 
 /// <summary>
-/// Represents the <c>KeywordRecord</c> DDS type declared in <c>02-scopes.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>KeywordRecord</c> DDS type declared in <c>02-scopes.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
 {
     /// <summary>
-    /// Gets or sets the <c>event</c> member.
+    /// Gets or sets the <c>event</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int @event { get; set; }
 
@@ -32,12 +32,22 @@ public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
     /// <summary>
     /// Gets the <c>values</c> member. Its maximum number of elements is <c>4</c>.
     /// </summary>
+    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
+    /// <example>
+    /// <code>
+    /// var sample = new KeywordRecord();
+    /// sample.values.Add(default!);
+    /// sample.values.RemoveAt(sample.values.Count - 1);
+    /// </code>
+    /// </example>
     [Bound(4)]
     public ISequence<int> values { get; } = null!;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KeywordRecord"/> class.
     /// </summary>
+    /// <remarks>Non-optional sequences start empty, nested aggregate members start as new instances.</remarks>
     public KeywordRecord()
     {
         values = new Sequence<int>();
@@ -46,10 +56,11 @@ public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
     /// <summary>
     /// Initializes a new instance of the <see cref="KeywordRecord"/> class with the supplied member values.
     /// </summary>
-    /// <param name="@event">The value for the <c>event</c> member.</param>
+    /// <param name="event">The value for the <c>event</c> member.</param>
     /// <param name="relative">The value for the <c>relative</c> member.</param>
     /// <param name="absolute">The value for the <c>absolute</c> member.</param>
     /// <param name="values">The value for the <c>values</c> member.</param>
+    /// <remarks>The constructor stores supplied reference-type member values as provided. It does not clone their arrays, sequences, or nested objects.</remarks>
     public KeywordRecord(int @event, Nested.Point relative, Nested.Point absolute, ISequence<int> values)
     {
         this.@event = @event;
@@ -62,6 +73,13 @@ public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
     /// Initializes a copy of the specified <see cref="KeywordRecord"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new KeywordRecord();
+    /// var copy = new KeywordRecord(original);
+    /// </code>
+    /// </example>
     public KeywordRecord(KeywordRecord? other)
     {
         if (other is null)
@@ -115,8 +133,8 @@ public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
     public override bool Equals(object? obj) => Equals(obj as KeywordRecord);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => KeywordRecordSupport.Instance.ToString(this);
 }

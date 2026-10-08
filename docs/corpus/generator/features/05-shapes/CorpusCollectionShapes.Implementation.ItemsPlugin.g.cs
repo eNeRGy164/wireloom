@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusCollectionShapes.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the Items typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class ItemsPlugin : InterpretedTypePlugin<Items, ItemsUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Items"/>.
+    /// </summary>
     internal ItemsPlugin() : base("CorpusCollectionShapes.Items", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

@@ -18,6 +18,9 @@ namespace CorpusNames.Nested.Implementation;
 /// </summary>
 internal class PointPlugin : InterpretedTypePlugin<Point, PointUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Point"/>.
+    /// </summary>
     internal PointPlugin() : base("CorpusNames.Nested.Point", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

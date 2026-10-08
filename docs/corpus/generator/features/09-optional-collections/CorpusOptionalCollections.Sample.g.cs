@@ -10,26 +10,48 @@ using Rti.Types;
 namespace CorpusOptionalCollections;
 
 /// <summary>
-/// Represents the <c>Sample</c> DDS type declared in <c>09-optional-collections.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>Sample</c> DDS type declared in <c>09-optional-collections.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
-    /// Gets or sets the <c>values</c> member. This member is optional. Its maximum number of elements is <c>4</c>.
+    /// Gets or sets the <c>values</c> member. This member is optional. Its maximum number of elements is <c>4</c>. A null value means absent; an empty collection is present with no elements. Its DDS member ID is <c>1</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
+    /// <example>
+    /// <code>
+    /// var sample = new Sample();
+    /// sample.values.Add(default!);
+    /// sample.values.RemoveAt(sample.values.Count - 1);
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// var sample = new Sample();
+    /// sample.values = null; // the member is absent
+    /// </code>
+    /// </example>
     [Optional]
     [Bound(4)]
     public ISequence<int>? values { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>items</c> member. This member is optional.
+    /// Gets or sets the <c>items</c> member. This member is optional. It is a fixed array with dimensions 2. A null value means absent; an empty collection is present with no elements. Its DDS member ID is <c>2</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// var sample = new Sample();
+    /// sample.items = null; // the member is absent
+    /// </code>
+    /// </example>
     [Optional]
     public int[]? items { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Sample"/> class.
     /// </summary>
+    /// <remarks>optional collections start null (absent).</remarks>
     public Sample()
     {
     }
@@ -39,6 +61,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// </summary>
     /// <param name="values">The value for the <c>values</c> member.</param>
     /// <param name="items">The value for the <c>items</c> member.</param>
+    /// <remarks>The constructor stores supplied reference-type member values as provided. It does not clone their arrays, sequences, or nested objects.</remarks>
     public Sample(ISequence<int>? values, int[]? items)
     {
         this.values = values;
@@ -49,6 +72,13 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// Initializes a copy of the specified <see cref="Sample"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Sample();
+    /// var copy = new Sample(original);
+    /// </code>
+    /// </example>
     public Sample(Sample? other)
     {
         if (other is null)
@@ -100,8 +130,8 @@ public partial class Sample : global::System.IEquatable<Sample>
     public override bool Equals(object? obj) => Equals(obj as Sample);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => SampleSupport.Instance.ToString(this);
 }

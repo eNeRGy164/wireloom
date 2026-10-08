@@ -51,6 +51,8 @@ public sealed class GeneratedCollectionSpecs
         managed.ShouldContain("public Texts texts");
         managed.ShouldContain("public Items items");
         managed.ShouldContain("public Grid grid");
+        managed.ShouldContain("Its maximum number of elements is <c>3</c>. Each string element is limited to <c>8</c> characters.");
+        managed.ShouldContain("For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements.");
 
         var texts = documents["Collections.Implementation.TextsUnmanaged.g.cs"].Source;
         texts.ShouldContain("private NativeStringSeq Value");

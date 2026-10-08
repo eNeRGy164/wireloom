@@ -9,6 +9,9 @@ using Rti.Types;
 
 namespace CorpusEnums.Implementation;
 
+/// <summary>
+/// Provides native storage and conversion operations for the ColorAlias2 typedef. This type is used by RTI runtime integration and is not an application-facing value type.
+/// </summary>
 public struct ColorAlias2Unmanaged : INativeTopicType<ColorAlias2>
 {
     private global::CorpusEnums.Color Value;

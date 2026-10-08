@@ -18,6 +18,9 @@ namespace CorpusKeyBoundaries.Implementation;
 /// </summary>
 internal class ArrayKeyPlugin : InterpretedTypePlugin<ArrayKey, ArrayKeyUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="ArrayKey"/>.
+    /// </summary>
     internal ArrayKeyPlugin() : base("CorpusKeyBoundaries.ArrayKey", isKeyed: true, CreateDynamicType(isPublic: false))
     {
     }

@@ -18,6 +18,9 @@ namespace CorpusIncludeSearch.Implementation;
 /// </summary>
 internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Sample"/>.
+    /// </summary>
     internal SamplePlugin() : base("CorpusIncludeSearch.Sample", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

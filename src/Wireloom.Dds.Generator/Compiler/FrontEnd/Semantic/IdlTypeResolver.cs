@@ -17,7 +17,7 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
         {
             if (boundExpression is null)
             {
-                return new IdlType.StringType(isWide, 255);
+                return new IdlType.StringType(isWide, 255, isBounded: false);
             }
 
             var bound = IdlBoundResolver.Resolve(
@@ -54,7 +54,7 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
         {
             if (alias.IsString)
             {
-                return new IdlType.Alias(qualified, new IdlType.StringType(alias.IsWideString, alias.StringBound));
+                return new IdlType.Alias(qualified, new IdlType.StringType(alias.IsWideString, alias.StringBound, alias.IsStringBounded));
             }
 
             if (!activeAliases.Add(qualified))

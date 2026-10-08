@@ -18,6 +18,9 @@ namespace CorpusPrimitiveBoundaries.Implementation;
 /// </summary>
 internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Sample"/>.
+    /// </summary>
     internal SamplePlugin() : base("CorpusPrimitiveBoundaries.Sample", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

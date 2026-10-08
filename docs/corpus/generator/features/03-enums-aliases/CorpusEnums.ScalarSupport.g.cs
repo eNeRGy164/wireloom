@@ -25,8 +25,9 @@ public class ScalarSupport : TypeSupport<Scalar>
     }
 
     /// <summary>
-    /// Gets the cached RTI Connext DDS type-support instance.
+    /// Gets the shared type-support instance for formatting, serialization, and dynamic-type utilities for this typedef.
     /// </summary>
+    /// <remarks>The generated plugin and unmanaged type are runtime implementation details; application code should use this support class and the managed typedef.</remarks>
     public static ScalarSupport Instance { get; } =
         ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ScalarSupport, Scalar>();
 }

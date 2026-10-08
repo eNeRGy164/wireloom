@@ -9,6 +9,9 @@ using Rti.Types;
 
 namespace CorpusAggregateComposition.Implementation;
 
+/// <summary>
+/// Provides native storage and conversion operations for the Identifier typedef. This type is used by RTI runtime integration and is not an application-facing value type.
+/// </summary>
 public struct IdentifierUnmanaged : INativeTopicType<Identifier>
 {
     private int Value;

@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusCollectionShapes.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the Names typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class NamesPlugin : InterpretedTypePlugin<Names, NamesUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Names"/>.
+    /// </summary>
     internal NamesPlugin() : base("CorpusCollectionShapes.Names", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

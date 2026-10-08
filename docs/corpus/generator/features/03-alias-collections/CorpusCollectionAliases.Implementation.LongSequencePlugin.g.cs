@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusCollectionAliases.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the LongSequence typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class LongSequencePlugin : InterpretedTypePlugin<LongSequence, LongSequenceUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="LongSequence"/>.
+    /// </summary>
     internal LongSequencePlugin() : base("CorpusCollectionAliases.LongSequence", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

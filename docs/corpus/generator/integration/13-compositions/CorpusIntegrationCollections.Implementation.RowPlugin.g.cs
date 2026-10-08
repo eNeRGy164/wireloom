@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusIntegrationCollections.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the Row typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class RowPlugin : InterpretedTypePlugin<Row, RowUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Row"/>.
+    /// </summary>
     internal RowPlugin() : base("CorpusIntegrationCollections.Row", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

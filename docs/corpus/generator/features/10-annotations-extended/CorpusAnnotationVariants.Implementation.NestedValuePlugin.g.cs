@@ -18,6 +18,9 @@ namespace CorpusAnnotationVariants.Implementation;
 /// </summary>
 internal class NestedValuePlugin : InterpretedTypePlugin<NestedValue, NestedValueUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="NestedValue"/>.
+    /// </summary>
     internal NestedValuePlugin() : base("CorpusAnnotationVariants.NestedValue", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

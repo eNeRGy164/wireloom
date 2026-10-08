@@ -36,7 +36,7 @@ internal static class ClassEmitter
 
         if (inheritedFieldPlans.Concat(fieldPlans).Any(field => field.IsKey))
         {
-            typeSummary += " Its key members form the DDS instance key.";
+            typeSummary += " Its key members identify a DDS instance across samples; they do not determine whether two complete samples are equal.";
         }
 
         if (baseType is not null)
@@ -45,9 +45,16 @@ internal static class ClassEmitter
         }
 
         typeSummary += $" It is marked as <c>{extensibility.ToString().ToLowerInvariant()}</c>.";
+        typeSummary += extensibility switch
+        {
+            IdlExtensibilityKind.Final => " The type's members and layout cannot be extended compatibly.",
+            IdlExtensibilityKind.Extensible => " New members may be appended while preserving the existing member order for compatible type evolution.",
+            IdlExtensibilityKind.Mutable => " Members may be identified and reordered by DDS member IDs during compatible type evolution.",
+            _ => string.Empty
+        };
         if (isTopic)
         {
-            typeSummary += " It is marked as a DDS topic type.";
+            typeSummary += " It is marked for use as a DDS topic data type; the annotation does not create a Topic or publish data.";
         }
 
         writer.WriteXmlSummary(typeSummary);
@@ -65,8 +72,8 @@ internal static class ClassEmitter
         if (hasTypeSupport)
         {
             writer.BlankLine();
-            writer.WriteXmlSummary("Returns the RTI Connext DDS type-support representation of this sample.");
-            writer.WriteXmlReturns("The RTI Connext DDS representation of this sample.");
+            writer.WriteXmlSummary("Formats this sample as readable text.");
+            writer.WriteXmlReturns("A readable string formatted by the type-support instance.");
             writer.WriteLine($"public override string ToString() => {escapedName}Support.Instance.ToString(this);");
         }
 

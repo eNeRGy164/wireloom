@@ -9,6 +9,9 @@ using Rti.Types;
 
 namespace CorpusUnionAliases.Implementation;
 
+/// <summary>
+/// Provides native storage and conversion operations for the ChoiceAlias typedef. This type is used by RTI runtime integration and is not an application-facing value type.
+/// </summary>
 public struct ChoiceAliasUnmanaged : INativeTopicType<ChoiceAlias>
 {
     private ChoiceUnmanaged Value;

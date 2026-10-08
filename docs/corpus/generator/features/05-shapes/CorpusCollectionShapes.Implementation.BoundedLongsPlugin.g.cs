@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusCollectionShapes.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the BoundedLongs typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class BoundedLongsPlugin : InterpretedTypePlugin<BoundedLongs, BoundedLongsUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="BoundedLongs"/>.
+    /// </summary>
     internal BoundedLongsPlugin() : base("CorpusCollectionShapes.BoundedLongs", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }
