@@ -14,7 +14,7 @@ internal abstract class IdlType
     }
 
     /// <summary>Represents a bounded IDL string or wide-string type.</summary>
-    public sealed class StringType(bool isWide, int bound, bool isBounded = true)
+    public sealed class StringType(bool isWide, int bound, bool isBounded)
         : IdlType
     {
         public bool IsWide { get; } = isWide;

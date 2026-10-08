@@ -27,7 +27,7 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
                 currentNamespace,
                 symbols,
                 "String bound");
-            return new IdlType.StringType(isWide, bound);
+            return new IdlType.StringType(isWide, bound, isBounded: true);
         }
 
         if (IdlNaming.IsPrimitive(idlType))

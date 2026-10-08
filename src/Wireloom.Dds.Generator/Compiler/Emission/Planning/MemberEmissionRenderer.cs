@@ -56,7 +56,10 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
 
         if (type is StringEmissionType stringType)
         {
-            return $"Each string element is limited to <c>{stringType.Bound}</c> characters.";
+            var stringKind = stringType.IsWide ? "wide" : "narrow";
+            return stringType.IsBounded
+                ? $"Each {stringKind} IDL string element is limited to <c>{stringType.Bound}</c> characters."
+                : $"Each unbounded {stringKind} IDL string element has an effective limit of <c>{stringType.Bound}</c> characters.";
         }
 
         if (type is SequenceEmissionType sequence)

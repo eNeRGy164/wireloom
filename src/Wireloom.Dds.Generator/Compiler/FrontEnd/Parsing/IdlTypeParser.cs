@@ -514,12 +514,12 @@ internal sealed class IdlTypeParser
         string? currentNamespace,
         string errorPrefix)
     {
-        if (!IdlBuiltinTypeSyntax.TryParseStringType(elementType, out var isWideString, out _))
+        if (!IdlBuiltinTypeSyntax.TryParseStringType(elementType, out var isWideString, out var boundExpression))
         {
             return context.ReferenceType(elementType, currentNamespace, input, offset, errorPrefix);
         }
 
-        var stringType = new IdlType.StringType(isWideString, 255);
+        var stringType = new IdlType.StringType(isWideString, 255, isBounded: boundExpression is not null);
         var bound = ParseStringBound(input, offset, elementType, currentNamespace, "String bound must be a positive Int32.");
         bound?.AddConsumer(stringType.SetBound);
         return stringType;

@@ -268,6 +268,7 @@ public sealed class GeneratedScalarSpecs
         var colorPlugin = documents["Enum.Implementation.ColorPlugin.g.cs"].Source;
         colorPlugin.ShouldContain("new EnumMember(\"Red\"");
         colorPlugin.ShouldContain("EnumValue = 0");
+        colorPlugin.Split("/// <summary>", StringSplitOptions.None).Length.ShouldBe(4);
 
         var samplePlugin = documents["Enum.Implementation.SamplePlugin.g.cs"].Source;
         samplePlugin.ShouldContain("ColorSupport.Instance.GetDynamicTypeInternal(isPublic)");
