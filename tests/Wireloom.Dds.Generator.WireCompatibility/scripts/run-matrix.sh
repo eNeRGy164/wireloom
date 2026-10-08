@@ -419,6 +419,9 @@ PY
     )
     cpp_template_type="$cpp_type"
     cmake_adaptation_args=()
+    if ccache_path="$(command -v ccache || true)" && [[ -n "$ccache_path" ]]; then
+        cmake_adaptation_args+=( "-DCMAKE_CXX_COMPILER_LAUNCHER=$ccache_path" )
+    fi
     if [[ "$case_id" == "07-union-wchar-label" ]]; then
         cpp_template_type="dds::core::xtypes::DynamicData"
         cmake_adaptation_args+=( -DWIRELOOM_DYNAMIC_WCHAR_UNION=ON )
@@ -440,8 +443,7 @@ PY
     run_tool "CMake configure for $case_id" "$case_dir/cmake-configure.log" \
         cmake -S "$native_dir" -B "$native_dir/build" \
         -DCMAKE_MODULE_PATH="$NDDSHOME/resource/cmake" \
-        -DCONNEXTDDS_ARCH=x64Linux4gcc8.5.0 \
-        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache "${cmake_adaptation_args[@]}"
+        -DCONNEXTDDS_ARCH=x64Linux4gcc8.5.0 "${cmake_adaptation_args[@]}"
     run_tool "C++ build for $case_id" "$case_dir/cmake-build.log" \
         cmake --build "$native_dir/build" --parallel 2
     cpp_peer="$native_dir/build/wire-peer"
