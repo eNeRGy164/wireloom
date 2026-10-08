@@ -84,7 +84,7 @@ jobs:
         shell: pwsh
 
       - name: Test corpus compliance
-        run: dotnet test $env:CORPUS_TEST_PROJECT --no-restore --configuration Release
+        run: dotnet run --project $env:CORPUS_TEST_PROJECT --no-restore --configuration Release
         shell: pwsh
 
       - name: Pack package for integration test
