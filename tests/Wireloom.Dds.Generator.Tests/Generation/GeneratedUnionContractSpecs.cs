@@ -36,6 +36,9 @@ public sealed class GeneratedUnionContractSpecs
         managed.ShouldContain("<exception cref=\"global::System.InvalidOperationException\">The discriminator selects an explicit branch.</exception>");
         managed.ShouldContain("Reading this property while another branch is active throws <see cref=\"global::System.InvalidOperationException\"/>.");
         managed.ShouldContain("choice.Setnumber(default!, 1);");
+        managed.ShouldContain("var activeValue = choice.number;");
+        managed.ShouldContain("activeValue = choice.number;");
+        managed.ShouldContain("Reading choice.text here throws InvalidOperationException because that branch is inactive.");
         managed.ShouldContain("<exception cref=\"global::System.ArgumentException\">");
 
         var unmanaged = documents["MultiLabel.Implementation.ChoiceUnmanaged.g.cs"].Source;
