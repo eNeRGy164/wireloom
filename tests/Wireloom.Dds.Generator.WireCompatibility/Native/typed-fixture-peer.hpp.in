@@ -90,6 +90,7 @@ static int run_typed_fixture_peer(
                   << " fixture=" << fixture
                   << " readers_current=" << matched_status.current_count()
                   << " readers_total=" << matched_status.total_count() << std::endl;
+#ifdef WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE
         if (case_id == "09-optional-string-sequences") {
             // Report optional presence separately from sequence length: an
             // absent member and a present empty sequence are distinct values.
@@ -101,6 +102,7 @@ static int run_typed_fixture_peer(
                       << " wide_length=" << (expected.wideValues.has_value()
                             ? expected.wideValues->size() : 0) << std::endl;
         }
+#endif
         writer.write(expected);
         writer.wait_for_acknowledgments(dds::core::Duration(timeout_seconds, 0));
         std::cout << "SENT" << std::endl;
@@ -138,6 +140,7 @@ static int run_typed_fixture_peer(
                 ++valid_samples;
                 bool sample_matches = sample.data() == expected;
                 std::string optional_mismatch;
+#ifdef WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE
                 if (case_id == "09-optional-string-sequences") {
                     // Check both presence and content explicitly. Whole-sample
                     // equality alone can obscure whether absence, emptiness,
@@ -159,6 +162,7 @@ static int run_typed_fixture_peer(
                         optional_mismatch = "wideValues sequence differs";
                     }
                 }
+#endif
                 if (!sample_matches) {
                     const auto match_status = reader.subscription_matched_status();
                     std::cout << "READER_STATS case=" << case_id

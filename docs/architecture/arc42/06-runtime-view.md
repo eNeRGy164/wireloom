@@ -72,8 +72,11 @@ configuration and version-aware emission before that runtime can join the
 matrix.
 
 Known case limitations remain visible in each result. The RTI-positive
-`09-optional-aggregate-member` is excluded because Wireloom reports DDSG0001;
-it will enter the wire matrix when generator support is implemented.
+`09-optional-aggregate-member` cannot run because Wireloom reports DDSG0001
+before endpoint generation. The report adds a not-implemented row, marks all
+four pairings with ⛔, and links to [issue #32](https://github.com/eNeRGy164/wireloom/issues/32)
+for generator support. This records a support gap, not a measured DDS
+interoperability failure.
 `05-array-of-sequences`
 is included despite warning DDSG0105: Wireloom currently maps the C# members to
 flat sequences while RTI C++ preserves the IDL arrays. Same-language controls
@@ -83,17 +86,18 @@ shape limitation. The wire report keeps those two cross-language failures and
 marks them as expected; this case's wire test does not establish preservation
 of the two-slot array shape. Aggregate alias members now use the
 underlying generated struct or union type, and all four `03-alias-aggregate`
-and all eight `07-union-aliases` exchanges pass. Prior optional-string-sequence
-runs showed the C++ reader timing out on present wide-string values, the C++
-writer crashing after discovery, and C++ reader value mismatches. The C# reader
-had compared against an empty DynamicData fixture for these variants; this has
-been replaced with an independent value check. The C++ fixture now checks
-optional presence separately from sequence length and values, and reports
-child exit codes so writer crashes are distinguishable from downstream reader
-timeouts. These are recorded failures, not exclusions. The prior full catalog
-run completed 364 of 372 scenarios. Two array-of-sequences cross-language
-failures are expected; six present optional wide-string exchanges remain
-under investigation. A post-fix licensed rerun is still needed.
+and all eight `07-union-aliases` exchanges pass. The latest licensed run
+completed all 372 exchanges across 93 case/fixture rows: 364 passed, 8 failed
+as expected, and none were unrun or unexpected. Two expected failures are the
+`05-array-of-sequences` cross-language discovery mismatches. The other six are
+the `09-optional-string-sequences` present-wide-value pairings. AddressSanitizer
+locates the C++ writer crash in RTI's `sequence_helper<std::wstring>::get_value_pointer`
+while serializing the optional sequence; the C++ reader discovers the C# writer
+but returns no sample for those present-wide fixtures. Absent, empty, and
+narrow-only controls pass. C# verification uses independent fixture values,
+and the C++ fixture checks optional presence separately from sequence length
+and values. The report marks these six outcomes as expected and retains
+sanitized endpoint evidence.
 The wchar union's C++ peer uses a manually constructed RTI `DynamicType` because
 `rtiddsgen` cannot parse wchar union labels. For `10-flat-data-binding`, C++
 generation removes only the C#-ignored `@language_binding(FLAT_DATA)` annotation
