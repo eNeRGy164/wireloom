@@ -326,6 +326,7 @@ run_scenario() {
 # case-specific builds so the full matrix does not repeat the same restore.
 dotnet restore "$project" \
     -p:WireCompatibilityRtiVersion="$rti_version" \
+    --locked-mode \
     --verbosity quiet
 
 overall_status=0

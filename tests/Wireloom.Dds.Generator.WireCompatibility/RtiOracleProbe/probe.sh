@@ -23,7 +23,7 @@ fi
 rm -rf "$scratch"
 mkdir -p "$scratch/native"
 
-dotnet restore "$cs_project" --verbosity quiet
+dotnet restore "$cs_project" --locked-mode --verbosity quiet
 dotnet build "$cs_project" --no-restore --configuration Release --verbosity quiet
 
 "$NDDSHOME/bin/rtiddsgen" \
