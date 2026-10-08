@@ -202,7 +202,7 @@ public sealed class GeneratedScalarSpecs
 
         var sample = documents["Enum.Sample.g.cs"].Source;
         sample.ShouldContain("public Color color");
-        sample.ShouldContain("color { get; set; } = Color.Red;");
+        sample.ShouldContain("color { get; set; } = global::Enum.Color.Red;");
 
         var sampleUnmanaged = documents["Enum.Implementation.SampleUnmanaged.g.cs"].Source;
         sampleUnmanaged.ShouldContain("public struct SampleUnmanaged");
@@ -234,10 +234,26 @@ public sealed class GeneratedScalarSpecs
 
         // Assert
         var sample = documents["NegativeEnum.Sample.g.cs"].Source;
-        sample.ShouldContain("public Value value { get; set; } = Value.Before;");
+        sample.ShouldContain("public Value value { get; set; } = global::NegativeEnum.Value.Before;");
 
         var unmanaged = documents["NegativeEnum.Implementation.SampleUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("(Value)(-2)");
+    }
+
+    [Fact]
+    public void EnumDefaultIsFullyQualifiedWhenMemberShadowsEnumType()
+    {
+        // Arrange
+        var input = Input(
+            "enum-member-shadowing.idl",
+            "module Example { enum Color { Red, Blue }; struct Sample { Color value; long Color; }; }; ");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var sample = documents["Example.Sample.g.cs"].Source;
+        sample.ShouldContain("public Color value { get; set; } = global::Example.Color.Red;");
     }
 
     [Fact]

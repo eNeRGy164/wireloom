@@ -4,5 +4,19 @@
       "id": "09-optional-aggregate-member",
       "reason": "Wireloom rejects optional aggregate members with DDSG0001, so this RTI-positive case is not wire-testable until generator support is implemented."
     }
+  ],
+  "expectedFailures": [
+    {
+      "id": "05-array-of-sequences",
+      "writer": "C#",
+      "reader": "C++",
+      "reason": "Expected: DDSG0105 warns that Wireloom's generated C# binding flattens the array-of-sequences shape, and RTI reports a different member type kind during cross-language discovery."
+    },
+    {
+      "id": "05-array-of-sequences",
+      "writer": "C++",
+      "reader": "C#",
+      "reason": "Expected: DDSG0105 warns that Wireloom's generated C# binding flattens the array-of-sequences shape, and RTI reports a different member type kind during cross-language discovery."
+    }
   ]
 }

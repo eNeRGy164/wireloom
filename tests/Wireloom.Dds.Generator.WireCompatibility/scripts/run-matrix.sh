@@ -265,8 +265,10 @@ run_scenario() {
         writer_status=1
     fi
 
-    if ! wait "$reader_pid"; then
-        reader_status=1
+    if wait "$reader_pid"; then
+        :
+    else
+        reader_status=$?
     fi
 
     local status=PASS
@@ -276,15 +278,22 @@ run_scenario() {
 
     for endpoint_log in "$writer_log" "$reader_log"; do
         if [[ -f "$endpoint_log" ]]; then
-            grep -E '^(READY|PASS|RECEIVED|SENT|FAIL|FAIL_DETAIL|WRITER_MATCHED|READER_STATS)( |$)' "$endpoint_log" \
+            grep -E '^(READY|PASS|RECEIVED|SENT|FAIL|FAIL_DETAIL|WRITER_MATCHED|OPTIONAL_FIXTURE|READER_STATS|EXPECTED_SAMPLE|ACTUAL_SAMPLE)( |$)' "$endpoint_log" \
                 >> "$output_dir/logs/${label}.log" || true
             grep -Ei 'not assignable|type consistency|typeobject|type object|incompatible|data representation|qos policy|representation' "$endpoint_log" \
                 | sed 's/^/RTI_DIAGNOSTIC /' >> "$output_dir/logs/${label}.log" || true
         fi
     done
 
+    # Keep child exit codes in the sanitized log. This distinguishes a timeout
+    # from native crashes such as SIGSEGV (139), even if the child emitted no
+    # structured FAIL line before terminating.
+    printf 'ENDPOINT_STATUS writer_language=%s writer_exit_code=%s reader_language=%s reader_exit_code=%s\n' \
+        "$writer_language" "$writer_status" "$reader_language" "$reader_status" \
+        >> "$output_dir/logs/${label}.log"
+
     record_scenario "$case_id" "$type_name" "$cpp_type_name" \
-        "$writer_language" "$reader_language" "$status" "$fixture"
+        "$writer_language" "$reader_language" "$status" "$fixture" || return 1
     printf '%s %s [%s] -> %s %s\n' "$status" "$case_id" "$fixture" "$writer_language" "$reader_language"
     [[ "$status" == PASS ]]
 }
@@ -301,10 +310,18 @@ for case_id in "${case_ids[@]}"; do
         -p:WireCompatibilityCase="$case_id" \
         -p:WireCompatibilityRtiVersion="$rti_version" \
         --verbosity quiet
-    dotnet build "$project" --no-restore --configuration Release \
-        -p:WireCompatibilityCase="$case_id" \
-        -p:WireCompatibilityRtiVersion="$rti_version" \
+    build_args=(
+        --no-restore --configuration Release
+        -p:WireCompatibilityCase="$case_id"
+        -p:WireCompatibilityRtiVersion="$rti_version"
         --verbosity quiet
+    )
+    if [[ "$case_id" == "05-array-of-sequences" ]]; then
+        # Preserve DDSG0105 as a warning in this known-limitation case while
+        # keeping the repository's warnings-as-errors policy for all others.
+        build_args+=( -p:WarningsNotAsErrors=DDSG0105 )
+    fi
+    dotnet build "$project" "${build_args[@]}"
 
     generated_root="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/obj/wireloom-generated"
     registry="$case_dir/case.json"

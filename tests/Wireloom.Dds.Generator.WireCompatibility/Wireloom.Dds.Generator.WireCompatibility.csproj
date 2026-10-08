@@ -11,7 +11,6 @@
     <WireCompatibilityCase Condition="'$(WireCompatibilityCase)' == ''">01-primitives</WireCompatibilityCase>
     <WireCompatibilityRtiVersion Condition="'$(WireCompatibilityRtiVersion)' == ''">7.7.0</WireCompatibilityRtiVersion>
     <AssemblyName>WireCompatibility.$(WireCompatibilityCase)</AssemblyName>
-    <WarningsNotAsErrors Condition="'$(WireCompatibilityCase)' == '05-array-of-sequences'">$(WarningsNotAsErrors);DDSG0105</WarningsNotAsErrors>
     <DdsIdlIncludeDirectories>$(MSBuildProjectDirectory)\..\..\docs\corpus\idl;$(MSBuildProjectDirectory)\..\..\docs\corpus\idl\includes</DdsIdlIncludeDirectories>
   </PropertyGroup>
 

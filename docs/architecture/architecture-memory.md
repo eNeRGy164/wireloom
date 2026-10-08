@@ -33,8 +33,12 @@ or ADRs first, then refresh this file and
   zoom of the compiler and preprocessing boundary.
   See [chapter 5](arc42/05-building-block-view.md).
 - **Runtime and deployment:** The wire workflow covers Wireloom-positive,
-  wire-testable cases with C#/C++ peers and exact RTI 7.7.0. The expanded
-  fixture catalog completed 372 scenarios: 364 passed and 8 failed. Each
+  wire-testable cases with C#/C++ peers and exact RTI 7.7.0. The last complete
+  fixture run covered 372 scenarios: 364 passed and 8 failed,
+  including two expected array-of-sequences cross-language failures. C#
+  optional-sequence verification is now fixture-driven; C++ comparisons check
+  optional presence and content, and logs retain child exit codes. A licensed
+  rerun is needed before claiming these failures are fixed. Each
   case/fixture has an independent exchange for each language pairing; Markdown
   summarizes pairing outcomes and defects while JSON and sanitized logs retain
   details. RTI 7.3.1 needs future version-aware emission. See

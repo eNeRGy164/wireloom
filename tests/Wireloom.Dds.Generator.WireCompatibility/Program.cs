@@ -80,7 +80,7 @@ internal static class Program
         }
         else
         {
-            Receive(participant, topic, expected, options);
+            Receive(participant, topic, expected, expectedDynamic, options);
         }
     }
 
@@ -163,6 +163,7 @@ internal static class Program
         DomainParticipant participant,
         Topic<T> topic,
         T expected,
+        DynamicData expectedDynamic,
         PeerOptions options)
     {
         var readerQos = participant.ImplicitSubscriber.DefaultDataReaderQos
@@ -190,11 +191,25 @@ internal static class Program
 
             foreach (var sample in validData)
             {
-                if (!Equals(expected, sample))
+                try
+                {
+                    if (options.CaseId == "09-optional-string-sequences")
+                    {
+                        IndependentSampleVerifier.VerifyOptionalStringSequenceFixture(
+                            sample!, options.Fixture);
+                    }
+                    else
+                    {
+                        IndependentSampleVerifier.Verify(
+                            expectedDynamic,
+                            sample!,
+                            $"{options.CaseId} fixture {options.Fixture}");
+                    }
+                }
+                catch (InvalidDataException)
                 {
                     WriteReaderStatistics(reader, takeCalls, returnedSamples, validSamples);
-                    throw new InvalidDataException(
-                        $"Received sample differs from {options.CaseId} fixture {options.Fixture}.");
+                    throw;
                 }
 
                 WriteReaderStatistics(reader, takeCalls, returnedSamples, validSamples);
