@@ -7,6 +7,21 @@ namespace Wireloom.Generation.Tests;
 public sealed class UnionSpecs
 {
     [Fact]
+    public void DocumentsStringBoundsInEncodingUnitsForUnionBranches()
+    {
+        // Arrange
+        var input = Input("union-string-bounds.idl",
+            "module Example { union Choice switch(long) { case 1: string<12> narrow; default: wstring<7> wide; }; };");
+
+        // Act
+        var managed = CompileSources(input)["Example.Choice.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("The bound on this narrow IDL string is measured in UTF-8 bytes.");
+        managed.ShouldContain("The bound on this wide IDL string is measured in UTF-16 code units.");
+    }
+
+    [Fact]
     public void EmitsUnionManagedNativePluginAndTypeSupportDocuments()
     {
         // Arrange

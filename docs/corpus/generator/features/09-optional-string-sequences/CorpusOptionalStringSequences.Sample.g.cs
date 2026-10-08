@@ -15,13 +15,14 @@ namespace CorpusOptionalStringSequences;
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
-    /// Gets or sets the <c>narrowValues</c> member. This member is optional. Its maximum number of elements is <c>4</c>. Each narrow IDL string element is limited to <c>16</c> characters. A null value means absent; an empty collection is present with no elements. Its DDS member ID is <c>1</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
+    /// Gets or sets the <c>narrowValues</c> member. This member is optional. Its maximum number of elements is <c>4</c>. Each narrow IDL string element is limited to <c>16</c> UTF-8 bytes. A null value means absent; an empty collection is present with no elements. Its DDS member ID is <c>1</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
     /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
     /// <example>
     /// <code>
     /// var sample = new Sample();
+    /// sample.narrowValues = new Sequence&lt;string&gt;();
     /// sample.narrowValues.Add(default!);
     /// sample.narrowValues.RemoveAt(sample.narrowValues.Count - 1);
     /// </code>
@@ -37,13 +38,14 @@ public partial class Sample : global::System.IEquatable<Sample>
     public ISequence<string>? narrowValues { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>wideValues</c> member. This member is optional. Its maximum number of elements is <c>4</c>. Each wide IDL string element is limited to <c>16</c> characters. A null value means absent; an empty collection is present with no elements. Its DDS member ID is <c>2</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
+    /// Gets or sets the <c>wideValues</c> member. This member is optional. Its maximum number of elements is <c>4</c>. Each wide IDL string element is limited to <c>16</c> UTF-16 code units. A null value means absent; an empty collection is present with no elements. Its DDS member ID is <c>2</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
     /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
     /// <example>
     /// <code>
     /// var sample = new Sample();
+    /// sample.wideValues = new Sequence&lt;string&gt;();
     /// sample.wideValues.Add(default!);
     /// sample.wideValues.RemoveAt(sample.wideValues.Count - 1);
     /// </code>

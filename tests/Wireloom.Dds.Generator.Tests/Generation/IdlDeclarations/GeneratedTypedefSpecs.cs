@@ -7,6 +7,28 @@ namespace Wireloom.Generation.IdlDeclarations.Tests;
 public sealed class GeneratedTypedefSpecs
 {
     [Fact]
+    public void DocumentsNestedConstraintsInSequenceTypedefsAndUsesUnboundedElementCount()
+    {
+        // Arrange
+        var input = Input("nested-sequence-typedefs.idl",
+            """
+            module Example {
+                typedef sequence<string<12>, 4> BoundedTexts;
+                typedef sequence<wstring, 3> UnboundedWideTexts;
+                typedef long HugeArray[50000][50000];
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Example.BoundedTexts.g.cs"].Source.ShouldContain("Each narrow IDL string element is limited to <c>12</c> UTF-8 bytes.");
+        documents["Example.UnboundedWideTexts.g.cs"].Source.ShouldContain("Each unbounded wide IDL string element has an effective limit of <c>255</c> UTF-16 code units.");
+        documents["Example.HugeArray.g.cs"].Source.ShouldContain("(2500000000 elements)");
+    }
+
+    [Fact]
     public void ResolvesTypedefsThatTargetKeywordNamedAggregates()
     {
         // Arrange
@@ -187,13 +209,13 @@ public sealed class GeneratedTypedefSpecs
         text.ShouldContain("public string Value { get; set; } = string.Empty;");
 
         var explicit255 = documents["StringAliases.Explicit255.g.cs"].Source;
-        explicit255.ShouldContain("Its IDL bound is <c>255</c> characters.");
-        explicit255.ShouldContain("The bound on this narrow IDL string counts characters.");
+        explicit255.ShouldContain("Its IDL bound is <c>255</c> UTF-8 bytes.");
+        explicit255.ShouldContain("The bound on this narrow IDL string is measured in UTF-8 bytes.");
         explicit255.ShouldNotContain("unbounded narrow IDL string");
 
         var unboundedText = documents["StringAliases.UnboundedText.g.cs"].Source;
-        unboundedText.ShouldContain("This unbounded narrow IDL string has an effective limit of 255 characters.");
-        unboundedText.ShouldNotContain("Its IDL bound is <c>255</c> characters.");
+        unboundedText.ShouldContain("This unbounded narrow IDL string has an effective limit of 255 UTF-8 bytes.");
+        unboundedText.ShouldNotContain("Its IDL bound is <c>255</c> UTF-8 bytes.");
 
         var textPlugin = documents["StringAliases.Implementation.TextPlugin.g.cs"].Source;
         textPlugin.ShouldContain("dtf.CreateString(8)");

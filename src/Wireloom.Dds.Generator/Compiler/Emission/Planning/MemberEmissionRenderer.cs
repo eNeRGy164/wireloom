@@ -27,7 +27,8 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
 
             if (facts.IsString)
             {
-                return $"Its maximum length is <c>{bound}</c> characters.";
+                var stringType = (StringEmissionType)facts.ValueType;
+                return $"Its maximum length is <c>{bound}</c> {StringBoundUnit(stringType.IsWide)}.";
             }
 
             if (EmissionTypeProjector.HasSequenceType(facts.Type))
@@ -50,16 +51,17 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
         }
     }
 
-    private static string? NestedCollectionConstraintSummary(EmissionTypePlan type)
+    internal static string? NestedCollectionConstraintSummary(EmissionTypePlan type)
     {
         type = UnwrapAliasAndOptional(type);
 
         if (type is StringEmissionType stringType)
         {
             var stringKind = stringType.IsWide ? "wide" : "narrow";
+            var unit = StringBoundUnit(stringType.IsWide);
             return stringType.IsBounded
-                ? $"Each {stringKind} IDL string element is limited to <c>{stringType.Bound}</c> characters."
-                : $"Each unbounded {stringKind} IDL string element has an effective limit of <c>{stringType.Bound}</c> characters.";
+                ? $"Each {stringKind} IDL string element is limited to <c>{stringType.Bound}</c> {unit}."
+                : $"Each unbounded {stringKind} IDL string element has an effective limit of <c>{stringType.Bound}</c> {unit}.";
         }
 
         if (type is SequenceEmissionType sequence)
@@ -78,6 +80,8 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
 
         return null;
     }
+
+    internal static string StringBoundUnit(bool isWide) => isWide ? "UTF-16 code units" : "UTF-8 bytes";
 
     private static EmissionTypePlan UnwrapAliasAndOptional(EmissionTypePlan type) => type switch
     {

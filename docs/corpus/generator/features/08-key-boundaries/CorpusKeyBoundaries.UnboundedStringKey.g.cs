@@ -15,10 +15,10 @@ namespace CorpusKeyBoundaries;
 public partial class UnboundedStringKey : global::System.IEquatable<UnboundedStringKey>
 {
     /// <summary>
-    /// Gets or sets the <c>name</c> member. This member forms part of the DDS instance key. Its maximum length is <c>255</c> characters.
+    /// Gets or sets the <c>name</c> member. This member forms part of the DDS instance key. Its maximum length is <c>255</c> UTF-8 bytes.
     /// </summary>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
-    /// <remarks>This unbounded narrow IDL string has an effective limit of 255 characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not enforce the effective limit when assigned.</remarks>
+    /// <remarks>This unbounded narrow IDL string has an effective limit of 255 UTF-8 bytes. The generated C# property does not enforce the effective limit when assigned.</remarks>
     [Key]
     [Bound(255)]
     public string name { get; set; } = string.Empty;

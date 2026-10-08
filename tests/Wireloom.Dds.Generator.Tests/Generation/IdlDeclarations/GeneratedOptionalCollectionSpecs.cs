@@ -28,6 +28,8 @@ public sealed class GeneratedOptionalCollectionSpecs
         // Assert
         var source = documents["OracleOptionalCollections.Message.g.cs"].Source;
         source.ShouldContain("[Optional]\n    [Bound(4)]\n    public ISequence<int>? values { get; set; }");
+        source.ShouldContain("sample.values = new Sequence&lt;int&gt;();");
+        source.ShouldContain("sample.values.Add(default!);");
         source.ShouldContain("[Optional]\n    public int[,]? matrix { get; set; }");
         source.ShouldContain("[Optional]\n    [Bound(8)]\n    public string? text { get; set; }");
         source.ShouldNotContain("values = new Sequence<int>();");

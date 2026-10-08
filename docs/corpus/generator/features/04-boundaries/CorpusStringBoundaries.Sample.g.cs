@@ -15,18 +15,18 @@ namespace CorpusStringBoundaries;
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
-    /// Gets or sets the <c>narrow</c> member. Its maximum length is <c>8</c> characters.
+    /// Gets or sets the <c>narrow</c> member. Its maximum length is <c>8</c> UTF-8 bytes.
     /// </summary>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
-    /// <remarks>The bound on this narrow IDL string counts characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not check the bound when assigned.</remarks>
+    /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(8)]
     public string narrow { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the <c>wide</c> member. Its maximum length is <c>8</c> characters.
+    /// Gets or sets the <c>wide</c> member. Its maximum length is <c>8</c> UTF-16 code units.
     /// </summary>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
-    /// <remarks>The bound on this wide IDL string counts characters. RTI encodes wide IDL strings as UTF-16 by default. The generated C# property does not check the bound when assigned.</remarks>
+    /// <remarks>The bound on this wide IDL string is measured in UTF-16 code units. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(8)]
     public string wide { get; set; } = string.Empty;
 

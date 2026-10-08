@@ -123,16 +123,19 @@ internal static class ManagedDataTypeEmitter
             {
                 writer.WriteXmlRemarks("The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.");
                 writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html", "RTI Connext 7.7.0 ISequence API");
-                writer.WriteXmlExample($"var sample = new {typeName}();\nsample.{field.EscapedName}.Add(default!);\nsample.{field.EscapedName}.RemoveAt(sample.{field.EscapedName}.Count - 1);");
+                var sequenceExample = field.IsOptional
+                    ? $"var sample = new {typeName}();\nsample.{field.EscapedName} = new Sequence<{IdlNaming.TypeReference(field.ElementCSharpType!, field.CurrentNamespace)}>();\nsample.{field.EscapedName}.Add(default!);\nsample.{field.EscapedName}.RemoveAt(sample.{field.EscapedName}.Count - 1);"
+                    : $"var sample = new {typeName}();\nsample.{field.EscapedName}.Add(default!);\nsample.{field.EscapedName}.RemoveAt(sample.{field.EscapedName}.Count - 1);";
+                writer.WriteXmlExample(sequenceExample);
             }
 
             if (field.IsString)
             {
                 var stringKind = field.IsWideString ? "wide" : "narrow";
-                var encoding = field.IsWideString ? "UTF-16" : "UTF-8";
+                var unit = MemberEmissionRenderer.StringBoundUnit(field.IsWideString);
                 var remark = !field.IsBoundedString
-                    ? $"This unbounded {stringKind} IDL string has an effective limit of 255 characters. RTI encodes {stringKind} IDL strings as {encoding} by default. The generated C# property does not enforce the effective limit when assigned."
-                    : $"The bound on this {stringKind} IDL string counts characters. RTI encodes {stringKind} IDL strings as {encoding} by default. The generated C# property does not check the bound when assigned.";
+                    ? $"This unbounded {stringKind} IDL string has an effective limit of 255 {unit}. The generated C# property does not enforce the effective limit when assigned."
+                    : $"The bound on this {stringKind} IDL string is measured in {unit}. The generated C# property does not check the bound when assigned.";
                 writer.WriteXmlRemarks(remark);
             }
 
