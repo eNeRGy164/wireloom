@@ -33,4 +33,6 @@ package-test-feed/
 coverage/
 
 # Local wire-compatibility run reports and sanitized logs
-/artifacts/wire-compatibility/
+/artifacts/wire-compatibility*
+/artifacts/wire-focus*
+tmp/
