@@ -443,12 +443,28 @@ int main(int argc, char **argv)
                 ++take_calls;
                 for (const auto &sample : samples) {
                     ++returned_samples;
-                    if (!sample.info().valid()) {
+                    if (sample.info().valid()) {
+                        ++valid_samples;
+                    } else {
                         ++invalid_samples;
-                        continue;
                     }
+                }
 
-                    ++valid_samples;
+                if (invalid_samples > 0) {
+                    const auto match_status = reader.subscription_matched_status();
+                    std::cout << "READER_STATS case=" << case_id
+                              << " matched_writers_current=" << match_status.current_count()
+                              << " matched_writers_total=" << match_status.total_count()
+                              << " take_calls=" << take_calls
+                              << " returned_samples=" << returned_samples
+                              << " valid_samples=" << valid_samples
+                              << " invalid_samples=" << invalid_samples
+                              << std::endl;
+                    throw std::runtime_error(
+                        "Received invalid-data sample for " + case_id + " fixture " + fixture);
+                }
+
+                for (const auto &sample : samples) {
                     if (!(sample.data() == expected)) {
                         const auto match_status = reader.subscription_matched_status();
                         std::cout << "READER_STATS case=" << case_id

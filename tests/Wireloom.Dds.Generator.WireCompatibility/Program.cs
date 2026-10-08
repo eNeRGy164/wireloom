@@ -180,14 +180,34 @@ internal static class Program
         var takeCalls = 0;
         var returnedSamples = 0;
         var validSamples = 0;
+        var invalidSamples = 0;
 
         while (deadline.Elapsed < Timeout)
         {
             using var samples = reader.Take();
             takeCalls++;
-            var validData = samples.ValidData().ToArray();
-            returnedSamples += samples.Count();
-            validSamples += validData.Length;
+            var validData = new List<T>();
+            foreach (var sample in samples)
+            {
+                returnedSamples++;
+                if (sample.Info.ValidData)
+                {
+                    validSamples++;
+                    validData.Add(sample.Data);
+                }
+                else
+                {
+                    invalidSamples++;
+                }
+            }
+
+            if (invalidSamples > 0)
+            {
+                WriteReaderStatistics(reader, takeCalls, returnedSamples, validSamples, invalidSamples);
+                throw new InvalidDataException(
+                    $"Received {invalidSamples} invalid-data sample(s) for " +
+                    $"{options.CaseId} fixture {options.Fixture}.");
+            }
 
             foreach (var sample in validData)
             {
@@ -208,18 +228,18 @@ internal static class Program
                 }
                 catch (InvalidDataException)
                 {
-                    WriteReaderStatistics(reader, takeCalls, returnedSamples, validSamples);
+                    WriteReaderStatistics(reader, takeCalls, returnedSamples, validSamples, invalidSamples);
                     throw;
                 }
 
-                WriteReaderStatistics(reader, takeCalls, returnedSamples, validSamples);
+                WriteReaderStatistics(reader, takeCalls, returnedSamples, validSamples, invalidSamples);
                 return;
             }
 
             Thread.Sleep(TimeSpan.FromMilliseconds(50));
         }
 
-        WriteReaderStatistics(reader, takeCalls, returnedSamples, validSamples);
+        WriteReaderStatistics(reader, takeCalls, returnedSamples, validSamples, invalidSamples);
         throw new TimeoutException(
             $"No sample received for {options.CaseId} fixture {options.Fixture}.");
     }
@@ -228,14 +248,15 @@ internal static class Program
         DataReader<T> reader,
         int takeCalls,
         int returnedSamples,
-        int validSamples)
+        int validSamples,
+        int invalidSamples)
     {
         var matchStatus = reader.SubscriptionMatchedStatus;
         Console.WriteLine(
             $"READER_STATS matched_publications_current={matchStatus.CurrentCount} " +
             $"matched_publications_total={matchStatus.TotalCount} take_calls={takeCalls} " +
             $"returned_samples={returnedSamples} valid_samples={validSamples} " +
-            $"invalid_samples={returnedSamples - validSamples}");
+            $"invalid_samples={invalidSamples}");
     }
 
     private static bool UsesXcdr2(string caseId) =>
