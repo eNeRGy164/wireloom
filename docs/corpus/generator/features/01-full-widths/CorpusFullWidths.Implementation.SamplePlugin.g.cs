@@ -18,6 +18,9 @@ namespace CorpusFullWidths.Implementation;
 /// </summary>
 internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Sample"/>.
+    /// </summary>
     internal SamplePlugin() : base("CorpusFullWidths.Sample", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

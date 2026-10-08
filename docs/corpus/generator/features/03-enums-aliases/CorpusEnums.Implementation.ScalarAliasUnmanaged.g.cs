@@ -9,6 +9,9 @@ using Rti.Types;
 
 namespace CorpusEnums.Implementation;
 
+/// <summary>
+/// Provides native storage and conversion operations for the ScalarAlias typedef. This type is used by RTI runtime integration and is not an application-facing value type.
+/// </summary>
 public struct ScalarAliasUnmanaged : INativeTopicType<ScalarAlias>
 {
     private int Value;

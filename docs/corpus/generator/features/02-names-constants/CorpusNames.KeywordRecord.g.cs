@@ -10,19 +10,19 @@ using Rti.Types;
 namespace CorpusNames;
 
 /// <summary>
-/// Represents the <c>KeywordRecord</c> DDS type declared in <c>02-names-constants.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>KeywordRecord</c> DDS type declared in <c>02-names-constants.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
 {
     /// <summary>
-    /// Gets or sets the <c>event</c> member.
+    /// Gets or sets the <c>event</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int @event { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>state</c> member.
     /// </summary>
-    public State state { get; set; } = State.Idle;
+    public State state { get; set; } = global::CorpusNames.State.Idle;
 
     /// <summary>
     /// Gets or sets the <c>point</c> member.
@@ -32,6 +32,7 @@ public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
     /// <summary>
     /// Initializes a new instance of the <see cref="KeywordRecord"/> class.
     /// </summary>
+    /// <remarks>nested aggregate members start as new instances.</remarks>
     public KeywordRecord()
     {
     }
@@ -39,9 +40,10 @@ public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
     /// <summary>
     /// Initializes a new instance of the <see cref="KeywordRecord"/> class with the supplied member values.
     /// </summary>
-    /// <param name="@event">The value for the <c>event</c> member.</param>
+    /// <param name="event">The value for the <c>event</c> member.</param>
     /// <param name="state">The value for the <c>state</c> member.</param>
     /// <param name="point">The value for the <c>point</c> member.</param>
+    /// <remarks>The constructor stores supplied reference-type member values as provided. It does not clone their arrays, sequences, or nested objects.</remarks>
     public KeywordRecord(int @event, State state, Nested.Point point)
     {
         this.@event = @event;
@@ -53,6 +55,13 @@ public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
     /// Initializes a copy of the specified <see cref="KeywordRecord"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new KeywordRecord();
+    /// var copy = new KeywordRecord(original);
+    /// </code>
+    /// </example>
     public KeywordRecord(KeywordRecord? other)
     {
         if (other is null)
@@ -103,8 +112,8 @@ public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
     public override bool Equals(object? obj) => Equals(obj as KeywordRecord);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => KeywordRecordSupport.Instance.ToString(this);
 }

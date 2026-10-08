@@ -11,8 +11,18 @@ using Rti.Types.Dynamic;
 namespace CorpusOptionalEvolution;
 
 /// <summary>
-/// Provides RTI Connext DDS type support for <see cref="Message"/>.
+/// Provides application-facing formatting, serialization, and dynamic-type utilities for <see cref="Message"/>. RTI uses its internal plugin and native representation to process samples.
 /// </summary>
+/// <remarks>The referenced API documentation targets RTI Connext 7.7.0, Wireloom's current compatibility baseline. Verify API details against the runtime version used by the consuming project.</remarks>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Dds_1_1Topics_1_1TypeSupport.html">RTI Connext C# TypeSupport API (7.7.0)</seealso>
+/// <example>
+/// <code>
+/// var sample = new Message();
+/// var text = MessageSupport.Instance.ToString(sample);
+/// var dynamicType = MessageSupport.Instance.DynamicType;
+/// var serializer = MessageSupport.Instance.CreateSerializer();
+/// </code>
+/// </example>
 public class MessageSupport : TypeSupport<Message>
 {
     /// <summary>
@@ -25,8 +35,9 @@ public class MessageSupport : TypeSupport<Message>
     }
 
     /// <summary>
-    /// Gets the cached RTI Connext DDS type-support instance.
+    /// Gets the shared type-support instance used by the generated utilities and DDS APIs for this type.
     /// </summary>
+    /// <remarks>Use this property to format or serialize samples and to inspect the dynamic type. The generated plugin and unmanaged type are runtime implementation details.</remarks>
     public static MessageSupport Instance { get; } =
         ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<MessageSupport, Message>();
 }

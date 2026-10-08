@@ -135,7 +135,7 @@ internal static class EmissionTypeProjector
         type switch
         {
             IdlType.Primitive primitive => new PrimitiveEmissionType(IdlNaming.NormalizeIdlType(primitive.Name), IdlNaming.MapPrimitive(primitive.Name)),
-            IdlType.StringType stringType => new StringEmissionType(stringType.IsWide, stringType.Bound),
+            IdlType.StringType stringType => new StringEmissionType(stringType.IsWide, stringType.Bound, stringType.IsBounded),
             IdlType.Enum @enum => new EnumEmissionType(
                 IdlNaming.ResolvedTypeReference(@enum.QualifiedName, currentNamespace),
                 @enum.DefaultValue,

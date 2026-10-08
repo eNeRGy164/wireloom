@@ -10,7 +10,7 @@ using Rti.Types;
 namespace CorpusUnionKeys;
 
 /// <summary>
-/// Represents the <c>Identity</c> DDS union declared in <c>08-key-union.idl</c>. Exactly one branch is selected by <see cref="Discriminator"/>.
+/// Represents the <c>Identity</c> DDS union declared in <c>08-key-union.idl</c>. The discriminator selects a branch when it matches a declared label; otherwise, no branch is active.
 /// </summary>
 public partial class Identity : global::System.IEquatable<Identity>
 {
@@ -23,13 +23,15 @@ public partial class Identity : global::System.IEquatable<Identity>
     public int Discriminator { get; private set; }
 
     /// <summary>
-    /// Gets the discriminator value used to initialize this union.
+    /// Gets the discriminator value used by the parameterless constructor.
     /// </summary>
     public const int DefaultDiscriminator = 0;
 
     /// <summary>
     /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>0</c>.
     /// </summary>
+    /// <remarks>Reading this property while another branch is active throws <see cref="global::System.InvalidOperationException"/>. Assigning it stores the value and changes <see cref="Discriminator"/> to a label for this branch.</remarks>
+    /// <exception cref="global::System.InvalidOperationException">The discriminator selects another branch or selects no branch.</exception>
     public int number
     {
         get
@@ -52,6 +54,8 @@ public partial class Identity : global::System.IEquatable<Identity>
     /// <summary>
     /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>1</c>.
     /// </summary>
+    /// <remarks>Reading this property while another branch is active throws <see cref="global::System.InvalidOperationException"/>. Assigning it stores the value and changes <see cref="Discriminator"/> to a label for this branch.</remarks>
+    /// <exception cref="global::System.InvalidOperationException">The discriminator selects another branch or selects no branch.</exception>
     [Bound(255)]
     public string text
     {
@@ -73,7 +77,7 @@ public partial class Identity : global::System.IEquatable<Identity>
     }
 
     /// <summary>
-    /// Initializes a new union with its RTI default discriminator.
+    /// Initializes a new union with its RTI default discriminator. A branch is active only when that discriminator matches a declared label or selects the default branch.
     /// </summary>
     public Identity()
     {
@@ -84,6 +88,7 @@ public partial class Identity : global::System.IEquatable<Identity>
     /// Initializes a copy of another <see cref="Identity"/> union.
     /// </summary>
     /// <param name="other">The union to copy.</param>
+    /// <remarks>When <paramref name="other"/> is null, the constructor leaves the discriminator at its default and does not copy a branch value.</remarks>
     public Identity(Identity? other)
     {
         if (other is null)
@@ -107,9 +112,9 @@ public partial class Identity : global::System.IEquatable<Identity>
     }
 
     /// <summary>
-    /// Gets the currently active union-branch value.
+    /// Gets the value of the currently active union branch, if any.
     /// </summary>
-    /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
+    /// <returns>The concrete value of the active branch, or <see langword="null"/> when the discriminator selects no declared branch.</returns>
     public object? Get()
     {
         return Discriminator switch
@@ -120,7 +125,9 @@ public partial class Identity : global::System.IEquatable<Identity>
         };
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Computes a hash from the discriminator and, when a branch is active, its value.
+    /// </summary>
     public override int GetHashCode()
     {
         return Discriminator switch
@@ -132,7 +139,7 @@ public partial class Identity : global::System.IEquatable<Identity>
     }
 
     /// <summary>
-    /// Determines whether this union has the same discriminator and active branch value as <paramref name="other"/>.
+    /// Determines whether this union has the same discriminator and active branch value as <paramref name="other"/>. When neither discriminator selects a branch, equality depends on the discriminator alone.
     /// </summary>
     /// <param name="other">The union to compare.</param>
     /// <returns><see langword="true"/> when both unions select equal values; otherwise <see langword="false"/>.</returns>
@@ -160,7 +167,8 @@ public partial class Identity : global::System.IEquatable<Identity>
     public override bool Equals(object? obj) => Equals(obj as Identity);
 
     /// <summary>
-    /// Returns the RTI Connext DDS representation of this union.
+    /// Formats this union as readable text.
     /// </summary>
+    /// <returns>A readable string formatted by the union's type-support instance.</returns>
     public override string ToString() => IdentitySupport.Instance.ToString(this);
 }

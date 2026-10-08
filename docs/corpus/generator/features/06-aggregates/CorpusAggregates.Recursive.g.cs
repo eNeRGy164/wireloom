@@ -10,24 +10,34 @@ using Rti.Types;
 namespace CorpusAggregates;
 
 /// <summary>
-/// Represents the <c>Recursive</c> DDS type declared in <c>06-aggregates.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>Recursive</c> DDS type declared in <c>06-aggregates.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Recursive : global::System.IEquatable<Recursive>
 {
     /// <summary>
-    /// Gets or sets the <c>value</c> member.
+    /// Gets or sets the <c>value</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int value { get; set; }
 
     /// <summary>
     /// Gets the <c>children</c> member. Its maximum number of elements is <c>100</c>.
     /// </summary>
+    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
+    /// <example>
+    /// <code>
+    /// var sample = new Recursive();
+    /// sample.children.Add(default!);
+    /// sample.children.RemoveAt(sample.children.Count - 1);
+    /// </code>
+    /// </example>
     [Bound(100)]
     public ISequence<Recursive> children { get; } = null!;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Recursive"/> class.
     /// </summary>
+    /// <remarks>Non-optional sequences start empty.</remarks>
     public Recursive()
     {
         children = new Sequence<Recursive>();
@@ -38,6 +48,7 @@ public partial class Recursive : global::System.IEquatable<Recursive>
     /// </summary>
     /// <param name="value">The value for the <c>value</c> member.</param>
     /// <param name="children">The value for the <c>children</c> member.</param>
+    /// <remarks>The constructor stores supplied reference-type member values as provided. It does not clone their arrays, sequences, or nested objects.</remarks>
     public Recursive(int value, ISequence<Recursive> children)
     {
         this.value = value;
@@ -48,6 +59,13 @@ public partial class Recursive : global::System.IEquatable<Recursive>
     /// Initializes a copy of the specified <see cref="Recursive"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Recursive();
+    /// var copy = new Recursive(original);
+    /// </code>
+    /// </example>
     public Recursive(Recursive? other)
     {
         if (other is null)
@@ -95,8 +113,8 @@ public partial class Recursive : global::System.IEquatable<Recursive>
     public override bool Equals(object? obj) => Equals(obj as Recursive);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => RecursiveSupport.Instance.ToString(this);
 }

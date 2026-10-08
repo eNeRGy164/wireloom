@@ -478,12 +478,67 @@ public sealed class GeneratorSpecs
         result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeFalse();
     }
 
-    private static GeneratorRunResult Run(string input, LanguageVersion languageVersion, IReadOnlyDictionary<string, string> metadata, bool includeRuntime)
+    [Fact]
+    public void GeneratedXmlDocumentationHasNoMalformedOrKeywordParameterWarnings()
     {
-        var parseOptions = new CSharpParseOptions(languageVersion);
+        // Arrange
+        const string input = "module Keywords { struct Sample { long event; long base; }; union Choice switch(long) { case 1: case 5: long number; default: string text; }; };";
+
+        // Act
+        var result = Run(
+            input,
+            LanguageVersion.CSharp12,
+            new Dictionary<string, string> { ["Generate"] = "true" },
+            includeRuntime: true,
+            documentationMode: DocumentationMode.Diagnose,
+            source: "using Keywords; namespace Input; public sealed class Marker { public void Run() { var choice = new Choice(); choice.number = default!; choice.Setnumber(default!, 1); } }");
+        var documentationWarnings = result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(diagnostic => diagnostic.Id is "CS1570" or "CS1572" or "CS1573" or "CS1584" or "CS0419")
+            .ToArray();
+
+        // Assert
+        documentationWarnings.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void GeneratedUsageExamplesCompileAgainstTheirGeneratedTypes()
+    {
+        // Arrange
+        const string input = "module Examples { struct Sample { sequence<long, 4> values; @optional string title; }; };";
+        const string source = "using Examples; namespace Input; public sealed class Marker { public void Run() { var sample = new Sample(); sample.values.Add(default!); sample.values.RemoveAt(sample.values.Count - 1); sample.title = null; var original = new Sample(); var copy = new Sample(original); var text = SampleSupport.Instance.ToString(copy); var dynamicType = SampleSupport.Instance.DynamicType; var serializer = SampleSupport.Instance.CreateSerializer(); } }";
+
+        // Act
+        var result = Run(
+            input,
+            LanguageVersion.CSharp12,
+            new Dictionary<string, string> { ["Generate"] = "true" },
+            includeRuntime: true,
+            documentationMode: DocumentationMode.Diagnose,
+            source: source);
+        var errors = result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        var documentationWarnings = result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(diagnostic => diagnostic.Id is "CS1570" or "CS1572" or "CS1573" or "CS1584" or "CS0419")
+            .ToArray();
+
+        // Assert
+        errors.ShouldBeEmpty();
+        documentationWarnings.ShouldBeEmpty();
+    }
+
+    private static GeneratorRunResult Run(
+        string input,
+        LanguageVersion languageVersion,
+        IReadOnlyDictionary<string, string> metadata,
+        bool includeRuntime,
+        DocumentationMode documentationMode = DocumentationMode.Parse,
+        string? source = null)
+    {
+        var parseOptions = new CSharpParseOptions(languageVersion, documentationMode: documentationMode);
         var compilation = CSharpCompilation.Create(
             "GeneratorInput",
-            [CSharpSyntaxTree.ParseText("namespace Input; public sealed class Marker { }", parseOptions)],
+            [CSharpSyntaxTree.ParseText(source ?? "namespace Input; public sealed class Marker { }", parseOptions)],
             includeRuntime ? RuntimeReferences() : FrameworkReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 

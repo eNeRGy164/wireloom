@@ -34,6 +34,7 @@ internal static class DynamicTypeEmitter
             writer.BlankLine();
         }
 
+        writer.WriteXmlSummary($"Initializes the RTI plugin for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"internal {names.PluginTypeName}() : base(\"{runtimeTypeName}\", isKeyed: {(inheritedFields.Concat(fields).Any(field => field.IsKey) ? "true" : "false")}, CreateDynamicType(isPublic: false))");
 
         if (isRecursive)

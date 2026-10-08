@@ -9,7 +9,7 @@ internal static class ManagedDataTypeEmitter
 {
     public static void Emit(GeneratedSourceWriter writer, string typeName, string? currentNamespace, IReadOnlyList<MemberEmissionPlan> fields, IReadOnlyList<MemberEmissionPlan> inheritedFields, string? baseType)
     {
-        EmitDataMembers(writer, fields);
+        EmitDataMembers(writer, typeName, fields);
         EmitDefaultConstructor(writer, typeName, fields);
 
         if (fields.Count > 0 || inheritedFields.Count > 0)
@@ -22,7 +22,7 @@ internal static class ManagedDataTypeEmitter
         EmitEquality(writer, typeName, fields, baseType is not null);
     }
 
-    private static void EmitDataMembers(GeneratedSourceWriter writer, IReadOnlyList<MemberEmissionPlan> fields)
+    private static void EmitDataMembers(GeneratedSourceWriter writer, string typeName, IReadOnlyList<MemberEmissionPlan> fields)
     {
         var rangedFields = fields.Where(field => field.HasManagedRange).ToArray();
         foreach (var field in rangedFields)
@@ -74,10 +74,72 @@ internal static class ManagedDataTypeEmitter
 
             if (field.IsMustUnderstand)
             {
-                propertySummary += " This member is marked as must-understand by DDS.";
+                propertySummary += " A DDS reader that does not understand this member cannot safely read the sample.";
+            }
+
+            if (field.IsArray)
+            {
+                propertySummary += $" It is a fixed array with dimensions {string.Join(" × ", field.Dimensions)}.";
+            }
+
+            if (field.IsOptional && (field.IsArray || field.IsSequence))
+            {
+                propertySummary += " A null value means absent; an empty collection is present with no elements.";
+            }
+            else if (field.IsOptional)
+            {
+                propertySummary += " A null value means the member is absent.";
+            }
+
+            if (field.MemberId is int memberId)
+            {
+                propertySummary += $" Its DDS member ID is <c>{memberId}</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.";
             }
 
             writer.WriteXmlSummary(propertySummary);
+
+            if (field.HasManagedRange)
+            {
+                if (field is { MinimumValue: { } minimum, MaximumValue: { } maximum })
+                {
+                    writer.WriteXmlException("global::System.ArgumentOutOfRangeException", $"The assigned value is outside the inclusive range {minimum} through {maximum}.");
+                }
+                else if (field.MinimumValue is { } minimumOnly)
+                {
+                    writer.WriteXmlException("global::System.ArgumentOutOfRangeException", $"The assigned value is less than {minimumOnly}.");
+                }
+                else if (field.MaximumValue is { } maximumOnly)
+                {
+                    writer.WriteXmlException("global::System.ArgumentOutOfRangeException", $"The assigned value is greater than {maximumOnly}.");
+                }
+            }
+
+            if (field.IsString)
+            {
+                writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", "RTI Connext 7.7.0 string and wide-string bounds");
+            }
+
+            if (field.IsSequence)
+            {
+                writer.WriteXmlRemarks("The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.");
+                writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html", "RTI Connext 7.7.0 ISequence API");
+                writer.WriteXmlExample($"var sample = new {typeName}();\nsample.{field.EscapedName}.Add(default!);\nsample.{field.EscapedName}.RemoveAt(sample.{field.EscapedName}.Count - 1);");
+            }
+
+            if (field.IsString)
+            {
+                var stringKind = field.IsWideString ? "wide" : "narrow";
+                var encoding = field.IsWideString ? "UTF-16" : "UTF-8";
+                var remark = !field.IsBoundedString
+                    ? $"This unbounded {stringKind} IDL string has an effective limit of 255 characters. RTI encodes {stringKind} IDL strings as {encoding} by default. The generated C# property does not enforce the effective limit when assigned."
+                    : $"The bound on this {stringKind} IDL string counts characters. RTI encodes {stringKind} IDL strings as {encoding} by default. The generated C# property does not check the bound when assigned.";
+                writer.WriteXmlRemarks(remark);
+            }
+
+            if (field.IsOptional)
+            {
+                writer.WriteXmlExample($"var sample = new {typeName}();\nsample.{field.EscapedName} = null; // the member is absent");
+            }
 
             if (field.IsKey)
             {
@@ -144,6 +206,36 @@ internal static class ManagedDataTypeEmitter
         writer.BlankLine();
 
         writer.WriteXmlSummary($"Initializes a new instance of the <see cref=\"{typeName}\"/> class.");
+        var initializationDetails = new List<string>();
+        if (fields.Any(field => field.IsSequence && !field.IsOptional))
+        {
+            initializationDetails.Add("Non-optional sequences start empty");
+        }
+
+        if (fields.Any(field => field.IsArray && !field.IsOptional))
+        {
+            initializationDetails.Add("fixed arrays are allocated at their declared dimensions");
+        }
+
+        if (fields.Any(field => field.IsAggregate && !field.IsOptional))
+        {
+            initializationDetails.Add("nested aggregate members start as new instances");
+        }
+
+        if (fields.Any(field => (field.IsArray || field.IsSequence) && field.IsOptional))
+        {
+            initializationDetails.Add("optional collections start null (absent)");
+        }
+
+        if (fields.Any(field => field.HasExplicitDefault))
+        {
+            initializationDetails.Add("explicit IDL defaults are applied");
+        }
+
+        if (initializationDetails.Count > 0)
+        {
+            writer.WriteXmlRemarks($"{string.Join(", ", initializationDetails)}.");
+        }
         writer.OpenBlock($"public {typeName}()");
 
         var sequenceFields = fields.Where(field => field.ManagedInitialization == ManagedInitializationKind.Sequence).ToArray();
@@ -187,6 +279,16 @@ internal static class ManagedDataTypeEmitter
             writer.WriteXmlParam(IdlNaming.EscapeIdentifier(field.Name), $"The value for the <c>{field.Name}</c> member.");
         }
 
+        if (fields.Concat(inheritedFields).Any(field => field.IsSequence || field.IsArray || field.IsAggregate))
+        {
+            writer.WriteXmlRemarks("The constructor stores supplied reference-type member values as provided. It does not clone their arrays, sequences, or nested objects.");
+        }
+
+        if (fields.Concat(inheritedFields).Any(field => field.HasManagedRange))
+        {
+            writer.WriteXmlRemarks("This constructor assigns the supplied values directly. Unlike assigning a ranged property afterward, it does not check the property's range constraints.");
+        }
+
         var parameters = inheritedFields.Concat(fields).Select(field => $"{IdlNaming.TypeReference(field.CSharpType, field.CurrentNamespace)} {IdlNaming.EscapeIdentifier(field.Name)}");
         var constructor = $"public {typeName}({string.Join(", ", parameters)})";
 
@@ -212,6 +314,8 @@ internal static class ManagedDataTypeEmitter
 
         writer.WriteXmlSummary($"Initializes a copy of the specified <see cref=\"{typeName}\"/> instance.");
         writer.WriteXmlParam("other", "The instance to copy, or <see langword=\"null\"/>.");
+        writer.WriteXmlRemarks("Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name=\"other\"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.");
+        writer.WriteXmlExample($"var original = new {typeName}();\nvar copy = new {typeName}(original);");
         writer.OpenBlock($"public {typeName}({typeName}? other){(baseReference is null ? string.Empty : " : base(other)")}");
         writer.OpenBlock("if (other is null)");
         writer.WriteLine("return;");

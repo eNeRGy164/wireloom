@@ -18,6 +18,9 @@ namespace CorpusIntegrationCollections.Implementation;
 /// </summary>
 internal class ItemPlugin : InterpretedTypePlugin<Item, ItemUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Item"/>.
+    /// </summary>
     internal ItemPlugin() : base("CorpusIntegrationCollections.Item", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

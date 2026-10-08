@@ -20,7 +20,7 @@ public partial class CoordinateGrid : global::System.IEquatable<CoordinateGrid>
     public int[,] Value { get; set; } = new int[2, 3];
 
     /// <summary>
-    /// Initializes an empty array typedef.
+    /// Initializes a fixed-size array typedef with dimensions 2 × 3 (6 elements); each element starts at its default value.
     /// </summary>
     public CoordinateGrid()
     {
@@ -30,6 +30,7 @@ public partial class CoordinateGrid : global::System.IEquatable<CoordinateGrid>
     /// Initializes the typedef with an array value.
     /// </summary>
     /// <param name="Value">The array value to store.</param>
+    /// <remarks>The typedef stores the supplied array reference; it does not make a copy.</remarks>
     public CoordinateGrid(int[,] Value)
     {
         this.Value = Value;
@@ -39,6 +40,7 @@ public partial class CoordinateGrid : global::System.IEquatable<CoordinateGrid>
     /// Initializes a copy of another array typedef.
     /// </summary>
     /// <param name="other">The typedef to copy.</param>
+    /// <remarks>The constructor creates a new array container. When <paramref name="other"/> is null, the initially allocated array remains in place.</remarks>
     public CoordinateGrid(CoordinateGrid? other)
     {
         if (other is null)
@@ -63,6 +65,7 @@ public partial class CoordinateGrid : global::System.IEquatable<CoordinateGrid>
     /// Determines whether this typedef has the same array values as <paramref name="other"/>.
     /// </summary>
     /// <param name="other">The typedef to compare.</param>
+    /// <returns><see langword="true"/> when both arrays have the same dimensions and equal values; otherwise, <see langword="false"/>.</returns>
     public bool Equals(CoordinateGrid? other)
     {
         if (other is null)
@@ -84,7 +87,8 @@ public partial class CoordinateGrid : global::System.IEquatable<CoordinateGrid>
     public override bool Equals(object? obj) => Equals(obj as CoordinateGrid);
 
     /// <summary>
-    /// Returns the RTI Connext DDS representation of this typedef.
+    /// Formats this typedef as readable text.
     /// </summary>
+    /// <returns>A readable string formatted by this typedef's type-support instance.</returns>
     public override string ToString() => CoordinateGridSupport.Instance.ToString(this);
 }

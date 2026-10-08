@@ -10,7 +10,7 @@ using Rti.Types;
 namespace CorpusIntegration.Contracts;
 
 /// <summary>
-/// Represents the <c>NamespacedMessage</c> DDS type declared in <c>13-modules.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>NamespacedMessage</c> DDS type declared in <c>13-modules.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class NamespacedMessage : global::System.IEquatable<NamespacedMessage>
 {
@@ -39,6 +39,13 @@ public partial class NamespacedMessage : global::System.IEquatable<NamespacedMes
     /// Initializes a copy of the specified <see cref="NamespacedMessage"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new NamespacedMessage();
+    /// var copy = new NamespacedMessage(original);
+    /// </code>
+    /// </example>
     public NamespacedMessage(NamespacedMessage? other)
     {
         if (other is null)
@@ -83,8 +90,8 @@ public partial class NamespacedMessage : global::System.IEquatable<NamespacedMes
     public override bool Equals(object? obj) => Equals(obj as NamespacedMessage);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => NamespacedMessageSupport.Instance.ToString(this);
 }

@@ -15,13 +15,15 @@ namespace CorpusIntegrationTrace;
 public partial class Producer : global::System.IEquatable<Producer>
 {
     /// <summary>
-    /// Gets or sets the value represented by this typedef. Its maximum length is <c>16</c>.
+    /// Gets or sets the value represented by this typedef. Its maximum length is <c>16</c> characters.
     /// </summary>
+    /// <remarks>The IDL bound counts characters. RTI encodes narrow IDL strings as UTF-8 and wide IDL strings as UTF-16 by default; assigning this property does not check the bound. For an unbounded IDL string, Wireloom currently generates an effective limit of 255 characters.</remarks>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
     [Bound(16)]
     public string Value { get; set; } = string.Empty;
 
     /// <summary>
-    /// Initializes an empty typedef value.
+    /// Initializes the typedef value to its default value.
     /// </summary>
     public Producer()
     {
@@ -31,6 +33,7 @@ public partial class Producer : global::System.IEquatable<Producer>
     /// Initializes the typedef with a value.
     /// </summary>
     /// <param name="Value">The value to store.</param>
+    /// <remarks>The constructor stores the supplied reference as provided; it does not make a copy.</remarks>
     public Producer(string Value)
     {
         this.Value = Value;
@@ -40,6 +43,7 @@ public partial class Producer : global::System.IEquatable<Producer>
     /// Initializes a copy of another typedef value.
     /// </summary>
     /// <param name="other">The typedef to copy.</param>
+    /// <remarks>When <paramref name="other"/> is null, the constructor returns without copying and keeps its property initializer. An aggregate value is copied through its generated copy constructor.</remarks>
     public Producer(Producer? other)
     {
         if (other is not null)
@@ -62,6 +66,7 @@ public partial class Producer : global::System.IEquatable<Producer>
     /// Determines whether this typedef has the same value as <paramref name="other"/>.
     /// </summary>
     /// <param name="other">The typedef to compare.</param>
+    /// <returns><see langword="true"/> when both typedefs have equal values; otherwise, <see langword="false"/>.</returns>
     public bool Equals(Producer? other)
     {
         if (other is null)
@@ -81,7 +86,8 @@ public partial class Producer : global::System.IEquatable<Producer>
     public override bool Equals(object? obj) => Equals(obj as Producer);
 
     /// <summary>
-    /// Returns the RTI Connext DDS representation of this typedef.
+    /// Formats this typedef as readable text.
     /// </summary>
+    /// <returns>A readable string formatted by this typedef's type-support instance.</returns>
     public override string ToString() => ProducerSupport.Instance.ToString(this);
 }

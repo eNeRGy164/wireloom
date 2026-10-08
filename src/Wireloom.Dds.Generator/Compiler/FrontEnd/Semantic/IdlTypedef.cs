@@ -15,11 +15,16 @@ internal sealed class IdlTypedef(string name, string? @namespace, string target,
     public bool IsString => Target is "string" or "wstring";
     public bool IsWideString { get; } = isWideString;
     public int StringBound { get; private set; } = stringBound ?? 255;
+    public bool IsStringBounded { get; private set; } = stringBound is not null;
 
     /// <summary>Applies a sequence bound resolved after parsing.</summary>
     internal void SetBound(int value) => Bound = value;
 
     /// <summary>Applies a string bound resolved after parsing.</summary>
-    internal void SetStringBound(int value) => StringBound = value;
+    internal void SetStringBound(int value)
+    {
+        StringBound = value;
+        IsStringBounded = true;
+    }
 
 }

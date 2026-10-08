@@ -67,10 +67,34 @@ internal sealed class GeneratedSourceWriter
     }
 
     public void WriteXmlParam(string name, string description) =>
-        WriteLine($"/// <param name=\"{name}\">{description}</param>");
+        WriteLine($"/// <param name=\"{name.TrimStart('@')}\">{description}</param>");
 
     public void WriteXmlReturns(string description) =>
         WriteLine($"/// <returns>{description}</returns>");
+
+    public void WriteXmlException(string exceptionType, string description) =>
+        WriteLine($"/// <exception cref=\"{exceptionType}\">{description}</exception>");
+
+    public void WriteXmlRemarks(string description) =>
+        WriteLine($"/// <remarks>{description}</remarks>");
+
+    public void WriteXmlSeeAlso(string href, string description) =>
+        WriteLine($"/// <seealso href=\"{href}\">{description}</seealso>");
+
+    /// <summary>Writes a C# code example inside an XML documentation element.</summary>
+    public void WriteXmlExample(string code)
+    {
+        WriteLine("/// <example>");
+        WriteLine("/// <code>");
+
+        foreach (var line in code.Split('\n'))
+        {
+            WriteLine($"/// {line}");
+        }
+
+        WriteLine("/// </code>");
+        WriteLine("/// </example>");
+    }
 
     public void WriteXmlInheritdoc() => WriteLine("/// <inheritdoc />");
 

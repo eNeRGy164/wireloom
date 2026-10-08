@@ -18,6 +18,9 @@ namespace CorpusScopes.Implementation;
 /// </summary>
 internal class KeywordRecordPlugin : InterpretedTypePlugin<KeywordRecord, KeywordRecordUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="KeywordRecord"/>.
+    /// </summary>
     internal KeywordRecordPlugin() : base("CorpusScopes.KeywordRecord", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

@@ -18,6 +18,9 @@ namespace CorpusKeyBoundaries.Implementation;
 /// </summary>
 internal class BoundedStringKeyPlugin : InterpretedTypePlugin<BoundedStringKey, BoundedStringKeyUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="BoundedStringKey"/>.
+    /// </summary>
     internal BoundedStringKeyPlugin() : base("CorpusKeyBoundaries.BoundedStringKey", isKeyed: true, CreateDynamicType(isPublic: false))
     {
     }

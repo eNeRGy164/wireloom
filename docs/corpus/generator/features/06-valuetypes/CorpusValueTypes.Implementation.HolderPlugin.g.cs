@@ -18,6 +18,9 @@ namespace CorpusValueTypes.Implementation;
 /// </summary>
 internal class HolderPlugin : InterpretedTypePlugin<Holder, HolderUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Holder"/>.
+    /// </summary>
     internal HolderPlugin() : base("CorpusValueTypes.Holder", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

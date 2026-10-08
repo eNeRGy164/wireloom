@@ -74,6 +74,7 @@ internal static class UnionTypeSupportEmitter
 
         writer.WriteXmlSummary($"Provides the RTI interpreted type plugin for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"internal class {names.PluginTypeName} : InterpretedTypePlugin<{implementationTypeName}, {names.UnmanagedTypeName}>");
+        writer.WriteXmlSummary($"Initializes the RTI plugin for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"internal {names.PluginTypeName}() : base(\"{runtimeTypeName}\", isKeyed: false, CreateDynamicType(isPublic: false))");
         writer.CloseBlock();
         writer.BlankLine();
@@ -156,7 +157,8 @@ internal static class UnionTypeSupportEmitter
         writer.OpenBrace();
         writer.CloseBlock();
         writer.BlankLine();
-        writer.WriteXmlSummary("Gets the cached RTI Connext DDS type-support instance.");
+        writer.WriteXmlSummary("Gets the shared type-support instance for this union.");
+        writer.WriteXmlRemarks("Use this instance for generated type-support operations. The plugin and unmanaged representation are runtime implementation details.");
         writer.WriteLine($"public static {names.SupportTypeName} Instance {{ get; }} =");
         writer.Indent();
         writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{names.SupportTypeName}, {supportTypeName}>();");

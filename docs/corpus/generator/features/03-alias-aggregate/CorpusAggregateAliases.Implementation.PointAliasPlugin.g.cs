@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusAggregateAliases.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the PointAlias typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class PointAliasPlugin : InterpretedTypePlugin<PointAlias, PointAliasUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="PointAlias"/>.
+    /// </summary>
     internal PointAliasPlugin() : base("CorpusAggregateAliases.PointAlias", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

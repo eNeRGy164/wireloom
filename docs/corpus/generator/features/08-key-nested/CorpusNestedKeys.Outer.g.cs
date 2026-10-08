@@ -10,7 +10,7 @@ using Rti.Types;
 namespace CorpusNestedKeys;
 
 /// <summary>
-/// Represents the <c>Outer</c> DDS type declared in <c>08-key-nested.idl</c>. Its key members form the DDS instance key. It is marked as <c>extensible</c>.
+/// Represents the <c>Outer</c> DDS type declared in <c>08-key-nested.idl</c>. Its key members identify a DDS instance across samples; they do not determine whether two complete samples are equal. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Outer : global::System.IEquatable<Outer>
 {
@@ -21,13 +21,14 @@ public partial class Outer : global::System.IEquatable<Outer>
     public Inner identity { get; set; } = new Inner();
 
     /// <summary>
-    /// Gets or sets the <c>payload</c> member.
+    /// Gets or sets the <c>payload</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int payload { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Outer"/> class.
     /// </summary>
+    /// <remarks>nested aggregate members start as new instances.</remarks>
     public Outer()
     {
     }
@@ -37,6 +38,7 @@ public partial class Outer : global::System.IEquatable<Outer>
     /// </summary>
     /// <param name="identity">The value for the <c>identity</c> member.</param>
     /// <param name="payload">The value for the <c>payload</c> member.</param>
+    /// <remarks>The constructor stores supplied reference-type member values as provided. It does not clone their arrays, sequences, or nested objects.</remarks>
     public Outer(Inner identity, int payload)
     {
         this.identity = identity;
@@ -47,6 +49,13 @@ public partial class Outer : global::System.IEquatable<Outer>
     /// Initializes a copy of the specified <see cref="Outer"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Outer();
+    /// var copy = new Outer(original);
+    /// </code>
+    /// </example>
     public Outer(Outer? other)
     {
         if (other is null)
@@ -94,8 +103,8 @@ public partial class Outer : global::System.IEquatable<Outer>
     public override bool Equals(object? obj) => Equals(obj as Outer);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => OuterSupport.Instance.ToString(this);
 }

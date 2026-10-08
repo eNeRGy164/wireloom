@@ -9,6 +9,9 @@ using Rti.Types;
 
 namespace CorpusAggregateAliases.Implementation;
 
+/// <summary>
+/// Provides native storage and conversion operations for the PointAlias typedef. This type is used by RTI runtime integration and is not an application-facing value type.
+/// </summary>
 public struct PointAliasUnmanaged : INativeTopicType<PointAlias>
 {
     private PointUnmanaged Value;

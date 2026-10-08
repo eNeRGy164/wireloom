@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Xml.Linq;
 
 namespace Wireloom.Dds.Generator.CorpusCompliance;
 
@@ -74,6 +75,55 @@ public sealed class CorpusComplianceSpecs
                     : $"{source.HintName}.g.cs";
                 File.WriteAllText(Path.Combine(caseRoot, fileName), source.Source);
             }
+        }
+    }
+
+    [Fact]
+    public void EveryGeneratedXmlDocumentationBlockIsWellFormed()
+    {
+        // Arrange
+        var acceptedCases = CorpusRepository.Cases.Where(corpusCase => corpusCase.ExpectedToCompile);
+
+        // Act
+        var documentationBlocks = acceptedCases
+            .SelectMany(corpusCase => Compile(corpusCase).Values)
+            .SelectMany(source => GetDocumentationBlocks(source.Source))
+            .ToArray();
+
+        // Assert
+        documentationBlocks.ShouldNotBeEmpty();
+
+        foreach (var documentation in documentationBlocks)
+        {
+            Should.NotThrow(() => XDocument.Parse($"<doc>{documentation}</doc>"));
+        }
+    }
+
+    private static IEnumerable<string> GetDocumentationBlocks(string source)
+    {
+        var lines = new List<string>();
+
+        foreach (var line in source.Split('\n'))
+        {
+            var trimmed = line.TrimStart();
+            if (trimmed.StartsWith("///", StringComparison.Ordinal))
+            {
+                lines.Add(trimmed[3..].TrimStart());
+                continue;
+            }
+
+            if (lines.Count == 0)
+            {
+                continue;
+            }
+
+            yield return string.Join(Environment.NewLine, lines);
+            lines.Clear();
+        }
+
+        if (lines.Count > 0)
+        {
+            yield return string.Join(Environment.NewLine, lines);
         }
     }
 

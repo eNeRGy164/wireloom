@@ -18,6 +18,9 @@ namespace CorpusMacros.Implementation;
 /// </summary>
 internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Sample"/>.
+    /// </summary>
     internal SamplePlugin() : base("CorpusMacros.Sample", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

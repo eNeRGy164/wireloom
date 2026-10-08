@@ -56,9 +56,9 @@ internal sealed class IdlTypeParser
             var element = ParseCollectionElementType(input, memberSourceOffset, kind, currentNamespace, "Unknown collection element type");
             parsedType = new IdlType.Array(element, dimensions);
         }
-        else if (IdlBuiltinTypeSyntax.TryParseStringType(kind, out var isWideString, out _))
+        else if (IdlBuiltinTypeSyntax.TryParseStringType(kind, out var isWideString, out var stringBoundExpression))
         {
-            var stringType = new IdlType.StringType(isWideString, 255);
+            var stringType = new IdlType.StringType(isWideString, 255, isBounded: stringBoundExpression is not null);
 
             if (member.Groups[2].Success)
             {

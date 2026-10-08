@@ -18,6 +18,9 @@ namespace CorpusEnums.Implementation;
 /// </summary>
 internal class RecordPlugin : InterpretedTypePlugin<Record, RecordUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Record"/>.
+    /// </summary>
     internal RecordPlugin() : base("CorpusEnums.Record", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

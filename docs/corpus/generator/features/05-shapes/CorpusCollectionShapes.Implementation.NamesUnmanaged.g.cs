@@ -9,6 +9,9 @@ using Rti.Types;
 
 namespace CorpusCollectionShapes.Implementation;
 
+/// <summary>
+/// Provides native storage and conversion operations for the Names typedef. This type is used by RTI runtime integration and is not an application-facing value type.
+/// </summary>
 public struct NamesUnmanaged : INativeTopicType<Names>
 {
     private NativeStringSeq Value;

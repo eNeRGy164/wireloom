@@ -9,6 +9,9 @@ using Rti.Types;
 
 namespace CorpusIntegrationTrace.Implementation;
 
+/// <summary>
+/// Provides native storage and conversion operations for the Producer typedef. This type is used by RTI runtime integration and is not an application-facing value type.
+/// </summary>
 public struct ProducerUnmanaged : INativeTopicType<Producer>
 {
     private NativeString Value;

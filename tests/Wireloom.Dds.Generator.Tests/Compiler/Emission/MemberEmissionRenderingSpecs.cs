@@ -34,7 +34,7 @@ public sealed class MemberEmissionRenderingSpecs
         var summary = renderer.ValueConstraintSummary;
 
         // Assert
-        summary.ShouldBe("Its value must be between <c>1</c> and <c>5</c>. Its default value is <c>3</c>.");
+        summary.ShouldBe("Valid values are in the inclusive range <c>1</c> through <c>5</c>. Its default value is <c>3</c>.");
         renderer.BoundSummary.ShouldBeNull();
     }
 

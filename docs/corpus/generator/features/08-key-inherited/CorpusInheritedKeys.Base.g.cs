@@ -10,18 +10,18 @@ using Rti.Types;
 namespace CorpusInheritedKeys;
 
 /// <summary>
-/// Represents the <c>Base</c> DDS type declared in <c>08-key-inherited.idl</c>. Its key members form the DDS instance key. It is marked as <c>extensible</c>.
+/// Represents the <c>Base</c> DDS type declared in <c>08-key-inherited.idl</c>. Its key members identify a DDS instance across samples; they do not determine whether two complete samples are equal. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Base : global::System.IEquatable<Base>
 {
     /// <summary>
-    /// Gets or sets the <c>tenant</c> member. This member forms part of the DDS instance key.
+    /// Gets or sets the <c>tenant</c> member. This member forms part of the DDS instance key. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     [Key]
     public int tenant { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>baseValue</c> member.
+    /// Gets or sets the <c>baseValue</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int baseValue { get; set; }
 
@@ -47,6 +47,13 @@ public partial class Base : global::System.IEquatable<Base>
     /// Initializes a copy of the specified <see cref="Base"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Base();
+    /// var copy = new Base(original);
+    /// </code>
+    /// </example>
     public Base(Base? other)
     {
         if (other is null)
@@ -94,8 +101,8 @@ public partial class Base : global::System.IEquatable<Base>
     public override bool Equals(object? obj) => Equals(obj as Base);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => BaseSupport.Instance.ToString(this);
 }

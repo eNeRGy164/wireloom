@@ -18,6 +18,9 @@ namespace Implementation;
 /// </summary>
 internal class IncludedTypePlugin : InterpretedTypePlugin<global::IncludedType, IncludedTypeUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="IncludedType"/>.
+    /// </summary>
     internal IncludedTypePlugin() : base("IncludedType", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

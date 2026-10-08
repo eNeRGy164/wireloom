@@ -18,6 +18,9 @@ namespace CorpusScopes.Implementation;
 /// </summary>
 internal class ReopenedPlugin : InterpretedTypePlugin<Reopened, ReopenedUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Reopened"/>.
+    /// </summary>
     internal ReopenedPlugin() : base("CorpusScopes.Reopened", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

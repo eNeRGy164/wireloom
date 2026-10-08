@@ -10,13 +10,15 @@ using Rti.Types;
 namespace CorpusFormatting;
 
 /// <summary>
-/// Represents the <c>Value</c> DDS type declared in <c>02-formatting.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>Value</c> DDS type declared in <c>02-formatting.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Value : global::System.IEquatable<Value>
 {
     /// <summary>
-    /// Gets or sets the <c>text</c> member. Its maximum length is <c>16</c>.
+    /// Gets or sets the <c>text</c> member. Its maximum length is <c>16</c> characters.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
+    /// <remarks>The bound on this narrow IDL string counts characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(16)]
     public string text { get; set; } = string.Empty;
 
@@ -40,6 +42,13 @@ public partial class Value : global::System.IEquatable<Value>
     /// Initializes a copy of the specified <see cref="Value"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Value();
+    /// var copy = new Value(original);
+    /// </code>
+    /// </example>
     public Value(Value? other)
     {
         if (other is null)
@@ -84,8 +93,8 @@ public partial class Value : global::System.IEquatable<Value>
     public override bool Equals(object? obj) => Equals(obj as Value);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => ValueSupport.Instance.ToString(this);
 }

@@ -18,6 +18,9 @@ namespace CorpusIntegration.Contracts.Implementation;
 /// </summary>
 internal class NamespacedMessagePlugin : InterpretedTypePlugin<NamespacedMessage, NamespacedMessageUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="NamespacedMessage"/>.
+    /// </summary>
     internal NamespacedMessagePlugin() : base("CorpusIntegration.Contracts.NamespacedMessage", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

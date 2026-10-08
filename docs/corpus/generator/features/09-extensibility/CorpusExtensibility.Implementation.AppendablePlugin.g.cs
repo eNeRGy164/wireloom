@@ -18,6 +18,9 @@ namespace CorpusExtensibility.Implementation;
 /// </summary>
 internal class AppendablePlugin : InterpretedTypePlugin<Appendable, AppendableUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Appendable"/>.
+    /// </summary>
     internal AppendablePlugin() : base("CorpusExtensibility.Appendable", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

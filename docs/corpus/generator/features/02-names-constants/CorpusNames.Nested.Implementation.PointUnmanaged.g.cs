@@ -21,6 +21,7 @@ public struct PointUnmanaged : INativeTopicType<Point>
     /// Releases native resources held by this instance.
     /// </summary>
     /// <param name="optionalsOnly">Indicates whether only optional members should be released.</param>
+    /// <remarks>This method releases resources owned by the generated native representation. Pass <see langword="true"/> to release optional members only, or <see langword="false"/> to release all members.</remarks>
     public void Destroy(bool optionalsOnly)
     {
     }
@@ -29,7 +30,8 @@ public struct PointUnmanaged : INativeTopicType<Point>
     /// Copies native values into a managed DDS sample.
     /// </summary>
     /// <param name="sample">The managed sample to populate.</param>
-    /// <param name="keysOnly">Whether to copy only key members.</param>
+    /// <param name="keysOnly">When the type has key members, whether to copy only those members.</param>
+    /// <remarks>The operation copies values into <paramref name="sample"/>. For an unkeyed type, all members are copied even when <paramref name="keysOnly"/> is true.</remarks>
     public void FromNative(Point sample, bool keysOnly = false)
     {
         sample.x = x;
@@ -41,6 +43,7 @@ public struct PointUnmanaged : INativeTopicType<Point>
     /// </summary>
     /// <param name="allocatePointers">Whether pointer members should be allocated.</param>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
+    /// <remarks>Use this method to prepare native storage before conversion. Call <see cref="Destroy"/> when the native representation is no longer needed.</remarks>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         x = 0;
@@ -51,7 +54,8 @@ public struct PointUnmanaged : INativeTopicType<Point>
     /// Copies a managed DDS sample into this native representation.
     /// </summary>
     /// <param name="sample">The managed sample to copy.</param>
-    /// <param name="keysOnly">Whether to copy only key members.</param>
+    /// <param name="keysOnly">When the type has key members, whether to copy only those members.</param>
+    /// <remarks>The operation copies values from <paramref name="sample"/> into native storage. For an unkeyed type, all members are copied even when <paramref name="keysOnly"/> is true.</remarks>
     public void ToNative(Point sample, bool keysOnly = false)
     {
         x = sample.x;

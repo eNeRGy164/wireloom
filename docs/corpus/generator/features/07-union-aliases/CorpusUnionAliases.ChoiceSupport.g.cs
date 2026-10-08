@@ -25,8 +25,9 @@ public class ChoiceSupport : TypeSupport<Choice>
     }
 
     /// <summary>
-    /// Gets the cached RTI Connext DDS type-support instance.
+    /// Gets the shared type-support instance for this union.
     /// </summary>
+    /// <remarks>Use this instance for generated type-support operations. The plugin and unmanaged representation are runtime implementation details.</remarks>
     public static ChoiceSupport Instance { get; } =
         ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ChoiceSupport, Choice>();
 }

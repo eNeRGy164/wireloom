@@ -20,7 +20,7 @@ public partial class Identifier : global::System.IEquatable<Identifier>
     public int Value { get; set; }
 
     /// <summary>
-    /// Initializes an empty typedef value.
+    /// Initializes the typedef value to its default value.
     /// </summary>
     public Identifier()
     {
@@ -39,6 +39,7 @@ public partial class Identifier : global::System.IEquatable<Identifier>
     /// Initializes a copy of another typedef value.
     /// </summary>
     /// <param name="other">The typedef to copy.</param>
+    /// <remarks>When <paramref name="other"/> is null, the constructor returns without copying and keeps its property initializer. An aggregate value is copied through its generated copy constructor.</remarks>
     public Identifier(Identifier? other)
     {
         if (other is not null)
@@ -61,6 +62,7 @@ public partial class Identifier : global::System.IEquatable<Identifier>
     /// Determines whether this typedef has the same value as <paramref name="other"/>.
     /// </summary>
     /// <param name="other">The typedef to compare.</param>
+    /// <returns><see langword="true"/> when both typedefs have equal values; otherwise, <see langword="false"/>.</returns>
     public bool Equals(Identifier? other)
     {
         if (other is null)
@@ -80,7 +82,8 @@ public partial class Identifier : global::System.IEquatable<Identifier>
     public override bool Equals(object? obj) => Equals(obj as Identifier);
 
     /// <summary>
-    /// Returns the RTI Connext DDS representation of this typedef.
+    /// Formats this typedef as readable text.
     /// </summary>
+    /// <returns>A readable string formatted by this typedef's type-support instance.</returns>
     public override string ToString() => IdentifierSupport.Instance.ToString(this);
 }

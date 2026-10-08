@@ -18,6 +18,9 @@ namespace CorpusExtensibility.Implementation;
 /// </summary>
 internal class FinalPlugin : InterpretedTypePlugin<Final, FinalUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Final"/>.
+    /// </summary>
     internal FinalPlugin() : base("CorpusExtensibility.Final", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

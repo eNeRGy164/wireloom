@@ -10,18 +10,24 @@ using Rti.Types;
 namespace CorpusExtensibility;
 
 /// <summary>
-/// Represents the <c>Mutable</c> DDS type declared in <c>09-extensibility.idl</c>. It is marked as <c>mutable</c>.
+/// Represents the <c>Mutable</c> DDS type declared in <c>09-extensibility.idl</c>. It is marked as <c>mutable</c>. Members may be identified and reordered by DDS member IDs during compatible type evolution.
 /// </summary>
 public partial class Mutable : global::System.IEquatable<Mutable>
 {
     /// <summary>
-    /// Gets or sets the <c>id</c> member.
+    /// Gets or sets the <c>id</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. Its DDS member ID is <c>1</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
     public int id { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>optionalValue</c> member. This member is optional.
+    /// Gets or sets the <c>optionalValue</c> member. This member is optional. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. A null value means the member is absent. Its DDS member ID is <c>2</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// var sample = new Mutable();
+    /// sample.optionalValue = null; // the member is absent
+    /// </code>
+    /// </example>
     [Optional]
     public int? optionalValue { get; set; }
 
@@ -47,6 +53,13 @@ public partial class Mutable : global::System.IEquatable<Mutable>
     /// Initializes a copy of the specified <see cref="Mutable"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Mutable();
+    /// var copy = new Mutable(original);
+    /// </code>
+    /// </example>
     public Mutable(Mutable? other)
     {
         if (other is null)
@@ -94,8 +107,8 @@ public partial class Mutable : global::System.IEquatable<Mutable>
     public override bool Equals(object? obj) => Equals(obj as Mutable);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => MutableSupport.Instance.ToString(this);
 }

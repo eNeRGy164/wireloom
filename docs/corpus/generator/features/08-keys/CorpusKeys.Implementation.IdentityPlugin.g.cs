@@ -18,6 +18,9 @@ namespace CorpusKeys.Implementation;
 /// </summary>
 internal class IdentityPlugin : InterpretedTypePlugin<Identity, IdentityUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Identity"/>.
+    /// </summary>
     internal IdentityPlugin() : base("CorpusKeys.Identity", isKeyed: true, CreateDynamicType(isPublic: false))
     {
     }

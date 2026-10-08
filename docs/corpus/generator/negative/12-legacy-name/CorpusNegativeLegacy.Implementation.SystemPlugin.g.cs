@@ -18,6 +18,9 @@ namespace CorpusNegativeLegacy.Implementation;
 /// </summary>
 internal class SystemPlugin : InterpretedTypePlugin<global::CorpusNegativeLegacy.System, SystemUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="System"/>.
+    /// </summary>
     internal SystemPlugin() : base("CorpusNegativeLegacy.System", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

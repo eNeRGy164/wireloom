@@ -16,12 +16,23 @@ namespace CorpusEnumValuePrefix.Implementation;
 /// <summary>
 /// Provides the RTI interpreted type plugin for <see cref="Annotated"/>.
 /// </summary>
+/// <summary>
+/// Provides the RTI runtime plugin for the <see cref="Annotated"/> enumeration. This implementation detail is not intended for application code.
+/// </summary>
 internal class AnnotatedPlugin : EnumTypePlugin
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Annotated"/>.
+    /// </summary>
     internal AnnotatedPlugin() : base(CreateDynamicType(isPublic: false))
     {
     }
 
+    /// <summary>
+    /// Creates the RTI dynamic type description for <see cref="Annotated"/>.
+    /// </summary>
+    /// <param name="isPublic">Whether the resulting dynamic type is publicly visible to RTI.</param>
+    /// <returns>The RTI dynamic type description.</returns>
     internal static DynamicType CreateDynamicType(bool isPublic = true)
     {
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);

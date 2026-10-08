@@ -18,6 +18,9 @@ namespace CorpusAggregateAliases.Implementation;
 /// </summary>
 internal class PointPlugin : InterpretedTypePlugin<Point, PointUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Point"/>.
+    /// </summary>
     internal PointPlugin() : base("CorpusAggregateAliases.Point", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

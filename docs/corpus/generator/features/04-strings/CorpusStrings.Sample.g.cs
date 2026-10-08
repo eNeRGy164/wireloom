@@ -10,31 +10,39 @@ using Rti.Types;
 namespace CorpusStrings;
 
 /// <summary>
-/// Represents the <c>Sample</c> DDS type declared in <c>04-strings.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>Sample</c> DDS type declared in <c>04-strings.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
-    /// Gets or sets the <c>unbounded</c> member. Its maximum length is <c>255</c>.
+    /// Gets or sets the <c>unbounded</c> member. Its maximum length is <c>255</c> characters.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
+    /// <remarks>This unbounded narrow IDL string has an effective limit of 255 characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not enforce the effective limit when assigned.</remarks>
     [Bound(255)]
     public string unbounded { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the <c>bounded</c> member. Its maximum length is <c>8</c>.
+    /// Gets or sets the <c>bounded</c> member. Its maximum length is <c>8</c> characters.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
+    /// <remarks>The bound on this narrow IDL string counts characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(8)]
     public string bounded { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the <c>wideUnbounded</c> member. Its maximum length is <c>255</c>.
+    /// Gets or sets the <c>wideUnbounded</c> member. Its maximum length is <c>255</c> characters.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
+    /// <remarks>This unbounded wide IDL string has an effective limit of 255 characters. RTI encodes wide IDL strings as UTF-16 by default. The generated C# property does not enforce the effective limit when assigned.</remarks>
     [Bound(255)]
     public string wideUnbounded { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the <c>wideBounded</c> member. Its maximum length is <c>8</c>.
+    /// Gets or sets the <c>wideBounded</c> member. Its maximum length is <c>8</c> characters.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
+    /// <remarks>The bound on this wide IDL string counts characters. RTI encodes wide IDL strings as UTF-16 by default. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(8)]
     public string wideBounded { get; set; } = string.Empty;
 
@@ -64,6 +72,13 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// Initializes a copy of the specified <see cref="Sample"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Sample();
+    /// var copy = new Sample(original);
+    /// </code>
+    /// </example>
     public Sample(Sample? other)
     {
         if (other is null)
@@ -117,8 +132,8 @@ public partial class Sample : global::System.IEquatable<Sample>
     public override bool Equals(object? obj) => Equals(obj as Sample);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => SampleSupport.Instance.ToString(this);
 }

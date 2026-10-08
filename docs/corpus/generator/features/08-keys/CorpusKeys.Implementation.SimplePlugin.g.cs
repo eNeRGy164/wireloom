@@ -18,6 +18,9 @@ namespace CorpusKeys.Implementation;
 /// </summary>
 internal class SimplePlugin : InterpretedTypePlugin<Simple, SimpleUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Simple"/>.
+    /// </summary>
     internal SimplePlugin() : base("CorpusKeys.Simple", isKeyed: true, CreateDynamicType(isPublic: false))
     {
     }

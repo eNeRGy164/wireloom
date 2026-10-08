@@ -46,10 +46,15 @@ internal static class EnumEmitter
         var writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI interpreted type plugin for <see cref=\"{typeName}\"/>.");
+        writer.WriteXmlSummary($"Provides the RTI runtime plugin for the <see cref=\"{typeName}\"/> enumeration. This implementation detail is not intended for application code.");
         writer.OpenBlock($"internal class {typeName}Plugin : EnumTypePlugin");
+        writer.WriteXmlSummary($"Initializes the RTI plugin for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"internal {typeName}Plugin() : base(CreateDynamicType(isPublic: false))");
         writer.CloseBlock();
         writer.BlankLine();
+        writer.WriteXmlSummary($"Creates the RTI dynamic type description for <see cref=\"{typeName}\"/>.");
+        writer.WriteXmlParam("isPublic", "Whether the resulting dynamic type is publicly visible to RTI.");
+        writer.WriteXmlReturns("The RTI dynamic type description.");
         writer.OpenBlock("internal static DynamicType CreateDynamicType(bool isPublic = true)");
         writer.WriteLine("var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);");
         writer.WriteLine("var enumType = dtf.BuildEnum()");
@@ -102,7 +107,7 @@ internal static class EnumEmitter
         writer.CloseBlock();
         writer.BlankLine();
 
-        writer.WriteXmlSummary("Gets the cached RTI Connext DDS type-support instance.");
+        writer.WriteXmlSummary("Gets the shared type-support instance for this enumeration.");
         writer.WriteLine($"public static {names.SupportTypeName} Instance {{ get; }} = ");
         writer.Indent();
         writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{names.SupportTypeName}, {typeName}>();");

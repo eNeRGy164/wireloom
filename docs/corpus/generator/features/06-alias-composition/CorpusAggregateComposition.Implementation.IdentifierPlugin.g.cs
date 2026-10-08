@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusAggregateComposition.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the Identifier typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class IdentifierPlugin : InterpretedTypePlugin<Identifier, IdentifierUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Identifier"/>.
+    /// </summary>
     internal IdentifierPlugin() : base("CorpusAggregateComposition.Identifier", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

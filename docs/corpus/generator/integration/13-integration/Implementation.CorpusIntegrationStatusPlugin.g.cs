@@ -18,6 +18,9 @@ namespace Implementation;
 /// </summary>
 internal class CorpusIntegrationStatusPlugin : InterpretedTypePlugin<global::CorpusIntegrationStatus, CorpusIntegrationStatusUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="CorpusIntegrationStatus"/>.
+    /// </summary>
     internal CorpusIntegrationStatusPlugin() : base("CorpusIntegrationStatus", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

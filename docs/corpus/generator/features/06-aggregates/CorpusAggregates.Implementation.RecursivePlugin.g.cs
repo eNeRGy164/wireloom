@@ -21,6 +21,9 @@ internal class RecursivePlugin : InterpretedTypePlugin<Recursive, RecursiveUnman
     private static DynamicType? dynamicType;
     private static bool isInitialized;
 
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Recursive"/>.
+    /// </summary>
     internal RecursivePlugin() : base("CorpusAggregates.Recursive", isKeyed: false, CreateDynamicType(isPublic: false))
     {
         isRecursiveType = true;

@@ -20,7 +20,7 @@ public partial class PointAlias2 : global::System.IEquatable<PointAlias2>
     public Point Value { get; set; } = null!;
 
     /// <summary>
-    /// Initializes an empty typedef value.
+    /// Initializes the typedef value to its default value.
     /// </summary>
     public PointAlias2()
     {
@@ -30,6 +30,7 @@ public partial class PointAlias2 : global::System.IEquatable<PointAlias2>
     /// Initializes the typedef with a value.
     /// </summary>
     /// <param name="Value">The value to store.</param>
+    /// <remarks>The constructor stores the supplied reference as provided; it does not make a copy.</remarks>
     public PointAlias2(Point Value)
     {
         this.Value = Value;
@@ -39,6 +40,7 @@ public partial class PointAlias2 : global::System.IEquatable<PointAlias2>
     /// Initializes a copy of another typedef value.
     /// </summary>
     /// <param name="other">The typedef to copy.</param>
+    /// <remarks>When <paramref name="other"/> is null, the constructor returns without copying and keeps its property initializer. An aggregate value is copied through its generated copy constructor.</remarks>
     public PointAlias2(PointAlias2? other)
     {
         if (other is not null)
@@ -61,6 +63,7 @@ public partial class PointAlias2 : global::System.IEquatable<PointAlias2>
     /// Determines whether this typedef has the same value as <paramref name="other"/>.
     /// </summary>
     /// <param name="other">The typedef to compare.</param>
+    /// <returns><see langword="true"/> when both typedefs have equal values; otherwise, <see langword="false"/>.</returns>
     public bool Equals(PointAlias2? other)
     {
         if (other is null)
@@ -80,7 +83,8 @@ public partial class PointAlias2 : global::System.IEquatable<PointAlias2>
     public override bool Equals(object? obj) => Equals(obj as PointAlias2);
 
     /// <summary>
-    /// Returns the RTI Connext DDS representation of this typedef.
+    /// Formats this typedef as readable text.
     /// </summary>
+    /// <returns>A readable string formatted by this typedef's type-support instance.</returns>
     public override string ToString() => PointAlias2Support.Instance.ToString(this);
 }

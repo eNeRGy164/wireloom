@@ -18,6 +18,9 @@ namespace CorpusScopedUnion.Implementation;
 /// </summary>
 internal class PayloadPlugin : InterpretedTypePlugin<Payload, PayloadUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Payload"/>.
+    /// </summary>
     internal PayloadPlugin() : base("CorpusScopedUnion.Payload", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

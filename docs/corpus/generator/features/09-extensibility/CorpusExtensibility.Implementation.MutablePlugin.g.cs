@@ -18,6 +18,9 @@ namespace CorpusExtensibility.Implementation;
 /// </summary>
 internal class MutablePlugin : InterpretedTypePlugin<Mutable, MutableUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Mutable"/>.
+    /// </summary>
     internal MutablePlugin() : base("CorpusExtensibility.Mutable", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

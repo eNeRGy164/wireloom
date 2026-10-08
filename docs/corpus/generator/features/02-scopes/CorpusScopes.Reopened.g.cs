@@ -10,7 +10,7 @@ using Rti.Types;
 namespace CorpusScopes;
 
 /// <summary>
-/// Represents the <c>Reopened</c> DDS type declared in <c>02-scopes.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>Reopened</c> DDS type declared in <c>02-scopes.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Reopened : global::System.IEquatable<Reopened>
 {
@@ -22,6 +22,7 @@ public partial class Reopened : global::System.IEquatable<Reopened>
     /// <summary>
     /// Initializes a new instance of the <see cref="Reopened"/> class.
     /// </summary>
+    /// <remarks>nested aggregate members start as new instances.</remarks>
     public Reopened()
     {
     }
@@ -30,6 +31,7 @@ public partial class Reopened : global::System.IEquatable<Reopened>
     /// Initializes a new instance of the <see cref="Reopened"/> class with the supplied member values.
     /// </summary>
     /// <param name="value">The value for the <c>value</c> member.</param>
+    /// <remarks>The constructor stores supplied reference-type member values as provided. It does not clone their arrays, sequences, or nested objects.</remarks>
     public Reopened(KeywordRecord value)
     {
         this.value = value;
@@ -39,6 +41,13 @@ public partial class Reopened : global::System.IEquatable<Reopened>
     /// Initializes a copy of the specified <see cref="Reopened"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Reopened();
+    /// var copy = new Reopened(original);
+    /// </code>
+    /// </example>
     public Reopened(Reopened? other)
     {
         if (other is null)
@@ -83,8 +92,8 @@ public partial class Reopened : global::System.IEquatable<Reopened>
     public override bool Equals(object? obj) => Equals(obj as Reopened);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => ReopenedSupport.Instance.ToString(this);
 }

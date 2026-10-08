@@ -18,6 +18,9 @@ namespace CorpusValueTypes.Implementation;
 /// </summary>
 internal class BaseValuePlugin : InterpretedTypePlugin<BaseValue, BaseValueUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="BaseValue"/>.
+    /// </summary>
     internal BaseValuePlugin() : base("CorpusValueTypes.BaseValue", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

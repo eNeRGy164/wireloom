@@ -8,7 +8,7 @@ using Omg.Types;
 using Rti.Types;
 
 /// <summary>
-/// Represents the <c>CorpusIntegrationStatus</c> DDS type declared in <c>13-status.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>CorpusIntegrationStatus</c> DDS type declared in <c>13-status.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class CorpusIntegrationStatus : global::System.IEquatable<CorpusIntegrationStatus>
 {
@@ -37,6 +37,13 @@ public partial class CorpusIntegrationStatus : global::System.IEquatable<CorpusI
     /// Initializes a copy of the specified <see cref="CorpusIntegrationStatus"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new CorpusIntegrationStatus();
+    /// var copy = new CorpusIntegrationStatus(original);
+    /// </code>
+    /// </example>
     public CorpusIntegrationStatus(CorpusIntegrationStatus? other)
     {
         if (other is null)
@@ -81,8 +88,8 @@ public partial class CorpusIntegrationStatus : global::System.IEquatable<CorpusI
     public override bool Equals(object? obj) => Equals(obj as CorpusIntegrationStatus);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => CorpusIntegrationStatusSupport.Instance.ToString(this);
 }

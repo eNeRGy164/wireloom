@@ -36,8 +36,8 @@ public sealed class GeneratedPluginSpecs
         managed.ShouldContain("global::System.ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 100);");
         managed.ShouldContain("global::System.ArgumentOutOfRangeException.ThrowIfLessThan(value, -32);");
         managed.ShouldContain("global::System.ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 31);");
-        managed.ShouldContain("Its value must be between <c>0</c> and <c>100</c>. Its default value is <c>50</c>.");
-        managed.ShouldContain("Its value must be between <c>-32</c> and <c>31</c>.");
+        managed.ShouldContain("Valid values are in the inclusive range <c>0</c> through <c>100</c>. Its default value is <c>50</c>.");
+        managed.ShouldContain("Valid values are in the inclusive range <c>-32</c> through <c>31</c>.");
         managed.ShouldContain("Its default value is <c>BLUE</c>.");
         managed.ShouldContainInOrder(
             "public Sample()",
@@ -160,7 +160,7 @@ public sealed class GeneratedPluginSpecs
         // Assert
         var managed = documents["AutoIdHash.Sample.g.cs"].Source;
         managed.ShouldContain("Its DDS member ID is generated from the hash of <c>stable_id</c> through <c>@hashid</c>.");
-        managed.ShouldContain("This member is marked as must-understand by DDS.");
+        managed.ShouldContain("A DDS reader that does not understand this member cannot safely read the sample.");
         managed.ShouldContain("Its DDS member ID is generated from the hash of <c>text</c> through <c>@hashid</c>.");
 
         var plugin = documents["AutoIdHash.Implementation.SamplePlugin.g.cs"].Source;

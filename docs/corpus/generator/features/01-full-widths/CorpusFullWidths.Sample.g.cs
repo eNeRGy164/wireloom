@@ -10,47 +10,47 @@ using Rti.Types;
 namespace CorpusFullWidths;
 
 /// <summary>
-/// Represents the <c>Sample</c> DDS type declared in <c>01-full-widths.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>Sample</c> DDS type declared in <c>01-full-widths.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
-    /// Gets or sets the <c>i8</c> member.
+    /// Gets or sets the <c>i8</c> member. Representable values are in the inclusive range <c>sbyte.MinValue</c> through <c>sbyte.MaxValue</c>.
     /// </summary>
     public sbyte i8 { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>i16</c> member.
+    /// Gets or sets the <c>i16</c> member. Representable values are in the inclusive range <c>short.MinValue</c> through <c>short.MaxValue</c>.
     /// </summary>
     public short i16 { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>i32</c> member.
+    /// Gets or sets the <c>i32</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int i32 { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>i64</c> member.
+    /// Gets or sets the <c>i64</c> member. Representable values are in the inclusive range <c>long.MinValue</c> through <c>long.MaxValue</c>.
     /// </summary>
     public long i64 { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>u8</c> member.
+    /// Gets or sets the <c>u8</c> member. Representable values are in the inclusive range <c>byte.MinValue</c> through <c>byte.MaxValue</c>.
     /// </summary>
     public byte u8 { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>u16</c> member.
+    /// Gets or sets the <c>u16</c> member. Representable values are in the inclusive range <c>ushort.MinValue</c> through <c>ushort.MaxValue</c>.
     /// </summary>
     public ushort u16 { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>u32</c> member.
+    /// Gets or sets the <c>u32</c> member. Representable values are in the inclusive range <c>uint.MinValue</c> through <c>uint.MaxValue</c>.
     /// </summary>
     public uint u32 { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>u64</c> member.
+    /// Gets or sets the <c>u64</c> member. Representable values are in the inclusive range <c>ulong.MinValue</c> through <c>ulong.MaxValue</c>.
     /// </summary>
     public ulong u64 { get; set; }
 
@@ -88,6 +88,13 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// Initializes a copy of the specified <see cref="Sample"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Sample();
+    /// var copy = new Sample(original);
+    /// </code>
+    /// </example>
     public Sample(Sample? other)
     {
         if (other is null)
@@ -153,8 +160,8 @@ public partial class Sample : global::System.IEquatable<Sample>
     public override bool Equals(object? obj) => Equals(obj as Sample);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => SampleSupport.Instance.ToString(this);
 }

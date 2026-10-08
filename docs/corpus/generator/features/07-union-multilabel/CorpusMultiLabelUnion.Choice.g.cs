@@ -10,7 +10,7 @@ using Rti.Types;
 namespace CorpusMultiLabelUnion;
 
 /// <summary>
-/// Represents the <c>Choice</c> DDS union declared in <c>07-union-multilabel.idl</c>. Exactly one branch is selected by <see cref="Discriminator"/>.
+/// Represents the <c>Choice</c> DDS union declared in <c>07-union-multilabel.idl</c>. The discriminator selects a branch when it matches a declared label; otherwise, no branch is active.
 /// </summary>
 public partial class Choice : global::System.IEquatable<Choice>
 {
@@ -23,13 +23,15 @@ public partial class Choice : global::System.IEquatable<Choice>
     public int Discriminator { get; private set; }
 
     /// <summary>
-    /// Gets the discriminator value used to initialize this union.
+    /// Gets the discriminator value used by the parameterless constructor.
     /// </summary>
     public const int DefaultDiscriminator = 0;
 
     /// <summary>
     /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>1, 5</c>.
     /// </summary>
+    /// <remarks>Reading this property while another branch is active throws <see cref="global::System.InvalidOperationException"/>. Assigning it stores the value and changes <see cref="Discriminator"/> to a label for this branch.</remarks>
+    /// <exception cref="global::System.InvalidOperationException">The discriminator selects another branch or selects no branch.</exception>
     public int number
     {
         get
@@ -54,6 +56,15 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// </summary>
     /// <param name="value">The value for the number branch.</param>
     /// <param name="discriminator">A discriminator value selecting this branch.</param>
+    /// <remarks>Assigning the <c>number</c> property selects the first label listed in its documentation. Use this method to select another valid label for the same branch.</remarks>
+    /// <example>
+    /// <code>
+    /// var choice = new Choice();
+    /// choice.number = default!;
+    /// choice.Setnumber(default!, 1);
+    /// </code>
+    /// </example>
+    /// <exception cref="global::System.ArgumentException">The discriminator does not select this branch.</exception>
     public void Setnumber(int value, int discriminator)
     {
         if (!(discriminator == 1 || discriminator == 5))
@@ -69,6 +80,8 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// <summary>
     /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>2</c>.
     /// </summary>
+    /// <remarks>Reading this property while another branch is active throws <see cref="global::System.InvalidOperationException"/>. Assigning it stores the value and changes <see cref="Discriminator"/> to a label for this branch.</remarks>
+    /// <exception cref="global::System.InvalidOperationException">The discriminator selects another branch or selects no branch.</exception>
     [Bound(255)]
     public string text
     {
@@ -90,7 +103,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     }
 
     /// <summary>
-    /// Initializes a new union with its RTI default discriminator.
+    /// Initializes a new union with its RTI default discriminator. A branch is active only when that discriminator matches a declared label or selects the default branch.
     /// </summary>
     public Choice()
     {
@@ -101,6 +114,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// Initializes a copy of another <see cref="Choice"/> union.
     /// </summary>
     /// <param name="other">The union to copy.</param>
+    /// <remarks>When <paramref name="other"/> is null, the constructor leaves the discriminator at its default and does not copy a branch value.</remarks>
     public Choice(Choice? other)
     {
         if (other is null)
@@ -125,9 +139,9 @@ public partial class Choice : global::System.IEquatable<Choice>
     }
 
     /// <summary>
-    /// Gets the currently active union-branch value.
+    /// Gets the value of the currently active union branch, if any.
     /// </summary>
-    /// <returns>The value of the branch selected by <see cref="Discriminator"/>.</returns>
+    /// <returns>The concrete value of the active branch, or <see langword="null"/> when the discriminator selects no declared branch.</returns>
     public object? Get()
     {
         return Discriminator switch
@@ -138,7 +152,9 @@ public partial class Choice : global::System.IEquatable<Choice>
         };
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Computes a hash from the discriminator and, when a branch is active, its value.
+    /// </summary>
     public override int GetHashCode()
     {
         return Discriminator switch
@@ -150,7 +166,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     }
 
     /// <summary>
-    /// Determines whether this union has the same discriminator and active branch value as <paramref name="other"/>.
+    /// Determines whether this union has the same discriminator and active branch value as <paramref name="other"/>. When neither discriminator selects a branch, equality depends on the discriminator alone.
     /// </summary>
     /// <param name="other">The union to compare.</param>
     /// <returns><see langword="true"/> when both unions select equal values; otherwise <see langword="false"/>.</returns>
@@ -178,7 +194,8 @@ public partial class Choice : global::System.IEquatable<Choice>
     public override bool Equals(object? obj) => Equals(obj as Choice);
 
     /// <summary>
-    /// Returns the RTI Connext DDS representation of this union.
+    /// Formats this union as readable text.
     /// </summary>
+    /// <returns>A readable string formatted by the union's type-support instance.</returns>
     public override string ToString() => ChoiceSupport.Instance.ToString(this);
 }

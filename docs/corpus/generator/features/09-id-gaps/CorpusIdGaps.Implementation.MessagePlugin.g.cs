@@ -18,6 +18,9 @@ namespace CorpusIdGaps.Implementation;
 /// </summary>
 internal class MessagePlugin : InterpretedTypePlugin<Message, MessageUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Message"/>.
+    /// </summary>
     internal MessagePlugin() : base("CorpusIdGaps.Message", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

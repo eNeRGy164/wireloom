@@ -18,6 +18,9 @@ namespace CorpusNegativeIgnored.Implementation;
 /// </summary>
 internal class UnknownPlugin : InterpretedTypePlugin<Unknown, UnknownUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Unknown"/>.
+    /// </summary>
     internal UnknownPlugin() : base("CorpusNegativeIgnored.Unknown", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

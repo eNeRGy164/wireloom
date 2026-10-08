@@ -9,6 +9,9 @@ using Rti.Types;
 
 namespace CorpusCollections.Implementation;
 
+/// <summary>
+/// Provides native storage and conversion operations for the CoordinateGrid typedef. This type is used by RTI runtime integration and is not an application-facing value type.
+/// </summary>
 public struct CoordinateGridUnmanaged : INativeTopicType<CoordinateGrid>
 {
     private NativeUnmanagedArray Value;

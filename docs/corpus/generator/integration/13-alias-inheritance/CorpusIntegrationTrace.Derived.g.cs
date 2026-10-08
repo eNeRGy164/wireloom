@@ -10,13 +10,15 @@ using Rti.Types;
 namespace CorpusIntegrationTrace;
 
 /// <summary>
-/// Represents the <c>Derived</c> DDS type declared in <c>13-alias-inheritance.idl</c>. It derives from <see cref="Base"/>. It is marked as <c>extensible</c>.
+/// Represents the <c>Derived</c> DDS type declared in <c>13-alias-inheritance.idl</c>. It derives from <see cref="Base"/>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Derived : Base, global::System.IEquatable<Derived>
 {
     /// <summary>
-    /// Gets or sets the <c>state</c> member. Its maximum length is <c>16</c>.
+    /// Gets or sets the <c>state</c> member. Its maximum length is <c>16</c> characters.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
+    /// <remarks>The bound on this narrow IDL string counts characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(16)]
     public string state { get; set; } = string.Empty;
 
@@ -28,6 +30,7 @@ public partial class Derived : Base, global::System.IEquatable<Derived>
     /// <summary>
     /// Initializes a new instance of the <see cref="Derived"/> class.
     /// </summary>
+    /// <remarks>nested aggregate members start as new instances.</remarks>
     public Derived()
     {
     }
@@ -38,6 +41,7 @@ public partial class Derived : Base, global::System.IEquatable<Derived>
     /// <param name="baseValue">The value for the <c>baseValue</c> member.</param>
     /// <param name="state">The value for the <c>state</c> member.</param>
     /// <param name="traceContext">The value for the <c>traceContext</c> member.</param>
+    /// <remarks>The constructor stores supplied reference-type member values as provided. It does not clone their arrays, sequences, or nested objects.</remarks>
     public Derived(int baseValue, string state, Context traceContext) : base(baseValue)
     {
         this.state = state;
@@ -48,6 +52,13 @@ public partial class Derived : Base, global::System.IEquatable<Derived>
     /// Initializes a copy of the specified <see cref="Derived"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Derived();
+    /// var copy = new Derived(original);
+    /// </code>
+    /// </example>
     public Derived(Derived? other) : base(other)
     {
         if (other is null)
@@ -101,8 +112,8 @@ public partial class Derived : Base, global::System.IEquatable<Derived>
     public override bool Equals(object? obj) => Equals(obj as Derived);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => DerivedSupport.Instance.ToString(this);
 }

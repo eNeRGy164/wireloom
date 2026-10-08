@@ -18,6 +18,9 @@ namespace CorpusIntegrationTrace.Implementation;
 /// </summary>
 internal class ContextPlugin : InterpretedTypePlugin<Context, ContextUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Context"/>.
+    /// </summary>
     internal ContextPlugin() : base("CorpusIntegrationTrace.Context", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

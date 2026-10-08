@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusCollectionAliases.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the NestedSequence typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class NestedSequencePlugin : InterpretedTypePlugin<NestedSequence, NestedSequenceUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="NestedSequence"/>.
+    /// </summary>
     internal NestedSequencePlugin() : base("CorpusCollectionAliases.NestedSequence", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

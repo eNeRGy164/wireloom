@@ -18,6 +18,9 @@ namespace idl.Implementation;
 /// </summary>
 internal class SystemPlugin : InterpretedTypePlugin<global::idl.System, SystemUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="System"/>.
+    /// </summary>
     internal SystemPlugin() : base("idl.System", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusEnums.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the ColorSequence typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class ColorSequencePlugin : InterpretedTypePlugin<ColorSequence, ColorSequenceUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="ColorSequence"/>.
+    /// </summary>
     internal ColorSequencePlugin() : base("CorpusEnums.ColorSequence", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

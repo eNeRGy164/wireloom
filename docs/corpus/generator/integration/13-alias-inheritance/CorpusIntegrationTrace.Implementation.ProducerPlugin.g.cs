@@ -13,8 +13,14 @@ using Rti.Types.Dynamic;
 
 namespace CorpusIntegrationTrace.Implementation;
 
+/// <summary>
+/// Provides the RTI runtime plugin for the Producer typedef. This implementation detail is not intended for application code.
+/// </summary>
 internal class ProducerPlugin : InterpretedTypePlugin<Producer, ProducerUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Producer"/>.
+    /// </summary>
     internal ProducerPlugin() : base("CorpusIntegrationTrace.Producer", isKeyed: false, CreateDynamicType(isPublic: false))
     {
     }

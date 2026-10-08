@@ -25,7 +25,7 @@ public class AnnotatedSupport : TypeSupport<Annotated>
     }
 
     /// <summary>
-    /// Gets the cached RTI Connext DDS type-support instance.
+    /// Gets the shared type-support instance for this enumeration.
     /// </summary>
     public static AnnotatedSupport Instance { get; } = 
         ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<AnnotatedSupport, Annotated>();

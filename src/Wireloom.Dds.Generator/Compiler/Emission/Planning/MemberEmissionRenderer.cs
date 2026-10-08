@@ -27,17 +27,61 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
 
             if (facts.IsString)
             {
-                return $"Its maximum length is <c>{bound}</c>.";
+                return $"Its maximum length is <c>{bound}</c> characters.";
             }
 
             if (EmissionTypeProjector.HasSequenceType(facts.Type))
             {
-                return $"Its maximum number of elements is <c>{bound}</c>.";
+                var summary = $"Its maximum number of elements is <c>{bound}</c>.";
+                var sequenceType = UnwrapAliasAndOptional(facts.Type);
+                if (sequenceType is SequenceEmissionType sequence)
+                {
+                    var elementConstraints = NestedCollectionConstraintSummary(sequence.Element);
+                    if (elementConstraints is not null)
+                    {
+                        summary += $" {elementConstraints}";
+                    }
+                }
+
+                return summary;
             }
 
             return $"Its DDS bound is <c>{bound}</c>.";
         }
     }
+
+    private static string? NestedCollectionConstraintSummary(EmissionTypePlan type)
+    {
+        type = UnwrapAliasAndOptional(type);
+
+        if (type is StringEmissionType stringType)
+        {
+            return $"Each string element is limited to <c>{stringType.Bound}</c> characters.";
+        }
+
+        if (type is SequenceEmissionType sequence)
+        {
+            var summary = $"Each nested sequence is limited to <c>{sequence.Bound}</c> elements.";
+            var nestedConstraints = NestedCollectionConstraintSummary(sequence.Element);
+            return nestedConstraints is null ? summary : $"{summary} {nestedConstraints}";
+        }
+
+        if (type is ArrayEmissionType array)
+        {
+            var summary = $"Each array element has dimensions {string.Join(" × ", array.Dimensions)}.";
+            var nestedConstraints = NestedCollectionConstraintSummary(array.Element);
+            return nestedConstraints is null ? summary : $"{summary} {nestedConstraints}";
+        }
+
+        return null;
+    }
+
+    private static EmissionTypePlan UnwrapAliasAndOptional(EmissionTypePlan type) => type switch
+    {
+        AliasEmissionType alias => UnwrapAliasAndOptional(alias.Target),
+        OptionalEmissionType optional => UnwrapAliasAndOptional(optional.Target),
+        _ => type
+    };
 
     /// <summary>Builds the documentation summary for value constraints.</summary>
     public string? ValueConstraintSummary
@@ -49,15 +93,31 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
 
             if (metadata is { Minimum: { } minimum, Maximum: { } maximum })
             {
-                constraints.Add($"Its value must be between <c>{FormatCSharpValue(facts.CSharpType.TrimEnd('?'), minimum)}</c> and <c>{FormatCSharpValue(facts.CSharpType.TrimEnd('?'), maximum)}</c>.");
+                constraints.Add($"Valid values are in the inclusive range <c>{FormatCSharpValue(facts.CSharpType.TrimEnd('?'), minimum)}</c> through <c>{FormatCSharpValue(facts.CSharpType.TrimEnd('?'), maximum)}</c>.");
             }
             else if (metadata?.Minimum is { } lower)
             {
-                constraints.Add($"Its minimum value is <c>{FormatCSharpValue(facts.CSharpType.TrimEnd('?'), lower)}</c>.");
+                constraints.Add($"Valid values are at least <c>{FormatCSharpValue(facts.CSharpType.TrimEnd('?'), lower)}</c>.");
             }
             else if (metadata?.Maximum is { } upper)
             {
-                constraints.Add($"Its maximum value is <c>{FormatCSharpValue(facts.CSharpType.TrimEnd('?'), upper)}</c>.");
+                constraints.Add($"Valid values are no greater than <c>{FormatCSharpValue(facts.CSharpType.TrimEnd('?'), upper)}</c>.");
+            }
+            else if (facts.ValueType is PrimitiveEmissionType primitive)
+            {
+                var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
+                if (mapping.MinimumLiteral is { } minimumLiteral
+                    && mapping.MaximumLiteral is { } maximumLiteral)
+                {
+                    if (mapping.AnnotationTypeKind is "Float32" or "Float64")
+                    {
+                        constraints.Add($"Finite values are in the inclusive range <c>{minimumLiteral}</c> through <c>{maximumLiteral}</c>. NaN and positive or negative infinity are also representable.");
+                    }
+                    else if (mapping.AnnotationTypeKind is { } typeKind && IsIntegralAnnotation(typeKind))
+                    {
+                        constraints.Add($"Representable values are in the inclusive range <c>{minimumLiteral}</c> through <c>{maximumLiteral}</c>.");
+                    }
+                }
             }
 
             if (metadata?.DefaultValue is { } defaultValue)

@@ -18,6 +18,9 @@ namespace CorpusInheritedKeys.Implementation;
 /// </summary>
 internal class DerivedPlugin : InterpretedTypePlugin<Derived, DerivedUnmanaged>
 {
+    /// <summary>
+    /// Initializes the RTI plugin for <see cref="Derived"/>.
+    /// </summary>
     internal DerivedPlugin() : base("CorpusInheritedKeys.Derived", isKeyed: true, CreateDynamicType(isPublic: false))
     {
     }

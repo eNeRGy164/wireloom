@@ -10,7 +10,7 @@ using Rti.Types;
 namespace CorpusDefaultsAndRanges;
 
 /// <summary>
-/// Represents the <c>Sample</c> DDS type declared in <c>09-defaults-ranges.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>Sample</c> DDS type declared in <c>09-defaults-ranges.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class Sample : global::System.IEquatable<Sample>
 {
@@ -18,8 +18,9 @@ public partial class Sample : global::System.IEquatable<Sample>
     private int _ranged;
 
     /// <summary>
-    /// Gets or sets the <c>value</c> member. Its value must be between <c>0</c> and <c>100</c>. Its default value is <c>50</c>.
+    /// Gets or sets the <c>value</c> member. Valid values are in the inclusive range <c>0</c> through <c>100</c>. Its default value is <c>50</c>.
     /// </summary>
+    /// <exception cref="global::System.ArgumentOutOfRangeException">The assigned value is outside the inclusive range 0 through 100.</exception>
     public int value
     {
         get
@@ -36,8 +37,9 @@ public partial class Sample : global::System.IEquatable<Sample>
     }
 
     /// <summary>
-    /// Gets or sets the <c>ranged</c> member. Its value must be between <c>-32</c> and <c>31</c>.
+    /// Gets or sets the <c>ranged</c> member. Valid values are in the inclusive range <c>-32</c> through <c>31</c>.
     /// </summary>
+    /// <exception cref="global::System.ArgumentOutOfRangeException">The assigned value is outside the inclusive range -32 through 31.</exception>
     public int ranged
     {
         get
@@ -61,6 +63,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Initializes a new instance of the <see cref="Sample"/> class.
     /// </summary>
+    /// <remarks>explicit IDL defaults are applied.</remarks>
     public Sample()
     {
         value = 50;
@@ -73,6 +76,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <param name="value">The value for the <c>value</c> member.</param>
     /// <param name="ranged">The value for the <c>ranged</c> member.</param>
     /// <param name="color">The value for the <c>color</c> member.</param>
+    /// <remarks>This constructor assigns the supplied values directly. Unlike assigning a ranged property afterward, it does not check the property's range constraints.</remarks>
     public Sample(int value, int ranged, Color color)
     {
         this._value = value;
@@ -84,6 +88,13 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// Initializes a copy of the specified <see cref="Sample"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new Sample();
+    /// var copy = new Sample(original);
+    /// </code>
+    /// </example>
     public Sample(Sample? other)
     {
         if (other is null)
@@ -134,8 +145,8 @@ public partial class Sample : global::System.IEquatable<Sample>
     public override bool Equals(object? obj) => Equals(obj as Sample);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => SampleSupport.Instance.ToString(this);
 }

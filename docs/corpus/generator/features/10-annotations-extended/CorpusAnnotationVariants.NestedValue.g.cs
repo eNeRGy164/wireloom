@@ -10,12 +10,12 @@ using Rti.Types;
 namespace CorpusAnnotationVariants;
 
 /// <summary>
-/// Represents the <c>NestedValue</c> DDS type declared in <c>10-annotations-extended.idl</c>. It is marked as <c>extensible</c>.
+/// Represents the <c>NestedValue</c> DDS type declared in <c>10-annotations-extended.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
 public partial class NestedValue : global::System.IEquatable<NestedValue>
 {
     /// <summary>
-    /// Gets or sets the <c>value</c> member.
+    /// Gets or sets the <c>value</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     public int value { get; set; }
 
@@ -39,6 +39,13 @@ public partial class NestedValue : global::System.IEquatable<NestedValue>
     /// Initializes a copy of the specified <see cref="NestedValue"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <example>
+    /// <code>
+    /// var original = new NestedValue();
+    /// var copy = new NestedValue(original);
+    /// </code>
+    /// </example>
     public NestedValue(NestedValue? other)
     {
         if (other is null)
@@ -83,8 +90,8 @@ public partial class NestedValue : global::System.IEquatable<NestedValue>
     public override bool Equals(object? obj) => Equals(obj as NestedValue);
 
     /// <summary>
-    /// Returns the RTI Connext DDS type-support representation of this sample.
+    /// Formats this sample as readable text.
     /// </summary>
-    /// <returns>The RTI Connext DDS representation of this sample.</returns>
+    /// <returns>A readable string formatted by the type-support instance.</returns>
     public override string ToString() => NestedValueSupport.Instance.ToString(this);
 }
