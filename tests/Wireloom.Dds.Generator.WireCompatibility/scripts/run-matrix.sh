@@ -237,6 +237,11 @@ run_scenario() {
     local reader_log="$scratch/${label}-reader.log" writer_log="$scratch/${label}-writer.log"
     local reader_pid reader_ready=0 reader_status=0 writer_status=0
 
+    scenario_index=$((scenario_index + 1))
+    printf 'SCENARIO_PROGRESS %d/%d %s [%s] %s -> %s\n' \
+        "$scenario_index" "$expected_scenario_count" "$case_id" "$fixture" \
+        "$writer_language" "$reader_language"
+
     # Start the reader first and wait until it has created its DDS entities.
     # This avoids losing the writer's single sample before discovery completes.
     start_peer "$reader_language" reader "$topic" "$case_id" "$type_name" "$fixture" > "$reader_log" 2>&1 &
@@ -305,6 +310,7 @@ dotnet restore "$project" \
     --verbosity quiet
 
 overall_status=0
+scenario_index=0
 for case_id in "${case_ids[@]}"; do
     case_dir="$scratch/$case_id"
     native_dir="$case_dir/native"
