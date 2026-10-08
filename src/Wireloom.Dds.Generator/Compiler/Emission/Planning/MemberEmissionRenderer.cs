@@ -88,7 +88,14 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
             if (facts.Type.IsEnum && !facts.IsOptional)
             {
                 var enumType = (EnumEmissionType)facts.ValueType;
-                return $" = {TypeReference(facts.CSharpType, currentNamespace)}.{EscapeIdentifier(enumType.DefaultMemberName)};";
+                var enumTypeName = enumType.SupportType ?? facts.CSharpType;
+                var enumReference = ResolvedTypeReference(enumTypeName, currentNamespace: null);
+                if (!enumReference.StartsWith("global::", StringComparison.Ordinal))
+                {
+                    enumReference = $"global::{enumReference}";
+                }
+
+                return $" = {enumReference}.{EscapeIdentifier(enumType.DefaultMemberName)};";
             }
 
             if (facts.IsSequence || facts.IsArray)

@@ -37,27 +37,28 @@ The original baseline covered 224 scenarios (one fixture per case). The
 expanded matrix adds independent exchanges for fixture variants, so its total
 is computed from the fixture catalog and recorded as `expectedScenarioCount`
 and `scenarioCount` in `results.json`; the human-readable `results.md` includes
-✅/⛔/❔ status cells and a problem/defect column for failed exchanges.
+✅/⛔/❔ status cells and a problem/defect column for failed exchanges. Known
+expected failures remain ⛔ and are annotated in that column; `results.json`
+also records their expected-failure count separately.
+The IDL scenario cell uses `"` to repeat the case shown in the preceding row,
+keeping fixture variations grouped without repeating the same filename.
 Wireloom-positive selection is
 independent of RTI oracle status. See the latest report for current outcomes;
 the findings below remain known limitations until their related behavior is
 fixed.
 
-`05-array-of-sequences` is included with its default fixture: DDSG0105 is a
-warning, and Wireloom currently maps the array-of-sequences members to flat
-sequences in C#. This checks DDS interoperability for the generated and RTI
-types, but does not establish preservation of the two-slot IDL array shape.
-The compatibility project keeps DDSG0105 visible while treating it as
-non-fatal for this case, despite the repository-wide warnings-as-errors policy.
-The same-language pairings passed; both cross-language pairings failed during
-endpoint discovery because RTI reported different member type kinds for the
-flat C# sequence and C++ array-of-sequences.
+`05-array-of-sequences` remains in the matrix so its known cross-language
+failure stays visible. DDSG0105 warns that its generated C# binding flattens
+the IDL array shape, and RTI rejects the resulting C# and C++ types during
+cross-language discovery. The report marks those failures as expected; the
+same-language controls remain useful evidence. This is an unsupported
+Wireloom mapping rather than a negative IDL syntax case.
 `03-alias-aggregate` and `07-union-aliases` pass all their fixture pairings
 with the current aggregate-alias projection. The last complete run recorded
-364 passing and 8 failing exchanges out of 372. The eight failures are the two
-cross-language `05-array-of-sequences` exchanges and six present-value
-`09-optional-string-sequences` exchanges involving RTI's typed C++ peer. The
-report records each result and pairing.
+364 passing and 8 failing exchanges out of 372, including two expected
+cross-language failures for `05-array-of-sequences`. The six present-value
+`09-optional-string-sequences` exchanges involving RTI's typed C++ peer remain
+in the matrix so the C++ failure can be diagnosed and fixed.
 For the wide-character union, the
 C++ peer uses a manually constructed RTI `DynamicType` that preserves the
 corpus discriminator, labels, member IDs, and extensibility because

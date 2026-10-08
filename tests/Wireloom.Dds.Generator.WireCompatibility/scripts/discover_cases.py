@@ -67,6 +67,8 @@ def main() -> int:
             preferred_types["EnumTopic"] = -1
         if case["id"] == "07-union-aliases":
             preferred_types["Holder"] = -1
+        if case["id"] == "06-valuetypes":
+            preferred_types["Holder"] = -1
         if case["id"] == "08-key-inherited":
             preferred_types["Derived"] = -1
         if case["id"] == "08-key-nested":

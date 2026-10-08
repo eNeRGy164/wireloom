@@ -79,15 +79,21 @@ is included despite warning DDSG0105: Wireloom currently maps the C# members to
 flat sequences while RTI C++ preserves the IDL arrays. Same-language controls
 pass but cross-language endpoint discovery fails because RTI reports different
 member type kinds. A focused RTI-generated C# oracle control reproduced this
-shape limitation. This case's wire test therefore does not establish
-preservation of the two-slot array shape. Aggregate alias members now use the
+shape limitation. The wire report keeps those two cross-language failures and
+marks them as expected; this case's wire test does not establish preservation
+of the two-slot array shape. Aggregate alias members now use the
 underlying generated struct or union type, and all four `03-alias-aggregate`
-and all eight `07-union-aliases` exchanges pass. The optional-string-sequence fixtures expose RTI C++ interoperability failures for
-present wide-string sequences: C++ readers time out on the wide-only and
-multiple-value cases, while C# readers receive values that differ from the
-fixture. Absent, narrow-only, and empty optional states pass. These are
-recorded failures and diagnostics, not exclusions. The full catalog run
-completed 364 of 372 scenarios; the report lists the eight failures by pairing.
+and all eight `07-union-aliases` exchanges pass. Prior optional-string-sequence
+runs showed the C++ reader timing out on present wide-string values, the C++
+writer crashing after discovery, and C++ reader value mismatches. The C# reader
+had compared against an empty DynamicData fixture for these variants; this has
+been replaced with an independent value check. The C++ fixture now checks
+optional presence separately from sequence length and values, and reports
+child exit codes so writer crashes are distinguishable from downstream reader
+timeouts. These are recorded failures, not exclusions. The prior full catalog
+run completed 364 of 372 scenarios. Two array-of-sequences cross-language
+failures are expected; six present optional wide-string exchanges remain
+under investigation. A post-fix licensed rerun is still needed.
 The wchar union's C++ peer uses a manually constructed RTI `DynamicType` because
 `rtiddsgen` cannot parse wchar union labels. For `10-flat-data-binding`, C++
 generation removes only the C#-ignored `@language_binding(FLAT_DATA)` annotation
