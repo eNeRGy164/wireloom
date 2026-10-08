@@ -15,7 +15,6 @@ public sealed class GeneratedTypedefSpecs
             module Example {
                 typedef sequence<string<12>, 4> BoundedTexts;
                 typedef sequence<wstring, 3> UnboundedWideTexts;
-                typedef long HugeArray[50000][50000];
             };
             """);
 
@@ -25,7 +24,20 @@ public sealed class GeneratedTypedefSpecs
         // Assert
         documents["Example.BoundedTexts.g.cs"].Source.ShouldContain("Each narrow IDL string element is limited to <c>12</c> UTF-8 bytes.");
         documents["Example.UnboundedWideTexts.g.cs"].Source.ShouldContain("Each unbounded wide IDL string element has an effective limit of <c>255</c> UTF-16 code units.");
-        documents["Example.HugeArray.g.cs"].Source.ShouldContain("(2500000000 elements)");
+    }
+
+    [Fact]
+    public void RejectsArrayTypedefsWhoseTotalElementCountExceedsNativeDimensionLimit()
+    {
+        // Arrange
+        var input = Input("oversized-array-typedef.idl",
+            "module Example { typedef long HugeArray[50000][50000]; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => CompileSources(input));
+
+        // Assert
+        exception.Message.ShouldContain("total number of array elements cannot exceed Int32.MaxValue");
     }
 
     [Fact]

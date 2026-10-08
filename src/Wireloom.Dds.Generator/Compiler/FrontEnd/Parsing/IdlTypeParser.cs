@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Wireloom.Compiler.FrontEnd.Preprocessing;
 using Wireloom.Compiler.FrontEnd.Semantic;
+using BigInt = System.Numerics.BigInteger;
 
 using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
 using static Wireloom.Compiler.Naming.IdlNaming;
@@ -477,6 +478,7 @@ internal sealed class IdlTypeParser
     internal IReadOnlyList<int> ParseDimensions(IdlInput input, int offset, string text, string? currentNamespace)
     {
         var result = new List<int>();
+        IdlDeferredBound? lastDimensionBound = null;
 
         foreach (Match match in Regex.Matches(text, @"\[([^\]]+)\]"))
         {
@@ -484,6 +486,7 @@ internal sealed class IdlTypeParser
             var index = result.Count;
             result.Add(bound.Value);
             bound.AddConsumer(value => result[index] = value);
+            lastDimensionBound = bound;
         }
 
         if (result.Count == 0)
@@ -491,7 +494,18 @@ internal sealed class IdlTypeParser
             throw new IdlException(input, context.MapOffset(offset), "Array declaration must specify at least one dimension.");
         }
 
+        lastDimensionBound!.AddConsumer(_ => ValidateArrayElementCount(input, offset, result));
+
         return result;
+    }
+
+    private void ValidateArrayElementCount(IdlInput input, int offset, IReadOnlyList<int> dimensions)
+    {
+        var elementCount = dimensions.Aggregate(BigInt.One, (count, dimension) => count * dimension);
+        if (elementCount > int.MaxValue)
+        {
+            throw new IdlException(input, context.MapOffset(offset), "The total number of array elements cannot exceed Int32.MaxValue.");
+        }
     }
 
     /// <summary>Parses and validates a bounded string type.</summary>
