@@ -298,6 +298,12 @@ run_scenario() {
     [[ "$status" == PASS ]]
 }
 
+# The package graph is constant across cases; restore it once before the
+# case-specific builds so the full matrix does not repeat the same restore.
+dotnet restore "$project" \
+    -p:WireCompatibilityRtiVersion="$rti_version" \
+    --verbosity quiet
+
 overall_status=0
 for case_id in "${case_ids[@]}"; do
     case_dir="$scratch/$case_id"
@@ -306,10 +312,6 @@ for case_id in "${case_ids[@]}"; do
 
     # Build Wireloom's C# output against the selected RTI runtime. The resulting
     # generated type name is discovered from Wireloom's emitted TypeSupport.
-    dotnet restore "$project" \
-        -p:WireCompatibilityCase="$case_id" \
-        -p:WireCompatibilityRtiVersion="$rti_version" \
-        --verbosity quiet
     build_args=(
         --no-restore --configuration Release
         -p:WireCompatibilityCase="$case_id"
@@ -432,7 +434,8 @@ PY
     run_tool "CMake configure for $case_id" "$case_dir/cmake-configure.log" \
         cmake -S "$native_dir" -B "$native_dir/build" \
         -DCMAKE_MODULE_PATH="$NDDSHOME/resource/cmake" \
-        -DCONNEXTDDS_ARCH=x64Linux4gcc8.5.0 "${cmake_adaptation_args[@]}"
+        -DCONNEXTDDS_ARCH=x64Linux4gcc8.5.0 \
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache "${cmake_adaptation_args[@]}"
     run_tool "C++ build for $case_id" "$case_dir/cmake-build.log" \
         cmake --build "$native_dir/build" --parallel 2
     cpp_peer="$native_dir/build/wire-peer"
