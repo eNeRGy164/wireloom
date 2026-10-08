@@ -504,8 +504,8 @@ public sealed class GeneratorSpecs
     public void GeneratedUsageExamplesCompileAgainstTheirGeneratedTypes()
     {
         // Arrange
-        const string input = "module Examples { struct Sample { sequence<long, 4> values; @optional string title; }; };";
-        const string source = "using Examples; namespace Input; public sealed class Marker { public void Run() { var sample = new Sample(); sample.values.Add(default!); sample.values.RemoveAt(sample.values.Count - 1); sample.title = null; var original = new Sample(); var copy = new Sample(original); var text = SampleSupport.Instance.ToString(copy); var dynamicType = SampleSupport.Instance.DynamicType; var serializer = SampleSupport.Instance.CreateSerializer(); } }";
+        const string input = "module Examples { struct Sample { sequence<long, 4> values; @optional string title; }; union Choice switch(long) { case 1: case 5: long number; default: string text; }; };";
+        const string source = "using Examples; namespace Input; public sealed class Marker { public void Run() { var sample = new Sample(); sample.values.Add(default!); sample.values.RemoveAt(sample.values.Count - 1); sample.title = null; var original = new Sample(); var copy = new Sample(original); var text = SampleSupport.Instance.ToString(copy); var dynamicType = SampleSupport.Instance.DynamicType; var serializer = SampleSupport.Instance.CreateSerializer(); var choice = new Choice(); choice.number = 42; var activeValue = choice.number; choice.Setnumber(42, 5); activeValue = choice.number; } }";
 
         // Act
         var result = Run(

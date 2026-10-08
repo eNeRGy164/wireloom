@@ -222,13 +222,17 @@ internal static class UnionEmitter
     {
         var methodName = IdlNaming.EscapeIdentifier($"Set{branch.Field.Name}");
         var validLabels = declaration.SelectionCondition(branch, negated: false, discriminatorName: "discriminator");
+        var inactiveBranch = declaration.Branches.FirstOrDefault(candidate => candidate != branch);
+        var inactiveReadNote = inactiveBranch is null
+            ? string.Empty
+            : $"\n// Reading choice.{inactiveBranch.Plan.EscapedName} here throws InvalidOperationException because that branch is inactive.";
 
         writer.BlankLine();
         writer.WriteXmlSummary($"Sets the {branch.Field.Name} branch with an explicit discriminator value.");
         writer.WriteXmlParam("value", $"The value for the {branch.Field.Name} branch.");
         writer.WriteXmlParam("discriminator", "A discriminator value selecting this branch.");
         writer.WriteXmlRemarks($"Assigning the <c>{branch.Field.Name}</c> property selects the first label listed in its documentation. Use this method to select another valid label for the same branch.");
-        writer.WriteXmlExample($"var choice = new {IdlNaming.TypeReference(declaration.Name, declaration.Namespace)}();\nchoice.{branch.Plan.EscapedName} = default!;\nchoice.{methodName}(default!, {branch.Labels[0]});");
+        writer.WriteXmlExample($"var choice = new {IdlNaming.TypeReference(declaration.Name, declaration.Namespace)}();\nchoice.{branch.Plan.EscapedName} = default!;\nvar activeValue = choice.{branch.Plan.EscapedName};\nchoice.{methodName}(default!, {branch.Labels[0]});\nactiveValue = choice.{branch.Plan.EscapedName};{inactiveReadNote}");
         writer.WriteXmlException("global::System.ArgumentException", "The discriminator does not select this branch.");
         writer.OpenBlock($"public void {methodName}({IdlNaming.TypeReference(branch.Plan.CSharpType, declaration.Namespace)} value, {ManagedDiscriminatorType(declaration)} discriminator)");
         writer.OpenBlock($"if (!({validLabels}))");
