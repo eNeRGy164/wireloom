@@ -7,6 +7,23 @@ namespace Wireloom.Generation.Tests;
 public sealed class GeneratedPluginSpecs
 {
     [Fact]
+    public void MaximumOnlyRangesAreDocumentedAndValidatedByTheGeneratedProperty()
+    {
+        // Arrange
+        var input = Input("maximum-only-range.idl",
+            "module MaximumOnlyRange { struct Sample { @max(10) long value; }; };");
+
+        // Act
+        var managed = CompileSources(input)["MaximumOnlyRange.Sample.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("Valid values are no greater than <c>10</c>.");
+        managed.ShouldContain("<exception cref=\"global::System.ArgumentOutOfRangeException\">The assigned value is greater than 10.</exception>");
+        managed.ShouldContain("ThrowIfGreaterThan(value, 10);");
+        managed.ShouldContain("this.value = value;");
+    }
+
+    [Fact]
     [Trait("Corpus", "C042")]
     public void MemberDefaultsAndRangesReachManagedNativeAndDynamicTypeOutputs()
     {

@@ -10,6 +10,22 @@ namespace Wireloom.Generation.Tests;
 public sealed class GeneratedAggregateSpecs
 {
     [Fact]
+    public void ExtensibilityKindsExplainTheirTypeEvolutionBehavior()
+    {
+        // Arrange
+        var input = Input("extensibility-summary.idl",
+            "module ExtensibilitySummary { @final struct FinalSample { long value; }; @appendable struct AppendableSample { long value; }; @mutable struct MutableSample { long value; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["ExtensibilitySummary.FinalSample.g.cs"].Source.ShouldContain("The type's members and layout cannot be extended compatibly.");
+        documents["ExtensibilitySummary.AppendableSample.g.cs"].Source.ShouldContain("New members may be appended while preserving the existing member order for compatible type evolution.");
+        documents["ExtensibilitySummary.MutableSample.g.cs"].Source.ShouldContain("Members may be identified and reordered by DDS member IDs during compatible type evolution.");
+    }
+
+    [Fact]
     public void NativeMemberAccessQualifiesOnlyParametersThatShadowFields()
     {
         // Arrange
