@@ -13,7 +13,9 @@ where the IDL allows them. Readers compare the complete generated sample with
 the fixture and report valid-sample and discovery counters. The JSON report
 records case, fixture, pairing, endpoint runtime versions, and pass/fail status.
 The Markdown report presents one row per case and fixture, with a status cell
-for each pairing and a problem/defect detail for failures.
+for each pairing. For failures, its problem/defect column reports the observed
+sanitized symptom and lists any registered expected-failure explanation
+separately. The JSON keeps these in `observedProblem` and `expectedFailure`.
 
 Wireloom-generated C# types and typed RTI readers/writers exercise generated
 conversions as well as DDS transport. The RTI C++ reference peer normally uses
@@ -38,8 +40,9 @@ expanded matrix adds independent exchanges for fixture variants, so its total
 is computed from the fixture catalog and recorded as `expectedScenarioCount`
 and `scenarioCount` in `results.json`; the human-readable `results.md` includes
 ✅/⛔/❔ status cells and a problem/defect column for failed exchanges. Known
-expected failures remain ⛔ and are annotated in that column; `results.json`
-also records their expected-failure count separately.
+expected failures remain ⛔; the problem column separates observed symptoms
+from their expected-failure explanations, and `results.json` records both
+fields and their aggregate count.
 Cases that Wireloom cannot generate appear as not-implemented rows in both
 reports. Their pairing cells show ⛔, while the problem column identifies the
 diagnostic and links the tracked support issue. They are not counted as

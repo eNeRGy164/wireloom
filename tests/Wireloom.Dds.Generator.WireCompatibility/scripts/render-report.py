@@ -17,6 +17,61 @@ def expected_failure_for(case_id, writer, reader, fixture):
         (case_id, writer, reader, None)
     )
 
+
+def observed_problem_for(case_id, fixture, pairing, scenario):
+    if scenario is None or scenario["status"] == "NOT_RUN":
+        return "scenario did not run"
+
+    writer, reader = pairing
+    writer_id = "cs" if writer == "C#" else "cpp"
+    reader_id = "cs" if reader == "C#" else "cpp"
+    log_path = pathlib.Path(logs_path) / f"{case_id}-{fixture}-{writer_id}-{reader_id}.log"
+    if not log_path.exists():
+        return "scenario log is missing"
+
+    lines = log_path.read_text(encoding="utf-8").splitlines()
+    observations = [
+        line.removeprefix("FAIL_DETAIL ").rstrip(".")
+        for line in lines
+        if line.startswith("FAIL_DETAIL ")
+    ]
+    if not observations:
+        observations = [
+            line.removeprefix("FAIL ").rstrip(".")
+            for line in lines
+            if line.startswith("FAIL ")
+        ]
+
+    endpoint_status = next((line for line in lines if line.startswith("ENDPOINT_STATUS ")), None)
+    endpoint_failures = []
+    if endpoint_status:
+        fields = dict(field.split("=", 1) for field in endpoint_status.split()[1:])
+        for endpoint, language in (("writer", writer), ("reader", reader)):
+            exit_code = fields.get(f"{endpoint}_exit_code", "0")
+            if exit_code == "139":
+                endpoint_failures.append(f"{language} {endpoint} terminated with exit 139 (SIGSEGV)")
+
+    for endpoint_failure in endpoint_failures:
+        if endpoint_failure not in observations:
+            observations.append(endpoint_failure)
+
+    if observations:
+        return "; ".join(observations)
+
+    diagnostics = [line for line in lines if line.startswith("RTI_DIAGNOSTIC ")]
+    if any("different type kinds" in line for line in diagnostics):
+        return "RTI discovery rejected the type: different member type kinds"
+
+    if endpoint_status:
+        fields = dict(field.split("=", 1) for field in endpoint_status.split()[1:])
+        for endpoint, language in (("writer", writer), ("reader", reader)):
+            exit_code = fields.get(f"{endpoint}_exit_code", "0")
+            if exit_code != "0":
+                return f"{language} {endpoint} exited with code {exit_code}"
+
+    return "endpoint failed; see sanitized scenario log"
+
+
 scenarios = []
 for line in pathlib.Path(source_path).read_text(encoding="utf-8").splitlines():
     case_id, csharp_type, cpp_type, writer, writer_version, reader, reader_version, status, fixture = line.split("\t")
@@ -30,6 +85,13 @@ for line in pathlib.Path(source_path).read_text(encoding="utf-8").splitlines():
     expected_failure = expected_failure_for(case_id, writer, reader, fixture)
     if expected_failure:
         scenario["expectedFailure"] = expected_failure
+    if status == "FAIL":
+        scenario["observedProblem"] = observed_problem_for(
+            case_id,
+            fixture,
+            (writer, reader),
+            scenario,
+        )
     if csharp_type or cpp_type:
         scenario["types"] = {"C#": csharp_type, "C++": cpp_type}
     if case_id == "10-flat-data-binding":
@@ -67,41 +129,7 @@ for scenario in scenarios:
     row[pairing] = scenario
 
 def problem_for(case_id, fixture, pairing, scenario):
-    writer, reader = pairing
-    expected_failure = expected_failure_for(case_id, writer, reader, fixture)
-    if expected_failure and scenario and scenario["status"] == "FAIL":
-        return expected_failure
-    if expected_failure and scenario and scenario["status"] == "NOT_RUN":
-        return f"Not run; expected known issue: {expected_failure.removeprefix('Expected: ')}"
-    writer_id = "cs" if writer == "C#" else "cpp"
-    reader_id = "cs" if reader == "C#" else "cpp"
-    log_path = pathlib.Path(logs_path) / f"{case_id}-{fixture}-{writer_id}-{reader_id}.log"
-    if not log_path.exists():
-        return "scenario did not run"
-
-    lines = log_path.read_text(encoding="utf-8").splitlines()
-    endpoint_status = next((line for line in lines if line.startswith("ENDPOINT_STATUS ")), None)
-    endpoint_failures = {}
-    if endpoint_status:
-        fields = dict(field.split("=", 1) for field in endpoint_status.split()[1:])
-        for endpoint, language in (("writer", writer), ("reader", reader)):
-            exit_code = fields.get(f"{endpoint}_exit_code", "0")
-            if exit_code != "0":
-                if exit_code == "139":
-                    return f"{language} {endpoint} terminated with exit 139 (SIGSEGV)"
-                endpoint_failures[endpoint] = f"{language} {endpoint} exited with code {exit_code}"
-    details = [line.removeprefix("FAIL_DETAIL ") for line in lines if line.startswith("FAIL_DETAIL ")]
-    if details:
-        return details[0].rstrip(".")
-    failures = [line.removeprefix("FAIL ") for line in lines if line.startswith("FAIL ")]
-    if failures:
-        return failures[0].rstrip(".")
-    diagnostics = [line for line in lines if line.startswith("RTI_DIAGNOSTIC ")]
-    if any("different type kinds" in line for line in diagnostics):
-        return "RTI discovery rejected the type: different member type kinds"
-    if endpoint_failures:
-        return next(iter(endpoint_failures.values()))
-    return "endpoint failed; see sanitized scenario log"
+    return (scenario or {}).get("observedProblem", "scenario did not run")
 
 def cell_for(case_id, fixture, pairing, row):
     scenario = row.get(pairing)
@@ -122,7 +150,7 @@ lines = [
     "",
     f"RTI Connext **{version}** · **{len(scenarios)}** DDS exchanges · **{passed}** passed · **{len(failed)}** failed (**{len(expected_failed)} expected) · **{len(not_run)}** not run · **{len(not_implemented_cases)}** case(s) not implemented",
     "",
-    'Each cell is an independent producer/consumer exchange. ✅ passed, ⛔ failed or not implemented, ❔ not run. The problem column distinguishes failed exchanges from generator support gaps. A `"` in the IDL scenario column repeats the case from the row above. Failure details are taken from sanitized endpoint logs.',
+    'Each cell is an independent producer/consumer exchange. ✅ passed, ⛔ failed or not implemented, ❔ not run. The problem column reports observed symptoms separately from registered expected-failure explanations. A `"` in the IDL scenario column repeats the case from the row above. Failure details are taken from sanitized endpoint logs.',
     "",
     "| IDL scenario | Variation | C# → C# | C++ → C++ | C# → C++ | C++ → C# | Problem / defect |",
     "| :-- | :-- | :--: | :--: | :--: | :--: | :-- |",
@@ -151,7 +179,16 @@ for case_id, fixture, row, not_implemented in sorted(report_rows, key=lambda ite
             if status in {"⛔", "❔"}:
                 pairing_name = f"{pairing[0]} → {pairing[1]}"
                 detail = problem_for(case_id, fixture, pairing, row.get(pairing)).replace("|", "\\|")
-                problems.append(f"**{pairing_name}:** {detail}")
+                scenario = row.get(pairing)
+                expected_failure = expected_failure_for(case_id, pairing[0], pairing[1], fixture)
+                if expected_failure and scenario and scenario["status"] == "FAIL":
+                    expected_detail = expected_failure.removeprefix("Expected: ").replace("|", "\\|")
+                    problems.append(
+                        f"**{pairing_name} observed:** {detail}<br>"
+                        f"**Expected:** {expected_detail}"
+                    )
+                else:
+                    problems.append(f"**{pairing_name}:** {detail}")
         problem_cell = "<br>".join(problems) if problems else "—"
     case_cell = f"`{case_id}.idl`" if case_id != previous_case else '"'
     lines.append(f"| {case_cell} | `{fixture}` | {' | '.join(status_cells)} | {problem_cell} |")
