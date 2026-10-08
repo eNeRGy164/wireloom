@@ -36,6 +36,9 @@ readonly non_default_fixture_cases=(
     11-preprocessor-advanced 11-include-search 11-comments
 )
 expected_scenario_count=0
+completed_scenario_count=0
+passed_scenario_count=0
+failed_scenario_count=0
 
 # Return fixture names instead of a yes/no fixture flag. Keeping each variant
 # in a separate process exchange makes a missing branch or sequence shape easy
@@ -241,9 +244,11 @@ run_scenario() {
     local reader_pid reader_ready=0 reader_status=0 writer_status=0
 
     scenario_index=$((scenario_index + 1))
-    printf 'SCENARIO_PROGRESS %d/%d %s [%s] %s -> %s\n' \
-        "$scenario_index" "$expected_scenario_count" "$case_id" "$fixture" \
-        "$writer_language" "$reader_language"
+    printf 'WIRE_MATRIX_PROGRESS started=%d/%d completed=%d/%d passed=%d failed=%d elapsed=%ss current=%s [%s] %s -> %s\n' \
+        "$scenario_index" "$expected_scenario_count" \
+        "$completed_scenario_count" "$expected_scenario_count" \
+        "$passed_scenario_count" "$failed_scenario_count" "$SECONDS" \
+        "$case_id" "$fixture" "$writer_language" "$reader_language"
 
     # Start the reader first and wait until it has created its DDS entities.
     # This avoids losing the writer's single sample before discovery completes.
@@ -302,6 +307,17 @@ run_scenario() {
 
     record_scenario "$case_id" "$type_name" "$cpp_type_name" \
         "$writer_language" "$reader_language" "$status" "$fixture" || return 1
+    completed_scenario_count=$((completed_scenario_count + 1))
+    if [[ "$status" == PASS ]]; then
+        passed_scenario_count=$((passed_scenario_count + 1))
+    else
+        failed_scenario_count=$((failed_scenario_count + 1))
+    fi
+    progress_percent=$((completed_scenario_count * 100 / expected_scenario_count))
+    printf 'WIRE_MATRIX_PROGRESS completed=%d/%d percent=%d%% passed=%d failed=%d elapsed=%ss latest=%s %s [%s] -> %s %s\n' \
+        "$completed_scenario_count" "$expected_scenario_count" "$progress_percent" \
+        "$passed_scenario_count" "$failed_scenario_count" "$SECONDS" \
+        "$status" "$case_id" "$fixture" "$writer_language" "$reader_language"
     printf '%s %s [%s] -> %s %s\n' "$status" "$case_id" "$fixture" "$writer_language" "$reader_language"
     [[ "$status" == PASS ]]
 }
@@ -314,7 +330,13 @@ dotnet restore "$project" \
 
 overall_status=0
 scenario_index=0
+SECONDS=0
+case_index=0
 for case_id in "${case_ids[@]}"; do
+    case_index=$((case_index + 1))
+    printf 'WIRE_MATRIX_CASE %d/%d case=%s phase=csharp-build completed-scenarios=%d/%d elapsed=%ss\n' \
+        "$case_index" "${#case_ids[@]}" "$case_id" \
+        "$completed_scenario_count" "$expected_scenario_count" "$SECONDS"
     case_dir="$scratch/$case_id"
     native_dir="$case_dir/native"
     mkdir -p "$native_dir"
