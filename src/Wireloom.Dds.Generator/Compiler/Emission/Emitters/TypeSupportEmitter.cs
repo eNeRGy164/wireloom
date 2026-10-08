@@ -55,12 +55,14 @@ internal static class TypeSupportEmitter
 
         documents.AddRange(DynamicTypeEmitter.EmitStructPlugin(names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive));
 
+        var dynamicTypeExample = isRecursive ? string.Empty : $"\nvar dynamicType = {names.SupportTypeName}.Instance.DynamicType;";
+
         writer = EmissionSupport.CreateSource(names.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides application-facing formatting, serialization, and dynamic-type utilities for <see cref=\"{typeName}\"/>. RTI uses its internal plugin and native representation to process samples.");
         writer.WriteXmlRemarks("The referenced API documentation targets RTI Connext 7.7.0, Wireloom's current compatibility baseline. Verify API details against the runtime version used by the consuming project.");
         writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Dds_1_1Topics_1_1TypeSupport.html", "RTI Connext C# TypeSupport API (7.7.0)");
-        writer.WriteXmlExample($"var sample = new {typeName}();\nvar text = {names.SupportTypeName}.Instance.ToString(sample);\nvar dynamicType = {names.SupportTypeName}.Instance.DynamicType;\nvar serializer = {names.SupportTypeName}.Instance.CreateSerializer();");
+        writer.WriteXmlExample($"var sample = new {typeName}();\nvar text = {names.SupportTypeName}.Instance.ToString(sample);{dynamicTypeExample}\nvar serializer = {names.SupportTypeName}.Instance.CreateSerializer();");
         writer.OpenBlock($"public class {names.SupportTypeName} : TypeSupport<{supportTypeName}>");
 
         writer.WriteXmlSummary($"Initializes a new instance of the <see cref=\"{names.SupportTypeName}\"/> class.");
