@@ -286,7 +286,7 @@ internal static class ManagedDataTypeEmitter
 
         if (fields.Concat(inheritedFields).Any(field => field.HasManagedRange))
         {
-            writer.WriteXmlRemarks("This constructor assigns the supplied values directly. Unlike assigning a ranged property afterward, it does not check the property's range constraints.");
+            writer.WriteXmlException("global::System.ArgumentOutOfRangeException", "A supplied member value is outside its declared range.");
         }
 
         var parameters = inheritedFields.Concat(fields).Select(field => $"{IdlNaming.TypeReference(field.CSharpType, field.CurrentNamespace)} {IdlNaming.EscapeIdentifier(field.Name)}");
@@ -301,8 +301,7 @@ internal static class ManagedDataTypeEmitter
 
         foreach (var field in fields)
         {
-            var target = field.HasManagedRange ? field.ManagedBackingFieldName : IdlNaming.EscapeIdentifier(field.Name);
-            writer.WriteLine($"this.{target} = {IdlNaming.EscapeIdentifier(field.Name)};");
+            writer.WriteLine($"this.{IdlNaming.EscapeIdentifier(field.Name)} = {IdlNaming.EscapeIdentifier(field.Name)};");
         }
 
         writer.CloseBlock();
