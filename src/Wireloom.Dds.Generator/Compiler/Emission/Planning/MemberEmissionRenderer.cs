@@ -106,17 +106,14 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
             else if (facts.ValueType is PrimitiveEmissionType primitive)
             {
                 var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
-                if (mapping.MinimumLiteral is { } minimumLiteral
-                    && mapping.MaximumLiteral is { } maximumLiteral)
+                if (mapping is { MinimumLiteral: { } minimumLiteral, MaximumLiteral: { } maximumLiteral, AnnotationTypeKind: "Float32" or "Float64" })
                 {
-                    if (mapping.AnnotationTypeKind is "Float32" or "Float64")
-                    {
-                        constraints.Add($"Finite values are in the inclusive range <c>{minimumLiteral}</c> through <c>{maximumLiteral}</c>. NaN and positive or negative infinity are also representable.");
-                    }
-                    else if (mapping.AnnotationTypeKind is { } typeKind && IsIntegralAnnotation(typeKind))
-                    {
-                        constraints.Add($"Representable values are in the inclusive range <c>{minimumLiteral}</c> through <c>{maximumLiteral}</c>.");
-                    }
+                    constraints.Add($"Finite values are in the inclusive range <c>{minimumLiteral}</c> through <c>{maximumLiteral}</c>. NaN and positive or negative infinity are also representable.");
+                }
+                else if (mapping is { MinimumLiteral: { } integerMinimum, MaximumLiteral: { } integerMaximum, AnnotationTypeKind: { } typeKind }
+                    && IsIntegralAnnotation(typeKind))
+                {
+                    constraints.Add($"Representable values are in the inclusive range <c>{integerMinimum}</c> through <c>{integerMaximum}</c>.");
                 }
             }
 
