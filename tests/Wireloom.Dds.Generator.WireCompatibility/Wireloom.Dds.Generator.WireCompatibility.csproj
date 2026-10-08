@@ -5,7 +5,6 @@
     <IsTestProject>false</IsTestProject>
     <IsPackable>false</IsPackable>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-    <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)wireloom-generated</CompilerGeneratedFilesOutputPath>
     <WireCompatibilityCase Condition="'$(WireCompatibilityCase)' == ''">01-primitives</WireCompatibilityCase>
