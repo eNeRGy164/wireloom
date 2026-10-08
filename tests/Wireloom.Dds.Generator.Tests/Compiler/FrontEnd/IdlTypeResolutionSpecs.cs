@@ -388,7 +388,7 @@ public sealed class IdlTypeResolutionSpecs
         // Assert
         output.ShouldContain("RED,");
         output.ShouldContain("EnumValue = 1");
-        output.ShouldContain("public Color color { get; set; } = Color.RED;");
+        output.ShouldContain("public Color color { get; set; } = global::Defaults.Color.RED;");
     }
 
     [Fact]
