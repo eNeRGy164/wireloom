@@ -44,9 +44,10 @@ public sealed class GeneratedPluginSpecs
             "value = 50;",
             "color = (Color)(2);");
         managed.ShouldContainInOrder(
-            "this._value = value;",
-            "this._ranged = ranged;",
+            "this.value = value;",
+            "this.ranged = ranged;",
             "this.color = color;");
+        managed.ShouldContain("<exception cref=\"global::System.ArgumentOutOfRangeException\">A supplied member value is outside its declared range.</exception>");
         managed.ShouldContainInOrder(
             "_value = other._value;",
             "_ranged = other._ranged;");
