@@ -26,6 +26,60 @@ public sealed class GeneratedNestedAliasSpecs
     }
 
     [Fact]
+    public void AggregateAliasesInRawCollectionsUseUnderlyingAggregateValues()
+    {
+        // Arrange
+        var input = Input("aggregate-alias-collections.idl",
+            """
+            module AggregateAliasCollections {
+                struct Point { long x; };
+                typedef Point PointAlias;
+                typedef PointAlias PointAlias2;
+                union Choice switch (long) {
+                    case 0: long number;
+                };
+                typedef Choice ChoiceAlias;
+                typedef ChoiceAlias ChoiceAlias2;
+                struct Sample {
+                    PointAlias points[2];
+                    sequence<PointAlias2, 3> pointSequence;
+                    ChoiceAlias choices[2];
+                    sequence<ChoiceAlias2, 3> choiceSequence;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var sample = documents["AggregateAliasCollections.Sample.g.cs"].Source;
+        sample.ShouldContain("public Point[] points { get; set; } = null!;");
+        sample.ShouldContain("points = new Point[2];");
+        sample.ShouldContain("points[dimension0] = new Point();");
+        sample.ShouldContain("public ISequence<Point> pointSequence { get; }");
+        sample.ShouldContain("pointSequence = new Sequence<Point>();");
+        sample.ShouldContain("points[dimension0] = new Point(other.points[dimension0]);");
+        sample.ShouldContain("element => new Point(element)");
+        sample.ShouldContain("public Choice[] choices { get; set; } = null!;");
+        sample.ShouldContain("choices[dimension0] = new Choice();");
+        sample.ShouldContain("public ISequence<Choice> choiceSequence { get; }");
+        sample.ShouldContain("choiceSequence = new Sequence<Choice>();");
+        sample.ShouldContain("choices[dimension0] = new Choice(other.choices[dimension0]);");
+        sample.ShouldContain("element => new Choice(element)");
+
+        var native = documents["AggregateAliasCollections.Implementation.SampleUnmanaged.g.cs"].Source;
+        native.ShouldContain("points.FromNative<Point, PointUnmanaged>(sample.points, keysOnly: false, dimension: 2);");
+        native.ShouldContain("pointSequence.FromNative<Point, PointUnmanaged>(sample.pointSequence);");
+        native.ShouldContain("points.ToNative<Point, PointUnmanaged>(sample.points, keysOnly: false, dimension: 2);");
+        native.ShouldContain("pointSequence.ToNative<Point, PointUnmanaged>(sample.pointSequence);");
+        native.ShouldContain("choices.FromNative<Choice, ChoiceUnmanaged>(sample.choices, keysOnly: false, dimension: 2);");
+        native.ShouldContain("choiceSequence.FromNative<Choice, ChoiceUnmanaged>(sample.choiceSequence);");
+        native.ShouldContain("choices.ToNative<Choice, ChoiceUnmanaged>(sample.choices, keysOnly: false, dimension: 2);");
+        native.ShouldContain("choiceSequence.ToNative<Choice, ChoiceUnmanaged>(sample.choiceSequence);");
+    }
+
+    [Fact]
     public void SupportsGuardedNestedAppendableTypesWithBoundedStringAliases()
     {
         // Arrange

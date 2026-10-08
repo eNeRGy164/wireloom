@@ -20,11 +20,12 @@ and writer handoff are expanded in the level-2 view below.
 | Corpus and integration tests | Checks acceptance, diagnostics, RTI C# shape, and packed-package consumption                          | Generator and fixtures       | Separate fast, corpus, and package layers                     |
 
 Emission planning uses the underlying struct or union type for aggregate
-members whose IDL type is a typedef chain. Standalone typedef declarations
-remain generated, while aggregate member APIs and native conversions use the
-underlying aggregate support. This matches RTI's generated C# member shape and
-keeps aggregate alias handling consistent across managed, native, and support
-emission.
+members and array or sequence elements whose IDL type is a typedef chain.
+Standalone typedef declarations remain generated, while aggregate APIs,
+collection elements, and native conversions use the underlying aggregate
+support. This matches RTI's generated C# shape: raw arrays and sequences of
+aggregate aliases expose initialized aggregate values and convert through the
+aggregate's native type support.
 
 The input graph and preprocessor enforce deterministic work boundaries: macro
 expansion is capped at 100,000 expansion operations and each preprocessed file
