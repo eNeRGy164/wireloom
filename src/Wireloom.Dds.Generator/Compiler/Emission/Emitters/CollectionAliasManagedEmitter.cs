@@ -190,12 +190,22 @@ internal static class CollectionAliasManagedEmitter
         }
         else
         {
-            var valueSummary = $"Gets or sets the value represented by this typedef.{(declaration.IsString ? $" Its maximum length is <c>{declaration.StringBound}</c> characters." : string.Empty)}";
+            var valueSummary = "Gets or sets the value represented by this typedef.";
+            if (declaration is { IsString: true, IsStringBounded: true })
+            {
+                valueSummary += $" Its IDL bound is <c>{declaration.StringBound}</c> characters.";
+            }
+
             writer.WriteXmlSummary(valueSummary);
 
             if (declaration.IsString)
             {
-                writer.WriteXmlRemarks("The IDL bound counts characters. RTI encodes narrow IDL strings as UTF-8 and wide IDL strings as UTF-16 by default; assigning this property does not check the bound. For an unbounded IDL string, Wireloom currently generates an effective limit of 255 characters.");
+                var stringKind = declaration.IsWideString ? "wide" : "narrow";
+                var encoding = declaration.IsWideString ? "UTF-16" : "UTF-8";
+                var stringRemarks = declaration.IsStringBounded
+                    ? $"The bound on this {stringKind} IDL string counts characters. RTI encodes {stringKind} IDL strings as {encoding} by default. The generated C# property does not check the bound when assigned."
+                    : $"This unbounded {stringKind} IDL string has an effective limit of 255 characters. RTI encodes {stringKind} IDL strings as {encoding} by default. The generated C# property does not enforce the effective limit when assigned.";
+                writer.WriteXmlRemarks(stringRemarks);
                 writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", "RTI Connext 7.7.0 string and wide-string bounds");
             }
 

@@ -172,6 +172,8 @@ public sealed class GeneratedTypedefSpecs
             """
             module StringAliases {
                 typedef string<8> Text;
+                typedef string<255> Explicit255;
+                typedef string UnboundedText;
                 typedef wstring<4> WideText;
             };
             """);
@@ -183,6 +185,15 @@ public sealed class GeneratedTypedefSpecs
         var text = documents["StringAliases.Text.g.cs"].Source;
         text.ShouldContain("[Bound(8)]");
         text.ShouldContain("public string Value { get; set; } = string.Empty;");
+
+        var explicit255 = documents["StringAliases.Explicit255.g.cs"].Source;
+        explicit255.ShouldContain("Its IDL bound is <c>255</c> characters.");
+        explicit255.ShouldContain("The bound on this narrow IDL string counts characters.");
+        explicit255.ShouldNotContain("unbounded narrow IDL string");
+
+        var unboundedText = documents["StringAliases.UnboundedText.g.cs"].Source;
+        unboundedText.ShouldContain("This unbounded narrow IDL string has an effective limit of 255 characters.");
+        unboundedText.ShouldNotContain("Its IDL bound is <c>255</c> characters.");
 
         var textPlugin = documents["StringAliases.Implementation.TextPlugin.g.cs"].Source;
         textPlugin.ShouldContain("dtf.CreateString(8)");

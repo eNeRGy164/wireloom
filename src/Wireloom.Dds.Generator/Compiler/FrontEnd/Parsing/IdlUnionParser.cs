@@ -128,11 +128,11 @@ internal sealed class IdlUnionParser
             return new IdlMember(branchName, sequence, sourceInput: input, sourceOffset: context.MapOffset(sourceOffset));
         }
 
-        if (IdlBuiltinTypeSyntax.TryParseStringType(branchType, out var isWideString, out _))
+        if (IdlBuiltinTypeSyntax.TryParseStringType(branchType, out var isWideString, out var boundExpression))
         {
             var bound = context.TypeParser.ParseStringBound(input, sourceOffset, branchType, currentNamespace, "Union string bound must be a positive Int32.");
 
-            var stringType = new IdlType.StringType(isWideString, bound?.Value ?? 255);
+            var stringType = new IdlType.StringType(isWideString, bound?.Value ?? 255, isBounded: boundExpression is not null);
             bound?.AddConsumer(stringType.SetBound);
             return new IdlMember(branchName, stringType, sourceInput: input, sourceOffset: context.MapOffset(sourceOffset));
         }

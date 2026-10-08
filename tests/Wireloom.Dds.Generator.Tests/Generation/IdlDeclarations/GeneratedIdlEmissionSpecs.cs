@@ -246,6 +246,7 @@ public sealed class GeneratedIdlEmissionSpecs
         support.ShouldContain("if (Instance is null)");
         support.ShouldContain("Instance = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<NodeSupport, Node>();");
         support.ShouldContain("return Instance;");
+        support.ShouldNotContain("var dynamicType = NodeSupport.Instance.DynamicType;");
     }
 
     [Fact]

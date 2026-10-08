@@ -51,7 +51,7 @@ internal static class CollectionAliasEmitter
         EmissionTypePlan elementPlan;
         if (declaration.IsString)
         {
-            elementPlan = new StringEmissionType(declaration.IsWideString, declaration.StringBound);
+            elementPlan = new StringEmissionType(declaration.IsWideString, declaration.StringBound, declaration.IsStringBounded);
         }
         else
         {

@@ -11,7 +11,7 @@ public sealed class EmissionPlanDecisionSpecs
     {
         // Arrange
         var plan = new CollectionAliasEmissionPlan(
-            new StringEmissionType(isWide: false, bound: 9),
+            new StringEmissionType(isWide: false, bound: 9, isBounded: true),
             isSequence: true,
             isArray: false,
             nativeValueRequiresCast: true);
@@ -38,7 +38,7 @@ public sealed class EmissionPlanDecisionSpecs
             "Example.Scalar");
         var stringAlias = new AliasEmissionType(
             "Example::Name",
-            new StringEmissionType(isWide: false, bound: 9),
+            new StringEmissionType(isWide: false, bound: 9, isBounded: true),
             "Example.Name");
         var primitivePlan = new CollectionAliasEmissionPlan(
             primitiveAlias,

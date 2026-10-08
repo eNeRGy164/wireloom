@@ -51,7 +51,7 @@ public sealed class GeneratedCollectionSpecs
         managed.ShouldContain("public Texts texts");
         managed.ShouldContain("public Items items");
         managed.ShouldContain("public Grid grid");
-        managed.ShouldContain("Its maximum number of elements is <c>3</c>. Each string element is limited to <c>8</c> characters.");
+        managed.ShouldContain("Its maximum number of elements is <c>3</c>. Each narrow IDL string element is limited to <c>8</c> characters.");
         managed.ShouldContain("For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements.");
 
         var texts = documents["Collections.Implementation.TextsUnmanaged.g.cs"].Source;
@@ -82,6 +82,22 @@ public sealed class GeneratedCollectionSpecs
 
         var gridSupport = documents["Collections.GridSupport.g.cs"].Source;
         gridSupport.ShouldContain("TypeSupport<Grid>");
+    }
+
+    [Fact]
+    public void NestedStringSequenceDocumentationDistinguishesExplicitAndEffectiveBounds()
+    {
+        // Arrange
+        var input = Input(
+            "nested-string-bounds.idl",
+            "module NestedStrings { struct Sample { sequence<string, 2> unbounded; sequence<string<7>, 2> bounded; }; };");
+
+        // Act
+        var managed = CompileSources(input)["NestedStrings.Sample.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("Each unbounded narrow IDL string element has an effective limit of <c>255</c> characters.");
+        managed.ShouldContain("Each narrow IDL string element is limited to <c>7</c> characters.");
     }
 
     [Fact]
