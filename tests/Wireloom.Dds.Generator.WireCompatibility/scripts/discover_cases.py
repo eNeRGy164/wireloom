@@ -16,14 +16,14 @@ def main() -> int:
     output_path = Path(sys.argv[3]).resolve()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     exclusions_path = Path(__file__).resolve().parents[1] / "wire-case-exclusions.json"
-    excluded_ids = {
+    not_implemented_ids = {
         case["id"]
-        for case in json.loads(exclusions_path.read_text(encoding="utf-8"))["cases"]
+        for case in json.loads(exclusions_path.read_text(encoding="utf-8"))["notImplementedCases"]
     }
     requested_case = sys.argv[4] if len(sys.argv) == 5 else None
     selected_cases = [
         case for case in manifest["positiveCases"]
-        if case["id"] not in excluded_ids
+        if case["id"] not in not_implemented_ids
         if requested_case is None or case["id"] == requested_case
     ]
     if requested_case is not None and not selected_cases:

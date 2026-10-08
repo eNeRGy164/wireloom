@@ -34,11 +34,15 @@ or ADRs first, then refresh this file and
   See [chapter 5](arc42/05-building-block-view.md).
 - **Runtime and deployment:** The wire workflow covers Wireloom-positive,
   wire-testable cases with C#/C++ peers and exact RTI 7.7.0. The last complete
-  fixture run covered 372 scenarios: 364 passed and 8 failed,
-  including two expected array-of-sequences cross-language failures. C#
-  optional-sequence verification is now fixture-driven; C++ comparisons check
-  optional presence and content, and logs retain child exit codes. A licensed
-  rerun is needed before claiming these failures are fixed. Each
+  fixture run covered 372 scenarios across 93 case/fixture rows: 364 passed
+  and 8 failed as expected, with no unexpected or unrun scenarios. Two expected
+  failures are the array-of-sequences cross-language mismatches. Six are the
+  present-wide-value pairings for optional string sequences. AddressSanitizer
+  locates the C++ writer crash in RTI's `std::wstring` sequence serializer; the
+  C++ reader discovers the C# writer but returns no sample for these fixtures.
+  Absent, empty, and narrow-only controls pass. C# optional-sequence
+  verification is fixture-driven; C++ comparisons check optional presence and
+  content, and logs retain child exit codes. Each
   case/fixture has an independent exchange for each language pairing; Markdown
   summarizes pairing outcomes and defects while JSON and sanitized logs retain
   details. RTI 7.3.1 needs future version-aware emission. See
@@ -56,7 +60,8 @@ or ADRs first, then refresh this file and
   compatibility remains a manual licensed evidence tier. See
   [chapter 9](arc42/09-architectural-decisions.md).
 - **Quality and risk:** The current exact 7.7.0 fixture matrix completed 372
-  scenarios with 364 passes and 8 failures.
+  scenarios with 364 passes and 8 expected failures; there were no unexpected
+  failures or unrun scenarios.
   `05-array-of-sequences` is included with defaults because DDSG0105 is a warning;
   current C# output flattens its array-of-sequences members, so a wire pass does
   not prove array-shape fidelity. Both same-language pairings pass, while both
@@ -66,15 +71,17 @@ or ADRs first, then refresh this file and
   is an RTI C# binding limitation rather than a Wireloom-only regression.
   `03-alias-aggregate` and both `07-union-aliases` variants now pass all four
   pairings after aggregate member aliases were projected to their underlying
-  struct or union type. The RTI-positive `09-optional-aggregate-member` remains
-  excluded because Wireloom reports DDSG0001. Consumers verify expected
+  struct or union type. The RTI-positive `09-optional-aggregate-member` cannot
+  run because Wireloom reports DDSG0001; the result report shows it as
+  not implemented and links issue #32. Consumers verify expected
   fixtures, and peers request reliable delivery.
   The wchar union uses a manually constructed RTI C++ `DynamicType` matching
   the discriminator, labels, IDs, and extensibility. FlatData uses standard
   C++ peer generation after removing its C#-ignored mapping annotation; this
-  does not verify the RTI FlatData-specific C++ layout. Populated optional
-  wide-string sequences fail in specific pairings: C++ readers can time out or
-  C# readers can receive values that differ from the fixture. RTI 7.3.1 target
+  does not verify the RTI FlatData-specific C++ layout. Six present-wide-value
+  optional-string pairings are expected failures: the C++ writer crashes
+  inside RTI's `sequence_helper<std::wstring>::get_value_pointer`, and the C++
+  reader returns no sample from C# for these fixtures. RTI 7.3.1 target
   compatibility, licensed exact-version environments, unsupported optional
   aggregate members, coarse per-root output invalidation, and coverage outside
   the retained corpus remain open risks. See

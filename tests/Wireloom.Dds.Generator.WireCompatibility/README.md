@@ -40,6 +40,10 @@ and `scenarioCount` in `results.json`; the human-readable `results.md` includes
 ✅/⛔/❔ status cells and a problem/defect column for failed exchanges. Known
 expected failures remain ⛔ and are annotated in that column; `results.json`
 also records their expected-failure count separately.
+Cases that Wireloom cannot generate appear as not-implemented rows in both
+reports. Their pairing cells show ⛔, while the problem column identifies the
+diagnostic and links the tracked support issue. They are not counted as
+executed DDS exchanges or as observed interoperability failures.
 The IDL scenario cell uses `"` to repeat the case shown in the preceding row,
 keeping fixture variations grouped without repeating the same filename.
 Wireloom-positive selection is
@@ -54,11 +58,15 @@ cross-language discovery. The report marks those failures as expected; the
 same-language controls remain useful evidence. This is an unsupported
 Wireloom mapping rather than a negative IDL syntax case.
 `03-alias-aggregate` and `07-union-aliases` pass all their fixture pairings
-with the current aggregate-alias projection. The last complete run recorded
-364 passing and 8 failing exchanges out of 372, including two expected
-cross-language failures for `05-array-of-sequences`. The six present-value
-`09-optional-string-sequences` exchanges involving RTI's typed C++ peer remain
-in the matrix so the C++ failure can be diagnosed and fixed.
+with the current aggregate-alias projection. The latest licensed run completed
+all 372 exchanges: 364 passed and 8 failed as expected, with no unrun or
+unexpected scenarios. Two expected cross-language failures are for
+`05-array-of-sequences`. The other six are the present-wide-value pairings for
+`09-optional-string-sequences`. AddressSanitizer locates the typed C++ writer
+crash inside RTI's `std::wstring` sequence serializer; the typed C++ reader
+also receives no sample from C# for those fixtures. Absent, empty, and
+narrow-only controls pass. The report records each affected fixture/pairing as
+an expected failure with the known limitation in the problem column.
 For the wide-character union, the
 C++ peer uses a manually constructed RTI `DynamicType` that preserves the
 corpus discriminator, labels, member IDs, and extensibility because

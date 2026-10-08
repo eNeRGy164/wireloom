@@ -130,7 +130,7 @@ write_report() {
 }
 trap write_report EXIT
 
-if ! python3 -c 'import json,sys; m=json.load(open(sys.argv[1], encoding="utf-8")); e=json.load(open(sys.argv[2], encoding="utf-8")); excluded={x["id"] for x in e["cases"]}; print("\n".join(x["id"] for x in m.get("positiveCases", []) if x["id"] not in excluded))' "$manifest" "$exclusions" > "$scratch/case-ids.txt"; then
+if ! python3 -c 'import json,sys; m=json.load(open(sys.argv[1], encoding="utf-8")); e=json.load(open(sys.argv[2], encoding="utf-8")); unsupported={x["id"] for x in e["notImplementedCases"]}; print("\n".join(x["id"] for x in m.get("positiveCases", []) if x["id"] not in unsupported))' "$manifest" "$exclusions" > "$scratch/case-ids.txt"; then
     echo "Failed to discover wire-testable cases from the corpus manifest and exclusion registry." >&2
     exit 2
 fi
