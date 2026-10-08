@@ -361,6 +361,38 @@ public sealed class IdlValidationSpecs
         output.ShouldContain("public class Sample");
     }
 
+    [Theory]
+    [InlineData("const string Marker = \"}\";")]
+    [InlineData("const wchar Marker = L'}';")]
+    public void IgnoresClosingBracesInsideLiteralsWhenFindingModuleBoundaries(string declaration)
+    {
+        // Arrange
+        var input = Input(
+            "module-closing-brace-literal.idl",
+            $"module Outer {{ {declaration} struct Sample {{ long value; }}; }};");
+
+        // Act
+        var output = Compile(input);
+
+        // Assert
+        output.ShouldContain("public class Sample");
+    }
+
+    [Fact]
+    public void AllowsWhitespaceBetweenModuleBodyAndTerminator()
+    {
+        // Arrange
+        var input = Input(
+            "module-terminator-whitespace.idl",
+            "module Outer { struct Sample { long value; }; }  \n ;");
+
+        // Act
+        var output = Compile(input);
+
+        // Assert
+        output.ShouldContain("public class Sample");
+    }
+
     [Fact]
     public void RequiresASemicolonAfterAModuleDeclaration()
     {

@@ -64,4 +64,26 @@ public sealed class EmissionShapeSpecs
         plan.Shape.IsAggregate.ShouldBeTrue();
         plan.Shape.Kind.ShouldBe(EmissionShapeKind.Alias);
     }
+
+    [Fact]
+    public void AliasToAggregateCollectionRetainsWrapperAndElementFacts()
+    {
+        // Arrange
+        var sequence = new SequenceEmissionType(
+            new StructEmissionType("Example::Point"),
+            3,
+            "ISequence<Point>");
+        var alias = new AliasEmissionType(
+            "Example::Points",
+            sequence,
+            "ISequence<Point>");
+
+        // Act
+        var shape = alias.Shape;
+
+        // Assert
+        shape.IsAggregate.ShouldBeTrue();
+        shape.HasAggregateElement.ShouldBeTrue();
+        shape.IsSequence.ShouldBeFalse();
+    }
 }
