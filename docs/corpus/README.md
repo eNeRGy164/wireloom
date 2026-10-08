@@ -117,7 +117,7 @@ Keep fast unit tests separate from exact corpus comparisons:
 Run the complete manifest-driven compliance suite with:
 
 ```text
-dotnet test tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --no-restore --configuration Release
+dotnet run --project tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --no-restore --configuration Release
 ```
 
 The package preview and release workflows restore and run this suite before
@@ -163,7 +163,7 @@ generated sources under `generator/<source-kind>/<case-id>`:
 
 ```powershell
 $env:CORPUS_GENERATOR_EXPORT_ROOT = "docs/corpus/generator"
-dotnet test tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --filter-method ExportAcceptedCorpusSources
+dotnet run --project tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --configuration Release -- --filter-method Wireloom.Dds.Generator.CorpusCompliance.CorpusComplianceSpecs.ExportAcceptedCorpusSources
 ```
 
 Rejected cases are omitted because they do not produce generated sources.
