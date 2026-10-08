@@ -14,9 +14,6 @@ using Rti.Types.Dynamic;
 namespace CorpusNames.Implementation;
 
 /// <summary>
-/// Provides the RTI interpreted type plugin for <see cref="State"/>.
-/// </summary>
-/// <summary>
 /// Provides the RTI runtime plugin for the <see cref="State"/> enumeration. This implementation detail is not intended for application code.
 /// </summary>
 internal class StatePlugin : EnumTypePlugin

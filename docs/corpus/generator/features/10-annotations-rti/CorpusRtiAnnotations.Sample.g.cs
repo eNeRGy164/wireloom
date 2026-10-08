@@ -71,11 +71,11 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <param name="value">The value for the <c>value</c> member.</param>
     /// <param name="text">The value for the <c>text</c> member.</param>
     /// <param name="externalText">The value for the <c>externalText</c> member.</param>
-    /// <remarks>This constructor assigns the supplied values directly. Unlike assigning a ranged property afterward, it does not check the property's range constraints.</remarks>
+    /// <exception cref="global::System.ArgumentOutOfRangeException">A supplied member value is outside its declared range.</exception>
     public Sample(int id, int value, string text, string externalText)
     {
         this.id = id;
-        this._value = value;
+        this.value = value;
         this.text = text;
         this.externalText = externalText;
     }

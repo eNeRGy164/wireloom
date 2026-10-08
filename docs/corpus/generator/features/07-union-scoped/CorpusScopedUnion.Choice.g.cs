@@ -10,7 +10,7 @@ using Rti.Types;
 namespace CorpusScopedUnion;
 
 /// <summary>
-/// Represents the <c>Choice</c> DDS union declared in <c>07-union-scoped.idl</c>. The discriminator selects a branch when it matches a declared label; otherwise, no branch is active.
+/// Represents the <c>Choice</c> DDS union declared in <c>07-union-scoped.idl</c>. The discriminator selects a branch when it matches a declared label. If it matches no declared label, no branch is active.
 /// </summary>
 public partial class Choice : global::System.IEquatable<Choice>
 {
@@ -77,7 +77,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     }
 
     /// <summary>
-    /// Initializes a new union with its RTI default discriminator. A branch is active only when that discriminator matches a declared label or selects the default branch.
+    /// Initializes a new union with its RTI default discriminator. If the default discriminator matches no declared label, no branch is active.
     /// </summary>
     public Choice()
     {

@@ -19,7 +19,6 @@ namespace CorpusAggregates;
 /// <code>
 /// var sample = new Recursive();
 /// var text = RecursiveSupport.Instance.ToString(sample);
-/// var dynamicType = RecursiveSupport.Instance.DynamicType;
 /// var serializer = RecursiveSupport.Instance.CreateSerializer();
 /// </code>
 /// </example>

@@ -14,9 +14,6 @@ using Rti.Types.Dynamic;
 namespace CorpusEnums.Implementation;
 
 /// <summary>
-/// Provides the RTI interpreted type plugin for <see cref="Color"/>.
-/// </summary>
-/// <summary>
 /// Provides the RTI runtime plugin for the <see cref="Color"/> enumeration. This implementation detail is not intended for application code.
 /// </summary>
 internal class ColorPlugin : EnumTypePlugin

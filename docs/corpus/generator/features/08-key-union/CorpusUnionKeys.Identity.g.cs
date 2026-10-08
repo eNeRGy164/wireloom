@@ -10,7 +10,7 @@ using Rti.Types;
 namespace CorpusUnionKeys;
 
 /// <summary>
-/// Represents the <c>Identity</c> DDS union declared in <c>08-key-union.idl</c>. The discriminator selects a branch when it matches a declared label; otherwise, no branch is active.
+/// Represents the <c>Identity</c> DDS union declared in <c>08-key-union.idl</c>. The discriminator selects a branch when it matches a declared label. If it matches no declared label, no branch is active.
 /// </summary>
 public partial class Identity : global::System.IEquatable<Identity>
 {
@@ -54,8 +54,9 @@ public partial class Identity : global::System.IEquatable<Identity>
     /// <summary>
     /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>1</c>.
     /// </summary>
-    /// <remarks>Reading this property while another branch is active throws <see cref="global::System.InvalidOperationException"/>. Assigning it stores the value and changes <see cref="Discriminator"/> to a label for this branch.</remarks>
+    /// <remarks>Reading this property while another branch is active throws <see cref="global::System.InvalidOperationException"/>. Assigning it stores the value and changes <see cref="Discriminator"/> to a label for this branch. This unbounded narrow IDL string has an effective limit of 255 characters. RTI encodes narrow IDL strings as UTF-8 by default. The generated C# property does not enforce the effective limit when assigned.</remarks>
     /// <exception cref="global::System.InvalidOperationException">The discriminator selects another branch or selects no branch.</exception>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
     [Bound(255)]
     public string text
     {
@@ -77,7 +78,7 @@ public partial class Identity : global::System.IEquatable<Identity>
     }
 
     /// <summary>
-    /// Initializes a new union with its RTI default discriminator. A branch is active only when that discriminator matches a declared label or selects the default branch.
+    /// Initializes a new union with its RTI default discriminator. If the default discriminator matches no declared label, no branch is active.
     /// </summary>
     public Identity()
     {
