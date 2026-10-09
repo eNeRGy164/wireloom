@@ -313,6 +313,7 @@ public sealed class IdlPreprocessorDirectiveSpecs : IdlPreprocessorTestBase
     [Fact]
     [Trait("Preprocessor", "PP015")]
     [Trait("Preprocessor", "PP017")]
+    [Trait("Preprocessor", "PP050")]
     public void ExpandsVariadicMacrosAndReportsWrongArgumentCounts()
     {
         // Arrange
@@ -332,6 +333,8 @@ public sealed class IdlPreprocessorDirectiveSpecs : IdlPreprocessorTestBase
         // Assert
         source.ShouldContain("const long Selected = 7;");
         diagnostics.ShouldContain(d => d.Message.Contains("wrong number of arguments", StringComparison.Ordinal));
+        var arityDiagnostic = diagnostics.Single(d => d.Message.Contains("wrong number of arguments", StringComparison.Ordinal));
+        arityDiagnostic.Offset.ShouldBe(input.Text.IndexOf("ADD(1)", StringComparison.Ordinal));
     }
 
     [Fact]

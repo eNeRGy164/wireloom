@@ -87,6 +87,7 @@ internal sealed class PreprocessorLexicalService(Func<int, int> originalOffset, 
                 var commentOffset = index;
                 output.Append("  ");
                 index += 2;
+                var closed = false;
 
                 while (index < source.Length)
                 {
@@ -96,6 +97,7 @@ internal sealed class PreprocessorLexicalService(Func<int, int> originalOffset, 
                     {
                         output.Append("  ");
                         index += 2;
+                        closed = true;
                         break;
                     }
 
@@ -103,8 +105,7 @@ internal sealed class PreprocessorLexicalService(Func<int, int> originalOffset, 
                     output.Append(character is '\r' or '\n' ? character : ' ');
                 }
 
-                if (index >= source.Length
-                    && (source.Length < 2 || source[^2] != '*' || source[^1] != '/'))
+                if (!closed)
                 {
                     throw new IdlException(input, originalOffset(commentOffset), "Unterminated comment.");
                 }

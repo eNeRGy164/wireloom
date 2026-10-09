@@ -103,4 +103,83 @@ public sealed class IdlInputGraphCycleSpecs
         exception.Message.ShouldContain("maximum depth");
         exception.Message.ShouldNotContain("Cyclic include");
     }
+
+    [Fact]
+    [Trait("Preprocessor", "PP049")]
+    public void AllowsAnIncludeChainAtTheMaximumSupportedDepth()
+    {
+        // Arrange
+        const int maximumDepth = 128;
+        var inputs = Enumerable.Range(0, maximumDepth + 1)
+            .Select(index => Input(
+                $"depth-{index}.idl",
+                index == maximumDepth
+                    ? "struct Last { long value; };"
+                    : $"#include \"depth-{index + 1}.idl\""))
+            .ToArray();
+        var pathComparer = Path.DirectorySeparatorChar == '\\'
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
+        var files = inputs.ToDictionary(input => Path.GetFullPath(input.Path), pathComparer);
+        var graph = new IdlInputGraph(files, [], [], [], CancellationToken.None);
+        graph.BeginRoot();
+        var parsedInputs = 0;
+
+        // Act
+        graph.Visit(inputs[0], (_, _, _, _, _) => parsedInputs++);
+
+        // Assert
+        parsedInputs.ShouldBe(maximumDepth + 1);
+    }
+
+    [Fact]
+    [Trait("Preprocessor", "PP034")]
+    public void DeduplicatesRootOutputsUsingPlatformPathCasingRules()
+    {
+        // Arrange
+        var graph = new IdlInputGraph(new Dictionary<string, IdlInput>(), [], [], [], CancellationToken.None);
+        graph.BeginRoot();
+        var lowerCasePath = Input("case.idl", "struct Sample { long value; };");
+        var upperCasePath = Input("CASE.IDL", "struct Sample { long value; };");
+        var parsedInputs = 0;
+
+        // Act
+        graph.Visit(lowerCasePath, (_, _, _, _, _) => parsedInputs++);
+        graph.Visit(upperCasePath, (_, _, _, _, _) => parsedInputs++);
+
+        // Assert
+        parsedInputs.ShouldBe(Path.DirectorySeparatorChar == '\\' ? 1 : 2);
+    }
+
+    [Fact]
+    [Trait("Preprocessor", "PP037")]
+    [Trait("Preprocessor", "PP049")]
+    public void RemovesVisitedPathsFromTheActiveSetAfterSuccessfulVisits()
+    {
+        // Arrange
+        const int maximumDepth = 128;
+        var shared = Input("shared.idl", "struct Shared { long value; };");
+        var chain = Enumerable.Range(0, maximumDepth + 1)
+            .Select(index => Input(
+                $"cleanup-{index}.idl",
+                index == maximumDepth
+                    ? "#include \"shared.idl\""
+                    : $"#include \"cleanup-{index + 1}.idl\""))
+            .ToArray();
+        var pathComparer = Path.DirectorySeparatorChar == '\\'
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
+        var files = chain.Append(shared).ToDictionary(input => Path.GetFullPath(input.Path), pathComparer);
+        var graph = new IdlInputGraph(files, [], [], [], CancellationToken.None);
+        graph.BeginRoot();
+        var parse = (string _, IdlInput _, int _, string? _, IReadOnlyList<SourceOriginSpan> _) => { };
+        graph.Visit(shared, parse);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => graph.Visit(chain[0], parse));
+
+        // Assert
+        exception.Message.ShouldContain("maximum depth");
+        exception.Message.ShouldNotContain("Cyclic include");
+    }
 }

@@ -182,7 +182,7 @@ internal sealed class PreprocessorSourceOriginTracker(
         ref int alignmentWork)
     {
         var best = (SourceIndex: -1, ExpandedIndex: -1, Length: 0);
-        for (var output = expandedIndex + 1; output < expandedTokens.Count; output++)
+        for (var output = expandedIndex; output < expandedTokens.Count; output++)
         {
             if (++alignmentWork > PreprocessorLimits.MaximumOriginAlignmentWork)
             {

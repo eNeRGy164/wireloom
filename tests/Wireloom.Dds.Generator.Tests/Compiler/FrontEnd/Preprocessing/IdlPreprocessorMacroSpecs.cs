@@ -24,6 +24,20 @@ public sealed class IdlPreprocessorMacroSpecs : IdlPreprocessorTestBase
     }
 
     [Fact]
+    [Trait("Preprocessor", "PP008")]
+    public void LeavesFunctionLikeMacroNameUnexpandedWithoutInvocationArguments()
+    {
+        // Arrange
+        const string input = "#define IDENTITY(value) value\nIDENTITY";
+
+        // Act
+        var source = Process(input);
+
+        // Assert
+        source.Trim().ShouldBe("IDENTITY");
+    }
+
+    [Fact]
     [Trait("Preprocessor", "PP007")]
     public void AcceptsWhitespaceBetweenAFunctionMacroNameAndInvocation()
     {
@@ -93,6 +107,24 @@ public sealed class IdlPreprocessorMacroSpecs : IdlPreprocessorTestBase
 
         // Assert
         source.ShouldContain("((4) + (4))");
+    }
+
+    [Fact]
+    [Trait("Preprocessor", "PP008")]
+    public void PreservesParenthesizedSuffixAfterAnEmptyMacroReplacement()
+    {
+        // Arrange
+        const string input =
+            """
+            #define EMPTY()
+            const long Value = EMPTY()(7);
+            """;
+
+        // Act
+        var source = Process(input);
+
+        // Assert
+        source.ShouldContain("const long Value = (7);");
     }
 
     [Fact]
@@ -710,6 +742,26 @@ public sealed class IdlPreprocessorMacroSpecs : IdlPreprocessorTestBase
 
         // Assert
         source.ShouldContain("const long Line = 3;");
+    }
+
+    [Fact]
+    [Trait("Preprocessor", "PP004")]
+    [Trait("Preprocessor", "PP044")]
+    public void MapsPredefinedLineInSuffixAfterMacroExpansionAndLineSplicing()
+    {
+        // Arrange
+        const string input =
+            """
+            #define PREFIX 1 +
+            const long Value = PREFIX \
+            __LINE__;
+            """;
+
+        // Act
+        var source = Process(input);
+
+        // Assert
+        source.ShouldContain("const long Value = 1 + 3;");
     }
 
     [Fact]
