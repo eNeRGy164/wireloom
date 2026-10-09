@@ -55,6 +55,15 @@ internal sealed class GeneratedSourceWriter
         output.Append('\n');
     }
 
+    /// <summary>Writes multiple lines at the current indentation level.</summary>
+    public void WriteLines(string text)
+    {
+        foreach (var line in text.Split('\n'))
+        {
+            WriteLine(line.TrimEnd('\r'));
+        }
+    }
+
     public void BlankLine() => WriteLine();
 
     public void WriteComment(string text) => WriteLine($"// {text}");

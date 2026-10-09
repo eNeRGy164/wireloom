@@ -48,9 +48,13 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         unboundedItems.FromNative<Item, ItemUnmanaged>(sample.unboundedItems);
+
         boundedItems.FromNative<Item, ItemUnmanaged>(sample.boundedItems);
+
         aggregateArray.FromNative<Item, ItemUnmanaged>(sample.aggregateArray, keysOnly: false, dimension: 2);
+
         rows.FromNative<Row, RowUnmanaged>(sample.rows, keysOnly: false, dimension: 2);
+
         sequenceOfArrays.FromNative<Row, RowUnmanaged>(sample.sequenceOfArrays);
     }
 

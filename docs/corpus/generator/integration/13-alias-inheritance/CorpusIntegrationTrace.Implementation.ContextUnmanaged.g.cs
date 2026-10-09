@@ -43,6 +43,7 @@ public struct ContextUnmanaged : INativeTopicType<Context>
     public void FromNative(Context sample, bool keysOnly = false)
     {
         sample.correlation = correlation.FromNative();
+
         sample.producer = producer.FromNativeOptional();
     }
 

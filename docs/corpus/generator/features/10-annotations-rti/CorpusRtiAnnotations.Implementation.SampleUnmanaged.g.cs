@@ -51,7 +51,9 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
         }
 
         sample.value = value;
+
         sample.text = text.FromNative();
+
         sample.externalText = externalText.FromNative();
     }
 

@@ -35,6 +35,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         sample.id = id;
+
         sample.value = value;
     }
 

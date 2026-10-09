@@ -123,9 +123,16 @@ internal static class NativeTypeEmitter
 
         var hasKeys = inheritedHasKeys || fields.Any(field => field.IsKey);
 
-        foreach (var field in hasKeys ? fields.Where(field => field.IsKey) : fields)
+        var copiedFields = (hasKeys ? fields.Where(field => field.IsKey) : fields).ToArray();
+        for (var fieldIndex = 0; fieldIndex < copiedFields.Length; fieldIndex++)
         {
-            writer.WriteLine(field.BuildFromNativeStatement(field.IsKey && hasKeys, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly")));
+            if (fieldIndex > 0)
+            {
+                writer.BlankLine();
+            }
+
+            var field = copiedFields[fieldIndex];
+            writer.WriteLines(field.BuildFromNativeStatement(field.IsKey && hasKeys, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly")));
         }
 
         if (hasKeys && fields.Any(field => !field.IsKey))
@@ -136,9 +143,16 @@ internal static class NativeTypeEmitter
             writer.CloseBlock();
             writer.BlankLine();
 
-            foreach (var field in fields.Where(field => !field.IsKey))
+            var nonKeyFields = fields.Where(field => !field.IsKey).ToArray();
+            for (var fieldIndex = 0; fieldIndex < nonKeyFields.Length; fieldIndex++)
             {
-                writer.WriteLine(field.BuildFromNativeStatement(false, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly")));
+                if (fieldIndex > 0)
+                {
+                    writer.BlankLine();
+                }
+
+                var field = nonKeyFields[fieldIndex];
+                writer.WriteLines(field.BuildFromNativeStatement(false, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly")));
             }
         }
 

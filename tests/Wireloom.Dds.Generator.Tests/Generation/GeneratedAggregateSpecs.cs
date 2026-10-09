@@ -344,6 +344,7 @@ public sealed class GeneratedAggregateSpecs
         unmanaged.ShouldContain("private NativeManagedOptional choice;");
         unmanaged.ShouldContain("payload.FromNative<");
         unmanaged.ShouldContain("out var payloadTemporary_");
+        unmanaged.ShouldContain("payload.FromNative<Payload, Implementation.PayloadUnmanaged>(out var payloadTemporary_);\n        sample.payload = payloadTemporary_;\n\n        nestedPayload.FromNative<");
         unmanaged.ShouldContain("nestedPayload.FromNative<");
         unmanaged.ShouldContain("out var nestedPayloadTemporary_");
         unmanaged.ShouldContain("choice.FromNative<");

@@ -36,6 +36,7 @@ public struct MutableUnmanaged : INativeTopicType<Mutable>
     public void FromNative(Mutable sample, bool keysOnly = false)
     {
         sample.id = id;
+
         sample.optionalValue = optionalValue.FromNative<int>();
     }
 

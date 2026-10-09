@@ -61,10 +61,10 @@ internal sealed partial class MemberEmissionPlan
 
             if (HasAggregateElement)
             {
-                return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(out {arrayType} {temporary}, {KeysOnlyArgument(forwardKeysOnly)}, dimensions: {dimensions}); sample.{EscapedName} = {temporary};";
+                return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(out {arrayType} {temporary}, {KeysOnlyArgument(forwardKeysOnly)}, dimensions: {dimensions});\nsample.{EscapedName} = {temporary};";
             }
 
-            return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>(out {arrayType} {temporary}, dimensions: {dimensions}); sample.{EscapedName} = {temporary};";
+            return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>(out {arrayType} {temporary}, dimensions: {dimensions});\nsample.{EscapedName} = {temporary};";
         }
 
         if (HasAggregateElement)
@@ -82,7 +82,7 @@ internal sealed partial class MemberEmissionPlan
             var temporary = $"{EscapedName}Temporary_";
             var elementType = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
 
-            return $"{nativeFieldPrefix}{EscapedName}.FromNative(out ISequence<{elementType}> {temporary}); sample.{EscapedName} = {temporary};";
+            return $"{nativeFieldPrefix}{EscapedName}.FromNative(out ISequence<{elementType}> {temporary});\nsample.{EscapedName} = {temporary};";
         }
 
         if (IsStringSequence)
@@ -96,10 +96,10 @@ internal sealed partial class MemberEmissionPlan
 
             if (HasAggregateElement)
             {
-                return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(out ISequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}> {temporary}, keysOnly: false); sample.{EscapedName} = {temporary};";
+                return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(out ISequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}> {temporary}, keysOnly: false);\nsample.{EscapedName} = {temporary};";
             }
 
-            return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>(out Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}> {temporary}); sample.{EscapedName} = {temporary};";
+            return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>(out Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}> {temporary});\nsample.{EscapedName} = {temporary};";
         }
 
         if (HasAggregateElement)
@@ -117,7 +117,7 @@ internal sealed partial class MemberEmissionPlan
             var temporary = $"{EscapedName}Temporary_";
             var type = IdlNaming.TypeReference(CSharpType.TrimEnd('?'), currentNamespace);
 
-            return $"{nativeFieldPrefix}{EscapedName}.FromNative<{type}, {GetReferencedUnmanagedType(currentNamespace)}>(out var {temporary}); sample.{EscapedName} = {temporary};";
+            return $"{nativeFieldPrefix}{EscapedName}.FromNative<{type}, {GetReferencedUnmanagedType(currentNamespace)}>(out var {temporary});\nsample.{EscapedName} = {temporary};";
         }
 
         return $"{nativeFieldPrefix}{EscapedName}.FromNative(sample.{EscapedName}, {KeysOnlyArgument(forwardKeysOnly)});";

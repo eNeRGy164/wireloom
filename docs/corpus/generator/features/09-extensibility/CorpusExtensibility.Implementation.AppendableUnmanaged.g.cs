@@ -41,6 +41,7 @@ public struct AppendableUnmanaged : INativeTopicType<Appendable>
     public void FromNative(Appendable sample, bool keysOnly = false)
     {
         sample.id = id;
+
         sample.text = text.FromNative();
     }
 

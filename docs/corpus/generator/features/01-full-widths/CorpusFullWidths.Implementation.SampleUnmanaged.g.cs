@@ -41,12 +41,19 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         sample.i8 = i8;
+
         sample.i16 = i16;
+
         sample.i32 = i32;
+
         sample.i64 = i64;
+
         sample.u8 = u8;
+
         sample.u16 = u16;
+
         sample.u32 = u32;
+
         sample.u64 = u64;
     }
 

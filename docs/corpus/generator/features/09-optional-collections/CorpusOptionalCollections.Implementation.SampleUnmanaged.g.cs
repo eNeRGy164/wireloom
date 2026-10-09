@@ -37,8 +37,11 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     /// <remarks>The operation copies values into <paramref name="sample"/>. For an unkeyed type, all members are copied even when <paramref name="keysOnly"/> is true.</remarks>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
-        values.FromNative<int>(out Sequence<int> valuesTemporary_); sample.values = valuesTemporary_;
-        items.FromNative<int>(out int[] itemsTemporary_, dimensions: new int[] { 2 }); sample.items = itemsTemporary_;
+        values.FromNative<int>(out Sequence<int> valuesTemporary_);
+        sample.values = valuesTemporary_;
+
+        items.FromNative<int>(out int[] itemsTemporary_, dimensions: new int[] { 2 });
+        sample.items = itemsTemporary_;
     }
 
     /// <summary>
