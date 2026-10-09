@@ -202,6 +202,36 @@ public sealed class IdlValidationSpecs
     }
 
     [Fact]
+    public void RejectsMembersThatCollideWithGeneratedOptionalAggregateTemporaries()
+    {
+        // Arrange
+        var input = Input(
+            "optional-aggregate-temporary-collision.idl",
+            "struct Payload { long value; }; struct Sample { @optional Payload payload; long payloadTemporary_; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("collides with a generated member, parameter, or local variable");
+    }
+
+    [Fact]
+    public void RejectsMembersThatCollideWithGeneratedOptionalAggregateAliasTemporaries()
+    {
+        // Arrange
+        var input = Input(
+            "optional-aggregate-alias-temporary-collision.idl",
+            "struct Payload { long value; }; typedef Payload PayloadAlias; struct Sample { @optional PayloadAlias payload; long payloadTemporary_; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("collides with a generated member, parameter, or local variable");
+    }
+
+    [Fact]
     public void AllowsTemporaryLikeMemberNamesBesideNonOptionalCollections()
     {
         // Arrange
