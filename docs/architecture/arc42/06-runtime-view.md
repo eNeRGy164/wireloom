@@ -39,16 +39,16 @@ The source for the build-time sequence diagram is
 ## 6.3 Wire compatibility evidence
 
 The manually dispatched wire-compatibility workflow targets positive corpus
-cases that Wireloom can generate and for which RTI Connext DDS 7.7.0 can provide a peer,
-using `rtiddsgen` or a runtime `DynamicType` where needed. It builds a
-Wireloom-generated C# type and an RTI-generated C++ reference type for each
-case. Every curated fixture runs in its own process exchange on a unique topic
-for C#→C#, C++→C++, C#→C++, and C++→C#. The report records case, fixture,
-writer and reader languages, endpoint RTI versions, and status. Readers compare
-the complete expected sample after checking sample validity; successful
-discovery alone does not count as a pass. The generated Markdown report groups
-each fixture into one row with four pairing status cells and a problem/defect
-column populated for failures; JSON retains the full structured metadata.
+cases that Wireloom can generate and for which RTI Connext DDS 7.7.0 can provide
+reference peers, using generated C# and C++ sources or a runtime `DynamicType`
+where needed. It builds three endpoints per case: Wireloom-generated C#,
+RTI-generated C#, and RTI-generated C++. Every curated fixture runs in its own
+process exchange on a unique topic for all nine directed sender/receiver
+pairings. The report names both implementation and language for each endpoint,
+plus case, fixture, runtime versions, and status. Readers compare the complete
+expected sample after checking sample validity; successful discovery alone does
+not count as a pass. Markdown has one status cell per pairing and a
+problem/defect column; JSON retains the full structured metadata.
 
 Fixtures include independently absent and present optional members, optional
 empty/single/multiple collection values, union branch choices, string
@@ -56,14 +56,18 @@ boundaries, and contrasting values for the remaining supported shapes. The
 catalog determines the scenario count, so every case can contribute several
 independently reported scenarios. The `02-multiple` case wraps both top-level
 declarations in one topic sample, and enum-only IDLs use a wrapper topic
-member. Both peers request reliable delivery. Data-representation cases select
-XCDR2 explicitly in both peers. C# uses generated typed readers and writers to
-exercise Wireloom's generated conversion paths. The C++ reference peer uses
-RTI `DynamicData` except where RTI omits needed string template
-specializations; those cases use RTI-generated typed C++ readers/writers.
-Diagnostic output includes match counters, read/take counts, sample validity,
-and selected type-consistency diagnostics. Artifacts contain structured
-results and sanitized endpoint logs only.
+member. All peers request reliable delivery. Data-representation cases select
+XCDR2 explicitly in all applicable peers. Wireloom C# uses generated typed
+readers and writers to exercise its conversion paths. RTI C# uses the pinned
+code generator to produce a typed peer from the same IDL input; generated files
+stay in scratch and are not uploaded. RTI C++ uses `DynamicData` except where
+RTI omits required string template specializations; those cases use generated
+typed readers/writers. For present optional wide-string sequence fixtures, the
+C++ peer uses DynamicData and RTI's C API setters to avoid a crash in RTI
+7.7.0's typed `std::wstring` sequence serializer. Absent, empty, and
+narrow-only controls remain typed. Diagnostic output includes match counters,
+read/take counts, sample validity, and selected type-consistency diagnostics.
+Artifacts contain structured results and sanitized endpoint logs only.
 
 The exact 7.7.0 workflow is a runtime evidence baseline, not evidence for other
 RTI releases. RTI 7.3.1 remains a follow-up because the current generator emits
@@ -74,34 +78,27 @@ matrix.
 The RTI-positive `09-optional-aggregate-member` now generates successfully.
 Its absent and present fixtures carry nested struct and union payload values,
 including typedef aliases, and are scheduled as independent exchanges across
-all four language pairings. The latest licensed matrix predates this
+all nine directed pairings. The latest licensed matrix predates this
 implementation, so those exchanges still need an exact RTI 7.7.0 run before
 they count as interoperability evidence.
 `05-array-of-sequences`
 is included despite warning DDSG0105: Wireloom currently maps the C# members to
-flat sequences while RTI C++ preserves the IDL arrays. Same-language controls
-pass but cross-language endpoint discovery fails because RTI reports different
-member type kinds. A focused RTI-generated C# oracle control reproduced this
-shape limitation. The wire report keeps those two cross-language failures and
-marks them as expected; this case's wire test does not establish preservation
-of the two-slot array shape. Aggregate alias members use the underlying
+flat sequences while RTI C# and RTI C++ preserve the IDL arrays. Pairings that
+include Wireloom C# fail endpoint discovery because RTI reports different
+member type kinds. The report marks those Wireloom cross-peer failures as
+expected; this case's wire test does not establish preservation of the two-slot
+array shape. Aggregate alias members use the underlying
 generated struct or union type in managed APIs and native conversions; for
 optional struct members with aggregate values, DynamicType metadata retains
-the declared typedef alias as RTI does. All four `03-alias-aggregate` and all eight
-`07-union-aliases` exchanges pass. The last complete licensed run
-before optional aggregate fixtures covered 372 exchanges across 93 case/fixture
-rows: 364 passed, 8 failed as expected, and none were unrun or unexpected. The
-expanded matrix adds eight optional aggregate exchanges; their results are
-pending an exact RTI 7.7.0 run. Two expected failures are the
-`05-array-of-sequences` cross-language discovery mismatches. The other six are
-the `09-optional-string-sequences` present-wide-value pairings. AddressSanitizer
-locates the C++ writer crash in RTI's `sequence_helper<std::wstring>::get_value_pointer`
-while serializing the optional sequence; the C++ reader discovers the C# writer
-but returns no sample for those present-wide fixtures. Absent, empty, and
-narrow-only controls pass. C# verification uses independent fixture values,
-and the C++ fixture checks optional presence separately from sequence length
-and values. The report marks these six outcomes as expected and retains
-sanitized endpoint evidence.
+the declared typedef alias as RTI does. All four `03-alias-aggregate` and all
+eight `07-union-aliases` exchanges pass. The expanded matrix reports its current
+totals in generated results. The expected `05-array-of-sequences` failures
+involve Wireloom C# pairings. The three-peer matrix uses DynamicData and RTI's
+C API setters for present wide-string fixtures in `09-optional-string-sequences`
+to exercise their intended wire shape without invoking RTI's crashing typed
+serializer. Absent, empty, and narrow-only controls remain typed. C# verification
+uses independent fixture values, and C++ controls check optional presence
+separately from sequence length and values.
 The wchar union's C++ peer uses a manually constructed RTI `DynamicType` because
 `rtiddsgen` cannot parse wchar union labels. For `10-flat-data-binding`, C++
 generation removes only the C#-ignored `@language_binding(FLAT_DATA)` annotation

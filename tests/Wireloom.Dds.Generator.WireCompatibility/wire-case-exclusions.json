@@ -3,57 +3,27 @@
   "expectedFailures": [
     {
       "id": "05-array-of-sequences",
-      "writer": "C#",
-      "reader": "C++",
-      "reason": "Expected: DDSG0105 warns that Wireloom's generated C# binding flattens the array-of-sequences shape, and RTI reports a different member type kind during cross-language discovery."
+      "writer": "Wireloom C#",
+      "reader": "RTI C++",
+      "reason": "Expected: DDSG0105 warns that Wireloom's generated C# binding flattens the array-of-sequences shape, and RTI reports a different member type kind during cross-peer discovery."
     },
     {
       "id": "05-array-of-sequences",
-      "writer": "C++",
-      "reader": "C#",
-      "reason": "Expected: DDSG0105 warns that Wireloom's generated C# binding flattens the array-of-sequences shape, and RTI reports a different member type kind during cross-language discovery."
+      "writer": "RTI C++",
+      "reader": "Wireloom C#",
+      "reason": "Expected: DDSG0105 warns that Wireloom's generated C# binding flattens the array-of-sequences shape, and RTI reports a different member type kind during cross-peer discovery."
     },
     {
-      "id": "09-optional-string-sequences",
-      "fixture": "optional-wide-only",
-      "writer": "C++",
-      "reader": "C++",
-      "reason": "Expected RTI Connext 7.7.0 failure: AddressSanitizer locates a SIGSEGV in RTI's C++ sequence_helper<std::wstring>::get_value_pointer while the typed writer serializes a present optional wide-string sequence."
+      "id": "05-array-of-sequences",
+      "writer": "Wireloom C#",
+      "reader": "RTI C#",
+      "reason": "Expected: DDSG0105 warns that Wireloom's generated C# binding flattens the array-of-sequences shape, and RTI reports a different member type kind during cross-peer discovery."
     },
     {
-      "id": "09-optional-string-sequences",
-      "fixture": "optional-multiple",
-      "writer": "C++",
-      "reader": "C++",
-      "reason": "Expected RTI Connext 7.7.0 failure: AddressSanitizer locates a SIGSEGV in RTI's C++ sequence_helper<std::wstring>::get_value_pointer while the typed writer serializes a present optional wide-string sequence."
-    },
-    {
-      "id": "09-optional-string-sequences",
-      "fixture": "optional-wide-only",
-      "writer": "C#",
-      "reader": "C++",
-      "reason": "Expected RTI Connext 7.7.0 failure: the C++ typed reader discovers the C# writer but returns no sample for a present optional wide-string sequence; absent, empty, and narrow-only controls pass."
-    },
-    {
-      "id": "09-optional-string-sequences",
-      "fixture": "optional-multiple",
-      "writer": "C#",
-      "reader": "C++",
-      "reason": "Expected RTI Connext 7.7.0 failure: the C++ typed reader discovers the C# writer but returns no sample for a present optional wide-string sequence; absent, empty, and narrow-only controls pass."
-    },
-    {
-      "id": "09-optional-string-sequences",
-      "fixture": "optional-wide-only",
-      "writer": "C++",
-      "reader": "C#",
-      "reason": "Expected RTI Connext 7.7.0 failure: the C++ typed writer segfaults in RTI's sequence_helper<std::wstring>::get_value_pointer before sending a present optional wide-string sequence."
-    },
-    {
-      "id": "09-optional-string-sequences",
-      "fixture": "optional-multiple",
-      "writer": "C++",
-      "reader": "C#",
-      "reason": "Expected RTI Connext 7.7.0 failure: the C++ typed writer segfaults in RTI's sequence_helper<std::wstring>::get_value_pointer before sending a present optional wide-string sequence."
+      "id": "05-array-of-sequences",
+      "writer": "RTI C#",
+      "reader": "Wireloom C#",
+      "reason": "Expected: DDSG0105 warns that Wireloom's generated C# binding flattens the array-of-sequences shape, and RTI reports a different member type kind during cross-peer discovery."
     }
   ]
 }

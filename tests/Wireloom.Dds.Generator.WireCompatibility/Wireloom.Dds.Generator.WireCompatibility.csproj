@@ -16,6 +16,8 @@
   <ItemGroup>
     <!-- The RTI control probe is a nested project. Do not compile its sources or generated obj files here. -->
     <Compile Remove="RtiOracleProbe/**/*.cs" />
+    <!-- This .NET 10 file-based utility is invoked by the matrix runner, not compiled into the peer. -->
+    <Compile Remove="scripts/matrix-tools.cs" />
     <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />
     <Using Remove="Shouldly;Xunit" />
     <ProjectReference Include="..\..\src\Wireloom.Dds.Generator\Wireloom.Dds.Generator.csproj"

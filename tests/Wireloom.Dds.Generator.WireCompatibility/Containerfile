@@ -12,7 +12,7 @@ ENV DOTNET_NOLOGO=1 \
 
 RUN apt-get update -qq \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        ca-certificates cmake curl g++ git make python3 \
+        ca-certificates cmake curl g++ git make \
     && curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh \
     && bash /tmp/dotnet-install.sh --version "${DOTNET_VERSION}" --install-dir /usr/share/dotnet \
     && rm -f /tmp/dotnet-install.sh \

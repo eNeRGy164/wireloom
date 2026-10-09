@@ -39,21 +39,14 @@ or ADRs first, then refresh this file and
   validation are explicit front-end phases, and chapter 5 includes a level-2
   zoom of the compiler and preprocessing boundary.
   See [chapter 5](arc42/05-building-block-view.md).
-- **Runtime and deployment:** The wire workflow covers Wireloom-positive,
-  wire-testable cases with C#/C++ peers and exact RTI 7.7.0. The last complete
-  fixture run before optional aggregate fixtures covered 372 scenarios across
-  93 case/fixture rows: 364 passed
-  and 8 failed as expected, with no unexpected or unrun scenarios. Two expected
-  failures are the array-of-sequences cross-language mismatches. Six are the
-  present-wide-value pairings for optional string sequences. AddressSanitizer
-  locates the C++ writer crash in RTI's `std::wstring` sequence serializer; the
-  C++ reader discovers the C# writer but returns no sample for these fixtures.
-  Absent, empty, and narrow-only controls pass. C# optional-sequence
-  verification is fixture-driven; C++ comparisons check optional presence and
-  content, and logs retain child exit codes. Each
-  case/fixture has an independent exchange for each language pairing; Markdown
-  summarizes pairing outcomes and defects while JSON and sanitized logs retain
-  details. RTI 7.3.1 needs future version-aware emission. See
+- **Runtime and deployment:** The exact RTI 7.7.0 wire workflow compares
+  Wireloom-generated C#, RTI-generated C#, and RTI-generated C++ across all
+  nine directed pairings for each fixture. Readers verify fixture values and
+  sample validity. RTI C# is generated from the same IDL in scratch. For
+  present optional wide-string sequences, the C++ peer uses DynamicData and
+  RTI C API setters to avoid the typed serializer crash; absent, empty, and
+  narrow-only controls remain typed. Current scenario totals come from the
+  generated result artifact. RTI 7.3.1 needs future version-aware emission. See
   [chapters 6](arc42/06-runtime-view.md) and [7](arc42/07-deployment-view.md).
 - **Cross-cutting concerns:** Evidence vocabulary, deterministic source
   identity, explicit compiler phases, diagnostics, test separation, measured
@@ -68,10 +61,10 @@ or ADRs first, then refresh this file and
   compatibility remains a manual licensed evidence tier. Optional aggregate
   DynamicType metadata preserves declared aliases to match the RTI oracle. See
   [chapter 9](arc42/09-architectural-decisions.md).
-- **Quality and risk:** The last complete exact 7.7.0 fixture matrix before
-  optional aggregate additions completed 372
-  scenarios with 364 passes and 8 expected failures; there were no unexpected
-  failures or unrun scenarios.
+- **Quality and risk:** The three-peer matrix reports current totals in its
+  generated result artifact. `05-array-of-sequences` remains a known shape
+  limitation: Wireloom C# flattens the IDL array while RTI C# and C++ preserve
+  it, so pairings involving Wireloom C# fail discovery as expected.
   `05-array-of-sequences` is included with defaults because DDSG0105 is a warning;
   current C# output flattens its array-of-sequences members, so a wire pass does
   not prove array-shape fidelity. Both same-language pairings pass, while both
@@ -79,10 +72,10 @@ or ADRs first, then refresh this file and
   and C++ array-of-sequences have different type kinds. A direct probe using
   RTI's retained C# oracle reproduces the same cross-language failure, so this
   is an RTI C# binding limitation rather than a Wireloom-only regression.
-  `03-alias-aggregate` and both `07-union-aliases` variants now pass all four
+  `03-alias-aggregate` and both `07-union-aliases` variants pass their
   pairings after aggregate member aliases were projected to their underlying
   struct or union type in managed APIs and native conversions.
-  `09-optional-aggregate-member` now generates optional struct and union values,
+  `09-optional-aggregate-member` generates optional struct and union values,
   retains declared aliases in optional aggregate DynamicType metadata to match
   RTI, and has absent/present fixtures with nested payloads. Those eight wire
   exchanges await an exact RTI 7.7.0 run. Consumers verify expected fixtures,
@@ -91,11 +84,10 @@ or ADRs first, then refresh this file and
   the discriminator, labels, IDs, and extensibility. FlatData uses standard
   C++ peer generation after removing its C#-ignored mapping annotation; this
   does not verify the RTI FlatData-specific C++ layout. Six present-wide-value
-  optional-string pairings are expected failures: the C++ writer crashes
-  inside RTI's `sequence_helper<std::wstring>::get_value_pointer`, and the C++
-  reader returns no sample from C# for these fixtures. RTI 7.3.1 target
-  compatibility, licensed exact-version environments, optional aggregate wire
-  evidence, coarse per-root output invalidation, and coverage outside
+  `09-optional-string-sequences` present-wide fixtures use the DynamicData C API
+  workaround in the C++ peer. RTI 7.3.1 target compatibility, licensed
+  exact-version environments, optional aggregate wire evidence, coarse
+  per-root output invalidation, and coverage outside
   the retained corpus remain open risks. See
   [chapters 10](arc42/10-quality-requirements.md) and
   [11](arc42/11-risks-and-technical-debt.md).

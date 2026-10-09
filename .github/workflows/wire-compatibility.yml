@@ -37,7 +37,7 @@ jobs:
         run: |
           apt-get update -qq
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            ca-certificates ccache cmake curl g++ make python3
+            ca-certificates ccache cmake curl g++ make
 
       - name: Restore C++ compiler outputs
         id: ccache-cache
