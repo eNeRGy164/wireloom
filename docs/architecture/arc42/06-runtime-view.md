@@ -71,12 +71,12 @@ APIs absent from its C# package. Wireloom needs explicit target-compatibility
 configuration and version-aware emission before that runtime can join the
 matrix.
 
-Known case limitations remain visible in each result. The RTI-positive
-`09-optional-aggregate-member` cannot run because Wireloom reports DDSG0001
-before endpoint generation. The report adds a not-implemented row, marks all
-four pairings with ⛔, and links to [issue #32](https://github.com/eNeRGy164/wireloom/issues/32)
-for generator support. This records a support gap, not a measured DDS
-interoperability failure.
+The RTI-positive `09-optional-aggregate-member` now generates successfully.
+Its absent and present fixtures carry nested struct and union payload values,
+including typedef aliases, and are scheduled as independent exchanges across
+all four language pairings. The latest licensed matrix predates this
+implementation, so those exchanges still need an exact RTI 7.7.0 run before
+they count as interoperability evidence.
 `05-array-of-sequences`
 is included despite warning DDSG0105: Wireloom currently maps the C# members to
 flat sequences while RTI C++ preserves the IDL arrays. Same-language controls
@@ -84,11 +84,15 @@ pass but cross-language endpoint discovery fails because RTI reports different
 member type kinds. A focused RTI-generated C# oracle control reproduced this
 shape limitation. The wire report keeps those two cross-language failures and
 marks them as expected; this case's wire test does not establish preservation
-of the two-slot array shape. Aggregate alias members now use the
-underlying generated struct or union type, and all four `03-alias-aggregate`
-and all eight `07-union-aliases` exchanges pass. The latest licensed run
-completed all 372 exchanges across 93 case/fixture rows: 364 passed, 8 failed
-as expected, and none were unrun or unexpected. Two expected failures are the
+of the two-slot array shape. Aggregate alias members use the underlying
+generated struct or union type in managed APIs and native conversions; for
+optional struct members with aggregate values, DynamicType metadata retains
+the declared typedef alias as RTI does. All four `03-alias-aggregate` and all eight
+`07-union-aliases` exchanges pass. The last complete licensed run
+before optional aggregate fixtures covered 372 exchanges across 93 case/fixture
+rows: 364 passed, 8 failed as expected, and none were unrun or unexpected. The
+expanded matrix adds eight optional aggregate exchanges; their results are
+pending an exact RTI 7.7.0 run. Two expected failures are the
 `05-array-of-sequences` cross-language discovery mismatches. The other six are
 the `09-optional-string-sequences` present-wide-value pairings. AddressSanitizer
 locates the C++ writer crash in RTI's `sequence_helper<std::wstring>::get_value_pointer`

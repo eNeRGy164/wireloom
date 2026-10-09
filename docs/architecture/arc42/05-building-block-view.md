@@ -27,6 +27,14 @@ support. This matches RTI's generated C# shape: raw arrays and sequences of
 aggregate aliases expose initialized aggregate values and convert through the
 aggregate's native type support.
 
+Optional struct members whose value type is a struct or union use nullable
+managed references and `NativeManagedOptional` storage. Their conversion plan
+uses the aggregate's native type support, while DynamicType metadata marks the
+member optional. When the declared member type is a typedef chain, its
+DynamicType metadata preserves the declared alias support, matching RTI; the
+managed property and native conversion still use the underlying aggregate.
+Absent values remain null in the managed contract.
+
 The input graph and preprocessor enforce deterministic work boundaries: macro
 expansion is capped at 100,000 expansion operations and each preprocessed file
 at 4 MiB of text, while conditional expressions are capped at 256 nested

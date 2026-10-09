@@ -29,13 +29,20 @@ or ADRs first, then refresh this file and
   Aggregate members and raw collection elements declared through struct or
   union typedef chains use the underlying aggregate type in generated APIs and
   native conversions; standalone typedef declarations remain generated.
+  Optional struct members whose value is a struct or union preserve null
+  presence with `NativeManagedOptional` conversions and optional DynamicType
+  metadata. Their DynamicType preserves declared typedef aliases to match RTI,
+  while managed properties and native conversions use the underlying
+  aggregate. Optional union branches follow RTI's required selected-branch
+  shape.
   Parsing, binding, and
   validation are explicit front-end phases, and chapter 5 includes a level-2
   zoom of the compiler and preprocessing boundary.
   See [chapter 5](arc42/05-building-block-view.md).
 - **Runtime and deployment:** The wire workflow covers Wireloom-positive,
   wire-testable cases with C#/C++ peers and exact RTI 7.7.0. The last complete
-  fixture run covered 372 scenarios across 93 case/fixture rows: 364 passed
+  fixture run before optional aggregate fixtures covered 372 scenarios across
+  93 case/fixture rows: 364 passed
   and 8 failed as expected, with no unexpected or unrun scenarios. Two expected
   failures are the array-of-sequences cross-language mismatches. Six are the
   present-wide-value pairings for optional string sequences. AddressSanitizer
@@ -58,9 +65,11 @@ or ADRs first, then refresh this file and
   compiler orchestration/resolution/emission are current decisions. The
   initial wire baseline is exact 7.7.0; future older-runtime support needs a
   generator target API version distinct from the package version. Wire-level
-  compatibility remains a manual licensed evidence tier. See
+  compatibility remains a manual licensed evidence tier. Optional aggregate
+  DynamicType metadata preserves declared aliases to match the RTI oracle. See
   [chapter 9](arc42/09-architectural-decisions.md).
-- **Quality and risk:** The current exact 7.7.0 fixture matrix completed 372
+- **Quality and risk:** The last complete exact 7.7.0 fixture matrix before
+  optional aggregate additions completed 372
   scenarios with 364 passes and 8 expected failures; there were no unexpected
   failures or unrun scenarios.
   `05-array-of-sequences` is included with defaults because DDSG0105 is a warning;
@@ -72,10 +81,12 @@ or ADRs first, then refresh this file and
   is an RTI C# binding limitation rather than a Wireloom-only regression.
   `03-alias-aggregate` and both `07-union-aliases` variants now pass all four
   pairings after aggregate member aliases were projected to their underlying
-  struct or union type. The RTI-positive `09-optional-aggregate-member` cannot
-  run because Wireloom reports DDSG0001; the result report shows it as
-  not implemented and links issue #32. Consumers verify expected
-  fixtures, and peers request reliable delivery.
+  struct or union type in managed APIs and native conversions.
+  `09-optional-aggregate-member` now generates optional struct and union values,
+  retains declared aliases in optional aggregate DynamicType metadata to match
+  RTI, and has absent/present fixtures with nested payloads. Those eight wire
+  exchanges await an exact RTI 7.7.0 run. Consumers verify expected fixtures,
+  and peers request reliable delivery.
   The wchar union uses a manually constructed RTI C++ `DynamicType` matching
   the discriminator, labels, IDs, and extensibility. FlatData uses standard
   C++ peer generation after removing its C#-ignored mapping annotation; this
@@ -83,8 +94,8 @@ or ADRs first, then refresh this file and
   optional-string pairings are expected failures: the C++ writer crashes
   inside RTI's `sequence_helper<std::wstring>::get_value_pointer`, and the C++
   reader returns no sample from C# for these fixtures. RTI 7.3.1 target
-  compatibility, licensed exact-version environments, unsupported optional
-  aggregate members, coarse per-root output invalidation, and coverage outside
+  compatibility, licensed exact-version environments, optional aggregate wire
+  evidence, coarse per-root output invalidation, and coverage outside
   the retained corpus remain open risks. See
   [chapters 10](arc42/10-quality-requirements.md) and
   [11](arc42/11-risks-and-technical-debt.md).

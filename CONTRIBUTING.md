@@ -109,6 +109,40 @@ stores analysis state, not the bootstrapped SDK; keep `global.json` visible so
 analysis uses the pinned SDK. The NuGet package cache is safe to share, but
 restore and build intermediates are platform-specific and must remain isolated.
 
+### Interpreting local WSLC runs
+
+When Qodana runs against the Windows bind mount through WSLC, InspectCode may
+repeat a `FileSystemTrackerImpl` warning that a watcher would reach the “Drive
+root.” This warning is not by itself a failed scan. InspectCode can continue
+analyzing and inspecting files, then write `.qodana/results/qodana.sarif.json`.
+Let the WSLC command exit normally; do not interrupt it only because this
+warning repeats or because output pauses while the scan is running.
+
+Do not start another Qodana container while the first `wslc run` is still
+active. If the command appears stalled, check `.qodana/results/log/` from a
+second terminal and compare file timestamps with the scan start time. Progress
+in the current `JetBrainsLog.*.inspectcode*.log` file means InspectCode is
+still running. Use these commands to inspect the latest log activity:
+
+```powershell
+Get-ChildItem .qodana/results/log -File |
+  Sort-Object LastWriteTimeUtc -Descending |
+  Select-Object -First 5 Name, Length, LastWriteTimeUtc
+Get-Content .qodana/results/log/code-inspection.log -Tail 20
+```
+
+After the command exits, confirm that `qodana.sarif.json` was updated during
+this run and that `code-inspection.log` ends with `Done`. Read the final
+summary in `baseline-out.log` and check the WSLC command's exit code; a
+completed report can still contain findings, and CI uses a zero-finding
+threshold. A report left by an earlier run is not evidence for the current
+source.
+
+The local and CI configurations target only
+`src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj`. The wire
+compatibility projects are not loaded by this Qodana scan, so excluding them
+does not address WSLC watcher warnings or a local container stall.
+
 For local coverage, the Cobertura report must contain both branch and line
 rates and a positive `branches-valid` count. Check its counters with:
 
