@@ -14,36 +14,38 @@ jobs:
   rti-7-7-0:
     name: RTI Connext 7.7.0 wire matrix
     runs-on: ubuntu-24.04
-    container:
-      image: rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca
-      options: --user 0:0
     timeout-minutes: 360
     env:
-      DOTNET_NOLOGO: true
-      DOTNET_CLI_TELEMETRY_OPTOUT: true
       WIRE_COMPATIBILITY_RTI_VERSION: 7.7.0
       WIRE_COMPATIBILITY_OUTPUT_DIR: artifacts/wire-compatibility
-      RTI_LICENSE_FILE: /tmp/rti_license.dat
-      NUGET_PACKAGES: /root/.nuget/packages
-      CCACHE_DIR: /root/.cache/ccache
-      CCACHE_MAXSIZE: 2G
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Install peer build tools
-        run: |
-          apt-get update -qq
-          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            ca-certificates ccache cmake curl g++ make
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+
+      - name: Build RTI test image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile
+          tags: wireloom-rti-7.7.0:local
+          load: true
+          cache-from: type=gha,scope=wireloom-rti-7.7.0
+          cache-to: type=gha,scope=wireloom-rti-7.7.0,mode=max
+
+      - name: Prepare persistent build caches
+        shell: bash
+        run: mkdir -p "$RUNNER_TEMP/wireloom-cache/ccache" "$RUNNER_TEMP/wireloom-cache/nuget"
 
       - name: Restore C++ compiler outputs
         id: ccache-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: /root/.cache/ccache
+          path: ${{ runner.temp }}/wireloom-cache/ccache
           key: ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
             ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-
@@ -52,15 +54,10 @@ jobs:
         id: nuget-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: /root/.nuget/packages
+          path: ${{ runner.temp }}/wireloom-cache/nuget
           key: nuget-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ hashFiles('Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json', 'src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj', 'tests/Wireloom.Dds.Generator.WireCompatibility/Wireloom.Dds.Generator.WireCompatibility.csproj') }}
           restore-keys: |
             nuget-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-
-
-      - name: Set up .NET 10
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-        with:
-          dotnet-version: 10.0.400
 
       - name: Provide runtime RTI license file
         shell: bash
@@ -72,32 +69,47 @@ jobs:
             exit 1
           fi
           umask 077
-          printf '%s' "$RTI_CONNEXT_LICENSE" > "$RTI_LICENSE_FILE"
+          printf '%s' "$RTI_CONNEXT_LICENSE" > "$RUNNER_TEMP/rti_license.dat"
 
-      - name: Verify RTI toolchain version
+      - name: Verify RTI toolchain and run 7.7.0 wire matrix
         shell: bash
         run: |
-          version="$($NDDSHOME/bin/rtiddsgen -version 2>&1 | sed -n 's/.*rtiddsgen version //p' | head -n 1)"
-          if [[ "$version" != "4.7.0" ]]; then
-            echo "Expected rtiddsgen 4.7.0 from the exact RTI 7.7.0 image." >&2
-            exit 1
-          fi
-
-      - name: Run 7.7.0 wire matrix
-        run: bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.sh
+          docker run --rm --user 0:0 \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --volume "$RUNNER_TEMP/wireloom-cache/ccache:/root/.cache/ccache" \
+            --volume "$RUNNER_TEMP/wireloom-cache/nuget:/root/.nuget/packages" \
+            --volume "$RUNNER_TEMP/rti_license.dat:/run/secrets/rti_license.dat:ro" \
+            --workdir /workspace \
+            --env GITHUB_WORKSPACE=/workspace \
+            --env RTI_LICENSE_FILE=/run/secrets/rti_license.dat \
+            --env NUGET_PACKAGES=/root/.nuget/packages \
+            --env CCACHE_DIR=/root/.cache/ccache \
+            --env CCACHE_MAXSIZE=2G \
+            --env WIRE_COMPATIBILITY_RTI_VERSION="$WIRE_COMPATIBILITY_RTI_VERSION" \
+            --env WIRE_COMPATIBILITY_OUTPUT_DIR="$WIRE_COMPATIBILITY_OUTPUT_DIR" \
+            --entrypoint bash \
+            wireloom-rti-7.7.0:local \
+            -lc '
+              version=$("$NDDSHOME/bin/rtiddsgen" -version 2>&1 | sed -n "s/.*rtiddsgen version //p" | head -n 1)
+              if [[ "$version" != "4.7.0" ]]; then
+                echo "Expected rtiddsgen 4.7.0 from the exact RTI 7.7.0 image." >&2
+                exit 1
+              fi
+              bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.sh
+            '
 
       - name: Save C++ compiler outputs
         if: always() && steps.ccache-cache.outcome == 'success' && steps.ccache-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: /root/.cache/ccache
+          path: ${{ runner.temp }}/wireloom-cache/ccache
           key: ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Save NuGet packages
         if: always() && steps.nuget-cache.outcome == 'success' && steps.nuget-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: /root/.nuget/packages
+          path: ${{ runner.temp }}/wireloom-cache/nuget
           key: nuget-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ hashFiles('Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json', 'src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj', 'tests/Wireloom.Dds.Generator.WireCompatibility/Wireloom.Dds.Generator.WireCompatibility.csproj') }}
 
       - name: Publish wire matrix summary
@@ -129,4 +141,4 @@ jobs:
 
       - name: Remove runtime license file
         if: always()
-        run: rm -f "$RTI_LICENSE_FILE"
+        run: rm -f "$RUNNER_TEMP/rti_license.dat"

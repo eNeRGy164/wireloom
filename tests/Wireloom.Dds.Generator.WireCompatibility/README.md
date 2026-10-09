@@ -122,9 +122,16 @@ wslc build -f tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile `
 ```
 
 The image pins the exact RTI 7.7.0 base image and installs .NET 10.0.400 plus
-the C++ build tools. It does not contain a license. The shell harness uses
-Python only inside this container to read the corpus manifest and write the
-structured report; no host Python installation is required. Run the container
+the C++ build tools, including ccache. GitHub Actions builds this same image
+with BuildKit's GitHub Actions cache, scoped to RTI 7.7.0, so its package
+installation and .NET setup layers can be reused on later runs. The immutable
+RTI base image still needs to be pulled by each fresh runner. The image does
+not contain a license. The shell harness uses the .NET 10 C# file-based utility
+for manifest reading, type discovery, IDL include discovery, and report
+generation; Python is not required. The matrix step succeeds when it generates
+the report, even if peer builds or exchanges fail; those outcomes are recorded
+as failed or not-run rows for review. Setup checks that prevent report
+generation still fail the workflow. Run the container
 with the repository mounted at `/workspace`, the license mounted read-only at
 `/run/secrets/rti_license.dat`, and `WIRE_COMPATIBILITY_CASE_FILTER=05-collections`
 for the focused non-default fixture. Omit the filter to run all 56
