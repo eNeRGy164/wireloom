@@ -4,9 +4,13 @@
     <Nullable>disable</Nullable>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <RootNamespace>Wireloom.Dds.Generator.WireCompatibility</RootNamespace>
     <AssemblyName>WireCompatibility.RtiOracleProbe</AssemblyName>
+    <RtiOracleSourceDir Condition="'$(RtiOracleSourceDir)' == ''"></RtiOracleSourceDir>
+    <RtiOracleSource Condition="'$(RtiOracleSource)' == ''">../../../docs/corpus/oracles/features/05-array-of-sequences/05-array-of-sequences.cs</RtiOracleSource>
+    <RtiOraclePlugin Condition="'$(RtiOraclePlugin)' == ''">../../../docs/corpus/oracles/features/05-array-of-sequences/05-array-of-sequencesPlugin.cs</RtiOraclePlugin>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,8 +19,9 @@
     <Compile Include="../Program.cs" Link="Program.cs" />
     <Compile Include="../FixtureCatalog.cs" Link="FixtureCatalog.cs" />
     <Compile Include="../IndependentSampleVerifier.cs" Link="IndependentSampleVerifier.cs" />
-    <Compile Include="../../../docs/corpus/oracles/features/05-array-of-sequences/05-array-of-sequences.cs" />
-    <Compile Include="../../../docs/corpus/oracles/features/05-array-of-sequences/05-array-of-sequencesPlugin.cs" />
+    <Compile Include="$(RtiOracleSourceDir)/**/*.cs" Condition="'$(RtiOracleSourceDir)' != ''" />
+    <Compile Include="$(RtiOracleSource)" Link="RtiOracle.cs" Condition="'$(RtiOracleSourceDir)' == ''" />
+    <Compile Include="$(RtiOraclePlugin)" Link="RtiOraclePlugin.cs" Condition="'$(RtiOracleSourceDir)' == ''" />
     <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
   </ItemGroup>
 </Project>

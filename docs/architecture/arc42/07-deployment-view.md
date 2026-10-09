@@ -21,9 +21,12 @@ The manually triggered wire-compatibility job starts with the exact
 `rticom/connext-base:7.7.0` toolchain and selects the matching C# runtime
 package through `WireCompatibilityRtiVersion`. The RTI license secret is
 written to a runtime-only file inside the job and is not included in artifacts.
-The runner builds one generated C# peer and one RTI-generated C++ peer per
-case, then launches separate producer/consumer processes for every fixture and
-language pairing. The scenario total is calculated from the fixture catalog.
+The runner builds a Wireloom-generated C# peer, an RTI-generated C# peer from
+the same IDL using the pinned code generator, and an RTI-generated C++ peer per case. It then
+launches separate producer/consumer processes for every fixture and all nine
+directed sender/receiver pairings. The report distinguishes the implementation
+and language of each endpoint; the scenario total is calculated from the
+fixture catalog.
 The job uploads only the structured scenario report and sanitized endpoint
 logs. Adding another RTI release requires an exact toolchain image and a
 compatible Wireloom emission target; 7.3.1 currently needs that

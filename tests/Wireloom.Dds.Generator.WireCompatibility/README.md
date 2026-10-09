@@ -1,13 +1,14 @@
 # Wire compatibility peers
 
-This project builds a small C# DDS peer for a selected positive corpus case.
-RTI Connext 7.7.0 is the initial wire baseline. The peer package version is
-selected by `WireCompatibilityRtiVersion` (default `7.7.0`); use the matching
-exact RTI toolchain when generating/building its C++ counterpart.
+This project compares Wireloom-generated C# with RTI-generated C# and C++ DDS
+peers for selected positive corpus cases. RTI Connext 7.7.0 is the initial wire
+baseline. The peer package version is selected by
+`WireCompatibilityRtiVersion` (default `7.7.0`); use the matching exact RTI
+toolchain to generate and build the reference peers.
 
 Each case has a curated fixture catalog. Every fixture is sent in a separate
-producer/consumer exchange with its own topic and report row, across C#→C#,
-C++→C++, C#→C++, and C++→C#. Fixtures contrast optional presence per member,
+producer/consumer exchange with its own topic and report row across all nine
+directed pairings of Wireloom C#, RTI C#, and RTI C++. Fixtures contrast optional presence per member,
 empty/single/multiple sequence lengths, union branches, and string boundaries
 where the IDL allows them. Readers compare the complete generated sample with
 the fixture and report valid-sample and discovery counters. The JSON report
@@ -17,19 +18,23 @@ for each pairing. For failures, its problem/defect column reports the observed
 sanitized symptom and lists any registered expected-failure explanation
 separately. The JSON keeps these in `observedProblem` and `expectedFailure`.
 
-Wireloom-generated C# types and typed RTI readers/writers exercise generated
-conversions as well as DDS transport. The RTI C++ reference peer normally uses
-`DynamicData`; typed generated C++ is used where RTI omits DynamicData string
-template specializations. Both peers request reliable delivery, and
-representation cases select XCDR2 explicitly.
+Wireloom-generated C# types and RTI-generated typed C# readers/writers exercise
+generated conversions and DDS transport. The RTI C# peer is generated from the
+same IDL with the pinned code generator, and generated files remain in scratch.
+The RTI C++ reference peer normally uses `DynamicData`; typed generated C++ is
+used where RTI omits DynamicData string template specializations. For present
+optional wide-string sequence fixtures, the C++ peer uses DynamicData and RTI's
+C API setters to avoid a crash in RTI 7.7.0's typed `std::wstring` sequence
+serializer. Absent, empty, and narrow-only controls remain typed. All peers
+request reliable delivery, and representation cases select XCDR2 explicitly.
 ## Implementation map for C# contributors
 
 Wireloom's generated C# type is the implementation under test. The shell
-runner builds the C# peer, asks `rtiddsgen` for the C++ reference peer, and
-launches independent exchanges. Expected fixture assignments exist in
+runner builds the Wireloom C# peer, asks `rtiddsgen` for RTI C# and C++ reference
+peers, and launches independent exchanges. Expected fixture assignments exist in
 `FixtureCatalog.cs` and the native fixture helpers; keep values, optional
 states, branch selection, and member paths aligned when changing a fixture.
-`Native/main.cpp.in` owns the DynamicData peer, while
+`Native/main.cpp.in` owns the DynamicData C++ peer, while
 `Native/typed-fixture-peer.hpp.in` handles typed C++ string cases that
 DynamicData cannot populate.
 `RtiOracleProbe/probe.sh` remains a focused diagnostic helper outside this
@@ -62,21 +67,19 @@ same-language controls remain useful evidence. This is an unsupported
 Wireloom mapping rather than a negative IDL syntax case.
 `09-optional-aggregate-member` includes absent and present fixtures for an
 optional struct value and an optional union value whose selected branch
-contains a nested payload, including typedef aliases. Each fixture is scheduled
-across all four language pairings; the latest licensed report predates this
-case, so its wire outcomes remain pending.
-`03-alias-aggregate` and `07-union-aliases` pass all their fixture pairings
-with the current aggregate-alias projection. The last complete licensed run
-before the optional aggregate fixtures completed 372 exchanges: 364 passed and
-8 failed as expected, with no unrun or unexpected scenarios. The expanded
-matrix adds eight optional aggregate exchanges; their outcomes remain pending
-an exact RTI 7.7.0 run. Two expected cross-language failures are for
-`05-array-of-sequences`. The other six are the present-wide-value pairings for
-`09-optional-string-sequences`. AddressSanitizer locates the typed C++ writer
-crash inside RTI's `std::wstring` sequence serializer; the typed C++ reader
-also receives no sample from C# for those fixtures. Absent, empty, and
-narrow-only controls pass. The report records each affected fixture/pairing as
-an expected failure with the known limitation in the problem column.
+contains a nested payload, including typedef aliases. Wireloom now generates
+these values; each fixture is scheduled across all nine directed pairings, and
+its wire outcomes remain pending an exact RTI 7.7.0 run.
+`03-alias-aggregate` and `07-union-aliases` pass their fixture pairings with the
+current aggregate-alias projection. The three-peer matrix reports current
+scenario totals in its generated results. Expected `05-array-of-sequences`
+failures involve Wireloom C# pairings because its generated binding flattens
+the IDL array shape; RTI C# and C++ provide independent reference pairings. For
+present wide-string fixtures in `09-optional-string-sequences`, the C++ peer
+uses DynamicData and RTI's C API setters to exercise the same wire shape without
+invoking RTI's crashing typed serializer. Absent, empty, and narrow-only
+controls remain typed. The report identifies peer adaptations and expected
+failures per scenario.
 For the wide-character union, the
 C++ peer uses a manually constructed RTI `DynamicType` that preserves the
 corpus discriminator, labels, member IDs, and extensibility because
@@ -101,7 +104,7 @@ The runner writes `artifacts/wire-compatibility/results.md` and
 committed. The manually triggered GitHub Actions workflow uploads them as the
 `wire-compatibility-rti-7.7.0` artifact, even when a build or exchange fails.
 The manually triggered workflow runs all wire-testable
-Wireloom-positive corpus cases and all four same-version language pairings,
+Wireloom-positive corpus cases and all nine same-version directed pairings,
 with each fixture as an independent scenario, using the immutable exact RTI
 7.7.0 image. Configure the repository secret
 `RTI_CONNEXT_LICENSE` with the license contents before dispatching it. The
