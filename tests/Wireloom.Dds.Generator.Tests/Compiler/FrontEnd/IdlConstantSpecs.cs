@@ -1,11 +1,31 @@
 using System.Globalization;
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
 using Wireloom;
+using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.FrontEnd.Symbols;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing.Tests;
 
 public sealed class IdlConstantSpecs
 {
+    [Fact]
+    public void EvaluatesAbsoluteConstantNamesFromTheGlobalScope()
+    {
+        // Arrange
+        var input = Input("absolute-constant-evaluation.idl", string.Empty);
+        var symbols = new IdlSymbolTable();
+        symbols.AddConstant("Label", new IdlConstantDeclaration(
+            "Label", "long", "1", null, input.Path, 1, input, 0));
+        symbols.AddConstant("N.Label", new IdlConstantDeclaration(
+            "Label", "long", "2", "N", input.Path, 2, input, 0));
+
+        // Act
+        var value = IdlConstantExpressionEvaluator.Evaluate("::Label", symbols, "N");
+
+        // Assert
+        value.ShouldBe(new System.Numerics.BigInteger(1));
+    }
+
     [Fact]
     [Trait("Corpus", "C004")]
     public void EmitsTypedIntegralConstantsIncludingSigned64Extrema()
@@ -310,6 +330,19 @@ public sealed class IdlConstantSpecs
     }
 
     [Fact]
+    public void RejectsRemainderByZeroInConstantExpressions()
+    {
+        // Arrange
+        var input = Input("constant-remainder-by-zero.idl", "const long Constant = 1 % 0;");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Division by zero");
+    }
+
+    [Fact]
     public void RejectsNegativeConstantExpressionShiftCounts()
     {
         // Arrange
@@ -320,6 +353,41 @@ public sealed class IdlConstantSpecs
 
         // Assert
         exception.Message.ShouldContain("Shift count is outside");
+    }
+
+    [Fact]
+    public void AcceptsZeroCountForLeftAndRightConstantExpressionShifts()
+    {
+        // Arrange
+        var input = Input("constant-zero-shift.idl",
+            """
+            module Constants {
+                const long Left = 8 << 0;
+                const long Right = 8 >> 0;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Constants.Left.g.cs"].Source.ShouldContain("public const int Value = 8 << 0;");
+        documents["Constants.Right.g.cs"].Source.ShouldContain("public const int Value = 8 >> 0;");
+    }
+
+    [Fact]
+    public void AcceptsMaximumSupportedShiftCountForZeroValue()
+    {
+        // Arrange
+        var input = Input(
+            "constant-maximum-shift.idl",
+            "const long Constant = 0 << 2147483647;");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Constant.g.cs"].Source.ShouldContain("public const int Value = 0 << 2147483647;");
     }
 
     [Fact]
@@ -346,6 +414,19 @@ public sealed class IdlConstantSpecs
 
         // Assert
         exception.Message.ShouldContain("Expected an integer literal");
+    }
+
+    [Fact]
+    public void RejectsUnterminatedParenthesizedConstantExpressions()
+    {
+        // Arrange
+        var input = Input("constant-parenthesis.idl", "const long Constant = (1 + 2;");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Expected ')' in constant expression");
     }
 
     [Theory]

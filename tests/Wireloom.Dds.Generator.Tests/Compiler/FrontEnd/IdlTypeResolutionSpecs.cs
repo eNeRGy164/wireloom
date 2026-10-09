@@ -8,6 +8,56 @@ namespace Wireloom.Compiler.FrontEnd.Semantic.Tests;
 
 public sealed class IdlTypeResolutionSpecs
 {
+    [Theory]
+    [InlineData(false, "long value;", false)]
+    [InlineData(true, "long value;", true)]
+    [InlineData(true, "@hashid(\"stable\") long value;", false)]
+    public void RecordsWhenHashBasedMemberIdsAreGeneratedAutomatically(
+        bool useHashIds,
+        string definition,
+        bool expectedAutomaticHash)
+    {
+        // Arrange
+        var context = new IdlParseContext(new IdlSymbolTable(), CancellationToken.None, diagnostics: null);
+        var input = new IdlInput("member.idl", definition);
+
+        // Act
+        var member = context.TypeParser.ParseMember(
+            input,
+            definition,
+            offset: 0,
+            sourceOffset: 0,
+            currentNamespace: null,
+            members: new HashSet<string>(StringComparer.Ordinal),
+            useHashIds).Field;
+
+        // Assert
+        member.Metadata.UsesAutoIdHash.ShouldBe(expectedAutomaticHash);
+    }
+
+    [Fact]
+    public void ResolvesValueMetadataImmediatelyForBoundMemberTypes()
+    {
+        // Arrange
+        const string definition = "@max(10) long value;";
+        var context = new IdlParseContext(new IdlSymbolTable(), CancellationToken.None, diagnostics: null);
+        var input = new IdlInput("bound-member-metadata.idl", definition);
+
+        // Act
+        var member = context.TypeParser.ParseMember(
+            input,
+            definition,
+            offset: 0,
+            sourceOffset: 0,
+            currentNamespace: null,
+            members: new HashSet<string>(StringComparer.Ordinal),
+            useHashIds: false).Field;
+
+        // Assert
+        member.Metadata.ValueMetadata.ShouldNotBeNull();
+        member.Metadata.ValueMetadata!.Maximum?.ToString().ShouldBe("10");
+    }
+
     [Fact]
     public void DefersSemanticValidationUntilTheValidationPhase()
     {
@@ -108,6 +158,52 @@ public sealed class IdlTypeResolutionSpecs
 
         // Assert
         documents["Sample.g.cs"].Source.ShouldContain("Its maximum length is <c>9</c> UTF-8 bytes.");
+    }
+
+    [Fact]
+    public void ResolvesMaximumOnlyMetadataForForwardPrimitiveAliases()
+    {
+        // Arrange
+        var input = Input(
+            "forward-maximum-only.idl",
+            "struct Sample { @max(10) Count value; }; typedef long Count;");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Sample.g.cs"].Source.ShouldContain("ThrowIfGreaterThan(value, 10);");
+        documents["Implementation.SamplePlugin.g.cs"].Source.ShouldContain("maxValue: new AnnotationParameterValue { Int32Value = 10 },");
+    }
+
+    [Fact]
+    public void ResolvesUnitMetadataForForwardPrimitiveAliases()
+    {
+        // Arrange
+        var input = Input(
+            "forward-unit-metadata.idl",
+            "struct Sample { @unit(\"meters\") Distance value; }; typedef long Distance;");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Implementation.SamplePlugin.g.cs"].Source.ShouldContain("unit: \"meters\"");
+    }
+
+    [Fact]
+    public void AcceptsArrayElementCountAtTheInt32Maximum()
+    {
+        // Arrange
+        var input = Input(
+            "maximum-array-element-count.idl",
+            "module MaximumArray { struct Sample { long values[2147483647]; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["MaximumArray.Sample.g.cs"].Source.ShouldContain("2147483647");
     }
 
     [Fact]
@@ -422,6 +518,23 @@ public sealed class IdlTypeResolutionSpecs
     }
 
     [Fact]
+    public void AcceptsMemberDefaultAtAnInclusiveSingleValueRange()
+    {
+        // Arrange
+        var input = Input(
+            "inclusive-single-value-range.idl",
+            "module Defaults { struct Sample { @min(5) @max(5) @default(5) long value; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Defaults.Sample.g.cs"].Source;
+        managed.ShouldContain("Valid values are in the inclusive range <c>5</c> through <c>5</c>. Its default value is <c>5</c>.");
+        managed.ShouldContain("value = 5;");
+    }
+
+    [Fact]
     public void ResolvesAbsoluteScopedStructBaseNames()
     {
         // Arrange
@@ -545,6 +658,26 @@ public sealed class IdlTypeResolutionSpecs
         var input = Input(
             "strict-inheritance.idl",
             "struct Base { @key long tenant; }; struct Derived : Base { @key long localId; };");
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        parser.Parse(input.Text, input, 0, currentNamespace: null);
+        parser.Bind();
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => parser.Validate(strict: true));
+
+        // Assert
+        exception.Message.ShouldContain("derived from a struct/valuetype can not contain @key fields");
+        exception.Input.ShouldBe(input);
+        exception.Offset.ShouldBe(input.Text.IndexOf("long localId", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ValidatesKeysAgainstTransitiveBaseMembersBeforeEmission()
+    {
+        // Arrange
+        var input = Input(
+            "transitive-inheritance-key.idl",
+            "struct Base { @key long tenant; }; struct Middle : Base { long region; }; struct Leaf : Middle { @key long localId; };");
         var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
         parser.Parse(input.Text, input, 0, currentNamespace: null);
         parser.Bind();
