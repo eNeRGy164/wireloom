@@ -1,8 +1,8 @@
 # Wire compatibility peers
 
 This project compares Wireloom-generated C# with RTI-generated C# and C++ DDS
-peers for selected positive corpus cases. RTI Connext 7.7.0 is the initial wire
-baseline. The peer package version is selected by
+peers for selected positive corpus cases. The matrix uses RTI Connext 7.7.0.
+The peer package version is selected by
 `WireCompatibilityRtiVersion` (default `7.7.0`); use the matching exact RTI
 toolchain to generate and build the reference peers.
 
@@ -27,6 +27,10 @@ optional wide-string sequence fixtures, the C++ peer uses DynamicData and RTI's
 C API setters to avoid a crash in RTI 7.7.0's typed `std::wstring` sequence
 serializer. Absent, empty, and narrow-only controls remain typed. All peers
 request reliable delivery, and representation cases select XCDR2 explicitly.
+The optional aggregate-member case selects `Holder` explicitly and uses typed
+fixtures on both managed and C++ peers because RTI 7.7.0 DynamicData resolves
+the nested typedef members against the wrong type. Readers compare the public
+optional values and selected union branch directly.
 ## Implementation map for C# contributors
 
 Wireloom's generated C# type is the implementation under test. The shell
@@ -40,39 +44,37 @@ DynamicData cannot populate.
 `RtiOracleProbe/probe.sh` remains a focused diagnostic helper outside this
 matrix.
 
-The original baseline covered 224 scenarios (one fixture per case). The
-expanded matrix adds independent exchanges for fixture variants, so its total
-is computed from the fixture catalog and recorded as `expectedScenarioCount`
-and `scenarioCount` in `results.json`; the human-readable `results.md` includes
-✅/⛔/❔ status cells and a problem/defect column for failed exchanges. Known
-expected failures remain ⛔; the problem column separates observed symptoms
-from their expected-failure explanations, and `results.json` records both
-fields and their aggregate count.
+The scenario total is computed from the fixture catalog and recorded as
+`expectedScenarioCount` and `scenarioCount` in `results.json`. The human-readable
+`results.md` uses distinct status cells for passes, adapted passes, expected and
+unexpected failures, not-run scenarios, and not-implemented cases. It also
+includes Adaptations and Problem / defect columns. Expected failures use ⚠️;
+the problem column separates observed symptoms from their expected-failure
+explanations, and `results.json` records both fields and their aggregate count.
 Cases that Wireloom cannot generate appear as not-implemented rows in both
 reports. Their pairing cells show ⛔, while the problem column identifies the
 diagnostic and links the tracked support issue. They are not counted as
 executed DDS exchanges or as observed interoperability failures.
 The IDL scenario cell uses `"` to repeat the case shown in the preceding row,
 keeping fixture variations grouped without repeating the same filename.
-Wireloom-positive selection is
-independent of RTI oracle status. See the latest report for current outcomes;
-the findings below remain known limitations until their related behavior is
-fixed.
+Wireloom-positive selection is independent of RTI oracle status. Each run's
+report records outcomes for the selected fixtures and pairings.
 
-`05-array-of-sequences` remains in the matrix so its known cross-language
-failure stays visible. DDSG0105 warns that its generated C# binding flattens
+`05-array-of-sequences` is included in the matrix. DDSG0105 warns that its
+generated C# binding flattens
 the IDL array shape, and RTI rejects the resulting C# and C++ types during
 cross-language discovery. The report marks those failures as expected; the
 same-language controls remain useful evidence. This is an unsupported
 Wireloom mapping rather than a negative IDL syntax case.
 `09-optional-aggregate-member` includes absent and present fixtures for an
 optional struct value and an optional union value whose selected branch
-contains a nested payload, including typedef aliases. Wireloom now generates
-these values; each fixture is scheduled across all nine directed pairings, and
-its wire outcomes remain pending an exact RTI 7.7.0 run.
-`03-alias-aggregate` and `07-union-aliases` pass their fixture pairings with the
-current aggregate-alias projection. The three-peer matrix reports current
-scenario totals in its generated results. Expected `05-array-of-sequences`
+contains a nested payload, including typedef aliases. Wireloom generates these
+values and the matrix schedules each fixture across all nine directed pairings;
+interoperability for this case is unverified until results are available from
+a licensed RTI 7.7.0 matrix run. Aggregate aliases use the underlying
+generated struct or union type in managed APIs and native conversions, while
+optional aggregate DynamicType metadata retains the declared typedef alias.
+Expected `05-array-of-sequences`
 failures involve Wireloom C# pairings because its generated binding flattens
 the IDL array shape; RTI C# and C++ provide independent reference pairings. For
 present wide-string fixtures in `09-optional-string-sequences`, the C++ peer
@@ -95,9 +97,8 @@ To compare the retained RTI-generated C# binding directly, run
 `RtiOracleProbe/probe.sh` inside the helper container with the repository
 mounted at `/workspace`, `GITHUB_WORKSPACE=/workspace`, and the RTI license
 mounted read-only at `/run/secrets/rti_license.dat`. It compiles the retained
-RTI C# oracle sources and pairs them with an RTI-generated C++ peer. This
-control passed C#↔C# and reproduced both cross-language discovery failures,
-with RTI reporting that the member types have different type kinds.
+RTI C# oracle sources and pairs them with an RTI-generated C++ peer. The probe
+reports endpoint and discovery results for that control.
 
 The runner writes `artifacts/wire-compatibility/results.md` and
 `results.json`; these generated files are local run output and are not
@@ -128,17 +129,16 @@ installation and .NET setup layers can be reused on later runs. The immutable
 RTI base image still needs to be pulled by each fresh runner. The image does
 not contain a license. The shell harness uses the .NET 10 C# file-based utility
 for manifest reading, type discovery, IDL include discovery, and report
-generation; Python is not required. The matrix step succeeds when it generates
-the report, even if peer builds or exchanges fail; those outcomes are recorded
-as failed or not-run rows for review. Setup checks that prevent report
-generation still fail the workflow. Run the container
+generation; Python is not required. Peer-build and exchange failures are
+recorded as failed or not-run rows, and the workflow succeeds if the report is
+generated. Matrix utility setup and locked-restore failures preserve a nonzero
+workflow status even when a report is available. Run the container
 with the repository mounted at `/workspace`, the license mounted read-only at
 `/run/secrets/rti_license.dat`, and `WIRE_COMPATIBILITY_CASE_FILTER=05-collections`
 for the focused non-default fixture. Omit the filter to run all 56
 wire-testable Wireloom-positive cases.
 Generated build outputs and artifacts are written to the mounted repository;
-the runner always checks its selected RTI version against the supported initial
-baseline.
+the runner checks its selected RTI version against 7.7.0.
 
 ## Build and discover one C# case
 
@@ -150,16 +150,16 @@ dotnet build tests/Wireloom.Dds.Generator.WireCompatibility/Wireloom.Dds.Generat
   -p:WireCompatibilityCase=01-primitives `
   -p:WireCompatibilityRtiVersion=7.7.0
 
-python tests/Wireloom.Dds.Generator.WireCompatibility/scripts/discover_cases.py `
+dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/matrix-tools.cs -- discover-cases `
   docs/corpus/manifest.json `
   tests/Wireloom.Dds.Generator.WireCompatibility/obj/wireloom-generated `
   tests/Wireloom.Dds.Generator.WireCompatibility/obj/cases.json `
   01-primitives
 ```
 
-The discovery helper resolves the generated C# and corresponding C++ type name
-from Wireloom output and the corpus manifest. It can select one case for local
-smoke runs or all positive cases after the case outputs have been built.
+The utility discovers generated C# and corresponding C++ type names from
+Wireloom output and the corpus manifest. The case filter can select one case
+or all wire-testable positive cases.
 
 ## Run two local C# processes
 
@@ -168,8 +168,6 @@ start one peer with `--role reader` and another with `--role writer`. Give both
 the same unique topic and pass the case, generated type name, and runtime
 version. Both endpoints must exit successfully before recording a pass.
 
-The RTI package version and future Wireloom generator target API version are
-separate concepts. When Wireloom adds target-version-aware emission, the
-workflow should pass that target explicitly instead of inferring it from the
-runtime package. This enables testing an older wire endpoint without silently
-changing which RTI APIs Wireloom emits.
+The matrix covers RTI Connext 7.7.0. Although the generator's runtime package
+reference floor is 7.3.1, generated-code compatibility with that release is
+not established because current output uses APIs absent from its C# package.

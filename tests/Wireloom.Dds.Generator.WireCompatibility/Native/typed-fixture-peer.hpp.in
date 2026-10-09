@@ -1,7 +1,7 @@
 #pragma once
 #include <sstream>
 #include <utility>
-#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE)
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE)
 // RTI's generated DynamicData API omits some string template instantiations.
 // Use RTI-generated typed C++ endpoints for these fixtures and compare the
 // complete generated sample value at the reader.
@@ -65,6 +65,22 @@ static int run_typed_fixture_peer(
     if (case_id == "04-boundaries") {
         expected.narrow = fixture == "string-boundary" ? "12345678" : "edge-8";
         expected.wide = fixture == "string-boundary" ? L"ABCDEFGH" : L"wide-8";
+    }
+#endif
+#ifdef WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE
+    if (case_id == "09-optional-aggregate-member" && fixture == "optional-present") {
+        ::CorpusOptionalAggregate::Payload payload(9701);
+        ::CorpusOptionalAggregate::Payload payload_alias(9703);
+        ::CorpusOptionalAggregate::Payload choice_payload(9702);
+        ::CorpusOptionalAggregate::Payload choice_alias_payload(9704);
+        ::CorpusOptionalAggregate::Choice choice;
+        ::CorpusOptionalAggregate::Choice choice_alias;
+        choice.payload(std::move(choice_payload));
+        choice_alias.payload(std::move(choice_alias_payload));
+        expected.payload = std::move(payload);
+        expected.payloadAlias = std::move(payload_alias);
+        expected.choice = std::move(choice);
+        expected.choiceAlias = std::move(choice_alias);
     }
 #endif
 

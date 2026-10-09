@@ -14,8 +14,8 @@ reachable include graph and emits C# source and RTI type-specific support.
   locations; do not silently omit declarations.
 - Compare small, attributable cases with RTI 7.7.0 / `rtiddsgen` 4.7.0 output.
 - Keep the minimum accepted RTI package reference (currently 7.3.1) separate
-  from the generator target API version; 7.7.0 is the initial wire-evidence
-  baseline, and older API emission requires explicit target configuration.
+  from the wire-evidence scope, which covers RTI 7.7.0. Generated-code
+  compatibility with RTI 7.3.1 is not established.
 
 Explicit non-goals:
 

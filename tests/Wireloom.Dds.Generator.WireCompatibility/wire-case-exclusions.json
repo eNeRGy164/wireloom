@@ -12,18 +12,6 @@
       "writer": "RTI C++",
       "reader": "Wireloom C#",
       "reason": "Expected: DDSG0105 warns that Wireloom's generated C# binding flattens the array-of-sequences shape, and RTI reports a different member type kind during cross-peer discovery."
-    },
-    {
-      "id": "05-array-of-sequences",
-      "writer": "Wireloom C#",
-      "reader": "RTI C#",
-      "reason": "Expected: DDSG0105 warns that Wireloom's generated C# binding flattens the array-of-sequences shape, and RTI reports a different member type kind during cross-peer discovery."
-    },
-    {
-      "id": "05-array-of-sequences",
-      "writer": "RTI C#",
-      "reader": "Wireloom C#",
-      "reason": "Expected: DDSG0105 warns that Wireloom's generated C# binding flattens the array-of-sequences shape, and RTI reports a different member type kind during cross-peer discovery."
     }
   ]
 }

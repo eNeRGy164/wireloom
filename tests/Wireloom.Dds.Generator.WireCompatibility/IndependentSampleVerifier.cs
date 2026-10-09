@@ -22,6 +22,67 @@ internal static class IndependentSampleVerifier
             context);
     }
 
+    internal static void VerifyOptionalAggregateMemberFixture(
+        object expectedSample,
+        object actualSample,
+        string context)
+    {
+        VerifySnapshots(
+            SnapshotOptionalAggregateManaged(expectedSample),
+            SnapshotOptionalAggregateManaged(actualSample),
+            context);
+    }
+
+    private static object SnapshotOptionalAggregateManaged(object sample)
+    {
+        var sampleType = sample.GetType();
+        var payload = sampleType.GetProperty("payload")!.GetValue(sample);
+        var payloadAlias = sampleType.GetProperty("payloadAlias")!.GetValue(sample);
+        var choice = sampleType.GetProperty("choice")!.GetValue(sample);
+        var choiceAlias = sampleType.GetProperty("choiceAlias")!.GetValue(sample);
+        return new SortedDictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["payload"] = SnapshotPayload(payload),
+            ["payloadAlias"] = SnapshotPayload(payloadAlias),
+            ["choice"] = SnapshotPayloadUnion(choice),
+            ["choiceAlias"] = SnapshotPayloadUnion(choiceAlias)
+        };
+    }
+
+    private static object? SnapshotPayload(object? payload) => payload is null
+        ? null
+        : new SortedDictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["value"] = Convert.ToInt32(
+                payload.GetType().GetProperty("value")!.GetValue(payload),
+                System.Globalization.CultureInfo.InvariantCulture)
+        };
+
+    private static object? SnapshotPayloadUnion(object? choice)
+    {
+        if (choice is null)
+        {
+            return null;
+        }
+
+        var choiceType = choice.GetType();
+        var discriminator = Convert.ToInt32(
+            choiceType.GetProperty("Discriminator")!.GetValue(choice),
+            System.Globalization.CultureInfo.InvariantCulture);
+        if (discriminator != 0)
+        {
+            throw new InvalidDataException(
+                $"Optional aggregate union selected discriminator {discriminator}; expected branch 0.");
+        }
+        var selectedPayload = choiceType.GetProperty("payload")!.GetValue(choice);
+        return new SortedDictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["$branch"] = "payload",
+            ["$discriminator"] = discriminator,
+            ["payload"] = SnapshotPayload(selectedPayload)
+        };
+    }
+
     internal static void VerifyOptionalStringSequenceFixture(object actualSample, string fixture)
     {
         var expected = new SortedDictionary<string, object?>(StringComparer.Ordinal)

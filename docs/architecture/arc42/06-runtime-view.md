@@ -69,18 +69,14 @@ narrow-only controls remain typed. Diagnostic output includes match counters,
 read/take counts, sample validity, and selected type-consistency diagnostics.
 Artifacts contain structured results and sanitized endpoint logs only.
 
-The exact 7.7.0 workflow is a runtime evidence baseline, not evidence for other
-RTI releases. RTI 7.3.1 remains a follow-up because the current generator emits
-APIs absent from its C# package. Wireloom needs explicit target-compatibility
-configuration and version-aware emission before that runtime can join the
-matrix.
+The matrix covers RTI Connext 7.7.0. Generated-code compatibility with RTI
+7.3.1 is not established because current output uses APIs absent from its C# package.
 
-The RTI-positive `09-optional-aggregate-member` now generates successfully.
-Its absent and present fixtures carry nested struct and union payload values,
-including typedef aliases, and are scheduled as independent exchanges across
-all nine directed pairings. The latest licensed matrix predates this
-implementation, so those exchanges still need an exact RTI 7.7.0 run before
-they count as interoperability evidence.
+The RTI-positive `09-optional-aggregate-member` generates optional struct and
+union values. Its absent and present fixtures carry nested payloads, including
+typedef aliases, and are scheduled as independent exchanges across all nine
+directed pairings. Interoperability for this case is unverified until results
+are available from a licensed RTI 7.7.0 matrix run.
 `05-array-of-sequences`
 is included despite warning DDSG0105: Wireloom currently maps the C# members to
 flat sequences while RTI C# and RTI C++ preserve the IDL arrays. Pairings that
@@ -90,9 +86,9 @@ expected; this case's wire test does not establish preservation of the two-slot
 array shape. Aggregate alias members use the underlying
 generated struct or union type in managed APIs and native conversions; for
 optional struct members with aggregate values, DynamicType metadata retains
-the declared typedef alias as RTI does. All four `03-alias-aggregate` and all
-eight `07-union-aliases` exchanges pass. The expanded matrix reports its current
-totals in generated results. The expected `05-array-of-sequences` failures
+the declared typedef alias as RTI does. The generated result artifact records
+the current status and scenario totals for every selected fixture and pairing.
+Expected `05-array-of-sequences` failures
 involve Wireloom C# pairings. The three-peer matrix uses DynamicData and RTI's
 C API setters for present wide-string fixtures in `09-optional-string-sequences`
 to exercise their intended wire shape without invoking RTI's crashing typed
