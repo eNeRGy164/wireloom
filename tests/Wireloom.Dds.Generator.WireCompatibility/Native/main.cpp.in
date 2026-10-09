@@ -12,6 +12,7 @@
 #include <vector>
 
 #include <dds/dds.hpp>
+#include <ndds/dds_c/dds_c_dynamicdata.h>
 #include <rti/config/Logger.hpp>
 
 #ifndef WIRELOOM_DYNAMIC_WCHAR_UNION
@@ -69,8 +70,12 @@ int main(int argc, char **argv)
 #if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE)
         if (case_id == "09-optional-string-sequences"
             || case_id == "04-strings" || case_id == "04-boundaries") {
-            return run_typed_fixture_peer(
-                participant, role, topic_name, timeout_seconds, case_id, fixture);
+            const bool needs_wide_sequence_workaround = case_id == "09-optional-string-sequences"
+                && (fixture == "optional-wide-only" || fixture == "optional-multiple");
+            if (!needs_wide_sequence_workaround) {
+                return run_typed_fixture_peer(
+                    participant, role, topic_name, timeout_seconds, case_id, fixture);
+            }
         }
 #endif
         dds::topic::Topic<DynamicData> topic(participant, topic_name, dynamic_type);
@@ -78,7 +83,45 @@ int main(int argc, char **argv)
         // and readers compare the received DynamicData against this same
         // expected value rather than treating discovery alone as a pass.
         DynamicData expected(dynamic_type);
-        if (case_id == "01-boundaries" && fixture == "non-default") {
+        if (case_id == "09-optional-string-sequences"
+            && (fixture == "optional-wide-only" || fixture == "optional-multiple")) {
+            // RTI 7.7.0's typed C++ serializer crashes on a present optional
+            // sequence<std::wstring>. Populate its DynamicData representation
+            // through the C API, whose string setters are available per element.
+            // DDS_Wchar is 16-bit even when Linux wchar_t is 32-bit.
+            if (fixture == "optional-multiple") {
+                auto narrow = expected.loan_value("narrowValues");
+                const std::vector<const char *> narrow_values{
+                    "narrow-one", "narrow-two", "narrow-three"};
+                for (size_t index = 0; index < narrow_values.size(); ++index) {
+                    const DDS_ReturnCode_t result = DDS_DynamicData_set_string(
+                        &narrow.get().native(), nullptr,
+                        static_cast<DDS_DynamicDataMemberId>(index + 1), narrow_values[index]);
+                    if (result != DDS_RETCODE_OK) {
+                        throw std::runtime_error("Could not set a narrow string sequence element");
+                    }
+                }
+            }
+
+            auto wide = expected.loan_value("wideValues");
+            const std::vector<std::wstring> wide_values = fixture == "optional-multiple"
+                ? std::vector<std::wstring>{L"wide-one", L"wide-two"}
+                : std::vector<std::wstring>{L"wide-only"};
+            for (size_t index = 0; index < wide_values.size(); ++index) {
+                std::vector<DDS_Wchar> wide_value;
+                for (const wchar_t character : wide_values[index]) {
+                    wide_value.push_back(static_cast<DDS_Wchar>(character));
+                }
+                wide_value.push_back(0);
+                const DDS_ReturnCode_t result = DDS_DynamicData_set_wstring(
+                    &wide.get().native(), nullptr,
+                    static_cast<DDS_DynamicDataMemberId>(index + 1), wide_value.data());
+                if (result != DDS_RETCODE_OK) {
+                    throw std::runtime_error("Could not set a wide string sequence element");
+                }
+            }
+            wide.return_loan();
+        } else if (case_id == "01-boundaries" && fixture == "non-default") {
             expected.value("shortValue", int16_t{INT16_MIN});
             expected.value("longValue", int32_t{INT32_MAX});
             expected.value("longLongValue", int64_t{INT64_MIN});
