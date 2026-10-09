@@ -157,6 +157,7 @@ void DiscoverCases(string[] commandArgs)
             "03-enums-aliases" => "Record",
             "02-multiple" => "WireloomWireCompatibilityMultipleTypes",
             "03-enum-values-prefix" or "03-enum-values-explicit" => "EnumTopic",
+            "09-optional-aggregate-member" => "Holder",
             "07-union-aliases" or "06-valuetypes" => "Holder",
             "08-key-inherited" => "Derived",
             "08-key-nested" => "Outer",
@@ -185,6 +186,7 @@ void DiscoverRti(string[] commandArgs)
     var selected = caseId switch
     {
         "03-enums-aliases" => "Record",
+        "09-optional-aggregate-member" => "Holder",
         "07-union-aliases" or "06-valuetypes" => "Holder",
         "08-key-inherited" => "Derived",
         "08-key-nested" => "Outer",
@@ -279,6 +281,7 @@ void RenderReport(string[] commandArgs)
     }
     string? Adaptation(string id, string fixture, string peer)
     {
+        if (id == "09-optional-aggregate-member") return "Typed optional aggregate fixture: construct Holder optionals and select its union branch through generated members; nested DynamicData paths cannot loan unset optional parents.";
         if (id is "02-multiple" or "03-enum-values-prefix" or "03-enum-values-explicit") return "Harness wrapper IDL composes the declarations into a topic type.";
         if (id == "06-alias-composition" && peer == "RTI C#") return "Custom generated-code workaround: qualifies the member conversion receiver because RTI 7.7.0 emits a shadowed field access.";
         if (peer != "RTI C++") return null;
@@ -366,6 +369,7 @@ void RenderReport(string[] commandArgs)
             ("RTI C#", "Wireloom C#"), ("RTI C#", "RTI C#"), ("RTI C#", "RTI C++"),
             ("RTI C++", "Wireloom C#"), ("RTI C++", "RTI C#"), ("RTI C++", "RTI C++"),
         };
+        string HeaderPeer(string peer) => peer.Replace("Wireloom", "🧵", StringComparison.Ordinal);
         string Cell(string id, string fixture, (string Writer, string Reader) pairing, Dictionary<string, object?>? item)
         {
             if (item is null) return "❔";
@@ -395,7 +399,7 @@ void RenderReport(string[] commandArgs)
             "| <sup>†</sup> | At least one endpoint used an adaptation; details appear in Adaptations. |",
             "",
             "The problem column separates observed symptoms from registered expected-failure explanations. Symbols remain distinct without relying on color alone.", "",
-            "| IDL scenario | Variation | " + string.Join(" | ", pairings.Select(p => $"{p.Item1} → {p.Item2}")) + " | Adaptations | Problem / defect |",
+            "| IDL scenario | Variation | " + string.Join(" | ", pairings.Select(p => $"{HeaderPeer(p.Item1)} → {HeaderPeer(p.Item2)}")) + " | Adaptations | Problem / defect |",
             "| :-- | :-- | " + string.Join(" | ", pairings.Select(_ => ":--:")) + " | :-- | :-- |",
         };
         var unsupportedById = unsupported.ToDictionary(item => (string)item!["id"]!, StringComparer.Ordinal);
@@ -409,7 +413,7 @@ void RenderReport(string[] commandArgs)
             var cells = pairings.Select(pair => unsupportedCase is not null && (pair.Item1 == "Wireloom C#" || pair.Item2 == "Wireloom C#")
                 ? "⚫ —" : Cell(id, fixture, pair, row.GetValueOrDefault(pair))).ToArray();
             var adaptationsInRow = row.Values.SelectMany(s => s.TryGetValue("adaptations", out var value) ? ((Dictionary<string, string>)value!).Select(kv => $"<sup>†</sup> **{kv.Key}:** {kv.Value}") : []).Distinct();
-            var adaptationText = string.Join("<br>", adaptationsInRow).Replace("|", "\\|");
+            var adaptationText = string.Join("<br><br>", adaptationsInRow).Replace("|", "\\|");
             var problems = new List<string>();
             foreach (var pair in pairings)
             {
@@ -429,7 +433,7 @@ void RenderReport(string[] commandArgs)
             if (unsupportedCase is not null)
                 problemParts.Add($"Not implemented by Wireloom: `{unsupportedCase["diagnostic"]}`. {unsupportedCase["reason"]} [#{unsupportedCase["issue"]!.ToString()!.TrimEnd('/').Split('/').Last()}]({unsupportedCase["issue"]})".Replace("|", "\\|"));
             problemParts.AddRange(problems);
-            var problemText = problemParts.Count == 0 ? "—" : string.Join("<br>", problemParts);
+            var problemText = problemParts.Count == 0 ? "—" : string.Join("<br><br>", problemParts);
             var caseCell = id == previous ? "\"" : $"`{id}.idl`";
             lines.Add($"| {caseCell} | `{fixture}` | {string.Join(" | ", cells)} | {(adaptationText.Length == 0 ? "—" : adaptationText)} | {problemText} |");
             previous = id;

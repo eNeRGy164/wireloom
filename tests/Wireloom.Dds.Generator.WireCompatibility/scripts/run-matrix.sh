@@ -19,6 +19,7 @@ readonly output_dir="${WIRE_COMPATIBILITY_OUTPUT_DIR:-$repo_root/artifacts/wire-
 readonly scratch="${RUNNER_TEMP:-/tmp}/wireloom-wire-compatibility"
 readonly cases_tsv="$scratch/cases.tsv"
 readonly scenarios_tsv="$scratch/scenarios.tsv"
+workflow_group_open=0
 readonly non_default_fixture_cases=(
     01-boundaries 01-full-widths
     02-names-constants 02-scopes 02-constant-expressions 02-formatting 02-multiple
@@ -40,6 +41,42 @@ expected_scenario_count=0
 completed_scenario_count=0
 passed_scenario_count=0
 failed_scenario_count=0
+
+# GitHub Actions renders these workflow commands as expandable log groups and
+# annotations. Keep local runs free of the command text.
+workflow_command_escape() {
+    local value="$1"
+    value="${value//'%'/'%25'}"
+    value="${value//$'\r'/'%0D'}"
+    value="${value//$'\n'/'%0A'}"
+    printf '%s' "$value"
+}
+
+start_workflow_group() {
+    local title
+    if [[ "${GITHUB_ACTIONS:-}" != "true" || "$workflow_group_open" -eq 1 ]]; then
+        return
+    fi
+    title="$(workflow_command_escape "$1")"
+    printf '::group::%s\n' "$title"
+    workflow_group_open=1
+}
+
+end_workflow_group() {
+    if [[ "${GITHUB_ACTIONS:-}" == "true" && "$workflow_group_open" -eq 1 ]]; then
+        printf '::endgroup::\n'
+        workflow_group_open=0
+    fi
+}
+
+workflow_annotation() {
+    local level="$1" title message
+    title="$(workflow_command_escape "$2")"
+    message="$(workflow_command_escape "$3")"
+    if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+        printf '::%s title=%s::%s\n' "$level" "$title" "$message"
+    fi
+}
 
 # Return fixture names instead of a yes/no fixture flag. Keeping each variant
 # in a separate process exchange makes a missing branch or sequence shape easy
@@ -146,16 +183,32 @@ matrix_tool() {
 finish_run() {
     local run_status=$?
     trap - EXIT
+    end_workflow_group
+    start_workflow_group "Generate wire compatibility report"
     if write_report; then
+        end_workflow_group
         if [[ "$run_status" -ne 0 ]]; then
             echo "Matrix execution ended with status $run_status; the report was generated successfully, so the workflow is successful. See the report for failed or unrun scenarios." >&2
+            workflow_annotation warning "Wire compatibility matrix completed with setup issues" \
+                "Matrix execution ended with status $run_status; see the generated report for failed or unrun scenarios."
+        elif [[ "${overall_status:-0}" -ne 0 || "$passed_scenario_count" -lt "$expected_scenario_count" ]]; then
+            workflow_annotation warning "Wire compatibility matrix completed with issues" \
+                "$passed_scenario_count of $expected_scenario_count scenario exchanges passed; see the generated report for failed or unrun scenarios."
+        else
+            workflow_annotation notice "Wire compatibility matrix passed" \
+                "$passed_scenario_count of $expected_scenario_count scenario exchanges passed in ${SECONDS}s."
         fi
         exit 0
     fi
+    end_workflow_group
     echo "Failed to generate the wire-compatibility report." >&2
+    workflow_annotation error "Wire compatibility report generation failed" \
+        "The matrix report could not be generated; inspect the preceding log output."
     exit 1
 }
 trap finish_run EXIT
+
+start_workflow_group "Prepare wire compatibility matrix"
 
 if ! dotnet build "$matrix_tools" --output "$scratch" --verbosity quiet; then
     echo "Failed to build the .NET matrix utility." >&2
@@ -196,6 +249,9 @@ for case_id in "${case_ids[@]}"; do
     fi
 done
 
+printf 'RTI Connext %s: %d cases, %d scenario exchanges planned.\n' \
+    "$rti_version" "${#case_ids[@]}" "$expected_scenario_count"
+
 # Seed every selected fixture/pairing before building. If restore, generation,
 # or native compilation exits early, the final report still names every
 # exchange that was selected but did not run.
@@ -218,6 +274,8 @@ for case_id in "${case_ids[@]}"; do
         done
     done
 done
+
+end_workflow_group
 
 record_scenario() {
     local case_id="$1" wireloom_type="$2" rti_csharp_type="$3" cpp_type="$4" writer="$5" reader="$6" status="$7" fixture="$8"
@@ -383,7 +441,7 @@ run_scenario() {
         "$completed_scenario_count" "$expected_scenario_count" "$progress_percent" \
         "$passed_scenario_count" "$failed_scenario_count" "$SECONDS" \
         "$status" "$case_id" "$fixture" "$writer_peer" "$reader_peer"
-    printf '%s %s [%s] -> %s %s\n' "$status" "$case_id" "$fixture" "$writer_peer" "$reader_peer"
+    printf '%s %s [%s] %s -> %s\n' "$status" "$case_id" "$fixture" "$writer_peer" "$reader_peer"
     [[ "$status" == PASS ]]
 }
 
@@ -401,6 +459,7 @@ SECONDS=0
 case_index=0
 for case_id in "${case_ids[@]}"; do
     case_index=$((case_index + 1))
+    start_workflow_group "Case $case_index/${#case_ids[@]}: $case_id"
     printf 'WIRE_MATRIX_CASE %d/%d case=%s phase=csharp-build completed-scenarios=%d/%d elapsed=%ss\n' \
         "$case_index" "${#case_ids[@]}" "$case_id" \
         "$completed_scenario_count" "$expected_scenario_count" "$SECONDS"
@@ -589,6 +648,9 @@ for case_id in "${case_ids[@]}"; do
     if [[ "$case_id" == "04-boundaries" ]]; then
         cmake_adaptation_args+=( -DWIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE=ON )
     fi
+    if [[ "$case_id" == "09-optional-aggregate-member" ]]; then
+        cmake_adaptation_args+=( -DWIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE=ON )
+    fi
     sed "s|@IDL_BASE@|idl|g; s|@CPP_TYPE@|$cpp_template_type|g" \
         "$native_template/main.cpp.in" > "$native_dir/main.cpp"
     cp "$native_template/typed-fixture-peer.hpp.in" "$native_dir/typed-fixture-peer.hpp"
@@ -624,6 +686,7 @@ for case_id in "${case_ids[@]}"; do
         run_scenario "$case_id" "$type_name" "$rti_type_name" "$cpp_type" "$fixture" 'RTI C++' 'RTI C#' || overall_status=1
         run_scenario "$case_id" "$type_name" "$rti_type_name" "$cpp_type" "$fixture" 'RTI C++' 'RTI C++' || overall_status=1
     done
+    end_workflow_group
 done
 
 actual_scenario_count=$(wc -l < "$scenarios_tsv")

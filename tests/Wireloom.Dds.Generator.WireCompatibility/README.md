@@ -27,6 +27,10 @@ optional wide-string sequence fixtures, the C++ peer uses DynamicData and RTI's
 C API setters to avoid a crash in RTI 7.7.0's typed `std::wstring` sequence
 serializer. Absent, empty, and narrow-only controls remain typed. All peers
 request reliable delivery, and representation cases select XCDR2 explicitly.
+The optional aggregate-member case selects `Holder` explicitly and uses typed
+fixtures on both managed and C++ peers because RTI 7.7.0 DynamicData resolves
+the nested typedef members against the wrong type. Readers compare the public
+optional values and selected union branch directly.
 ## Implementation map for C# contributors
 
 Wireloom's generated C# type is the implementation under test. The shell
