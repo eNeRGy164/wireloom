@@ -268,6 +268,7 @@ public sealed class GeneratedUnionContractSpecs
         // Assert
         managed.ShouldContain("An unmatched discriminator selects the default branch <see cref=\"value\"/>.");
         managed.ShouldContain("falls back to the default branch <see cref=\"value\"/>.");
+        managed.ShouldNotContain("When neither discriminator selects a branch, equality depends on the discriminator alone.");
         managed.ShouldContain("if (false)");
         managed.ShouldNotContain("if ()");
     }
@@ -284,6 +285,7 @@ public sealed class GeneratedUnionContractSpecs
         // Assert
         managed.ShouldContain("If it matches no declared label, no branch is active.");
         managed.ShouldContain("If the default discriminator matches no declared label, no branch is active.");
+        managed.ShouldContain("When neither discriminator selects a branch, equality depends on the discriminator alone.");
     }
 
     [Fact]
@@ -314,6 +316,7 @@ public sealed class GeneratedUnionContractSpecs
         managed.ShouldNotContain("_ => null");
         managed.ShouldNotContain("_ => global::System.HashCode.Combine(Discriminator)");
         managed.ShouldNotContain("_ => true");
+        managed.ShouldNotContain("default:");
 
         var unmanaged = documents["BooleanUnion.Implementation.ChoiceUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("private byte _discriminator");

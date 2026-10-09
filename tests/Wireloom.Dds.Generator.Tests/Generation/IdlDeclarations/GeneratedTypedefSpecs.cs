@@ -169,6 +169,28 @@ public sealed class GeneratedTypedefSpecs
     }
 
     [Fact]
+    public void EmitsNativeLifecycleAndConversionsForAggregateValueAliases()
+    {
+        // Arrange
+        var input = Input("aggregate-value-alias.idl",
+            """
+            module AggregateValueAliases {
+                struct Item { long value; };
+                typedef Item ItemAlias;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var native = documents["AggregateValueAliases.Implementation.ItemAliasUnmanaged.g.cs"].Source;
+        native.ShouldContain("Value.Initialize(allocatePointers, allocateMemory);");
+        native.ShouldContain("Value.FromNative(sample.Value, keysOnly: false);");
+        native.ShouldContain("Value.ToNative(sample.Value, keysOnly: false);");
+    }
+
+    [Fact]
     public void QualifiesNamedCollectionAliasElementsAgainstShadowingNamespaces()
     {
         // Arrange
