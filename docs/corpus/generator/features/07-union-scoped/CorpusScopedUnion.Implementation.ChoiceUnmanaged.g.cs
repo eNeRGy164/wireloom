@@ -60,9 +60,6 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
 
                 values.FromNative((Sequence<int>)sample.values);
                 break;
-
-            default:
-                break;
         }
     }
 
@@ -97,9 +94,6 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
 
             case 11:
                 values.ToNative((Sequence<int>)sample.values);
-                break;
-
-            default:
                 break;
         }
     }

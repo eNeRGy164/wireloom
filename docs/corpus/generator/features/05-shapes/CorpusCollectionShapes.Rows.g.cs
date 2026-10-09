@@ -33,11 +33,11 @@ public partial class Rows : global::System.IEquatable<Rows>
     /// <summary>
     /// Initializes the typedef with a sequence value.
     /// </summary>
-    /// <param name="Value">The sequence value to store.</param>
+    /// <param name="value">The sequence value to store.</param>
     /// <remarks>The typedef stores the supplied sequence reference; it does not make a copy.</remarks>
-    public Rows(ISequence<Row> Value)
+    public Rows(ISequence<Row> value)
     {
-        this.Value = Value;
+        Value = value;
     }
 
     /// <summary>

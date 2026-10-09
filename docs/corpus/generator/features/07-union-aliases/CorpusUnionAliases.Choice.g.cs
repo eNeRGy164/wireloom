@@ -107,8 +107,6 @@ public partial class Choice : global::System.IEquatable<Choice>
             case Kind.Ten:
                 this._ten = other.ten;
                 break;
-            default:
-                break;
         }
     }
 

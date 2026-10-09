@@ -24,16 +24,17 @@ public partial class ChoiceAlias : global::System.IEquatable<ChoiceAlias>
     /// </summary>
     public ChoiceAlias()
     {
+        Value = new Choice();
     }
 
     /// <summary>
     /// Initializes the typedef with a value.
     /// </summary>
-    /// <param name="Value">The value to store.</param>
+    /// <param name="value">The value to store.</param>
     /// <remarks>The constructor stores the supplied reference as provided; it does not make a copy.</remarks>
-    public ChoiceAlias(Choice Value)
+    public ChoiceAlias(Choice value)
     {
-        this.Value = Value;
+        Value = value;
     }
 
     /// <summary>
@@ -45,7 +46,7 @@ public partial class ChoiceAlias : global::System.IEquatable<ChoiceAlias>
     {
         if (other is not null)
         {
-            Value = other.Value is null ? null! : new Choice(other.Value);
+            Value = new Choice(other.Value);
         }
     }
 

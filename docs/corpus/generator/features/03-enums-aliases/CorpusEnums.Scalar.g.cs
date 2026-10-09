@@ -29,10 +29,10 @@ public partial class Scalar : global::System.IEquatable<Scalar>
     /// <summary>
     /// Initializes the typedef with a value.
     /// </summary>
-    /// <param name="Value">The value to store.</param>
-    public Scalar(int Value)
+    /// <param name="value">The value to store.</param>
+    public Scalar(int value)
     {
-        this.Value = Value;
+        Value = value;
     }
 
     /// <summary>

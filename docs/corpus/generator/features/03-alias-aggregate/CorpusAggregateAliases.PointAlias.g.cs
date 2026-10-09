@@ -24,16 +24,17 @@ public partial class PointAlias : global::System.IEquatable<PointAlias>
     /// </summary>
     public PointAlias()
     {
+        Value = new Point();
     }
 
     /// <summary>
     /// Initializes the typedef with a value.
     /// </summary>
-    /// <param name="Value">The value to store.</param>
+    /// <param name="value">The value to store.</param>
     /// <remarks>The constructor stores the supplied reference as provided; it does not make a copy.</remarks>
-    public PointAlias(Point Value)
+    public PointAlias(Point value)
     {
-        this.Value = Value;
+        Value = value;
     }
 
     /// <summary>
@@ -45,7 +46,7 @@ public partial class PointAlias : global::System.IEquatable<PointAlias>
     {
         if (other is not null)
         {
-            Value = other.Value is null ? null! : new Point(other.Value);
+            Value = new Point(other.Value);
         }
     }
 

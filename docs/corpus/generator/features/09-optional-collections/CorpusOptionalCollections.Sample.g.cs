@@ -15,7 +15,7 @@ namespace CorpusOptionalCollections;
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
-    /// Gets or sets the <c>values</c> member. This member is optional. Its maximum number of elements is <c>4</c>. A null value means absent; an empty collection is present with no elements. Its DDS member ID is <c>1</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
+    /// Gets or sets the <c>values</c> member. This member is optional. Its maximum number of elements is <c>4</c>. A <see langword="null"/> value means absent; an empty collection is present with no elements. Its DDS member ID is <c>1</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
     /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
@@ -38,7 +38,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     public ISequence<int>? values { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>items</c> member. This member is optional. It is a fixed array with dimensions 2. A null value means absent; an empty collection is present with no elements. Its DDS member ID is <c>2</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
+    /// Gets or sets the <c>items</c> member. This member is optional. It is a fixed array with dimensions 2. A <see langword="null"/> value means absent; an empty collection is present with no elements. Its DDS member ID is <c>2</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
     /// <example>
     /// <code>

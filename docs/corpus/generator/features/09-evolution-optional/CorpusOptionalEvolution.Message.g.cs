@@ -20,7 +20,7 @@ public partial class Message : global::System.IEquatable<Message>
     public int requiredValue { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>optionalValue</c> member. This member is optional. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. A null value means the member is absent. Its DDS member ID is <c>2</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
+    /// Gets or sets the <c>optionalValue</c> member. This member is optional. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. A <see langword="null"/> value means the member is absent. Its DDS member ID is <c>2</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
     /// <example>
     /// <code>
@@ -32,7 +32,7 @@ public partial class Message : global::System.IEquatable<Message>
     public int? optionalValue { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>optionalText</c> member. This member is optional. Its maximum length is <c>16</c> UTF-8 bytes. A null value means the member is absent. Its DDS member ID is <c>3</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
+    /// Gets or sets the <c>optionalText</c> member. This member is optional. Its maximum length is <c>16</c> UTF-8 bytes. A <see langword="null"/> value means the member is absent. Its DDS member ID is <c>3</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
     /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>

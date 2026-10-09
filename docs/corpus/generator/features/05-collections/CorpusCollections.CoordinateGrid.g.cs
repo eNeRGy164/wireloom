@@ -29,11 +29,11 @@ public partial class CoordinateGrid : global::System.IEquatable<CoordinateGrid>
     /// <summary>
     /// Initializes the typedef with an array value.
     /// </summary>
-    /// <param name="Value">The array value to store.</param>
+    /// <param name="value">The array value to store.</param>
     /// <remarks>The typedef stores the supplied array reference; it does not make a copy.</remarks>
-    public CoordinateGrid(int[,] Value)
+    public CoordinateGrid(int[,] value)
     {
-        this.Value = Value;
+        Value = value;
     }
 
     /// <summary>

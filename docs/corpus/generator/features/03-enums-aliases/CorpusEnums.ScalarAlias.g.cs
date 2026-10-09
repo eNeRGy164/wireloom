@@ -29,10 +29,10 @@ public partial class ScalarAlias : global::System.IEquatable<ScalarAlias>
     /// <summary>
     /// Initializes the typedef with a value.
     /// </summary>
-    /// <param name="Value">The value to store.</param>
-    public ScalarAlias(int Value)
+    /// <param name="value">The value to store.</param>
+    public ScalarAlias(int value)
     {
-        this.Value = Value;
+        Value = value;
     }
 
     /// <summary>

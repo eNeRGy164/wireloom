@@ -29,10 +29,10 @@ public partial class ColorAlias : global::System.IEquatable<ColorAlias>
     /// <summary>
     /// Initializes the typedef with a value.
     /// </summary>
-    /// <param name="Value">The value to store.</param>
-    public ColorAlias(Color Value)
+    /// <param name="value">The value to store.</param>
+    public ColorAlias(Color value)
     {
-        this.Value = Value;
+        Value = value;
     }
 
     /// <summary>

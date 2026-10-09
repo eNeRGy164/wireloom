@@ -49,9 +49,6 @@ public struct IdentityUnmanaged : INativeTopicType<Identity>
             case 1:
                 sample.text = text.FromNative();
                 break;
-
-            default:
-                break;
         }
     }
 
@@ -86,9 +83,6 @@ public struct IdentityUnmanaged : INativeTopicType<Identity>
 
             case 1:
                 text.ToNative(sample.text, 255);
-                break;
-
-            default:
                 break;
         }
     }

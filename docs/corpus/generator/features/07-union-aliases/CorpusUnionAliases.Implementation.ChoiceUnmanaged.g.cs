@@ -49,9 +49,6 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
             case Kind.Ten:
                 sample.ten = ten.FromNative();
                 break;
-
-            default:
-                break;
         }
     }
 
@@ -86,9 +83,6 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
 
             case Kind.Ten:
                 ten.ToNative(sample.ten, 255);
-                break;
-
-            default:
                 break;
         }
     }

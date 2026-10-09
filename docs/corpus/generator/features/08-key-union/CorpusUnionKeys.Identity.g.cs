@@ -107,8 +107,6 @@ public partial class Identity : global::System.IEquatable<Identity>
             case 1:
                 this._text = other.text;
                 break;
-            default:
-                break;
         }
     }
 

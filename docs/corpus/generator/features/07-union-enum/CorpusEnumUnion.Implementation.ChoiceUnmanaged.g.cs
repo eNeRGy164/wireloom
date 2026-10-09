@@ -60,9 +60,6 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
 
                 payload.FromNative(sample.payload, keysOnly: false);
                 break;
-
-            default:
-                break;
         }
     }
 
@@ -102,9 +99,6 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
 
             case Kind.PayloadValue:
                 payload.ToNative(sample.payload, keysOnly: false);
-                break;
-
-            default:
                 break;
         }
     }
