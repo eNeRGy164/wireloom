@@ -48,17 +48,19 @@ public sealed class IdlPreprocessorLimitSpecs : IdlPreprocessorTestBase
     public void RejectsExcessivePreprocessorOutput()
     {
         // Arrange
-        var input = Input("output-limit.idl", new string('x', (4 * 1024 * 1024) + 1));
+        var input = Input("output-limit.idl", new string('x', PreprocessorLimits.MaximumOutputLength + 1));
 
         // Act
         var exception = Should.Throw<IdlException>(() => new IdlPreprocessor([], []).Process(input, (_, _, _) => { }));
 
         // Assert
         exception.Message.ShouldContain("Preprocessor output exceeds");
+        exception.Offset.ShouldBe(0);
     }
 
     [Fact]
     [Trait("Preprocessor", "PP051")]
+    [Trait("Preprocessor", "PP050")]
     public void RejectsMacroGeneratedOutputBeforeRescanningTheWholeReplacement()
     {
         // Arrange

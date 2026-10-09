@@ -44,6 +44,86 @@ public sealed class IdlInputGraphSearchSpecs
     }
 
     [Fact]
+    [Trait("Preprocessor", "PP032")]
+    public void MatchesIncludePathCasingAccordingToPlatformRules()
+    {
+        // Arrange
+        var canonicalPath = Path.GetFullPath(Path.Combine("configured", "common.idl"));
+        var included = Input(canonicalPath, "struct Common { long value; };", generate: false);
+        var including = Input("root.idl", "");
+        var pathComparer = Path.DirectorySeparatorChar == '\\'
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
+        var files = new Dictionary<string, IdlInput>(pathComparer) { [canonicalPath] = included };
+        var resolver = new IdlIncludeResolver(files, ["configured"]);
+
+        // Act
+        var resolved = resolver.TryResolve(including, "COMMON.IDL", angle: true, out var actual);
+
+        // Assert
+        resolved.ShouldBe(Path.DirectorySeparatorChar == '\\');
+        if (resolved)
+        {
+            actual.ShouldBe(included);
+        }
+    }
+
+    [Fact]
+    [Trait("Preprocessor", "PP031")]
+    public void RejectsRootedIncludeNamesEvenWhenThePathExistsInTheInputGraph()
+    {
+        // Arrange
+        var canonicalPath = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "absolute-include.idl"));
+        var included = Input(canonicalPath, "struct Included { long value; };", generate: false);
+        var including = Input("root.idl", "");
+        var resolver = new IdlIncludeResolver(
+            new Dictionary<string, IdlInput> { [canonicalPath] = included },
+            []);
+
+        // Act
+        var resolved = resolver.TryResolve(including, canonicalPath, angle: false, out _);
+
+        // Assert
+        resolved.ShouldBeFalse();
+    }
+
+    [Fact]
+    [Trait("Preprocessor", "PP031")]
+    public void RejectsWhitespaceIncludeNamesEvenWhenTheCandidatePathExists()
+    {
+        // Arrange
+        var including = Input(Path.Combine("root", "root.idl"), "");
+        var includingDirectory = Path.GetDirectoryName(Path.GetFullPath(including.Path))!;
+        var candidatePath = Path.GetFullPath(Path.Combine(includingDirectory, " "));
+        var included = Input(candidatePath, "struct Included { long value; };", generate: false);
+        var resolver = new IdlIncludeResolver(
+            new Dictionary<string, IdlInput> { [candidatePath] = included },
+            []);
+
+        // Act
+        var resolved = resolver.TryResolve(including, " ", angle: false, out _);
+
+        // Assert
+        resolved.ShouldBeFalse();
+    }
+
+    [Fact]
+    [Trait("Preprocessor", "PP031")]
+    public void ReturnsFalseWhenTheIncludingPathContainsInvalidCharacters()
+    {
+        // Arrange
+        var resolver = new IdlIncludeResolver(new Dictionary<string, IdlInput>(), []);
+        var including = new IdlInput("bad\0root.idl", "");
+        Should.Throw<ArgumentException>(() => Path.GetFullPath(including.Path));
+
+        // Act
+        var resolved = resolver.TryResolve(including, "common.idl", angle: false, out _);
+
+        // Assert
+        resolved.ShouldBeFalse();
+    }
+
+    [Fact]
     [Trait("Preprocessor", "PP048")]
     public void EvaluatesHasIncludeAgainstTheInputGraph()
     {

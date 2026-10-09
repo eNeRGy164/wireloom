@@ -77,6 +77,29 @@ public sealed class IdlPreprocessorDiagnosticSpecs : IdlPreprocessorTestBase
 
     [Fact]
     [Trait("Preprocessor", "PP050")]
+    public void PreservesSourceOffsetsForLiteralCharactersAndEscapedQuotes()
+    {
+        // Arrange
+        var input = Input("literal-origin.idl", "const string Value = \"a\\\"b\";");
+
+        // Act
+        var result = new IdlPreprocessor([], []).ProcessWithMetadata(input, (_, _, _) => { });
+
+        // Assert
+        result.Text.ShouldBe(input.Text);
+        var outputLiteral = result.Text.IndexOf("\"a\\\"b\"", StringComparison.Ordinal);
+        outputLiteral.ShouldBeGreaterThanOrEqualTo(0);
+        for (var index = 0; index < 6; index++)
+        {
+            var outputOffset = outputLiteral + index;
+            var origin = result.SourceOrigins.Single(span =>
+                outputOffset >= span.OutputStart && outputOffset < span.OutputStart + span.OutputLength);
+            origin.Map(outputOffset).ShouldBe(input.Text.IndexOf("\"a\\\"b\"", StringComparison.Ordinal) + index);
+        }
+    }
+
+    [Fact]
+    [Trait("Preprocessor", "PP050")]
     public void PrefersTheUnchangedSuffixWhenReplacementTokensTieWithIt()
     {
         // Arrange

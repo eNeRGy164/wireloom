@@ -57,4 +57,32 @@ public sealed class PreprocessorConditionalStateSpecs
         exception.Message.ShouldBe("Unterminated preprocessor conditional.");
         exception.Offset.ShouldBe(input.Text.Length);
     }
+
+    [Fact]
+    public void DoesNotEvaluateElifInsideAnInactiveParentBranch()
+    {
+        // Arrange
+        var state = new PreprocessorConditionalState();
+        var input = new IdlInput("conditional.idl", string.Empty);
+        var evaluated = false;
+        state.Enter(false);
+        state.Enter(true);
+
+        // Act
+        state.SelectElseIf(() =>
+        {
+            evaluated = true;
+            return true;
+        }, input, 0);
+        var nestedActive = state.IsActive;
+        state.End(input, 1);
+        var parentActive = state.IsActive;
+        state.End(input, 2);
+
+        // Assert
+        evaluated.ShouldBeFalse();
+        nestedActive.ShouldBeFalse();
+        parentActive.ShouldBeFalse();
+        state.IsActive.ShouldBeTrue();
+    }
 }

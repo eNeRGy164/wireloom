@@ -2,14 +2,13 @@ using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
 
 namespace Wireloom.Compiler.FrontEnd.Preprocessing.Tests;
 
-[Trait("Preprocessor", "PP006")]
-[Trait("Preprocessor", "PP024")]
-[Trait("Preprocessor", "PP041")]
-[Trait("Preprocessor", "PP050")]
 public sealed class PreprocessorExtractedServiceSpecs
 {
     /// <summary>Verifies the extracted conditional-expression parser.</summary>
     [Fact]
+    [Trait("Preprocessor", "PP024")]
+    [Trait("Preprocessor", "PP025")]
+    [Trait("Preprocessor", "PP026")]
     public void EvaluatesExtractedConditionalExpressionGrammar()
     {
         // Arrange
@@ -24,6 +23,8 @@ public sealed class PreprocessorExtractedServiceSpecs
 
     /// <summary>Verifies function-like macro parameter extraction.</summary>
     [Fact]
+    [Trait("Preprocessor", "PP007")]
+    [Trait("Preprocessor", "PP013")]
     public void ExtractedMacroDefinitionServicePreservesFunctionMacroParameters()
     {
         // Arrange
@@ -41,6 +42,7 @@ public sealed class PreprocessorExtractedServiceSpecs
 
     /// <summary>Verifies line text and source-boundary preservation.</summary>
     [Fact]
+    [Trait("Preprocessor", "PP050")]
     public void ExtractedLineScannerPreservesCrLfAndOriginalBoundaries()
     {
         // Arrange
@@ -53,5 +55,22 @@ public sealed class PreprocessorExtractedServiceSpecs
         lines.Select(line => line.Text).ShouldBe(["first", "second"]);
         lines.Select(line => line.OriginalOffset).ShouldBe([10, 17]);
         lines[0].End.ShouldBe(6);
+    }
+
+    [Fact]
+    [Trait("Preprocessor", "PP050")]
+    public void ExtractedLineScannerPreservesLeadingEmptyLineBoundaries()
+    {
+        // Arrange
+        var scanner = new PreprocessorInputLineScanner();
+
+        // Act
+        var lines = scanner.Scan("\nnext", offset => offset + 10).ToArray();
+
+        // Assert
+        lines.Select(line => line.Text).ShouldBe([string.Empty, "next"]);
+        lines.Select(line => line.Offset).ShouldBe([0, 1]);
+        lines.Select(line => line.End).ShouldBe([0, 5]);
+        lines.Select(line => line.OriginalOffset).ShouldBe([10, 11]);
     }
 }
