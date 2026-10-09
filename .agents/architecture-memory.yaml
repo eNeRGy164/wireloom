@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-09T12:33:39Z
+  generated_at: 2026-10-09T18:26:49Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -35,7 +35,7 @@ summary:
     sources:
       - docs/architecture/arc42/01-introduction-and-goals.md
   constraints:
-    text: The analyzer targets netstandard2.0; consumers use .NET 10, C# 12+, and an explicit RTI runtime reference of at least 7.3.1. Retained oracle sources use RTI 7.7.0 / rtiddsgen 4.7.0.
+    text: The analyzer targets netstandard2.0; consumer applications support .NET 8 and higher with C# 12+, while repository projects default to .NET 10. An explicit RTI runtime reference of at least 7.3.1 is required. Retained oracle sources use RTI 7.7.0 / rtiddsgen 4.7.0.
     sources:
       - docs/architecture/arc42/02-architecture-constraints.md
   context:
@@ -84,6 +84,10 @@ defaults:
       value: Wireloom
       source: brownfield-detection
       status: detected
+    consumer_minimum_target_framework:
+      value: net8.0
+      source: chapter-2
+      status: explicit
     consumer_target_framework:
       value: net10.0
       source: chapter-2

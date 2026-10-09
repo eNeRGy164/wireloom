@@ -5,7 +5,8 @@ generating C# types from the RTI Connext DDS IDL subset. Add it to a .NET
 project that owns DDS data contracts; the package generates source during the
 normal build and does not invoke Java, native tooling, or `rtiddsgen`.
 
-This is a preview package. Support is feature-specific and evidence-driven;
+Consumer projects can target .NET 8 and higher using C# 12 or later.
+Support is feature-specific and evidence-driven;
 successful compilation of one IDL shape is not a blanket claim of RTI or wire
 compatibility.
 
@@ -17,7 +18,7 @@ version and configuration.
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Rti.ConnextDds" Version="7.3.1" />
+  <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
   <PackageReference Include="Wireloom.Dds.Generator"
                     Version="0.3.0"
                     PrivateAssets="all" />
@@ -25,9 +26,14 @@ version and configuration.
 ```
 
 The retained oracle corpus was generated with RTI Connext DDS 7.7.0 /
-`rtiddsgen` 4.7.0. The compatibility floor is RTI 7.3.1 and later because
-7.3.1 ships the same `rtiddsgen` version. The consumer project must resolve a
-compatible `Rti.ConnextDds` reference and use C# 12 or later.
+`rtiddsgen` 4.7.0. Use RTI 7.7.0 as the tested runtime baseline. The package's
+minimum-version guard accepts 7.3.1 and later; it does not establish that every
+generated API works with older releases. The consumer project must resolve a
+compatible `Rti.ConnextDds` reference.
+
+The generator itself targets `netstandard2.0` for Roslyn host compatibility.
+The repository's .NET 10 build and test defaults do not impose a .NET 10
+requirement on consumer applications.
 
 ## Declare an IDL generation root
 

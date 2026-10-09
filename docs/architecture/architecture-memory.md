@@ -11,8 +11,9 @@ or ADRs first, then refresh this file and
 - **Goals:** Keep Connext IDL generation inside the .NET build, emit C# data
   contracts and RTI type-specific support, and advance compatibility through
   small oracle-backed cases. See [chapter 1](arc42/01-introduction-and-goals.md).
-- **Constraints:** The analyzer targets `netstandard2.0`; consumer and test
-  projects use .NET 10; C# 12+ and an RTI runtime reference of at least 7.3.1
+- **Constraints:** The analyzer targets `netstandard2.0`; consumer applications
+  support .NET 8 and higher, while repository projects default to .NET 10.
+  C# 12+ and an RTI runtime reference of at least 7.3.1
   are required. That package floor is not proof that current generated source
   compiles against 7.3.1. Retained oracle sources use RTI 7.7.0 /
   `rtiddsgen` 4.7.0.
@@ -104,7 +105,8 @@ or ADRs first, then refresh this file and
 
 | Area                        | Value                                                         | Provenance                                    |
 | :-------------------------- | :------------------------------------------------------------ | :-------------------------------------------- |
-| Consumer/test target        | `net10.0`                                                     | `global.json`, chapter 2                      |
+| Supported consumer minimum  | `net8.0`, C# 12+                                              | Consumer requirements, chapter 2              |
+| Repository target default   | `net10.0`                                                     | `Directory.Build.props`, chapter 2            |
 | Generator target            | `netstandard2.0`                                              | `Wireloom.Dds.Generator.csproj`, chapter 2    |
 | SDK policy                  | `10.0.400`; prerelease disabled; `latestFeature` roll-forward | `global.json`; Qodana compatibility           |
 | Package output              | NuGet analyzer/source-generator package                       | Generator project and workflows               |

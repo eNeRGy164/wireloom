@@ -26,3 +26,25 @@ freshly created local feed. The other package versions remain explicit and
 pinned in the project file. The build writes generated C# files under the
 project's `obj` directory, and the tests exercise those generated types at
 compile time and at runtime.
+
+## .NET 8 consumer check
+
+Consumer support starts at .NET 8 with C# 12. Repository projects default to
+.NET 10; override the existing integration project's target to check the
+minimum consumer framework without adding a project:
+
+```powershell
+dotnet restore tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
+  --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config `
+  -p:WireloomDdsGeneratorPackageVersion=0.3.0 -p:TargetFramework=net8.0
+dotnet run --project tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
+  --no-restore --configuration Release `
+  -p:WireloomDdsGeneratorPackageVersion=0.3.0 -p:TargetFramework=net8.0 -p:LangVersion=12.0
+```
+
+On October 9, 2026, all **7 tests passed** against the local 0.3.0 package,
+targeting `net8.0` with C# 12 and running on .NET 8.0.31. The build used .NET SDK
+10.0.401 under the repository's pinned SDK policy. This verifies the consumer
+framework; it does not establish compatibility with every older SDK's Roslyn
+host. Use the package version from your isolated feed when checking a newer
+package.
