@@ -173,7 +173,7 @@ public sealed class GeneratedAggregateSpecs
         var input = Input("keyed.idl",
             """
             module Keyed {
-                @topic struct Sample { @key long id; string text; };
+                @topic struct Sample { @key long id; @key long tenant; string text; };
             };
             """);
 
@@ -190,8 +190,10 @@ public sealed class GeneratedAggregateSpecs
         unmanaged.ShouldContain("The operation copies values into <paramref name=\"sample\"/>. When <paramref name=\"keysOnly\"/> is true, only key members are copied.");
         unmanaged.ShouldContain("The operation copies values from <paramref name=\"sample\"/> into native storage. When <paramref name=\"keysOnly\"/> is true, only key members are copied.");
         unmanaged.ShouldNotContain("For an unkeyed type");
+        unmanaged.ShouldContain("sample.id = id;\n        sample.tenant = tenant;");
         unmanaged.ShouldContainInOrder(
             "sample.id = id;",
+            "sample.tenant = tenant;",
             "if (keysOnly)",
             "sample.text = text.FromNative();");
 

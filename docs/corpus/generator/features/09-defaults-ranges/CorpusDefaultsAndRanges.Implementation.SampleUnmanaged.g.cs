@@ -36,9 +36,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         sample.value = value;
-
         sample.ranged = ranged;
-
         sample.color = color;
     }
 

@@ -41,7 +41,6 @@ public struct FinalUnmanaged : INativeTopicType<Final>
     public void FromNative(Final sample, bool keysOnly = false)
     {
         sample.id = id;
-
         sample.text = text.FromNative();
     }
 
