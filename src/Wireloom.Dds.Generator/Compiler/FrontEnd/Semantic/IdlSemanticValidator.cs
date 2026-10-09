@@ -205,7 +205,7 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
             reservedNames.Add("parent");
         }
 
-        foreach (var field in fields.Where(field => field.Metadata.IsOptional && HasCollectionTemporary(field.Type)))
+        foreach (var field in fields.Where(field => field.Metadata.IsOptional && HasFromNativeTemporary(field.Type)))
         {
             reservedNames.Add(IdlNaming.EscapeIdentifier($"{field.Name}Temporary_"));
         }
@@ -220,10 +220,10 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         }
     }
 
-    private static bool HasCollectionTemporary(IdlType type) => type switch
+    private static bool HasFromNativeTemporary(IdlType type) => type switch
     {
-        IdlType.Sequence or IdlType.Array => true,
-        IdlType.Alias alias => HasCollectionTemporary(alias.Target),
+        IdlType.Sequence or IdlType.Array or IdlType.Struct or IdlType.Union => true,
+        IdlType.Alias alias => HasFromNativeTemporary(alias.Target),
         _ => false
     };
 
