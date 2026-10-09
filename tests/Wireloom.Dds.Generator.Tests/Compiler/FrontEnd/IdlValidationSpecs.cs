@@ -84,6 +84,21 @@ public sealed class IdlValidationSpecs
     }
 
     [Fact]
+    public void RejectsDeclarationsThatCollideWithGeneratedUnmanagedCompanionTypes()
+    {
+        // Arrange
+        var input = Input(
+            "unmanaged-companion-type-collision.idl",
+            "struct Foo { long value; }; module Implementation { struct FooUnmanaged { long other; }; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("IDL declaration 'Implementation.FooUnmanaged' collides with a generated type");
+    }
+
+    [Fact]
     public void AcceptsEnumUnmanagedNamesBecauseEnumsDoNotEmitUnmanagedTypes()
     {
         // Arrange
@@ -184,6 +199,23 @@ public sealed class IdlValidationSpecs
 
         // Assert
         exception.Message.ShouldContain("collides with a generated member, parameter, or local variable");
+    }
+
+    [Fact]
+    public void AllowsTemporaryLikeMemberNamesBesideNonOptionalCollections()
+    {
+        // Arrange
+        var input = Input(
+            "non-optional-generated-temporary-name.idl",
+            "struct Sample { sequence<long> values; long valuesTemporary_; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Sample.g.cs"].Source;
+        managed.ShouldContain("public ISequence<int> Values");
+        managed.ShouldContain("public int ValuesTemporary_");
     }
 
     [Fact]
@@ -449,12 +481,13 @@ public sealed class IdlValidationSpecs
         exception.Message.ShouldContain("Unknown typedef target");
     }
 
-    [Fact]
-    public void ReportsTypedefAliasCycles()
+    [Theory]
+    [InlineData("module P03 { typedef B A; typedef A B; };")]
+    [InlineData("module P03 { typedef sequence<B, 2> A; typedef sequence<A, 2> B; };")]
+    public void ReportsTypedefAliasCycles(string source)
     {
         // Arrange
-        var input = Input("alias-cycle.idl",
-            "module P03 { typedef B A; typedef A B; };");
+        var input = Input("alias-cycle.idl", source);
 
         // Act
         var exception = Should.Throw<IdlException>(() => Compile(input));
@@ -569,6 +602,7 @@ public sealed class IdlValidationSpecs
     [InlineData("struct Broken { long values[0]; };", "Array dimensions")]
     [InlineData("struct Broken { sequence<Missing> values; };", "Unknown collection element type")]
     [InlineData("typedef sequence<long, 0> Values;", "Collection bound")]
+    [InlineData("typedef sequence<long, Missing> Values;", "Collection bound must resolve to a positive constant")]
     public void ReportsMalformedCollectionDeclarations(string source, string expectedDiagnostic)
     {
         // Arrange
@@ -657,6 +691,22 @@ public sealed class IdlValidationSpecs
 
         // Assert
         exception.Message.ShouldContain("Duplicate member: value");
+        exception.Offset.ShouldBe(input.Text.LastIndexOf("long value", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RejectsDuplicateMemberIdsWithinAnAggregate()
+    {
+        // Arrange
+        var input = Input(
+            "duplicate-member-id.idl",
+            "struct Sample { @id(7) long first; @id(7) long second; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Duplicate member ID: 7");
     }
 
     [Theory]
@@ -714,6 +764,7 @@ public sealed class IdlValidationSpecs
 
         // Assert
         exception.Message.ShouldContain(expectedMessage);
+        exception.Offset.ShouldBe(input.Text.IndexOf(member, StringComparison.Ordinal) + member.LastIndexOf('@'));
     }
 
     [Theory]
@@ -1218,5 +1269,23 @@ public sealed class IdlValidationSpecs
 
         // Assert
         exception.Message.ShouldContain("IDL union branch 'Setevent'");
+    }
+
+    [Fact]
+    public void AllowsUnionBranchNamesMatchingSettersForSingleLabelBranches()
+    {
+        // Arrange
+        var input = Input(
+            "single-label-setter-like-branch.idl",
+            "union Choice switch(long) { case 1: long event; case 2: long Setevent; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Choice.g.cs"].Source;
+        managed.ShouldContain("public int @event");
+        managed.ShouldContain("public int Setevent");
+        managed.ShouldNotContain("public void Setevent(");
     }
 }
