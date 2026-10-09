@@ -2,8 +2,18 @@ module CorpusOptionalAggregate {
     struct Payload {
         long value;
     };
+    typedef Payload PayloadAlias;
+
+    union Choice switch(long) {
+        case 0: @optional Payload payload;
+        case 1: long number;
+    };
+    typedef Choice ChoiceAlias;
 
     struct Holder {
         @optional Payload payload;
+        @optional PayloadAlias payloadAlias;
+        @optional Choice choice;
+        @optional ChoiceAlias choiceAlias;
     };
 };

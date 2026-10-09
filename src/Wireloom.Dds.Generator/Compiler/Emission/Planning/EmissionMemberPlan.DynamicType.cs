@@ -7,13 +7,18 @@ namespace Wireloom.Compiler.Emission.Planning;
 internal sealed partial class MemberEmissionPlan
 {
     /// <summary>Builds the dynamic-type expression for this member.</summary>
-    public string BuildDynamicTypeExpression(string implementationNamespace, string? recursiveTypeName = null, bool isRecursive = false) => shape.Kind switch
+    public string BuildDynamicTypeExpression(string implementationNamespace, string? recursiveTypeName = null, bool isRecursive = false)
     {
-        EmissionShapeKind.Sequence or EmissionShapeKind.Array => BuildCollectionDynamicType(implementationNamespace, recursiveTypeName, isRecursive),
-        EmissionShapeKind.Struct or EmissionShapeKind.Union or EmissionShapeKind.Enum or EmissionShapeKind.Alias => ReferencedSupportType(implementationNamespace) + ".GetDynamicTypeInternal(isPublic)",
-        EmissionShapeKind.String => BuildStringDynamicType(),
-        _ => $"dtf.GetPrimitiveType<{PrimitiveDynamicType()}>()",
-    };
+        var dynamicType = IsOptional && IsAggregate ? Field.DeclaredType : Type;
+
+        return dynamicType.Shape.Kind switch
+        {
+            EmissionShapeKind.Sequence or EmissionShapeKind.Array => BuildCollectionDynamicType(implementationNamespace, recursiveTypeName, isRecursive),
+            EmissionShapeKind.Struct or EmissionShapeKind.Union or EmissionShapeKind.Enum or EmissionShapeKind.Alias => ReferencedSupportType(implementationNamespace, dynamicType) + ".GetDynamicTypeInternal(isPublic)",
+            EmissionShapeKind.String => BuildStringDynamicType(),
+            _ => $"dtf.GetPrimitiveType<{PrimitiveDynamicType()}>()",
+        };
+    }
 
     private string BuildCollectionDynamicType(string implementationNamespace, string? recursiveTypeName, bool isRecursive)
     {
@@ -75,6 +80,6 @@ internal sealed partial class MemberEmissionPlan
         return $"dtf.GetPrimitiveType<{IdlNaming.TypeReference(ElementCSharpType!, implementationNamespace)}>()";
     }
 
-    private string ReferencedSupportType(string implementationNamespace) =>
-        $"{IdlNaming.GeneratedSupportTypeReference(SupportType ?? CSharpType, implementationNamespace)}Support.Instance";
+    private static string ReferencedSupportType(string implementationNamespace, EmissionTypePlan type) =>
+        $"{IdlNaming.GeneratedSupportTypeReference(type.SupportType ?? type.CSharpType, implementationNamespace)}Support.Instance";
 }

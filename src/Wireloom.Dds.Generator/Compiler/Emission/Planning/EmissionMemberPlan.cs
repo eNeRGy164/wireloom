@@ -110,6 +110,9 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
     public string? ManagedDefaultInitializationStatement => Renderer.ManagedDefaultInitializationStatement(ManagedInitialization);
 
+    public string? ManagedDefaultInitializationStatementFor(string targetName) =>
+        Renderer.ManagedDefaultInitializationStatement(ManagedInitialization, targetName);
+
     public string ManagedDefaultValue => Renderer.ManagedDefaultValue;
 
     /// <summary>Formats an IDL constant value as a C# literal for the requested type.</summary>
@@ -151,6 +154,11 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
         if (IsAggregate)
         {
+            if (IsOptional)
+            {
+                return "NativeManagedOptional";
+            }
+
             return GetReferencedUnmanagedType(namespaceName);
         }
 
@@ -206,7 +214,8 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
         if (IsAggregate)
         {
-            return $"new {TypeReference(CSharpType, currentNamespace)}({source})";
+            var copy = $"new {TypeReference(CSharpType.TrimEnd('?'), currentNamespace)}({source})";
+            return IsOptional ? $"{source} is null ? null : {copy}" : copy;
         }
 
         return source;
@@ -224,7 +233,8 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
         if (IsAggregate)
         {
-            return $"new {TypeReference(CSharpType, currentNamespace)}({source})";
+            var copy = $"new {TypeReference(CSharpType.TrimEnd('?'), currentNamespace)}({source})";
+            return IsOptional ? $"{source} is null ? null : {copy}" : copy;
         }
 
         return source;

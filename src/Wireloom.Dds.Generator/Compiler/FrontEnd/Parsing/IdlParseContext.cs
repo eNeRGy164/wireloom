@@ -149,11 +149,6 @@ internal sealed class IdlParseContext
                     foreach (var field in @class.Fields)
                     {
                         var bound = TypeBinder.Bind(field.Type);
-                        if (field.Metadata.IsOptional && !IsOptionalScalar(bound))
-                        {
-                            throw new IdlException(field.SourceInput!, field.SourceOffset, "Optional aggregate members are not supported yet.");
-                        }
-
                         field.Bind(bound);
                     }
 
@@ -285,13 +280,6 @@ internal sealed class IdlParseContext
             throw new IdlException(declaration.SourceInput, declaration.SourceOffset, $"Invalid {declaration.Type} constant expression: {exception.Message}");
         }
     }
-
-    private static bool IsOptionalScalar(IdlType type) => type switch
-    {
-        IdlType.Primitive or IdlType.StringType or IdlType.Enum or IdlType.Sequence or IdlType.Array => true,
-        IdlType.Alias alias => IsOptionalScalar(alias.Target),
-        _ => false
-    };
 
     /// <summary>Parses an extensibility annotation into its semantic kind.</summary>
     internal static IdlExtensibilityKind ParseExtensibility(string annotation) => annotation.Trim() switch

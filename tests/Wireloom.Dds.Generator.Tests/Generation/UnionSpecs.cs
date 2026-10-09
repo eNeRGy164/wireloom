@@ -199,7 +199,10 @@ public sealed class UnionSpecs
         holder.ShouldContain("value = new Choice(other.value);");
 
         var choiceAlias2 = documents["Example.ChoiceAlias2.g.cs"].Source;
-        choiceAlias2.ShouldContain("Value = other.Value is null ? null! : new Choice(other.Value);");
+        choiceAlias2.ShouldContain("public ChoiceAlias2(Choice value)");
+        choiceAlias2.ShouldContain("Value = value;");
+        choiceAlias2.ShouldNotContain("this.Value = Value;");
+        choiceAlias2.ShouldContain("Value = new Choice(other.Value);");
 
         var holderNative = documents["Example.Implementation.HolderUnmanaged.g.cs"].Source;
         holderNative.ShouldContain("private ChoiceUnmanaged value;");
@@ -236,7 +239,6 @@ public sealed class UnionSpecs
         managed.ShouldNotContain("Settext");
         managed.ShouldContain("number");
         managed.ShouldContain("text");
-        managed.ShouldContain("default:");
 
         var plugin = documents["Example.Implementation.ChoicePlugin.g.cs"].Source;
         plugin.ShouldContain("WithDiscriminator(KindSupport.Instance.GetDynamicTypeInternal(isPublic))");
@@ -378,6 +380,28 @@ public sealed class UnionSpecs
     }
 
     [Fact]
+    public void UnionCopyConstructorOmitsEmptyDefaultCaseWhenNoDefaultBranchExists()
+    {
+        // Arrange
+        var input = Input("copy-constructor-without-default-branch.idl",
+            "module Example { union Choice switch(long) { case 0: long number; case 1: long other; }; };");
+
+        // Act
+        var managed = CompileSources(input)["Example.Choice.g.cs"].Source;
+        var constructorStart = managed.IndexOf("public Choice(Choice? other)", StringComparison.Ordinal);
+        constructorStart.ShouldBeGreaterThanOrEqualTo(0);
+        var constructorEnd = managed.IndexOf("public object? Get()", constructorStart, StringComparison.Ordinal);
+        var constructor = managed[constructorStart..constructorEnd];
+
+        // Assert
+        constructor.ShouldContain("case 0:");
+        constructor.ShouldContain("this._number = other.number;");
+        constructor.ShouldContain("case 1:");
+        constructor.ShouldContain("this._other = other.other;");
+        constructor.ShouldNotContain("default:");
+    }
+
+    [Fact]
     public void UnionConstructorDoesNotInitializeInactiveAggregateBranches()
     {
         // Arrange
@@ -409,6 +433,24 @@ public sealed class UnionSpecs
     }
 
     [Fact]
+    public void UnionConstructorInitializesTheAggregateBranchSelectedByItsDefaultDiscriminator()
+    {
+        // Arrange
+        var input = Input("union-default-aggregate-branch.idl",
+            "module Example { struct Payload { long value; }; union Choice switch(long) { case 0: @optional Payload payload; case 1: long number; }; };");
+
+        // Act
+        var managed = CompileSources(input)["Example.Choice.g.cs"].Source;
+
+        // Assert
+        var constructorStart = managed.IndexOf("public Choice()", StringComparison.Ordinal);
+        constructorStart.ShouldBeGreaterThanOrEqualTo(0);
+        var constructor = managed[constructorStart..managed.IndexOf("public Choice(Choice? other)", constructorStart, StringComparison.Ordinal)];
+        constructor.ShouldContain("Discriminator = DefaultDiscriminator;");
+        constructor.ShouldContain("_payload = new Payload();");
+    }
+
+    [Fact]
     public void UnionDefaultAggregateSequenceInitializesNativeStorage()
     {
         // Arrange
@@ -427,6 +469,12 @@ public sealed class UnionSpecs
         var documents = CompileSources(input);
 
         // Assert
+        var managed = documents["Example.Choice.g.cs"].Source;
+        var constructorStart = managed.IndexOf("public Choice()", StringComparison.Ordinal);
+        constructorStart.ShouldBeGreaterThanOrEqualTo(0);
+        var constructor = managed[constructorStart..managed.IndexOf("public Choice(Choice? other)", constructorStart, StringComparison.Ordinal)];
+        constructor.ShouldContain("_values = new Sequence<Payload>();");
+
         var native = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
         native.ShouldContain("values.Initialize<Payload, PayloadUnmanaged>(max: 2, absoluteMax: 2, allocateMemory: allocateMemory);");
     }

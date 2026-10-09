@@ -167,7 +167,7 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
                 return facts.IsOptional ? null : " = null!;";
             }
 
-            if (facts.IsAggregate)
+            if (facts is { IsAggregate: true, IsOptional: false })
             {
                 return $" = new {TypeReference(facts.CSharpType, currentNamespace)}();";
             }
@@ -177,18 +177,22 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
     }
 
     /// <summary>Builds the managed default initialization statement.</summary>
-    public string? ManagedDefaultInitializationStatement(ManagedInitializationKind initialization)
+    public string? ManagedDefaultInitializationStatement(ManagedInitializationKind initialization) =>
+        ManagedDefaultInitializationStatement(initialization, EscapedName);
+
+    /// <summary>Builds the managed default initialization statement for a supplied target name.</summary>
+    public string? ManagedDefaultInitializationStatement(ManagedInitializationKind initialization, string targetName)
     {
         if (HasExplicitDefault)
         {
-            return $"{EscapedName} = {ManagedDefaultValue};";
+            return $"{targetName} = {ManagedDefaultValue};";
         }
 
         return initialization switch
         {
-            ManagedInitializationKind.Sequence => $"{EscapedName} = new Sequence<{TypeReference(facts.ElementCSharpType!, currentNamespace)}>();",
-            ManagedInitializationKind.Array => $"{EscapedName} = new {TypeReference(facts.ElementCSharpType!, currentNamespace)}[{string.Join(", ", facts.Dimensions)}];",
-            ManagedInitializationKind.Aggregate => $"{EscapedName} = new {TypeReference(facts.CSharpType, currentNamespace)}();",
+            ManagedInitializationKind.Sequence => $"{targetName} = new Sequence<{TypeReference(facts.ElementCSharpType!, currentNamespace)}>();",
+            ManagedInitializationKind.Array => $"{targetName} = new {TypeReference(facts.ElementCSharpType!, currentNamespace)}[{string.Join(", ", facts.Dimensions)}];",
+            ManagedInitializationKind.Aggregate => $"{targetName} = new {TypeReference(facts.CSharpType, currentNamespace)}();",
             _ => null
         };
     }

@@ -32,7 +32,7 @@ internal static class MemberEmissionPolicies
         bool isArray,
         bool isAggregate)
     {
-        if (isOptional && (isSequence || isArray))
+        if (isOptional && (isSequence || isArray || isAggregate))
         {
             return ManagedInitializationKind.None;
         }

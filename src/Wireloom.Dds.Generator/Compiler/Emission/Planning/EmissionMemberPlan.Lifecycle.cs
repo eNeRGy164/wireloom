@@ -162,7 +162,18 @@ internal sealed partial class MemberEmissionPlan
             return BuildCollectionDestroyStatement(namespaceName, nativeFieldPrefix);
         }
 
-        return IsAggregate ? $"{nativeFieldPrefix}{EscapedName}.Destroy(optionalsOnly);" : null;
+        if (!IsAggregate)
+        {
+            return null;
+        }
+
+        if (IsOptional)
+        {
+            var type = IdlNaming.TypeReference(CSharpType.TrimEnd('?'), currentNamespace);
+            return $"{nativeFieldPrefix}{EscapedName}.Destroy<{type}, {GetReferencedUnmanagedType(currentNamespace)}>(optionalsOnly);";
+        }
+
+        return $"{nativeFieldPrefix}{EscapedName}.Destroy(optionalsOnly);";
     }
 
     private string BuildCollectionDestroyStatement(string? namespaceName, string nativeFieldPrefix)

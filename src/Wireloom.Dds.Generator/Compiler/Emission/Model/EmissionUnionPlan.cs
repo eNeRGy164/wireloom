@@ -54,6 +54,16 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
     /// <summary>Gets the managed discriminator value selected for the default branch.</summary>
     public string ManagedDefaultDiscriminator => ManagedDiscriminatorValue(FindDefaultDiscriminatorValue());
 
+    /// <summary>Gets the branch selected by the managed default discriminator, if any.</summary>
+    public UnionBranchEmissionPlan? DefaultDiscriminatorBranch
+    {
+        get
+        {
+            var discriminatorValue = FindDefaultDiscriminatorValue();
+            return ExplicitBranches.FirstOrDefault(branch => branch.LabelValues.Contains(discriminatorValue)) ?? DefaultBranch;
+        }
+    }
+
     /// <summary>Builds the managed discriminator expression for a union branch.</summary>
     public string BranchDiscriminator(UnionBranchEmissionPlan branch)
     {

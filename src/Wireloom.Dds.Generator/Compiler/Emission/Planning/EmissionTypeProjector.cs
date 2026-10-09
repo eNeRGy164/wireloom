@@ -10,6 +10,7 @@ internal static class EmissionTypeProjector
     /// <summary>Projects a semantic member into an emission field.</summary>
     internal static IdlEmissionField ToEmissionField(IdlMember member, string? currentNamespace)
     {
+        var declaredType = ProjectType(member.Type, currentNamespace);
         var type = ProjectMemberType(member.Type, currentNamespace);
         var cSharpType = type.CSharpType;
 
@@ -21,7 +22,7 @@ internal static class EmissionTypeProjector
         {
             cSharpType += "?";
         }
-        else if (member.Metadata.IsOptional && type is not SequenceEmissionType and not ArrayEmissionType && !IsAggregateEmissionType(type))
+        else if (member.Metadata.IsOptional && type is not SequenceEmissionType and not ArrayEmissionType)
         {
             cSharpType += "?";
         }
@@ -42,7 +43,8 @@ internal static class EmissionTypeProjector
                 member.Metadata.IsExternal,
                 member.Metadata.IsMustUnderstand,
                 member.Metadata.MemberIdHashSource,
-                member.Metadata.UsesAutoIdHash));
+                member.Metadata.UsesAutoIdHash),
+            declaredType);
     }
 
     /// <summary>Projects a collection element while preserving a named alias identity.</summary>

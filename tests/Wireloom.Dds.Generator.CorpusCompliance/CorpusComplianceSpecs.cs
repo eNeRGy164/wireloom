@@ -225,6 +225,40 @@ public sealed class CorpusComplianceSpecs
         messageUnmanaged.ShouldContain("optionalText.ToNativeOptional(sample.optionalText, 16);");
     }
 
+    [Fact]
+    public void P09OptionalAggregateMemberMatchesTheRtiContract()
+    {
+        // Arrange
+        var corpusCase = CorpusRepository.Cases.Single(corpusCase => corpusCase.Id == "09-optional-aggregate-member");
+
+        // Act
+        var generated = Compile(corpusCase);
+
+        // Assert
+        var holder = generated["CorpusOptionalAggregate.Holder.g.cs"].Source;
+        var unmanaged = generated["CorpusOptionalAggregate.Implementation.HolderUnmanaged.g.cs"].Source;
+        var plugin = generated["CorpusOptionalAggregate.Implementation.HolderPlugin.g.cs"].Source;
+
+        holder.ShouldContain("[Optional]\n    public Payload? payload { get; set; }");
+        holder.ShouldContain("[Optional]\n    public Payload? payloadAlias { get; set; }");
+        holder.ShouldContain("[Optional]\n    public Choice? choice { get; set; }");
+        holder.ShouldContain("[Optional]\n    public Choice? choiceAlias { get; set; }");
+        unmanaged.ShouldContain("private NativeManagedOptional payload;");
+        unmanaged.ShouldContain("private NativeManagedOptional payloadAlias;");
+        unmanaged.ShouldContain("private NativeManagedOptional choice;");
+        unmanaged.ShouldContain("private NativeManagedOptional choiceAlias;");
+        unmanaged.ShouldContain("payload.FromNative<Payload, Implementation.PayloadUnmanaged>(out var payloadTemporary_);");
+        unmanaged.ShouldContain("payload.ToNative<Payload, Implementation.PayloadUnmanaged>(sample.payload!);");
+        unmanaged.ShouldContain("payloadAlias.ToNative<Payload, Implementation.PayloadUnmanaged>(sample.payloadAlias!);");
+        unmanaged.ShouldContain("choice.ToNative<Choice, Implementation.ChoiceUnmanaged>(sample.choice!);");
+        unmanaged.ShouldContain("choiceAlias.ToNative<Choice, Implementation.ChoiceUnmanaged>(sample.choiceAlias!);");
+        unmanaged.ShouldContain("payload.Destroy<Payload, Implementation.PayloadUnmanaged>(optionalsOnly);");
+        plugin.ShouldContain("new StructMember(\"payload\", PayloadSupport.Instance.GetDynamicTypeInternal(isPublic), isOptional: true, id: 0)");
+        plugin.ShouldContain("new StructMember(\"payloadAlias\", PayloadAliasSupport.Instance.GetDynamicTypeInternal(isPublic), isOptional: true, id: 1)");
+        plugin.ShouldContain("new StructMember(\"choiceAlias\", ChoiceAliasSupport.Instance.GetDynamicTypeInternal(isPublic), isOptional: true, id: 3)");
+        plugin.ShouldContain("isOptional: true");
+    }
+
     private static IReadOnlyDictionary<string, GeneratedIdlSource> Compile(CorpusCase corpusCase) =>
         IdlCompiler.CompileSources(CorpusRepository.BuildInputs(corpusCase), TestContext.Current.CancellationToken);
 

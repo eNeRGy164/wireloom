@@ -18,7 +18,7 @@ public sealed class GeneratedNestedAliasSpecs
 
         // Assert
         var alias = documents["AggregateAliasCopy.PointAlias2.g.cs"].Source;
-        alias.ShouldContain("Value = other.Value is null ? null! : new Point(other.Value);");
+        alias.ShouldContain("Value = new Point(other.Value);");
 
         var sample = documents["AggregateAliasCopy.Sample.g.cs"].Source;
         sample.ShouldContain("public Point point { get; set; } = new Point();");
