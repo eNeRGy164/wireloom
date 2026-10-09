@@ -46,7 +46,6 @@ public struct DerivedUnmanaged : INativeTopicType<Derived>
     {
         parent.FromNative(sample, keysOnly);
         sample.state = state.FromNative();
-
         traceContext.FromNative(sample.traceContext, keysOnly: false);
     }
 

@@ -41,7 +41,6 @@ public struct PayloadUnmanaged : INativeTopicType<Payload>
     public void FromNative(Payload sample, bool keysOnly = false)
     {
         sample.code = code;
-
         sample.label = label.FromNative();
     }
 

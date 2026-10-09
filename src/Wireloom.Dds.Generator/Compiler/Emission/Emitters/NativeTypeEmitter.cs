@@ -130,15 +130,17 @@ internal static class NativeTypeEmitter
         }
 
         var copiedFields = (hasKeys ? fields.Where(field => field.IsKey) : fields).ToArray();
-        for (var fieldIndex = 0; fieldIndex < copiedFields.Length; fieldIndex++)
+        string? previousStatement = null;
+        foreach (var field in copiedFields)
         {
-            if (fieldIndex > 0)
+            var statement = field.BuildFromNativeStatement(field.IsKey && hasKeys, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly"));
+            if (previousStatement is not null && (previousStatement.Contains('\n') || statement.Contains('\n')))
             {
                 writer.BlankLine();
             }
 
-            var field = copiedFields[fieldIndex];
-            writer.WriteLines(field.BuildFromNativeStatement(field.IsKey && hasKeys, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly")));
+            writer.WriteLines(statement);
+            previousStatement = statement;
         }
 
         if (hasKeys && fields.Any(field => !field.IsKey))
@@ -150,15 +152,17 @@ internal static class NativeTypeEmitter
             writer.BlankLine();
 
             var nonKeyFields = fields.Where(field => !field.IsKey).ToArray();
-            for (var fieldIndex = 0; fieldIndex < nonKeyFields.Length; fieldIndex++)
+            previousStatement = null;
+            foreach (var field in nonKeyFields)
             {
-                if (fieldIndex > 0)
+                var statement = field.BuildFromNativeStatement(false, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly"));
+                if (previousStatement is not null && (previousStatement.Contains('\n') || statement.Contains('\n')))
                 {
                     writer.BlankLine();
                 }
 
-                var field = nonKeyFields[fieldIndex];
-                writer.WriteLines(field.BuildFromNativeStatement(false, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly")));
+                writer.WriteLines(statement);
+                previousStatement = statement;
             }
         }
 

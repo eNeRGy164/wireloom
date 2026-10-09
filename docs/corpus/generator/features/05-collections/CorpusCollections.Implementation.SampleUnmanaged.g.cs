@@ -48,13 +48,9 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         values.FromNative(sample.values, dimension: 2 * 3);
-
         unbounded.FromNative((Sequence<int>)sample.unbounded);
-
         bounded.FromNative(sample.bounded, keysOnly: false);
-
         items.FromNative<Item, ItemUnmanaged>(sample.items);
-
         grid.FromNative(sample.grid, keysOnly: false);
     }
 

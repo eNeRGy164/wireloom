@@ -41,7 +41,6 @@ public struct RecursiveUnmanaged : INativeTopicType<Recursive>
     public void FromNative(Recursive sample, bool keysOnly = false)
     {
         sample.value = value;
-
         children.FromNative<Recursive, RecursiveUnmanaged>(sample.children);
     }
 

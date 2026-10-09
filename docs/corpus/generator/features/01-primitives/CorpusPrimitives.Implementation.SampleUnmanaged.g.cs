@@ -51,37 +51,21 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         sample.signed16 = signed16;
-
         sample.signed32 = signed32;
-
         sample.signed64 = signed64;
-
         sample.unsigned16 = unsigned16;
-
         sample.unsigned32 = unsigned32;
-
         sample.unsigned64 = unsigned64;
-
         sample.fixedInt8 = fixedInt8;
-
         sample.fixedInt64 = fixedInt64;
-
         sample.fixedUint8 = fixedUint8;
-
         sample.fixedUint64 = fixedUint64;
-
         sample.octetValue = octetValue;
-
         sample.boolValue = global::System.Convert.ToBoolean(boolValue);
-
         sample.charValue = NativeChar.FromUtf8(charValue);
-
         sample.wideCharValue = (char)wideCharValue;
-
         sample.floatValue = floatValue;
-
         sample.doubleValue = doubleValue;
-
         sample.longDoubleValue = longDoubleValue;
     }
 

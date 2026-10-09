@@ -40,17 +40,11 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         sample.shortValue = shortValue;
-
         sample.longValue = longValue;
-
         sample.longLongValue = longLongValue;
-
         sample.int8Value = int8Value;
-
         sample.int64Value = int64Value;
-
         sample.floatValue = floatValue;
-
         sample.doubleValue = doubleValue;
     }
 

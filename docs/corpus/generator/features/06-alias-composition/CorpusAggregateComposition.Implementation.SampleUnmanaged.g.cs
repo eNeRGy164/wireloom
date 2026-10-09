@@ -37,9 +37,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         sample.id = id;
-
         sample.state = state;
-
         values.FromNative((Sequence<float>)sample.values);
     }
 

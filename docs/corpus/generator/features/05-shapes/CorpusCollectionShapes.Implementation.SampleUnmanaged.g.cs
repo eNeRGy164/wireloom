@@ -52,17 +52,11 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         unboundedItems.FromNative<Item, ItemUnmanaged>(sample.unboundedItems);
-
         boundedItems.FromNative(sample.boundedItems, keysOnly: false);
-
         nestedSequences.FromNative<BoundedLongs, BoundedLongsUnmanaged>(sample.nestedSequences);
-
         rows.FromNative<Row, RowUnmanaged>(sample.rows, keysOnly: false, dimension: 2);
-
         sequenceOfArrays.FromNative<Row, RowUnmanaged>(sample.sequenceOfArrays);
-
         sequenceOfArrayAliases.FromNative<Rows, RowsUnmanaged>(sample.sequenceOfArrayAliases);
-
         names.FromNative(sample.names, keysOnly: false);
     }
 

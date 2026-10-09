@@ -41,7 +41,6 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         sample.id = id;
-
         sample.text = text.FromNative();
     }
 
