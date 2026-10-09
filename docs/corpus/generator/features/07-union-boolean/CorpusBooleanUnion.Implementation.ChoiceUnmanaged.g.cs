@@ -63,7 +63,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
 
         enabled = 0;
 
-        disabled.Initialize(size: 255, allocateMemory: allocateMemory);
+        disabled.Initialize(size: 255, allocateMemory);
     }
 
     /// <summary>

@@ -54,7 +54,7 @@ public struct MessageUnmanaged : INativeTopicType<Message>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         id = 0;
-        text.Initialize(size: 16, allocateMemory: allocateMemory);
+        text.Initialize(size: 16, allocateMemory);
     }
 
     /// <summary>

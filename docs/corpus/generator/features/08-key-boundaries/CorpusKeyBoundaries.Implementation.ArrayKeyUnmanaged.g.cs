@@ -53,7 +53,7 @@ public struct ArrayKeyUnmanaged : INativeTopicType<ArrayKey>
     /// <remarks>Use this method to prepare native storage before conversion. Call <see cref="Destroy"/> when the native representation is no longer needed.</remarks>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        coordinates.Initialize<int>(dimension: 2, allocateMemory: allocateMemory);
+        coordinates.Initialize<int>(dimension: 2, allocateMemory);
         payload = 0;
     }
 

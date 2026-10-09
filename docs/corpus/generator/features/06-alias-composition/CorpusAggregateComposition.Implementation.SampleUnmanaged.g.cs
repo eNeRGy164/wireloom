@@ -53,7 +53,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     {
         id = 0;
         state = (State)(0);
-        values.Initialize<float>(max: 4, absoluteMax: 4, allocateMemory: allocateMemory);
+        values.Initialize<float>(max: 4, absoluteMax: 4, allocateMemory);
     }
 
     /// <summary>

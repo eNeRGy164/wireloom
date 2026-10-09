@@ -54,10 +54,10 @@ public sealed class GeneratedCollectionBoundarySpecs
 
         // Native initialization carries the RTI boundary contract: exact values
         // are accepted and over-bound values are rejected by serialization.
-        native.ShouldContain("values.Initialize<int>(dimension: 2 * 3, allocateMemory: allocateMemory);");
-        native.ShouldContain("unbounded.Initialize<int>(max: 100, absoluteMax: 100, allocateMemory: allocateMemory);");
+        native.ShouldContain("values.Initialize<int>(dimension: 2 * 3, allocateMemory);");
+        native.ShouldContain("unbounded.Initialize<int>(max: 100, absoluteMax: 100, allocateMemory);");
         native.ShouldContain("bounded.Initialize(allocatePointers, allocateMemory);");
-        native.ShouldContain("items.Initialize<Item, ItemUnmanaged>(max: 2, absoluteMax: 2, allocateMemory: allocateMemory);");
+        native.ShouldContain("items.Initialize<Item, ItemUnmanaged>(max: 2, absoluteMax: 2, allocateMemory);");
         native.ShouldContain("grid.Initialize(allocatePointers, allocateMemory);");
 
         native.ShouldContain("unbounded.ToNative((Sequence<int>)sample.unbounded);");

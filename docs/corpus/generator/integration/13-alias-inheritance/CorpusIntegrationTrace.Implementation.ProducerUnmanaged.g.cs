@@ -42,7 +42,7 @@ public struct ProducerUnmanaged : INativeTopicType<Producer>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize(size: 16, allocateMemory: allocateMemory);
+        Value.Initialize(size: 16, allocateMemory);
     }
 
     /// <summary>

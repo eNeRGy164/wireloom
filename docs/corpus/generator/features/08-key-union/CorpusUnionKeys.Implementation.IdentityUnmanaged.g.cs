@@ -63,7 +63,7 @@ public struct IdentityUnmanaged : INativeTopicType<Identity>
 
         number = 0;
 
-        text.Initialize(size: 255, allocateMemory: allocateMemory);
+        text.Initialize(size: 255, allocateMemory);
     }
 
     /// <summary>

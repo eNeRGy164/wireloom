@@ -74,7 +74,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
 
         qualifiedPayload.Initialize(allocatePointers, allocateMemory);
 
-        values.Initialize<int>(max: 4, absoluteMax: 4, allocateMemory: allocateMemory);
+        values.Initialize<int>(max: 4, absoluteMax: 4, allocateMemory);
     }
 
     /// <summary>

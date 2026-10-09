@@ -476,7 +476,7 @@ public sealed class UnionSpecs
         constructor.ShouldContain("_values = new Sequence<Payload>();");
 
         var native = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
-        native.ShouldContain("values.Initialize<Payload, PayloadUnmanaged>(max: 2, absoluteMax: 2, allocateMemory: allocateMemory);");
+        native.ShouldContain("values.Initialize<Payload, PayloadUnmanaged>(max: 2, absoluteMax: 2, allocateMemory);");
     }
 
     [Fact]

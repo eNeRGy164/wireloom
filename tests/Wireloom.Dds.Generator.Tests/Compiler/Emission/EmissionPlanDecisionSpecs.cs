@@ -141,7 +141,7 @@ public sealed class EmissionPlanDecisionSpecs
         var toNative = plan.BuildToNativeStatement(forwardKeysOnly: false);
 
         // Assert
-        initialize.ShouldBe("values.Initialize<int>(max: 3, absoluteMax: 3, allocateMemory: allocateMemory);");
+        initialize.ShouldBe("values.Initialize<int>(max: 3, absoluteMax: 3, allocateMemory);");
         destroy.ShouldBe("values.Destroy(optionalsOnly);");
         fromNative.ShouldBe("values.FromNative((Sequence<int>)sample.values);");
         toNative.ShouldBe("values.ToNative((Sequence<int>)sample.values);");

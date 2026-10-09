@@ -54,7 +54,7 @@ public struct PayloadUnmanaged : INativeTopicType<Payload>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         code = 0;
-        label.Initialize(size: 16, allocateMemory: allocateMemory);
+        label.Initialize(size: 16, allocateMemory);
     }
 
     /// <summary>

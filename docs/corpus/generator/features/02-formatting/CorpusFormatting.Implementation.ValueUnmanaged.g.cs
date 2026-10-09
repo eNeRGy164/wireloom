@@ -50,7 +50,7 @@ public struct ValueUnmanaged : INativeTopicType<Value>
     /// <remarks>Use this method to prepare native storage before conversion. Call <see cref="Destroy"/> when the native representation is no longer needed.</remarks>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        text.Initialize(size: 16, allocateMemory: allocateMemory);
+        text.Initialize(size: 16, allocateMemory);
     }
 
     /// <summary>

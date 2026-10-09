@@ -47,7 +47,7 @@ public struct NamesUnmanaged : INativeTopicType<Names>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize(max: 4, absoluteMax: 4, maxStrLen: 32, allocateMemory: allocateMemory);
+        Value.Initialize(max: 4, absoluteMax: 4, maxStrLen: 32, allocateMemory);
     }
 
     /// <summary>

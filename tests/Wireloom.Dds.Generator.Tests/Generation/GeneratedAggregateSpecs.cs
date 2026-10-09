@@ -42,7 +42,7 @@ public sealed class GeneratedAggregateSpecs
         native.ShouldContain("allocatePointers.Destroy(optionalsOnly);");
         native.ShouldContain("allocateMemory.Destroy(optionalsOnly);");
         native.ShouldContain("this.allocatePointers.Initialize(allocatePointers, allocateMemory);");
-        native.ShouldContain("this.allocateMemory.Initialize<int>(max: 2, absoluteMax: 2, allocateMemory: allocateMemory);");
+        native.ShouldContain("this.allocateMemory.Initialize<int>(max: 2, absoluteMax: 2, allocateMemory);");
         native.ShouldContain("value = sample.value;");
         native.ShouldContain("sample.value = value;");
         native.ShouldNotContain("this.value.FromNative");

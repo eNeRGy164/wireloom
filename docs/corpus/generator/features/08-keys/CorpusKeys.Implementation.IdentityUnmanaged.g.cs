@@ -54,7 +54,7 @@ public struct IdentityUnmanaged : INativeTopicType<Identity>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         tenant = 0;
-        name.Initialize(size: 16, allocateMemory: allocateMemory);
+        name.Initialize(size: 16, allocateMemory);
     }
 
     /// <summary>

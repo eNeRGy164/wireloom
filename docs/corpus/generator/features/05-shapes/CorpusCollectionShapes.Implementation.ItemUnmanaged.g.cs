@@ -54,7 +54,7 @@ public struct ItemUnmanaged : INativeTopicType<Item>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         id = 0;
-        label.Initialize(size: 12, allocateMemory: allocateMemory);
+        label.Initialize(size: 12, allocateMemory);
     }
 
     /// <summary>

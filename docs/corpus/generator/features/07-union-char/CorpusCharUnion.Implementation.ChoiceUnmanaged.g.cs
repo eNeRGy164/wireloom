@@ -67,7 +67,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
         _discriminator = NativeChar.ToUtf8(Choice.DefaultDiscriminator);
 
         letter = 0;
-        text.Initialize(size: 255, allocateMemory: allocateMemory);
+        text.Initialize(size: 255, allocateMemory);
 
         other = 0;
     }

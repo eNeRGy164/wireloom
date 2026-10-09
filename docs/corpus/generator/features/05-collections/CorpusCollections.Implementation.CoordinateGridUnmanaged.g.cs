@@ -42,7 +42,7 @@ public struct CoordinateGridUnmanaged : INativeTopicType<CoordinateGrid>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize<int>(dimension: 2 * 3, allocateMemory: allocateMemory);
+        Value.Initialize<int>(dimension: 2 * 3, allocateMemory);
     }
 
     /// <summary>

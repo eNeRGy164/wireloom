@@ -62,10 +62,10 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     /// <remarks>Use this method to prepare native storage before conversion. Call <see cref="Destroy"/> when the native representation is no longer needed.</remarks>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        unbounded.Initialize(size: 255, allocateMemory: allocateMemory);
-        bounded.Initialize(size: 8, allocateMemory: allocateMemory);
-        wideUnbounded.Initialize(size: 255, allocateMemory: allocateMemory);
-        wideBounded.Initialize(size: 8, allocateMemory: allocateMemory);
+        unbounded.Initialize(size: 255, allocateMemory);
+        bounded.Initialize(size: 8, allocateMemory);
+        wideUnbounded.Initialize(size: 255, allocateMemory);
+        wideBounded.Initialize(size: 8, allocateMemory);
     }
 
     /// <summary>

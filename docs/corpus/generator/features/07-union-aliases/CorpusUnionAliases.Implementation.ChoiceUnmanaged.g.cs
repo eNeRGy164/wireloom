@@ -63,7 +63,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
 
         zero = 0;
 
-        ten.Initialize(size: 255, allocateMemory: allocateMemory);
+        ten.Initialize(size: 255, allocateMemory);
     }
 
     /// <summary>

@@ -42,7 +42,7 @@ public struct ColorSequenceUnmanaged : INativeTopicType<ColorSequence>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize<Color>(max: 3, absoluteMax: 3, allocateMemory: allocateMemory);
+        Value.Initialize<Color>(max: 3, absoluteMax: 3, allocateMemory);
     }
 
     /// <summary>
