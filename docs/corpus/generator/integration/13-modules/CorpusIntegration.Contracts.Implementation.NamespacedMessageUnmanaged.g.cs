@@ -30,7 +30,7 @@ public struct NamespacedMessageUnmanaged : INativeTopicType<NamespacedMessage>
     /// </summary>
     /// <param name="sample">The managed sample to populate.</param>
     /// <param name="keysOnly">When the type has key members, whether to copy only those members.</param>
-    /// <remarks>The operation copies values into <paramref name="sample"/>. For an unkeyed type, all members are copied even when <paramref name="keysOnly"/> is true.</remarks>
+    /// <remarks>The operation copies values into <paramref name="sample"/>.</remarks>
     public void FromNative(NamespacedMessage sample, bool keysOnly = false)
     {
         sample.enabled = global::System.Convert.ToBoolean(enabled);
@@ -52,7 +52,7 @@ public struct NamespacedMessageUnmanaged : INativeTopicType<NamespacedMessage>
     /// </summary>
     /// <param name="sample">The managed sample to copy.</param>
     /// <param name="keysOnly">When the type has key members, whether to copy only those members.</param>
-    /// <remarks>The operation copies values from <paramref name="sample"/> into native storage. For an unkeyed type, all members are copied even when <paramref name="keysOnly"/> is true.</remarks>
+    /// <remarks>The operation copies values from <paramref name="sample"/> into native storage.</remarks>
     public void ToNative(NamespacedMessage sample, bool keysOnly = false)
     {
         enabled = global::System.Convert.ToByte(sample.enabled);

@@ -187,6 +187,9 @@ public sealed class GeneratedAggregateSpecs
         managed.ShouldContain("public string text");
 
         var unmanaged = documents["Keyed.Implementation.SampleUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("The operation copies values into <paramref name=\"sample\"/>. When <paramref name=\"keysOnly\"/> is true, only key members are copied.");
+        unmanaged.ShouldContain("The operation copies values from <paramref name=\"sample\"/> into native storage. When <paramref name=\"keysOnly\"/> is true, only key members are copied.");
+        unmanaged.ShouldNotContain("For an unkeyed type");
         unmanaged.ShouldContainInOrder(
             "sample.id = id;",
             "if (keysOnly)",

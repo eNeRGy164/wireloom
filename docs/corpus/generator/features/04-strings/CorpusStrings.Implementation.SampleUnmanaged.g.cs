@@ -42,7 +42,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     /// </summary>
     /// <param name="sample">The managed sample to populate.</param>
     /// <param name="keysOnly">When the type has key members, whether to copy only those members.</param>
-    /// <remarks>The operation copies values into <paramref name="sample"/>. For an unkeyed type, all members are copied even when <paramref name="keysOnly"/> is true.</remarks>
+    /// <remarks>The operation copies values into <paramref name="sample"/>.</remarks>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         sample.unbounded = unbounded.FromNative();
@@ -73,7 +73,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     /// </summary>
     /// <param name="sample">The managed sample to copy.</param>
     /// <param name="keysOnly">When the type has key members, whether to copy only those members.</param>
-    /// <remarks>The operation copies values from <paramref name="sample"/> into native storage. For an unkeyed type, all members are copied even when <paramref name="keysOnly"/> is true.</remarks>
+    /// <remarks>The operation copies values from <paramref name="sample"/> into native storage.</remarks>
     public void ToNative(Sample sample, bool keysOnly = false)
     {
         unbounded.ToNative(sample.unbounded, 255);

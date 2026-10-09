@@ -37,7 +37,7 @@ public struct SimpleUnmanaged : INativeTopicType<Simple>
     /// </summary>
     /// <param name="sample">The managed sample to populate.</param>
     /// <param name="keysOnly">When the type has key members, whether to copy only those members.</param>
-    /// <remarks>The operation copies values into <paramref name="sample"/>. For an unkeyed type, all members are copied even when <paramref name="keysOnly"/> is true.</remarks>
+    /// <remarks>The operation copies values into <paramref name="sample"/>. When <paramref name="keysOnly"/> is true, only key members are copied.</remarks>
     public void FromNative(Simple sample, bool keysOnly = false)
     {
         sample.id = id;
@@ -67,7 +67,7 @@ public struct SimpleUnmanaged : INativeTopicType<Simple>
     /// </summary>
     /// <param name="sample">The managed sample to copy.</param>
     /// <param name="keysOnly">When the type has key members, whether to copy only those members.</param>
-    /// <remarks>The operation copies values from <paramref name="sample"/> into native storage. For an unkeyed type, all members are copied even when <paramref name="keysOnly"/> is true.</remarks>
+    /// <remarks>The operation copies values from <paramref name="sample"/> into native storage. When <paramref name="keysOnly"/> is true, only key members are copied.</remarks>
     public void ToNative(Simple sample, bool keysOnly = false)
     {
         id = sample.id;

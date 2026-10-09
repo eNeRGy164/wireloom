@@ -55,6 +55,9 @@ public sealed class GeneratedScalarSpecs
         unmanaged.ShouldContain("public void FromNative(Sample sample, bool keysOnly = false)");
         unmanaged.ShouldContain("public void Initialize(bool allocatePointers = true, bool allocateMemory = true)");
         unmanaged.ShouldContain("public void ToNative(Sample sample, bool keysOnly = false)");
+        unmanaged.ShouldContain("The operation copies values into <paramref name=\"sample\"/>.");
+        unmanaged.ShouldContain("The operation copies values from <paramref name=\"sample\"/> into native storage.");
+        unmanaged.ShouldNotContain("For an unkeyed type");
         unmanaged.ShouldNotContain("using Omg.Types;");
 
         var samplePlugin = documents["Primitive.Implementation.SamplePlugin.g.cs"].Source;
