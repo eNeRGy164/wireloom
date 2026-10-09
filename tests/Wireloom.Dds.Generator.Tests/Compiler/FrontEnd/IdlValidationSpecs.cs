@@ -728,7 +728,7 @@ public sealed class IdlValidationSpecs
     }
 
     [Fact]
-    public void RejectsOptionalAggregateMembers()
+    public void AcceptsOptionalAggregateMembers()
     {
         // Arrange
         var input = Input(
@@ -736,10 +736,10 @@ public sealed class IdlValidationSpecs
             "struct Payload { long value; }; struct Holder { @optional Payload payload; };");
 
         // Act
-        var exception = Should.Throw<IdlException>(() => Compile(input));
+        var output = Compile(input);
 
         // Assert
-        exception.Message.ShouldContain("Optional aggregate members are not supported yet");
+        output.ShouldContain("class Holder");
     }
 
     [Theory]

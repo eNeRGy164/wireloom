@@ -52,10 +52,10 @@ internal static class CollectionAliasManagedEmitter
             writer.BlankLine();
 
             writer.WriteXmlSummary("Initializes the typedef with a sequence value.");
-            writer.WriteXmlParam("Value", "The sequence value to store.");
+            writer.WriteXmlParam("value", "The sequence value to store.");
             writer.WriteXmlRemarks("The typedef stores the supplied sequence reference; it does not make a copy.");
-            writer.OpenBlock($"public {typeName}(ISequence<{elementReference}> Value)");
-            writer.WriteLine("this.Value = Value;");
+            writer.OpenBlock($"public {typeName}(ISequence<{elementReference}> value)");
+            writer.WriteLine("Value = value;");
             writer.CloseBlock();
             writer.BlankLine();
 
@@ -122,10 +122,10 @@ internal static class CollectionAliasManagedEmitter
             writer.BlankLine();
 
             writer.WriteXmlSummary("Initializes the typedef with an array value.");
-            writer.WriteXmlParam("Value", "The array value to store.");
+            writer.WriteXmlParam("value", "The array value to store.");
             writer.WriteXmlRemarks("The typedef stores the supplied array reference; it does not make a copy.");
-            writer.OpenBlock($"public {typeName}({arrayType} Value)");
-            writer.WriteLine("this.Value = Value;");
+            writer.OpenBlock($"public {typeName}({arrayType} value)");
+            writer.WriteLine("Value = value;");
             writer.CloseBlock();
             writer.BlankLine();
 
@@ -226,17 +226,22 @@ internal static class CollectionAliasManagedEmitter
 
             writer.WriteXmlSummary("Initializes the typedef value to its default value.");
             writer.OpenBlock($"public {typeName}()");
+            if (plan.IsAggregate)
+            {
+                writer.WriteLine($"Value = new {elementReference}();");
+            }
+
             writer.CloseBlock();
             writer.BlankLine();
 
             writer.WriteXmlSummary("Initializes the typedef with a value.");
-            writer.WriteXmlParam("Value", "The value to store.");
+            writer.WriteXmlParam("value", "The value to store.");
             if (requiresNullForgivingValueInitializer || plan.IsString)
             {
                 writer.WriteXmlRemarks("The constructor stores the supplied reference as provided; it does not make a copy.");
             }
-            writer.OpenBlock($"public {typeName}({elementReference} Value)");
-            writer.WriteLine("this.Value = Value;");
+            writer.OpenBlock($"public {typeName}({elementReference} value)");
+            writer.WriteLine("Value = value;");
             writer.CloseBlock();
             writer.BlankLine();
 
@@ -247,7 +252,7 @@ internal static class CollectionAliasManagedEmitter
             writer.OpenBlock("if (other is not null)");
             if (plan.IsAggregate)
             {
-                writer.WriteLine($"Value = other.Value is null ? null! : new {elementReference}(other.Value);");
+                writer.WriteLine($"Value = new {elementReference}(other.Value);");
             }
             else
             {

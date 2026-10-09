@@ -280,12 +280,25 @@ public sealed class GeneratedUnionContractSpecs
         var input = Input("unmatched-union.idl", "union Choice switch(long) { case 1: long value; };");
 
         // Act
-        var managed = CompileSources(input)["Choice.g.cs"].Source;
+        var documents = CompileSources(input);
 
         // Assert
+        var managed = documents["Choice.g.cs"].Source;
         managed.ShouldContain("If it matches no declared label, no branch is active.");
         managed.ShouldContain("If the default discriminator matches no declared label, no branch is active.");
         managed.ShouldContain("When neither discriminator selects a branch, equality depends on the discriminator alone.");
+
+        var unmanaged = documents["Implementation.ChoiceUnmanaged.g.cs"].Source;
+        unmanaged.ShouldNotContain("default:");
+
+        var fromNativeStart = unmanaged.IndexOf("public void FromNative(", StringComparison.Ordinal);
+        var toNativeStart = unmanaged.IndexOf("public void ToNative(", StringComparison.Ordinal);
+        fromNativeStart.ShouldBeGreaterThanOrEqualTo(0);
+        toNativeStart.ShouldBeGreaterThanOrEqualTo(0);
+        var fromNative = unmanaged[fromNativeStart..toNativeStart];
+        var toNative = unmanaged[toNativeStart..];
+        fromNative.ShouldContain("break;\n        }\n    }");
+        toNative.ShouldContain("break;\n        }\n    }");
     }
 
     [Fact]

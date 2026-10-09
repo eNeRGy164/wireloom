@@ -84,11 +84,11 @@ internal static class ManagedDataTypeEmitter
 
             if (field.IsOptional && (field.IsArray || field.IsSequence))
             {
-                propertySummary += " A null value means absent; an empty collection is present with no elements.";
+                propertySummary += " A <see langword=\"null\"/> value means absent; an empty collection is present with no elements.";
             }
             else if (field.IsOptional)
             {
-                propertySummary += " A null value means the member is absent.";
+                propertySummary += " A <see langword=\"null\"/> value means the member is absent.";
             }
 
             if (field.MemberId is int memberId)

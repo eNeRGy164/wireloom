@@ -125,6 +125,7 @@ public sealed class GeneratedCollectionSpecs
         managed.ShouldContain("public ISequence<int>? values");
         managed.ShouldContain("public int[,]? grid");
         managed.ShouldContain("public string? text");
+        managed.ShouldContain("A <see langword=\"null\"/> value means absent; an empty collection is present with no elements.");
 
         var unmanaged = documents["Optional.Implementation.SampleUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("NativeOptionalSeq values");

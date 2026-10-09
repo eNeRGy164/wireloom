@@ -102,6 +102,9 @@ internal sealed class IdlUnionParser
         }
 
         var branchType = NormalizeIdlType(branch.Groups["type"].Value);
+        // RTI accepts @optional on a union branch but omits it from the generated
+        // C# contract and DynamicType. A union always selects one branch, so the
+        // annotation does not make the selected branch independently absent.
         var field = ParseUnionBranchField(input, branchName, branchType, sourceOffset + offset, currentNamespace);
         var labels = new List<string>();
 

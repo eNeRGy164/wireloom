@@ -2,11 +2,12 @@ using Wireloom.Compiler.FrontEnd.Semantic;
 
 namespace Wireloom.Compiler.Emission.Model;
 
-/// <summary>Describes an IDL field and its projected target type.</summary>
-internal sealed class IdlEmissionField(string name, EmissionTypePlan type, EmissionMetadata metadata)
+/// <summary>Describes an IDL field and its projected target types.</summary>
+internal sealed class IdlEmissionField(string name, EmissionTypePlan type, EmissionMetadata metadata, EmissionTypePlan? declaredType = null)
 {
     public string Name { get; } = name;
     public EmissionTypePlan Type { get; } = type;
+    public EmissionTypePlan DeclaredType { get; } = declaredType ?? type;
     public bool IsKey => Metadata.IsKey;
     public int? MemberId => Metadata.MemberId;
     public bool IsOptional => Metadata.IsOptional;

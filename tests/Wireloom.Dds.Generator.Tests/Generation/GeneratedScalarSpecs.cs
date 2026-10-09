@@ -155,6 +155,7 @@ public sealed class GeneratedScalarSpecs
         var sample = documents["OptionalPrimitive.Sample.g.cs"].Source;
         sample.ShouldContain("[Optional]");
         sample.ShouldContain("public int? value");
+        sample.ShouldContain("A <see langword=\"null\"/> value means the member is absent.");
 
         var unmanaged = documents["OptionalPrimitive.Implementation.SampleUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("NativeUnmanagedOptional value");

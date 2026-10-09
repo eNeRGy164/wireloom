@@ -88,6 +88,7 @@ internal static class UnionEmitter
         writer.WriteXmlSummary($"Initializes a new union with its RTI default discriminator. {constructorBranchSummary}");
         writer.OpenBlock($"public {typeName}()");
         writer.WriteLine("Discriminator = DefaultDiscriminator;");
+        EmitDefaultDiscriminatorBranchInitialization(writer, declaration);
         writer.CloseBlock();
         writer.BlankLine();
 
@@ -159,6 +160,22 @@ internal static class UnionEmitter
             new GeneratedIdlSource(names.Managed.HintName, writer.ToString()),
             .. UnionTypeSupportEmitter.Emit(declaration, names, sourceIdlFileName)
         ];
+    }
+
+    private static void EmitDefaultDiscriminatorBranchInitialization(GeneratedSourceWriter writer, IdlEmissionUnion declaration)
+    {
+        var branch = declaration.DefaultDiscriminatorBranch;
+        if (branch is null)
+        {
+            return;
+        }
+
+        var initialization = branch.Plan.ManagedDefaultInitializationStatementFor(ManagedBackingFieldName(declaration, branch));
+        if (initialization is not null)
+        {
+            writer.BlankLine();
+            writer.WriteLine(initialization);
+        }
     }
 
     /// <summary>Emits one public union branch and its discriminator guard.</summary>
@@ -284,7 +301,7 @@ internal static class UnionEmitter
         }
 
         var defaultBranch = declaration.DefaultBranch;
-        if (defaultBranch is null && declaration.IsExhaustiveBoolean)
+        if (defaultBranch is null)
         {
             writer.CloseBlock();
             return;
@@ -292,13 +309,8 @@ internal static class UnionEmitter
 
         writer.WriteLine("default:");
         writer.Indent();
-
-        if (defaultBranch is not null)
-        {
-            var copiedValue = defaultBranch.Plan.BuildUnionCopyExpression(source);
-            writer.WriteLine($"{destination}.{ManagedBackingFieldName(declaration, defaultBranch)}{assignment}{copiedValue};");
-        }
-
+        var defaultCopiedValue = defaultBranch.Plan.BuildUnionCopyExpression(source);
+        writer.WriteLine($"{destination}.{ManagedBackingFieldName(declaration, defaultBranch)}{assignment}{defaultCopiedValue};");
         writer.WriteLine("break;");
         writer.Unindent();
         writer.CloseBlock();

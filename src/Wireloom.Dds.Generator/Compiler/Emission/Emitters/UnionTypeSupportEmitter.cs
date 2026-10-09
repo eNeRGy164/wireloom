@@ -193,8 +193,11 @@ internal static class UnionTypeSupportEmitter
 
         writer.OpenBlock($"switch ({declaration.NativeDiscriminatorReadExpression("_discriminator")})");
 
-        foreach (var branch in declaration.ExplicitBranches)
+        var explicitBranches = declaration.ExplicitBranches;
+        for (var branchIndex = 0; branchIndex < explicitBranches.Count; branchIndex++)
         {
+            var branch = explicitBranches[branchIndex];
+
             foreach (var label in branch.Labels)
             {
                 writer.WriteLine($"case {label}:");
@@ -229,36 +232,42 @@ internal static class UnionTypeSupportEmitter
             }
 
             writer.WriteLine("break;");
-            writer.BlankLine();
             writer.Unindent();
+
+            if (branchIndex < explicitBranches.Count - 1)
+            {
+                writer.BlankLine();
+            }
         }
 
-        if (!declaration.IsExhaustiveBoolean)
+        var defaultBranch = declaration.DefaultBranch;
+        if (!declaration.IsExhaustiveBoolean && defaultBranch is not null)
         {
+            if (explicitBranches.Count > 0)
+            {
+                writer.BlankLine();
+            }
+
             writer.WriteLine("default:");
             writer.Indent();
 
-            var defaultBranch = declaration.DefaultBranch;
-            if (defaultBranch is not null)
+            if (fromNative)
             {
-                if (fromNative)
+                EmitManagedBranchInitialization(writer, declaration, defaultBranch);
+                var nativeFieldPrefix = NativeFieldPrefix(defaultBranch.Plan, "sample", "keysOnly");
+                var statement = defaultBranch.Plan.BuildFromNativeStatement(false, implementationNamespace, nativeFieldPrefix);
+                var valueExpression = defaultBranch.Plan.BuildFromNativeValueExpression(nativeFieldPrefix);
+                if (valueExpression is null)
                 {
-                    EmitManagedBranchInitialization(writer, declaration, defaultBranch);
-                    var nativeFieldPrefix = NativeFieldPrefix(defaultBranch.Plan, "sample", "keysOnly");
-                    var statement = defaultBranch.Plan.BuildFromNativeStatement(false, implementationNamespace, nativeFieldPrefix);
-                    var valueExpression = defaultBranch.Plan.BuildFromNativeValueExpression(nativeFieldPrefix);
-                    if (valueExpression is null)
-                    {
-                        writer.WriteLine(statement);
-                        valueExpression = $"sample.{defaultBranch.Plan.EscapedName}";
-                    }
+                    writer.WriteLine(statement);
+                    valueExpression = $"sample.{defaultBranch.Plan.EscapedName}";
+                }
 
-                    writer.WriteLine($"sample.{IdlNaming.EscapeIdentifier($"Set{defaultBranch.Field.Name}")}({valueExpression}, {declaration.NativeDiscriminatorReadExpression("_discriminator")});");
-                }
-                else
-                {
-                    writer.WriteLine(defaultBranch.Plan.BuildToNativeStatement(false, implementationNamespace, NativeFieldPrefix(defaultBranch.Plan, "sample", "keysOnly")));
-                }
+                writer.WriteLine($"sample.{IdlNaming.EscapeIdentifier($"Set{defaultBranch.Field.Name}")}({valueExpression}, {declaration.NativeDiscriminatorReadExpression("_discriminator")});");
+            }
+            else
+            {
+                writer.WriteLine(defaultBranch.Plan.BuildToNativeStatement(false, implementationNamespace, NativeFieldPrefix(defaultBranch.Plan, "sample", "keysOnly")));
             }
 
             writer.WriteLine("break;");

@@ -301,6 +301,71 @@ public sealed class GeneratedAggregateSpecs
     }
 
     [Fact]
+    public void OptionalAggregateMembersPreservePresenceAndSupportNestedAliases()
+    {
+        // Arrange
+        var input = Input("optional-aggregate-members.idl",
+            """
+            module OptionalAggregateMembers {
+                struct Payload { long value; };
+                typedef Payload PayloadAlias;
+                typedef PayloadAlias PayloadAliasChain;
+                union Choice switch(long) { case 0: long number; case 1: @optional Payload payload; };
+                typedef Choice ChoiceAlias;
+                typedef ChoiceAlias ChoiceAliasChain;
+                struct Sample {
+                    @optional Payload payload;
+                    @optional PayloadAliasChain nestedPayload;
+                    @optional ChoiceAliasChain choice;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["OptionalAggregateMembers.Sample.g.cs"].Source;
+        var choice = documents["OptionalAggregateMembers.Choice.g.cs"].Source;
+        var unmanaged = documents["OptionalAggregateMembers.Implementation.SampleUnmanaged.g.cs"].Source;
+        var plugin = documents["OptionalAggregateMembers.Implementation.SamplePlugin.g.cs"].Source;
+
+        managed.ShouldContain("public Payload? payload { get; set; }");
+        managed.ShouldContain("public Payload? nestedPayload { get; set; }");
+        managed.ShouldContain("public Choice? choice { get; set; }");
+        choice.ShouldContain("public Payload payload");
+        choice.ShouldNotContain("[Optional]");
+        managed.ShouldContain("other.payload is null ? null : new");
+        managed.ShouldContain("other.nestedPayload is null ? null : new");
+        managed.ShouldContain("other.choice is null ? null : new");
+
+        unmanaged.ShouldContain("private NativeManagedOptional payload;");
+        unmanaged.ShouldContain("private NativeManagedOptional nestedPayload;");
+        unmanaged.ShouldContain("private NativeManagedOptional choice;");
+        unmanaged.ShouldContain("payload.FromNative<");
+        unmanaged.ShouldContain("out var payloadTemporary_");
+        unmanaged.ShouldContain("nestedPayload.FromNative<");
+        unmanaged.ShouldContain("out var nestedPayloadTemporary_");
+        unmanaged.ShouldContain("choice.FromNative<");
+        unmanaged.ShouldContain("out var choiceTemporary_");
+        unmanaged.ShouldContain("payload.ToNative<");
+        unmanaged.ShouldContain("sample.payload");
+        unmanaged.ShouldContain("nestedPayload.ToNative<");
+        unmanaged.ShouldContain("sample.nestedPayload");
+        unmanaged.ShouldContain("choice.ToNative<");
+        unmanaged.ShouldContain("sample.choice");
+        unmanaged.ShouldContain("payload.Destroy<");
+        unmanaged.ShouldContain("nestedPayload.Destroy<");
+        unmanaged.ShouldContain("choice.Destroy<");
+        plugin.ShouldContain("new StructMember(\"payload\"");
+        plugin.ShouldContain("new StructMember(\"nestedPayload\"");
+        plugin.ShouldContain("new StructMember(\"choice\"");
+        plugin.ShouldContain("new StructMember(\"nestedPayload\", PayloadAliasChainSupport.Instance.GetDynamicTypeInternal(isPublic), isOptional: true, id: 1)");
+        plugin.ShouldContain("new StructMember(\"choice\", ChoiceAliasChainSupport.Instance.GetDynamicTypeInternal(isPublic), isOptional: true, id: 2)");
+        plugin.ShouldContain("isOptional: true");
+    }
+
+    [Fact]
     [Trait("Corpus", "C021")]
     public void AggregateMembersNamedSampleQualifyNativeStorageWhenForwarding()
     {

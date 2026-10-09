@@ -79,6 +79,36 @@ public sealed class GeneratedTypedefSpecs
     }
 
     [Fact]
+    public void InitializesAggregateAliasValueInParameterlessConstructor()
+    {
+        // Arrange
+        var input = Input(
+            "aggregate-value-alias-default.idl",
+            "module AggregateAliases { struct Item { long value; }; typedef Item ItemAlias; };");
+
+        // Act
+        var alias = CompileSources(input)["AggregateAliases.ItemAlias.g.cs"].Source;
+
+        // Assert
+        alias.ShouldContain("public ItemAlias()\n    {\n        Value = new Item();\n    }");
+    }
+
+    [Fact]
+    public void CopiesAggregateAliasValueThroughAggregateCopyConstructorWhenSourceValueIsNull()
+    {
+        // Arrange
+        var input = Input(
+            "aggregate-value-alias-null-copy.idl",
+            "module AggregateAliases { struct Item { long value; }; typedef Item ItemAlias; };");
+
+        // Act
+        var alias = CompileSources(input)["AggregateAliases.ItemAlias.g.cs"].Source;
+
+        // Assert
+        alias.ShouldContain("Value = new Item(other.Value);");
+    }
+
+    [Fact]
     public void ResolvesNestedScalarAliasesAgainstRootScope()
     {
         // Arrange
