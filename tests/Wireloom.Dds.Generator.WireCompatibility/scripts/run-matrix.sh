@@ -63,6 +63,9 @@ fixtures_for_case() {
         09-optional-collections)
             printf '%s\n' optional-absent optional-empty optional-single optional-multiple
             ;;
+        09-optional-aggregate-member)
+            printf '%s\n' optional-absent optional-present
+            ;;
         09-optional-string-sequences)
             printf '%s\n' optional-absent optional-narrow-only optional-wide-only optional-empty optional-multiple
             ;;
