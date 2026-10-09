@@ -108,20 +108,26 @@ internal static class NativeTypeEmitter
         string? baseUnmanagedType,
         bool inheritedHasKeys)
     {
+        var hasKeys = inheritedHasKeys || fields.Any(field => field.IsKey);
+
         writer.BlankLine();
 
         writer.WriteXmlSummary("Copies native values into a managed DDS sample.");
         writer.WriteXmlParam("sample", "The managed sample to populate.");
         writer.WriteXmlParam("keysOnly", "When the type has key members, whether to copy only those members.");
-        writer.WriteXmlRemarks("The operation copies values into <paramref name=\"sample\"/>. For an unkeyed type, all members are copied even when <paramref name=\"keysOnly\"/> is true.");
+        var remarks = "The operation copies values into <paramref name=\"sample\"/>.";
+        if (hasKeys)
+        {
+            remarks += " When <paramref name=\"keysOnly\"/> is true, only key members are copied.";
+        }
+
+        writer.WriteXmlRemarks(remarks);
         writer.OpenBlock($"public void FromNative({typeName} sample, bool keysOnly = false)");
 
         if (baseUnmanagedType is not null)
         {
             writer.WriteLine("parent.FromNative(sample, keysOnly);");
         }
-
-        var hasKeys = inheritedHasKeys || fields.Any(field => field.IsKey);
 
         var copiedFields = (hasKeys ? fields.Where(field => field.IsKey) : fields).ToArray();
         for (var fieldIndex = 0; fieldIndex < copiedFields.Length; fieldIndex++)
@@ -194,20 +200,26 @@ internal static class NativeTypeEmitter
         string? baseUnmanagedType,
         bool inheritedHasKeys)
     {
+        var hasKeys = inheritedHasKeys || fields.Any(field => field.IsKey);
+
         writer.BlankLine();
 
         writer.WriteXmlSummary("Copies a managed DDS sample into this native representation.");
         writer.WriteXmlParam("sample", "The managed sample to copy.");
         writer.WriteXmlParam("keysOnly", "When the type has key members, whether to copy only those members.");
-        writer.WriteXmlRemarks("The operation copies values from <paramref name=\"sample\"/> into native storage. For an unkeyed type, all members are copied even when <paramref name=\"keysOnly\"/> is true.");
+        var remarks = "The operation copies values from <paramref name=\"sample\"/> into native storage.";
+        if (hasKeys)
+        {
+            remarks += " When <paramref name=\"keysOnly\"/> is true, only key members are copied.";
+        }
+
+        writer.WriteXmlRemarks(remarks);
         writer.OpenBlock($"public void ToNative({typeName} sample, bool keysOnly = false)");
 
         if (baseUnmanagedType is not null)
         {
             writer.WriteLine("parent.ToNative(sample, keysOnly);");
         }
-
-        var hasKeys = inheritedHasKeys || fields.Any(field => field.IsKey);
 
         foreach (var field in hasKeys ? fields.Where(field => field.IsKey) : fields)
         {
