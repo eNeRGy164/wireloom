@@ -167,6 +167,12 @@ if ! matrix_tool list-cases "$manifest" "$exclusions" > "$scratch/case-ids.txt";
     exit 2
 fi
 mapfile -t case_ids < "$scratch/case-ids.txt"
+mapfile -t rti_only_case_ids < <(matrix_tool list-rti-only-cases "$exclusions")
+case_ids+=("${rti_only_case_ids[@]}")
+declare -A rti_only_cases=()
+for case_id in "${rti_only_case_ids[@]}"; do
+    rti_only_cases["$case_id"]=1
+done
 if [[ "${#case_ids[@]}" -eq 0 ]]; then
     echo "Case discovery returned no wire-testable cases." >&2
     exit 2
@@ -183,7 +189,11 @@ if [[ -n "${WIRE_COMPATIBILITY_CASE_FILTER:-}" ]]; then
 fi
 for case_id in "${case_ids[@]}"; do
     mapfile -t case_fixtures < <(fixtures_for_case "$case_id")
-    expected_scenario_count=$((expected_scenario_count + ${#case_fixtures[@]} * 9))
+    if [[ -n "${rti_only_cases[$case_id]:-}" ]]; then
+        expected_scenario_count=$((expected_scenario_count + ${#case_fixtures[@]} * 4))
+    else
+        expected_scenario_count=$((expected_scenario_count + ${#case_fixtures[@]} * 9))
+    fi
 done
 
 # Seed every selected fixture/pairing before building. If restore, generation,
@@ -198,6 +208,10 @@ for case_id in "${case_ids[@]}"; do
             'RTI C++|Wireloom C#' 'RTI C++|RTI C#' 'RTI C++|RTI C++'; do
             writer_peer="${pairing%%|*}"
             reader_peer="${pairing#*|}"
+            if [[ -n "${rti_only_cases[$case_id]:-}" ]] \
+                && [[ "$writer_peer" == "Wireloom C#" || "$reader_peer" == "Wireloom C#" ]]; then
+                continue
+            fi
             printf '%s\t\t\t\t%s\t%s\t%s\t%s\tNOT_RUN\t%s\n' \
                 "$case_id" "$writer_peer" "$rti_version" \
                 "$reader_peer" "$rti_version" "$fixture" >> "$scenarios_tsv"
@@ -396,6 +410,12 @@ for case_id in "${case_ids[@]}"; do
 
     # Build Wireloom's C# output against the selected RTI runtime. The resulting
     # generated type name is discovered from Wireloom's emitted TypeSupport.
+    if [[ -n "${rti_only_cases[$case_id]:-}" ]]; then
+        type_name=""
+        cpp_type="CorpusOptionalAggregate::Holder"
+        idl_relative="idl/features/09-optional-aggregate-member.idl"
+        case_defines=()
+    else
     build_args=(
         --no-restore --configuration Release
         -p:WireCompatibilityCase="$case_id"
@@ -419,6 +439,7 @@ for case_id in "${case_ids[@]}"; do
     cpp_type="${discovered[1]}"
     idl_relative="${discovered[2]}"
     case_defines=("${discovered[@]:3}")
+    fi
     cs_peer="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/bin/Release/net10.0/WireCompatibility.${case_id}.dll"
 
     define_args=()
@@ -434,6 +455,7 @@ for case_id in "${case_ids[@]}"; do
     rti_cs_peer="$case_dir/rti-bin/WireCompatibility.RtiOracleProbe.dll"
     rti_build_log="$case_dir/rti-csharp-build.log"
     oracle_registry="$case_dir/rti-oracle.json"
+    rti_csharp_generated=0
     mkdir -p "$rti_csharp_dir" "$case_dir/rti-bin" "$case_dir/rti-obj"
     rti_csharp_codegen_args=(
         -language "C#" -replace -generateIncludeFiles -d "$rti_csharp_dir"
@@ -443,8 +465,42 @@ for case_id in "${case_ids[@]}"; do
         "$idl_path"
     )
     if run_tool "RTI C# generation for $case_id" "$case_dir/rtiddsgen-csharp.log" \
-        "$NDDSHOME/bin/rtiddsgen" "${rti_csharp_codegen_args[@]}" \
-        && matrix_tool discover-rti \
+        "$NDDSHOME/bin/rtiddsgen" "${rti_csharp_codegen_args[@]}"; then
+        rti_csharp_generated=1
+        mapfile -t rti_includes < <(matrix_tool includes-recursive \
+            "$idl_path" \
+            "$repo_root/docs/corpus/idl" \
+            "$repo_root/docs/corpus/idl/includes")
+        include_index=0
+        for include_entry in "${rti_includes[@]}"; do
+            IFS=$'\t' read -r include_path include_source <<< "$include_entry"
+            [[ -z "$include_source" ]] && continue
+            include_dir="$rti_csharp_dir/includes/$include_index"
+            mkdir -p "$include_dir"
+            include_codegen_args=(
+                -language "C#" -replace -generateIncludeFiles -d "$include_dir"
+                "${define_args[@]}"
+                -I "$repo_root/docs/corpus/idl"
+                -I "$repo_root/docs/corpus/idl/includes"
+                "$include_source"
+            )
+            if ! run_tool "RTI C# generation for included IDL $include_path" \
+                "$case_dir/rtiddsgen-csharp-include-$include_index.log" \
+                "$NDDSHOME/bin/rtiddsgen" "${include_codegen_args[@]}"; then
+                rti_csharp_generated=0
+                break
+            fi
+            include_index=$((include_index + 1))
+        done
+        if [[ "$rti_csharp_generated" == 1 && "$case_id" == "06-alias-composition" ]]; then
+            # RTI 7.7.0 shadows this generated member with a conversion
+            # parameter, which otherwise produces invalid C# calls.
+            sed -i -E \
+                's/^([[:space:]]*)sample\.(FromNative|ToNative)\(sample\.sample/\1this.sample.\2(sample.sample/' \
+                "$rti_csharp_dir/${case_id}Plugin.cs"
+        fi
+    fi
+    if [[ "$rti_csharp_generated" == 1 ]] && matrix_tool discover-rti \
             "$manifest" "$case_id" "$type_name" "$rti_csharp_dir" "$oracle_registry"; then
         rti_type_name="$(matrix_tool json-field "$oracle_registry" rtiCSharpType)"
         if dotnet build "$rti_csharp_project" --no-restore --configuration Release --verbosity quiet \
@@ -551,6 +607,13 @@ for case_id in "${case_ids[@]}"; do
     # failed pairing is recorded but does not stop later cases from running.
     mapfile -t case_fixtures < <(fixtures_for_case "$case_id")
     for fixture in "${case_fixtures[@]}"; do
+        if [[ -n "${rti_only_cases[$case_id]:-}" ]]; then
+            run_scenario "$case_id" "$type_name" "$rti_type_name" "$cpp_type" "$fixture" 'RTI C#' 'RTI C#' || overall_status=1
+            run_scenario "$case_id" "$type_name" "$rti_type_name" "$cpp_type" "$fixture" 'RTI C#' 'RTI C++' || overall_status=1
+            run_scenario "$case_id" "$type_name" "$rti_type_name" "$cpp_type" "$fixture" 'RTI C++' 'RTI C#' || overall_status=1
+            run_scenario "$case_id" "$type_name" "$rti_type_name" "$cpp_type" "$fixture" 'RTI C++' 'RTI C++' || overall_status=1
+            continue
+        fi
         run_scenario "$case_id" "$type_name" "$rti_type_name" "$cpp_type" "$fixture" 'Wireloom C#' 'Wireloom C#' || overall_status=1
         run_scenario "$case_id" "$type_name" "$rti_type_name" "$cpp_type" "$fixture" 'Wireloom C#' 'RTI C#' || overall_status=1
         run_scenario "$case_id" "$type_name" "$rti_type_name" "$cpp_type" "$fixture" 'Wireloom C#' 'RTI C++' || overall_status=1

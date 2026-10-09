@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 
-const string usage = "Usage: matrix-tools.cs <list-cases|case-field|case-info|json-field|discover-cases|discover-rti|includes|render-report> ...";
+const string usage = "Usage: matrix-tools.cs <list-cases|list-rti-only-cases|case-field|case-info|json-field|discover-cases|discover-rti|includes|includes-recursive|render-report> ...";
 var jsonOptions = new JsonSerializerOptions
 {
     WriteIndented = true,
@@ -30,6 +30,13 @@ try
                 var id = (string)item!["id"]!;
                 if (!unsupported.Contains(id)) Console.WriteLine(id);
             }
+            break;
+        }
+        case "list-rti-only-cases":
+        {
+            RequireArgs(2);
+            foreach (var item in ReadJson(args[1])["notImplementedCases"]!.AsArray())
+                Console.WriteLine((string)item!["id"]!);
             break;
         }
         case "case-field":
@@ -71,6 +78,9 @@ try
             break;
         case "includes":
             DiscoverIncludes(args);
+            break;
+        case "includes-recursive":
+            DiscoverIncludesRecursive(args);
             break;
         case "render-report":
             RenderReport(args);
@@ -205,6 +215,34 @@ void DiscoverIncludes(string[] commandArgs)
     }
 }
 
+void DiscoverIncludesRecursive(string[] commandArgs)
+{
+    if (commandArgs.Length != 4) throw new ArgumentException(usage);
+    var rootIdl = Path.GetFullPath(commandArgs[1]);
+    var roots = commandArgs.Skip(2).Select(Path.GetFullPath).ToArray();
+    var discovered = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { rootIdl };
+    var pending = new Queue<string>();
+    pending.Enqueue(rootIdl);
+    var includeRegex = new Regex("^\\s*#\\s*include\\s*[<\\\"]([^>\\\"]+)[>\\\"]", RegexOptions.Multiline);
+
+    while (pending.TryDequeue(out var currentIdl))
+    {
+        foreach (Match match in includeRegex.Matches(File.ReadAllText(currentIdl)))
+        {
+            var include = match.Groups[1].Value;
+            var candidates = new[] { Path.Combine(Path.GetDirectoryName(currentIdl)!, include) }
+                .Concat(roots.Select(root => Path.Combine(root, include)));
+            var source = candidates.FirstOrDefault(File.Exists);
+            if (source is null) continue;
+
+            source = Path.GetFullPath(source);
+            if (!discovered.Add(source)) continue;
+            Console.WriteLine($"{include}\t{source}");
+            pending.Enqueue(source);
+        }
+    }
+}
+
 string FindRepositoryRoot(string path)
 {
     var directory = new DirectoryInfo(Path.GetDirectoryName(Path.GetFullPath(path))!);
@@ -242,6 +280,7 @@ void RenderReport(string[] commandArgs)
     string? Adaptation(string id, string fixture, string peer)
     {
         if (id is "02-multiple" or "03-enum-values-prefix" or "03-enum-values-explicit") return "Harness wrapper IDL composes the declarations into a topic type.";
+        if (id == "06-alias-composition" && peer == "RTI C#") return "Custom generated-code workaround: qualifies the member conversion receiver because RTI 7.7.0 emits a shadowed field access.";
         if (peer != "RTI C++") return null;
         if (id == "09-optional-string-sequences" && fixture is ("optional-wide-only" or "optional-multiple")) return "Custom RTI C++ path: DynamicData C API per-element setters bypass the RTI 7.7.0 typed optional wide-string sequence serializer.";
         if (id == "07-union-wchar-label") return "Custom RTI DynamicType: manually models the wchar discriminator because rtiddsgen cannot parse wchar union labels.";
@@ -330,10 +369,10 @@ void RenderReport(string[] commandArgs)
         string Cell(string id, string fixture, (string Writer, string Reader) pairing, Dictionary<string, object?>? item)
         {
             if (item is null) return "❔";
-            var mark = item.ContainsKey("adaptations") ? "†" : "";
+            var mark = item.ContainsKey("adaptations") ? "<sup>†</sup>" : "";
             var state = (string)item["status"]!;
-            if (state == "PASS") return $"✅{mark}";
-            if (state == "FAIL") return $"{(ExpectedFailure(id, pairing.Writer, pairing.Reader, fixture) is not null ? "🟧" : "⛔")}{mark}";
+            if (state == "PASS") return $"{(mark.Length > 0 ? "🟧" : "✅")}{mark}";
+            if (state == "FAIL") return $"{(ExpectedFailure(id, pairing.Writer, pairing.Reader, fixture) is not null ? "⚠️" : "⛔")}{mark}";
             return $"❔{mark}";
         }
         var groups = all.GroupBy(item => ((string)item["case"]!, (string)item["fixture"]!)).ToDictionary(group => group.Key, group => group.ToDictionary(item => (((Dictionary<string, object?>)item["writer"]!)["peer"]!.ToString()!, ((Dictionary<string, object?>)item["reader"]!)["peer"]!.ToString()!)));
@@ -344,22 +383,37 @@ void RenderReport(string[] commandArgs)
         {
             "# Wire compatibility results", "",
             $"RTI Connext **{rtiVersion}** · **{all.Count}** DDS exchanges · **{passed}** passed · **{failed.Length}** failed (**{failed.Count(s => s.ContainsKey("expectedFailure"))}** expected) · **{notRunCount}** not run · **{unsupported.Count}** case(s) not implemented", "",
-            "Each cell is an independent producer/consumer exchange. ✅ passed, 🟧 expected failure, ⛔ unexpected failure, ❔ not run, and ⚫ — not implemented. Symbols remain distinct without relying on color alone. † means at least one endpoint used a test-harness workaround or custom IDL/type model; see Adaptations. The problem column reports observed symptoms separately from registered expected-failure explanations. A `\"` in the IDL scenario column repeats the case from the row above. Failure details are taken from sanitized endpoint logs.", "",
+            "Each cell is an independent producer/consumer exchange. A `\"` in the IDL scenario column repeats the case from the row above. Failure details are taken from sanitized endpoint logs.", "",
+            "| Legend | Meaning |",
+            "| :-- | :-- |",
+            "| ✅ | Exchange passed |",
+            "| 🟧<sup>†</sup> | Exchange passed using a test-harness workaround or custom IDL/type model |",
+            "| ⚠️ | Expected failure |",
+            "| ⛔ | Unexpected failure |",
+            "| ❔ | Not run |",
+            "| ⚫ — | Not implemented |",
+            "| <sup>†</sup> | At least one endpoint used an adaptation; details appear in Adaptations. |",
+            "",
+            "The problem column separates observed symptoms from registered expected-failure explanations. Symbols remain distinct without relying on color alone.", "",
             "| IDL scenario | Variation | " + string.Join(" | ", pairings.Select(p => $"{p.Item1} → {p.Item2}")) + " | Adaptations | Problem / defect |",
             "| :-- | :-- | " + string.Join(" | ", pairings.Select(_ => ":--:")) + " | :-- | :-- |",
         };
-        var reportRows = groups.Select(g => (g.Key.Item1, g.Key.Item2, g.Value, (JsonNode?)null))
-            .Concat(unsupported.Select(item => ((string)item!["id"]!, "not implemented", new Dictionary<(string, string), Dictionary<string, object?>>(), (JsonNode?)item)))
+        var unsupportedById = unsupported.ToDictionary(item => (string)item!["id"]!, StringComparer.Ordinal);
+        var reportRows = groups.Select(g => (g.Key.Item1, g.Key.Item2, g.Value, unsupportedById.GetValueOrDefault(g.Key.Item1)))
+            .Concat(unsupported.Where(item => !groups.Keys.Any(key => key.Item1 == (string)item!["id"]!))
+                .Select(item => ((string)item!["id"]!, "not implemented", new Dictionary<(string, string), Dictionary<string, object?>>(), (JsonNode?)item)))
             .OrderBy(row => row.Item1, StringComparer.Ordinal).ThenBy(row => row.Item2, StringComparer.Ordinal).ToArray();
         string? previous = null;
         foreach (var (id, fixture, row, unsupportedCase) in reportRows)
         {
-            var cells = unsupportedCase is not null ? pairings.Select(_ => "⚫ —").ToArray() : pairings.Select(pair => Cell(id, fixture, pair, row.GetValueOrDefault(pair))).ToArray();
-            var adaptationsInRow = row.Values.SelectMany(s => s.TryGetValue("adaptations", out var value) ? ((Dictionary<string, string>)value!).Select(kv => $"**{kv.Key}:** {kv.Value}") : []).Distinct();
+            var cells = pairings.Select(pair => unsupportedCase is not null && (pair.Item1 == "Wireloom C#" || pair.Item2 == "Wireloom C#")
+                ? "⚫ —" : Cell(id, fixture, pair, row.GetValueOrDefault(pair))).ToArray();
+            var adaptationsInRow = row.Values.SelectMany(s => s.TryGetValue("adaptations", out var value) ? ((Dictionary<string, string>)value!).Select(kv => $"<sup>†</sup> **{kv.Key}:** {kv.Value}") : []).Distinct();
             var adaptationText = string.Join("<br>", adaptationsInRow).Replace("|", "\\|");
             var problems = new List<string>();
             foreach (var pair in pairings)
             {
+                if (unsupportedCase is not null && (pair.Item1 == "Wireloom C#" || pair.Item2 == "Wireloom C#")) continue;
                 var item = row.GetValueOrDefault(pair);
                 if (item is null || (string)item["status"]! is "FAIL" or "NOT_RUN")
                 {
@@ -371,9 +425,11 @@ void RenderReport(string[] commandArgs)
                         : $"**{name}:** {detail.Replace("|", "\\|")}");
                 }
             }
-            var problemText = unsupportedCase is not null
-                ? $"Not implemented by Wireloom: `{unsupportedCase["diagnostic"]}`. {unsupportedCase["reason"]} [#{unsupportedCase["issue"]!.ToString()!.TrimEnd('/').Split('/').Last()}]({unsupportedCase["issue"]})".Replace("|", "\\|")
-                : problems.Count == 0 ? "—" : string.Join("<br>", problems);
+            var problemParts = new List<string>();
+            if (unsupportedCase is not null)
+                problemParts.Add($"Not implemented by Wireloom: `{unsupportedCase["diagnostic"]}`. {unsupportedCase["reason"]} [#{unsupportedCase["issue"]!.ToString()!.TrimEnd('/').Split('/').Last()}]({unsupportedCase["issue"]})".Replace("|", "\\|"));
+            problemParts.AddRange(problems);
+            var problemText = problemParts.Count == 0 ? "—" : string.Join("<br>", problemParts);
             var caseCell = id == previous ? "\"" : $"`{id}.idl`";
             lines.Add($"| {caseCell} | `{fixture}` | {string.Join(" | ", cells)} | {(adaptationText.Length == 0 ? "—" : adaptationText)} | {problemText} |");
             previous = id;
