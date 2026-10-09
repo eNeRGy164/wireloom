@@ -43,6 +43,18 @@ internal static class FixtureCatalog
             return sample;
         }
 
+        if (caseId == "09-optional-aggregate-member")
+        {
+            if (fixture == "optional-present")
+            {
+                SetFixtureValue(sample, "payload.value", 9701);
+                SetFixtureValue(sample, "payloadAlias.value", 9703);
+                SetFixtureValue(sample, "choice.payload.value", 9702);
+                SetFixtureValue(sample, "choiceAlias.payload.value", 9704);
+            }
+            return sample;
+        }
+
         if (caseId == "09-optional-string-sequences" || fixture == "default"
             || fixture.StartsWith("optional-", StringComparison.Ordinal))
         {

@@ -225,6 +225,11 @@ int main(int argc, char **argv)
             expected.set_values("values", std::vector<int32_t>{9501, 9502, 9503});
             expected.value("items[0]", int32_t{9511});
             expected.value("items[1]", int32_t{9512});
+        } else if (case_id == "09-optional-aggregate-member" && fixture == "optional-present") {
+            expected.value("payload.value", int32_t{9701});
+            expected.value("payloadAlias.value", int32_t{9703});
+            expected.value("choice.payload.value", int32_t{9702});
+            expected.value("choiceAlias.payload.value", int32_t{9704});
         } else if (case_id == "09-optional-string-sequences" && fixture == "optional-absent") {
             // Both optional string sequences stay absent.
         } else if (case_id == "08-keys" && fixture == "non-default") {

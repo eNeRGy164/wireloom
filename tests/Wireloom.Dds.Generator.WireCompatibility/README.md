@@ -60,10 +60,17 @@ the IDL array shape, and RTI rejects the resulting C# and C++ types during
 cross-language discovery. The report marks those failures as expected; the
 same-language controls remain useful evidence. This is an unsupported
 Wireloom mapping rather than a negative IDL syntax case.
+`09-optional-aggregate-member` includes absent and present fixtures for an
+optional struct value and an optional union value whose selected branch
+contains a nested payload, including typedef aliases. Each fixture is scheduled
+across all four language pairings; the latest licensed report predates this
+case, so its wire outcomes remain pending.
 `03-alias-aggregate` and `07-union-aliases` pass all their fixture pairings
-with the current aggregate-alias projection. The latest licensed run completed
-all 372 exchanges: 364 passed and 8 failed as expected, with no unrun or
-unexpected scenarios. Two expected cross-language failures are for
+with the current aggregate-alias projection. The last complete licensed run
+before the optional aggregate fixtures completed 372 exchanges: 364 passed and
+8 failed as expected, with no unrun or unexpected scenarios. The expanded
+matrix adds eight optional aggregate exchanges; their outcomes remain pending
+an exact RTI 7.7.0 run. Two expected cross-language failures are for
 `05-array-of-sequences`. The other six are the present-wide-value pairings for
 `09-optional-string-sequences`. AddressSanitizer locates the typed C++ writer
 crash inside RTI's `std::wstring` sequence serializer; the typed C++ reader

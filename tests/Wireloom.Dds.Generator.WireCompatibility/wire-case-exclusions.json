@@ -1,13 +1,5 @@
 {
-  "notImplementedCases": [
-    {
-      "id": "09-optional-aggregate-member",
-      "status": "NOT_IMPLEMENTED",
-      "diagnostic": "DDSG0001",
-      "reason": "Wireloom rejects optional aggregate members with DDSG0001 before endpoint generation, so no DDS exchange can run until generator support is implemented.",
-      "issue": "https://github.com/eNeRGy164/wireloom/issues/32"
-    }
-  ],
+  "notImplementedCases": [],
   "expectedFailures": [
     {
       "id": "05-array-of-sequences",
