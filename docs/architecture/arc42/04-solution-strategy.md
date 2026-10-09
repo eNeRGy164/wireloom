@@ -14,9 +14,9 @@
    Unsupported declarations and invalid input produce source-located diagnostics
    rather than partial output.
 5. **Advance compatibility by case and explicit target.**
-   The retained oracle capture and initial wire baseline use RTI 7.7.0 /
-   `rtiddsgen` 4.7.0. The accepted runtime package floor (7.3.1) does not
+   The retained oracle capture uses RTI 7.7.0 / `rtiddsgen` 4.7.0, and the wire
+   matrix covers RTI 7.7.0. The accepted runtime package floor (7.3.1) does not
    guarantee that emitted code compiles against every accepted package version.
-   Add an explicit generator target version and version-aware emission before
-   claiming older API compatibility. A feature becomes a compatibility claim
-   only after relevant source-shape, runtime, and interoperability evidence.
+   Generated-code compatibility with older RTI APIs is not established. A
+   feature becomes a compatibility claim only after relevant source-shape,
+   runtime, and interoperability evidence.

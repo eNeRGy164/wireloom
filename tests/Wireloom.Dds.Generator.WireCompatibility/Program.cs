@@ -67,9 +67,12 @@ internal static class Program
             typeSupport.DynamicType,
             options.CaseId,
             options.Fixture);
-        var expected = options.CaseId == "09-optional-string-sequences"
-            ? CreateOptionalStringSequenceFixture<T>(options.Fixture)
-            : serializer.FromDynamicData(expectedDynamic);
+        var expected = options.CaseId switch
+        {
+            "09-optional-string-sequences" => CreateOptionalStringSequenceFixture<T>(options.Fixture),
+            "09-optional-aggregate-member" => CreateOptionalAggregateMemberFixture<T>(options.Fixture),
+            _ => serializer.FromDynamicData(expectedDynamic)
+        };
 
         using var participant = DomainParticipantFactory.Instance.CreateParticipant(domainId: 0);
         using var topic = participant.CreateTopic<T>(options.TopicName);
@@ -218,6 +221,13 @@ internal static class Program
                         IndependentSampleVerifier.VerifyOptionalStringSequenceFixture(
                             sample!, options.Fixture);
                     }
+                    else if (options.CaseId == "09-optional-aggregate-member")
+                    {
+                        IndependentSampleVerifier.VerifyOptionalAggregateMemberFixture(
+                            expected!,
+                            sample!,
+                            $"{options.CaseId} fixture {options.Fixture}");
+                    }
                     else
                     {
                         IndependentSampleVerifier.Verify(
@@ -242,6 +252,57 @@ internal static class Program
         WriteReaderStatistics(reader, takeCalls, returnedSamples, validSamples, invalidSamples);
         throw new TimeoutException(
             $"No sample received for {options.CaseId} fixture {options.Fixture}.");
+    }
+
+    private static T CreateOptionalAggregateMemberFixture<T>(string fixture)
+    {
+        var sample = Activator.CreateInstance<T>()!;
+        if (fixture == "optional-absent")
+        {
+            return sample;
+        }
+
+        if (fixture != "optional-present")
+        {
+            throw new FixtureException($"Unknown optional aggregate fixture '{fixture}'.");
+        }
+
+        var sampleType = typeof(T);
+        var payloadType = sampleType.Assembly.GetType($"{sampleType.Namespace}.Payload", throwOnError: true)!;
+        var choiceType = GetMemberValueType(sampleType, "choice");
+        var choiceAliasType = GetMemberValueType(sampleType, "choiceAlias");
+        SetPayloadMember(sample, "payload", payloadType, 9701);
+        SetPayloadMember(sample, "payloadAlias", payloadType, 9703);
+        SetChoiceMember(sample, "choice", choiceType, payloadType, 9702);
+        SetChoiceMember(sample, "choiceAlias", choiceAliasType, payloadType, 9704);
+        return sample;
+    }
+
+    private static Type GetMemberValueType(Type sampleType, string memberName)
+    {
+        var memberType = sampleType.GetProperty(memberName)!.PropertyType;
+        return Nullable.GetUnderlyingType(memberType) ?? memberType;
+    }
+
+    private static void SetPayloadMember<T>(T sample, string memberName, Type payloadType, int value)
+    {
+        var payload = Activator.CreateInstance(payloadType)!;
+        payloadType.GetProperty("value")!.SetValue(payload, value);
+        typeof(T).GetProperty(memberName)!.SetValue(sample, payload);
+    }
+
+    private static void SetChoiceMember<T>(
+        T sample,
+        string memberName,
+        Type choiceType,
+        Type payloadType,
+        int value)
+    {
+        var payload = Activator.CreateInstance(payloadType)!;
+        payloadType.GetProperty("value")!.SetValue(payload, value);
+        var choice = Activator.CreateInstance(choiceType)!;
+        choiceType.GetProperty("payload")!.SetValue(choice, payload);
+        typeof(T).GetProperty(memberName)!.SetValue(sample, choice);
     }
 
     private static void WriteReaderStatistics<T>(

@@ -67,12 +67,15 @@ int main(int argc, char **argv)
         const auto &dynamic_type = rti::topic::dynamic_type<DdsType>::get();
 #endif
         dds::domain::DomainParticipant participant(0);
-#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE)
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE)
         if (case_id == "09-optional-string-sequences"
-            || case_id == "04-strings" || case_id == "04-boundaries") {
+            || case_id == "04-strings" || case_id == "04-boundaries"
+            || case_id == "09-optional-aggregate-member") {
             const bool needs_wide_sequence_workaround = case_id == "09-optional-string-sequences"
                 && (fixture == "optional-wide-only" || fixture == "optional-multiple");
-            if (!needs_wide_sequence_workaround) {
+            if (!needs_wide_sequence_workaround
+                && (case_id != "09-optional-aggregate-member"
+                    || fixture == "optional-absent" || fixture == "optional-present")) {
                 return run_typed_fixture_peer(
                     participant, role, topic_name, timeout_seconds, case_id, fixture);
             }
@@ -268,11 +271,6 @@ int main(int argc, char **argv)
             expected.set_values("values", std::vector<int32_t>{9501, 9502, 9503});
             expected.value("items[0]", int32_t{9511});
             expected.value("items[1]", int32_t{9512});
-        } else if (case_id == "09-optional-aggregate-member" && fixture == "optional-present") {
-            expected.value("payload.value", int32_t{9701});
-            expected.value("payloadAlias.value", int32_t{9703});
-            expected.value("choice.payload.value", int32_t{9702});
-            expected.value("choiceAlias.payload.value", int32_t{9704});
         } else if (case_id == "09-optional-string-sequences" && fixture == "optional-absent") {
             // Both optional string sequences stay absent.
         } else if (case_id == "08-keys" && fixture == "non-default") {
