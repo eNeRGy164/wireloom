@@ -41,6 +41,7 @@ public struct IdentityUnmanaged : INativeTopicType<Identity>
     public void FromNative(Identity sample, bool keysOnly = false)
     {
         sample.tenant = tenant;
+
         sample.name = name.FromNative();
     }
 

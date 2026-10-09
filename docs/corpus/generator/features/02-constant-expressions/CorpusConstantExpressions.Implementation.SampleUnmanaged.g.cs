@@ -37,6 +37,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         values.FromNative((Sequence<int>)sample.values);
+
         array.FromNative(sample.array, dimension: 5);
     }
 

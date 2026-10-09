@@ -46,8 +46,11 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
         sample.unbounded = unbounded.FromNative();
+
         sample.bounded = bounded.FromNative();
+
         sample.wideUnbounded = wideUnbounded.FromNative();
+
         sample.wideBounded = wideBounded.FromNative();
     }
 

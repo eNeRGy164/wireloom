@@ -45,8 +45,11 @@ public struct KeywordRecordUnmanaged : INativeTopicType<KeywordRecord>
     public void FromNative(KeywordRecord sample, bool keysOnly = false)
     {
         sample.@event = @event;
+
         relative.FromNative(sample.relative, keysOnly: false);
+
         absolute.FromNative(sample.absolute, keysOnly: false);
+
         values.FromNative((Sequence<int>)sample.values);
     }
 

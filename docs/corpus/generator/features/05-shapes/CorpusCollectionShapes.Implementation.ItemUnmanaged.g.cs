@@ -41,6 +41,7 @@ public struct ItemUnmanaged : INativeTopicType<Item>
     public void FromNative(Item sample, bool keysOnly = false)
     {
         sample.id = id;
+
         sample.label = label.FromNative();
     }
 

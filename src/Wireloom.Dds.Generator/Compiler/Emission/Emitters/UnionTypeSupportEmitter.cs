@@ -217,14 +217,14 @@ internal static class UnionTypeSupportEmitter
                     var valueExpression = branch.Plan.BuildFromNativeValueExpression(nativeFieldPrefix);
                     if (valueExpression is null)
                     {
-                        writer.WriteLine(statement);
+                        writer.WriteLines(statement);
                         valueExpression = $"sample.{branch.Plan.EscapedName}";
                     }
 
                     statement = $"sample.{IdlNaming.EscapeIdentifier($"Set{branch.Field.Name}")}({valueExpression}, {declaration.NativeDiscriminatorReadExpression("_discriminator")});";
                 }
 
-                writer.WriteLine(statement);
+                writer.WriteLines(statement);
             }
             else
             {
@@ -259,7 +259,7 @@ internal static class UnionTypeSupportEmitter
                 var valueExpression = defaultBranch.Plan.BuildFromNativeValueExpression(nativeFieldPrefix);
                 if (valueExpression is null)
                 {
-                    writer.WriteLine(statement);
+                    writer.WriteLines(statement);
                     valueExpression = $"sample.{defaultBranch.Plan.EscapedName}";
                 }
 

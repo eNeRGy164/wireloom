@@ -42,7 +42,9 @@ public struct KeywordRecordUnmanaged : INativeTopicType<KeywordRecord>
     public void FromNative(KeywordRecord sample, bool keysOnly = false)
     {
         sample.@event = @event;
+
         sample.state = state;
+
         point.FromNative(sample.point, keysOnly: false);
     }
 

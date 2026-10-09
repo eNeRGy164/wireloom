@@ -35,6 +35,7 @@ public struct PointUnmanaged : INativeTopicType<Point>
     public void FromNative(Point sample, bool keysOnly = false)
     {
         sample.x = x;
+
         sample.y = y;
     }
 

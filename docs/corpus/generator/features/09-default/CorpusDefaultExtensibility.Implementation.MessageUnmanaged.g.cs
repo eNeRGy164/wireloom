@@ -41,6 +41,7 @@ public struct MessageUnmanaged : INativeTopicType<Message>
     public void FromNative(Message sample, bool keysOnly = false)
     {
         sample.id = id;
+
         sample.text = text.FromNative();
     }
 

@@ -42,6 +42,7 @@ public struct ComposedUnmanaged : INativeTopicType<Composed>
     public void FromNative(Composed sample, bool keysOnly = false)
     {
         @base.FromNative(sample.@base, keysOnly: false);
+
         derived.FromNative(sample.derived, keysOnly: false);
     }
 

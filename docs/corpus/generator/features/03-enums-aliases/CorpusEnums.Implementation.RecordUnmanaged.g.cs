@@ -44,9 +44,13 @@ public struct RecordUnmanaged : INativeTopicType<Record>
     public void FromNative(Record sample, bool keysOnly = false)
     {
         sample.value = value;
+
         sample.aliasValue = aliasValue;
+
         sample.color = color;
+
         sample.aliasColor = aliasColor;
+
         colors.FromNative(sample.colors, keysOnly: false);
     }
 

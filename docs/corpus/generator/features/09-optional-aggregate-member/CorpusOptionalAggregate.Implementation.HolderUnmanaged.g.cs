@@ -40,10 +40,17 @@ public struct HolderUnmanaged : INativeTopicType<Holder>
     /// <remarks>The operation copies values into <paramref name="sample"/>. For an unkeyed type, all members are copied even when <paramref name="keysOnly"/> is true.</remarks>
     public void FromNative(Holder sample, bool keysOnly = false)
     {
-        payload.FromNative<Payload, Implementation.PayloadUnmanaged>(out var payloadTemporary_); sample.payload = payloadTemporary_;
-        payloadAlias.FromNative<Payload, Implementation.PayloadUnmanaged>(out var payloadAliasTemporary_); sample.payloadAlias = payloadAliasTemporary_;
-        choice.FromNative<Choice, Implementation.ChoiceUnmanaged>(out var choiceTemporary_); sample.choice = choiceTemporary_;
-        choiceAlias.FromNative<Choice, Implementation.ChoiceUnmanaged>(out var choiceAliasTemporary_); sample.choiceAlias = choiceAliasTemporary_;
+        payload.FromNative<Payload, Implementation.PayloadUnmanaged>(out var payloadTemporary_);
+        sample.payload = payloadTemporary_;
+
+        payloadAlias.FromNative<Payload, Implementation.PayloadUnmanaged>(out var payloadAliasTemporary_);
+        sample.payloadAlias = payloadAliasTemporary_;
+
+        choice.FromNative<Choice, Implementation.ChoiceUnmanaged>(out var choiceTemporary_);
+        sample.choice = choiceTemporary_;
+
+        choiceAlias.FromNative<Choice, Implementation.ChoiceUnmanaged>(out var choiceAliasTemporary_);
+        sample.choiceAlias = choiceAliasTemporary_;
     }
 
     /// <summary>

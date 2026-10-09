@@ -35,6 +35,7 @@ public struct MessageUnmanaged : INativeTopicType<Message>
     public void FromNative(Message sample, bool keysOnly = false)
     {
         sample.first = first;
+
         sample.seventh = seventh;
     }
 
