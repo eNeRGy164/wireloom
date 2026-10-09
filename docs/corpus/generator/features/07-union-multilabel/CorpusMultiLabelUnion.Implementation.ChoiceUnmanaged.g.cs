@@ -50,9 +50,6 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
             case 2:
                 sample.text = text.FromNative();
                 break;
-
-            default:
-                break;
         }
     }
 
@@ -88,9 +85,6 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
 
             case 2:
                 text.ToNative(sample.text, 255);
-                break;
-
-            default:
                 break;
         }
     }

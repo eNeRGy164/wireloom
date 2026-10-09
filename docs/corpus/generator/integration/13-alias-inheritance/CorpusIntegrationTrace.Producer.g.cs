@@ -32,11 +32,11 @@ public partial class Producer : global::System.IEquatable<Producer>
     /// <summary>
     /// Initializes the typedef with a value.
     /// </summary>
-    /// <param name="Value">The value to store.</param>
+    /// <param name="value">The value to store.</param>
     /// <remarks>The constructor stores the supplied reference as provided; it does not make a copy.</remarks>
-    public Producer(string Value)
+    public Producer(string value)
     {
-        this.Value = Value;
+        Value = value;
     }
 
     /// <summary>

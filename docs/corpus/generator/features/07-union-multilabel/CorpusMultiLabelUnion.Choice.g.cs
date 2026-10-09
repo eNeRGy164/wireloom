@@ -137,8 +137,6 @@ public partial class Choice : global::System.IEquatable<Choice>
             case 2:
                 this._text = other.text;
                 break;
-            default:
-                break;
         }
     }
 

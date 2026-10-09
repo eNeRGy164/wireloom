@@ -106,8 +106,6 @@ public partial class Choice : global::System.IEquatable<Choice>
             case 11:
                 this._values = new Sequence<int>(other.values);
                 break;
-            default:
-                break;
         }
     }
 

@@ -29,11 +29,11 @@ public partial class Row : global::System.IEquatable<Row>
     /// <summary>
     /// Initializes the typedef with an array value.
     /// </summary>
-    /// <param name="Value">The array value to store.</param>
+    /// <param name="value">The array value to store.</param>
     /// <remarks>The typedef stores the supplied array reference; it does not make a copy.</remarks>
-    public Row(int[] Value)
+    public Row(int[] value)
     {
-        this.Value = Value;
+        Value = value;
     }
 
     /// <summary>

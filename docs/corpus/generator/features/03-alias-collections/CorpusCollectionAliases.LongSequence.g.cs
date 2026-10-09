@@ -33,11 +33,11 @@ public partial class LongSequence : global::System.IEquatable<LongSequence>
     /// <summary>
     /// Initializes the typedef with a sequence value.
     /// </summary>
-    /// <param name="Value">The sequence value to store.</param>
+    /// <param name="value">The sequence value to store.</param>
     /// <remarks>The typedef stores the supplied sequence reference; it does not make a copy.</remarks>
-    public LongSequence(ISequence<int> Value)
+    public LongSequence(ISequence<int> value)
     {
-        this.Value = Value;
+        Value = value;
     }
 
     /// <summary>

@@ -29,10 +29,10 @@ public partial class Identifier : global::System.IEquatable<Identifier>
     /// <summary>
     /// Initializes the typedef with a value.
     /// </summary>
-    /// <param name="Value">The value to store.</param>
-    public Identifier(int Value)
+    /// <param name="value">The value to store.</param>
+    public Identifier(int value)
     {
-        this.Value = Value;
+        Value = value;
     }
 
     /// <summary>

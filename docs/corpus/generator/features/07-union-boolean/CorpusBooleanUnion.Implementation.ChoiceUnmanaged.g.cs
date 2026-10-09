@@ -49,7 +49,6 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
             case false:
                 sample.disabled = disabled.FromNative();
                 break;
-
         }
     }
 
@@ -85,7 +84,6 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
             case false:
                 disabled.ToNative(sample.disabled, 255);
                 break;
-
         }
     }
 }

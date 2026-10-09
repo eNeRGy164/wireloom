@@ -135,8 +135,6 @@ public partial class Choice : global::System.IEquatable<Choice>
             case Kind.PayloadValue:
                 this._payload = new Payload(other.payload);
                 break;
-            default:
-                break;
         }
     }
 
