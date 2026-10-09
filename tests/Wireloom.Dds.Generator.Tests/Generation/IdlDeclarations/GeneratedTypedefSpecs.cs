@@ -152,7 +152,7 @@ public sealed class GeneratedTypedefSpecs
         var valuesNative = documents["CollectionAliases.Implementation.ValuesUnmanaged.g.cs"].Source;
         valuesNative.ShouldContain("private NativeSeq Value;");
         valuesNative.ShouldNotContain("NativeManagedArray");
-        valuesNative.ShouldContain("Value.Initialize<int>(max: 3, absoluteMax: 3, allocateMemory: allocateMemory);");
+        valuesNative.ShouldContain("Value.Initialize<int>(max: 3, absoluteMax: 3, allocateMemory);");
         valuesNative.ShouldContain("Value.FromNative((Sequence<int>)sample.Value);");
         valuesNative.ShouldContain("Value.ToNative((Sequence<int>)sample.Value);");
 
@@ -164,7 +164,7 @@ public sealed class GeneratedTypedefSpecs
 
         var itemsNative = documents["CollectionAliases.Implementation.ItemsUnmanaged.g.cs"].Source;
         itemsNative.ShouldNotContain("Value.Initialize<int>");
-        itemsNative.ShouldContain("Value.Initialize<Item, ItemUnmanaged>(max: 2, absoluteMax: 2, allocateMemory: allocateMemory);");
+        itemsNative.ShouldContain("Value.Initialize<Item, ItemUnmanaged>(max: 2, absoluteMax: 2, allocateMemory);");
         itemsNative.ShouldContain("Value.FromNative<Item, ItemUnmanaged>((Sequence<Item>)sample.Value);");
         itemsNative.ShouldContain("Value.ToNative<Item, ItemUnmanaged>((Sequence<Item>)sample.Value);");
 
@@ -177,7 +177,7 @@ public sealed class GeneratedTypedefSpecs
         var matrixNative = documents["CollectionAliases.Implementation.MatrixUnmanaged.g.cs"].Source;
         matrixNative.ShouldContain("private NativeUnmanagedArray Value;");
         matrixNative.ShouldNotContain("private NativeManagedArray Value;");
-        matrixNative.ShouldContain("Value.Initialize<int>(dimension: 2 * 3, allocateMemory: allocateMemory);");
+        matrixNative.ShouldContain("Value.Initialize<int>(dimension: 2 * 3, allocateMemory);");
         matrixNative.ShouldContain("Value.FromNative(sample.Value, dimension: 2 * 3);");
         matrixNative.ShouldContain("Value.ToNative<int>(sample.Value, dimension: 2 * 3);");
 
@@ -287,7 +287,7 @@ public sealed class GeneratedTypedefSpecs
         var textNative = documents["StringAliases.Implementation.TextUnmanaged.g.cs"].Source;
         textNative.ShouldContain("private NativeString Value;");
         textNative.ShouldNotContain("NativeWstring");
-        textNative.ShouldContain("Value.Initialize(size: 8, allocateMemory: allocateMemory);");
+        textNative.ShouldContain("Value.Initialize(size: 8, allocateMemory);");
         textNative.ShouldContain("sample.Value = Value.FromNative();");
         textNative.ShouldContain("Value.ToNative(sample.Value, 8);");
 
@@ -301,7 +301,7 @@ public sealed class GeneratedTypedefSpecs
         var wideTextNative = documents["StringAliases.Implementation.WideTextUnmanaged.g.cs"].Source;
         wideTextNative.ShouldContain("private NativeWstring Value;");
         wideTextNative.ShouldNotContain("NativeString");
-        wideTextNative.ShouldContain("Value.Initialize(size: 4, allocateMemory: allocateMemory);");
+        wideTextNative.ShouldContain("Value.Initialize(size: 4, allocateMemory);");
         wideTextNative.ShouldContain("sample.Value = Value.FromNative();");
         wideTextNative.ShouldContain("Value.ToNative(sample.Value, 4);");
     }
@@ -324,7 +324,7 @@ public sealed class GeneratedTypedefSpecs
         // Assert
         var textsNative = documents["StringSequenceAliases.Implementation.TextsUnmanaged.g.cs"].Source;
         textsNative.ShouldContain("private NativeStringSeq Value;");
-        textsNative.ShouldContain("Value.Initialize(max: 3, absoluteMax: 3, maxStrLen: 8, allocateMemory: allocateMemory);");
+        textsNative.ShouldContain("Value.Initialize(max: 3, absoluteMax: 3, maxStrLen: 8, allocateMemory);");
         textsNative.ShouldContain("Value.FromNative(sample.Value);");
         textsNative.ShouldContain("Value.ToNative(sample.Value, 8);");
         textsNative.ShouldContain("if (optionalsOnly)");
@@ -333,7 +333,7 @@ public sealed class GeneratedTypedefSpecs
 
         var wideTextsNative = documents["StringSequenceAliases.Implementation.WideTextsUnmanaged.g.cs"].Source;
         wideTextsNative.ShouldContain("private NativeWstringSeq Value;");
-        wideTextsNative.ShouldContain("Value.Initialize(max: 2, absoluteMax: 2, maxStrLen: 4, allocateMemory: allocateMemory);");
+        wideTextsNative.ShouldContain("Value.Initialize(max: 2, absoluteMax: 2, maxStrLen: 4, allocateMemory);");
         wideTextsNative.ShouldContain("Value.FromNative(sample.Value);");
         wideTextsNative.ShouldContain("Value.ToNative(sample.Value, 4);");
         wideTextsNative.ShouldContain("if (optionalsOnly)");

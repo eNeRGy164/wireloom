@@ -58,7 +58,7 @@ public struct UnboundedStringKeyUnmanaged : INativeTopicType<UnboundedStringKey>
     /// <remarks>Use this method to prepare native storage before conversion. Call <see cref="Destroy"/> when the native representation is no longer needed.</remarks>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        name.Initialize(size: 255, allocateMemory: allocateMemory);
+        name.Initialize(size: 255, allocateMemory);
         payload = 0;
     }
 

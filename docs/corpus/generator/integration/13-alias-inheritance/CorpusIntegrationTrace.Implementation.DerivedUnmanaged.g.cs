@@ -59,7 +59,7 @@ public struct DerivedUnmanaged : INativeTopicType<Derived>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         parent.Initialize(allocatePointers, allocateMemory);
-        state.Initialize(size: 16, allocateMemory: allocateMemory);
+        state.Initialize(size: 16, allocateMemory);
         traceContext.Initialize(allocatePointers, allocateMemory);
     }
 

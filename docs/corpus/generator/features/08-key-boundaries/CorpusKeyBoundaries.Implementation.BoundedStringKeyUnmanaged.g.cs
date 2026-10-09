@@ -58,7 +58,7 @@ public struct BoundedStringKeyUnmanaged : INativeTopicType<BoundedStringKey>
     /// <remarks>Use this method to prepare native storage before conversion. Call <see cref="Destroy"/> when the native representation is no longer needed.</remarks>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        name.Initialize(size: 12, allocateMemory: allocateMemory);
+        name.Initialize(size: 12, allocateMemory);
         payload = 0;
     }
 

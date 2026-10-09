@@ -64,7 +64,7 @@ public struct KeywordRecordUnmanaged : INativeTopicType<KeywordRecord>
         @event = 0;
         relative.Initialize(allocatePointers, allocateMemory);
         absolute.Initialize(allocatePointers, allocateMemory);
-        values.Initialize<int>(max: 4, absoluteMax: 4, allocateMemory: allocateMemory);
+        values.Initialize<int>(max: 4, absoluteMax: 4, allocateMemory);
     }
 
     /// <summary>

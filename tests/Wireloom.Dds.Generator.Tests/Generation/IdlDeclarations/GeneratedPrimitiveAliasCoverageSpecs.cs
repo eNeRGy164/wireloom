@@ -128,7 +128,7 @@ public sealed class GeneratedPrimitiveAliasCoverageSpecs
 
         var textsNative = documents["BoundedPrimitiveAliases.Implementation.TextsUnmanaged.g.cs"].Source;
         textsNative.ShouldContain("private NativeStringSeq Value;");
-        textsNative.ShouldContain("Value.Initialize(max: 3, absoluteMax: 3, maxStrLen: 8, allocateMemory: allocateMemory);");
+        textsNative.ShouldContain("Value.Initialize(max: 3, absoluteMax: 3, maxStrLen: 8, allocateMemory);");
         textsNative.ShouldContain("Value.FromNative(sample.Value);");
         textsNative.ShouldContain("Value.ToNative(sample.Value, 8);");
 
@@ -137,7 +137,7 @@ public sealed class GeneratedPrimitiveAliasCoverageSpecs
 
         var wideTextsNative = documents["BoundedPrimitiveAliases.Implementation.WideTextsUnmanaged.g.cs"].Source;
         wideTextsNative.ShouldContain("private NativeWstringSeq Value;");
-        wideTextsNative.ShouldContain("Value.Initialize(max: 2, absoluteMax: 2, maxStrLen: 4, allocateMemory: allocateMemory);");
+        wideTextsNative.ShouldContain("Value.Initialize(max: 2, absoluteMax: 2, maxStrLen: 4, allocateMemory);");
         wideTextsNative.ShouldContain("Value.FromNative(sample.Value);");
         wideTextsNative.ShouldContain("Value.ToNative(sample.Value, 4);");
     }
@@ -234,7 +234,7 @@ public sealed class GeneratedPrimitiveAliasCoverageSpecs
         plugin.ShouldContain($"CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<{csharpType}>(), {bound})");
 
         var native = documents[$"PrimitiveSequenceAliases.Implementation.{alias}Unmanaged.g.cs"].Source;
-        native.ShouldContain($"Value.Initialize<{csharpType}>(max: {bound}, absoluteMax: {bound}, allocateMemory: allocateMemory);");
+        native.ShouldContain($"Value.Initialize<{csharpType}>(max: {bound}, absoluteMax: {bound}, allocateMemory);");
         native.ShouldContain("Value.Destroy(optionalsOnly);");
         native.ShouldContain($"Value.FromNative((Sequence<{csharpType}>)sample.Value);");
         native.ShouldContain($"Value.ToNative((Sequence<{csharpType}>)sample.Value);");
@@ -253,7 +253,7 @@ public sealed class GeneratedPrimitiveAliasCoverageSpecs
 
         var native = documents[$"BoundedPrimitiveAliases.Implementation.{alias}Unmanaged.g.cs"].Source;
         native.ShouldContain($"private {nativeType} Value;");
-        native.ShouldContain($"Value.Initialize({initializeSize}, allocateMemory: allocateMemory);");
+        native.ShouldContain($"Value.Initialize({initializeSize}, allocateMemory);");
         native.ShouldContain("Value.Destroy();");
         native.ShouldContain("sample.Value = Value.FromNative();");
         native.ShouldContain($"Value.ToNative(sample.Value, {bound});");

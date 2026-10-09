@@ -50,7 +50,7 @@ public struct CorpusIntegrationMessageUnmanaged : INativeTopicType<global::Corpu
     /// <remarks>Use this method to prepare native storage before conversion. Call <see cref="Destroy"/> when the native representation is no longer needed.</remarks>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        text.Initialize(size: 255, allocateMemory: allocateMemory);
+        text.Initialize(size: 255, allocateMemory);
     }
 
     /// <summary>

@@ -18,10 +18,10 @@ internal sealed partial class MemberEmissionPlan
             var element = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
             if (HasAggregateElement)
             {
-                return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
+                return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory);";
             }
 
-            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory);";
         }
 
         if (IsAggregate)
@@ -31,7 +31,7 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsString)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {Bound}, allocateMemory: allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {Bound}, allocateMemory);";
         }
 
         if (IsOptionalScalar)
@@ -107,7 +107,7 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsString)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {Bound}, allocateMemory: allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {Bound}, allocateMemory);";
         }
 
         return $"{nativeFieldPrefix}{EscapedName} = {NativeDefaultValue(namespaceName)};";
@@ -119,15 +119,15 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsStringSequence)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.Initialize(max: {Bound}, absoluteMax: {Bound}, maxStrLen: {ElementType!.Bound}, allocateMemory: allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize(max: {Bound}, absoluteMax: {Bound}, maxStrLen: {ElementType!.Bound}, allocateMemory);";
         }
 
         if (HasAggregateElement)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory);";
         }
 
-        return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory: allocateMemory);";
+        return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory);";
     }
 
     private string BuildArrayInitializeStatement(string? namespaceName, string nativeFieldPrefix)
@@ -139,7 +139,7 @@ internal sealed partial class MemberEmissionPlan
             return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, allocatePointers: allocatePointers, allocateMemory: allocateMemory);";
         }
 
-        return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, allocateMemory: allocateMemory);";
+        return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, allocateMemory);";
     }
 
     /// <summary>Builds native destruction code for this member.</summary>

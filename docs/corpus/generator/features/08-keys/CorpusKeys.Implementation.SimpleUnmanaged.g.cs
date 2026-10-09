@@ -59,7 +59,7 @@ public struct SimpleUnmanaged : INativeTopicType<Simple>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         id = 0;
-        name.Initialize(size: 16, allocateMemory: allocateMemory);
+        name.Initialize(size: 16, allocateMemory);
     }
 
     /// <summary>

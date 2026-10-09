@@ -254,7 +254,7 @@ public sealed class GeneratedCollectionSpecs
 
         var unmanaged = documents["PrimitiveArray.Implementation.SampleUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("NativeUnmanagedArray grid");
-        unmanaged.ShouldContain("grid.Initialize<int>(dimension: 2 * 3, allocateMemory: allocateMemory)");
+        unmanaged.ShouldContain("grid.Initialize<int>(dimension: 2 * 3, allocateMemory)");
 
         var samplePlugin = documents["PrimitiveArray.Implementation.SamplePlugin.g.cs"].Source;
         samplePlugin.ShouldContain("CreateArrayWithAccessInfo<int>");

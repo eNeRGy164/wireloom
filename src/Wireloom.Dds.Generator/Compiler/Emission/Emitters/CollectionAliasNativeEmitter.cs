@@ -200,15 +200,15 @@ internal static class CollectionAliasNativeEmitter
         {
             if (isStringSequence)
             {
-                writer.WriteLine($"Value.Initialize(max: {declaration.Bound}, absoluteMax: {declaration.Bound}, maxStrLen: {stringSequenceBound}, allocateMemory: allocateMemory);");
+                writer.WriteLine($"Value.Initialize(max: {declaration.Bound}, absoluteMax: {declaration.Bound}, maxStrLen: {stringSequenceBound}, allocateMemory);");
             }
             else if (collectionElementIsAggregate)
             {
-                writer.WriteLine($"Value.Initialize<{implementationElementType}, {collectionElementUnmanagedType}>(max: {declaration.Bound}, absoluteMax: {declaration.Bound}, allocateMemory: allocateMemory);");
+                writer.WriteLine($"Value.Initialize<{implementationElementType}, {collectionElementUnmanagedType}>(max: {declaration.Bound}, absoluteMax: {declaration.Bound}, allocateMemory);");
             }
             else
             {
-                writer.WriteLine($"Value.Initialize<{implementationElementType}>(max: {declaration.Bound}, absoluteMax: {declaration.Bound}, allocateMemory: allocateMemory);");
+                writer.WriteLine($"Value.Initialize<{implementationElementType}>(max: {declaration.Bound}, absoluteMax: {declaration.Bound}, allocateMemory);");
             }
         }
         else
@@ -221,7 +221,7 @@ internal static class CollectionAliasNativeEmitter
                 }
                 else
                 {
-                    writer.WriteLine($"Value.Initialize<{implementationElementType}>(dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, allocateMemory: allocateMemory);");
+                    writer.WriteLine($"Value.Initialize<{implementationElementType}>(dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, allocateMemory);");
                 }
             }
             else
@@ -232,7 +232,7 @@ internal static class CollectionAliasNativeEmitter
                 }
                 else if (isString)
                 {
-                    writer.WriteLine($"Value.Initialize(size: {declaration.StringBound}, allocateMemory: allocateMemory);");
+                    writer.WriteLine($"Value.Initialize(size: {declaration.StringBound}, allocateMemory);");
                 }
                 else
                 {

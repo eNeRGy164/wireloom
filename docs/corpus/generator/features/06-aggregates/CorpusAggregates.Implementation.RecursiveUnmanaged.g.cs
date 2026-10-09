@@ -54,7 +54,7 @@ public struct RecursiveUnmanaged : INativeTopicType<Recursive>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         value = 0;
-        children.Initialize<Recursive, RecursiveUnmanaged>(max: 100, absoluteMax: 100, allocateMemory: allocateMemory);
+        children.Initialize<Recursive, RecursiveUnmanaged>(max: 100, absoluteMax: 100, allocateMemory);
     }
 
     /// <summary>

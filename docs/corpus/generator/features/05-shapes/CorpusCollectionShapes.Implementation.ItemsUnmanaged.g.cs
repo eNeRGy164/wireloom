@@ -47,7 +47,7 @@ public struct ItemsUnmanaged : INativeTopicType<Items>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize<Item, ItemUnmanaged>(max: 3, absoluteMax: 3, allocateMemory: allocateMemory);
+        Value.Initialize<Item, ItemUnmanaged>(max: 3, absoluteMax: 3, allocateMemory);
     }
 
     /// <summary>

@@ -55,7 +55,7 @@ public struct ContextUnmanaged : INativeTopicType<Context>
     /// <remarks>Use this method to prepare native storage before conversion. Call <see cref="Destroy"/> when the native representation is no longer needed.</remarks>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        correlation.Initialize(size: 32, allocateMemory: allocateMemory);
+        correlation.Initialize(size: 32, allocateMemory);
     }
 
     /// <summary>

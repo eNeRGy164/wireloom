@@ -42,7 +42,7 @@ public struct BoundedLongsUnmanaged : INativeTopicType<BoundedLongs>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize<int>(max: 4, absoluteMax: 4, allocateMemory: allocateMemory);
+        Value.Initialize<int>(max: 4, absoluteMax: 4, allocateMemory);
     }
 
     /// <summary>

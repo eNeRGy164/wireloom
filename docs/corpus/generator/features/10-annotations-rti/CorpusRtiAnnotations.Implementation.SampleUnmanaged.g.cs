@@ -67,8 +67,8 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     {
         id = 0;
         value = 0;
-        text.Initialize(size: 16, allocateMemory: allocateMemory);
-        externalText.Initialize(size: 16, allocateMemory: allocateMemory);
+        text.Initialize(size: 16, allocateMemory);
+        externalText.Initialize(size: 16, allocateMemory);
     }
 
     /// <summary>

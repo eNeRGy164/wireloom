@@ -55,7 +55,7 @@ public struct DerivedValueUnmanaged : INativeTopicType<DerivedValue>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         parent.Initialize(allocatePointers, allocateMemory);
-        name.Initialize(size: 16, allocateMemory: allocateMemory);
+        name.Initialize(size: 16, allocateMemory);
     }
 
     /// <summary>

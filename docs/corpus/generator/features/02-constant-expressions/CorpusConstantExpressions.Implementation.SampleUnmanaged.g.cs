@@ -49,8 +49,8 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     /// <remarks>Use this method to prepare native storage before conversion. Call <see cref="Destroy"/> when the native representation is no longer needed.</remarks>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        values.Initialize<int>(max: 5, absoluteMax: 5, allocateMemory: allocateMemory);
-        array.Initialize<int>(dimension: 5, allocateMemory: allocateMemory);
+        values.Initialize<int>(max: 5, absoluteMax: 5, allocateMemory);
+        array.Initialize<int>(dimension: 5, allocateMemory);
     }
 
     /// <summary>

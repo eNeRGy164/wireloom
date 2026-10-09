@@ -66,11 +66,11 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     /// <remarks>Use this method to prepare native storage before conversion. Call <see cref="Destroy"/> when the native representation is no longer needed.</remarks>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        unboundedItems.Initialize<Item, ItemUnmanaged>(max: 100, absoluteMax: 100, allocateMemory: allocateMemory);
-        boundedItems.Initialize<Item, ItemUnmanaged>(max: 2, absoluteMax: 2, allocateMemory: allocateMemory);
+        unboundedItems.Initialize<Item, ItemUnmanaged>(max: 100, absoluteMax: 100, allocateMemory);
+        boundedItems.Initialize<Item, ItemUnmanaged>(max: 2, absoluteMax: 2, allocateMemory);
         aggregateArray.Initialize<Item, ItemUnmanaged>(dimension: 2, allocatePointers: allocatePointers, allocateMemory: allocateMemory);
         rows.Initialize<Row, RowUnmanaged>(dimension: 2, allocatePointers: allocatePointers, allocateMemory: allocateMemory);
-        sequenceOfArrays.Initialize<Row, RowUnmanaged>(max: 2, absoluteMax: 2, allocateMemory: allocateMemory);
+        sequenceOfArrays.Initialize<Row, RowUnmanaged>(max: 2, absoluteMax: 2, allocateMemory);
     }
 
     /// <summary>

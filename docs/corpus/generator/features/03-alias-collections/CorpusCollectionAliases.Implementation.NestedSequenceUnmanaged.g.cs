@@ -47,7 +47,7 @@ public struct NestedSequenceUnmanaged : INativeTopicType<NestedSequence>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize<LongSequence, LongSequenceUnmanaged>(max: 2, absoluteMax: 2, allocateMemory: allocateMemory);
+        Value.Initialize<LongSequence, LongSequenceUnmanaged>(max: 2, absoluteMax: 2, allocateMemory);
     }
 
     /// <summary>
