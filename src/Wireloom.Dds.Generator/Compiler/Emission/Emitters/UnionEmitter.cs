@@ -34,7 +34,7 @@ internal static class UnionEmitter
         }
 
 
-        var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.DataTypeUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.GetManagedTypeUsings(declaration.Branches.Select(branch => branch.Plan)), sourceIdlFileName);
 
         writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> DDS union declared in <c>{sourceIdlFileName}</c>. The discriminator selects a branch when it matches a declared label.{branchSelectionSummary}");
         writer.OpenBlock($"public partial class {typeName} : global::System.IEquatable<{typeName}>");

@@ -5,7 +5,6 @@
 #nullable enable
 
 using Omg.Types;
-using Rti.Types;
 
 /// <summary>
 /// Represents the <c>CorpusIntegrationMessage</c> DDS type declared in <c>13-integration.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.

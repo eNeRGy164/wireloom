@@ -127,7 +127,7 @@ public sealed class GeneratedIdlEmissionSpecs
 
         // Assert
         var dataType = documents["OracleP01.Primitive.g.cs"].Source;
-        dataType.ShouldContain("using Omg.Types;");
+        dataType.ShouldNotContain("using Omg.Types;");
         dataType.ShouldNotContain("using System;");
         dataType.ShouldNotContain("using System.Linq;");
         dataType.ShouldContain("global::System.IEquatable<Primitive>");

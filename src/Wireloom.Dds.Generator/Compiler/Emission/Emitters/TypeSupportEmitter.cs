@@ -34,7 +34,7 @@ internal static class TypeSupportEmitter
 
         var writer = EmissionSupport.CreateSource(
             names.ImplementationNamespace,
-            EmissionSupport.GetUnmanagedTypeUsings(fields.Concat(inheritedFields).Select(field => field.Type)),
+            EmissionSupport.GetUnmanagedTypeUsings(fields.Concat(inheritedFields)),
             sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI native representation for <see cref=\"{typeName}\"/>.");

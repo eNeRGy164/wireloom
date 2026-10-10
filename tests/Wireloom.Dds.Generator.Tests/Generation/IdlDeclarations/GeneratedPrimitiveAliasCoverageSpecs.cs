@@ -53,6 +53,7 @@ public sealed class GeneratedPrimitiveAliasCoverageSpecs
         booleanNative.ShouldContain("Value = global::System.Convert.ToByte(sample.Value);");
 
         var charNative = documents["PrimitiveAliases.Implementation.CharAliasUnmanaged.g.cs"].Source;
+        charNative.ShouldContain("using Rti.Types;");
         charNative.ShouldContain("private byte Value;");
         charNative.ShouldContain("sample.Value = NativeChar.FromUtf8(Value);");
         charNative.ShouldContain("Value = NativeChar.ToUtf8(sample.Value);");

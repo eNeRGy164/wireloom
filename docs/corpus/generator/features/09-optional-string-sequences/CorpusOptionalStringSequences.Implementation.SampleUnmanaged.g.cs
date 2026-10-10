@@ -6,7 +6,6 @@
 
 using Omg.Types;
 using Rti.Dds.NativeInterface.TypePlugin;
-using Rti.Types;
 
 namespace CorpusOptionalStringSequences.Implementation;
 

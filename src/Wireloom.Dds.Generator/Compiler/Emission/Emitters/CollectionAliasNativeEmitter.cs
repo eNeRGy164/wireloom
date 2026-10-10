@@ -35,6 +35,7 @@ internal static class CollectionAliasNativeEmitter
         var isAggregate = plan.IsAggregate;
         var isUnion = plan.IsUnion;
         var collectionElementIsAggregate = plan is { IsCollection: true, CollectionElementIsAggregate: true };
+        var usesRtiSequenceType = plan.IsSequence && !isStringSequence;
 
         var collectionElementUnmanagedType = string.Empty;
         if (collectionElementIsAggregate)
@@ -44,7 +45,7 @@ internal static class CollectionAliasNativeEmitter
 
         var writer = EmissionSupport.CreateSource(
             names.ImplementationNamespace,
-            EmissionSupport.GetUnmanagedTypeUsings([plan.ElementPlan]),
+            EmissionSupport.GetUnmanagedTypeUsings([plan.ElementPlan], usesSequence: usesRtiSequenceType),
             sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides native storage and conversion operations for the {typeName} typedef. This type is used by RTI runtime integration and is not an application-facing value type.");

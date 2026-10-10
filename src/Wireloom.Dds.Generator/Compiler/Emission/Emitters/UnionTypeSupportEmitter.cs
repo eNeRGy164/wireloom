@@ -23,7 +23,7 @@ internal static class UnionTypeSupportEmitter
 
         var writer = EmissionSupport.CreateSource(
             names.ImplementationNamespace,
-            EmissionSupport.GetUnmanagedTypeUsings(declaration.Branches.Select(branch => branch.Plan.Type)),
+            EmissionSupport.GetUnmanagedTypeUsings(declaration.Branches.Select(branch => branch.Plan), usesNativeChar: declaration.UsesNativeCharDiscriminator),
             sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI native representation for <see cref=\"{typeName}\"/>.");
@@ -70,7 +70,13 @@ internal static class UnionTypeSupportEmitter
             new(names.Unmanaged.HintName, writer.ToString())
         };
 
-        writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
+        writer = EmissionSupport.CreateSource(
+            names.ImplementationNamespace,
+            EmissionSupport.GetPluginUsings(
+                declaration.Branches.Select(branch => branch.Plan.Type),
+                usesExtensibility: true,
+                usesAnnotations: declaration.Branches.Any(branch => EmissionSupport.UsesPrimitiveAnnotation(branch.Plan))),
+            sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI interpreted type plugin for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"internal class {names.PluginTypeName} : InterpretedTypePlugin<{implementationTypeName}, {names.UnmanagedTypeName}>");

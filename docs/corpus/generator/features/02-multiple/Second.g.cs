@@ -5,7 +5,6 @@
 #nullable enable
 
 using Omg.Types;
-using Rti.Types;
 
 /// <summary>
 /// Represents the <c>Second</c> DDS type declared in <c>02-multiple.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.

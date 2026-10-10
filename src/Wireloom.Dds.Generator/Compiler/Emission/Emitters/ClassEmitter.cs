@@ -31,7 +31,7 @@ internal static class ClassEmitter
         var hasTypeSupport = fieldPlans.All(field => field.HasTypeSupport);
         var runtimeTypeName = currentNamespace is null ? name : $"{currentNamespace}.{name}";
         var isRecursive = fieldPlans.Any(field => field.IsRecursive(runtimeTypeName));
-        var writer = EmissionSupport.CreateSource(currentNamespace, EmissionSupport.DataTypeUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(currentNamespace, EmissionSupport.GetManagedTypeUsings(fieldPlans.Concat(inheritedFieldPlans)), sourceIdlFileName);
         var typeSummary = $"Represents the <c>{name}</c> DDS type declared in <c>{sourceIdlFileName}</c>.";
 
         if (inheritedFieldPlans.Concat(fieldPlans).Any(field => field.IsKey))

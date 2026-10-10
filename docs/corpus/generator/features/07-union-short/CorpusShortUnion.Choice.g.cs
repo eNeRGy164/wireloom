@@ -5,7 +5,6 @@
 #nullable enable
 
 using Omg.Types;
-using Rti.Types;
 
 namespace CorpusShortUnion;
 

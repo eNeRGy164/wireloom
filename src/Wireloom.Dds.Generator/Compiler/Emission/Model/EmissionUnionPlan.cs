@@ -24,6 +24,8 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
     public string DiscriminatorCSharpType { get; } = discriminatorCSharpType;
     internal string? DiscriminatorEnumQualifiedName { get; } = discriminatorEnumQualifiedName;
     public bool DiscriminatorIsEnum { get; } = discriminatorIsEnum;
+    /// <summary>Gets whether native discriminator conversion uses the RTI character helpers.</summary>
+    public bool UsesNativeCharDiscriminator => !DiscriminatorIsEnum && DiscriminatorIdlType == "char";
     private int? DiscriminatorDefaultValue { get; } = discriminatorDefaultValue;
     public IReadOnlyList<UnionBranchEmissionPlan> Branches { get; } = branches;
     public IdlExtensibilityKind Extensibility { get; } = extensibility;

@@ -43,7 +43,10 @@ internal static class EnumEmitter
         var typeName = names.ManagedTypeName;
         var runtimeName = names.RuntimeTypeName;
 
-        var writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(
+            names.ImplementationNamespace,
+            EmissionSupport.GetPluginUsings([], usesExtensibility: true, usesAnnotations: true),
+            sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI runtime plugin for the <see cref=\"{typeName}\"/> enumeration. This implementation detail is not intended for application code.");
         writer.OpenBlock($"internal class {typeName}Plugin : EnumTypePlugin");

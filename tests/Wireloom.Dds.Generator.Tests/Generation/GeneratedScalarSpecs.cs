@@ -322,7 +322,7 @@ public sealed class GeneratedScalarSpecs
     }
 
     [Fact]
-    public void LongDoubleUnmanagedTypesImportOmgTypes()
+    public void LongDoubleUnmanagedTypesImportRtiTypes()
     {
         // Arrange
         var input = Input(
@@ -333,7 +333,40 @@ public sealed class GeneratedScalarSpecs
         var unmanaged = CompileSources(input)["LongDoubleTypes.Implementation.SampleUnmanaged.g.cs"].Source;
 
         // Assert
-        unmanaged.ShouldContain("using Omg.Types;");
+        unmanaged.ShouldContain("using Rti.Types;");
+        unmanaged.ShouldNotContain("using Omg.Types;");
+        unmanaged.ShouldContain("private LongDouble value;");
+    }
+
+    [Fact]
+    public void ManagedScalarLongDoubleAliasesImportRtiTypes()
+    {
+        // Arrange
+        var input = Input(
+            "long-double-alias.idl",
+            "module LongDoubleAliasTypes { typedef long double LongDoubleAlias; struct Sample { LongDoubleAlias value; }; };");
+
+        // Act
+        var managed = CompileSources(input)["LongDoubleAliasTypes.Sample.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("using Rti.Types;");
+        managed.ShouldContain("public LongDouble value { get; set; }");
+    }
+
+    [Fact]
+    public void NativeScalarLongDoubleAliasesImportRtiTypes()
+    {
+        // Arrange
+        var input = Input(
+            "long-double-alias.idl",
+            "module LongDoubleAliasTypes { typedef long double LongDoubleAlias; struct Sample { LongDoubleAlias value; }; };");
+
+        // Act
+        var unmanaged = CompileSources(input)["LongDoubleAliasTypes.Implementation.SampleUnmanaged.g.cs"].Source;
+
+        // Assert
+        unmanaged.ShouldContain("using Rti.Types;");
         unmanaged.ShouldContain("private LongDouble value;");
     }
 }

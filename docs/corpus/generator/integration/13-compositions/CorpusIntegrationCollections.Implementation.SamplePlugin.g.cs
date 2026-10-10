@@ -5,10 +5,8 @@
 #nullable enable
 
 using Omg.Types;
-using Omg.Types.Dynamic;
 using Rti.Dds.Core;
 using Rti.Dds.NativeInterface.TypePlugin;
-using Rti.Types;
 using Rti.Types.Dynamic;
 
 namespace CorpusIntegrationCollections.Implementation;
