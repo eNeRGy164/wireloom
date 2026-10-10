@@ -26,10 +26,10 @@ public struct HolderUnmanaged : INativeTopicType<Holder>
     /// <remarks>This method releases resources owned by the generated native representation. Pass <see langword="true"/> to release optional members only, or <see langword="false"/> to release all members.</remarks>
     public void Destroy(bool optionalsOnly)
     {
-        payload.Destroy<Payload, Implementation.PayloadUnmanaged>(optionalsOnly);
-        payloadAlias.Destroy<Payload, Implementation.PayloadUnmanaged>(optionalsOnly);
-        choice.Destroy<Choice, Implementation.ChoiceUnmanaged>(optionalsOnly);
-        choiceAlias.Destroy<Choice, Implementation.ChoiceUnmanaged>(optionalsOnly);
+        payload.Destroy<Payload, PayloadUnmanaged>(optionalsOnly);
+        payloadAlias.Destroy<Payload, PayloadUnmanaged>(optionalsOnly);
+        choice.Destroy<Choice, ChoiceUnmanaged>(optionalsOnly);
+        choiceAlias.Destroy<Choice, ChoiceUnmanaged>(optionalsOnly);
     }
 
     /// <summary>
@@ -40,16 +40,16 @@ public struct HolderUnmanaged : INativeTopicType<Holder>
     /// <remarks>The operation copies values into <paramref name="sample"/>.</remarks>
     public void FromNative(Holder sample, bool keysOnly = false)
     {
-        payload.FromNative<Payload, Implementation.PayloadUnmanaged>(out var payloadTemporary_);
+        payload.FromNative<Payload, PayloadUnmanaged>(out var payloadTemporary_);
         sample.payload = payloadTemporary_;
 
-        payloadAlias.FromNative<Payload, Implementation.PayloadUnmanaged>(out var payloadAliasTemporary_);
+        payloadAlias.FromNative<Payload, PayloadUnmanaged>(out var payloadAliasTemporary_);
         sample.payloadAlias = payloadAliasTemporary_;
 
-        choice.FromNative<Choice, Implementation.ChoiceUnmanaged>(out var choiceTemporary_);
+        choice.FromNative<Choice, ChoiceUnmanaged>(out var choiceTemporary_);
         sample.choice = choiceTemporary_;
 
-        choiceAlias.FromNative<Choice, Implementation.ChoiceUnmanaged>(out var choiceAliasTemporary_);
+        choiceAlias.FromNative<Choice, ChoiceUnmanaged>(out var choiceAliasTemporary_);
         sample.choiceAlias = choiceAliasTemporary_;
     }
 
@@ -71,9 +71,9 @@ public struct HolderUnmanaged : INativeTopicType<Holder>
     /// <remarks>The operation copies values from <paramref name="sample"/> into native storage.</remarks>
     public void ToNative(Holder sample, bool keysOnly = false)
     {
-        payload.ToNative<Payload, Implementation.PayloadUnmanaged>(sample.payload!);
-        payloadAlias.ToNative<Payload, Implementation.PayloadUnmanaged>(sample.payloadAlias!);
-        choice.ToNative<Choice, Implementation.ChoiceUnmanaged>(sample.choice!);
-        choiceAlias.ToNative<Choice, Implementation.ChoiceUnmanaged>(sample.choiceAlias!);
+        payload.ToNative<Payload, PayloadUnmanaged>(sample.payload!);
+        payloadAlias.ToNative<Payload, PayloadUnmanaged>(sample.payloadAlias!);
+        choice.ToNative<Choice, ChoiceUnmanaged>(sample.choice!);
+        choiceAlias.ToNative<Choice, ChoiceUnmanaged>(sample.choiceAlias!);
     }
 }
