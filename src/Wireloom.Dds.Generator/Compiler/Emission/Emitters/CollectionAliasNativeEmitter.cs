@@ -274,7 +274,7 @@ internal static class CollectionAliasNativeEmitter
                 }
                 else
                 {
-                    writer.WriteLine($"Value.ToNative<{implementationElementType}>(sample.Value, dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)});");
+                    writer.WriteLine($"Value.ToNative(sample.Value, dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)});");
                 }
             }
             else

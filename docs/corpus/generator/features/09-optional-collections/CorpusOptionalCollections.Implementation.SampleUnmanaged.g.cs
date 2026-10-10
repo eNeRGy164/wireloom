@@ -37,10 +37,10 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     /// <remarks>The operation copies values into <paramref name="sample"/>.</remarks>
     public void FromNative(Sample sample, bool keysOnly = false)
     {
-        values.FromNative<int>(out Sequence<int> valuesTemporary_);
+        values.FromNative(out Sequence<int> valuesTemporary_);
         sample.values = valuesTemporary_;
 
-        items.FromNative<int>(out int[] itemsTemporary_, dimensions: new int[] { 2 });
+        items.FromNative(out int[] itemsTemporary_, dimensions: new int[] { 2 });
         sample.items = itemsTemporary_;
     }
 
@@ -63,7 +63,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     /// <remarks>The operation copies values from <paramref name="sample"/> into native storage.</remarks>
     public void ToNative(Sample sample, bool keysOnly = false)
     {
-        values.ToNative<int>((Sequence<int>)sample.values!, 4);
-        items.ToNative<int>(sample.items, 2);
+        values.ToNative((Sequence<int>)sample.values!, 4);
+        items.ToNative(sample.items, 2);
     }
 }

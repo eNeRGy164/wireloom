@@ -179,7 +179,7 @@ public sealed class GeneratedTypedefSpecs
         matrixNative.ShouldNotContain("private NativeManagedArray Value;");
         matrixNative.ShouldContain("Value.Initialize<int>(dimension: 2 * 3, allocateMemory);");
         matrixNative.ShouldContain("Value.FromNative(sample.Value, dimension: 2 * 3);");
-        matrixNative.ShouldContain("Value.ToNative<int>(sample.Value, dimension: 2 * 3);");
+        matrixNative.ShouldContain("Value.ToNative(sample.Value, dimension: 2 * 3);");
 
         var itemArray = documents["CollectionAliases.ItemArray.g.cs"].Source;
         itemArray.ShouldContain("public Item[] Value { get; set; } = new Item[2];");

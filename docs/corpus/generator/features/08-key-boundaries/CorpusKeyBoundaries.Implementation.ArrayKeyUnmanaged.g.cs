@@ -65,7 +65,7 @@ public struct ArrayKeyUnmanaged : INativeTopicType<ArrayKey>
     /// <remarks>The operation copies values from <paramref name="sample"/> into native storage. When <paramref name="keysOnly"/> is true, only key members are copied.</remarks>
     public void ToNative(ArrayKey sample, bool keysOnly = false)
     {
-        coordinates.ToNative<int>(sample.coordinates, dimension: 2);
+        coordinates.ToNative(sample.coordinates, dimension: 2);
 
         if (keysOnly)
         {

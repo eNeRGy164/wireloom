@@ -64,7 +64,7 @@ internal sealed partial class MemberEmissionPlan
                 return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(out {arrayType} {temporary}, {KeysOnlyArgument(forwardKeysOnly)}, dimensions: {dimensions});\nsample.{EscapedName} = {temporary};";
             }
 
-            return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>(out {arrayType} {temporary}, dimensions: {dimensions});\nsample.{EscapedName} = {temporary};";
+            return $"{nativeFieldPrefix}{EscapedName}.FromNative(out {arrayType} {temporary}, dimensions: {dimensions});\nsample.{EscapedName} = {temporary};";
         }
 
         if (HasAggregateElement)
@@ -99,7 +99,7 @@ internal sealed partial class MemberEmissionPlan
                 return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(out ISequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}> {temporary}, keysOnly: false);\nsample.{EscapedName} = {temporary};";
             }
 
-            return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>(out Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}> {temporary});\nsample.{EscapedName} = {temporary};";
+            return $"{nativeFieldPrefix}{EscapedName}.FromNative(out Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}> {temporary});\nsample.{EscapedName} = {temporary};";
         }
 
         if (HasAggregateElement)
@@ -195,7 +195,7 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsOptional)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>(sample.{EscapedName}, {ArraySourceEmitter.ElementCount(Dimensions)});";
+            return $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName}, {ArraySourceEmitter.ElementCount(Dimensions)});";
         }
 
         if (HasAggregateElement)
@@ -203,7 +203,7 @@ internal sealed partial class MemberEmissionPlan
             return $"{nativeFieldPrefix}{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, {KeysOnlyArgument(forwardKeysOnly)}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
         }
 
-        return $"{nativeFieldPrefix}{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>(sample.{EscapedName}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
+        return $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
     }
 
     private string BuildSequenceToNativeStatement(string? namespaceName, string nativeFieldPrefix)
@@ -225,7 +225,7 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsOptional)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>((Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>)sample.{EscapedName}!, {Bound});";
+            return $"{nativeFieldPrefix}{EscapedName}.ToNative((Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>)sample.{EscapedName}!, {Bound});";
         }
 
         if (HasAggregateElement)
@@ -254,7 +254,7 @@ internal sealed partial class MemberEmissionPlan
         $"{nativeFieldPrefix}{EscapedName}{(IsOptional ? ".ToNativeOptional(sample." : ".ToNative(sample.")}{EscapedName}, {Bound});";
 
     private string BuildPrimitiveToNativeStatement(string nativeFieldPrefix) => IsOptional
-        ? $"{nativeFieldPrefix}{EscapedName}.ToNative<{NullableValueType()}>(sample.{EscapedName});"
+        ? $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName});"
         : $"{nativeFieldPrefix}{EscapedName} = {PrimitiveToNativeExpression()};";
 
 }

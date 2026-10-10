@@ -164,6 +164,8 @@ public sealed class GeneratedScalarSpecs
         unmanaged.ShouldContain("NativeUnmanagedOptional value");
         unmanaged.ShouldContain("value.Destroy(optionalsOnly);");
         unmanaged.ShouldContain("value.FromNative<int>()");
+        unmanaged.ShouldContain("value.ToNative(sample.value);");
+        unmanaged.ShouldNotContain("value.ToNative<int>(sample.value);");
 
         var samplePlugin = documents["OptionalPrimitive.Implementation.SamplePlugin.g.cs"].Source;
         samplePlugin.ShouldContain("isOptional: true");
