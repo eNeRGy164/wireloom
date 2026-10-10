@@ -35,7 +35,7 @@ internal class InnerPlugin : InterpretedTypePlugin<Inner, InnerUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("code", dtf.GetPrimitiveType<int>(), isKey: true, id: 0),
             new StructMember("revision", dtf.GetPrimitiveType<int>(), id: 1)

@@ -46,7 +46,7 @@ public sealed class GeneratedUnionContractSpecs
         unmanaged.ShouldNotContain("sample.Setnumber(sample.number = number, _discriminator);");
 
         var choicePlugin = documents["MultiLabel.Implementation.ChoicePlugin.g.cs"].Source;
-        choicePlugin.ShouldContain("new int[] { 1, 5 }");
+        choicePlugin.ShouldContain("new[] { 1, 5 }");
 
         var choiceSupport = documents["MultiLabel.ChoiceSupport.g.cs"].Source;
         choiceSupport.ShouldContain("TypeSupport<Choice>");
@@ -202,8 +202,8 @@ public sealed class GeneratedUnionContractSpecs
 
         var plugin = documents["CharUnion.Implementation.ChoicePlugin.g.cs"].Source;
         plugin.ShouldContain("WithDiscriminator(dtf.GetPrimitiveType<char>())");
-        plugin.ShouldContain("new int[] { 97 }");
-        plugin.ShouldContain("new int[] { 122 }");
+        plugin.ShouldContain("new[] { 97 }");
+        plugin.ShouldContain("new[] { 122 }");
     }
 
     [Fact]
@@ -342,8 +342,8 @@ public sealed class GeneratedUnionContractSpecs
 
         var plugin = documents["BooleanUnion.Implementation.ChoicePlugin.g.cs"].Source;
         plugin.ShouldContain("WithDiscriminator(dtf.GetPrimitiveType<bool>())");
-        plugin.ShouldContain("new int[] { 1 }");
-        plugin.ShouldContain("new int[] { 0 }");
+        plugin.ShouldContain("new[] { 1 }");
+        plugin.ShouldContain("new[] { 0 }");
     }
 
     [Fact]

@@ -35,7 +35,7 @@ internal class ItemPlugin : InterpretedTypePlugin<Item, ItemUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("id", dtf.GetPrimitiveType<int>(), id: 0),
             new StructMember("label", dtf.CreateString(12), id: 1)

@@ -35,7 +35,7 @@ internal class ContextPlugin : InterpretedTypePlugin<Context, ContextUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("correlation", dtf.CreateString(32), id: 0),
             new StructMember("producer", ProducerSupport.Instance.GetDynamicTypeInternal(isPublic), isOptional: true, id: 1)

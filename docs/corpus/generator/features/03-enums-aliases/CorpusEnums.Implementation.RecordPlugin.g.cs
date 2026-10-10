@@ -35,7 +35,7 @@ internal class RecordPlugin : InterpretedTypePlugin<Record, RecordUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("value", ScalarSupport.Instance.GetDynamicTypeInternal(isPublic), id: 0),
             new StructMember("aliasValue", ScalarAliasSupport.Instance.GetDynamicTypeInternal(isPublic), id: 1),

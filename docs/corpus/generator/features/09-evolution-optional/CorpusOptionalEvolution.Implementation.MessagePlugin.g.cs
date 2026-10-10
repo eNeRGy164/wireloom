@@ -35,7 +35,7 @@ internal class MessagePlugin : InterpretedTypePlugin<Message, MessageUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("requiredValue", dtf.GetPrimitiveType<int>(), id: 1),
             new StructMember("optionalValue", dtf.GetPrimitiveType<int>(), isOptional: true, id: 2),

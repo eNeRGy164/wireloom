@@ -35,7 +35,7 @@ internal class FirstPlugin : InterpretedTypePlugin<global::First, FirstUnmanaged
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("value", dtf.GetPrimitiveType<int>(), id: 0)
         };

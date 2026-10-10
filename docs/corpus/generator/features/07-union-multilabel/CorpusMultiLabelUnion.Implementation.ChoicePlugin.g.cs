@@ -35,10 +35,10 @@ internal class ChoicePlugin : InterpretedTypePlugin<Choice, ChoiceUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new UnionMember[]
+        var members = new[]
         {
-            new UnionMember("number", dtf.GetPrimitiveType<int>(), new int[] { 1, 5 }, id: 1),
-            new UnionMember("text", dtf.CreateString(255), new int[] { 2 }, id: 2)
+            new UnionMember("number", dtf.GetPrimitiveType<int>(), new[] { 1, 5 }, id: 1),
+            new UnionMember("text", dtf.CreateString(255), new[] { 2 }, id: 2)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<ChoiceUnmanaged>(

@@ -35,7 +35,7 @@ internal class IdentityPlugin : InterpretedTypePlugin<Identity, IdentityUnmanage
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("tenant", dtf.GetPrimitiveType<int>(), isKey: true, id: 0),
             new StructMember("name", dtf.CreateString(16), isKey: true, id: 1)

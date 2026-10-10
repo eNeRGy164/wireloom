@@ -35,7 +35,7 @@ internal class NamespacedMessagePlugin : InterpretedTypePlugin<NamespacedMessage
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("enabled", dtf.GetPrimitiveType<bool>(), id: 0)
         };

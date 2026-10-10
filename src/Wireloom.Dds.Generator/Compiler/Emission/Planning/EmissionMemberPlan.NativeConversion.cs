@@ -55,7 +55,7 @@ internal sealed partial class MemberEmissionPlan
     {
         if (IsOptional)
         {
-            var dimensions = $"new int[] {{ {string.Join(", ", Dimensions)} }}";
+            var dimensions = $"new[] {{ {string.Join(", ", Dimensions)} }}";
             var temporary = $"{EscapedName}Temporary_";
             var arrayType = IdlNaming.TypeReference(CSharpType.TrimEnd('?'), namespaceName);
 

@@ -35,7 +35,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("i8", dtf.GetPrimitiveType<sbyte>(), id: 0),
             new StructMember("i16", dtf.GetPrimitiveType<short>(), id: 1),

@@ -54,7 +54,7 @@ internal class RecursivePlugin : InterpretedTypePlugin<Recursive, RecursiveUnman
         isInitialized = true;
 
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("value", dtf.GetPrimitiveType<int>(), id: 0),
             new StructMember("children", tsf.CreateSequenceWithAccessInfo(dtf, RecursiveSupport.GetOrCreateInstanceImpl().GetDynamicTypeInternal(isPublic), 100), id: 1)

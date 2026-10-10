@@ -35,7 +35,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("narrowValues", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateString(16), 4), isOptional: true, id: 1),
             new StructMember("wideValues", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(16), 4), isOptional: true, id: 2)

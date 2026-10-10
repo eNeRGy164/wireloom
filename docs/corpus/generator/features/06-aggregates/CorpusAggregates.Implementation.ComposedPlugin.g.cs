@@ -35,7 +35,7 @@ internal class ComposedPlugin : InterpretedTypePlugin<Composed, ComposedUnmanage
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("base", BaseSupport.Instance.GetDynamicTypeInternal(isPublic), id: 0),
             new StructMember("derived", DerivedSupport.Instance.GetDynamicTypeInternal(isPublic), id: 1)

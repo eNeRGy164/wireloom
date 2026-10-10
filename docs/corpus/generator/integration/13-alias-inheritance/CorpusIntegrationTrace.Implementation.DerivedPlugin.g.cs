@@ -35,7 +35,7 @@ internal class DerivedPlugin : InterpretedTypePlugin<Derived, DerivedUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("state", dtf.CreateString(16), id: 1),
             new StructMember("traceContext", ContextSupport.Instance.GetDynamicTypeInternal(isPublic), id: 2)

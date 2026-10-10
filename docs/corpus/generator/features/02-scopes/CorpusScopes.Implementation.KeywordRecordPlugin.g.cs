@@ -35,7 +35,7 @@ internal class KeywordRecordPlugin : InterpretedTypePlugin<KeywordRecord, Keywor
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("event", dtf.GetPrimitiveType<int>(), id: 0),
             new StructMember("relative", Nested.PointSupport.Instance.GetDynamicTypeInternal(isPublic), id: 1),

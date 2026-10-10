@@ -35,7 +35,7 @@ internal class BoundedStringKeyPlugin : InterpretedTypePlugin<BoundedStringKey, 
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("name", dtf.CreateString(12), isKey: true, id: 0),
             new StructMember("payload", dtf.GetPrimitiveType<int>(), id: 1)

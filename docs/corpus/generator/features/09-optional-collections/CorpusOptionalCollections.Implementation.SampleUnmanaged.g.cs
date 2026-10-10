@@ -40,7 +40,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
         values.FromNative(out Sequence<int> valuesTemporary_);
         sample.values = valuesTemporary_;
 
-        items.FromNative(out int[] itemsTemporary_, dimensions: new int[] { 2 });
+        items.FromNative(out int[] itemsTemporary_, dimensions: new[] { 2 });
         sample.items = itemsTemporary_;
     }
 

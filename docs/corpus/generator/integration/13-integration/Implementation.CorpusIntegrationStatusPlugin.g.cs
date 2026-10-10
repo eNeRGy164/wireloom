@@ -35,7 +35,7 @@ internal class CorpusIntegrationStatusPlugin : InterpretedTypePlugin<global::Cor
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("active", dtf.GetPrimitiveType<bool>(), id: 0)
         };
