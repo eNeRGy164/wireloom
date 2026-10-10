@@ -324,8 +324,9 @@ public sealed class GeneratedUnionContractSpecs
         managed.ShouldContain("public bool Discriminator");
         managed.ShouldContain("public const bool DefaultDiscriminator = false");
         managed.ShouldContain("public object? Get()");
-        managed.ShouldContain("Discriminator != true");
-        managed.ShouldContain("Discriminator != false");
+        managed.ShouldContain("!Discriminator");
+        managed.ShouldNotContain("Discriminator != true");
+        managed.ShouldNotContain("Discriminator != false");
         managed.ShouldNotContain("_ => null");
         managed.ShouldNotContain("_ => global::System.HashCode.Combine(Discriminator)");
         managed.ShouldNotContain("_ => true");

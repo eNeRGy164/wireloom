@@ -78,6 +78,11 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
     /// <summary>Builds the branch-selection condition for the supplied discriminator.</summary>
     public string SelectionCondition(UnionBranchEmissionPlan branch, bool negated, string discriminatorName = "Discriminator")
     {
+        if (DiscriminatorCSharpType == "bool")
+        {
+            return BooleanSelectionCondition(branch, negated, discriminatorName);
+        }
+
         if (!branch.IsDefault)
         {
             var comparison = negated ? "!=" : "==";
@@ -106,6 +111,35 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
         }
 
         return string.Join(" && ", operators);
+    }
+
+    /// <summary>Builds a Boolean branch condition using the discriminator directly.</summary>
+    private string BooleanSelectionCondition(UnionBranchEmissionPlan branch, bool negated, string discriminatorName)
+    {
+        if (!branch.IsDefault)
+        {
+            var conditions = branch.LabelValues.Select(value =>
+            {
+                var isTrue = value != 0;
+                return isTrue == negated ? $"!{discriminatorName}" : discriminatorName;
+            });
+
+            return string.Join(negated ? " && " : " || ", conditions);
+        }
+
+        var explicitValues = ExplicitBranches.SelectMany(candidate => candidate.LabelValues).Distinct();
+        var defaultConditions = explicitValues.Select(value =>
+        {
+            var isTrue = value != 0;
+            return isTrue == negated ? $"!{discriminatorName}" : discriminatorName;
+        }).ToArray();
+
+        if (defaultConditions.Length == 0)
+        {
+            return negated ? "false" : "true";
+        }
+
+        return string.Join(negated ? " || " : " && ", defaultConditions);
     }
 
     /// <summary>Builds a managed discriminator expression for an IDL label.</summary>
