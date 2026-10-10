@@ -36,7 +36,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     {
         get
         {
-            if (Discriminator != true)
+            if (!Discriminator)
             {
                 throw new global::System.InvalidOperationException("enabled not selected");
             }
@@ -62,7 +62,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     {
         get
         {
-            if (Discriminator != false)
+            if (Discriminator)
             {
                 throw new global::System.InvalidOperationException("disabled not selected");
             }

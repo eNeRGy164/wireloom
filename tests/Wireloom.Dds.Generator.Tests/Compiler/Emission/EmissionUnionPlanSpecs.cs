@@ -73,6 +73,44 @@ public sealed class EmissionUnionPlanSpecs
     }
 
     [Fact]
+    public void BuildsUnconditionalSelectionConditionsForBooleanDefaultOnlyUnions()
+    {
+        // Arrange
+        var defaultBranch = CreateBranch("fallback", [], [], isDefault: true);
+        var plan = CreateUnion("Choice", "bool", discriminatorIsEnum: false, discriminatorDefaultValue: null, [defaultBranch]);
+
+        // Act
+        var getterCondition = plan.SelectionCondition(defaultBranch, negated: true);
+        var setterCondition = plan.SelectionCondition(defaultBranch, negated: false);
+
+        // Assert
+        getterCondition.ShouldBe("false");
+        setterCondition.ShouldBe("true");
+    }
+
+    [Fact]
+    public void BuildsBooleanSelectionConditionsWithoutComparingAgainstBooleanLiterals()
+    {
+        // Arrange
+        var trueBranch = CreateBranch("affirmative", ["true"], [1]);
+        var falseBranch = CreateBranch("negative", ["false"], [0]);
+        var defaultBranch = CreateBranch("fallback", [], [], isDefault: true);
+        var plan = CreateUnion("Choice", "bool", discriminatorIsEnum: false, discriminatorDefaultValue: null, [trueBranch, falseBranch, defaultBranch]);
+
+        // Act
+        var trueGetter = plan.SelectionCondition(trueBranch, negated: true, discriminatorName: "discriminator");
+        var falseSetter = plan.SelectionCondition(falseBranch, negated: false, discriminatorName: "discriminator");
+        var defaultGetter = plan.SelectionCondition(defaultBranch, negated: true, discriminatorName: "discriminator");
+        var defaultSetter = plan.SelectionCondition(defaultBranch, negated: false, discriminatorName: "discriminator");
+
+        // Assert
+        trueGetter.ShouldBe("!discriminator");
+        falseSetter.ShouldBe("!discriminator");
+        defaultGetter.ShouldBe("!discriminator || discriminator");
+        defaultSetter.ShouldBe("discriminator && !discriminator");
+    }
+
+    [Fact]
     public void UsesTheDeclaredEnumDefaultDiscriminator()
     {
         // Arrange
@@ -81,9 +119,11 @@ public sealed class EmissionUnionPlanSpecs
 
         // Act
         var defaultDiscriminator = plan.ManagedDefaultDiscriminator;
+        var nativeDiscriminatorType = plan.NativeDiscriminatorType;
 
         // Assert
         defaultDiscriminator.ShouldBe("(ChoiceKind)3");
+        nativeDiscriminatorType.ShouldBe("ChoiceKind");
     }
 
     [Fact]
