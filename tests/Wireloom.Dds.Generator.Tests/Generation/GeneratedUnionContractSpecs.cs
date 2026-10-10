@@ -324,7 +324,7 @@ public sealed class GeneratedUnionContractSpecs
         var managed = documents["BooleanUnion.Choice.g.cs"].Source;
         managed.ShouldContain("public bool Discriminator");
         managed.ShouldContain("public const bool DefaultDiscriminator = false");
-        managed.ShouldContain("public object? Get()");
+        managed.ShouldContain("public object Get()");
         managed.ShouldContain("!Discriminator");
         managed.ShouldNotContain("Discriminator != true");
         managed.ShouldNotContain("Discriminator != false");

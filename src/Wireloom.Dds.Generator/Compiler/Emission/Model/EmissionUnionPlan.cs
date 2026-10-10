@@ -35,6 +35,11 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
     public UnionBranchEmissionPlan? DefaultBranch =>
         Branches.SingleOrDefault(branch => branch.IsDefault);
 
+    /// <summary>Gets whether the generated <c>Get</c> method can return null.</summary>
+    public bool GetCanReturnNull =>
+        (!IsExhaustiveBoolean && DefaultBranch is null) ||
+        Branches.Any(branch => branch.Plan.CSharpType.EndsWith("?", StringComparison.Ordinal));
+
     /// <summary>Gets whether both boolean discriminator values are covered without a default branch.</summary>
     public bool IsExhaustiveBoolean
     {
