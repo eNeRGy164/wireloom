@@ -169,8 +169,8 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsOptional)
         {
-            var type = IdlNaming.TypeReference(CSharpType.TrimEnd('?'), currentNamespace);
-            return $"{nativeFieldPrefix}{EscapedName}.Destroy<{type}, {GetReferencedUnmanagedType(currentNamespace)}>(optionalsOnly);";
+            var type = IdlNaming.TypeReference(CSharpType.TrimEnd('?'), namespaceName);
+            return $"{nativeFieldPrefix}{EscapedName}.Destroy<{type}, {GetReferencedUnmanagedType(namespaceName)}>(optionalsOnly);";
         }
 
         return $"{nativeFieldPrefix}{EscapedName}.Destroy(optionalsOnly);";

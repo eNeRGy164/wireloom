@@ -24,7 +24,7 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsAggregate)
         {
-            return BuildAggregateFromNativeStatement(forwardKeysOnly, nativeFieldPrefix);
+            return BuildAggregateFromNativeStatement(forwardKeysOnly, namespaceName, nativeFieldPrefix);
         }
 
         if (IsString)
@@ -110,14 +110,14 @@ internal sealed partial class MemberEmissionPlan
         return $"{nativeFieldPrefix}{EscapedName}.FromNative((Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>)sample.{EscapedName});";
     }
 
-    private string BuildAggregateFromNativeStatement(bool forwardKeysOnly, string nativeFieldPrefix)
+    private string BuildAggregateFromNativeStatement(bool forwardKeysOnly, string? namespaceName, string nativeFieldPrefix)
     {
         if (IsOptional)
         {
             var temporary = $"{EscapedName}Temporary_";
-            var type = IdlNaming.TypeReference(CSharpType.TrimEnd('?'), currentNamespace);
+            var type = IdlNaming.TypeReference(CSharpType.TrimEnd('?'), namespaceName);
 
-            return $"{nativeFieldPrefix}{EscapedName}.FromNative<{type}, {GetReferencedUnmanagedType(currentNamespace)}>(out var {temporary});\nsample.{EscapedName} = {temporary};";
+            return $"{nativeFieldPrefix}{EscapedName}.FromNative<{type}, {GetReferencedUnmanagedType(namespaceName)}>(out var {temporary});\nsample.{EscapedName} = {temporary};";
         }
 
         return $"{nativeFieldPrefix}{EscapedName}.FromNative(sample.{EscapedName}, {KeysOnlyArgument(forwardKeysOnly)});";
@@ -171,7 +171,7 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsAggregate)
         {
-            return BuildAggregateToNativeStatement(forwardKeysOnly, nativeFieldPrefix);
+            return BuildAggregateToNativeStatement(forwardKeysOnly, namespaceName, nativeFieldPrefix);
         }
 
         if (IsString)
@@ -236,12 +236,12 @@ internal sealed partial class MemberEmissionPlan
         return $"{nativeFieldPrefix}{EscapedName}.ToNative((Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>)sample.{EscapedName});";
     }
 
-    private string BuildAggregateToNativeStatement(bool forwardKeysOnly, string nativeFieldPrefix)
+    private string BuildAggregateToNativeStatement(bool forwardKeysOnly, string? namespaceName, string nativeFieldPrefix)
     {
         if (IsOptional)
         {
-            var type = IdlNaming.TypeReference(CSharpType.TrimEnd('?'), currentNamespace);
-            return $"{nativeFieldPrefix}{EscapedName}.ToNative<{type}, {GetReferencedUnmanagedType(currentNamespace)}>(sample.{EscapedName}!);";
+            var type = IdlNaming.TypeReference(CSharpType.TrimEnd('?'), namespaceName);
+            return $"{nativeFieldPrefix}{EscapedName}.ToNative<{type}, {GetReferencedUnmanagedType(namespaceName)}>(sample.{EscapedName}!);";
         }
 
         return $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName}, {KeysOnlyArgument(forwardKeysOnly)});";

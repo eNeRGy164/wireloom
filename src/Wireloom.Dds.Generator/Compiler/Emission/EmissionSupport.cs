@@ -37,7 +37,14 @@ internal static class EmissionSupport
             return $"global::Implementation.{typeName}Unmanaged";
         }
 
-        return IdlNaming.ResolvedTypeReference($"{typeName[..lastDot]}.Implementation.{typeName[(lastDot + 1)..]}Unmanaged", currentNamespace);
+        var unmanagedNamespace = $"{typeName[..lastDot]}.Implementation";
+        var unmanagedTypeName = $"{typeName[(lastDot + 1)..]}Unmanaged";
+        if (string.Equals(unmanagedNamespace, currentNamespace, StringComparison.Ordinal))
+        {
+            return unmanagedTypeName;
+        }
+
+        return IdlNaming.ResolvedTypeReference($"{unmanagedNamespace}.{unmanagedTypeName}", currentNamespace);
     }
 
     internal static string GetSupportType(string typeName, string? currentNamespace) =>

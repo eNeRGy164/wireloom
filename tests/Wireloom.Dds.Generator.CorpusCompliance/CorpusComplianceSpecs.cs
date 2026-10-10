@@ -247,12 +247,12 @@ public sealed class CorpusComplianceSpecs
         unmanaged.ShouldContain("private NativeManagedOptional payloadAlias;");
         unmanaged.ShouldContain("private NativeManagedOptional choice;");
         unmanaged.ShouldContain("private NativeManagedOptional choiceAlias;");
-        unmanaged.ShouldContain("payload.FromNative<Payload, Implementation.PayloadUnmanaged>(out var payloadTemporary_);");
-        unmanaged.ShouldContain("payload.ToNative<Payload, Implementation.PayloadUnmanaged>(sample.payload!);");
-        unmanaged.ShouldContain("payloadAlias.ToNative<Payload, Implementation.PayloadUnmanaged>(sample.payloadAlias!);");
-        unmanaged.ShouldContain("choice.ToNative<Choice, Implementation.ChoiceUnmanaged>(sample.choice!);");
-        unmanaged.ShouldContain("choiceAlias.ToNative<Choice, Implementation.ChoiceUnmanaged>(sample.choiceAlias!);");
-        unmanaged.ShouldContain("payload.Destroy<Payload, Implementation.PayloadUnmanaged>(optionalsOnly);");
+        unmanaged.ShouldContain("payload.FromNative<Payload, PayloadUnmanaged>(out var payloadTemporary_);");
+        unmanaged.ShouldContain("payload.ToNative<Payload, PayloadUnmanaged>(sample.payload!);");
+        unmanaged.ShouldContain("payloadAlias.ToNative<Payload, PayloadUnmanaged>(sample.payloadAlias!);");
+        unmanaged.ShouldContain("choice.ToNative<Choice, ChoiceUnmanaged>(sample.choice!);");
+        unmanaged.ShouldContain("choiceAlias.ToNative<Choice, ChoiceUnmanaged>(sample.choiceAlias!);");
+        unmanaged.ShouldContain("payload.Destroy<Payload, PayloadUnmanaged>(optionalsOnly);");
         plugin.ShouldContain("new StructMember(\"payload\", PayloadSupport.Instance.GetDynamicTypeInternal(isPublic), isOptional: true, id: 0)");
         plugin.ShouldContain("new StructMember(\"payloadAlias\", PayloadAliasSupport.Instance.GetDynamicTypeInternal(isPublic), isOptional: true, id: 1)");
         plugin.ShouldContain("new StructMember(\"choiceAlias\", ChoiceAliasSupport.Instance.GetDynamicTypeInternal(isPublic), isOptional: true, id: 3)");
