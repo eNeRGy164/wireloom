@@ -195,6 +195,7 @@ public sealed class GeneratedUnionContractSpecs
         managed.ShouldContain("Discriminator != 'z'");
 
         var unmanaged = documents["CharUnion.Implementation.ChoiceUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("using Rti.Types;");
         unmanaged.ShouldContain("private byte _discriminator");
         unmanaged.ShouldContain("switch (NativeChar.FromUtf8(_discriminator))");
         unmanaged.ShouldContain("_discriminator = NativeChar.ToUtf8(sample.Discriminator);");

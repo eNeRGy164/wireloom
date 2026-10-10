@@ -4,9 +4,6 @@
 // It requires the RTI Connext DDS .NET runtime.
 #nullable enable
 
-using Omg.Types;
-using Rti.Types;
-
 /// <summary>
 /// Represents the <c>IncludedType</c> DDS type declared in <c>common.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>

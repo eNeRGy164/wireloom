@@ -23,7 +23,13 @@ internal static class CollectionAliasPluginEmitter
             collectionElementUnmanagedType = IdlNaming.TypeReference(plan.ElementNativeType, names.ImplementationNamespace);
         }
 
-        var writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(
+            names.ImplementationNamespace,
+            EmissionSupport.GetPluginUsings(
+                [plan.ElementPlan],
+                usesExtensibility: false,
+                usesAnnotations: !plan.IsCollection && (plan.IsString || plan.IsPrimitive)),
+            sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI runtime plugin for the {typeName} typedef. This implementation detail is not intended for application code.");
         writer.OpenBlock($"internal class {names.PluginTypeName} : InterpretedTypePlugin<{implementationTypeName}, {names.UnmanagedTypeName}>");

@@ -25,7 +25,10 @@ internal static class CollectionAliasManagedEmitter
 
         var elementReference = IdlNaming.TypeReference(resolvedElement, declaration.Namespace);
         var requiresNullForgivingValueInitializer = !declaration.IsCollection && plan is { IsAggregate: true, IsPrimitive: false, IsEnum: false };
-        var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.DataTypeUsings, sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(
+            declaration.Namespace,
+            EmissionSupport.GetManagedTypeUsings([plan.ElementPlan], usesOmgTypes: plan.IsSequence || declaration.Bound is not null || declaration.IsStringBounded, usesSequence: plan.IsSequence),
+            sourceIdlFileName);
 
         writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> IDL typedef declared in <c>{sourceIdlFileName}</c>.");
         writer.OpenBlock($"public partial class {typeName} : global::System.IEquatable<{typeName}>");

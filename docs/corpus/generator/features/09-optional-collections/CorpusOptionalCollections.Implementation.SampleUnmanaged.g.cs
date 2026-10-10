@@ -4,7 +4,6 @@
 // It requires the RTI Connext DDS .NET runtime.
 #nullable enable
 
-using Omg.Types;
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
 

@@ -22,7 +22,14 @@ internal static class DynamicTypeEmitter
         var idlTypeName = names.IdlTypeName;
         var implementationTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.ImplementationNamespace);
 
-        var writer = EmissionSupport.CreateSource(names.ImplementationNamespace, EmissionSupport.PluginUsings, sourceIdlFileName);
+        var allFields = inheritedFields.Concat(fields).ToArray();
+        var writer = EmissionSupport.CreateSource(
+            names.ImplementationNamespace,
+            EmissionSupport.GetPluginUsings(
+                allFields.Select(field => field.Type),
+                usesExtensibility: true,
+                usesAnnotations: allFields.Any(EmissionSupport.UsesPrimitiveAnnotation)),
+            sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI interpreted type plugin for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"internal class {names.PluginTypeName} : InterpretedTypePlugin<{implementationTypeName}, {names.UnmanagedTypeName}>");

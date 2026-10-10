@@ -5,7 +5,6 @@
 #nullable enable
 
 using Rti.Dds.NativeInterface.TypePlugin;
-using Rti.Types;
 
 namespace CorpusStrings.Implementation;
 
