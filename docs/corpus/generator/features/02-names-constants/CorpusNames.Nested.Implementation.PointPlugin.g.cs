@@ -35,7 +35,7 @@ internal class PointPlugin : InterpretedTypePlugin<Point, PointUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("x", dtf.GetPrimitiveType<int>(), id: 0),
             new StructMember("y", dtf.GetPrimitiveType<int>(), id: 1)

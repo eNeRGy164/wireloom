@@ -35,7 +35,7 @@ internal class DerivedValuePlugin : InterpretedTypePlugin<DerivedValue, DerivedV
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("name", dtf.CreateString(16), id: 1)
         };

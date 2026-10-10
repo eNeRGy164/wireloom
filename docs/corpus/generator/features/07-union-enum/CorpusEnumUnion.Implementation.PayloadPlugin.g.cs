@@ -35,7 +35,7 @@ internal class PayloadPlugin : InterpretedTypePlugin<Payload, PayloadUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("code", dtf.GetPrimitiveType<int>(), id: 0),
             new StructMember("label", dtf.CreateString(16), id: 1)

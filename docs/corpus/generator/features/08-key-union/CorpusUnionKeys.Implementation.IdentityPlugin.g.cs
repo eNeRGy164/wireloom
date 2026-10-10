@@ -35,10 +35,10 @@ internal class IdentityPlugin : InterpretedTypePlugin<Identity, IdentityUnmanage
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new UnionMember[]
+        var members = new[]
         {
-            new UnionMember("number", dtf.GetPrimitiveType<int>(), new int[] { 0 }, id: 1),
-            new UnionMember("text", dtf.CreateString(255), new int[] { 1 }, id: 2)
+            new UnionMember("number", dtf.GetPrimitiveType<int>(), new[] { 0 }, id: 1),
+            new UnionMember("text", dtf.CreateString(255), new[] { 1 }, id: 2)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<IdentityUnmanaged>(

@@ -35,7 +35,7 @@ internal class SecondPlugin : InterpretedTypePlugin<global::Second, SecondUnmana
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("name", dtf.CreateString(255), id: 0)
         };

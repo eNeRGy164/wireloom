@@ -35,7 +35,7 @@ internal class NamedPlugin : InterpretedTypePlugin<Named, NamedUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("sample", SampleSupport.Instance.GetDynamicTypeInternal(isPublic), id: 0)
         };

@@ -86,7 +86,7 @@ internal static class UnionTypeSupportEmitter
         writer.WriteLine("var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);");
         writer.WriteLine("var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;");
         writer.BlankLine();
-        writer.WriteLine("var members = new UnionMember[]");
+        writer.WriteLine(declaration.Branches.Count == 0 ? "var members = new UnionMember[]" : "var members = new[]");
         writer.OpenBrace();
 
         for (var index = 0; index < declaration.Branches.Count; index++)
@@ -94,8 +94,8 @@ internal static class UnionTypeSupportEmitter
             var branch = declaration.Branches[index];
             var dynamicType = branch.Plan.BuildDynamicTypeExpression(names.ImplementationNamespace);
             var labels = branch.IsDefault
-                ? "new int[] { UnionMember.DefaultLabel }"
-                : $"new int[] {{ {string.Join(", ", branch.LabelValues)} }}";
+                ? "new[] { UnionMember.DefaultLabel }"
+                : $"new[] {{ {string.Join(", ", branch.LabelValues)} }}";
 
             writer.WriteLine($"new UnionMember(\"{branch.Field.Name}\", {dynamicType}, {labels}, id: {index + 1}){(index == declaration.Branches.Count - 1 ? string.Empty : ",")}");
         }

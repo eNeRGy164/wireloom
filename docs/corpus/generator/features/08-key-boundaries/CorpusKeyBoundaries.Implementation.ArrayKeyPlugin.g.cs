@@ -35,7 +35,7 @@ internal class ArrayKeyPlugin : InterpretedTypePlugin<ArrayKey, ArrayKeyUnmanage
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("coordinates", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), new uint[] { 2 }), isKey: true, id: 0),
             new StructMember("payload", dtf.GetPrimitiveType<int>(), id: 1)

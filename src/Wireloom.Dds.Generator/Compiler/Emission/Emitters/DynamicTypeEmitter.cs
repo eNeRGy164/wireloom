@@ -68,7 +68,7 @@ internal static class DynamicTypeEmitter
         }
 
         writer.BlankLine();
-        writer.WriteLine("var members = new StructMember[]");
+        writer.WriteLine(fields.Count == 0 ? "var members = new StructMember[]" : "var members = new[]");
         writer.OpenBrace();
 
         for (var index = 0; index < fields.Count; index++)

@@ -35,7 +35,7 @@ internal class HolderPlugin : InterpretedTypePlugin<Holder, HolderUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("value", ChoiceSupport.Instance.GetDynamicTypeInternal(isPublic), id: 0)
         };

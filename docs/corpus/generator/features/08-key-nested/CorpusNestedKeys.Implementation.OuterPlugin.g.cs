@@ -35,7 +35,7 @@ internal class OuterPlugin : InterpretedTypePlugin<Outer, OuterUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("identity", InnerSupport.Instance.GetDynamicTypeInternal(isPublic), isKey: true, id: 0),
             new StructMember("payload", dtf.GetPrimitiveType<int>(), id: 1)

@@ -35,7 +35,7 @@ internal class ReopenedPlugin : InterpretedTypePlugin<Reopened, ReopenedUnmanage
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        var members = new StructMember[]
+        var members = new[]
         {
             new StructMember("value", KeywordRecordSupport.Instance.GetDynamicTypeInternal(isPublic), id: 0)
         };
