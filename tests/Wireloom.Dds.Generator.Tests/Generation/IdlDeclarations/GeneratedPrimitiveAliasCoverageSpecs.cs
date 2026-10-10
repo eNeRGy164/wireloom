@@ -33,7 +33,7 @@ public sealed class GeneratedPrimitiveAliasCoverageSpecs
 
         // Assert
         AssertPrimitiveAlias(documents, "ShortAlias", "Int16", "Int16Value", "0", "short.MinValue", "short.MaxValue", "0");
-        AssertPrimitiveAlias(documents, "LongAlias", "Int32", "Int32Value", "0", "int.MinValue", "int.MaxValue", "(int)0");
+        AssertPrimitiveAlias(documents, "LongAlias", "Int32", "Int32Value", "0", "int.MinValue", "int.MaxValue", "0");
         AssertPrimitiveAlias(documents, "LongLongAlias", "Int64", "Int64Value", "0L", "long.MinValue", "long.MaxValue", "0L");
         AssertPrimitiveAlias(documents, "UnsignedShortAlias", "Uint16", "Uint16Value", "0", "ushort.MinValue", "ushort.MaxValue", "0");
         AssertPrimitiveAlias(documents, "UnsignedLongAlias", "UInt32", "Uint32Value", "0U", "uint.MinValue", "uint.MaxValue", "(uint)0");

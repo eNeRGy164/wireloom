@@ -302,6 +302,11 @@ internal static class CollectionAliasNativeEmitter
     private static string NativeDefaultValue(string implementationElementType, CollectionAliasEmissionPlan plan)
     {
         var elementPlan = EmissionTypeProjector.UnwrapValueEmissionType(plan.ElementPlan);
+        if (elementPlan is EnumEmissionType)
+        {
+            return "0";
+        }
+
         if (elementPlan is PrimitiveEmissionType primitive)
         {
             var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);

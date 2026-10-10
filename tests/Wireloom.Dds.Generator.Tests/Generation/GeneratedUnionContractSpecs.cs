@@ -155,7 +155,7 @@ public sealed class GeneratedUnionContractSpecs
         // Assert
         var managed = documents["EnumUnion.Choice.g.cs"].Source;
         managed.ShouldContain("public Kind Discriminator");
-        managed.ShouldContain("public const Kind DefaultDiscriminator = (Kind)0");
+        managed.ShouldContain("public const Kind DefaultDiscriminator = 0");
 
         var unmanaged = documents["EnumUnion.Implementation.ChoiceUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("private global::EnumUnion.Kind _discriminator");

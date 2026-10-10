@@ -52,6 +52,11 @@ internal sealed partial class MemberEmissionPlan
 
             if (ValueType is EnumEmissionType)
             {
+                if (DefaultValue!.Value.IsZero)
+                {
+                    return "0";
+                }
+
                 return $"({IdlNaming.TypeReference(CSharpType, namespaceName)})({value})";
             }
 
@@ -65,6 +70,7 @@ internal sealed partial class MemberEmissionPlan
 
         return ValueType switch
         {
+            EnumEmissionType { DefaultValue: 0 } => "0",
             EnumEmissionType enumType => $"({IdlNaming.TypeReference(CSharpType, namespaceName)})({enumType.DefaultValue})",
             _ => throw new InvalidOperationException("Expected a scalar native value.")
         };

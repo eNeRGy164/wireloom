@@ -1,3 +1,4 @@
+using System.Numerics;
 using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.FrontEnd.Semantic;
@@ -145,5 +146,40 @@ public sealed class EmissionPlanDecisionSpecs
         destroy.ShouldBe("values.Destroy(optionalsOnly);");
         fromNative.ShouldBe("values.FromNative((Sequence<int>)sample.values);");
         toNative.ShouldBe("values.ToNative((Sequence<int>)sample.values);");
+    }
+
+    [Fact]
+    public void NativeEnumInitializationUsesZeroWithoutRedundantCasts()
+    {
+        // Arrange
+        var enumType = new EnumEmissionType("Example.State", 0, "Zero");
+        var implicitDefaultPlan = CreateEnumMemberPlan(enumType, valueMetadata: null);
+        var explicitDefaultPlan = CreateEnumMemberPlan(enumType, new IdlMemberValueMetadata(defaultValue: BigInteger.Zero));
+
+        // Act
+        var implicitInitialization = implicitDefaultPlan.BuildInitializeStatement();
+        var explicitInitialization = explicitDefaultPlan.BuildInitializeStatement();
+
+        // Assert
+        implicitInitialization.ShouldBe("state = 0;");
+        explicitInitialization.ShouldBe("state = 0;");
+    }
+
+    private static MemberEmissionPlan CreateEnumMemberPlan(EnumEmissionType enumType, IdlMemberValueMetadata? valueMetadata)
+    {
+        var field = new IdlEmissionField(
+            name: "state",
+            type: enumType,
+            metadata: new EmissionMetadata(
+                isKey: false,
+                memberId: null,
+                isOptional: false,
+                valueMetadata: valueMetadata,
+                isExternal: false,
+                isMustUnderstand: false,
+                memberIdHashSource: null,
+                usesAutoIdHash: false));
+
+        return new MemberEmissionPlan(field, currentNamespace: "Example");
     }
 }

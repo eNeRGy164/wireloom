@@ -41,7 +41,7 @@ public struct ColorAlias2Unmanaged : INativeTopicType<ColorAlias2>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value = (Color)0;
+        Value = 0;
     }
 
     /// <summary>

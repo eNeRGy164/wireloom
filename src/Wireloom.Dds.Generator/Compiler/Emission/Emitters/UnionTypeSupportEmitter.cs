@@ -94,7 +94,7 @@ internal static class UnionTypeSupportEmitter
             var branch = declaration.Branches[index];
             var dynamicType = branch.Plan.BuildDynamicTypeExpression(names.ImplementationNamespace);
             var labels = branch.IsDefault
-                ? "new int[] { (int)UnionMember.DefaultLabel }"
+                ? "new int[] { UnionMember.DefaultLabel }"
                 : $"new int[] {{ {string.Join(", ", branch.LabelValues)} }}";
 
             writer.WriteLine($"new UnionMember(\"{branch.Field.Name}\", {dynamicType}, {labels}, id: {index + 1}){(index == declaration.Branches.Count - 1 ? string.Empty : ",")}");

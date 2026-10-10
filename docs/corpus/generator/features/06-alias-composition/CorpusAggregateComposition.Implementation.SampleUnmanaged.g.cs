@@ -50,7 +50,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         id = 0;
-        state = (State)(0);
+        state = 0;
         values.Initialize<float>(max: 4, absoluteMax: 4, allocateMemory);
     }
 

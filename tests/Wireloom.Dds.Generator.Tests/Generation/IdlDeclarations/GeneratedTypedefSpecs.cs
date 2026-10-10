@@ -94,6 +94,24 @@ public sealed class GeneratedTypedefSpecs
     }
 
     [Fact]
+    public void InitializesEnumAliasesWithoutRedundantZeroCasts()
+    {
+        // Arrange
+        var input = Input(
+            "enum-alias-zero-default.idl",
+            "module EnumAliases { enum Color { Red, Blue }; typedef Color ColorAlias; typedef ColorAlias ColorAlias2; }; ");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["EnumAliases.Implementation.ColorAliasUnmanaged.g.cs"].Source.ShouldContain("Value = 0;");
+        documents["EnumAliases.Implementation.ColorAliasUnmanaged.g.cs"].Source.ShouldNotContain("Value = (Color)0;");
+        documents["EnumAliases.Implementation.ColorAlias2Unmanaged.g.cs"].Source.ShouldContain("Value = 0;");
+        documents["EnumAliases.Implementation.ColorAlias2Unmanaged.g.cs"].Source.ShouldNotContain("Value = (Color)0;");
+    }
+
+    [Fact]
     public void CopiesAggregateAliasValueThroughAggregateCopyConstructorWhenSourceValueIsNull()
     {
         // Arrange

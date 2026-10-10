@@ -200,6 +200,7 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
     /// <summary>Builds the managed default value expression.</summary>
     public string ManagedDefaultValue => facts.ValueType switch
     {
+        EnumEmissionType when facts.ValueMetadata!.DefaultValue!.Value.IsZero => "0",
         EnumEmissionType => $"({TypeReference(facts.CSharpType, currentNamespace)})({facts.ValueMetadata!.DefaultValue!.Value.ToString(CultureInfo.InvariantCulture)})",
         _ => FormatCSharpValue(facts.CSharpType.TrimEnd('?'), facts.ValueMetadata!.DefaultValue!.Value)
     };
