@@ -159,7 +159,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// Gets the value of the currently active union branch, if any.
     /// </summary>
     /// <returns>The concrete value of the active branch, including the default branch <see cref="flag"/> when no explicit label matches.</returns>
-    public object? Get()
+    public object Get()
     {
         return Discriminator switch
         {

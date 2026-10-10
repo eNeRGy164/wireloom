@@ -113,11 +113,27 @@ internal static class UnionEmitter
         }
 
         writer.WriteXmlSummary("Gets the value of the currently active union branch, if any.");
-        var getReturns = defaultBranch is null
-            ? "The concrete value of the active branch, or <see langword=\"null\"/> when the discriminator selects no declared branch."
-            : $"The concrete value of the active branch, including the default branch <see cref=\"{IdlNaming.EscapeIdentifier(defaultBranch.Field.Name)}\"/> when no explicit label matches.";
+        string getReturns;
+        if (defaultBranch is not null)
+        {
+            getReturns = $"The concrete value of the active branch, including the default branch <see cref=\"{IdlNaming.EscapeIdentifier(defaultBranch.Field.Name)}\"/> when no explicit label matches.";
+        }
+        else if (declaration.IsExhaustiveBoolean)
+        {
+            getReturns = "The concrete value of the active branch.";
+        }
+        else
+        {
+            getReturns = "The concrete value of the active branch, or <see langword=\"null\"/> when the discriminator selects no declared branch.";
+        }
+
+        if (declaration.Branches.Any(branch => branch.Plan.CSharpType.EndsWith("?", StringComparison.Ordinal)))
+        {
+            getReturns += " The returned value may be <see langword=\"null\"/> when the active branch value is null.";
+        }
+
         writer.WriteXmlReturns(getReturns);
-        writer.OpenBlock("public object? Get()");
+        writer.OpenBlock($"public object{(declaration.GetCanReturnNull ? "?" : string.Empty)} Get()");
         EmitUnionReturnSwitch(writer, declaration);
         writer.CloseBlock();
         writer.BlankLine();

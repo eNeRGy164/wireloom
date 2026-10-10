@@ -402,6 +402,21 @@ public sealed class UnionSpecs
     }
 
     [Fact]
+    public void UnionGetReturnNullabilityMatchesItsSelectableBranches()
+    {
+        // Arrange
+        var input = Input("union-get-nullability.idl",
+            "module Example { union DefaultChoice switch(long) { case 1: long number; default: string text; }; union OpenChoice switch(long) { case 1: long number; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Example.DefaultChoice.g.cs"].Source.ShouldContain("public object Get()");
+        documents["Example.OpenChoice.g.cs"].Source.ShouldContain("public object? Get()");
+    }
+
+    [Fact]
     public void UnionConstructorDoesNotInitializeInactiveAggregateBranches()
     {
         // Arrange
