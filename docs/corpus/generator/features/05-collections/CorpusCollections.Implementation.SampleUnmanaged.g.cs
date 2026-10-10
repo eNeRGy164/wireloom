@@ -77,7 +77,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     /// <remarks>The operation copies values from <paramref name="sample"/> into native storage.</remarks>
     public void ToNative(Sample sample, bool keysOnly = false)
     {
-        values.ToNative<int>(sample.values, dimension: 2 * 3);
+        values.ToNative(sample.values, dimension: 2 * 3);
         unbounded.ToNative((Sequence<int>)sample.unbounded);
         bounded.ToNative(sample.bounded, keysOnly: false);
         items.ToNative<Item, ItemUnmanaged>(sample.items);

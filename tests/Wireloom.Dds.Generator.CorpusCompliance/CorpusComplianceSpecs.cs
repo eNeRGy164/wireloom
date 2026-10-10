@@ -209,10 +209,10 @@ public sealed class CorpusComplianceSpecs
 
         sampleUnmanaged.ShouldContain("private NativeOptionalSeq values;");
         sampleUnmanaged.ShouldContain("private NativeUnmanagedOptionalArray items;");
-        sampleUnmanaged.ShouldContain("values.FromNative<int>(out Sequence<int> valuesTemporary_);");
-        sampleUnmanaged.ShouldContain("items.FromNative<int>(out int[] itemsTemporary_, dimensions: new int[] { 2 });");
-        sampleUnmanaged.ShouldContain("values.ToNative<int>((Sequence<int>)sample.values!, 4);");
-        sampleUnmanaged.ShouldContain("items.ToNative<int>(sample.items, 2);");
+        sampleUnmanaged.ShouldContain("values.FromNative(out Sequence<int> valuesTemporary_);");
+        sampleUnmanaged.ShouldContain("items.FromNative(out int[] itemsTemporary_, dimensions: new int[] { 2 });");
+        sampleUnmanaged.ShouldContain("values.ToNative((Sequence<int>)sample.values!, 4);");
+        sampleUnmanaged.ShouldContain("items.ToNative(sample.items, 2);");
         sampleUnmanaged.ShouldContain("values.Destroy(optionalsOnly);");
         sampleUnmanaged.ShouldContain("items.Destroy(optionalsOnly);");
 

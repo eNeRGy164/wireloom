@@ -62,7 +62,7 @@ public struct MessageUnmanaged : INativeTopicType<Message>
     public void ToNative(Message sample, bool keysOnly = false)
     {
         requiredValue = sample.requiredValue;
-        optionalValue.ToNative<int>(sample.optionalValue);
+        optionalValue.ToNative(sample.optionalValue);
         optionalText.ToNativeOptional(sample.optionalText, 16);
     }
 }

@@ -59,6 +59,6 @@ public struct MutableUnmanaged : INativeTopicType<Mutable>
     public void ToNative(Mutable sample, bool keysOnly = false)
     {
         id = sample.id;
-        optionalValue.ToNative<int>(sample.optionalValue);
+        optionalValue.ToNative(sample.optionalValue);
     }
 }

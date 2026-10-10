@@ -52,6 +52,6 @@ public struct RowUnmanaged : INativeTopicType<Row>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void ToNative(Row sample, bool keysOnly = false)
     {
-        Value.ToNative<int>(sample.Value, dimension: 3);
+        Value.ToNative(sample.Value, dimension: 3);
     }
 }

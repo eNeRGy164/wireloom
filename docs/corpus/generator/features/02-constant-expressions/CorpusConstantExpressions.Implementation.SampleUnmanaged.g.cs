@@ -61,6 +61,6 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     public void ToNative(Sample sample, bool keysOnly = false)
     {
         values.ToNative((Sequence<int>)sample.values);
-        array.ToNative<int>(sample.array, dimension: 5);
+        array.ToNative(sample.array, dimension: 5);
     }
 }

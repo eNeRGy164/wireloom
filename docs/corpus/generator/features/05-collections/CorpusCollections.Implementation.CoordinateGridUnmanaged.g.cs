@@ -52,6 +52,6 @@ public struct CoordinateGridUnmanaged : INativeTopicType<CoordinateGrid>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void ToNative(CoordinateGrid sample, bool keysOnly = false)
     {
-        Value.ToNative<int>(sample.Value, dimension: 2 * 3);
+        Value.ToNative(sample.Value, dimension: 2 * 3);
     }
 }

@@ -59,10 +59,10 @@ public sealed class GeneratedOptionalCollectionSpecs
         unmanaged.ShouldContain("private NativeOptionalSeq values;");
         unmanaged.ShouldContain("private NativeUnmanagedOptionalArray matrix;");
         unmanaged.ShouldContain("values.Initialize();");
-        unmanaged.ShouldContain("values.FromNative<int>(out Sequence<int> valuesTemporary_);");
-        unmanaged.ShouldContain("values.ToNative<int>((Sequence<int>)sample.values!, 4);");
-        unmanaged.ShouldContain("matrix.FromNative<int>(out int[,] matrixTemporary_, dimensions: new int[] { 2, 3 });");
-        unmanaged.ShouldContain("matrix.ToNative<int>(sample.matrix, 2 * 3);");
+        unmanaged.ShouldContain("values.FromNative(out Sequence<int> valuesTemporary_);");
+        unmanaged.ShouldContain("values.ToNative((Sequence<int>)sample.values!, 4);");
+        unmanaged.ShouldContain("matrix.FromNative(out int[,] matrixTemporary_, dimensions: new int[] { 2, 3 });");
+        unmanaged.ShouldContain("matrix.ToNative(sample.matrix, 2 * 3);");
         unmanaged.ShouldContain("text.ToNativeOptional(sample.text, 8);");
         unmanaged.ShouldContain("values.Destroy(optionalsOnly);\n        matrix.Destroy(optionalsOnly);\n        text.Destroy();");
         unmanaged.ShouldNotContain("text.Initialize(size: 8");

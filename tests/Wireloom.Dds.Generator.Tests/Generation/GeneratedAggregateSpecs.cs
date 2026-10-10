@@ -446,7 +446,7 @@ public sealed class GeneratedAggregateSpecs
         var array = documents["SampleShadowing.Implementation.ArrayUnmanaged.g.cs"].Source;
         array.ShouldContainInOrder(
             "this.sample.FromNative(sample.sample, dimension: 2);",
-            "this.sample.ToNative<int>(sample.sample, dimension: 2);");
+            "this.sample.ToNative(sample.sample, dimension: 2);");
 
         var aggregate = documents["SampleShadowing.Implementation.AggregateUnmanaged.g.cs"].Source;
         aggregate.ShouldContainInOrder(
