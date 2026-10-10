@@ -107,7 +107,7 @@ internal sealed class PrimitiveTypeMapping(
                 return new("short", "short", "short", "short", "0", "Int16", "Int16Value", "short.MinValue", "short.MaxValue", "0", nativeValueRequiresCast: false);
             case "long":
             case "int32":
-                return new("long", "int", "int", "int", "0", "Int32", "Int32Value", "int.MinValue", "int.MaxValue");
+                return new("long", "int", "int", "int", "0", "Int32", "Int32Value", "int.MinValue", "int.MaxValue", nativeValueRequiresCast: false);
             case "long long":
             case "int64":
                 return new("long long", "long", "long", "long", "0L", "Int64", "Int64Value", "long.MinValue", "long.MaxValue");

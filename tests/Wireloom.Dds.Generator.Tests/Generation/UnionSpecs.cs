@@ -232,7 +232,7 @@ public sealed class UnionSpecs
         var managed = documents["Example.Choice.g.cs"].Source;
         managed.ShouldContain("Discriminator { get; private set; }");
         managed.ShouldContain("public Kind Discriminator { get; private set; }");
-        managed.ShouldContain("public const Kind DefaultDiscriminator = (Kind)0;");
+        managed.ShouldContain("public const Kind DefaultDiscriminator = 0;");
         managed.ShouldContain("Discriminator != Kind.Number");
         managed.ShouldContain("Discriminator = Kind.Number;");
         managed.ShouldNotContain("global::Example.Kind");
@@ -342,7 +342,7 @@ public sealed class UnionSpecs
 
         // Assert
         managed.ShouldContain("public const Kind DefaultDiscriminator = (Kind)10;");
-        managed.ShouldContain("Discriminator = (Kind)0;");
+        managed.ShouldContain("Discriminator = 0;");
     }
 
     [Fact]
@@ -589,11 +589,11 @@ public sealed class UnionSpecs
 
         // Assert
         var enumChoice = documents["Example.EnumChoice.g.cs"].Source;
-        enumChoice.ShouldContain("public const Kind DefaultDiscriminator = (Kind)0;");
+        enumChoice.ShouldContain("public const Kind DefaultDiscriminator = 0;");
         enumChoice.ShouldContain("Discriminator = (Kind)1;");
 
         var exhaustiveEnumChoice = documents["Example.ExhaustiveEnumChoice.g.cs"].Source;
-        exhaustiveEnumChoice.ShouldContain("public const Kind DefaultDiscriminator = (Kind)0;");
+        exhaustiveEnumChoice.ShouldContain("public const Kind DefaultDiscriminator = 0;");
         exhaustiveEnumChoice.ShouldContain("Discriminator = (Kind)2;");
 
         var integerChoice = documents["Example.IntegerChoice.g.cs"].Source;

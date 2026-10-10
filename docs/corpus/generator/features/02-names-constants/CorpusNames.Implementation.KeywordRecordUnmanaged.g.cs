@@ -55,7 +55,7 @@ public struct KeywordRecordUnmanaged : INativeTopicType<KeywordRecord>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         @event = 0;
-        state = (State)(0);
+        state = 0;
         point.Initialize(allocatePointers, allocateMemory);
     }
 

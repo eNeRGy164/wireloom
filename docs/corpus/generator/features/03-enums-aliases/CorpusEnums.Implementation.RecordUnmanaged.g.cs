@@ -60,8 +60,8 @@ public struct RecordUnmanaged : INativeTopicType<Record>
     {
         value = 0;
         aliasValue = 0;
-        color = (Color)(0);
-        aliasColor = (Color)(0);
+        color = 0;
+        aliasColor = 0;
         colors.Initialize(allocatePointers, allocateMemory);
     }
 

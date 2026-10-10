@@ -41,7 +41,7 @@ public struct ScalarUnmanaged : INativeTopicType<Scalar>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value = (int)0;
+        Value = 0;
     }
 
     /// <summary>

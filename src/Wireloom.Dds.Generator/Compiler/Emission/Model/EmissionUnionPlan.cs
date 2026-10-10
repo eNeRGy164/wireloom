@@ -257,6 +257,7 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
         "bool" => value == 0 ? "false" : "true",
         "char" when value == 0 => "'\\0'",
         "char" => $"(char){value}",
+        _ when DiscriminatorIsEnum && value == 0 => "0",
         _ when DiscriminatorIsEnum => $"({ManagedEnumTypeReference()}){value}",
         _ => value.ToString(CultureInfo.InvariantCulture)
     };
