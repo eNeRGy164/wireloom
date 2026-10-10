@@ -10,7 +10,7 @@ internal static class EnumEmitter
     public static IReadOnlyList<GeneratedIdlSource> Emit(IdlEnum declaration, string sourceIdlFileName)
     {
         var names = IdlNaming.CreateGeneratedTypeNames(declaration.Namespace, declaration.Name);
-        var writer = EmissionSupport.CreateSource(declaration.Namespace, [], sourceIdlFileName);
+        var writer = EmissionSupport.CreateSource(declaration.Namespace, [], sourceIdlFileName, nullableContext: false);
 
         writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> enumeration declared in <c>{sourceIdlFileName}</c>.");
         writer.OpenBlock($"public enum {names.ManagedTypeName}");

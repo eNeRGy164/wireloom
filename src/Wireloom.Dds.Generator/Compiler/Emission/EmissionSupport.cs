@@ -16,11 +16,13 @@ internal static class EmissionSupport
     internal static GeneratedSourceWriter CreateSource(
         string? currentNamespace,
         IEnumerable<string> usingAliases,
-        string sourceIdlFileName) =>
+        string sourceIdlFileName,
+        bool nullableContext = true) =>
         new(
             currentNamespace is null ? null : IdlNaming.EscapeQualifiedIdentifier(currentNamespace),
             usingAliases,
-            sourceIdlFileName);
+            sourceIdlFileName,
+            nullableContext);
 
     internal static string GetUnmanagedType(string typeName, string? currentNamespace)
     {

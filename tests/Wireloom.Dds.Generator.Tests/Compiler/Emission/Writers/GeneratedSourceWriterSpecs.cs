@@ -57,4 +57,17 @@ public sealed class GeneratedSourceWriterSpecs
         // Assert
         writer.ToString().ShouldContain("/// if (value &lt; 2 &amp;&amp; value &gt; 0) { }");
     }
+
+    [Fact]
+    public void OmitsNullableDirectiveWhenTheDocumentDoesNotUseNullableAnnotations()
+    {
+        // Arrange
+        var writer = new GeneratedSourceWriter("Sample.Namespace", [], "sample.idl", nullableContext: false);
+
+        // Act
+        var source = writer.ToString();
+
+        // Assert
+        source.ShouldNotContain("#nullable");
+    }
 }
