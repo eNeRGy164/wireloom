@@ -9,6 +9,11 @@ file(GLOB_RECURSE RTI_GENERATED_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURC
 add_executable(wire-peer main.cpp ${RTI_GENERATED_SOURCES})
 target_compile_features(wire-peer PRIVATE cxx_std_11)
 target_link_libraries(wire-peer PRIVATE RTIConnextDDS::cpp2_api)
+if(WIRELOOM_CHAR8_LITERAL_FIXTURE)
+    # RTI emits the high-bit char label literally. Compile it as one char8 byte,
+    # not as a UTF-8 multicharacter integer truncated into the discriminator.
+    target_compile_options(wire-peer PRIVATE -fexec-charset=ISO-8859-1)
+endif()
 if(WIRELOOM_DYNAMIC_WCHAR_UNION)
     target_compile_definitions(wire-peer PRIVATE WIRELOOM_DYNAMIC_WCHAR_UNION)
 endif()

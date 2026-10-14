@@ -71,6 +71,7 @@ internal static class Program
         {
             "09-optional-string-sequences" => CreateOptionalStringSequenceFixture<T>(options.Fixture),
             "09-optional-aggregate-member" => CreateOptionalAggregateMemberFixture<T>(options.Fixture),
+            "07-union-char-boundaries" => CreateCharacterUnionFixture<T>(options.Fixture),
             _ => serializer.FromDynamicData(expectedDynamic)
         };
 
@@ -204,19 +205,19 @@ internal static class Program
                 }
             }
 
-            if (invalidSamples > 0)
-            {
-                WriteReaderStatistics(reader, takeCalls, returnedSamples, validSamples, invalidSamples);
-                throw new InvalidDataException(
-                    $"Received {invalidSamples} invalid-data sample(s) for " +
-                    $"{options.CaseId} fixture {options.Fixture}.");
-            }
-
+            // ValidData=false also describes ordinary instance lifecycle notifications,
+            // including a writer exiting after its reliable sample was acknowledged.
+            // Count those notifications, but require and verify a valid payload.
             foreach (var sample in validData)
             {
                 try
                 {
-                    if (options.CaseId == "09-optional-string-sequences")
+                    if (options.CaseId == "07-union-char-boundaries")
+                    {
+                        IndependentSampleVerifier.VerifyCharacterUnionFixture(
+                            expectedDynamic.Type, sample!, options.Fixture);
+                    }
+                    else if (options.CaseId == "09-optional-string-sequences")
                     {
                         IndependentSampleVerifier.VerifyOptionalStringSequenceFixture(
                             sample!, options.Fixture);
@@ -252,6 +253,21 @@ internal static class Program
         WriteReaderStatistics(reader, takeCalls, returnedSamples, validSamples, invalidSamples);
         throw new TimeoutException(
             $"No sample received for {options.CaseId} fixture {options.Fixture}.");
+    }
+
+    /// <summary>Seeds character branches directly so RTI DynamicData signedness cannot alter the fixture.</summary>
+    private static T CreateCharacterUnionFixture<T>(string fixture)
+    {
+        var sample = Activator.CreateInstance<T>()!;
+        var branch = fixture switch
+        {
+            "union-minimum" => "minimum",
+            "union-maximum" => "maximum",
+            "union-default" => "fallback",
+            _ => throw new FixtureException($"Unknown character union fixture '{fixture}'.")
+        };
+        typeof(T).GetProperty(branch)!.SetValue(sample, 8201);
+        return sample;
     }
 
     private static T CreateOptionalAggregateMemberFixture<T>(string fixture)

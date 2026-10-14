@@ -129,6 +129,9 @@ fixtures_for_case() {
         07-union-boolean)
             printf '%s\n' union-enabled union-disabled
             ;;
+        07-union-octet|07-union-short-boundaries|07-union-long|07-union-ushort|07-union-ulong|07-union-int8|07-union-uint8|07-union-int16|07-union-uint16|07-union-int32|07-union-uint32|07-union-char-boundaries)
+            printf '%s\n' union-minimum union-maximum union-default
+            ;;
         07-union-scoped)
             printf '%s\n' union-payload sequence-empty sequence-single
             ;;
@@ -384,7 +387,7 @@ run_scenario() {
     start_peer "$reader_peer" reader "$topic" "$case_id" "$wireloom_type" "$rti_type" "$fixture" > "$reader_log" 2>&1 &
     reader_pid=$!
 
-    for _ in $(seq 1 100); do
+    for _ in $(seq 1 "$((timeout_seconds * 10))"); do
         if grep -q '^READY ' "$reader_log"; then
             reader_ready=1
             break
@@ -403,7 +406,8 @@ run_scenario() {
             writer_status=$?
         fi
     else
-        : > "$writer_log"
+        printf 'FAIL ReaderReadiness Reader did not become ready for %s fixture %s\n' \
+            "$case_id" "$fixture" > "$writer_log"
         writer_status=1
     fi
 
@@ -642,6 +646,9 @@ for case_id in "${case_ids[@]}"; do
     done < <(matrix_tool includes "$native_dir/idl.idl" "$repo_root/docs/corpus/idl" "$repo_root/docs/corpus/idl/includes")
     cpp_template_type="$cpp_type"
     cmake_adaptation_args=()
+    if [[ "$case_id" == "07-union-char-boundaries" ]]; then
+        cmake_adaptation_args+=( -DWIRELOOM_CHAR8_LITERAL_FIXTURE=ON )
+    fi
     if ccache_path="$(command -v ccache || true)" && [[ -n "$ccache_path" ]]; then
         cmake_adaptation_args+=( "-DCMAKE_CXX_COMPILER_LAUNCHER=$ccache_path" )
     fi
