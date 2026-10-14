@@ -1,0 +1,5 @@
+module CorpusNegativeUnionunsignedlonglong {
+    union Choice switch(unsigned long long) {
+        case 1: long value;
+    };
+};

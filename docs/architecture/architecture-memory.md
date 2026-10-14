@@ -35,7 +35,9 @@ or ADRs first, then refresh this file and
   metadata. Their DynamicType preserves declared typedef aliases to match RTI,
   while managed properties and native conversions use the underlying
   aggregate. Optional union branches follow RTI's required selected-branch
-  shape.
+  shape. Union metadata uses type-specific signed labels matching RTI C++
+  while managed discriminators retain their IDL ranges. Narrow character 254
+  uses signed 8-bit metadata label -2; its managed value and wire byte stay 254. Narrow char labels and default selection are limited to 0..255; wchar retains 0..65535.
   Parsing, binding, and
   validation are explicit front-end phases, and chapter 5 includes a level-2
   zoom of the compiler and preprocessing boundary.
@@ -43,7 +45,10 @@ or ADRs first, then refresh this file and
 - **Runtime and deployment:** The manually triggered wire workflow targets RTI
   Connext 7.7.0 and compares Wireloom-generated C#, RTI-generated C#, and
   RTI-generated C++ across all nine directed pairings for each fixture. Readers
-  verify fixture values and sample validity. Present optional wide-string
+  require and verify valid payloads while counting ordinary instance lifecycle
+  notifications separately. The verifier normalizes discriminator widths;
+  character fixtures use independent typed values and a single-byte C++
+  execution charset. Present optional wide-string
   sequences use the DynamicData C API peer; absent, empty, and narrow-only
   controls use typed peers. Optional aggregate values are supported by the
   generator, while their interoperability is unverified until a licensed matrix

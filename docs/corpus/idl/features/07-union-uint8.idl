@@ -1,0 +1,7 @@
+module CorpusUnionUint8 {
+    union Choice switch(uint8) {
+        case 0: long minimum;
+        case 255: long maximum;
+        default: long fallback;
+    };
+};

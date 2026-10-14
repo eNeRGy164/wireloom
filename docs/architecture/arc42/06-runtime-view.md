@@ -1,5 +1,17 @@
 # 6. Runtime view
 
+Wire readers count `ValidData=false` instance lifecycle notifications without
+treating them as corrupted payloads. A writer may exit after acknowledgment
+before the reader takes its sample, producing a `NotAliveNoWriters`
+notification alongside valid data. Every reader still requires a valid sample
+and verifies its complete fixture; lifecycle-only traffic times out.
+The independent verifier normalizes signed RTI labels and discriminator values
+using the declared discriminator type before comparing branches and snapshots.
+Character boundary fixtures are seeded and checked through managed members,
+independently of RTI DynamicData's branch selection. Their C++ peer uses
+`-fexec-charset=ISO-8859-1` so RTI's literal U+00FF label becomes byte 255 and
+signed metadata label -1, rather than a UTF-8 multicharacter constant.
+
 Wireloom has no long-running runtime process. Its primary runtime scenario is
 the consumer's build, followed later by the generated application's use of the
 RTI runtime.

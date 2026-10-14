@@ -1,0 +1,7 @@
+module CorpusCharUnionBoundaries {
+    union Choice switch(char) {
+        case '\0': long minimum;
+        case 'ÿ': long maximum;
+        default: long fallback;
+    };
+};

@@ -8,6 +8,8 @@ The corpus covers IDL parsing, preprocessing, semantic diagnostics, RTI
 annotations, and generated C# source shape. It does not cover runtime behavior,
 serialization bytes, wire compatibility, keyhashes, or live DDS communication.
 Those concerns belong in the relevant implementation and integration tests.
+Union discriminator acceptance, compilation, range, and runtime evidence is
+summarized in the [union discriminator compatibility matrix](UNION-DISCRIMINATOR-MATRIX.md).
 
 ## Contents
 
@@ -37,10 +39,10 @@ The current inventory contains:
 
 | Group                    | Count | Location                             |
 | ------------------------ | ----: | ------------------------------------ |
-| Positive feature cases   |    57 | [`idl/features`](idl/features)       |
-| Negative cases           |    55 | [`idl/negative`](idl/negative)       |
+| Positive feature cases   |    69 | [`idl/features`](idl/features)       |
+| Negative cases           |    60 | [`idl/negative`](idl/negative)       |
 | Integration entry points |     4 | [`idl/integration`](idl/integration) |
-| Total                    |   116 | —                                    |
+| Total                    |   133 | —                                    |
 
 Each case has a manifest ID, such as `01-primitives`, and a stable `C###`
 provenance tag. Tags are used by the feature index and test diagnostics.

@@ -1,0 +1,5 @@
+module CorpusNegativeUnionint64 {
+    union Choice switch(int64) {
+        case 1: long value;
+    };
+};

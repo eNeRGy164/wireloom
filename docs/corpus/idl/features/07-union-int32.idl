@@ -1,0 +1,7 @@
+module CorpusUnionInt32 {
+    union Choice switch(int32) {
+        case -2147483648: long minimum;
+        case 2147483647: long maximum;
+        default: long fallback;
+    };
+};
