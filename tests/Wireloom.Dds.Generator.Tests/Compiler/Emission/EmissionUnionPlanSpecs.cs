@@ -134,7 +134,7 @@ public sealed class EmissionUnionPlanSpecs
         try
         {
             // Arrange
-            var labelValues = Enumerable.Range(0, sbyte.MaxValue + 1).ToArray();
+            var labelValues = Enumerable.Range(0, sbyte.MaxValue + 1).Select(value => (long)value).ToArray();
             var labels = labelValues.Select(value => value.ToString(CultureInfo.InvariantCulture)).ToArray();
             var explicitBranch = CreateBranch("first", labels, labelValues);
             var defaultBranch = CreateBranch("fallback", [], [], isDefault: true);
@@ -216,6 +216,34 @@ public sealed class EmissionUnionPlanSpecs
     }
 
     [Theory]
+    [InlineData("char", true)]
+    [InlineData("wchar", false)]
+    public void KeepsCharacterDefaultSelectionWithinTheNativeRange(string discriminatorIdlType, bool isExhaustive)
+    {
+        // Arrange
+        var values = Enumerable.Range(0, 256).Select(value => (long)value).ToArray();
+        var labels = values.Select(value => value.ToString(CultureInfo.InvariantCulture)).ToArray();
+        var branch = CreateBranch("first", labels, values);
+        var fallback = CreateBranch("fallback", [], [], isDefault: true);
+        var plan = CreateUnion("Choice", "char", discriminatorIsEnum: false, discriminatorDefaultValue: null,
+            [branch, fallback], discriminatorIdlType: discriminatorIdlType);
+
+        // Act
+        Func<string> selectDefault = () => plan.ManagedDefaultDiscriminator;
+
+        // Assert
+        if (isExhaustive)
+        {
+            Should.Throw<InvalidOperationException>(selectDefault)
+                .Message.ShouldContain("no representable default discriminator");
+        }
+        else
+        {
+            selectDefault().ShouldBe("(char)256");
+        }
+    }
+
+    [Theory]
     [InlineData("byte")]
     [InlineData("short")]
     [InlineData("ushort")]
@@ -265,7 +293,7 @@ public sealed class EmissionUnionPlanSpecs
     private static UnionBranchEmissionPlan CreateBranch(
         string name,
         IReadOnlyList<string> labels,
-        IReadOnlyList<int> labelValues,
+        IReadOnlyList<long> labelValues,
         bool isDefault = false)
     {
         var field = new IdlEmissionField(

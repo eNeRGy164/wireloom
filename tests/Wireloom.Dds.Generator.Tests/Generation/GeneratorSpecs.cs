@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -528,6 +529,181 @@ public sealed class GeneratorSpecs
     }
 
     [Fact]
+    public void UnsignedLongUnionLabelsCompileAndRoundTripThroughRtiSerializer()
+    {
+        // Arrange
+        const string input = "module UnsignedLabels { union Choice switch(unsigned long) { case 2147483648: long aboveSignedMax; case 4294967295: long unsignedMax; default: long fallback; }; };";
+        var result = Run(
+            input,
+            LanguageVersion.CSharp12,
+            new Dictionary<string, string> { ["Generate"] = "true" },
+            includeRuntime: true);
+        var errors = result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+
+        // Act
+        using var generatedAssemblyStream = new MemoryStream();
+        result.Output.Emit(generatedAssemblyStream, cancellationToken: TestContext.Current.CancellationToken).Success.ShouldBeTrue();
+        generatedAssemblyStream.Position = 0;
+        var generatedAssembly = System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromStream(generatedAssemblyStream, null);
+        var choiceType = generatedAssembly.GetType("UnsignedLabels.Choice", throwOnError: true)!;
+        var supportType = generatedAssembly.GetType("UnsignedLabels.ChoiceSupport", throwOnError: true)!;
+        var support = supportType.GetProperty("Instance")!.GetValue(null)!;
+        var createSerializer = supportType.GetMethod("CreateSerializer")!;
+        var serializerArguments = createSerializer.GetParameters()
+            .Select(parameter => parameter.DefaultValue)
+            .ToArray();
+        var serializer = createSerializer.Invoke(support, serializerArguments)!;
+
+        try
+        {
+            var sample = Activator.CreateInstance(choiceType)!;
+            choiceType.GetProperty("aboveSignedMax")!.SetValue(sample, 121);
+            var serializerInterface = serializer.GetType().GetInterfaces()
+                .Single(type => type.IsGenericType && type.GetGenericTypeDefinition().Name == "ISerializer`1");
+            var serialize = serializerInterface.GetMethod("Serialize", [choiceType])!;
+            var deserialize = serializerInterface.GetMethod("Deserialize", [typeof(byte[])])!;
+            var bytes = (byte[])serialize.Invoke(serializer, [sample])!;
+            var roundTripped = deserialize.Invoke(serializer, [bytes])!;
+
+            // Assert
+            errors.ShouldBeEmpty();
+            choiceType.GetProperty("Discriminator")!.GetValue(roundTripped).ShouldBe(2147483648U);
+            choiceType.GetProperty("aboveSignedMax")!.GetValue(roundTripped).ShouldBe(121);
+
+            choiceType.GetProperty("unsignedMax")!.SetValue(sample, 122);
+            bytes = (byte[])serialize.Invoke(serializer, [sample])!;
+            roundTripped = deserialize.Invoke(serializer, [bytes])!;
+            choiceType.GetProperty("Discriminator")!.GetValue(roundTripped).ShouldBe(uint.MaxValue);
+            choiceType.GetProperty("unsignedMax")!.GetValue(roundTripped).ShouldBe(122);
+        }
+        finally
+        {
+            ((IDisposable)serializer).Dispose();
+        }
+    }
+
+    [Theory]
+    [InlineData("boolean", "FALSE", "False")]
+    [InlineData("boolean", "TRUE", "True")]
+    [InlineData("char", "'\\0'", "\0")]
+    [InlineData("char", "'a'", "a")]
+    [InlineData("char", "'\u007f'", "\u007f")]
+    [InlineData("char", "'\u0080'", "\u0080")]
+    [InlineData("char", "'\u00fe'", "\u00fe")]
+    [InlineData("char", "'ÿ'", "ÿ")]
+    [InlineData("wchar", "L'a'", "a")]
+    [InlineData("Kind", "Minimum", "Minimum")]
+    [InlineData("Kind", "Middle", "Middle")]
+    [InlineData("Kind", "Maximum", "Maximum")]
+    [InlineData("octet", "255", "255")]
+    [InlineData("octet", "0", "0")]
+    [InlineData("short", "0", "0")]
+    [InlineData("short", "-32768", "-32768")]
+    [InlineData("short", "32767", "32767")]
+    [InlineData("unsigned short", "0", "0")]
+    [InlineData("unsigned short", "65535", "65535")]
+    [InlineData("long", "-2147483648", "-2147483648")]
+    [InlineData("long", "0", "0")]
+    [InlineData("long", "2147483647", "2147483647")]
+    [InlineData("unsigned long", "0", "0")]
+    [InlineData("unsigned long", "2147483648", "2147483648")]
+    [InlineData("unsigned long", "4294967295", "4294967295")]
+    [InlineData("int8", "0", "0")]
+    [InlineData("int8", "-128", "-128")]
+    [InlineData("int8", "127", "127")]
+    [InlineData("uint8", "0", "0")]
+    [InlineData("uint8", "255", "255")]
+    [InlineData("int16", "-32768", "-32768")]
+    [InlineData("int16", "0", "0")]
+    [InlineData("int16", "32767", "32767")]
+    [InlineData("uint16", "0", "0")]
+    [InlineData("uint16", "65535", "65535")]
+    [InlineData("int32", "-2147483648", "-2147483648")]
+    [InlineData("int32", "0", "0")]
+    [InlineData("int32", "2147483647", "2147483647")]
+    [InlineData("uint32", "0", "0")]
+    [InlineData("uint32", "2147483648", "2147483648")]
+    [InlineData("uint32", "4294967295", "4294967295")]
+    public void RtiAcceptedPrimitiveDiscriminatorsCompileAndExposeRoundTripBehavior(
+        string discriminatorType,
+        string label,
+        string expectedDiscriminator)
+    {
+        // Arrange
+        var assemblyName = $"UnionDiscriminator_{Convert.ToHexString(Encoding.UTF8.GetBytes($"{discriminatorType}_{label}"))}";
+        var enumDeclaration = discriminatorType == "Kind" ? "enum Kind { Minimum, Middle, Maximum }; " : string.Empty;
+        var isBoolean = discriminatorType == "boolean";
+        var input = isBoolean
+            ? $"module Matrix {{ union Choice switch(boolean) {{ case FALSE: long whenFalse; case TRUE: long whenTrue; }}; }};"
+            : $"module Matrix {{ {enumDeclaration}union Choice switch({discriminatorType}) {{ case {label}: long value; default: long fallback; }}; }};";
+        var result = Run(
+            input,
+            LanguageVersion.CSharp12,
+            new Dictionary<string, string> { ["Generate"] = "true" },
+            includeRuntime: true,
+            assemblyName: assemblyName);
+        var errors = result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        errors.ShouldBeEmpty();
+
+        // Act
+        using var generatedAssemblyStream = new MemoryStream();
+        result.Output.Emit(generatedAssemblyStream, cancellationToken: TestContext.Current.CancellationToken).Success.ShouldBeTrue();
+        generatedAssemblyStream.Position = 0;
+        var generatedAssembly = System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromStream(generatedAssemblyStream, null);
+        var choiceType = generatedAssembly.GetType("Matrix.Choice", throwOnError: true)!;
+        var supportType = generatedAssembly.GetType("Matrix.ChoiceSupport", throwOnError: true)!;
+        var support = supportType.GetProperty("Instance")!.GetValue(null)!;
+        var createSerializer = supportType.GetMethod("CreateSerializer")!;
+        var serializerArguments = createSerializer.GetParameters()
+            .Select(parameter => parameter.DefaultValue)
+            .ToArray();
+        var serializer = createSerializer.Invoke(support, serializerArguments)!;
+
+        try
+        {
+            var sample = Activator.CreateInstance(choiceType)!;
+            var valueMember = isBoolean ? (label == "FALSE" ? "whenFalse" : "whenTrue") : "value";
+            choiceType.GetProperty(valueMember)!.SetValue(sample, 42);
+            var serializerInterface = serializer.GetType().GetInterfaces()
+                .Single(type => type.IsGenericType && type.GetGenericTypeDefinition().Name == "ISerializer`1");
+            var serialize = serializerInterface.GetMethod("Serialize", [choiceType])!;
+            var deserialize = serializerInterface.GetMethod("Deserialize", [typeof(byte[])])!;
+            var bytes = (byte[])serialize.Invoke(serializer, [sample])!;
+            var roundTripped = deserialize.Invoke(serializer, [bytes])!;
+
+            // Assert
+            Convert.ToString(choiceType.GetProperty("Discriminator")!.GetValue(roundTripped), System.Globalization.CultureInfo.InvariantCulture)
+                .ShouldBe(expectedDiscriminator);
+            choiceType.GetProperty(valueMember)!.GetValue(roundTripped).ShouldBe(42);
+
+            if (discriminatorType == "char" && expectedDiscriminator == "þ")
+            {
+                var dynamicType = (Rti.Types.Dynamic.UnionType)supportType.GetProperty("DynamicType")!.GetValue(support)!;
+                dynamicType.Members.Single(member => member.Name == valueMember).Labels.ShouldBe([-2]);
+            }
+
+            if (!isBoolean)
+            {
+                var defaultSample = Activator.CreateInstance(choiceType)!;
+                choiceType.GetProperty("fallback")!.SetValue(defaultSample, 43);
+                var defaultDiscriminator = choiceType.GetProperty("Discriminator")!.GetValue(defaultSample);
+                bytes = (byte[])serialize.Invoke(serializer, [defaultSample])!;
+                roundTripped = deserialize.Invoke(serializer, [bytes])!;
+                choiceType.GetProperty("Discriminator")!.GetValue(roundTripped).ShouldBe(defaultDiscriminator);
+                choiceType.GetProperty("fallback")!.GetValue(roundTripped).ShouldBe(43);
+            }
+        }
+        finally
+        {
+            ((IDisposable)serializer).Dispose();
+        }
+    }
+
+    [Fact]
     public void ArrayTypedefAtNativeDimensionLimitCompilesEveryGeneratedDocument()
     {
         // Arrange
@@ -554,11 +730,12 @@ public sealed class GeneratorSpecs
         IReadOnlyDictionary<string, string> metadata,
         bool includeRuntime,
         DocumentationMode documentationMode = DocumentationMode.Parse,
-        string? source = null)
+        string? source = null,
+        string assemblyName = "GeneratorInput")
     {
         var parseOptions = new CSharpParseOptions(languageVersion, documentationMode: documentationMode);
         var compilation = CSharpCompilation.Create(
-            "GeneratorInput",
+            assemblyName,
             [CSharpSyntaxTree.ParseText(source ?? "namespace Input; public sealed class Marker { }", parseOptions)],
             includeRuntime ? RuntimeReferences() : FrameworkReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));

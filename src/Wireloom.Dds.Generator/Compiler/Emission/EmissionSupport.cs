@@ -90,7 +90,11 @@ internal static class EmissionSupport
     }
 
     /// <summary>Gets namespaces required by one plugin document's dynamic types and metadata.</summary>
-    internal static IReadOnlyList<string> GetPluginUsings(IEnumerable<EmissionTypePlan> types, bool usesExtensibility, bool usesAnnotations)
+    internal static IReadOnlyList<string> GetPluginUsings(
+        IEnumerable<EmissionTypePlan> types,
+        bool usesExtensibility,
+        bool usesAnnotations,
+        bool usesRtiTypes = false)
     {
         var typePlans = types.ToArray();
         var usings = new List<string>
@@ -110,7 +114,7 @@ internal static class EmissionSupport
             usings.Add("Omg.Types.Dynamic");
         }
 
-        if (typePlans.Any(RequiresPluginRtiTypes))
+        if (usesRtiTypes || typePlans.Any(RequiresPluginRtiTypes))
         {
             usings.Add("Rti.Types");
         }

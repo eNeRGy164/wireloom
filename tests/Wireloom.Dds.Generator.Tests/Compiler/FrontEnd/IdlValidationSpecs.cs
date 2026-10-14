@@ -894,7 +894,6 @@ public sealed class IdlValidationSpecs
     [InlineData("union Choice switch(float) { case 0: long value; };", "Unsupported union discriminator type")]
     [InlineData("typedef float Kind; union Choice switch(Kind) { case 0: long value; };", "Unsupported union discriminator type")]
     [InlineData("union Choice switch(char) { case '\\a': long value; };", "Unknown union discriminator label")]
-    [InlineData("union Choice switch(char) { case '\\0': long value; };", "Unknown union discriminator label")]
     [InlineData("union Choice switch(char) { case L'a': long value; };", "Unknown union discriminator label")]
     [InlineData("union Choice switch(long) { case 1: sequence<Missing> values; };", "Unknown union collection element type")]
     [InlineData("union Choice switch(long) { case 1: Missing value; };", "Unknown union branch type")]
@@ -958,16 +957,91 @@ public sealed class IdlValidationSpecs
     }
 
     [Theory]
+    [InlineData("", "char", "'Ā'")]
+    [InlineData("typedef char Kind;", "Kind", "'Ā'")]
+    [InlineData("typedef char Kind;", "Kind", "256")]
+    public void RejectsNarrowCharacterUnionLabelsBeyondTheWireByteRange(string declaration, string discriminator, string label)
+    {
+        // Arrange
+        var input = Input("narrow-char-range.idl", $$"""
+            {{declaration}}
+            union Choice switch({{discriminator}}) { case {{label}}: long value; };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("outside the range of char");
+    }
+
+    [Theory]
+    [InlineData("char")]
+    [InlineData("Kind")]
+    public void RejectsDefaultBranchesWhenAllNarrowCharacterValuesAreOccupied(string discriminator)
+    {
+        // Arrange
+        var labels = string.Join(" ", Enumerable.Range(0, 256).Select(value => $"case {value}:"));
+        var input = Input("exhaustive-char-default.idl", $$"""
+            typedef char Kind;
+            union Choice switch({{discriminator}}) { {{labels}} long value; default: long fallback; };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("no representable discriminator value left");
+    }
+
+    [Theory]
+    [InlineData("'Ā'")]
+    [InlineData("L'Ā'")]
+    [InlineData("65535")]
+    public void PreservesWideCharacterUnionLabelRange(string label)
+    {
+        // Arrange
+        var input = Input("wide-char-range.idl", $$"""
+            union Choice switch(wchar) { case {{label}}: long value; default: long fallback; };
+            """);
+
+        // Act
+        var output = Compile(input);
+
+        // Assert
+        output.ShouldContain("public class Choice");
+    }
+
+    [Theory]
     [InlineData("boolean", "2")]
     [InlineData("int8", "128")]
     [InlineData("uint8", "-1")]
     [InlineData("char", "65536")]
+    [InlineData("char", "256")]
     [InlineData("wchar", "65536")]
+    [InlineData("char", "-1")]
+    [InlineData("wchar", "-1")]
+    [InlineData("octet", "256")]
+    [InlineData("octet", "-1")]
     [InlineData("short", "32768")]
+    [InlineData("short", "-32769")]
     [InlineData("int16", "32768")]
+    [InlineData("int16", "-32769")]
     [InlineData("unsigned short", "65536")]
+    [InlineData("unsigned short", "-1")]
     [InlineData("uint16", "65536")]
+    [InlineData("uint16", "-1")]
+    [InlineData("long", "2147483648")]
+    [InlineData("long", "-2147483649")]
     [InlineData("long", "4294967296")]
+    [InlineData("unsigned long", "-1")]
+    [InlineData("unsigned long", "4294967296")]
+    [InlineData("int8", "-129")]
+    [InlineData("uint8", "256")]
+    [InlineData("int32", "2147483648")]
+    [InlineData("int32", "-2147483649")]
+    [InlineData("uint32", "-1")]
+    [InlineData("uint32", "4294967296")]
     public void RejectsPrimitiveUnionLabelsOutsideDiscriminatorRange(string discriminatorType, string label)
     {
         // Arrange
@@ -979,7 +1053,7 @@ public sealed class IdlValidationSpecs
         var exception = Should.Throw<IdlException>(() => Compile(input));
 
         // Assert
-        exception.Message.ShouldContain("Numeric union discriminator label");
+        exception.Message.ShouldContain("discriminator label");
     }
 
     [Fact]

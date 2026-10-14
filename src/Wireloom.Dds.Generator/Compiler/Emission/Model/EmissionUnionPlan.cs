@@ -6,12 +6,12 @@ using Wireloom.Compiler.Naming;
 namespace Wireloom.Compiler.Emission.Model;
 
 /// <summary>Describes one resolved union branch for the source emitters.</summary>
-internal sealed class UnionBranchEmissionPlan(IdlEmissionField field, MemberEmissionPlan plan, IReadOnlyList<string> labels, IReadOnlyList<int> labelValues, bool isDefault)
+internal sealed class UnionBranchEmissionPlan(IdlEmissionField field, MemberEmissionPlan plan, IReadOnlyList<string> labels, IReadOnlyList<long> labelValues, bool isDefault)
 {
     public IdlEmissionField Field { get; } = field;
     public MemberEmissionPlan Plan { get; } = plan;
     public IReadOnlyList<string> Labels { get; } = labels;
-    public IReadOnlyList<int> LabelValues { get; } = labelValues;
+    public IReadOnlyList<long> LabelValues { get; } = labelValues;
     public bool IsDefault { get; } = isDefault;
 }
 
@@ -190,7 +190,7 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
         return PrimitiveTypeMapping.Resolve(DiscriminatorIdlType).ToNativeExpression(source);
     }
 
-    private int FindDefaultDiscriminatorValue()
+    private long FindDefaultDiscriminatorValue()
     {
         if (DiscriminatorIsEnum)
         {
@@ -205,7 +205,7 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
         return FindUnoccupiedDiscriminatorValue();
     }
 
-    private int FindUnoccupiedDiscriminatorValue()
+    private long FindUnoccupiedDiscriminatorValue()
     {
         var occupied = ExplicitBranches.SelectMany(branch => branch.LabelValues).Distinct().OrderBy(value => value).ToArray();
         var (minimum, maximum) = DiscriminatorRange();
@@ -213,14 +213,14 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
         return candidate ?? throw new InvalidOperationException($"Union '{Name}' has no representable default discriminator.");
     }
 
-    private static int? FindFirstUnoccupiedValue(IReadOnlyList<int> occupied, int minimum, int maximum)
+    private static long? FindFirstUnoccupiedValue(IReadOnlyList<long> occupied, long minimum, long maximum)
     {
         if (minimum > maximum)
         {
             return null;
         }
 
-        long candidate = minimum;
+        var candidate = minimum;
 
         foreach (var occupiedValue in occupied)
         {
@@ -236,7 +236,7 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
 
             if (occupiedValue > candidate)
             {
-                return (int)candidate;
+                return candidate;
             }
 
             if (occupiedValue == candidate)
@@ -245,21 +245,30 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
             }
         }
 
-        return candidate <= maximum ? (int)candidate : null;
+        return candidate <= maximum ? candidate : null;
     }
 
-    private (int Minimum, int Maximum) DiscriminatorRange() => DiscriminatorCSharpType switch
+    private (long Minimum, long Maximum) DiscriminatorRange()
     {
-        "bool" => (0, 1),
-        "char" => (char.MinValue, char.MaxValue),
-        "sbyte" => (sbyte.MinValue, sbyte.MaxValue),
-        "byte" => (byte.MinValue, byte.MaxValue),
-        "short" => (short.MinValue, short.MaxValue),
-        "ushort" => (ushort.MinValue, ushort.MaxValue),
-        _ => (int.MinValue, int.MaxValue)
-    };
+        if (UsesNativeCharDiscriminator)
+        {
+            return (byte.MinValue, byte.MaxValue);
+        }
 
-    private string ManagedDiscriminatorValue(int value) => DiscriminatorCSharpType switch
+        return DiscriminatorCSharpType switch
+        {
+            "bool" => (0, 1),
+            "char" => (char.MinValue, char.MaxValue),
+            "sbyte" => (sbyte.MinValue, sbyte.MaxValue),
+            "byte" => (byte.MinValue, byte.MaxValue),
+            "short" => (short.MinValue, short.MaxValue),
+            "ushort" => (ushort.MinValue, ushort.MaxValue),
+            "uint" => (uint.MinValue, uint.MaxValue),
+            _ => (int.MinValue, int.MaxValue)
+        };
+    }
+
+    private string ManagedDiscriminatorValue(long value) => DiscriminatorCSharpType switch
     {
         "bool" => value == 0 ? "false" : "true",
         "char" when value == 0 => "'\\0'",
