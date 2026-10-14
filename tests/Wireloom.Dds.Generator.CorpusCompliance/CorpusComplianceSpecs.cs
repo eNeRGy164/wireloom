@@ -60,7 +60,7 @@ public sealed class CorpusComplianceSpecs
             Assert.Skip("Set CORPUS_GENERATOR_EXPORT_ROOT to publish generated corpus sources.");
         }
 
-        var root = Path.GetFullPath(exportRoot);
+        var root = Path.GetFullPath(exportRoot, CorpusRepository.RepositoryRoot);
         Directory.CreateDirectory(root);
 
         foreach (var corpusCase in CorpusRepository.Cases.Where(corpusCase => corpusCase.ExpectedToCompile))
