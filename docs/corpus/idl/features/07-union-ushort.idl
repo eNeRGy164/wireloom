@@ -1,0 +1,7 @@
+module CorpusUnionUnsignedShort {
+    union Choice switch(unsigned short) {
+        case 0: long minimum;
+        case 65535: long maximum;
+        default: long fallback;
+    };
+};

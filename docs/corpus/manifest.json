@@ -41,6 +41,7 @@
     { "id": "07-union-scoped", "theme": "scoped and collection union branches", "idl": "idl/features/07-union-scoped.idl", "defines": [] },
     { "id": "07-union-multilabel", "theme": "multi-label unions without default", "idl": "idl/features/07-union-multilabel.idl", "defines": [] },
     { "id": "07-union-short", "theme": "short union discriminator", "idl": "idl/features/07-union-short.idl", "defines": [] },
+    { "id": "07-union-short-boundaries", "theme": "short union discriminator minimum, maximum, and default", "idl": "idl/features/07-union-short-boundaries.idl", "defines": [], "tag": "C132" },
     { "id": "07-union-char", "theme": "character union discriminator", "idl": "idl/features/07-union-char.idl", "defines": [] },
     { "id": "07-union-wchar-label", "theme": "wide-character union discriminator; RTI runtime support uncertain", "idl": "idl/features/07-union-wchar-label.idl", "defines": [], "observedOutcome": "rejected", "observedDiagnostics": ["RTI Connext DDS 7.7.0.1 / rtiddsgen 4.7.0.1: ERROR com.rti.ndds.nddsgen.antlr.auto.IdlParser 07-union-wchar-label.idl line 2:24 no viable alternative at input 'wchar' in union"], "runtimeSupport": "uncertain", "runtimeSupportNote": "RTI 7.7 exposes wchar DynamicType and dynamic union APIs, but runtime registration, serialization, and DDS communication for this discriminator have not been tested. rtiddsgen rejection does not establish runtime rejection.", "tag": "C113" },
     { "id": "07-union-boolean", "theme": "boolean union discriminator", "idl": "idl/features/07-union-boolean.idl", "defines": [] },
@@ -71,7 +72,18 @@
     { "id": "11-include-search", "theme": "quoted and angle include resolution", "idl": "idl/features/11-include-search.idl", "defines": [] },
     { "id": "11-comments", "theme": "comments and source preservation", "idl": "idl/features/11-comments.idl", "defines": [] },
     { "id": "09-optional-string-sequences", "theme": "optional narrow and wide string sequences", "idl": "idl/features/09-optional-string-sequences.idl", "defines": [], "tag": "C114" },
-    { "id": "09-optional-aggregate-member", "theme": "optional aggregate member", "idl": "idl/features/09-optional-aggregate-member.idl", "defines": [], "tag": "C115", "observedOutcome": "accepted" }
+    { "id": "09-optional-aggregate-member", "theme": "optional aggregate member", "idl": "idl/features/09-optional-aggregate-member.idl", "defines": [], "tag": "C115", "observedOutcome": "accepted" },
+    { "id": "07-union-octet", "theme": "union discriminator octet minimum, maximum, and default", "idl": "idl/features/07-union-octet.idl", "defines": [], "tag": "C117" },
+    { "id": "07-union-ushort", "theme": "union discriminator unsigned short minimum, maximum, and default", "idl": "idl/features/07-union-ushort.idl", "defines": [], "tag": "C118" },
+    { "id": "07-union-ulong", "theme": "union discriminator unsigned long minimum, maximum, and default", "idl": "idl/features/07-union-ulong.idl", "defines": [], "tag": "C119" },
+    { "id": "07-union-int8", "theme": "union discriminator int8 minimum, maximum, and default", "idl": "idl/features/07-union-int8.idl", "defines": [], "tag": "C120" },
+    { "id": "07-union-uint8", "theme": "union discriminator uint8 minimum, maximum, and default", "idl": "idl/features/07-union-uint8.idl", "defines": [], "tag": "C121" },
+    { "id": "07-union-int16", "theme": "union discriminator int16 minimum, maximum, and default", "idl": "idl/features/07-union-int16.idl", "defines": [], "tag": "C122" },
+    { "id": "07-union-uint16", "theme": "union discriminator uint16 minimum, maximum, and default", "idl": "idl/features/07-union-uint16.idl", "defines": [], "tag": "C123" },
+    { "id": "07-union-int32", "theme": "union discriminator int32 minimum, maximum, and default", "idl": "idl/features/07-union-int32.idl", "defines": [], "tag": "C124" },
+    { "id": "07-union-uint32", "theme": "union discriminator uint32 minimum, maximum, and default", "idl": "idl/features/07-union-uint32.idl", "defines": [], "tag": "C125" },
+    { "id": "07-union-long", "theme": "union discriminator long minimum, maximum, and default", "idl": "idl/features/07-union-long.idl", "defines": [], "tag": "C133" },
+    { "id": "07-union-char-boundaries", "theme": "char union discriminator minimum, maximum, and default", "idl": "idl/features/07-union-char-boundaries.idl", "defines": [], "tag": "C130" }
   ],
   "negativeCases": [
     {"id":"12-lexical","theme":"unterminated lexical input","idl":"idl/negative/12-lexical.idl","observedOutcome":"rejected","observedDiagnostics":["RTI 7.7.0.1: ERROR com.rti.ndds.nddsgen.antlr.auto.IdlParser 12-lexical.idl line 2:0 mismatched input '<EOF>' expecting '}' in structure"]},
@@ -129,6 +141,11 @@
     ,{"id":"12-angle-missing","theme":"missing angle include","idl":"idl/negative/12-angle-missing.idl","observedOutcome":"rejected","observedDiagnostics":["RTI 7.7.0.1: ERROR com.rti.ndds.nddsgen.IDLPreprocessor /work/docs/corpus/idl/negative/12-angle-missing.idl:1:10: fatal error: does-not-exist.idl: No such file or directory"]}
     ,{"id":"12-included-error","theme":"diagnostic in included file","idl":"idl/negative/12-included-error.idl","observedOutcome":"rejected","observedDiagnostics":["RTI 7.7.0.1: ERROR com.rti.ndds.nddsgen.IDLPreprocessor In file included from /work/docs/corpus/idl/negative/12-included-error.idl:1:","RTI 7.7.0.1: /work/docs/corpus/idl/negative/12-included-error-child.idl:1:2: error: #error CORPUS_INCLUDED_FAILURE"]}
     ,{ "id": "12-name-collisions", "theme": "generated-name collision probes", "idl": "idl/negative/12-name-collisions.idl", "observedOutcome": "accepted", "tag": "C112" }
+    ,{ "id": "12-union-unsigned-long-long", "theme": "unsupported unsigned long long union discriminator", "idl": "idl/negative/12-union-unsigned-long-long.idl", "observedOutcome": "rejected", "observedDiagnostics": ["RTI 7.7.0.1 / rtiddsgen 4.7.0.1: int64 and uint64 are not valid types for a discriminator"], "tag": "C126" }
+    ,{ "id": "12-union-int64", "theme": "unsupported int64 union discriminator", "idl": "idl/negative/12-union-int64.idl", "observedOutcome": "rejected", "observedDiagnostics": ["RTI 7.7.0.1 / rtiddsgen 4.7.0.1: int64 and uint64 are not valid types for a discriminator"], "tag": "C127" }
+    ,{ "id": "12-union-uint64", "theme": "unsupported uint64 union discriminator", "idl": "idl/negative/12-union-uint64.idl", "observedOutcome": "rejected", "observedDiagnostics": ["RTI 7.7.0.1 / rtiddsgen 4.7.0.1: int64 and uint64 are not valid types for a discriminator"], "tag": "C128" }
+    ,{ "id": "12-union-long-long", "theme": "unsupported long long union discriminator", "idl": "idl/negative/12-union-long-long.idl", "observedOutcome": "rejected", "observedDiagnostics": ["RTI 7.7.0.1 / rtiddsgen 4.7.0.1: int64 and uint64 are not valid types for a discriminator"], "tag": "C129" }
+    ,{ "id": "12-union-wchar-rti-limit", "theme": "RTI rejects wchar union discriminators", "idl": "idl/features/07-union-wchar-label.idl", "observedOutcome": "rejected", "observedDiagnostics": ["RTI Connext DDS 7.7.0.1 / rtiddsgen 4.7.0.1: no viable alternative at input 'wchar' in union"], "tag": "C131" }
   ],
   "integrationEntryPoints": [
     "idl/integration/contracts/13-integration.idl",

@@ -18,7 +18,7 @@ public sealed class CorpusComplianceSpecs
     public void CorpusManifestAndOracleLibraryHaveTheSameCaseSet()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(116);
+        cases.Length.ShouldBe(133);
         cases.ShouldBeUnique();
         CorpusRepository.OracleCaseIds.ShouldBe(cases.OrderBy(id => id, StringComparer.Ordinal).ToArray());
 
@@ -351,7 +351,8 @@ public sealed class CorpusComplianceSpecs
             .Replace(" ", string.Empty, StringComparison.Ordinal)
             .Replace("?", string.Empty, StringComparison.Ordinal)
             .Replace("\r", string.Empty, StringComparison.Ordinal)
-            .Replace("\n", string.Empty, StringComparison.Ordinal);
+            .Replace("\n", string.Empty, StringComparison.Ordinal)
+            .Replace("octet", "byte", StringComparison.Ordinal);
 
     private static StringComparer GetPathComparer() =>
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
