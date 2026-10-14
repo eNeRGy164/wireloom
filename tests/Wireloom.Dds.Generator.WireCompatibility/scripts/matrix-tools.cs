@@ -376,6 +376,11 @@ void RenderReport(string[] commandArgs)
             return null;
         }
 
+        if (id == "07-union-char-boundaries")
+        {
+            return "Single-byte C++ execution charset (ISO-8859-1): RTI emits the char8 label literally; preserve byte 255 and signed metadata label -1 instead of a UTF-8 multicharacter constant.";
+        }
+
         if (id == "09-optional-string-sequences" && fixture is ("optional-wide-only" or "optional-multiple"))
         {
             return "Custom RTI C++ path: DynamicData C API per-element setters bypass the RTI 7.7.0 typed optional wide-string sequence serializer.";

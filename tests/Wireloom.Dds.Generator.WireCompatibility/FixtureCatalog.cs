@@ -6,6 +6,22 @@ namespace Wireloom.Dds.Generator.WireCompatibility;
 /// <summary>Builds deterministic DynamicData values for each wire fixture.</summary>
 internal static class FixtureCatalog
 {
+    private static readonly HashSet<string> UnionBoundaryCaseIds =
+    [
+        "07-union-octet",
+        "07-union-short-boundaries",
+        "07-union-long",
+        "07-union-ushort",
+        "07-union-ulong",
+        "07-union-int8",
+        "07-union-uint8",
+        "07-union-int16",
+        "07-union-uint16",
+        "07-union-int32",
+        "07-union-uint32",
+        "07-union-char-boundaries"
+    ];
+
     internal static DynamicData CreateFixture(
         Rti.Types.Dynamic.DynamicType dynamicType,
         string caseId,
@@ -173,6 +189,19 @@ internal static class FixtureCatalog
 
         if (caseId.StartsWith("07-union-", StringComparison.Ordinal) || caseId == "07-unions")
         {
+            if (UnionBoundaryCaseIds.Contains(caseId)
+                && fixture is "union-minimum" or "union-maximum" or "union-default")
+            {
+                var boundaryMember = fixture switch
+                {
+                    "union-minimum" => "minimum",
+                    "union-maximum" => "maximum",
+                    _ => "fallback"
+                };
+                SetFixtureValue(sample, boundaryMember, 8201);
+                return sample;
+            }
+
             var member = fixture switch
             {
                 "union-number" => caseId switch

@@ -14,6 +14,25 @@ namespace Wireloom.Dds.Generator.WireCompatibility;
 /// </summary>
 internal static class IndependentSampleVerifier
 {
+    /// <summary>Checks character boundary values independently of RTI's DynamicData branch selection.</summary>
+    internal static void VerifyCharacterUnionFixture(IDynamicType type, object actualSample, string fixture)
+    {
+        var (branch, discriminator) = fixture switch
+        {
+            "union-minimum" => ("minimum", 0L),
+            "union-maximum" => ("maximum", 255L),
+            "union-default" => ("fallback", 1L),
+            _ => throw new InvalidDataException($"Unknown character union fixture '{fixture}'.")
+        };
+        var expected = new SortedDictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["$branch"] = branch,
+            ["$discriminator"] = discriminator,
+            [branch] = 8201
+        };
+        VerifySnapshots(expected, SnapshotManaged(type, actualSample), $"character union fixture {fixture}");
+    }
+
     internal static void Verify(DynamicData expectedFixture, object actualSample, string context)
     {
         VerifySnapshots(
@@ -163,7 +182,7 @@ internal static class IndependentSampleVerifier
                 return new SortedDictionary<string, object?>(StringComparer.Ordinal)
                 {
                     ["$branch"] = selectedMember.Name,
-                    ["$discriminator"] = NormalizeDiscriminator(discriminator),
+                    ["$discriminator"] = NormalizeDiscriminator(union, discriminator),
                     [selectedMember.Name] = SnapshotDynamicMember(
                         data,
                         selectedMember.Name,
@@ -393,7 +412,7 @@ internal static class IndependentSampleVerifier
                 ?? throw new InvalidDataException($"Managed union {valueType.FullName} has a null discriminator.");
             var selectedMember = FindUnionMember((UnionType)expectedType, discriminatorValue);
             properties["$branch"] = selectedMember.Name;
-            properties["$discriminator"] = NormalizeDiscriminator(discriminatorValue);
+            properties["$discriminator"] = NormalizeDiscriminator((UnionType)expectedType, discriminatorValue);
             properties[selectedMember.Name] = SnapshotManaged(
                 selectedMember.Type,
                 GetManagedMember(value, selectedMember.Name));
@@ -429,8 +448,10 @@ internal static class IndependentSampleVerifier
 
     private static UnionMember FindUnionMember(UnionType union, object discriminator)
     {
-        var label = Convert.ToInt32(discriminator, System.Globalization.CultureInfo.InvariantCulture);
-        var explicitMember = union.Members.FirstOrDefault(member => member.Labels.Contains(label));
+        var label = NormalizeDiscriminator(union, discriminator);
+        var explicitMember = union.Members.FirstOrDefault(member => member.Labels
+            .Where(value => value != UnionMember.DefaultLabel)
+            .Any(value => NormalizeDiscriminator(union, value) == label));
         return explicitMember
             ?? union.Members.FirstOrDefault(member => member.Labels.Contains(UnionMember.DefaultLabel))
             ?? throw new InvalidDataException($"Union discriminator {label} has no declared branch.");
@@ -444,10 +465,24 @@ internal static class IndependentSampleVerifier
         _ => value
     };
 
-    private static object? NormalizeDiscriminator(object value) => value switch
+    /// <summary>Normalizes RTI's signed label storage to the declared discriminator's value range.</summary>
+    private static long NormalizeDiscriminator(UnionType union, object value)
     {
-        bool boolean => boolean ? 1 : 0,
-        char character => (int)character,
-        _ => NormalizeScalar(value)
-    };
+        var numericValue = value is char character
+            ? character
+            : Convert.ToInt64(value, System.Globalization.CultureInfo.InvariantCulture);
+        IDynamicType discriminatorType = union.Discriminator;
+        while (discriminatorType is AliasType alias)
+        {
+            discriminatorType = alias.RelatedType;
+        }
+
+        return discriminatorType.Kind switch
+        {
+            TypeKind.UInt32 => unchecked((uint)numericValue),
+            TypeKind.Uint16 or TypeKind.Char16 => unchecked((ushort)numericValue),
+            TypeKind.Uint8 or TypeKind.Octet or TypeKind.Char8 => unchecked((byte)numericValue),
+            _ => numericValue
+        };
+    }
 }

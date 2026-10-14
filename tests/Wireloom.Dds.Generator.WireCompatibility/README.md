@@ -31,7 +31,23 @@ The optional aggregate-member case selects `Holder` explicitly and uses typed
 fixtures on both managed and C++ peers because RTI 7.7.0 DynamicData resolves
 the nested typedef members against the wrong type. Readers compare the public
 optional values and selected union branch directly.
+
 ## Implementation map for C# contributors
+
+Readers count lifecycle notifications (`ValidData=false`) separately from
+payloads. Writer shutdown may deliver `NotAliveNoWriters` alongside valid data;
+this does not fail an exchange. A reader still requires a valid sample and
+checks its complete fixture. Lifecycle-only traffic times out, and payload
+mismatches remain failures.
+
+The independent verifier compares discriminator values using their declared
+width, so RTI's signed label storage does not overflow or change a selected
+branch. Character boundary fixtures use typed assignments and independent
+expected values. For `07-union-char-boundaries`, the unchanged RTI C++ output
+is compiled with `-fexec-charset=ISO-8859-1`: its literal U+00FF must become one
+byte, not a UTF-8 multicharacter integer. The resulting C++ metadata label is
+-1, matching Wireloom. The report records this C++ adaptation; RTI C# reference
+failures remain visible.
 
 Wireloom's generated C# type is the implementation under test. The shell
 runner builds the Wireloom C# peer, asks `rtiddsgen` for RTI C# and C++ reference

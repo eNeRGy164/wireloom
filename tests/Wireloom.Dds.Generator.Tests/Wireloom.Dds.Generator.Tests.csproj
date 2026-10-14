@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility/IndependentSampleVerifier.cs" Link="WireCompatibility/IndependentSampleVerifier.cs" />
   </ItemGroup>
 
   <ItemGroup>
