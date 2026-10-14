@@ -8,14 +8,14 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
 {
     public IdlMember Field { get; } = field;
     public IReadOnlyList<string> Labels { get; private set; } = [];
-    public IReadOnlyList<int> LabelValues { get; private set; } = [];
+    public IReadOnlyList<long> LabelValues { get; private set; } = [];
     public bool IsDefault { get; } = isDefault;
 
     private static readonly IReadOnlyDictionary<string, (BigInteger Minimum, BigInteger Maximum)> NumericLabelRanges =
         new Dictionary<string, (BigInteger Minimum, BigInteger Maximum)>(StringComparer.Ordinal)
         {
             ["boolean"] = (0, 1),
-            ["char"] = (char.MinValue, char.MaxValue),
+            ["char"] = (byte.MinValue, byte.MaxValue),
             ["wchar"] = (char.MinValue, char.MaxValue),
             ["int8"] = (sbyte.MinValue, sbyte.MaxValue),
             ["uint8"] = (byte.MinValue, byte.MaxValue),
@@ -26,8 +26,8 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
             ["uint16"] = (ushort.MinValue, ushort.MaxValue),
             ["long"] = (int.MinValue, int.MaxValue),
             ["int32"] = (int.MinValue, int.MaxValue),
-            ["unsigned long"] = (int.MinValue, int.MaxValue),
-            ["uint32"] = (int.MinValue, int.MaxValue),
+            ["unsigned long"] = (uint.MinValue, uint.MaxValue),
+            ["uint32"] = (uint.MinValue, uint.MaxValue),
             ["long long"] = (int.MinValue, int.MaxValue),
             ["int64"] = (int.MinValue, int.MaxValue),
             ["unsigned long long"] = (int.MinValue, int.MaxValue),
@@ -40,13 +40,14 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
     internal void BindLabels(string? discriminatorIdlType, IdlEnum? discriminatorEnum)
     {
         var labels = new List<string>();
-        var labelValues = new List<int>();
+        var labelValues = new List<long>();
 
         foreach (var label in RawLabels)
         {
             if ((discriminatorIdlType is "char" or "wchar")
                 && TryParseCharacterLabel(label, discriminatorIdlType == "wchar", out var characterLabel))
             {
+                ValidateLabelRange(discriminatorIdlType, label, characterLabel);
                 labels.Add(label);
                 labelValues.Add(characterLabel);
             }
@@ -72,7 +73,7 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
 
                 ValidateNumericLabel(discriminatorIdlType, label, numericLabel);
 
-                var labelValue = (int)numericLabel;
+                var labelValue = (long)numericLabel;
                 labels.Add(labelValue.ToString(CultureInfo.InvariantCulture));
                 labelValues.Add(labelValue);
             }
@@ -98,7 +99,12 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
 
     private void ValidateNumericLabel(string discriminatorIdlType, string label, BigInteger value)
     {
-        if (value < int.MinValue || value > int.MaxValue)
+        var normalizedType = IdlNaming.NormalizeIdlType(discriminatorIdlType);
+        var maximumSupportedLabel = normalizedType is "unsigned long" or "uint32"
+            ? uint.MaxValue
+            : int.MaxValue;
+
+        if (value < int.MinValue || value > maximumSupportedLabel)
         {
             throw new IdlException(
                 Field.SourceInput!,
@@ -106,15 +112,19 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
                 $"Numeric union discriminator label '{label}' is outside the supported generated range.");
         }
 
-        var normalizedType = IdlNaming.NormalizeIdlType(discriminatorIdlType);
-        var range = NumericLabelRanges[normalizedType];
+        ValidateLabelRange(discriminatorIdlType, label, value);
+    }
+
+    private void ValidateLabelRange(string discriminatorIdlType, string label, BigInteger value)
+    {
+        var range = NumericLabelRanges[IdlNaming.NormalizeIdlType(discriminatorIdlType)];
 
         if (value < range.Minimum || value > range.Maximum)
         {
             throw new IdlException(
                 Field.SourceInput!,
                 Field.SourceOffset,
-                $"Numeric union discriminator label '{label}' is outside the range of {discriminatorIdlType}.");
+                $"Union discriminator label '{label}' is outside the range of {discriminatorIdlType}.");
         }
     }
 
@@ -136,6 +146,7 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
         var content = label[contentStart..^1];
         var character = content switch
         {
+            "\\0" => '\0',
             "\\n" => '\n',
             "\\r" => '\r',
             "\\t" => '\t',
@@ -145,7 +156,7 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
             _ => '\0'
         };
 
-        if (content.Length != 1 && character == '\0')
+        if (content.Length != 1 && character == '\0' && content != "\\0")
         {
             return false;
         }
@@ -183,11 +194,7 @@ internal sealed class IdlUnion(
         "long",
         "int32",
         "unsigned long",
-        "uint32",
-        "long long",
-        "int64",
-        "unsigned long long",
-        "uint64"
+        "uint32"
     ];
 
     public string Name { get; } = name;

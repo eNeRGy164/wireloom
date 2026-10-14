@@ -280,7 +280,7 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         IdlInput input,
         IReadOnlyList<IdlUnionBranch> branches)
     {
-        var labels = new HashSet<int>();
+        var labels = new HashSet<long>();
 
         foreach (var branch in branches.Where(branch => !branch.IsDefault))
         {
@@ -307,7 +307,7 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
             return;
         }
 
-        var occupied = new HashSet<int>(branches
+        var occupied = new HashSet<long>(branches
             .Where(branch => !branch.IsDefault)
             .SelectMany(branch => branch.LabelValues));
 
@@ -324,7 +324,7 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         throw new IdlException(input, offset, $"A {discriminatorType} union with a default branch has no representable discriminator value left for the default branch.");
     }
 
-    private static bool TryGetDiscriminatorRange(string discriminatorType, out int minimum, out int maximum)
+    private static bool TryGetDiscriminatorRange(string discriminatorType, out long minimum, out long maximum)
     {
         switch (IdlNaming.NormalizeIdlType(discriminatorType))
         {
@@ -332,7 +332,7 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
                 minimum = 0;
                 maximum = 1;
                 return true;
-            case "char" or "wchar":
+            case "wchar":
                 minimum = char.MinValue;
                 maximum = char.MaxValue;
                 return true;
@@ -340,7 +340,7 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
                 minimum = sbyte.MinValue;
                 maximum = sbyte.MaxValue;
                 return true;
-            case "uint8" or "octet":
+            case "char" or "uint8" or "octet":
                 minimum = byte.MinValue;
                 maximum = byte.MaxValue;
                 return true;
@@ -352,6 +352,10 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
                 minimum = ushort.MinValue;
                 maximum = ushort.MaxValue;
                 return true;
+            case "unsigned long" or "uint32":
+                minimum = uint.MinValue;
+                maximum = uint.MaxValue;
+                return true;
             default:
                 minimum = int.MinValue;
                 maximum = int.MaxValue;
@@ -359,26 +363,8 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         }
     }
 
-    private static bool HasUnoccupiedValue(HashSet<int> occupied, int minimum, int maximum)
-    {
-        for (var candidate = 0; candidate <= maximum; candidate++)
-        {
-            if (!occupied.Contains(candidate))
-            {
-                return true;
-            }
-        }
-
-        for (var candidate = minimum; candidate < 0; candidate++)
-        {
-            if (!occupied.Contains(candidate))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    private static bool HasUnoccupiedValue(HashSet<long> occupied, long minimum, long maximum) =>
+        occupied.Count < maximum - minimum + 1;
 
     private void ValidateTypedef(IdlInput input, int offset, string name, HashSet<string> activeAliases)
     {

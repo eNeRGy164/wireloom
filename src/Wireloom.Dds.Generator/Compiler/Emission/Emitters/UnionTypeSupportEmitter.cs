@@ -75,7 +75,8 @@ internal static class UnionTypeSupportEmitter
             EmissionSupport.GetPluginUsings(
                 declaration.Branches.Select(branch => branch.Plan.Type),
                 usesExtensibility: true,
-                usesAnnotations: declaration.Branches.Any(branch => EmissionSupport.UsesPrimitiveAnnotation(branch.Plan))),
+                usesAnnotations: declaration.Branches.Any(branch => EmissionSupport.UsesPrimitiveAnnotation(branch.Plan)),
+                usesRtiTypes: declaration is { DiscriminatorIsEnum: false, PrimitiveDiscriminatorDynamicType: "Octet" }),
             sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI interpreted type plugin for <see cref=\"{typeName}\"/>.");
@@ -101,7 +102,7 @@ internal static class UnionTypeSupportEmitter
             var dynamicType = branch.Plan.BuildDynamicTypeExpression(names.ImplementationNamespace);
             var labels = branch.IsDefault
                 ? "new[] { UnionMember.DefaultLabel }"
-                : $"new[] {{ {string.Join(", ", branch.LabelValues)} }}";
+                : $"new[] {{ {string.Join(", ", branch.LabelValues.Select(l => FormatRtiLabel(declaration, l)))} }}";
 
             writer.WriteLine($"new UnionMember(\"{branch.Field.Name}\", {dynamicType}, {labels}, id: {index + 1}){(index == declaration.Branches.Count - 1 ? string.Empty : ",")}");
         }
@@ -336,5 +337,23 @@ internal static class UnionTypeSupportEmitter
 
     private static string NativeFieldPrefix(MemberEmissionPlan field, params string[] parameterNames) =>
         parameterNames.Contains(field.Name, StringComparer.Ordinal) ? "this." : string.Empty;
+
+    /// <summary>Formats a label using RTI's native discriminator and signed metadata representation.</summary>
+    private static string FormatRtiLabel(IdlEmissionUnion declaration, long label)
+    {
+        // RTI reads a native char discriminator as a signed byte when selecting
+        // a branch. Its metadata label must use the same representation.
+        if (declaration.UsesNativeCharDiscriminator)
+        {
+            return unchecked((sbyte)label).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        if (label > int.MaxValue)
+        {
+            return $"unchecked((int){label.ToString(System.Globalization.CultureInfo.InvariantCulture)})";
+        }
+
+        return label.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
 
 }

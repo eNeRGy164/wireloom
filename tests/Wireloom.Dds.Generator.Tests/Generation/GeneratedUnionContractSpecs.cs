@@ -7,6 +7,42 @@ namespace Wireloom.Generation.Tests;
 public sealed class GeneratedUnionContractSpecs
 {
     [Fact]
+    public void UnsignedLongUnionLabelsAboveInt32MaxPreserveTheirValues()
+    {
+        // Arrange
+        var input = Input("unsigned-long-union-labels.idl",
+            """
+            module UnsignedLabels {
+                union Choice switch(unsigned long) {
+                    case 2147483648: long aboveSignedMax;
+                    case 4294967295: long unsignedMax;
+                    default: long fallback;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["UnsignedLabels.Choice.g.cs"].Source;
+        managed.ShouldContain("public uint Discriminator");
+        managed.ShouldContain("Discriminator == 2147483648");
+        managed.ShouldContain("Discriminator == 4294967295");
+        managed.ShouldContain("case 2147483648:");
+        managed.ShouldContain("case 4294967295:");
+
+        var plugin = documents["UnsignedLabels.Implementation.ChoicePlugin.g.cs"].Source;
+        plugin.ShouldContain("new[] { unchecked((int)2147483648) }");
+        plugin.ShouldContain("new[] { unchecked((int)4294967295) }");
+
+        var unmanaged = documents["UnsignedLabels.Implementation.ChoiceUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("private uint _discriminator;");
+        unmanaged.ShouldContain("case 2147483648:");
+        unmanaged.ShouldContain("case 4294967295:");
+    }
+
+    [Fact]
     [Trait("Corpus", "C025")]
     public void MultiLabelUnionsPreserveLabelsAndNativeDiscriminatorBehavior()
     {
