@@ -6,12 +6,13 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 
-const string usage = "Usage: matrix-tools.cs <list-cases|list-rti-only-cases|case-field|case-info|json-field|discover-cases|discover-rti|includes|includes-recursive|render-report> ...";
+const string usage = "Usage: matrix-tools.cs <list-cases|list-rti-only-cases|case-field|case-info|json-field|discover-cases|discover-rti|includes|includes-recursive|partition-shard|merge-shards|render-report> ...";
 var jsonOptions = new JsonSerializerOptions
 {
     WriteIndented = true,
     TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
 };
+var keyJsonOptions = new JsonSerializerOptions(jsonOptions) { WriteIndented = false };
 
 try
 {
@@ -105,6 +106,12 @@ try
         case "render-report":
             RenderReport(args);
             break;
+        case "partition-shard":
+            PartitionShard(args);
+            break;
+        case "merge-shards":
+            MergeShards(args);
+            break;
         default:
             throw new ArgumentException(usage);
     }
@@ -126,6 +133,168 @@ void RequireArgs(int count)
 }
 
 JsonNode ReadJson(string path) => JsonNode.Parse(File.ReadAllText(path))!;
+
+// A shard owns whole cases. Greedy assignment by exchange count keeps all
+// fixtures/pairings together and is deterministic across independent runners.
+void PartitionShard(string[] commandArgs)
+{
+    RequireArgs(6);
+    var version = commandArgs[1];
+    var index = int.Parse(commandArgs[2]);
+    var count = int.Parse(commandArgs[3]);
+    var rows = ReadScenarioRows(commandArgs[4]);
+    var destination = commandArgs[5];
+    var cases = rows.GroupBy(row => row[0], StringComparer.Ordinal).ToArray();
+    if (count < 1 || count > cases.Length || index < 0 || index >= count)
+    {
+        throw new ArgumentException("Shard count must be positive and no greater than the case count; index must be zero-based and within the shard count.");
+    }
+
+    var loads = new int[count];
+    var assignments = new Dictionary<string, int>(StringComparer.Ordinal);
+    foreach (var item in cases.OrderByDescending(item => item.Count()).ThenBy(item => item.Key, StringComparer.Ordinal))
+    {
+        var shard = Enumerable.Range(0, count).OrderBy(shard => loads[shard]).ThenBy(shard => shard).First();
+        assignments.Add(item.Key, shard);
+        loads[shard] += item.Count();
+    }
+
+    var keys = rows.Select(ScenarioKey).ToArray();
+    if (keys.Distinct(StringComparer.Ordinal).Count() != rows.Count)
+    {
+        throw new InvalidDataException("The scenario plan contains duplicate exchanges.");
+    }
+
+    Directory.CreateDirectory(destination);
+    var plan = new
+    {
+        rtiVersion = version,
+        shardCount = count,
+        expectedScenarioCount = rows.Count,
+        cases = cases.Select(item => new
+        {
+            id = item.Key,
+            shard = assignments[item.Key],
+            scenarioKeys = item.Select(ScenarioKey).ToArray()
+        }).ToArray()
+    };
+    File.WriteAllText(Path.Combine(destination, "plan.json"), JsonSerializer.Serialize(plan, jsonOptions) + "\n");
+    var selected = rows.Where(row => assignments[row[0]] == index).ToArray();
+    File.WriteAllLines(Path.Combine(destination, "scenarios.tsv"), selected.Select(row => string.Join('\t', row)));
+    File.WriteAllLines(Path.Combine(destination, "selected-cases.txt"), cases.Where(item => assignments[item.Key] == index).Select(item => item.Key));
+    File.WriteAllText(Path.Combine(destination, "shard.json"), JsonSerializer.Serialize(new
+    {
+        rtiVersion = version,
+        shardCount = count,
+        shardIndex = index,
+        expectedScenarioCount = selected.Length
+    }, jsonOptions) + "\n");
+}
+
+// Regenerate the combined report from validated rows and sanitized logs. Do
+// not concatenate JSON counters or repeat the global exclusion registry.
+void MergeShards(string[] commandArgs)
+{
+    RequireArgs(6);
+    var version = commandArgs[1];
+    var count = int.Parse(commandArgs[2]);
+    var source = commandArgs[3];
+    var destination = commandArgs[4];
+    var metadataFiles = Directory.GetFiles(source, "shard.json", SearchOption.AllDirectories);
+    if (count < 1 || metadataFiles.Length != count)
+    {
+        throw new InvalidDataException($"Expected {count} shard artifacts; found {metadataFiles.Length}.");
+    }
+
+    JsonNode? sharedPlan = null;
+    var indices = new HashSet<int>();
+    var exchanges = new Dictionary<string, string[]>(StringComparer.Ordinal);
+    var logFiles = new List<string>();
+    foreach (var metadataFile in metadataFiles.Order(StringComparer.Ordinal))
+    {
+        var directory = Path.GetDirectoryName(metadataFile)!;
+        var metadata = ReadJson(metadataFile);
+        var index = (int)metadata["shardIndex"]!;
+        var plan = ReadJson(Path.Combine(directory, "plan.json"));
+        if ((string)metadata["rtiVersion"]! != version || (string)plan["rtiVersion"]! != version
+            || (int)metadata["shardCount"]! != count || (int)plan["shardCount"]! != count
+            || index < 0 || index >= count || !indices.Add(index))
+        {
+            throw new InvalidDataException("Shard identity or RTI version does not match, or a shard index is duplicated.");
+        }
+
+        if (sharedPlan is not null && !JsonNode.DeepEquals(sharedPlan, plan))
+        {
+            throw new InvalidDataException("Shard case plans differ.");
+        }
+        sharedPlan = plan;
+        var expectedKeys = plan["cases"]!.AsArray().Where(item => (int)item!["shard"]! == index)
+            .SelectMany(item => item!["scenarioKeys"]!.AsArray()).Select(item => (string)item!).ToHashSet(StringComparer.Ordinal);
+        var rows = ReadScenarioRows(Path.Combine(directory, "scenarios.tsv"));
+        var report = ReadJson(Path.Combine(directory, "results.json"));
+        if ((int)metadata["expectedScenarioCount"]! != expectedKeys.Count || rows.Count != expectedKeys.Count
+            || (int)report["expectedScenarioCount"]! != expectedKeys.Count || (int)report["scenarioCount"]! != rows.Count
+            || (string)report["rtiVersion"]! != version)
+        {
+            throw new InvalidDataException($"Shard {index} has missing exchanges or inconsistent report counts.");
+        }
+
+        foreach (var row in rows)
+        {
+            var key = ScenarioKey(row);
+            if (row[8] == "NOT_RUN")
+            {
+                throw new InvalidDataException($"Shard {index} contains an unexecuted exchange; incomplete evidence cannot be combined.");
+            }
+            if (!expectedKeys.Contains(key) || row[5] != version || row[7] != version
+                || row[8] is not ("PASS" or "FAIL") || !exchanges.TryAdd(key, row))
+            {
+                throw new InvalidDataException($"Shard {index} contains an unexpected, duplicate, or invalid exchange.");
+            }
+        }
+
+        var logs = Path.Combine(directory, "logs");
+        if (Directory.Exists(logs))
+        {
+            logFiles.AddRange(Directory.GetFiles(logs, "*.log"));
+        }
+    }
+
+    var orderedKeys = sharedPlan!["cases"]!.AsArray().SelectMany(item => item!["scenarioKeys"]!.AsArray())
+        .Select(item => (string)item!).ToArray();
+    var expectedCount = (int)sharedPlan["expectedScenarioCount"]!;
+    if (orderedKeys.Length != expectedCount || exchanges.Count != expectedCount
+        || orderedKeys.Distinct(StringComparer.Ordinal).Count() != expectedCount)
+    {
+        throw new InvalidDataException("Combined shards do not cover the complete scenario plan exactly once.");
+    }
+
+    Directory.CreateDirectory(destination);
+    var logsDestination = Path.Combine(destination, "logs");
+    Directory.CreateDirectory(logsDestination);
+    foreach (var file in logFiles)
+    {
+        File.Copy(file, Path.Combine(logsDestination, Path.GetFileName(file)), overwrite: false);
+    }
+    var rowsDestination = Path.Combine(destination, "scenarios.tsv");
+    File.WriteAllLines(rowsDestination, orderedKeys.Select(key => string.Join('\t', exchanges[key])));
+    File.WriteAllText(Path.Combine(destination, "plan.json"), sharedPlan.ToJsonString(jsonOptions) + "\n");
+    RenderReport(["render-report", version, expectedCount.ToString(), rowsDestination,
+        Path.Combine(destination, "results.json"), Path.Combine(destination, "results.md"), logsDestination, commandArgs[5]]);
+    Console.WriteLine($"Merged {count} shards: {expectedCount} exchanges verified exactly once.");
+}
+
+List<string[]> ReadScenarioRows(string path)
+{
+    var rows = File.ReadLines(path).Where(line => line.Length > 0).Select(line => line.Split('\t')).ToList();
+    if (rows.Any(row => row.Length != 10))
+    {
+        throw new InvalidDataException("Scenario TSV row must contain 10 fields.");
+    }
+    return rows;
+}
+
+string ScenarioKey(string[] row) => JsonSerializer.Serialize(new[] { row[0], row[9], row[4], row[6] }, keyJsonOptions);
 
 JsonNode FindCase(JsonNode manifest, string id) => manifest["positiveCases"]!.AsArray()
     .FirstOrDefault(item => (string)item!["id"]! == id)
