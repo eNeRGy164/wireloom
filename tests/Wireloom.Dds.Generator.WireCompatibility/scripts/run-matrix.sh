@@ -374,13 +374,14 @@ run_scenario() {
 
     if [[ "$rti_cs_available" -eq 0 \
         && ( "$writer_peer" == "RTI C#" || "$reader_peer" == "RTI C#" ) ]]; then
-        printf 'NOT_RUN_DETAIL RTI-generated C# peer was unavailable for %s\n' "$case_id" \
+        printf 'FAIL_DETAIL %s\n' "$rti_cs_failure_reason" \
             > "$output_dir/logs/${label}.log"
         record_scenario "$case_id" "$wireloom_type" "$rti_type" "$cpp_type" \
-            "$writer_peer" "$reader_peer" NOT_RUN "$fixture" || return 1
+            "$writer_peer" "$reader_peer" FAIL "$fixture" || return 1
         completed_scenario_count=$((completed_scenario_count + 1))
+        failed_scenario_count=$((failed_scenario_count + 1))
         progress_percent=$((completed_scenario_count * 100 / expected_scenario_count))
-        printf 'WIRE_MATRIX_PROGRESS completed=%d/%d percent=%d%% passed=%d failed=%d elapsed=%ss latest=NOT_RUN %s [%s] %s -> %s\n' \
+        printf 'WIRE_MATRIX_PROGRESS completed=%d/%d percent=%d%% passed=%d failed=%d elapsed=%ss latest=FAIL %s [%s] %s -> %s\n' \
             "$completed_scenario_count" "$expected_scenario_count" "$progress_percent" \
             "$passed_scenario_count" "$failed_scenario_count" "$SECONDS" \
             "$case_id" "$fixture" "$writer_peer" "$reader_peer"
@@ -532,6 +533,7 @@ for case_id in "${case_ids[@]}"; do
     rti_build_log="$case_dir/rti-csharp-build.log"
     oracle_registry="$case_dir/rti-oracle.json"
     rti_csharp_generated=0
+    rti_cs_failure_reason="RTI C# generation failed for $case_id"
     rti_type_name=""
     mkdir -p "$rti_csharp_dir" "$case_dir/rti-bin" "$case_dir/rti-obj"
     rti_csharp_codegen_args=(
@@ -577,6 +579,9 @@ for case_id in "${case_ids[@]}"; do
                 "$rti_csharp_dir/${case_id}Plugin.cs"
         fi
     fi
+    if [[ "$rti_csharp_generated" == 1 ]]; then
+        rti_cs_failure_reason="RTI C# generated-type discovery failed for $case_id"
+    fi
     if [[ "$rti_csharp_generated" == 1 ]] && matrix_tool discover-rti \
             "$manifest" "$case_id" "$type_name" "$rti_csharp_dir" "$oracle_registry"; then
         rti_type_name="$(matrix_tool json-field "$oracle_registry" rtiCSharpType)"
@@ -590,13 +595,18 @@ for case_id in "${case_ids[@]}"; do
         else
             rti_cs_available=0
             overall_status=1
-            echo "RTI-generated C# peer failed to compile for $case_id; its matrix pairings will be marked not run." >&2
+            rti_cs_failure_reason="RTI-generated C# peer failed to compile for $case_id"
+            compiler_error="$(sed -n 's/.*: error \(CS[0-9]*: .*\) \[.*$/\1/p' "$rti_build_log" | head -n 1 || true)"
+            if [[ -n "$compiler_error" ]]; then
+                rti_cs_failure_reason+="; $compiler_error"
+            fi
+            echo "$rti_cs_failure_reason; its matrix pairings will be marked failed." >&2
             grep -Ei 'error|warning|failed|exception' "$rti_build_log" | head -n 30 >&2 || true
         fi
     else
         rti_cs_available=0
         overall_status=1
-        echo "RTI C# generation failed for $case_id; its matrix pairings will be marked not run." >&2
+        echo "$rti_cs_failure_reason; its matrix pairings will be marked failed." >&2
     fi
     # Normally both peers use the same corpus IDL. These two adaptations keep
     # RTI C++ generation possible while preserving the intended wire shape:

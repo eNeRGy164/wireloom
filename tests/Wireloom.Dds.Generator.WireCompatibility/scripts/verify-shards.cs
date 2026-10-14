@@ -42,6 +42,10 @@ try
                 {
                     status = "FAIL";
                 }
+                else if (item.Key == "07-union-ulong" && (writer == peers[1] || reader == peers[1]))
+                {
+                    status = "FAIL";
+                }
 
                 rows.Add([item.Key, "Managed.Type", "Oracle.Type", "::Native::Type", writer, "7.7.0", reader, "7.7.0", status, fixture]);
             }
@@ -66,8 +70,18 @@ try
         foreach (var row in File.ReadAllLines(Path.Combine(directory, "scenarios.tsv")).Select(line => line.Split('\t')))
         {
             var peerIds = new Dictionary<string, string> { [peers[0]] = "wireloom-cs", [peers[1]] = "rti-cs", [peers[2]] = "rti-cpp" };
+            var logText = "FAIL_DETAIL retained symptom\n";
+            if (row[8] == "NOT_RUN")
+            {
+                logText = "NOT_RUN_DETAIL interrupted exchange\n";
+            }
+            else if (row[0] == "07-union-ulong" && row[8] == "FAIL")
+            {
+                logText = "FAIL_DETAIL RTI-generated C# peer failed to compile; CS0221\n";
+            }
+
             File.WriteAllText(Path.Combine(logs, $"{row[0]}-{row[9]}-{peerIds[row[4]]}-{peerIds[row[6]]}.log"),
-                row[8] == "NOT_RUN" ? "NOT_RUN_DETAIL unavailable oracle\n" : "FAIL_DETAIL retained symptom\n");
+                logText);
         }
         var count = File.ReadAllLines(Path.Combine(directory, "scenarios.tsv")).Length.ToString();
         Invoke(true, "render-report", "7.7.0", count, Path.Combine(directory, "scenarios.tsv"),
@@ -81,9 +95,16 @@ try
     Invoke(true, "render-report", "7.7.0", rows.Count.ToString(), seed, baseline,
         Path.Combine(root, "baseline.md"), Path.Combine(merged, "logs"), exclusions);
 
-    // Assert: payload/report evidence survives, including registry entries and not-run reasons.
+    // Assert: payload/report evidence survives, including registry entries and failure reasons.
     Check(JsonNode.DeepEquals(Read(baseline), Read(Path.Combine(merged, "results.json"))), "Combined JSON equals the unsharded report.");
     Check(File.ReadAllText(Path.Combine(root, "baseline.md")) == File.ReadAllText(Path.Combine(merged, "results.md")), "Combined Markdown equals the unsharded report.");
+    var unsignedScenarios = Read(Path.Combine(merged, "results.json"))["scenarios"]!.AsArray()
+        .Where(item => (string?)item!["case"] == "07-union-ulong").ToArray();
+    Check(unsignedScenarios.Count(item => (string?)item!["status"] == "FAIL"
+        && ((string?)item["observedProblem"])!.Contains("CS0221", StringComparison.Ordinal)) == 15,
+        "All RTI C# build-blocked pairings retain failure status and compiler evidence.");
+    Check(unsignedScenarios.Count(item => (string?)item!["status"] == "PASS") == 12,
+        "Wireloom and C++ controls remain passing when the RTI C# peer cannot compile.");
     var shardRows = Enumerable.Range(0, 4).Select(index => File.ReadAllLines(Path.Combine(source, $"shard-{index}", "scenarios.tsv"))).ToArray();
     Check(shardRows.Sum(items => items.Length) == rows.Count, "Every exchange is retained exactly once.");
     var caseSets = shardRows.Select(items => items.Select(line => line.Split('\t')[0]).ToHashSet()).ToArray();
