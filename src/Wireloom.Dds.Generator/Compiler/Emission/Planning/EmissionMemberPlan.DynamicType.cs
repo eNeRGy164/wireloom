@@ -24,9 +24,14 @@ internal sealed partial class MemberEmissionPlan
     {
         if (isRecursive && IsRecursive(recursiveTypeName!))
         {
-            var supportType = $"{IdlNaming.GeneratedSupportTypeReference(recursiveTypeName!, implementationNamespace)}Support.GetOrCreateInstanceImpl()";
+            if (IsSequence)
+            {
+                var recursiveSupportType = $"{IdlNaming.GeneratedSupportTypeReference(recursiveTypeName!, implementationNamespace)}Support.GetOrCreateInstanceImpl()";
+                return $"tsf.CreateSequenceWithAccessInfo(dtf, {recursiveSupportType}.GetDynamicTypeInternal(isPublic), {Bound})";
+            }
 
-            return $"tsf.CreateSequenceWithAccessInfo(dtf, {supportType}.GetDynamicTypeInternal(isPublic), {Bound})";
+            var supportType = $"{IdlNaming.GeneratedSupportTypeReference(recursiveTypeName!, implementationNamespace)}Support.Instance";
+            return $"tsf.CreateArrayWithAccessInfo<{ElementUnmanagedType(implementationNamespace)}>(dtf, {supportType}.GetDynamicTypeInternal(isPublic), new uint[] {{ {string.Join(", ", Dimensions)} }})";
         }
 
         return BuildCollectionDynamicType(implementationNamespace);

@@ -366,6 +366,7 @@ void DiscoverCases(string[] commandArgs)
             "03-enums-aliases" => "Record",
             "02-multiple" => "WireloomWireCompatibilityMultipleTypes",
             "03-enum-values-prefix" or "03-enum-values-explicit" => "EnumTopic",
+            "09-optional-recursive-array" => "Node",
             "09-optional-aggregate-member" => "Holder",
             "07-union-aliases" or "06-valuetypes" => "Holder",
             "08-key-inherited" => "Derived",
@@ -404,6 +405,7 @@ void DiscoverRti(string[] commandArgs)
     var selected = caseId switch
     {
         "03-enums-aliases" => "Record",
+        "09-optional-recursive-array" => "Node",
         "09-optional-aggregate-member" => "Holder",
         "07-union-aliases" or "06-valuetypes" => "Holder",
         "08-key-inherited" => "Derived",
@@ -525,6 +527,21 @@ void RenderReport(string[] commandArgs)
     }
     string? Adaptation(string id, string fixture, string peer)
     {
+        if (id == "09-optional-recursive-array")
+        {
+            var adaptation = "Typed finite recursive array fixture: bypass public DynamicType and disable TypeObject/TypeCode propagation because RTI 7.7.0 does not support recursive TypeObject v2.";
+            if (peer is "RTI C#" or "Wireloom C#")
+            {
+                adaptation += " Bootstrap the managed plugin before Support.Instance to avoid the RTI-compatible recursive static-initialization null dereference.";
+            }
+            else if (peer == "RTI C++")
+            {
+                adaptation += " Scratch generated-code workaround: forward the visited-node chain when initializing the recursive array TypeCode.";
+            }
+
+            return adaptation;
+        }
+
         if (id == "09-optional-aggregate-member")
         {
             return "Typed optional aggregate fixture: construct Holder optionals and select its union branch through generated members; nested DynamicData paths cannot loan unset optional parents.";

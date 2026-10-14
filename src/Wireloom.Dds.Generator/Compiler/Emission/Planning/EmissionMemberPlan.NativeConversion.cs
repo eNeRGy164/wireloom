@@ -61,7 +61,7 @@ internal sealed partial class MemberEmissionPlan
 
             if (HasAggregateElement)
             {
-                return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(out {arrayType} {temporary}, {KeysOnlyArgument(forwardKeysOnly)}, dimensions: {dimensions});\nsample.{EscapedName} = {temporary};";
+                return $"{nativeFieldPrefix}{EscapedName}.FromNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(out {arrayType} {temporary}, keysOnly, dimensions: {dimensions});\nsample.{EscapedName} = {temporary};";
             }
 
             return $"{nativeFieldPrefix}{EscapedName}.FromNative(out {arrayType} {temporary}, dimensions: {dimensions});\nsample.{EscapedName} = {temporary};";
@@ -186,11 +186,7 @@ internal sealed partial class MemberEmissionPlan
     {
         if (IsOptional && HasAggregateElement)
         {
-            var dimensionArgument = forwardKeysOnly
-                ? ArraySourceEmitter.ElementCount(Dimensions)
-                : $"dimension: {ArraySourceEmitter.ElementCount(Dimensions)}";
-
-            return $"{nativeFieldPrefix}{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, {KeysOnlyArgument(forwardKeysOnly)}, {dimensionArgument});";
+            return $"{nativeFieldPrefix}{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, keysOnly, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
         }
 
         if (IsOptional)

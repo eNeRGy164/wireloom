@@ -19,6 +19,8 @@
 
   <ItemGroup>
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-integration.idl" />
+    <DdsIdl Include="..\..\docs\corpus\idl\features\09-optional-recursive-array.idl" />
+    <DdsIdl Include="..\..\docs\corpus\idl\features\06-aggregates.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-modules.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-alias-inheritance.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\collections\13-compositions.idl" />

@@ -149,8 +149,7 @@ Wireloom mapping rather than a negative IDL syntax case.
 optional struct value and an optional union value whose selected branch
 contains a nested payload, including typedef aliases. Wireloom generates these
 values and the matrix schedules each fixture across all nine directed pairings;
-interoperability for this case is unverified until results are available from
-a licensed RTI 7.7.0 matrix run. Aggregate aliases use the underlying
+all 18 exchanges passed in the licensed RTI 7.7.0 matrix on October 14, 2026. Aggregate aliases use the underlying
 generated struct or union type in managed APIs and native conversions, while
 optional aggregate DynamicType metadata retains the declared typedef alias.
 Expected `05-array-of-sequences`
@@ -214,7 +213,7 @@ generated. Matrix utility setup and locked-restore failures preserve a nonzero
 workflow status even when a report is available. Run the container
 with the repository mounted at `/workspace`, the license mounted read-only at
 `/run/secrets/rti_license.dat`, and `WIRE_COMPATIBILITY_CASE_FILTER=05-collections`
-for the focused non-default fixture. Omit the filter to run all 56
+for the focused non-default fixture. Omit the filter to run all 70
 wire-testable Wireloom-positive cases.
 Generated build outputs and artifacts are written to the mounted repository;
 the runner checks its selected RTI version against 7.7.0.
@@ -250,3 +249,18 @@ version. Both endpoints must exit successfully before recording a pass.
 The matrix covers RTI Connext 7.7.0. Although the generator's runtime package
 reference floor is 7.3.1, generated-code compatibility with that release is
 not established because current output uses APIs absent from its C# package.
+
+`09-optional-recursive-array` selects `Node` and runs `optional-absent`,
+`optional-present`, and `optional-nested` fixtures (27 exchanges). Root value 9801,
+child values 9811/9812, and nested child values 9821/9822 make element ordering
+observable. Present arrays always contain two initialized children; leaves have
+absent children. Managed readers inspect the complete tree independently, and
+C++ readers compare generated typed values.
+
+Recursive types do not expose public DynamicType. This case bypasses DynamicData
+and disables TypeObject/TypeCode propagation on all peers because default RTI
+7.7.0 TypeObject v2 rejects recursive types. Both managed array peers bootstrap
+their plugins in the harness before accessing the singleton; scratch RTI C++ generation forwards the
+visited-node chain for the recursive array TypeCode. Retained C# oracle sources
+are unmodified. All 27 focused exchanges passed on October 14, 2026; reports mark
+these adapted results explicitly.

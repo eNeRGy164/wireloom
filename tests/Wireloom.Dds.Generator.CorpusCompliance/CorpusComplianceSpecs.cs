@@ -18,7 +18,7 @@ public sealed class CorpusComplianceSpecs
     public void CorpusManifestAndOracleLibraryHaveTheSameCaseSet()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(133);
+        cases.Length.ShouldBe(134);
         cases.ShouldBeUnique();
         CorpusRepository.OracleCaseIds.ShouldBe(cases.OrderBy(id => id, StringComparer.Ordinal).ToArray());
 
@@ -257,6 +257,54 @@ public sealed class CorpusComplianceSpecs
         plugin.ShouldContain("new StructMember(\"payloadAlias\", PayloadAliasSupport.Instance.GetDynamicTypeInternal(isPublic), isOptional: true, id: 1)");
         plugin.ShouldContain("new StructMember(\"choiceAlias\", ChoiceAliasSupport.Instance.GetDynamicTypeInternal(isPublic), isOptional: true, id: 3)");
         plugin.ShouldContain("isOptional: true");
+    }
+
+    [Fact]
+    public void OptionalRecursiveArrayPreservesOracleStorageAndMetadata()
+    {
+        // Arrange
+        var corpusCase = CorpusRepository.Cases.Single(item => item.Id == "09-optional-recursive-array");
+        var oracle = string.Join("\n", CorpusRepository.OracleFiles(corpusCase).Select(File.ReadAllText));
+
+        // Act
+        var generated = Compile(corpusCase);
+
+        // Assert
+        oracle.ShouldContain("NativeManagedOptionalArray children");
+        oracle.ShouldContain("CreateArrayWithAccessInfo");
+        oracle.ShouldContain("isRecursiveType = true");
+        oracle.ShouldContain("[Optional]");
+        oracle.ShouldContain("hash.Add(this.children[0]);");
+        oracle.ShouldContain("hash.Add(-1);");
+        oracle.ShouldContain("children.Destroy<");
+        oracle.ShouldContain("children.FromNative<");
+        oracle.ShouldContain("children.ToNative<");
+        oracle.ShouldContain("result.SetMemberAnnotations(");
+        var node = generated["CorpusOptionalRecursiveArray.Node.g.cs"].Source;
+        node.ShouldContain("public Node[]? children { get; set; }");
+        node.ShouldNotContain("children = new Node[2]");
+        var native = generated["CorpusOptionalRecursiveArray.Implementation.NodeUnmanaged.g.cs"].Source;
+        native.ShouldContain("private NativeManagedOptionalArray children;");
+        native.ShouldContain("children.FromNative<Node, NodeUnmanaged>");
+        native.ShouldContain("children.ToNative<Node, NodeUnmanaged>");
+        native.ShouldContain("children.Destroy<Node, NodeUnmanaged>(dimension: 2, optionalsOnly);");
+        native.ShouldContain("out Node[] childrenTemporary_, keysOnly, dimensions: new[] { 2 }");
+        native.ShouldContain("sample.children, keysOnly, dimension: 2");
+        native.ShouldContain("dimensions: new[] { 2 }");
+        native.ShouldNotContain("children.Initialize");
+        var plugin = generated["CorpusOptionalRecursiveArray.Implementation.NodePlugin.g.cs"].Source;
+        plugin.ShouldContain("CreateArrayWithAccessInfo<NodeUnmanaged>");
+        plugin.ShouldContain("NodeSupport.Instance.GetDynamicTypeInternal(isPublic)");
+        plugin.ShouldNotContain("GetOrCreateInstanceImpl");
+        plugin.ShouldContain("new uint[] { 2 }");
+        plugin.ShouldContain("isOptional: true, id: 1");
+        plugin.ShouldContain("isRecursiveType = true");
+        plugin.ShouldContain("defaultValue: new AnnotationParameterValue { Int32Value = 0 }");
+        plugin.ShouldContain("minValue: new AnnotationParameterValue { Int32Value = int.MinValue }");
+        plugin.ShouldContain("maxValue: new AnnotationParameterValue { Int32Value = int.MaxValue }");
+        plugin.ShouldContain("result.SetMemberAnnotations(0, annotations);");
+        var support = generated["CorpusOptionalRecursiveArray.NodeSupport.g.cs"].Source;
+        support.ShouldContain("internal static NodeSupport GetOrCreateInstanceImpl()");
     }
 
     private static IReadOnlyDictionary<string, GeneratedIdlSource> Compile(CorpusCase corpusCase) =>

@@ -3,7 +3,7 @@
 This is the feature index for the managed-generator compatibility corpus. Each case has a stable `C###` tag that can be used in test names, issues, and implementation work. Tags normally follow manifest order; explicit manifest tags preserve existing references when classified cases are added to an earlier group.
 
 The status snapshot below was re-verified by the corpus compliance run on
-2026-10-14 with `CORPUS_GENERATOR_EXPORT_ROOT` set. All 273 checks passed,
+2026-10-15 with `CORPUS_GENERATOR_EXPORT_ROOT` set. All 276 checks passed,
 including generated-source export. The discriminator runtime evidence is
 summarized separately in [the compatibility matrix](UNION-DISCRIMINATOR-MATRIX.md).
 
@@ -94,6 +94,8 @@ RTI oracle links point to the licensee-generated C# source under `corpus/oracles
 | C054 | `11-comments`                    | comments and source preservation              | [idl/features/11-comments.idl](idl/features/11-comments.idl)                                       | [source](oracles/features/11-comments/11-comments.cs), [plugin](oracles/features/11-comments/11-commentsPlugin.cs)                                                                             | accepted        | compiles       | [implemented](generator/features/11-comments/)                    |
 | C114 | `09-optional-string-sequences`   | optional narrow and wide string sequences     | [idl/features/09-optional-string-sequences.idl](idl/features/09-optional-string-sequences.idl)     | [source](oracles/features/09-optional-string-sequences/09-optional-string-sequences.cs), [plugin](oracles/features/09-optional-string-sequences/09-optional-string-sequencesPlugin.cs)         | accepted        | compiles       | [implemented](generator/features/09-optional-string-sequences/)   |
 | C115 | `09-optional-aggregate-member`   | optional aggregate member                     | [idl/features/09-optional-aggregate-member.idl](idl/features/09-optional-aggregate-member.idl)     | [source](oracles/features/09-optional-aggregate-member/09-optional-aggregate-member.cs), [plugin](oracles/features/09-optional-aggregate-member/09-optional-aggregate-memberPlugin.cs)         | accepted        | compiles       | [implemented](generator/features/09-optional-aggregate-member/)   |
+
+| C134 | `09-optional-recursive-array` | optional recursive fixed arrays | [IDL](idl/features/09-optional-recursive-array.idl) | [source](oracles/features/09-optional-recursive-array/09-optional-recursive-array.cs), [plugin](oracles/features/09-optional-recursive-array/09-optional-recursive-arrayPlugin.cs) | accepted | compiles | implemented; [generated](generator/features/09-optional-recursive-array/) |
 
 ## Negative cases
 

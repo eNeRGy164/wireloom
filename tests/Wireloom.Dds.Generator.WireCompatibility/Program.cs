@@ -1,3 +1,5 @@
+#nullable enable annotations
+
 using System.Diagnostics;
 using System.Reflection;
 using Omg.Types;
@@ -27,6 +29,11 @@ internal static class Program
         }
         catch (Exception exception)
         {
+            while (exception is TargetInvocationException or TypeInitializationException && exception.InnerException is not null)
+            {
+                exception = exception.InnerException;
+            }
+
             var detail = exception is FixtureException fixtureException
                 ? $" {fixtureException.Message}"
                 : string.Empty;
@@ -58,24 +65,47 @@ internal static class Program
 
     private static void RunTypedPeer<T>(PeerOptions options)
     {
+        if (options.CaseId == "09-optional-recursive-array")
+        {
+            // Both generated array plugins match RTI's Support.Instance access.
+            // Start from the plugin so its recursive placeholder exists before that read.
+            var plugin = typeof(T).Assembly.GetType($"{typeof(T).Namespace}.Implementation.NodePlugin", throwOnError: true)!;
+            plugin.GetMethod("CreateDynamicType", BindingFlags.Public | BindingFlags.Static)!.Invoke(null, [false]);
+        }
+
         // Use Wireloom's generated type and serializer end-to-end. The reference
         // DynamicData fixture only seeds the expected managed sample; typed
         // DDS writers/readers exercise generated ToNative/FromNative code.
         var typeSupport = (TypeSupport<T>)TypeSupportHelper.GetTypeSupportForType(typeof(T));
         using var serializer = typeSupport.CreateSerializer();
-        using var expectedDynamic = FixtureCatalog.CreateFixture(
-            typeSupport.DynamicType,
-            options.CaseId,
-            options.Fixture);
+        DynamicData? fixture = null;
+        if (options.CaseId != "09-optional-recursive-array")
+        {
+            fixture = FixtureCatalog.CreateFixture(typeSupport.DynamicType, options.CaseId, options.Fixture);
+        }
+
+        using var expectedDynamic = fixture;
         var expected = options.CaseId switch
         {
+            "09-optional-recursive-array" => CreateOptionalRecursiveArrayFixture<T>(options.Fixture),
             "09-optional-string-sequences" => CreateOptionalStringSequenceFixture<T>(options.Fixture),
             "09-optional-aggregate-member" => CreateOptionalAggregateMemberFixture<T>(options.Fixture),
             "07-union-char-boundaries" => CreateCharacterUnionFixture<T>(options.Fixture),
-            _ => serializer.FromDynamicData(expectedDynamic)
+            _ => serializer.FromDynamicData(expectedDynamic!)
         };
 
-        using var participant = DomainParticipantFactory.Instance.CreateParticipant(domainId: 0);
+        var participantQos = DomainParticipantFactory.Instance.DefaultParticipantQos;
+        if (options.CaseId == "09-optional-recursive-array")
+        {
+            // RTI 7.7.0 cannot register recursive types with TypeObject v2 enabled.
+            participantQos = participantQos.WithResourceLimits(policy =>
+            {
+                policy.TypeObjectMaxSerializedLength = 0;
+                policy.TypeCodeMaxSerializedLength = 0;
+            });
+        }
+
+        using var participant = DomainParticipantFactory.Instance.CreateParticipant(domainId: 0, participantQos);
         using var topic = participant.CreateTopic<T>(options.TopicName);
 
         if (options.Role == PeerRole.Writer)
@@ -167,7 +197,7 @@ internal static class Program
         DomainParticipant participant,
         Topic<T> topic,
         T expected,
-        DynamicData expectedDynamic,
+        DynamicData? expectedDynamic,
         PeerOptions options)
     {
         var readerQos = participant.ImplicitSubscriber.DefaultDataReaderQos
@@ -215,12 +245,17 @@ internal static class Program
                     if (options.CaseId == "07-union-char-boundaries")
                     {
                         IndependentSampleVerifier.VerifyCharacterUnionFixture(
-                            expectedDynamic.Type, sample!, options.Fixture);
+                            expectedDynamic!.Type, sample!, options.Fixture);
                     }
                     else if (options.CaseId == "09-optional-string-sequences")
                     {
                         IndependentSampleVerifier.VerifyOptionalStringSequenceFixture(
                             sample!, options.Fixture);
+                    }
+                    else if (options.CaseId == "09-optional-recursive-array")
+                    {
+                        IndependentSampleVerifier.VerifyOptionalRecursiveArrayFixture(
+                            expected!, sample!, $"{options.CaseId} fixture {options.Fixture}");
                     }
                     else if (options.CaseId == "09-optional-aggregate-member")
                     {
@@ -232,7 +267,7 @@ internal static class Program
                     else
                     {
                         IndependentSampleVerifier.Verify(
-                            expectedDynamic,
+                            expectedDynamic!,
                             sample!,
                             $"{options.CaseId} fixture {options.Fixture}");
                     }
@@ -268,6 +303,35 @@ internal static class Program
         };
         typeof(T).GetProperty(branch)!.SetValue(sample, 8201);
         return sample;
+    }
+
+    /// <summary>Constructs a finite recursive tree without requesting public DynamicType metadata.</summary>
+    private static T CreateOptionalRecursiveArrayFixture<T>(string fixture)
+    {
+        if (fixture is not ("optional-absent" or "optional-present" or "optional-nested"))
+        {
+            throw new FixtureException($"Unknown optional recursive array fixture '{fixture}'.");
+        }
+
+        var root = CreateNode(9801);
+        if (fixture != "optional-absent")
+        {
+            var children = new[] { CreateNode(9811), CreateNode(9812) };
+            typeof(T).GetProperty("children")!.SetValue(root, children);
+            if (fixture == "optional-nested")
+            {
+                typeof(T).GetProperty("children")!.SetValue(children[0], new[] { CreateNode(9821), CreateNode(9822) });
+            }
+        }
+
+        return root;
+
+        T CreateNode(int value)
+        {
+            var node = Activator.CreateInstance<T>()!;
+            typeof(T).GetProperty("value")!.SetValue(node, value);
+            return node;
+        }
     }
 
     private static T CreateOptionalAggregateMemberFixture<T>(string fixture)

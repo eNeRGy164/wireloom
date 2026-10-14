@@ -359,7 +359,19 @@ internal static class ManagedDataTypeEmitter
         foreach (var field in fields)
         {
             var fieldPrefix = field.Name == "hash" ? "this." : string.Empty;
-            writer.WriteLine($"hash.Add({field.HashValue(fieldPrefix)});");
+            if (field is { IsOptional: true, IsArray: true, HasAggregateElement: true })
+            {
+                writer.OpenBlock($"if ({fieldPrefix}{field.EscapedName} is not null)");
+                writer.WriteLine($"hash.Add({field.HashValue(fieldPrefix)});");
+                writer.CloseBlock();
+                writer.OpenBlock("else");
+                writer.WriteLine("hash.Add(-1);");
+                writer.CloseBlock();
+            }
+            else
+            {
+                writer.WriteLine($"hash.Add({field.HashValue(fieldPrefix)});");
+            }
         }
 
         writer.BlankLine();
