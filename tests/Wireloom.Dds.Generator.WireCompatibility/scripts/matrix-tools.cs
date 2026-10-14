@@ -761,7 +761,7 @@ void RenderReport(string[] commandArgs)
                 ? "⚫ —" : Cell(id, fixture, pair, row.GetValueOrDefault(pair))).ToArray();
             var adaptationsInRow = row.Values.SelectMany(s => s.TryGetValue("adaptations", out var value) ? ((Dictionary<string, string>)value!).Select(kv => $"<sup>†</sup> **{kv.Key}:** {kv.Value}") : []).Distinct();
             var adaptationText = string.Join("<br><br>", adaptationsInRow).Replace("|", "\\|");
-            var problems = new List<string>();
+            var problems = new List<(string Pairing, string Detail, string? Expected)>();
             foreach (var pair in pairings)
             {
                 if (unsupportedCase is not null && (pair.Item1 == "Wireloom C#" || pair.Item2 == "Wireloom C#"))
@@ -773,17 +773,29 @@ void RenderReport(string[] commandArgs)
                 if (item is null || (string)item["status"]! is "FAIL" or "NOT_RUN")
                 {
                     var detail = item is null ? "scenario did not run" : (string?)item.GetValueOrDefault("observedProblem") ?? "scenario did not run";
-                    var expected = ExpectedFailure(id, pair.Item1, pair.Item2, fixture);
+                    var expected = item is not null && (string)item["status"]! == "FAIL"
+                        ? ExpectedFailure(id, pair.Item1, pair.Item2, fixture) : null;
                     var name = $"{pair.Item1} → {pair.Item2}";
-                    problems.Add(expected is not null && item is not null && (string)item["status"]! == "FAIL"
-                        ? $"**{name} observed:** {detail.Replace("|", "\\|")}<br>**Expected:** {expected.Replace("Expected: ", "").Replace("|", "\\|")}"
-                        : $"**{name}:** {detail.Replace("|", "\\|")}");
+                    problems.Add((name, detail, expected));
                 }
             }
             var problemParts = new List<string>();
             if (unsupportedCase is not null)
                 problemParts.Add($"Not implemented by Wireloom: `{unsupportedCase["diagnostic"]}`. {unsupportedCase["reason"]} [#{unsupportedCase["issue"]!.ToString()!.TrimEnd('/').Split('/').Last()}]({unsupportedCase["issue"]})".Replace("|", "\\|"));
-            problemParts.AddRange(problems);
+            foreach (var problem in problems.GroupBy(item => (item.Detail, item.Expected)))
+            {
+                var names = string.Join(", ", problem.Select(item => item.Pairing));
+                var detail = problem.Key.Detail.Replace("|", "\\|");
+                if (problem.Key.Expected is not null)
+                {
+                    var expected = problem.Key.Expected.Replace("Expected: ", "").Replace("|", "\\|");
+                    problemParts.Add($"**{names} observed:** {detail}<br>**Expected:** {expected}");
+                }
+                else
+                {
+                    problemParts.Add($"**{names}:** {detail}");
+                }
+            }
             var problemText = problemParts.Count == 0 ? "—" : string.Join("<br><br>", problemParts);
             var caseCell = id == previous ? "\"" : $"`{id}.idl`";
             lines.Add($"| {caseCell} | `{fixture}` | {string.Join(" | ", cells)} | {(adaptationText.Length == 0 ? "—" : adaptationText)} | {problemText} |");

@@ -38,7 +38,8 @@ try
                 }
 
                 var status = "PASS";
-                if (item.Key == "05-array-of-sequences" && writer == peers[0] && reader == peers[2])
+                if (item.Key == "05-array-of-sequences"
+                    && ((writer == peers[0] && reader == peers[2]) || (writer == peers[2] && reader == peers[0])))
                 {
                     status = "FAIL";
                 }
@@ -105,6 +106,15 @@ try
         "All RTI C# build-blocked pairings retain failure status and compiler evidence.");
     Check(unsignedScenarios.Count(item => (string?)item!["status"] == "PASS") == 12,
         "Wireloom and C++ controls remain passing when the RTI C# peer cannot compile.");
+    var markdownLines = File.ReadAllLines(Path.Combine(merged, "results.md"));
+    var compilerRows = markdownLines.Where(line => line.Contains("CS0221", StringComparison.Ordinal)).ToArray();
+    Check(compilerRows.Length == 3 && compilerRows.All(line => line.Split("CS0221").Length == 2
+        && pairings.Where(pair => pair.Writer == peers[1] || pair.Reader == peers[1])
+            .All(pair => line.Contains($"{pair.Writer} → {pair.Reader}", StringComparison.Ordinal))),
+        "Each row shows one compiler message and identifies all five affected pairings.");
+    var expectedRow = markdownLines.Single(line => line.StartsWith("| `05-array-of-sequences.idl`", StringComparison.Ordinal));
+    Check(expectedRow.Split("retained symptom").Length == 3 && expectedRow.Contains("**Expected:** registered failure", StringComparison.Ordinal),
+        "Matching observed messages with different expected-failure classifications remain separate.");
     var shardRows = Enumerable.Range(0, 4).Select(index => File.ReadAllLines(Path.Combine(source, $"shard-{index}", "scenarios.tsv"))).ToArray();
     Check(shardRows.Sum(items => items.Length) == rows.Count, "Every exchange is retained exactly once.");
     var caseSets = shardRows.Select(items => items.Select(line => line.Split('\t')[0]).ToHashSet()).ToArray();

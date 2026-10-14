@@ -63,6 +63,8 @@ adaptations, not-run outcomes, and the exclusion registry once. The combined
 artifact keeps the name `wire-compatibility-rti-7.7.0`; partial shard artifacts
 use a `-shard-<index>` suffix. Setup failures fail the workflow even if another
 shard completes; observed peer failures remain reported outcomes as before.
+Only the combined report job publishes a workflow summary; shards retain
+their evidence artifacts without publishing duplicate summaries.
 
 The report job uses GitHub's official `actions/download-artifact` v8.0.2,
 pinned to commit `9000827ccba6bdab643e8b6fd33ac0654aef8333`, to collect same-run
@@ -119,6 +121,9 @@ unexpected failures, not-run scenarios, and not-implemented cases. It also
 includes Adaptations and Problem / defect columns. Expected failures use ⚠️;
 the problem column separates observed symptoms from their expected-failure
 explanations, and `results.json` records both fields and their aggregate count.
+Identical observed problems with the same expected-failure explanation are
+grouped within each Markdown row, listing the affected pairings once alongside
+one copy of the message. JSON retains the separate result for every exchange.
 RTI C# generation, type-discovery, and compilation failures mark every pairing
 that requires that peer as failed (⛔), with the failed setup stage and the first
 compiler diagnostic when available. This records a confirmed peer setup defect;

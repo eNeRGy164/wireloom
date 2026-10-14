@@ -124,21 +124,6 @@ jobs:
           path: ${{ runner.temp }}/wireloom-cache/nuget
           key: nuget-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ hashFiles('Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json', 'src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj', 'tests/Wireloom.Dds.Generator.WireCompatibility/Wireloom.Dds.Generator.WireCompatibility.csproj') }}
 
-      - name: Publish wire matrix summary
-        if: always()
-        shell: bash
-        run: |
-          report=artifacts/wire-compatibility/results.md
-          if [[ -f "$report" ]]; then
-            cat "$report" >> "$GITHUB_STEP_SUMMARY"
-          else
-            {
-              echo "# Wire compatibility results"
-              echo
-              echo "The matrix did not produce a report. Check the setup and run logs for the failure."
-            } >> "$GITHUB_STEP_SUMMARY"
-          fi
-
       - name: Upload sanitized wire evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
