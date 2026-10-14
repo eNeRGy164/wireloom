@@ -20,7 +20,6 @@ readonly scratch="${RUNNER_TEMP:-/tmp}/wireloom-wire-compatibility"
 readonly cases_tsv="$scratch/cases.tsv"
 readonly scenarios_tsv="$scratch/scenarios.tsv"
 workflow_group_open=0
-allow_peer_failures=0
 readonly non_default_fixture_cases=(
     01-boundaries 01-full-widths
     02-names-constants 02-scopes 02-constant-expressions 02-formatting 02-multiple
@@ -172,6 +171,7 @@ printf '{"rtiVersion":"%s","scenarios":[]}' "$rti_version" > "$output_dir/result
 # Endpoint output is separately reduced to status lines and selected RTI
 # diagnostics so the report artifacts do not include arbitrary process output.
 write_report() {
+    cp "$scenarios_tsv" "$output_dir/scenarios.tsv"
     matrix_tool render-report \
         "$rti_version" "$expected_scenario_count" "$scenarios_tsv" \
         "$output_dir/results.json" "$output_dir/results.md" "$output_dir/logs" "$exclusions"
@@ -191,15 +191,11 @@ finish_run() {
     start_workflow_group "Generate wire compatibility report"
     if write_report; then
         end_workflow_group
-        if [[ "$run_status" -ne 0 && "$allow_peer_failures" -eq 0 ]]; then
+        if [[ "$run_status" -ne 0 ]]; then
             echo "Matrix setup ended with status $run_status. See the generated report for selected exchanges that did not run." >&2
             workflow_annotation error "Wire compatibility matrix setup failed" \
                 "Matrix setup ended with status $run_status; inspect the generated report for unrun scenarios."
             exit "$run_status"
-        elif [[ "$run_status" -ne 0 ]]; then
-            echo "Matrix execution ended with status $run_status; peer builds or exchanges failed. See the generated report." >&2
-            workflow_annotation warning "Wire compatibility matrix completed with issues" \
-                "Matrix execution ended with status $run_status; see the generated report for failed or unrun scenarios."
         elif [[ "${overall_status:-0}" -ne 0 || "$passed_scenario_count" -lt "$expected_scenario_count" ]]; then
             workflow_annotation warning "Wire compatibility matrix completed with issues" \
                 "$passed_scenario_count of $expected_scenario_count scenario exchanges passed; see the generated report for failed or unrun scenarios."
@@ -283,6 +279,15 @@ for case_id in "${case_ids[@]}"; do
         done
     done
 done
+
+matrix_tool partition-shard "$rti_version" "${WIRE_COMPATIBILITY_SHARD_INDEX:-0}" \
+    "${WIRE_COMPATIBILITY_SHARD_COUNT:-1}" "$scenarios_tsv" "$output_dir"
+cp "$output_dir/scenarios.tsv" "$scenarios_tsv"
+mapfile -t case_ids < "$output_dir/selected-cases.txt"
+expected_scenario_count=$(wc -l < "$scenarios_tsv")
+printf 'Shard %s/%s: %d cases, %d scenario exchanges planned.\n' \
+    "${WIRE_COMPATIBILITY_SHARD_INDEX:-0}" "${WIRE_COMPATIBILITY_SHARD_COUNT:-1}" \
+    "${#case_ids[@]}" "$expected_scenario_count"
 
 end_workflow_group
 
@@ -463,9 +468,8 @@ dotnet restore "$project" \
     --verbosity quiet
 dotnet restore "$rti_csharp_project" --locked-mode --verbosity quiet
 
-# Setup and locked restores must succeed. Once case builds and exchanges begin,
-# their failures are represented in the report and do not fail the workflow.
-allow_peer_failures=1
+# Unexpected setup errors must fail the job even after peer execution starts.
+# Handled peer failures are recorded as FAIL rows and allow the matrix to continue.
 overall_status=0
 scenario_index=0
 SECONDS=0

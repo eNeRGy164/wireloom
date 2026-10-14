@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-14T19:57:30Z
+  generated_at: 2026-10-14T19:58:16Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -51,11 +51,11 @@ summary:
     sources:
       - docs/architecture/arc42/05-building-block-view.md
   runtime:
-    text: Generation occurs during consumer compilation; the manual wire workflow targets RTI Connext 7.7.0. Each fixture runs across all nine directed pairings of Wireloom C#, RTI-generated C#, and RTI-generated C++. Readers require and verify valid fixture payloads while counting ordinary instance lifecycle notifications separately. Discriminator verification normalizes RTI signed storage to the declared width; character fixtures use typed assignments and independent expected values. The character-boundary C++ peer uses a single-byte execution charset to preserve byte 255 and signed label -1. Present optional wide-string sequence fixtures use DynamicData and RTI C API setters in the C++ peer; absent, empty, and narrow-only controls use typed peers. Optional aggregate values are supported by the generator, but their interoperability is unverified until a licensed matrix result is available. Aggregate DynamicType metadata preserves declared aliases. RTI 7.3.1 generated-code compatibility is not established. The wchar union uses a manually constructed RTI C++ DynamicType; FlatData uses standard C++ mapping, not RTI's FlatData-specific C++ layout.
+    text: Generation occurs during consumer compilation; the manual wire workflow targets RTI Connext 7.7.0. Whole cases are balanced by exchange count across four isolated shard runners; a report job verifies matching plans and exact coverage and rejects any not-run exchange before regenerating combined evidence. Unexpected setup errors retain a nonzero exit status while partial shard reports remain available. Each fixture runs across all nine directed pairings of Wireloom C#, RTI-generated C#, and RTI-generated C++. Readers require and verify valid fixture payloads while counting ordinary instance lifecycle notifications separately. Discriminator verification normalizes RTI signed storage to the declared width; character fixtures use typed assignments and independent expected values. The character-boundary C++ peer uses a single-byte execution charset to preserve byte 255 and signed label -1. Present optional wide-string sequence fixtures use DynamicData and RTI C API setters in the C++ peer; absent, empty, and narrow-only controls use typed peers. Optional aggregate values are supported by the generator, but their interoperability is unverified until a licensed matrix result is available. Aggregate DynamicType metadata preserves declared aliases. RTI 7.3.1 generated-code compatibility is not established. The wchar union uses a manually constructed RTI C++ DynamicType; FlatData uses standard C++ mapping, not RTI's FlatData-specific C++ layout.
     sources:
       - docs/architecture/arc42/06-runtime-view.md
   deployment:
-    text: The analyzer is delivered as a NuGet package; initial manual wire evidence requires exact RTI 7.7.0 tooling and a runtime-scoped license file. Add other releases only with a matching toolchain and compatible generator target.
+    text: The analyzer is delivered as a NuGet package; manual wire evidence uses four isolated RTI 7.7.0 shard jobs with parallel cached image builds; shard zero exports the shared Docker build cache. Each shard receives a runtime-scoped license file; the .NET-only artifact merge job has no RTI secret. Add other releases only with a matching toolchain and compatible generator target.
     sources:
       - docs/architecture/arc42/07-deployment-view.md
   cross_cutting:

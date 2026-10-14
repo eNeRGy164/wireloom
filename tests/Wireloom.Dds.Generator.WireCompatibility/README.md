@@ -32,6 +32,58 @@ fixtures on both managed and C++ peers because RTI 7.7.0 DynamicData resolves
 the nested typedef members against the wrong type. Readers compare the public
 optional values and selected union branch directly.
 
+## Case shards and combined reports
+
+The GitHub workflow runs four case shards concurrently (`fail-fast: false`).
+Each shard loads its image through a cached Docker build. Package installation
+and the .NET SDK installation are reused when the layer cache hits; only shard
+zero exports the shared build cache. No shared-image job delays shard startup.
+Every case and all its fixtures/pairings belong to exactly one shard. The
+partitioner balances exchange counts deterministically, assigning larger
+cases first; ties use case ID and shard index. No peer builds share a runner
+or mutable output directory across shards.
+
+Local execution remains unsharded by default. To select a shard, set both
+`WIRE_COMPATIBILITY_SHARD_INDEX` (zero-based) and
+`WIRE_COMPATIBILITY_SHARD_COUNT`. Apply the same optional
+`WIRE_COMPATIBILITY_CASE_FILTER` to every shard. The selected set must contain
+at least as many cases as shards. Separate local shard runs need independent
+repository copies and output directories because case builds use shared
+project `obj` and `bin` paths.
+
+Each shard artifact contains `results.json`, `results.md`, sanitized `logs/`,
+`scenarios.tsv`, `plan.json`, and `shard.json`. The report job requires all
+shards, verifies their shared plan and RTI version, and rejects missing,
+duplicate, or misassigned exchanges and inconsistent counts. Any not-run row
+prevents publication of a complete combined report, including seeded rows
+left by an interrupted C++ setup. Unexpected setup errors retain their nonzero
+job exit even when a partial report is generated. Otherwise it regenerates
+the combined report from validated rows and logs, preserving failure details,
+adaptations, not-run outcomes, and the exclusion registry once. The combined
+artifact keeps the name `wire-compatibility-rti-7.7.0`; partial shard artifacts
+use a `-shard-<index>` suffix. Setup failures fail the workflow even if another
+shard completes; observed peer failures remain reported outcomes as before.
+
+The report job uses GitHub's official `actions/download-artifact` v8.0.2,
+pinned to commit `9000827ccba6bdab643e8b6fd33ac0654aef8333`, to collect same-run
+artifacts from the already used GitHub Actions publisher. It requires no RTI
+secret and introduces no application or generator package dependency. The
+existing weekly GitHub Actions Dependabot updates cover this action.
+
+Validate partitioning and merging without an RTI license:
+
+```powershell
+dotnet build tests/Wireloom.Dds.Generator.WireCompatibility/scripts/matrix-tools.cs --output tmp/shard-tools
+dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-shards.cs -- tmp/shard-tools/matrix-tools.dll
+```
+
+On Linux, also run `bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-harness.sh`
+to verify late setup errors keep their exit status while handled peer failures
+remain reportable outcomes.
+
+These checks compare sharded and unsharded JSON/Markdown and cover malformed
+or incomplete artifacts. The same verification runs in the report job.
+
 ## Implementation map for C# contributors
 
 Readers count lifecycle notifications (`ValidData=false`) separately from
@@ -140,9 +192,9 @@ wslc build -f tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile `
 
 The image pins the exact RTI 7.7.0 base image and installs .NET 10.0.400 plus
 the C++ build tools, including ccache. GitHub Actions builds this same image
-with BuildKit's GitHub Actions cache, scoped to RTI 7.7.0, so its package
-installation and .NET setup layers can be reused on later runs. The immutable
-RTI base image still needs to be pulled by each fresh runner. The image does
+in each shard with BuildKit's GitHub Actions cache, scoped to RTI 7.7.0,
+so its package installation and .NET setup layers can be reused on later runs.
+Each fresh runner still retrieves and loads the cached image layers. The image does
 not contain a license. The shell harness uses the .NET 10 C# file-based utility
 for manifest reading, type discovery, IDL include discovery, and report
 generation; Python is not required. Peer-build and exchange failures are

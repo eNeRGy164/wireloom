@@ -44,7 +44,11 @@ or ADRs first, then refresh this file and
   See [chapter 5](arc42/05-building-block-view.md).
 - **Runtime and deployment:** The manually triggered wire workflow targets RTI
   Connext 7.7.0 and compares Wireloom-generated C#, RTI-generated C#, and
-  RTI-generated C++ across all nine directed pairings for each fixture. Readers
+  RTI-generated C++ across all nine directed pairings for each fixture. Four
+  isolated runners balance whole cases by exchange count; a .NET-only report
+  job validates matching plans and complete coverage before merging evidence. Incomplete exchanges prevent merging; unexpected setup errors retain a nonzero job exit.
+  Shards load images through parallel cached Docker builds; shard zero exports
+  the shared build cache. Only RTI shard jobs receive the runtime license secret. Readers
   require and verify valid payloads while counting ordinary instance lifecycle
   notifications separately. The verifier normalizes discriminator widths;
   character fixtures use independent typed values and a single-byte C++

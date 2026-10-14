@@ -1,5 +1,18 @@
 # 6. Runtime view
 
+The manual wire workflow partitions whole cases across four independent runners.
+Each runner derives the same deterministic plan from all selected exchanges,
+assigns larger cases first to the currently smaller shard, and runs every
+fixture and pairing belonging to its cases. Each shard seeds its assigned
+exchanges before peer builds, preserving explicit not-run outcomes on failure.
+The report job requires all shard artifacts and verifies matching plans,
+versions, identities, and exact exchange coverage before regenerating one
+combined JSON and Markdown report. Duplicate or missing evidence fails the
+merge; peer failures remain visible scenario outcomes. Unexpected setup errors
+keep a nonzero job exit even after peer execution begins. Partial reports and
+seeded not-run rows remain available in shard artifacts, but any not-run row
+prevents publication of a complete combined report.
+
 Wire readers count `ValidData=false` instance lifecycle notifications without
 treating them as corrupted payloads. A writer may exit after acknowledgment
 before the reader takes its sample, producing a `NotAliveNoWriters`
