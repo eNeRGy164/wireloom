@@ -119,6 +119,12 @@ unexpected failures, not-run scenarios, and not-implemented cases. It also
 includes Adaptations and Problem / defect columns. Expected failures use ⚠️;
 the problem column separates observed symptoms from their expected-failure
 explanations, and `results.json` records both fields and their aggregate count.
+RTI C# generation, type-discovery, and compilation failures mark every pairing
+that requires that peer as failed (⛔), with the failed setup stage and the first
+compiler diagnostic when available. This records a confirmed peer setup defect;
+it does not claim that a DDS exchange executed. Wireloom and C++ pairings still
+run independently. Not-run status is reserved for exchanges without an observed
+failure, such as seeded scenarios left incomplete by an interrupted job.
 Cases that Wireloom cannot generate appear as not-implemented rows in both
 reports. Their pairing cells show ⛔, while the problem column identifies the
 diagnostic and links the tracked support issue. They are not counted as
