@@ -67,11 +67,15 @@ internal static class DynamicTypeEmitter
             writer.CloseBlock();
             writer.BlankLine();
             writer.OpenBlock("if (isInitialized)");
-            writer.WriteLine($"dynamicType = tsf.CreateTypeWithAccessInfo<{names.UnmanagedTypeName}>(dtf.BuildStruct()\n    .WithExtensibility(ExtensibilityKind.{extensibility})\n    .WithName(\"{idlTypeName}\"));");
+            writer.WriteLine($"dynamicType = tsf.CreateTypeWithAccessInfo<{names.UnmanagedTypeName}>(dtf.BuildStruct()");
+            writer.Indent();
+            writer.WriteLine($".WithExtensibility(ExtensibilityKind.{extensibility})");
+            writer.WriteLine($".WithName(\"{idlTypeName}\"));");
+            writer.Unindent();
             writer.WriteLine("return dynamicType;");
             writer.CloseBlock();
-            writer.WriteLine("isInitialized = true;");
             writer.BlankLine();
+            writer.WriteLine("isInitialized = true;");
         }
 
         writer.BlankLine();
@@ -118,6 +122,7 @@ internal static class DynamicTypeEmitter
             writer.OpenBlock("if (dynamicType != null && ((StructType)dynamicType).MemberCount == 0)");
             writer.WriteLine("tsf.SetStructMembers((StructType)dynamicType, members);");
             writer.CloseBlock();
+            writer.BlankLine();
             writer.WriteLine("isInitialized = false;");
         }
 

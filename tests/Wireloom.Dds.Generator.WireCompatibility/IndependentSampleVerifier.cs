@@ -52,6 +52,36 @@ internal static class IndependentSampleVerifier
             context);
     }
 
+    /// <summary>Checks the complete finite recursive tree through public members.</summary>
+    internal static void VerifyOptionalRecursiveArrayFixture(object expectedSample, object actualSample, string context)
+    {
+        VerifySnapshots(SnapshotRecursiveNode(expectedSample, depth: 0), SnapshotRecursiveNode(actualSample, depth: 0), context);
+    }
+
+    private static object SnapshotRecursiveNode(object sample, int depth)
+    {
+        if (depth > 2)
+        {
+            throw new InvalidDataException("Recursive fixture exceeds its expected tree depth.");
+        }
+
+        var type = sample.GetType();
+        var children = (Array?)type.GetProperty("children")!.GetValue(sample);
+        object[]? childSnapshots = null;
+        if (children is not null)
+        {
+            if (children.Rank != 1 || children.Length != 2)
+            {
+                throw new InvalidDataException("Recursive fixture children must have exactly two elements.");
+            }
+
+            childSnapshots = children.Cast<object?>().Select(child =>
+                SnapshotRecursiveNode(child ?? throw new InvalidDataException("Recursive fixture has a null child."), depth + 1)).ToArray();
+        }
+
+        return new { value = type.GetProperty("value")!.GetValue(sample), children = childSnapshots };
+    }
+
     private static object SnapshotOptionalAggregateManaged(object sample)
     {
         var sampleType = sample.GetType();

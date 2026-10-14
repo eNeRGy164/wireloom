@@ -101,7 +101,8 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
     /// <summary>Determines whether this member recursively refers to the containing runtime type.</summary>
     public bool IsRecursive(string runtimeTypeName) =>
-        IsSequence && string.Equals(ElementSupportType ?? ElementCSharpType, runtimeTypeName, StringComparison.Ordinal);
+        (IsSequence || (IsOptional && IsArray))
+        && string.Equals(ElementSupportType ?? ElementCSharpType, runtimeTypeName, StringComparison.Ordinal);
 
     public string ManagedPropertyAccessors => IsSequence && !IsOptional ? " { get; }" : " { get; set; }";
     public string ManagedPropertySummaryVerb => IsSequence && !IsOptional ? "Gets" : "Gets or sets";
@@ -299,7 +300,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
             return $"{targetPrefix}{EscapedName}?.Count ?? -1";
         }
 
-        if (IsOptional && IsArray)
+        if (IsOptional && IsArray && !HasAggregateElement)
         {
             return $"{targetPrefix}{EscapedName} is null ? -1 : {targetPrefix}{EscapedName}{ArraySourceEmitter.IndexExpression(ZeroIndices())}";
         }

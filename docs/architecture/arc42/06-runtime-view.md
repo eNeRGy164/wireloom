@@ -100,11 +100,12 @@ The matrix covers RTI Connext 7.7.0. Generated-code compatibility with RTI
 The RTI-positive `09-optional-aggregate-member` generates optional struct and
 union values. Its absent and present fixtures carry nested payloads, including
 typedef aliases, and are scheduled as independent exchanges across all nine
-directed pairings. Interoperability for this case is unverified until results
-are available from a licensed RTI 7.7.0 matrix run.
+directed pairings. All 18 exchanges passed in the licensed RTI 7.7.0 matrix
+on October 14, 2026.
 `05-array-of-sequences`
 is included despite warning DDSG0105: Wireloom currently maps the C# members to
-flat sequences while RTI C# and RTI C++ preserve the IDL arrays. Pairings that
+flat sequences, matching the retained RTI C# oracle, while RTI C++ preserves
+the IDL arrays. Pairings that
 include Wireloom C# fail endpoint discovery because RTI reports different
 member type kinds. The report marks those Wireloom cross-peer failures as
 expected; this case's wire test does not establish preservation of the two-slot
@@ -125,3 +126,15 @@ The wchar union's C++ peer uses a manually constructed RTI `DynamicType` because
 generation removes only the C#-ignored `@language_binding(FLAT_DATA)` annotation
 while retaining the type shape and XCDR2 requirement; this does not validate
 RTI's FlatData-specific C++ layout.
+
+The `09-optional-recursive-array` case has absent, present, and nested finite-tree
+fixtures. All 27 directed exchanges passed on October 14, 2026. Managed and C++
+peers use generated typed members and check the complete tree, including optional
+presence and child values, without requesting public recursive DynamicType.
+This case disables TypeObject/TypeCode propagation in participant QoS: RTI 7.7.0
+cannot register recursive types with default TypeObject v2. Both managed array
+peers start plugin metadata initialization in the harness before accessing the
+generated singleton, matching the RTI plugin's initialization requirements; its RTI
+C++ scratch source forwards the visited-node chain when initializing the array
+TypeCode. Reports identify these adaptations. The original IDL remains intact;
+these results do not establish unadapted RTI reference-peer interoperability.

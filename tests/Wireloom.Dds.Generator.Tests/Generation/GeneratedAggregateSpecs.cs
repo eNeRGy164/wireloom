@@ -298,9 +298,9 @@ public sealed class GeneratedAggregateSpecs
 
         // Assert
         var unmanaged = documents["OptionalAggregateCollections.Implementation.SampleUnmanaged.g.cs"].Source;
-        unmanaged.ShouldContain("items.FromNative<Item, ItemUnmanaged>(out Item[] itemsTemporary_, keysOnly: false, dimensions: new[] { 2 });");
+        unmanaged.ShouldContain("items.FromNative<Item, ItemUnmanaged>(out Item[] itemsTemporary_, keysOnly, dimensions: new[] { 2 });");
         unmanaged.ShouldContain("values.FromNative<Item, ItemUnmanaged>(out ISequence<Item> valuesTemporary_, keysOnly: false);");
-        unmanaged.ShouldContain("items.ToNative<Item, ItemUnmanaged>(sample.items, keysOnly: false, dimension: 2);");
+        unmanaged.ShouldContain("items.ToNative<Item, ItemUnmanaged>(sample.items, keysOnly, dimension: 2);");
         unmanaged.ShouldContain("values.ToNative<Item, ItemUnmanaged>(sample.values, 4);");
         unmanaged.ShouldContain("values.Initialize<Item, ItemUnmanaged>();");
     }

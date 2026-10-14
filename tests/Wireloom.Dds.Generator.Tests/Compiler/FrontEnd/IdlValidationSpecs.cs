@@ -545,6 +545,42 @@ public sealed class IdlValidationSpecs
         exception.Message.ShouldContain(targetType);
     }
 
+    [Theory]
+    [InlineData("struct Node { @optional Node children[2]; };")]
+    [InlineData("struct Node { @optional Node children[2][3]; };")]
+    [InlineData("typedef Node First; typedef First Second; struct Node { @optional Second children[2]; };")]
+    [InlineData("typedef Node Children[2]; struct Node { @optional Children children; };")]
+    public void AcceptsOptionalRecursiveFixedArrays(string source)
+    {
+        // Arrange
+        var input = Input("optional-recursive-array.idl", source);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents.ShouldNotBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("struct Node { @optional Node children[2]; Node inlineValue; };")]
+    [InlineData("struct Node { @optional Node value; };")]
+    [InlineData("struct Node { @optional Node children[2]; Node requiredChildren[2]; };")]
+    [InlineData("typedef Node Children[2]; struct Node { Children children; };")]
+    [InlineData("union Node switch(long) { case 0: @optional Node value; };")]
+    public void OptionalArraysDoNotHideRequiredValueCycles(string source)
+    {
+        // Arrange
+        var input = Input("required-recursive-array.idl", source);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Recursive value-type member");
+        exception.Input.Path.ShouldEndWith("required-recursive-array.idl");
+    }
+
     [Fact]
     public void ResolvesTypedefTargetsDeclaredLaterInTheCompilation()
     {

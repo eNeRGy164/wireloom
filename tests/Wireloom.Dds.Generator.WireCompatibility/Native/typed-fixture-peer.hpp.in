@@ -1,7 +1,7 @@
 #pragma once
 #include <sstream>
 #include <utility>
-#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE)
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE)
 // RTI's generated DynamicData API omits some string template instantiations.
 // Use RTI-generated typed C++ endpoints for these fixtures and compare the
 // complete generated sample value at the reader.
@@ -81,6 +81,25 @@ static int run_typed_fixture_peer(
         expected.payloadAlias = std::move(payload_alias);
         expected.choice = std::move(choice);
         expected.choiceAlias = std::move(choice_alias);
+    }
+#endif
+
+#ifdef WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE
+    if (fixture != "optional-absent" && fixture != "optional-present" && fixture != "optional-nested") {
+        throw std::runtime_error("Unknown optional recursive array fixture: " + fixture);
+    }
+    expected.value = 9801;
+    if (fixture != "optional-absent") {
+        ::dds::core::array<DdsType, 2> children;
+        children[0].value = 9811;
+        children[1].value = 9812;
+        if (fixture == "optional-nested") {
+            ::dds::core::array<DdsType, 2> grandchildren;
+            grandchildren[0].value = 9821;
+            grandchildren[1].value = 9822;
+            children[0].children = std::move(grandchildren);
+        }
+        expected.children = std::move(children);
     }
 #endif
 

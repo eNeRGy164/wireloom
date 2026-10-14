@@ -104,6 +104,9 @@ fixtures_for_case() {
         09-optional-collections)
             printf '%s\n' optional-absent optional-empty optional-single optional-multiple
             ;;
+        09-optional-recursive-array)
+            printf '%s\n' optional-absent optional-present optional-nested
+            ;;
         09-optional-aggregate-member)
             printf '%s\n' optional-absent optional-present
             ;;
@@ -681,6 +684,14 @@ for case_id in "${case_ids[@]}"; do
     fi
     if [[ "$case_id" == "09-optional-aggregate-member" ]]; then
         cmake_adaptation_args+=( -DWIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE=ON )
+    fi
+    if [[ "$case_id" == "09-optional-recursive-array" ]]; then
+        # RTI 4.7.0 omits the visited-node chain when initializing the recursive
+        # array element TypeCode, causing unbounded metadata recursion.
+        # Adjust scratch reference code only; the declared IDL shape is intact.
+        grep -F 'Node_g_tc_children_array._data._typeCode' "$native_dir/idl.cxx" >/dev/null
+        sed -i '/Node_g_tc_children_array._data._typeCode/s/::get().native()/::get(\&node).native()/' "$native_dir/idl.cxx"
+        cmake_adaptation_args+=( -DWIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE=ON )
     fi
     sed "s|@IDL_BASE@|idl|g; s|@CPP_TYPE@|$cpp_template_type|g" \
         "$native_template/main.cpp.in" > "$native_dir/main.cpp"

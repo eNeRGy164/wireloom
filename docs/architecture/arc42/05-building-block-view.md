@@ -80,3 +80,16 @@ records syntax and source context, binding resolves references and deferred
 bounds against the complete symbol graph, and validation applies semantic
 rules before emission planning begins. Emitters return generated documents to a
 central result boundary, which owns duplicate hint-name validation.
+
+Optional fixed-array members break recursive value-layout cycles because their
+native storage is indirect. Validation unwraps typedefs before identifying the
+array and preserves required-array and inline aggregate cycle diagnostics.
+Self-referencing optional arrays read `Support.Instance` in member metadata,
+matching RTI C#. Plugins do not emit a standalone support bootstrap call.
+Recursive sequences retain RTI's `GetOrCreateInstanceImpl()` member expression.
+Optional arrays retain fixed-array dimensions and `NativeManagedOptionalArray`
+conversions. Optional aggregate-array
+conversions forward `keysOnly` to the element support and preserve positional
+`optionalsOnly` cleanup.
+Optional aggregate-array hashing adds the first element when present and `-1`
+when absent, matching the RTI C# oracle.

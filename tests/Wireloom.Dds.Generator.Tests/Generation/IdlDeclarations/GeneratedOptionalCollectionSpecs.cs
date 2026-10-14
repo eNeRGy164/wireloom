@@ -7,6 +7,61 @@ namespace Wireloom.Generation.IdlDeclarations.Tests;
 [Trait("Corpus", "C039")]
 public sealed class GeneratedOptionalCollectionSpecs
 {
+    [Theory]
+    [InlineData("struct Node { @optional Node children[2]; };", "Node[]?", "2")]
+    [InlineData("struct Node { @optional Node children[2][3]; };", "Node[,]?", "2, 3")]
+    [InlineData("typedef Node First; typedef First Second; struct Node { @optional Second children[2]; };", "Node[]?", "2")]
+    public void EmitsRecursiveOptionalArraySupport(string source, string propertyType, string dimensions)
+    {
+        // Arrange
+        var input = Input("optional-recursive-array.idl", $"module RecursiveArrays {{ {source} }};");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["RecursiveArrays.Node.g.cs"].Source.ShouldContain($"public {propertyType} children {{ get; set; }}");
+        documents["RecursiveArrays.Implementation.NodeUnmanaged.g.cs"].Source.ShouldContain("private NativeManagedOptionalArray children;");
+        var plugin = documents["RecursiveArrays.Implementation.NodePlugin.g.cs"].Source;
+        plugin.ShouldContain("isRecursiveType = true");
+        plugin.ShouldContain("CreateArrayWithAccessInfo<NodeUnmanaged>");
+        plugin.ShouldContain("NodeSupport.Instance.GetDynamicTypeInternal(isPublic)");
+        plugin.ShouldContain("\n\n        isInitialized = true;\n\n        var members");
+        plugin.ShouldNotContain("GetOrCreateInstanceImpl");
+        plugin.ShouldContain("\n\n        isInitialized = false;");
+        plugin.ShouldContain("\n                .WithExtensibility(ExtensibilityKind.Extensible)");
+        plugin.ShouldContain($"new uint[] {{ {dimensions} }}");
+        plugin.ShouldNotContain("CreateSequenceWithAccessInfo");
+        var managed = documents["RecursiveArrays.Node.g.cs"].Source;
+        managed.ShouldContain("if (children is not null)");
+        managed.ShouldContain("hash.Add(children[");
+        managed.ShouldContain("hash.Add(-1);");
+        managed.ShouldNotContain("children is null ? -1");
+        documents["RecursiveArrays.NodeSupport.g.cs"].Source.ShouldContain("internal static NodeSupport GetOrCreateInstanceImpl()");
+    }
+
+    [Fact]
+    public void ForwardsKeysOnlyForOptionalArraysOfKeyedAggregates()
+    {
+        // Arrange
+        var input = Input("optional-keyed-array.idl",
+            """
+            module OptionalKeyedArrays {
+                struct Child { @key long id; long value; };
+                struct Parent { @optional Child children[2]; };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var native = documents["OptionalKeyedArrays.Implementation.ParentUnmanaged.g.cs"].Source;
+        native.ShouldContain("out Child[] childrenTemporary_, keysOnly, dimensions: new[] { 2 }");
+        native.ShouldContain("sample.children, keysOnly, dimension: 2");
+        native.ShouldContain("dimension: 2, optionalsOnly);");
+    }
+
     [Fact]
     public void EmitsOptionalSequenceArrayAndStringSurfaces()
     {

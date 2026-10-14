@@ -116,6 +116,17 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
 
             foreach (var field in fields)
             {
+                var valueType = field.Type;
+                while (valueType is IdlType.Alias alias)
+                {
+                    valueType = alias.Target;
+                }
+
+                if (field.Metadata.IsOptional && valueType is IdlType.Array)
+                {
+                    continue;
+                }
+
                 var target = GetValueTypeName(field.Type);
                 if (target is null)
                 {

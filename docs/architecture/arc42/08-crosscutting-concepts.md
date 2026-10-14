@@ -82,3 +82,9 @@ limits are deterministic rather than elapsed-time based. Exceeding either
 limit, invalid include operands, and cancellation reject the compilation
 instead of returning partial text. Physical line starts are indexed once so
 repeated `__LINE__` expansion remains linear in total input and output size.
+
+For optional arrays of aggregate elements, hashing uses an explicit presence
+branch: add the first aggregate element when present and add `-1` otherwise.
+An integer/aggregate conditional expression cannot be passed to generic
+`HashCode.Add<T>`. C134 checks this rule alongside nullable presence, deep copy,
+optional metadata, and native fixed-array conversion.

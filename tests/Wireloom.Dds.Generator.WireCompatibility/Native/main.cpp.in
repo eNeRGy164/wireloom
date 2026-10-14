@@ -61,6 +61,14 @@ int main(int argc, char **argv)
         const int timeout_seconds = std::stoi(argv[3]);
         const std::string case_id(argv[4]);
         const std::string fixture(argv[5]);
+#ifdef WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE
+        auto recursive_qos = dds::domain::DomainParticipant::default_participant_qos();
+        recursive_qos.policy<rti::core::policy::DomainParticipantResourceLimits>()
+            .type_object_max_serialized_length(0).type_code_max_serialized_length(0);
+        dds::domain::DomainParticipant recursive_participant(0, recursive_qos);
+        return run_typed_fixture_peer(
+            recursive_participant, role, topic_name, timeout_seconds, case_id, fixture);
+#endif
 #ifdef WIRELOOM_DYNAMIC_WCHAR_UNION
         dds::core::xtypes::UnionType dynamic_type(
             "CorpusWideCharacterUnion::Choice",
@@ -83,10 +91,10 @@ int main(int argc, char **argv)
         const auto &dynamic_type = rti::topic::dynamic_type<DdsType>::get();
 #endif
         dds::domain::DomainParticipant participant(0);
-#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE)
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE)
         if (case_id == "09-optional-string-sequences"
             || case_id == "04-strings" || case_id == "04-boundaries"
-            || case_id == "09-optional-aggregate-member") {
+            || case_id == "09-optional-aggregate-member" || case_id == "09-optional-recursive-array") {
             const bool needs_wide_sequence_workaround = case_id == "09-optional-string-sequences"
                 && (fixture == "optional-wide-only" || fixture == "optional-multiple");
             if (!needs_wide_sequence_workaround

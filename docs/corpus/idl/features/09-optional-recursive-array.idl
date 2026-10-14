@@ -1,0 +1,6 @@
+module CorpusOptionalRecursiveArray {
+    struct Node {
+        long value;
+        @optional Node children[2];
+    };
+};

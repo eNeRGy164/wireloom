@@ -46,12 +46,12 @@ internal class RecursivePlugin : InterpretedTypePlugin<Recursive, RecursiveUnman
         if (isInitialized)
         {
             dynamicType = tsf.CreateTypeWithAccessInfo<RecursiveUnmanaged>(dtf.BuildStruct()
-    .WithExtensibility(ExtensibilityKind.Extensible)
-    .WithName("CorpusAggregates::Recursive"));
+                .WithExtensibility(ExtensibilityKind.Extensible)
+                .WithName("CorpusAggregates::Recursive"));
             return dynamicType;
         }
-        isInitialized = true;
 
+        isInitialized = true;
 
         var members = new[]
         {
@@ -79,6 +79,7 @@ internal class RecursivePlugin : InterpretedTypePlugin<Recursive, RecursiveUnman
         {
             tsf.SetStructMembers((StructType)dynamicType, members);
         }
+
         isInitialized = false;
 
         return result;

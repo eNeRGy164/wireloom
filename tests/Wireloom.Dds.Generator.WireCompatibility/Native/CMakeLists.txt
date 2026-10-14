@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.16)
 # The RTI toolchain is supplied by the caller's pinned container environment.
 project(WireloomWirePeer LANGUAGES CXX)
 
+if(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE)
+    add_compile_definitions(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE)
+endif()
+
 find_package(RTIConnextDDS REQUIRED)
 
 file(GLOB_RECURSE RTI_GENERATED_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cxx")
