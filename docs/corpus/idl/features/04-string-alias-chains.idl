@@ -1,0 +1,15 @@
+module CorpusStringAliasChains {
+    typedef string NarrowText;
+    typedef NarrowText NarrowTextChain;
+
+    typedef string<16> BoundedNarrowText;
+    typedef BoundedNarrowText BoundedNarrowTextChain;
+    typedef BoundedNarrowTextChain BoundedNarrowTextChain2;
+
+    typedef wstring WideText;
+    typedef WideText WideTextChain;
+
+    typedef wstring<8> BoundedWideText;
+    typedef BoundedWideText BoundedWideTextChain;
+    typedef BoundedWideTextChain BoundedWideTextChain2;
+};
