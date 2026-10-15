@@ -33,7 +33,10 @@ or ADRs first, then refresh this file and
   Sequence typedef plans share the effective 100-element fallback across
   managed attributes, native allocation, and metadata. String typedefs import
   their bound attribute namespace and retain the effective 255-byte/code-unit
-  limit.
+  limit. Alias data classes retain their RTI formatting delegate; support
+  classes hide the nonvirtual default formatter for unsupported root kinds.
+  Loops and escaping stay in support documents. Wide-string alias annotations
+  preserve their wide kind/value so support instances initialize.
   Optional struct members whose value is a struct or union preserve null
   presence with `NativeManagedOptional` conversions and optional DynamicType
   metadata. Their DynamicType preserves declared typedef aliases to match RTI,
