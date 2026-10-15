@@ -40,7 +40,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     {
         switch (NativeChar.FromUtf8(_discriminator))
         {
-            case (char)254:
+            case (char)127:
             case (char)255:
                 sample.Setvalue(value, NativeChar.FromUtf8(_discriminator));
                 break;
@@ -76,7 +76,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
 
         switch (NativeChar.FromUtf8(_discriminator))
         {
-            case (char)254:
+            case (char)127:
             case (char)255:
                 value = sample.value;
                 break;
@@ -87,3 +87,4 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
         }
     }
 }
+

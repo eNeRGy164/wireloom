@@ -38,7 +38,7 @@ namespace CorpusNumericCharUnion
             {
                 switch (NativeChar.FromUtf8(_d))
                 {
-                    case 254:
+                    case 127:
                     case 255:
                     sample.Setvalue(value, NativeChar.FromUtf8(_d));
                     break;
@@ -60,7 +60,7 @@ namespace CorpusNumericCharUnion
                 _d = NativeChar.ToUtf8(sample.Discriminator);
                 switch (NativeChar.FromUtf8(_d))
                 {
-                    case 254:
+                    case 127:
                     case 255:
                     value = sample.value;
                     break;
@@ -86,7 +86,7 @@ namespace CorpusNumericCharUnion
                 // Choice union
                 var ChoiceStructMembers = new UnionMember[]
                 {
-                    new UnionMember("value", dtf.GetPrimitiveType<int>(), new int[] {(int) 254, (int) 255}, id: 1),
+                    new UnionMember("value", dtf.GetPrimitiveType<int>(), new int[] {(int) 127, (int) 255}, id: 1),
                     new UnionMember("fallback", dtf.GetPrimitiveType<int>(), new int[] {(int) UnionMember.DefaultLabel}, id: 2)
 
                 };
@@ -152,3 +152,4 @@ namespace CorpusNumericCharUnion
     }
 
 } // namespace CorpusNumericCharUnion
+

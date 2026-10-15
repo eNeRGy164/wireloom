@@ -36,7 +36,7 @@ internal class ChoicePlugin : InterpretedTypePlugin<Choice, ChoiceUnmanaged>
 
         var members = new[]
         {
-            new UnionMember("value", dtf.GetPrimitiveType<int>(), new[] { -2, -1 }, id: 1),
+            new UnionMember("value", dtf.GetPrimitiveType<int>(), new[] { 127, -1 }, id: 1),
             new UnionMember("fallback", dtf.GetPrimitiveType<int>(), new[] { UnionMember.DefaultLabel }, id: 2)
         };
 
@@ -70,3 +70,4 @@ internal class ChoicePlugin : InterpretedTypePlugin<Choice, ChoiceUnmanaged>
         return result;
     }
 }
+
