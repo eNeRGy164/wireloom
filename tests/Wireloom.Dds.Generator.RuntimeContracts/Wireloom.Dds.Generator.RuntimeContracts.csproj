@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <DdsIdl Include="Fixtures/*.idl" />
-    <DdsIdl Include="KnownFailures/$(RuntimeContractKnownFailure).idl" Condition="'$(RuntimeContractKnownFailure)' != ''" />
   </ItemGroup>
 
   <ItemGroup>
