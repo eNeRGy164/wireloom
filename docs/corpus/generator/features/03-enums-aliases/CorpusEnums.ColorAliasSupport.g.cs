@@ -30,4 +30,18 @@ public class ColorAliasSupport : TypeSupport<ColorAlias>
     /// <remarks>The generated plugin and unmanaged type are runtime implementation details; application code should use this support class and the managed typedef.</remarks>
     public static ColorAliasSupport Instance { get; } =
         ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<ColorAliasSupport, ColorAlias>();
+
+    /// <summary>
+    /// Formats an alias sample without using RTI's unsupported root DynamicData conversion.
+    /// </summary>
+    /// <param name="sample">The alias sample to format.</param>
+    /// <returns>Diagnostic text with invariant numbers, quoted collection strings, and RTI-formatted aggregate elements.</returns>
+    /// <remarks>This method hides RTI's nonvirtual default formatter. Calls through the base TypeSupport type and explicit print-format overloads retain RTI behavior. This diagnostic text is not a serialization format.</remarks>
+    /// <exception cref="global::System.ArgumentNullException">The sample is null.</exception>
+    public new string ToString(ColorAlias sample)
+    {
+        global::System.ArgumentNullException.ThrowIfNull(sample);
+
+        return sample.Value.ToString();
+    }
 }

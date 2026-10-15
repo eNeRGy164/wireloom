@@ -11,6 +11,27 @@ namespace Wireloom.Dds.Generator.RuntimeContracts.Aliases;
 /// <summary>Executes unbounded typedef contracts previously blocked by F1 compilation failures.</summary>
 public sealed class UnboundedAliasSpecs
 {
+    /// <summary>Checks the formatting fallback for every unbounded element family.</summary>
+    [Fact]
+    public void FormatsUnboundedElementFamilies()
+    {
+        // Arrange
+        var child = new Child { value = 17 };
+
+        // Act / Assert
+        new Text("hello").ToString().ShouldBe("hello");
+        new WideText("世界").ToString().ShouldBe("世界");
+        new Numbers(new Sequence<int> { 17 }).ToString().ShouldBe("[17]");
+        new NumbersChain(new Numbers(new Sequence<int> { 17 })).ToString().ShouldBe("[17]");
+        new States(new Sequence<State> { State.Ready }).ToString().ShouldBe("[Ready]");
+        new Children(new Sequence<Child> { child }).ToString().ShouldBe($"[{child}]");
+        new Scalars(new Sequence<Scalar> { new(17) }).ToString().ShouldBe("[17]");
+        new Texts(new Sequence<string> { "hello" }).ToString().ShouldBe("[\"hello\"]");
+        new WideTexts(new Sequence<string> { "世界" }).ToString().ShouldBe("[\"世界\"]");
+        new BoundedTexts(new Sequence<string> { "hello" }).ToString().ShouldBe("[\"hello\"]");
+        new BoundedWideTexts(new Sequence<string> { "世界" }).ToString().ShouldBe("[\"世界\"]");
+    }
+
     /// <summary>Checks default, value, and copy constructors for unbounded narrow and wide strings.</summary>
     [Fact]
     public void ConstructsAndCopiesUnboundedStrings()

@@ -18,7 +18,7 @@ internal static class CollectionAliasEmitter
             .. CollectionAliasManagedEmitter.Emit(declaration, names, plan, sourceIdlFileName),
             .. CollectionAliasPluginEmitter.Emit(declaration, names, plan, sourceIdlFileName),
             .. CollectionAliasNativeEmitter.Emit(declaration, names, plan, sourceIdlFileName),
-            .. CollectionAliasTypeSupportEmitter.Emit(declaration, names, sourceIdlFileName)
+            .. CollectionAliasTypeSupportEmitter.Emit(declaration, names, plan, sourceIdlFileName)
         ];
     }
 

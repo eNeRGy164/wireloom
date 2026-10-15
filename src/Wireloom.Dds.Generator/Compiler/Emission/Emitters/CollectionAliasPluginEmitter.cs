@@ -113,8 +113,9 @@ internal static class CollectionAliasPluginEmitter
             writer.OpenBrace();
             writer.WriteLine("var annotations = new Annotations(");
             writer.Indent();
-            writer.WriteLine("TypeKind.String,");
-            writer.WriteLine("defaultValue: new AnnotationParameterValue { StringValue = \"\" },");
+            var stringKind = declaration.IsWideString ? "WideString" : "String";
+            writer.WriteLine($"TypeKind.{stringKind},");
+            writer.WriteLine($"defaultValue: new AnnotationParameterValue {{ {stringKind}Value = \"\" }},");
             writer.WriteLine("minValue: null,");
             writer.WriteLine("maxValue: null,");
             writer.WriteLine("unit: null);");

@@ -30,4 +30,47 @@ public class CoordinateGridSupport : TypeSupport<CoordinateGrid>
     /// <remarks>The generated plugin and unmanaged type are runtime implementation details; application code should use this support class and the managed typedef.</remarks>
     public static CoordinateGridSupport Instance { get; } =
         ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<CoordinateGridSupport, CoordinateGrid>();
+
+    /// <summary>
+    /// Formats an alias sample without using RTI's unsupported root DynamicData conversion.
+    /// </summary>
+    /// <param name="sample">The alias sample to format.</param>
+    /// <returns>Diagnostic text with invariant numbers, quoted collection strings, and RTI-formatted aggregate elements.</returns>
+    /// <remarks>This method hides RTI's nonvirtual default formatter. Calls through the base TypeSupport type and explicit print-format overloads retain RTI behavior. This diagnostic text is not a serialization format.</remarks>
+    /// <exception cref="global::System.ArgumentNullException">The sample is null.</exception>
+    public new string ToString(CoordinateGrid sample)
+    {
+        global::System.ArgumentNullException.ThrowIfNull(sample);
+
+        var value = sample.Value;
+        if (value is null)
+        {
+            return "null";
+        }
+
+        var text = new global::System.Text.StringBuilder();
+        text.Append('[');
+        for (var index0 = value.GetLowerBound(0); index0 <= value.GetUpperBound(0); index0++)
+        {
+            if (index0 != value.GetLowerBound(0))
+            {
+                text.Append(", ");
+            }
+
+            text.Append('[');
+            for (var index1 = value.GetLowerBound(1); index1 <= value.GetUpperBound(1); index1++)
+            {
+                if (index1 != value.GetLowerBound(1))
+                {
+                    text.Append(", ");
+                }
+
+                text.Append(global::System.Convert.ToString(value[index0, index1], global::System.Globalization.CultureInfo.InvariantCulture));
+            }
+            text.Append(']');
+        }
+        text.Append(']');
+
+        return text.ToString();
+    }
 }
