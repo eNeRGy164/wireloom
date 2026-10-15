@@ -240,8 +240,8 @@ internal static class Program
         var choice = new CorpusNumericCharUnion.Choice();
         switch (fixture)
         {
-            case "union-254":
-                choice.Setvalue(13701, (char)254);
+            case "union-127":
+                choice.Setvalue(13701, (char)127);
                 break;
             case "union-255":
                 choice.Setvalue(13702, (char)255);

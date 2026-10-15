@@ -25,7 +25,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     public const char DefaultDiscriminator = '\0';
 
     /// <summary>
-    /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>254, 255</c>.
+    /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>127, 255</c>.
     /// </summary>
     /// <remarks>Reading this property while another branch is active throws <see cref="global::System.InvalidOperationException"/>. Assigning it stores the value and changes <see cref="Discriminator"/> to a label for this branch.</remarks>
     /// <exception cref="global::System.InvalidOperationException">The discriminator selects another branch or selects no branch.</exception>
@@ -33,7 +33,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     {
         get
         {
-            if (Discriminator != (char)254 && Discriminator != (char)255)
+            if (Discriminator != (char)127 && Discriminator != (char)255)
             {
                 throw new global::System.InvalidOperationException("value not selected");
             }
@@ -44,7 +44,7 @@ public partial class Choice : global::System.IEquatable<Choice>
         {
             _value = value;
 
-            Discriminator = (char)254;
+            Discriminator = (char)127;
         }
     }
 
@@ -59,7 +59,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// var choice = new Choice();
     /// choice.value = default!;
     /// var activeValue = choice.value;
-    /// choice.Setvalue(default!, (char)254);
+    /// choice.Setvalue(default!, (char)127);
     /// activeValue = choice.value;
     /// // Reading choice.fallback here throws InvalidOperationException because that branch is inactive.
     /// </code>
@@ -67,7 +67,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// <exception cref="global::System.ArgumentException">The discriminator does not select this branch.</exception>
     public void Setvalue(int value, char discriminator)
     {
-        if (!(discriminator == (char)254 || discriminator == (char)255))
+        if (!(discriminator == (char)127 || discriminator == (char)255))
         {
             throw new global::System.ArgumentException("Invalid discriminator value for value", nameof(discriminator));
         }
@@ -86,7 +86,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     {
         get
         {
-            if (Discriminator == (char)254 || Discriminator == (char)255)
+            if (Discriminator == (char)127 || Discriminator == (char)255)
             {
                 throw new global::System.InvalidOperationException("fallback not selected");
             }
@@ -126,7 +126,7 @@ public partial class Choice : global::System.IEquatable<Choice>
 
         switch (Discriminator)
         {
-            case (char)254:
+            case (char)127:
             case (char)255:
                 this._value = other.value;
                 break;
@@ -144,7 +144,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// <exception cref="global::System.ArgumentException">The discriminator selects an explicit branch.</exception>
     public void Setfallback(int value, char discriminator)
     {
-        if (discriminator == (char)254 || discriminator == (char)255)
+        if (discriminator == (char)127 || discriminator == (char)255)
         {
             throw new global::System.ArgumentException("Invalid discriminator value for fallback", nameof(discriminator));
         }
@@ -162,7 +162,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     {
         return Discriminator switch
         {
-            (char)254 or (char)255 => value,
+            (char)127 or (char)255 => value,
             _ => fallback,
         };
     }
@@ -174,7 +174,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     {
         return Discriminator switch
         {
-            (char)254 or (char)255 => global::System.HashCode.Combine(Discriminator, value),
+            (char)127 or (char)255 => global::System.HashCode.Combine(Discriminator, value),
             _ => global::System.HashCode.Combine(Discriminator, fallback),
         };
     }
@@ -198,7 +198,7 @@ public partial class Choice : global::System.IEquatable<Choice>
 
         return Discriminator switch
         {
-            (char)254 or (char)255 => value.Equals(other.value),
+            (char)127 or (char)255 => value.Equals(other.value),
             _ => fallback.Equals(other.fallback),
         };
     }
@@ -212,3 +212,4 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// <returns>A readable string formatted by the union's type-support instance.</returns>
     public override string ToString() => ChoiceSupport.Instance.ToString(this);
 }
+

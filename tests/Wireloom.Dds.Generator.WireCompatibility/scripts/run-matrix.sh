@@ -152,7 +152,7 @@ fixtures_for_case() {
             printf '%s\n' union-zero union-ten
             ;;
         07-union-char-numeric)
-            printf '%s\n' union-254 union-255 union-default
+            printf '%s\n' union-127 union-255 union-default
             ;;
         07-union-string-sequence-aliases)
             printf '%s\n' union-direct-narrow union-direct-wide union-alias-narrow union-alias-wide union-bounded-narrow union-bounded-wide

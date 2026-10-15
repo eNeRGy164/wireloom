@@ -34,7 +34,7 @@ namespace CorpusNumericCharUnion
         {
             get
             {
-                if (Discriminator != 254 && Discriminator != 255)
+                if (Discriminator != 127 && Discriminator != 255)
                 {
                     throw new InvalidOperationException("value not selected");
                 }
@@ -44,7 +44,7 @@ namespace CorpusNumericCharUnion
             set
             {
                 _value = value;
-                Discriminator = 254;
+                Discriminator = 127;
             }
         }
 
@@ -52,7 +52,7 @@ namespace CorpusNumericCharUnion
         {
             get
             {
-                if (Discriminator == 254 || Discriminator == 255)
+                if (Discriminator == 127 || Discriminator == 255)
 
                 {
                     throw new InvalidOperationException("fallback not selected");
@@ -82,7 +82,7 @@ namespace CorpusNumericCharUnion
             this.Discriminator = other.Discriminator;
             switch (Discriminator)
             {
-                case 254:
+                case 127:
                 case 255:
                 this._value = other.value;
                 break;
@@ -94,7 +94,7 @@ namespace CorpusNumericCharUnion
 
         public void Setvalue(int  value, char discriminator)
         {
-            if (discriminator != 254 && discriminator != 255)
+            if (discriminator != 127 && discriminator != 255)
             {
                 throw new ArgumentException("Invalid discriminator value for value", paramName: nameof(discriminator));
             }
@@ -103,7 +103,7 @@ namespace CorpusNumericCharUnion
         }
         public void Setfallback(int  fallback, char discriminator)
         {
-            if (discriminator == 254 || discriminator == 255)
+            if (discriminator == 127 || discriminator == 255)
 
             {
                 throw new ArgumentException("Invalid discriminator value for fallback", paramName: nameof(discriminator));
@@ -116,7 +116,7 @@ namespace CorpusNumericCharUnion
         {
             switch (Discriminator)
             {
-                case 254:
+                case 127:
                 case 255:
                 return value;
                 default:
@@ -129,7 +129,7 @@ namespace CorpusNumericCharUnion
         {
             switch (Discriminator)
             {
-                case 254:
+                case 127:
                 case 255:
                 return HashCode.Combine(Discriminator, this.value);
                 default:
@@ -156,7 +156,7 @@ namespace CorpusNumericCharUnion
 
             switch (Discriminator)
             {
-                case 254:
+                case 127:
                 case 255:
                 return this.value.Equals(other.value);
                 default:
@@ -170,3 +170,4 @@ namespace CorpusNumericCharUnion
     }
 
 } // namespace CorpusNumericCharUnion
+

@@ -185,11 +185,11 @@ public sealed class CorpusComplianceSpecs
         var generated = string.Join(Environment.NewLine, Compile(corpusCase).Values.Select(source => source.Source));
 
         // Act
-        var oracleContainsRawIntegerLabels = oracle.Contains("Discriminator != 254", StringComparison.Ordinal) &&
-            oracle.Contains("case 254:", StringComparison.Ordinal) &&
+        var oracleContainsRawIntegerLabels = oracle.Contains("Discriminator != 127", StringComparison.Ordinal) &&
+            oracle.Contains("case 127:", StringComparison.Ordinal) &&
             oracle.Contains("case 255:", StringComparison.Ordinal);
-        var generatedContainsCharacterCasts = generated.Contains("Discriminator != (char)254", StringComparison.Ordinal) &&
-            generated.Contains("case (char)254:", StringComparison.Ordinal) &&
+        var generatedContainsCharacterCasts = generated.Contains("Discriminator != (char)127", StringComparison.Ordinal) &&
+            generated.Contains("case (char)127:", StringComparison.Ordinal) &&
             generated.Contains("case (char)255:", StringComparison.Ordinal);
 
         // Assert

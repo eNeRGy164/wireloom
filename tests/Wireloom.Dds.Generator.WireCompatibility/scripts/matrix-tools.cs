@@ -581,7 +581,7 @@ void RenderReport(string[] commandArgs)
 
         if (id == "07-union-char-numeric")
         {
-            return "Compile the typed RTI C++ peer with unsigned char so generated branch guards can represent IDL char labels 254 and 255 on Linux.";
+            return "Compile the typed RTI C++ peer with unsigned char so generated branch guards can represent IDL char label 255 on Linux.";
         }
 
         if (id == "09-optional-string-sequences" && fixture is ("optional-wide-only" or "optional-multiple"))
