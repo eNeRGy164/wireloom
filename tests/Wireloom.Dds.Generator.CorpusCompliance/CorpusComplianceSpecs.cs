@@ -18,7 +18,7 @@ public sealed class CorpusComplianceSpecs
     public void CorpusManifestAndOracleLibraryHaveTheSameCaseSet()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(136);
+        cases.Length.ShouldBe(137);
         cases.ShouldBeUnique();
         CorpusRepository.OracleCaseIds.ShouldBe(cases.OrderBy(id => id, StringComparer.Ordinal).ToArray());
 
@@ -174,6 +174,27 @@ public sealed class CorpusComplianceSpecs
             .DescendantNodes().OfType<VariableDeclaratorSyntax>()
             .Single(variable => variable.Identifier.ValueText == "DefaultDiscriminator")
             .Initializer!.Value.ToString();
+    }
+
+    [Fact]
+    public void NumericCharacterUnionLabelsMatchTheRetainedRtiCSharpOracle()
+    {
+        // Arrange
+        var corpusCase = CorpusRepository.Cases.Single(item => item.Id == "07-union-char-numeric");
+        var oracle = string.Join(Environment.NewLine, CorpusRepository.OracleFiles(corpusCase).Select(File.ReadAllText));
+        var generated = string.Join(Environment.NewLine, Compile(corpusCase).Values.Select(source => source.Source));
+
+        // Act
+        var oracleContainsRawIntegerLabels = oracle.Contains("Discriminator != 254", StringComparison.Ordinal) &&
+            oracle.Contains("case 254:", StringComparison.Ordinal) &&
+            oracle.Contains("case 255:", StringComparison.Ordinal);
+        var generatedContainsCharacterCasts = generated.Contains("Discriminator != (char)254", StringComparison.Ordinal) &&
+            generated.Contains("case (char)254:", StringComparison.Ordinal) &&
+            generated.Contains("case (char)255:", StringComparison.Ordinal);
+
+        // Assert
+        oracleContainsRawIntegerLabels.ShouldBeTrue();
+        generatedContainsCharacterCasts.ShouldBeTrue();
     }
 
     [Theory]

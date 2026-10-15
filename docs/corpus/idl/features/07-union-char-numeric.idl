@@ -1,0 +1,9 @@
+module CorpusNumericCharUnion {
+    union Choice switch(char) {
+        case 254:
+        case 255:
+            long value;
+        default:
+            long fallback;
+    };
+};
