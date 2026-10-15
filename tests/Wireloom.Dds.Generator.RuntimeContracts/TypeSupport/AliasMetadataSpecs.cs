@@ -8,6 +8,24 @@ namespace Wireloom.Dds.Generator.RuntimeContracts.TypeSupport;
 /// <summary>Exercises metadata creation and support initialization for typedef families.</summary>
 public sealed class AliasMetadataSpecs
 {
+    /// <summary>Checks F3's wide-string annotation correction for both metadata visibilities.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CreatesWideStringAliasMetadata(bool isPublic)
+    {
+        // Arrange
+        const int bound = 16;
+
+        // Act
+        var type = WideTextPlugin.CreateDynamicType(isPublic).ShouldBeOfType<AliasType>();
+
+        // Assert
+        type.RelatedType.ShouldBeOfType<WideStringType>().Bounds.ShouldBe((uint)bound);
+        WideTextSupport.Instance.ShouldBeSameAs(WideTextSupport.Instance);
+        new WideText(new string('Ω', bound)).ToString().ShouldBe(new string('Ω', bound));
+    }
+
     /// <summary>Checks scalar and enum aliases and their chains.</summary>
     [Theory]
     [InlineData(false)]

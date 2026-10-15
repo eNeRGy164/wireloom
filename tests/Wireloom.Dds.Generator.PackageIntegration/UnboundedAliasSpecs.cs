@@ -10,6 +10,23 @@ namespace Wireloom.Dds.Generator.PackageIntegration;
 /// <summary>Checks F1 regression fixtures through a freshly packed analyzer.</summary>
 public sealed class UnboundedAliasSpecs
 {
+    /// <summary>Checks the packed analyzer's managed fallback for unsupported RTI root formatting.</summary>
+    [Fact]
+    public void FormatsAliasValuesWithoutRootDynamicData()
+    {
+        // Arrange
+        var text = new Text("hello");
+        var wideText = new WideText("世界");
+        var numbers = new Numbers(new Sequence<int> { 17, 18 });
+
+        // Act / Assert
+        text.ToString().ShouldBe("hello");
+        wideText.ToString().ShouldBe("世界");
+        WideTextSupport.Instance.ToString(wideText).ShouldBe("世界");
+        WideTextSupport.Instance.DynamicType.ShouldBeOfType<AliasType>().RelatedType.ShouldBeOfType<WideStringType>().Bounds.ShouldBe(255U);
+        numbers.ToString().ShouldBe("[17, 18]");
+    }
+
     /// <summary>Checks that the packed generator emits compilable unbounded aliases and consistent metadata.</summary>
     [Fact]
     public void CompilesUnboundedAliasesAndDescribesTheirEffectiveBounds()

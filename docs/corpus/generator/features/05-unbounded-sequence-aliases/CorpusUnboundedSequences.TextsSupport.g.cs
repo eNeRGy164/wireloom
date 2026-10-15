@@ -30,4 +30,88 @@ public class TextsSupport : TypeSupport<Texts>
     /// <remarks>The generated plugin and unmanaged type are runtime implementation details; application code should use this support class and the managed typedef.</remarks>
     public static TextsSupport Instance { get; } =
         ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<TextsSupport, Texts>();
+
+    /// <summary>
+    /// Formats an alias sample without using RTI's unsupported root DynamicData conversion.
+    /// </summary>
+    /// <param name="sample">The alias sample to format.</param>
+    /// <returns>Diagnostic text with invariant numbers, quoted collection strings, and RTI-formatted aggregate elements.</returns>
+    /// <remarks>This method hides RTI's nonvirtual default formatter. Calls through the base TypeSupport type and explicit print-format overloads retain RTI behavior. This diagnostic text is not a serialization format.</remarks>
+    /// <exception cref="global::System.ArgumentNullException">The sample is null.</exception>
+    public new string ToString(Texts sample)
+    {
+        global::System.ArgumentNullException.ThrowIfNull(sample);
+
+        var value = sample.Value;
+        if (value is null)
+        {
+            return "null";
+        }
+
+        var text = new global::System.Text.StringBuilder();
+        text.Append('[');
+        for (var index = 0; index < value.Count; index++)
+        {
+            if (index != 0)
+            {
+                text.Append(", ");
+            }
+
+            text.Append(FormatString(value[index]));
+        }
+        text.Append(']');
+
+        return text.ToString();
+    }
+
+    private static string FormatString(string? value)
+    {
+        if (value is null)
+        {
+            return "null";
+        }
+
+        var text = new global::System.Text.StringBuilder();
+        text.Append('"');
+        foreach (var character in value)
+        {
+            switch (character)
+            {
+                case '"':
+                    text.Append("\\\"");
+                    break;
+                case '\\':
+                    text.Append("\\\\");
+                    break;
+                case '\n':
+                    text.Append("\\n");
+                    break;
+                case '\r':
+                    text.Append("\\r");
+                    break;
+                case '\t':
+                    text.Append("\\t");
+                    break;
+                case '\b':
+                    text.Append("\\b");
+                    break;
+                case '\f':
+                    text.Append("\\f");
+                    break;
+                default:
+                    if (character < ' ')
+                    {
+                        text.Append("\\u");
+                        text.Append(((int)character).ToString("x4", global::System.Globalization.CultureInfo.InvariantCulture));
+                    }
+                    else
+                    {
+                        text.Append(character);
+                    }
+                    break;
+            }
+        }
+        text.Append('"');
+        return text.ToString();
+    }
 }

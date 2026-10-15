@@ -38,8 +38,8 @@ internal class WideTextPlugin : InterpretedTypePlugin<WideText, WideTextUnmanage
 
         {
             var annotations = new Annotations(
-                TypeKind.String,
-                defaultValue: new AnnotationParameterValue { StringValue = "" },
+                TypeKind.WideString,
+                defaultValue: new AnnotationParameterValue { WideStringValue = "" },
                 minValue: null,
                 maxValue: null,
                 unit: null);

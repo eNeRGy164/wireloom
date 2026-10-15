@@ -1,0 +1,13 @@
+module RuntimeAliasFormatting {
+    typedef string Text;
+    typedef Text Label;
+    typedef sequence<Text, 4> Texts;
+    typedef sequence<Label, 4> Labels;
+    typedef double Number;
+    typedef long double Extended;
+    typedef boolean Flag;
+    typedef char Character;
+    typedef sequence<double, 4> Numbers;
+    typedef long Cube[1][2][2];
+    typedef sequence<Numbers, 3> Rows;
+};
