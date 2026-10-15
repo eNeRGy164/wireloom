@@ -70,7 +70,8 @@ internal static class CollectionAliasEmitter
             declaration.IsSequence,
             declaration.IsArray,
             RequiresNativeValueCast(elementPlan),
-            elementNativeType);
+            elementNativeType,
+            sequenceBound: declaration.Bound);
     }
 
     private static bool RequiresNativeValueCast(EmissionTypePlan elementPlan)

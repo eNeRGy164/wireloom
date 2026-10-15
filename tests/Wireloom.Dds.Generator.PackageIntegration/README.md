@@ -27,6 +27,12 @@ pinned in the project file. The build writes generated C# files under the
 project's `obj` directory, and the tests exercise those generated types at
 compile time and at runtime.
 
+F1 regression inputs link the runtime contract suite's unbounded string and
+sequence fixtures. The packed analyzer must compile those declarations and
+execute native conversions at the existing effective limits of 255 string
+bytes and 100 sequence elements. Current validation is recorded in the
+[runtime contract evidence](../Wireloom.Dds.Generator.RuntimeContracts/EVIDENCE.md#f1-repair).
+
 ## .NET 8 consumer check
 
 Consumer support starts at .NET 8 with C# 12. Repository projects default to

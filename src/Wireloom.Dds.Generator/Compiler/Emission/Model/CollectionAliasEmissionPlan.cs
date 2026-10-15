@@ -9,7 +9,8 @@ internal sealed class CollectionAliasEmissionPlan(
     bool isSequence,
     bool isArray,
     bool nativeValueRequiresCast,
-    string? elementNativeType = null)
+    string? elementNativeType = null,
+    int? sequenceBound = null)
 {
     public EmissionTypePlan ElementPlan { get; } = elementPlan;
 
@@ -18,6 +19,9 @@ internal sealed class CollectionAliasEmissionPlan(
     public string ElementNativeType { get; } = elementNativeType ?? elementPlan.CSharpType;
 
     public bool IsSequence { get; } = isSequence;
+
+    /// <summary>Gets the effective sequence limit shared by managed, native, and metadata emission.</summary>
+    public int SequenceBound { get; } = sequenceBound ?? 100;
 
     public bool IsArray { get; } = isArray;
 

@@ -201,15 +201,15 @@ internal static class CollectionAliasNativeEmitter
         {
             if (isStringSequence)
             {
-                writer.WriteLine($"Value.Initialize(max: {declaration.Bound}, absoluteMax: {declaration.Bound}, maxStrLen: {stringSequenceBound}, allocateMemory);");
+                writer.WriteLine($"Value.Initialize(max: {plan.SequenceBound}, absoluteMax: {plan.SequenceBound}, maxStrLen: {stringSequenceBound}, allocateMemory);");
             }
             else if (collectionElementIsAggregate)
             {
-                writer.WriteLine($"Value.Initialize<{implementationElementType}, {collectionElementUnmanagedType}>(max: {declaration.Bound}, absoluteMax: {declaration.Bound}, allocateMemory);");
+                writer.WriteLine($"Value.Initialize<{implementationElementType}, {collectionElementUnmanagedType}>(max: {plan.SequenceBound}, absoluteMax: {plan.SequenceBound}, allocateMemory);");
             }
             else
             {
-                writer.WriteLine($"Value.Initialize<{implementationElementType}>(max: {declaration.Bound}, absoluteMax: {declaration.Bound}, allocateMemory);");
+                writer.WriteLine($"Value.Initialize<{implementationElementType}>(max: {plan.SequenceBound}, absoluteMax: {plan.SequenceBound}, allocateMemory);");
             }
         }
         else

@@ -1,0 +1,14 @@
+module RuntimeUnboundedSequence {
+    typedef sequence<long> Numbers;
+    enum State { Idle, Ready };
+    struct Child { long value; };
+    typedef long Scalar;
+    typedef sequence<State> States;
+    typedef sequence<Child> Children;
+    typedef sequence<Scalar> Scalars;
+    typedef sequence<string> Texts;
+    typedef sequence<wstring> WideTexts;
+    typedef sequence<string<8>> BoundedTexts;
+    typedef sequence<wstring<4>> BoundedWideTexts;
+    typedef Numbers NumbersChain;
+};
