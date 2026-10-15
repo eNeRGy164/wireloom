@@ -88,11 +88,12 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// Initializes a copy of another <see cref="Choice"/> union.
     /// </summary>
     /// <param name="other">The union to copy.</param>
-    /// <remarks>When <paramref name="other"/> is null, the constructor leaves the discriminator at its default and does not copy a branch value.</remarks>
+    /// <remarks>When <paramref name="other"/> is null, initializes the same discriminator and selected branch value as the parameterless constructor.</remarks>
     public Choice(Choice? other)
     {
         if (other is null)
         {
+            Discriminator = DefaultDiscriminator;
             return;
         }
 

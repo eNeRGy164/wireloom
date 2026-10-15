@@ -1,0 +1,22 @@
+module RuntimeUnionNullCopy {
+    struct Child { long id; };
+    typedef sequence<long, 4> Numbers;
+    typedef long Vector[2];
+    enum Mode { First = 7, Second = 9 };
+    enum NegativeMode { NegativeFirst = -7, NegativeSecond = -3 };
+    enum MixedMode { MixedFirst = -7, MixedZero = 0, MixedLast = 9 };
+    union ZeroScalar switch(boolean) { case FALSE: long number; case TRUE: long other; };
+    union BooleanDefault switch(boolean) { case FALSE: long number; default: Child child; };
+    union ZeroString switch(boolean) { case FALSE: string<16> text; case TRUE: long number; };
+    union ZeroAggregate switch(boolean) { case FALSE: Child child; case TRUE: long number; };
+    union ZeroSequence switch(boolean) { case FALSE: Numbers numbers; case TRUE: long number; };
+    union ZeroArray switch(boolean) { case FALSE: Vector vector; case TRUE: long number; };
+    union DefaultAggregate switch(long) { case 1: long number; default: Child child; };
+    union EnumNoDefault switch(Mode) { case First: long number; case Second: long other; };
+    union EnumWithDefault switch(Mode) { case First: long number; default: boolean flag; };
+    union EnumAggregate switch(Mode) { case First: Child child; default: long number; };
+    union NegativeLabels switch(long) { case -2: case -1: long number; default: boolean flag; };
+    union NegativeAndZero switch(long) { case -1: long negative; case 0: long zero; default: boolean flag; };
+    union NegativeEnum switch(NegativeMode) { case NegativeFirst: long number; case NegativeSecond: long other; };
+    union MixedEnum switch(MixedMode) { case MixedFirst: long number; case MixedZero: long zero; default: boolean flag; };
+};

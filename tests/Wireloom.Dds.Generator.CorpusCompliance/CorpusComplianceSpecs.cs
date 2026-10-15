@@ -148,6 +148,34 @@ public sealed class CorpusComplianceSpecs
         }
     }
 
+    /// <summary>Checks constructor defaults separately from the public API shape and default-branch setters.</summary>
+    [Theory]
+    [InlineData("07-unions", "0")]
+    [InlineData("07-union-octet", "0")]
+    [InlineData("07-union-uint8", "0")]
+    [InlineData("07-union-uint16", "0")]
+    [InlineData("07-union-uint32", "0")]
+    [InlineData("07-union-int8", "0")]
+    [InlineData("07-union-boolean", "false")]
+    public void UnionTypeDefaultsMatchXTypesAndTheRetainedOracle(string caseId, string expected)
+    {
+        // Arrange
+        var corpusCase = CorpusRepository.Cases.Single(item => item.Id == caseId);
+        var oracle = string.Join(Environment.NewLine, CorpusRepository.OracleFiles(corpusCase).Select(File.ReadAllText));
+
+        // Act
+        var generated = string.Join(Environment.NewLine, Compile(corpusCase).Values.Select(source => source.Source));
+
+        // Assert
+        DefaultExpression(oracle).ShouldBe(expected);
+        DefaultExpression(generated).ShouldBe(expected);
+
+        static string DefaultExpression(string source) => CSharpSyntaxTree.ParseText(source).GetRoot()
+            .DescendantNodes().OfType<VariableDeclaratorSyntax>()
+            .Single(variable => variable.Identifier.ValueText == "DefaultDiscriminator")
+            .Initializer!.Value.ToString();
+    }
+
     [Theory]
     [MemberData(nameof(CorpusCases))]
     public void EveryCorpusCaseMatchesItsExpectedAcceptance(CorpusCase corpusCase)

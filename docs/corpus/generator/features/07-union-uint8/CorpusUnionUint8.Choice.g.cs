@@ -23,7 +23,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// <summary>
     /// Gets the discriminator value used by the parameterless constructor.
     /// </summary>
-    public const byte DefaultDiscriminator = 1;
+    public const byte DefaultDiscriminator = 0;
 
     /// <summary>
     /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>0</c>.
@@ -109,11 +109,12 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// Initializes a copy of another <see cref="Choice"/> union.
     /// </summary>
     /// <param name="other">The union to copy.</param>
-    /// <remarks>When <paramref name="other"/> is null, the constructor leaves the discriminator at its default and does not copy a branch value.</remarks>
+    /// <remarks>When <paramref name="other"/> is null, initializes the same discriminator and selected branch value as the parameterless constructor.</remarks>
     public Choice(Choice? other)
     {
         if (other is null)
         {
+            Discriminator = DefaultDiscriminator;
             return;
         }
 

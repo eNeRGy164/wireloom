@@ -58,7 +58,7 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
         }
     }
 
-    /// <summary>Gets the managed discriminator value selected for the default branch.</summary>
+    /// <summary>Gets the XTypes default value of the discriminator type, independently of default branch labels.</summary>
     public string ManagedDefaultDiscriminator => ManagedDiscriminatorValue(FindDefaultDiscriminatorValue());
 
     /// <summary>Gets the branch selected by the managed default discriminator, if any.</summary>
@@ -197,12 +197,7 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
             return DiscriminatorDefaultValue ?? 0;
         }
 
-        if (DefaultBranch is null)
-        {
-            return 0;
-        }
-
-        return FindUnoccupiedDiscriminatorValue();
+        return 0;
     }
 
     private long FindUnoccupiedDiscriminatorValue()
@@ -274,6 +269,7 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
         "char" when value == 0 => "'\\0'",
         "char" => $"(char){value}",
         _ when DiscriminatorIsEnum && value == 0 => "0",
+        _ when DiscriminatorIsEnum && value < 0 => $"({ManagedEnumTypeReference()})({value.ToString(CultureInfo.InvariantCulture)})",
         _ when DiscriminatorIsEnum => $"({ManagedEnumTypeReference()}){value}",
         _ => value.ToString(CultureInfo.InvariantCulture)
     };

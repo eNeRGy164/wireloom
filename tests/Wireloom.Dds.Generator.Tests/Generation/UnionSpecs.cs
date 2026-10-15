@@ -463,6 +463,13 @@ public sealed class UnionSpecs
         var constructor = managed[constructorStart..managed.IndexOf("public Choice(Choice? other)", constructorStart, StringComparison.Ordinal)];
         constructor.ShouldContain("Discriminator = DefaultDiscriminator;");
         constructor.ShouldContain("_payload = new Payload();");
+        var copyStart = managed.IndexOf("public Choice(Choice? other)", StringComparison.Ordinal);
+        var copyBranchStart = managed.IndexOf("Discriminator = other.Discriminator;", copyStart, StringComparison.Ordinal);
+        var nullCopy = managed[copyStart..copyBranchStart];
+        nullCopy.ShouldContain("if (other is null)");
+        nullCopy.ShouldContain("Discriminator = DefaultDiscriminator;");
+        nullCopy.ShouldContain("_payload = new Payload();");
+        managed[copyBranchStart..].ShouldNotContain("_payload = new Payload();");
     }
 
     [Fact]
@@ -612,9 +619,11 @@ public sealed class UnionSpecs
         exhaustiveEnumChoice.ShouldContain("Discriminator = (Kind)2;");
 
         var integerChoice = documents["Example.IntegerChoice.g.cs"].Source;
+        integerChoice.ShouldContain("public const int DefaultDiscriminator = 0;");
         integerChoice.ShouldContain("Discriminator = 1;");
 
         var booleanChoice = documents["Example.BooleanChoice.g.cs"].Source;
+        booleanChoice.ShouldContain("public const bool DefaultDiscriminator = false;");
         booleanChoice.ShouldContain("Discriminator = true;");
     }
 

@@ -8,7 +8,7 @@ namespace Wireloom.Compiler.Emission.Tests;
 public sealed class EmissionUnionPlanSpecs
 {
     [Fact]
-    public void AllocatesTheFirstUnoccupiedDiscriminatorForTheDefaultBranch()
+    public void SeparatesTypeDefaultFromDefaultBranchSelection()
     {
         // Arrange
         var explicitBranch = CreateBranch("first", ["One", "Two"], [0, 1]);
@@ -20,7 +20,8 @@ public sealed class EmissionUnionPlanSpecs
         var branchDiscriminator = plan.BranchDiscriminator(defaultBranch);
 
         // Assert
-        defaultDiscriminator.ShouldBe("2");
+        defaultDiscriminator.ShouldBe("0");
+        plan.DefaultDiscriminatorBranch.ShouldBeSameAs(explicitBranch);
         branchDiscriminator.ShouldBe("2");
     }
 
@@ -110,19 +111,22 @@ public sealed class EmissionUnionPlanSpecs
         defaultSetter.ShouldBe("discriminator && !discriminator");
     }
 
-    [Fact]
-    public void UsesTheDeclaredEnumDefaultDiscriminator()
+    [Theory]
+    [InlineData(3, "(ChoiceKind)3")]
+    [InlineData(-7, "(ChoiceKind)(-7)")]
+    [InlineData(0, "0")]
+    public void UsesTheDeclaredEnumDefaultDiscriminator(int value, string expression)
     {
         // Arrange
         var branch = CreateBranch("first", ["First"], [0]);
-        var plan = CreateUnion("Choice", "ChoiceKind", discriminatorIsEnum: true, discriminatorDefaultValue: 3, [branch]);
+        var plan = CreateUnion("Choice", "ChoiceKind", discriminatorIsEnum: true, discriminatorDefaultValue: value, [branch]);
 
         // Act
         var defaultDiscriminator = plan.ManagedDefaultDiscriminator;
         var nativeDiscriminatorType = plan.NativeDiscriminatorType;
 
         // Assert
-        defaultDiscriminator.ShouldBe("(ChoiceKind)3");
+        defaultDiscriminator.ShouldBe(expression);
         nativeDiscriminatorType.ShouldBe("ChoiceKind");
     }
 
@@ -149,7 +153,7 @@ public sealed class EmissionUnionPlanSpecs
             CultureInfo.CurrentCulture = customCulture;
 
             // Act
-            var defaultDiscriminator = plan.ManagedDefaultDiscriminator;
+            var defaultDiscriminator = plan.BranchDiscriminator(defaultBranch);
 
             // Assert
             defaultDiscriminator.ShouldBe("-128");
@@ -229,7 +233,7 @@ public sealed class EmissionUnionPlanSpecs
             [branch, fallback], discriminatorIdlType: discriminatorIdlType);
 
         // Act
-        Func<string> selectDefault = () => plan.ManagedDefaultDiscriminator;
+        Func<string> selectDefault = () => plan.BranchDiscriminator(fallback);
 
         // Assert
         if (isExhaustive)
@@ -254,7 +258,7 @@ public sealed class EmissionUnionPlanSpecs
         var plan = CreateUnion("Choice", discriminatorType, discriminatorIsEnum: false, discriminatorDefaultValue: null, [defaultBranch]);
 
         // Act
-        var defaultDiscriminator = plan.ManagedDefaultDiscriminator;
+        var defaultDiscriminator = plan.BranchDiscriminator(defaultBranch);
 
         // Assert
         defaultDiscriminator.ShouldBe("0");
@@ -269,10 +273,11 @@ public sealed class EmissionUnionPlanSpecs
         var plan = CreateUnion("Choice", "char", discriminatorIsEnum: false, discriminatorDefaultValue: null, [explicitBranch, defaultBranch]);
 
         // Act
-        var defaultDiscriminator = plan.ManagedDefaultDiscriminator;
+        var defaultDiscriminator = plan.BranchDiscriminator(defaultBranch);
 
         // Assert
         defaultDiscriminator.ShouldBe("(char)1");
+        plan.ManagedDefaultDiscriminator.ShouldBe("'\\0'");
     }
 
     [Fact]
@@ -284,7 +289,7 @@ public sealed class EmissionUnionPlanSpecs
         var plan = CreateUnion("Choice", "bool", discriminatorIsEnum: false, discriminatorDefaultValue: null, [explicitBranch, defaultBranch]);
 
         // Act
-        var exception = Should.Throw<InvalidOperationException>(() => plan.ManagedDefaultDiscriminator);
+        var exception = Should.Throw<InvalidOperationException>(() => plan.BranchDiscriminator(defaultBranch));
 
         // Assert
         exception.Message.ShouldContain("no representable default discriminator");
