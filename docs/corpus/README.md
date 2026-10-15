@@ -39,10 +39,10 @@ The current inventory contains:
 
 | Group                    | Count | Location                             |
 | ------------------------ | ----: | ------------------------------------ |
-| Positive feature cases   |    70 | [`idl/features`](idl/features)       |
+| Positive feature cases   |    72 | [`idl/features`](idl/features)       |
 | Negative cases           |    60 | [`idl/negative`](idl/negative)       |
 | Integration entry points |     4 | [`idl/integration`](idl/integration) |
-| Total                    |   134 | —                                    |
+| Total                    |   136 | —                                    |
 
 Each case has a manifest ID, such as `01-primitives`, and a stable `C###`
 provenance tag. Tags are used by the feature index and test diagnostics.
@@ -169,3 +169,6 @@ dotnet run --project tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.
 ```
 
 Rejected cases are omitted because they do not produce generated sources.
+
+Unbounded typedef cases C135/C136 and their typed RTI C# runtime probe are
+documented in [unbounded typedef evidence](UNBOUNDED-ALIASES.md).

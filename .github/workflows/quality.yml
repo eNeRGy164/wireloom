@@ -42,7 +42,17 @@ jobs:
           cache-dependency-path: '**/packages.lock.json'
 
       - name: Restore locked dependencies
-        run: dotnet restore $env:RUNTIME_TEST_PROJECT --locked-mode
+        run: |
+          dotnet restore $env:RUNTIME_TEST_PROJECT --locked-mode
+          dotnet restore tests/Wireloom.Dds.Generator.WireCompatibility/RtiOracleProbe/RtiOracleProbe.csproj --locked-mode
+        shell: pwsh
+
+      - name: Check retained RTI C# unbounded alias oracle
+        run: >-
+          dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility/RtiOracleProbe/RtiOracleProbe.csproj
+          --no-restore --configuration Release
+          -p:RtiOracleProgram=UnboundedAliasProbe.cs
+          '-p:RtiOracleSourceDir=../../../docs/corpus/oracles/features/*-unbounded-*-aliases'
         shell: pwsh
 
       - name: Test runtime contracts

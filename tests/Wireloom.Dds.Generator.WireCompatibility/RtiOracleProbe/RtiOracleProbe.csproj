@@ -11,14 +11,15 @@
     <RtiOracleSourceDir Condition="'$(RtiOracleSourceDir)' == ''"></RtiOracleSourceDir>
     <RtiOracleSource Condition="'$(RtiOracleSource)' == ''">../../../docs/corpus/oracles/features/05-array-of-sequences/05-array-of-sequences.cs</RtiOracleSource>
     <RtiOraclePlugin Condition="'$(RtiOraclePlugin)' == ''">../../../docs/corpus/oracles/features/05-array-of-sequences/05-array-of-sequencesPlugin.cs</RtiOraclePlugin>
+    <RtiOracleProgram Condition="'$(RtiOracleProgram)' == ''">../Program.cs</RtiOracleProgram>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />
     <Using Remove="Shouldly;Xunit" />
-    <Compile Include="../Program.cs" Link="Program.cs" />
-    <Compile Include="../FixtureCatalog.cs" Link="FixtureCatalog.cs" />
-    <Compile Include="../IndependentSampleVerifier.cs" Link="IndependentSampleVerifier.cs" />
+    <Compile Include="$(RtiOracleProgram)" Link="Program.cs" />
+    <Compile Include="../FixtureCatalog.cs" Link="FixtureCatalog.cs" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
+    <Compile Include="../IndependentSampleVerifier.cs" Link="IndependentSampleVerifier.cs" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
     <Compile Include="$(RtiOracleSourceDir)/**/*.cs" Condition="'$(RtiOracleSourceDir)' != ''" />
     <Compile Include="$(RtiOracleSource)" Link="RtiOracle.cs" Condition="'$(RtiOracleSourceDir)' == ''" />
     <Compile Include="$(RtiOraclePlugin)" Link="RtiOraclePlugin.cs" Condition="'$(RtiOracleSourceDir)' == ''" />

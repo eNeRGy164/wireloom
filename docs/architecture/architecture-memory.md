@@ -30,6 +30,10 @@ or ADRs first, then refresh this file and
   Aggregate members and raw collection elements declared through struct or
   union typedef chains use the underlying aggregate type in generated APIs and
   native conversions; standalone typedef declarations remain generated.
+  Sequence typedef plans share the effective 100-element fallback across
+  managed attributes, native allocation, and metadata. String typedefs import
+  their bound attribute namespace and retain the effective 255-byte/code-unit
+  limit.
   Optional struct members whose value is a struct or union preserve null
   presence with `NativeManagedOptional` conversions and optional DynamicType
   metadata. Their DynamicType preserves declared typedef aliases to match RTI,
@@ -63,7 +67,10 @@ or ADRs first, then refresh this file and
   invalidation, and supply-chain controls apply across the system. Build-time
   generated runtime contract fixtures execute typed managed/native/support
   APIs on Windows and Linux, with separate generated-source coverage and
-  explicit deferred findings. RTI C# is a baseline, not an API ceiling;
+  explicit deferred findings. Retained unbounded typedef RTI C# oracles also
+  run typed API/native probes on both platforms, confirming default bounds and
+  independent aggregate element copying; scalar sequence wrapper APIs differ.
+  RTI C# is a baseline, not an API ceiling;
   improvements supported by RTI C++ evidence retain separate wire verification.
   See
   [chapter 8](arc42/08-crosscutting-concepts.md) and the [incremental baseline](../performance/incremental-generator-baseline.md).

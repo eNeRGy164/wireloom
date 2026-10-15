@@ -26,6 +26,8 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "03-alias-collections",
         "04-strings",
         "04-boundaries",
+        "04-unbounded-string-aliases",
+        "05-unbounded-sequence-aliases",
         "05-collections",
         "05-shapes",
         "05-array-of-sequences",

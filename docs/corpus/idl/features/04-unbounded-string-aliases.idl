@@ -1,0 +1,4 @@
+module CorpusUnboundedStrings {
+    typedef string Text;
+    typedef wstring WideText;
+};
