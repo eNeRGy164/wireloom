@@ -143,6 +143,24 @@ keeping fixture variations grouped without repeating the same filename.
 Wireloom-positive selection is independent of RTI oracle status. Each run's
 report records outcomes for the selected fixtures and pairings.
 
+The recently added positive corpus cases C135–C140 have fixtures that exercise
+their declared variations rather than default-only samples:
+
+| Case | Wire fixtures | Variation checked |
+| --- | --- | --- |
+| C135 `04-unbounded-string-aliases` | `string-empty`, `string-boundary` | Empty narrow/wide aliases and 255-character narrow/wide values. |
+| C136 `05-unbounded-sequence-aliases` | `sequence-empty`, `sequence-multiple` | Empty and two-element sequences across primitive, enum, aggregate, scalar-alias, narrow/wide, and bounded-string element aliases. |
+| C137 `07-union-char-numeric` | `union-254`, `union-255`, `union-default` | Both high-valued explicit char labels and a default-label branch. Wireloom C# self-exchanges cover all three; RTI C# code generation fails with CS0266, and RTI C++ reports type incompatibility for Wireloom pairings plus a wrong member value on its 254/255 self-round trips. Its default self-round trip passes. The C++ peer uses unsigned-char compilation to reach those branches. |
+| C138 `04-string-alias-chains` | `string-empty`, `string-boundary` | Empty values and exact narrow/wide bounds through bounded and unbounded alias chains. |
+| C139 `07-union-string-sequence-aliases` | `union-direct-narrow`, `union-direct-wide`, `union-alias-narrow`, `union-alias-wide`, `union-bounded-narrow`, `union-bounded-wide` | Direct, alias, and bounded-alias branches with three sequence elements; bounded branches include strings at their declared length limits. Wireloom C# and RTI C++ pairings pass (24/24); the 30 RTI C# pairings fail with `FromDynamicData` `NullReferenceException`. |
+| C140 `07-union-string-sequence-bounded-direct` | narrow/wide `empty` and `multiple` | Empty and three-element direct bounded sequence branches, including strings at the element bounds. All nine pairings pass. |
+
+Expected failures remain individual matrix outcomes with fixture and pairing
+scope in `wire-case-exclusions.json`; they do not suppress the exchange or turn
+an observed peer failure into a pass. Check the generated report when an oracle
+failure changes, because Wireloom self-coverage, RTI API behavior, and DDS wire
+interoperability are separate evidence.
+
 `05-array-of-sequences` is included in the matrix. DDSG0105 warns that its
 generated C# binding flattens
 the IDL array shape, and RTI rejects the resulting C# and C++ types during
