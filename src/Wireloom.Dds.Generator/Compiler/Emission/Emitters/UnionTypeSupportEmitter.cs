@@ -23,7 +23,10 @@ internal static class UnionTypeSupportEmitter
 
         var writer = EmissionSupport.CreateSource(
             names.ImplementationNamespace,
-            EmissionSupport.GetUnmanagedTypeUsings(declaration.Branches.Select(branch => branch.Plan), usesNativeChar: declaration.UsesNativeCharDiscriminator),
+            EmissionSupport.GetUnmanagedTypeUsings(
+                declaration.Branches.Select(branch => branch.Plan),
+                usesSequence: declaration.Branches.Any(branch => branch.Plan.IsSequence),
+                usesNativeChar: declaration.UsesNativeCharDiscriminator),
             sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI native representation for <see cref=\"{typeName}\"/>.");

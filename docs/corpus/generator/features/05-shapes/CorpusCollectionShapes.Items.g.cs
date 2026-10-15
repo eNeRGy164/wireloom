@@ -52,7 +52,7 @@ public partial class Items : global::System.IEquatable<Items>
             return;
         }
 
-        Value = new Sequence<Item>(other.Value);
+        Value = new Sequence<Item>(global::System.Linq.Enumerable.Select(other.Value, element => new Item(element)));
     }
 
     /// <inheritdoc />

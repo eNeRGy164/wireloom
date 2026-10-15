@@ -52,7 +52,7 @@ public partial class Scalars : global::System.IEquatable<Scalars>
             return;
         }
 
-        Value = new Sequence<Scalar>(other.Value);
+        Value = new Sequence<Scalar>(global::System.Linq.Enumerable.Select(other.Value, element => new Scalar(element)));
     }
 
     /// <inheritdoc />

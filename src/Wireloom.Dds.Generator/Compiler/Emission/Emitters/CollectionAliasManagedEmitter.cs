@@ -70,7 +70,10 @@ internal static class CollectionAliasManagedEmitter
             writer.WriteLine("return;");
             writer.CloseBlock();
             writer.BlankLine();
-            writer.WriteLine($"Value = new Sequence<{elementReference}>(other.Value);");
+            var copiedSequence = plan.CollectionElementIsAggregate
+                ? $"global::System.Linq.Enumerable.Select(other.Value, element => new {elementReference}(element))"
+                : "other.Value";
+            writer.WriteLine($"Value = new Sequence<{elementReference}>({copiedSequence});");
             writer.CloseBlock();
             writer.BlankLine();
 

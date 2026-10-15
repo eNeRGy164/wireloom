@@ -52,7 +52,7 @@ public partial class Children : global::System.IEquatable<Children>
             return;
         }
 
-        Value = new Sequence<Child>(other.Value);
+        Value = new Sequence<Child>(global::System.Linq.Enumerable.Select(other.Value, element => new Child(element)));
     }
 
     /// <inheritdoc />
