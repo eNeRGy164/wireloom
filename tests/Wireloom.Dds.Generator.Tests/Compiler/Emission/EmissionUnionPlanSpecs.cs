@@ -280,6 +280,31 @@ public sealed class EmissionUnionPlanSpecs
         plan.ManagedDefaultDiscriminator.ShouldBe("'\\0'");
     }
 
+    [Theory]
+    [InlineData("char", 254)]
+    [InlineData("wchar", 937)]
+    public void FormatsNumericCharacterLabelsAsCharacterExpressions(string discriminatorIdlType, int labelValue)
+    {
+        // Arrange
+        var label = labelValue.ToString(CultureInfo.InvariantCulture);
+        var branch = CreateBranch("value", [label], [labelValue]);
+        var plan = CreateUnion(
+            "Choice",
+            "char",
+            discriminatorIsEnum: false,
+            discriminatorDefaultValue: null,
+            [branch],
+            discriminatorIdlType: discriminatorIdlType);
+
+        // Act
+        var expression = plan.ManagedDiscriminatorLabel(label);
+
+        // Assert
+        expression.ShouldBe($"(char){label}");
+        plan.BranchDiscriminator(branch).ShouldBe(expression);
+        plan.SelectionCondition(branch, negated: false).ShouldBe($"Discriminator == {expression}");
+    }
+
     [Fact]
     public void RejectsAnExhaustiveBooleanDefaultBranchAtEmissionPlanning()
     {

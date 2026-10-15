@@ -210,7 +210,7 @@ internal static class UnionTypeSupportEmitter
 
             foreach (var label in branch.Labels)
             {
-                writer.WriteLine($"case {label}:");
+                writer.WriteLine($"case {declaration.ManagedDiscriminatorLabel(label)}:");
             }
 
             writer.Indent();

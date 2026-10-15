@@ -267,7 +267,7 @@ internal static class UnionEmitter
         writer.WriteXmlParam("value", $"The value for the {branch.Field.Name} branch.");
         writer.WriteXmlParam("discriminator", "A discriminator value selecting this branch.");
         writer.WriteXmlRemarks($"Assigning the <c>{branch.Field.Name}</c> property selects the first label listed in its documentation. Use this method to select another valid label for the same branch.");
-        writer.WriteXmlExample($"var choice = new {IdlNaming.TypeReference(declaration.Name, declaration.Namespace)}();\nchoice.{branch.Plan.EscapedName} = default!;\nvar activeValue = choice.{branch.Plan.EscapedName};\nchoice.{methodName}(default!, {branch.Labels[0]});\nactiveValue = choice.{branch.Plan.EscapedName};{inactiveReadNote}");
+        writer.WriteXmlExample($"var choice = new {IdlNaming.TypeReference(declaration.Name, declaration.Namespace)}();\nchoice.{branch.Plan.EscapedName} = default!;\nvar activeValue = choice.{branch.Plan.EscapedName};\nchoice.{methodName}(default!, {declaration.ManagedDiscriminatorLabel(branch.Labels[0])});\nactiveValue = choice.{branch.Plan.EscapedName};{inactiveReadNote}");
         writer.WriteXmlException("global::System.ArgumentException", "The discriminator does not select this branch.");
         writer.OpenBlock($"public void {methodName}({IdlNaming.TypeReference(branch.Plan.CSharpType, declaration.Namespace)} value, {ManagedDiscriminatorType(declaration)} discriminator)");
         writer.OpenBlock($"if (!({validLabels}))");
