@@ -40,6 +40,19 @@ support. This matches RTI's generated C# shape: raw arrays and sequences of
 aggregate aliases expose initialized aggregate values and convert through the
 aggregate's native type support.
 
+Collection alias emission plans resolve an omitted sequence bound to the
+existing effective limit of 100 elements. Managed attributes and summaries,
+native allocation, and DynamicType metadata consume that same resolved bound;
+the semantic declaration retains whether the IDL supplied an explicit bound.
+String typedefs retain their effective 255-byte/code-unit limit and import the
+attribute namespace whenever their generated value property uses `Bound`.
+Retained corpus cases C135/C136 confirm these defaults against RTI-generated
+C# with a typed runtime probe on Windows and Linux. The probe also records
+RTI's independent aggregate sequence element copies and its scalar sequence
+element typedef erasure; Wireloom currently retains scalar wrappers. These
+are API observations, with no new wire compatibility claim. See
+[the unbounded typedef evidence](../../corpus/UNBOUNDED-ALIASES.md).
+
 Optional struct members whose value type is a struct or union use nullable
 managed references and `NativeManagedOptional` storage. Their conversion plan
 uses the aggregate's native type support, while DynamicType metadata marks the

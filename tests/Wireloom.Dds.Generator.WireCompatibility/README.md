@@ -6,6 +6,10 @@ The peer package version is selected by
 `WireCompatibilityRtiVersion` (default `7.7.0`); use the matching exact RTI
 toolchain to generate and build the reference peers.
 
+The nested `RtiOracleProbe` also supports a typed, local API probe of retained
+unbounded typedef oracles. See [commands and observations](../../docs/corpus/UNBOUNDED-ALIASES.md).
+It runs without a DDS exchange and supplies separate runtime API evidence.
+
 Each case has a curated fixture catalog. Every fixture is sent in a separate
 producer/consumer exchange with its own topic and report row across all nine
 directed pairings of Wireloom C#, RTI C#, and RTI C++. Fixtures contrast optional presence per member,
