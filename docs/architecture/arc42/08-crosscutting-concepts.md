@@ -62,6 +62,14 @@ a more capable managed API; interoperability claims still require wire
 verification. The current behavior below is not a requirement to reproduce
 every RTI limitation in future APIs.
 
+Alias diagnostic formatting intentionally improves on RTI C#'s unsupported
+scalar and collection root formatting. Struct and union formatting continues
+through RTI; aliases needing a fallback use a hidden typed instance method in
+their existing support class rather than embedding loops in the data class.
+Invariant numbers, readable Unicode, quoted collection strings, and nested
+array dimensions are executable runtime contracts. This is diagnostic output,
+with separate evidence from serialization and DDS interoperability.
+
 - Array hash codes use the first element, not the array length. This preserves
   RTI's intentionally weak hash behavior. Empty arrays are not a supported
   input for this generated hash path.

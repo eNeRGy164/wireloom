@@ -119,3 +119,66 @@ succeeds for wide-string metadata, and deep-copies aggregate sequence elements
 (F5 baseline). Its scalar sequence element API erases typedef wrappers, while
 Wireloom retains them. See [commands and findings](../../docs/corpus/UNBOUNDED-ALIASES.md).
 No additional serialization or DDS wire claim is made.
+
+## F2 RTI comparison
+
+A typed probe compiled the exact alias fixture through RTI Code Generator
+4.7.0.1 and compared its formatting with freshly emitted Wireloom types.
+On Windows (.NET 10.0.12) and Linux (.NET 10.0.11), RTI reproduced all 15 F2
+failures; three struct/struct-alias controls formatted successfully. Wireloom
+matched, with wide-string formatting blocked earlier by F3's metadata error.
+These are 18 observations per implementation/platform, not passing formatting
+contracts. The generator remains unchanged; [full evidence and commands](F2-EVIDENCE.md)
+retain F2 as a desired API improvement beyond the observed RTI C# baseline.
+
+## F2 repair and support-class layout
+
+The original RTI C# comparison above is historical. F2 is now implemented:
+managed aliases retain `Support.Instance.ToString(this)`, and their existing
+support classes declare `public new string ToString(Alias sample)` for the
+unsupported root kinds. Loops and escaping stay out of the managed data class.
+Struct and union roots/elements retain their RTI formatter. Base-typed calls
+and explicit print-format overloads retain RTI behavior; a separate runtime
+characterization verifies nonvirtual base dispatch. Null samples throw
+`ArgumentNullException`, while null underlying values format as `null`.
+
+The original RTI factory, singleton, and support constructors are unchanged.
+F3 is fixed as a prerequisite: wide-string aliases now use RTI's
+`TypeKind.WideString` and `WideStringValue` annotations. Both metadata
+visibilities, support initialization, and formatting pass regular tests.
+The RTI-generated oracle remains unchanged.
+
+Exact runtime checks cover all 15 original F2 shapes, null/empty values,
+Unicode and string escaping, invariant numbers, nested sequences, three array
+dimensions, the unbounded element families, original aggregate output, support
+singleton identity, and the explicit-format overload's availability.
+The unrelated F8 string-array native generic compilation failure is isolated
+in `KnownFailures/string-array-aliases.idl`; no new string-array runtime
+capability or DDS wire compatibility is claimed.
+Final support-instance implementation validation:
+
+| Gate                                              | Result                                                                   |
+| ------------------------------------------------- | ------------------------------------------------------------------------ |
+| Locked restores / Release builds                  | Passed                                                                   |
+| Full generator suite                              | 1,240 passed                                                             |
+| Runtime suite, Windows and Linux                  | 475 passed, 2 existing skips (F4/F5) on each platform                    |
+| Corpus compliance with source export              | 280 passed, no skips                                                     |
+| Fresh `0.3.0-f2-instance` package integration     | 16 passed                                                                |
+| Maintained-source branch coverage                 | 4,711 / 5,010 (94.03%)                                                   |
+| Maintained-source line coverage                   | 6,942 / 7,010 (99.03%)                                                   |
+| New formatting emitter branch/line coverage       | 100% / 100% for both focused emitters                                    |
+| Generated-fixture branch coverage, both platforms | 1,005 / 1,468 (68.46%)                                                   |
+| Generated-fixture line coverage, both platforms   | 3,833 / 4,906 (78.13%)                                                   |
+| Generated report validation                       | 341 generated classes; positive branch counters; authored tests excluded |
+| Community Qodana                                  | Exit 0; successful SARIF invocation; 0 findings; `Done`                  |
+| CI / Coveralls                                    | Pending push and workflow execution                                      |
+
+Coverage uses the existing root `coverage.settings.xml`; results are under
+`coverage/f2-generator`, `coverage/f2-runtime`, and `coverage/f2-runtime-linux`.
+The new formatter emitters have full branch coverage. The expanded generated
+fixture report includes additional support/value methods and repeated
+formatting branches that the suite does not execute for every fixture type;
+its aggregate percentage is not full API coverage. Review it against the
+matrix and remaining findings rather than treating F2/F3 as completion of #39.
+The expected native diagnostic in the base-dispatch characterization records
+RTI's original failure; the generated support call in the same test succeeds.

@@ -53,6 +53,21 @@ element typedef erasure; Wireloom currently retains scalar wrappers. These
 are API observations, with no new wire compatibility claim. See
 [the unbounded typedef evidence](../../corpus/UNBOUNDED-ALIASES.md).
 
+Alias formatting keeps RTI type-support formatting for struct and union roots
+and aggregate elements. Scalar, enum, and string roots use their managed
+values because RTI's root DynamicData formatting rejects those kinds.
+Aliases retain their original one-line `Support.Instance.ToString(this)`
+delegate. For unsupported root kinds, the generated support class declares
+`public new string ToString(Alias sample)`, hiding RTI's nonvirtual default
+formatter. Collection loops and string escaping stay in the support document,
+preserving dimensions, order, Unicode, and quoted string elements. Base-typed
+calls and explicit print-format overloads retain RTI behavior. The original
+support factory and singleton initialization remain unchanged. Wide-string
+alias annotations use `WideStringValue` and `TypeKind.WideString`, matching
+RTI and allowing the support instance to initialize. These diagnostic helpers
+add no runtime dependency or new serialization behavior. See the
+[F2 comparison and contract](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/F2-EVIDENCE.md).
+
 Optional struct members whose value type is a struct or union use nullable
 managed references and `NativeManagedOptional` storage. Their conversion plan
 uses the aggregate's native type support, while DynamicType metadata marks the
