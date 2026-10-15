@@ -80,7 +80,7 @@ jobs:
         shell: pwsh
 
       - name: Test generator
-        run: dotnet test $env:TEST_PROJECT --no-restore --configuration Release
+        run: dotnet run --project $env:TEST_PROJECT --no-restore --configuration Release
         shell: pwsh
 
       - name: Test corpus compliance
@@ -102,7 +102,7 @@ jobs:
         shell: pwsh
 
       - name: Test packed package
-        run: dotnet test $env:PACKAGE_INTEGRATION_TEST_PROJECT --no-restore --configuration Release
+        run: dotnet run --project $env:PACKAGE_INTEGRATION_TEST_PROJECT --no-restore --configuration Release
         shell: pwsh
 
       - name: Pack release package
