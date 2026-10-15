@@ -1,0 +1,145 @@
+# Generated API runtime contracts
+
+This project implements the detection layer for
+[#39](https://github.com/eNeRGy164/wireloom/issues/39). Small IDL fixtures are
+compiled by the current generator during the build. Tests call generated C#
+APIs directly, including internal plugins in the same assembly. There is no
+runtime Roslyn compilation, reflection-based invocation, or Python execution.
+
+The goal is **RTI C# or better**. Existing documentation, IDL semantics, and
+retained RTI evidence establish expectations. RTI implementation quirks are
+characterization evidence, not an automatic ceiling on the API. Improvements
+beyond RTI C# can use RTI C++ support as evidence, but interoperability claims
+still require independent wire verification. API execution, serialization, and
+DDS wire compatibility remain distinct evidence categories.
+
+## Run
+
+From the repository root, using the pinned SDK:
+
+```powershell
+$project = 'tests/Wireloom.Dds.Generator.RuntimeContracts/Wireloom.Dds.Generator.RuntimeContracts.csproj'
+dotnet restore $project --locked-mode
+dotnet run --project $project --no-restore --configuration Release
+```
+
+Use Microsoft.Testing.Platform filters after `--`, for example
+`-- --filter-namespace Wireloom.Dds.Generator.RuntimeContracts.Native`.
+The suite uses RTI 7.7.0 native libraries supplied by the existing NuGet package.
+It creates no domain participants and requires no DDS peers, discovery, or RTI
+generator installation. A native-loading failure is a test failure, not a skip.
+The quality workflow executes the suite on Windows and Ubuntu; preview and
+release workflows run it before packaging for integration validation.
+
+## Ownership and organization
+
+- `Fixtures`: authored IDL and small typed sample factories. Each module owns
+  its own generated types, independently of corpus snapshots.
+- `Managed`: defaults, constructors, property mutation, equality, hashing,
+  formatting, and struct/valuetype inheritance.
+- `Unions`: selection, invalid access, transitions, copies, and supported
+  discriminator kinds.
+- `Aliases`: scalar, enum, string, aggregate, union, collection, and chain APIs.
+- `Native`: allocation, conversions, key filtering, and destruction. The generic
+  helper owns its native struct locally; native storage is never passed by
+  value to cleanup helpers. Every allocation has `try/finally` full cleanup.
+- `TypeSupport`: observable RTI metadata and support initialization.
+- `KnownFailures`: isolated compile inputs and explicitly skipped desired
+  contracts. These gaps prevent a claim that #39 is complete.
+
+RTI's `allocateMemory=false` mode requires existing backing storage for strings
+and arrays. `NativeSample` allocates storage first for those cases, then invokes
+initialization with the requested flags. This tests reuse of valid storage,
+rather than attempting conversion through unallocated pointers. The helper
+exercises optional-only destruction before full cleanup; dedicated lifecycle
+tests also read required data after optional-only cleanup and verify absence.
+
+## Coverage matrix
+
+Names below identify test classes; theory parameters identify concrete shapes,
+members, discriminator labels, and allocation/key combinations in test results.
+
+| Generated API / shape                                               | Executable tests                                                                                                                                                         | Gaps / interpretation                                                                                                                                                           |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Scalar defaults, value constructor, null/non-null copy, properties  | `ScalarSpecs`                                                                                                                                                            | Null copy retains initializers; constructor-only IDL defaults do not run                                                                                                        |
+| Scalar equality overloads and hash consistency                      | `ScalarSpecs`, `ScalarEqualitySpecs`                                                                                                                                     | Each primitive width, char/wchar, enum, string/wstring, and explicit default is changed independently                                                                           |
+| Aggregate/collection defaults, copies, properties, equality, hashes | `CollectionSpecs`, `CollectionEqualitySpecs`                                                                                                                             | Required/optional, absent/present, bounded/unbounded sequences, primitive/aggregate/string elements, vector/matrix                                                              |
+| Struct and valuetype inheritance                                    | `InheritanceSpecs`, `AggregateNativeSpecs`                                                                                                                               | Inherited data, optional members, equality, hashing, formatting, and conversion                                                                                                 |
+| Union construction, discriminators, properties, `Get`, setters      | `UnionSpecs`, `DiscriminatorSpecs`                                                                                                                                       | Explicit, multiple, default, inactive, and no-active-branch paths; null-copy gap F4                                                                                             |
+| Union copies, equality, hashes, formatting                          | `UnionSpecs`, `DiscriminatorSpecs`                                                                                                                                       | Primitive, aggregate, sequence, array, default branches; independent collection copies                                                                                          |
+| Supported discriminator kinds                                       | `DiscriminatorSpecs`                                                                                                                                                     | Boolean, int8/uint8, octet, short/ushort, long/ulong, char/wchar, enum, typedef; 64-bit discriminators are unsupported corpus cases, not runtime fixtures                       |
+| Typedef constructors, `Value`, copies, equality, hashes             | `ScalarAliasSpecs`, `AggregateAliasSpecs`, `CollectionAliasSpecs`, `UnionAliasSpecs`, `ReferenceOwnershipSpecs`                                                          | Scalar/enum/string/wstring/aggregate/union/sequence/array/chains; value-constructor reference ownership; unbounded typedef compile gaps F1; aggregate sequence copy decision F5 |
+| `ToString` through type support                                     | `ScalarSpecs`, `CollectionSpecs`, `InheritanceSpecs`, `UnionSpecs`, `DiscriminatorSpecs`, `AliasMetadataSpecs`, `UnionAliasSpecs`                                        | Primitive/string/collection typedef formatting remains F2; wide-string alias support remains F3                                                                                 |
+| Native `Initialize`, `ToNative`, `FromNative`, both cleanup modes   | `AggregateNativeSpecs`, `ScalarAliasNativeSpecs`, `AggregateAliasNativeSpecs`, `CollectionAliasNativeSpecs`, `UnionNativeSpecs`, `DiscriminatorSpecs`, `UnionAliasSpecs` | All allocation flag pairs; enum/strings/wstrings, aliases/chains, arrays/matrices, bounded/unbounded sequences, optional values/collections, inheritance, every union branch    |
+| Key-only behavior in each direction                                 | `AggregateNativeSpecs.FiltersKeysInEachDirection`, `NestedKeySpecs`, alias/union native theories                                                                         | Independent source/native/destination sentinels; nested key propagation; optional aggregate-array forwarding                                                                    |
+| Metadata creation and `Instance`                                    | `MetadataSpecs`, `AliasMetadataSpecs`, `RuntimeSmokeSpecs`                                                                                                               | Both visibility values, member types/IDs/keys/optionals, bounds, dimensions, enum values, aliases, inheritance, multi/default/signed-char labels; F3 blocks wide-string aliases |
+
+Enums do not generate managed constructors/equality methods or native sample
+representations of their own; enum-bearing samples, aliases, metadata, and
+support cover the applicable APIs. Getter-only sequences are mutated through
+their containers. Array hash tests require valid fixed-size arrays and assert
+equal-value consistency, not particular numbers or stronger hash distribution.
+
+## Known findings
+
+All findings remain associated with [#39](https://github.com/eNeRGy164/wireloom/issues/39).
+Separate GitHub issue publication was blocked by automatic approval review;
+these local findings and executable reproductions are retained for follow-up.
+No generator behavior is changed by this suite.
+
+| ID  | Finding and evidence                                                                                                                                                 | Reproduction / disposition                                                                                                                                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F1  | Unbounded string/wstring typedefs emit `[Bound]` without the `Omg.Types` import; unbounded sequence typedefs emit missing bounds in `Initialize` and plugin metadata | `KnownFailures/unbounded-strings.idl`, `unbounded-sequence.idl`; compile failures, runtime coverage deferred                                                                                                |
+| F2  | Scalar/enum/string typedef `ToString` reaches an unsupported RTI DynamicData kind; array/sequence typedefs reach unsupported `FromCdrBuffer` kinds                   | `RuntimeGapSpecs.FormatsAliasValues`; 15 named shape rows in one skipped theory; aggregate/union alias formatting passes                                                                                    |
+| F3  | Bounded wstring alias metadata supplies narrow-string annotations; RTI reports annotation kind mismatch                                                              | `RuntimeGapSpecs.CreatesWideStringAliasMetadata`; both visibility values and `Instance` are blocked; direct native wstring alias conversion passes                                                          |
+| F4  | Null-source union copy returns before setting a nonzero `DefaultDiscriminator`, selecting a different branch                                                         | `RuntimeGapSpecs.NullUnionCopyKeepsTheDefaultBranch`; desired default behavior is skipped separately from passing union tests                                                                               |
+| F5  | Aggregate sequence typedef copy creates a new container but shares mutable elements                                                                                  | Passing `ChildrenPreservesItsValueContract` characterizes current behavior; skipped `CopiesAggregateSequenceElementsIndependently` records a proposed ownership improvement, not an assumed IDL requirement |
+| F6  | Accepted numeric char/wchar labels emit integer expressions where C# requires char values, producing CS0266                                                          | `KnownFailures/numeric-character-labels.idl`; literal-label equivalents pass at runtime; semantic/RTI acceptance requires follow-up evidence                                                                |
+
+Reproduce each compile failure independently:
+
+```powershell
+dotnet build $project --no-restore --configuration Release -p:RuntimeContractKnownFailure=unbounded-strings
+dotnet build $project --no-restore --configuration Release -p:RuntimeContractKnownFailure=unbounded-sequence
+dotnet build $project --no-restore --configuration Release -p:RuntimeContractKnownFailure=numeric-character-labels
+```
+
+Each command is expected to fail. Omit the property on the next normal build.
+The known inputs are explicit generation roots only in these opt-in builds.
+To investigate a skipped runtime contract, remove its `Skip` locally and run
+the focused test; do not convert an unexpected exception into a passing API
+contract. MTP reports a skipped theory as one skipped test rather than expanding
+its individual rows.
+
+## Generated-source coverage
+
+Maintained-source and generated-fixture reports remain separate for inspection.
+The Coveralls job waits for both runtime jobs, downloads their reports into
+separate directories, and builds the fixtures so their generated sources exist
+in the upload workspace. A file-based C# script normalizes source paths across
+Windows and Linux and rejects missing source files. The Coveralls action then
+discovers and submits the generator report and both runtime reports together.
+The shared root `coverage.settings.xml` includes the generator and runtime
+contract assemblies, retains generated fixture sources under `obj`, and
+excludes authored runtime test code by namespace. Other test assemblies and
+build intermediates remain excluded.
+Microsoft's [coverage configuration](https://github.com/microsoft/codecoverage/blob/main/docs/configuration.md)
+places `IncludeTestAssembly` directly under `Configuration`; omitting it can
+produce an empty report because MTP excludes test assemblies by default.
+
+```powershell
+dotnet run --project $project --no-restore --configuration Release -- `
+  --coverage --coverage-settings coverage.settings.xml `
+  --coverage-output generated.cobertura.xml --coverage-output-format cobertura `
+  --results-directory coverage/runtime
+dotnet run --file tests/Wireloom.Dds.Generator.RuntimeContracts/scripts/verify-coverage.cs -- coverage/runtime/generated.cobertura.xml
+```
+
+The file-based C# verifier rejects empty reports, missing branch counters,
+missing fixture families, and reports containing authored test sources. Review
+branch coverage first, then line coverage and uncovered methods against the
+matrix. The report includes unused fixture support APIs and known failures;
+it is not a claim of full generated API coverage.
+
+Actual commands, platform versions, pass counts, coverage counters, and remaining
+validation limits are recorded in [EVIDENCE.md](EVIDENCE.md).

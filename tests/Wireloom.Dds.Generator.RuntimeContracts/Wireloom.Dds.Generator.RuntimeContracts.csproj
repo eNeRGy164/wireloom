@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Wireloom.Dds.Generator.RuntimeContracts</RootNamespace>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Rti.ConnextDds" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DdsIdl Include="Fixtures/*.idl" />
+    <DdsIdl Include="KnownFailures/$(RuntimeContractKnownFailure).idl" Condition="'$(RuntimeContractKnownFailure)' != ''" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="scripts/**/*.cs" />
+  </ItemGroup>
+
+  <Import Project="../../src/Wireloom.Dds.Generator/build/Wireloom.Dds.Generator.targets" />
+</Project>

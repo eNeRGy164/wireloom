@@ -1,0 +1,5 @@
+// Opt-in compile reproduction: -p:RuntimeContractKnownFailure=numeric-character-labels
+module RuntimeNumericCharacterLabels {
+    union Narrow switch(char) { case 254: long value; };
+    union Wide switch(wchar) { case 937: long value; };
+};

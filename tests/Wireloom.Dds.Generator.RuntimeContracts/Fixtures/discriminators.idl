@@ -1,0 +1,16 @@
+module RuntimeDiscriminators {
+    enum State { Idle, Ready };
+    typedef long Discriminator;
+    union BooleanChoice switch(boolean) { case FALSE: long number; case TRUE: long other; };
+    union SignedByteChoice switch(int8) { case 0: long number; case 1: long other; };
+    union UnsignedByteChoice switch(uint8) { case 0: long number; case 1: long other; };
+    union OctetChoice switch(octet) { case 0: long number; case 1: long other; };
+    union ShortChoice switch(short) { case 0: long number; case 1: long other; };
+    union UnsignedShortChoice switch(unsigned short) { case 0: long number; case 1: long other; };
+    union IntChoice switch(long) { case 0: long number; case 1: long other; };
+    union UnsignedIntChoice switch(unsigned long) { case 0: long number; case 1: long other; };
+    union CharacterChoice switch(char) { case 'a': long number; case 'þ': long other; };
+    union WideCharacterChoice switch(wchar) { case 'a': long number; case 'Ω': long other; };
+    union EnumChoice switch(State) { case Idle: long number; case Ready: long other; };
+    union AliasChoice switch(Discriminator) { case 0: long number; case 1: long other; };
+};

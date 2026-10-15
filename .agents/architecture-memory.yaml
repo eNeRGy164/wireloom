@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-14T22:25:46Z
+  generated_at: 2026-10-15T05:30:54Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -59,15 +59,15 @@ summary:
     sources:
       - docs/architecture/arc42/07-deployment-view.md
   cross_cutting:
-    text: Evidence vocabulary, deterministic inputs and invalidation, explicit compiler stages, diagnostics, test separation, deterministic preprocessing limits, and supply-chain controls apply across the system.
+    text: Evidence vocabulary, deterministic inputs and invalidation, explicit compiler stages, diagnostics, test separation, deterministic preprocessing limits, and supply-chain controls apply across the system. Build-time generated runtime fixtures execute typed managed, native, and support APIs on Windows and Linux, with separate generated-source coverage and explicit deferred findings. RTI C# is a baseline, not an API ceiling; improvements supported by RTI C++ evidence require separate wire verification.
     sources:
       - docs/architecture/arc42/08-crosscutting-concepts.md
   decisions:
-    text: Roslyn hosting, explicit roots, independent semantic modeling, project-wide root metadata, explicit parse-bind-validate phases, explicit runtime ownership, case-level evidence, separated compiler orchestration/resolution/emission, bounded preprocessing work, manually triggered wire evidence targeting exact RTI 7.7.0, preservation of declared alias metadata for optional aggregate members to match RTI, inclusion of warning-only Wireloom-positive cases, and union metadata normalization matching RTI C++ while preserving managed discriminator ranges are current decisions. The wire matrix distinguishes Wireloom C#, RTI C#, and RTI C++ endpoints and exercises all directed pairings; RTI-positive cases rejected by Wireloom remain visible as not implemented.
+    text: Roslyn hosting, explicit roots, independent semantic modeling, project-wide root metadata, explicit parse-bind-validate phases, explicit runtime ownership, case-level evidence, separated compiler orchestration/resolution/emission, bounded preprocessing work, manually triggered wire evidence targeting exact RTI 7.7.0, preservation of declared alias metadata for optional aggregate members to match RTI, inclusion of warning-only Wireloom-positive cases, and union metadata normalization matching RTI C++ while preserving managed discriminator ranges are current decisions. RTI C# is the managed API baseline, with deliberate improvements allowed and separately evidenced. The wire matrix distinguishes Wireloom C#, RTI C#, and RTI C++ endpoints and exercises all directed pairings; RTI-positive cases rejected by Wireloom remain visible as not implemented.
     sources:
       - docs/architecture/arc42/09-architectural-decisions.md
   quality:
-    text: Compatibility shape, diagnostics, package integration, maintainability, incremental build evidence, wire compatibility across Wireloom-positive cases and the exact 7.7.0 three-peer fixture matrix, and supply-chain integrity are the primary quality goals. Generated reports record scenario totals and current outcomes; optional aggregate interoperability passed all 18 exact RTI 7.7.0 fixture exchanges.
+    text: Compatibility shape, diagnostics, package integration, maintainability, incremental build evidence, wire compatibility across Wireloom-positive cases and the exact 7.7.0 three-peer fixture matrix, and supply-chain integrity are the primary quality goals. The runtime contract matrix separately records generated API behavior, compile-blocked inputs, and skipped findings without establishing wire compatibility. Generated reports record scenario totals and current outcomes; optional aggregate interoperability passed all 18 exact RTI 7.7.0 fixture exchanges.
     sources:
       - docs/architecture/arc42/10-quality-requirements.md
   risks:

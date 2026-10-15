@@ -1,0 +1,21 @@
+module RuntimeAliases {
+    enum State { Idle, Ready };
+    struct Child { long id; string<16> text; };
+    typedef long Scalar;
+    typedef Scalar ScalarChain;
+    typedef State EnumAlias;
+    typedef EnumAlias EnumChain;
+    typedef string<16> Text;
+    typedef wstring<16> WideText;
+    typedef Child Aggregate;
+    typedef Aggregate AggregateChain;
+    typedef sequence<long, 4> Numbers;
+    typedef sequence<Child, 4> Children;
+    typedef sequence<string<16>, 3> Texts;
+    typedef sequence<wstring<16>, 3> WideTexts;
+    typedef long Vector[2];
+    typedef long Matrix[2][3];
+    typedef Child Points[2];
+    typedef Numbers NumbersChain;
+    typedef Matrix MatrixChain;
+};

@@ -1,0 +1,16 @@
+module RuntimeUnions {
+    struct Child { long id; string<16> text; };
+    typedef sequence<long, 4> Numbers;
+    typedef long Vector[2];
+    union Choice switch(long) {
+        case 0: long number;
+        case 1:
+        case 2: string<16> text;
+        case 3: Child child;
+        case 4: Numbers numbers;
+        case 5: Vector vector;
+        default: boolean flag;
+    };
+    union Sparse switch(long) { case 1: long number; };
+    typedef Choice ChoiceAlias;
+};

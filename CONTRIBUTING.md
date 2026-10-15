@@ -65,6 +65,12 @@ Keep the test layers focused:
   rejected, and generated-shape evidence.
 - Package integration tests verify that the packed analyzer works in a
   consuming project.
+- [Runtime contract tests](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
+  compile focused IDL fixtures during the build and execute generated APIs
+  directly against RTI 7.7.0 on Windows and Linux. Their behavior matrix tracks
+  runtime contracts; Coveralls measures maintained generator source only.
+  Keep known failures visible and distinguish API behavior from serialization
+  and DDS wire evidence.
 
 When adding or changing a corpus case, follow the detailed [corpus authoring
 rules](docs/corpus/README.md). Keep each case focused on one feature, preserve
