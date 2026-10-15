@@ -1,4 +1,0 @@
-// Opt-in compile reproduction: -p:RuntimeContractKnownFailure=unbounded-sequence
-module RuntimeUnboundedSequence {
-    typedef sequence<long> Numbers;
-};

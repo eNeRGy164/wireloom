@@ -1,0 +1,7 @@
+// Opt-in compile reproduction: -p:RuntimeContractKnownFailure=string-alias-chains
+module RuntimeStringAliasChains {
+    typedef string Text;
+    typedef wstring WideText;
+    typedef Text TextChain;
+    typedef WideText WideTextChain;
+};

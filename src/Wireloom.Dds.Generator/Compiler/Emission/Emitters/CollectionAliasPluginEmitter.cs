@@ -47,7 +47,7 @@ internal static class CollectionAliasPluginEmitter
 
         if (plan.IsSequence)
         {
-            writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{names.UnmanagedTypeName}>(dtf, \"{typeName}\", tsf.CreateSequenceWithAccessInfo(dtf, {GetDynamicElementType(plan, names.ImplementationNamespace)}, {declaration.Bound}));");
+            writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{names.UnmanagedTypeName}>(dtf, \"{typeName}\", tsf.CreateSequenceWithAccessInfo(dtf, {GetDynamicElementType(plan, names.ImplementationNamespace)}, {plan.SequenceBound}));");
         }
         else if (plan.IsArray)
         {

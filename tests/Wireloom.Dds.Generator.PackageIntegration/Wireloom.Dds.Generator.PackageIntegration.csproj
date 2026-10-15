@@ -18,6 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/unbounded-strings.idl" />
+    <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/unbounded-sequence.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-integration.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\features\09-optional-recursive-array.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\features\06-aggregates.idl" />
