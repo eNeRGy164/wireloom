@@ -1,4 +1,3 @@
-// Opt-in compile reproduction: -p:RuntimeContractKnownFailure=string-array-aliases
 module RuntimeStringArrayAliases {
     typedef string<16> TextVector[2];
     typedef wstring<16> WideMatrix[1][2];
