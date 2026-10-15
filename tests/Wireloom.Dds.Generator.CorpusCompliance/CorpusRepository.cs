@@ -57,6 +57,8 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "07-union-uint32",
         "07-union-char-boundaries",
         "07-union-long",
+        "07-union-string-sequence-aliases",
+        "07-union-string-sequence-bounded-direct",
         "12-union-wchar-rti-limit",
         "08-keys",
         "08-key-nested",
