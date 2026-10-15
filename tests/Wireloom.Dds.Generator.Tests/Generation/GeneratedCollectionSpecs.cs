@@ -20,6 +20,41 @@ public sealed class GeneratedCollectionSpecs
     }
 
     [Fact]
+    public void StringArraysUseBoundedRtiNativeArrayStorage()
+    {
+        // Arrange
+        var input = Input(
+            "string-array-aliases.idl",
+            """
+            module Sample {
+                typedef string<16> TextVector[2];
+                typedef wstring<8> WideMatrix[1][2];
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var textNative = documents["Sample.Implementation.TextVectorUnmanaged.g.cs"].Source;
+        textNative.ShouldContain("private NativeStringArray Value;");
+        textNative.ShouldContain("Value.Initialize(dimension: 2, maxStrLen: 16, allocateMemory: allocateMemory);");
+        textNative.ShouldContain("Value.ToNative(sample.Value, dimension: 2, maxStrLen: 16);");
+        textNative.ShouldContain("Value.FromNative(sample.Value, dimension: 2);");
+        textNative.ShouldContain("Value.Destroy(dimension: 2);");
+
+        var wideNative = documents["Sample.Implementation.WideMatrixUnmanaged.g.cs"].Source;
+        wideNative.ShouldContain("private NativeWstringArray Value;");
+        wideNative.ShouldContain("Value.Initialize(dimension: 1 * 2, maxStrLen: 8, allocateMemory: allocateMemory);");
+        wideNative.ShouldContain("Value.ToNative(sample.Value, dimension: 1 * 2, maxStrLen: 8);");
+        wideNative.ShouldContain("Value.FromNative(sample.Value, dimension: 1 * 2);");
+        wideNative.ShouldContain("Value.Destroy(dimension: 1 * 2);");
+
+        documents["Sample.Implementation.TextVectorPlugin.g.cs"].Source.ShouldContain("CreateArrayWithAccessInfo<NativeString>");
+        documents["Sample.Implementation.WideMatrixPlugin.g.cs"].Source.ShouldContain("CreateArrayWithAccessInfo<NativeWstring>");
+    }
+
+    [Fact]
     [Trait("Corpus", "C016")]
     [Trait("Corpus", "C017")]
     public void CollectionsEmitTypedBoundedAndMultidimensionalContracts()

@@ -52,7 +52,11 @@ internal static class CollectionAliasPluginEmitter
         else if (plan.IsArray)
         {
             var arrayElementType = collectionElementUnmanagedType;
-            if (!collectionElementIsAggregate)
+            if (plan.IsString)
+            {
+                arrayElementType = plan.IsWideString ? "NativeWstring" : "NativeString";
+            }
+            else if (!collectionElementIsAggregate)
             {
                 arrayElementType = IdlNaming.TypeReference(plan.ElementNativeType, names.ImplementationNamespace);
             }
