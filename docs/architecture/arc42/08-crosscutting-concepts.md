@@ -85,6 +85,10 @@ with separate evidence from serialization and DDS interoperability.
   shape. Integer sequence arrays use `NativeSeq`; bounded string sequence
   arrays use `NativeStringSeq` with the string bound passed through
   `FromNative`, `Initialize`, and `ToNative`.
+- Direct narrow and wide string-sequence union branches use specialized native
+  storage and pass element bounds through initialization and conversion.
+  Typedef-backed union branches delegate through their generated native alias
+  wrappers. Runtime API coverage is separate from DDS wire verification.
 - `optionalsOnly` cleanup is context-sensitive. Types with direct optional
   members destroy those members and return before required cleanup. Derived
   types return after base cleanup because the base may contain optional
