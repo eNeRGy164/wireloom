@@ -1,0 +1,6 @@
+module RuntimeUnionBoundedStringSequences {
+    union DirectBoundedStringSequences switch(long) {
+        case 0: sequence<string<8>, 3> narrow;
+        case 1: sequence<wstring<4>, 3> wide;
+    };
+};
