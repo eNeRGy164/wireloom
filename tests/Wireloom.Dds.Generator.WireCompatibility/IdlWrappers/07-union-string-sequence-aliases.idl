@@ -1,0 +1,8 @@
+#include "features/07-union-string-sequence-aliases.idl"
+
+module RuntimeUnionStringSequences {
+    struct StringSequenceUnionsSample {
+        DirectStringSequences direct;
+        StringSequenceAliases aliases;
+    };
+};

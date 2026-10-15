@@ -1,0 +1,16 @@
+#include "features/04-string-alias-chains.idl"
+
+module CorpusStringAliasChains {
+    struct StringAliasChainsSample {
+        NarrowText narrow;
+        NarrowTextChain narrowChain;
+        BoundedNarrowText boundedNarrow;
+        BoundedNarrowTextChain boundedNarrowChain;
+        BoundedNarrowTextChain2 boundedNarrowChain2;
+        WideText wide;
+        WideTextChain wideChain;
+        BoundedWideText boundedWide;
+        BoundedWideTextChain boundedWideChain;
+        BoundedWideTextChain2 boundedWideChain2;
+    };
+};

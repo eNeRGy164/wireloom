@@ -18,12 +18,23 @@ if(WIRELOOM_CHAR8_LITERAL_FIXTURE)
     # not as a UTF-8 multicharacter integer truncated into the discriminator.
     target_compile_options(wire-peer PRIVATE -fexec-charset=ISO-8859-1)
 endif()
+if(WIRELOOM_UNSIGNED_CHAR_NUMERIC_UNION)
+    # RTI's generated char-discriminator union stores IDL char in C++ char.
+    # On Linux's default signed-char ABI, labels 254/255 become -2/-1 and
+    # the generated branch guards reject their own assigned discriminator.
+    target_compile_options(wire-peer PRIVATE -funsigned-char)
+endif()
 if(WIRELOOM_DYNAMIC_WCHAR_UNION)
     target_compile_definitions(wire-peer PRIVATE WIRELOOM_DYNAMIC_WCHAR_UNION)
 endif()
 if(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE)
     target_compile_definitions(wire-peer PRIVATE WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE)
 endif()
+foreach(fixture_macro IN ITEMS WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES WIRELOOM_TYPED_NUMERIC_CHAR_UNION WIRELOOM_TYPED_STRING_ALIAS_CHAINS WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED)
+    if(${fixture_macro})
+        target_compile_definitions(wire-peer PRIVATE ${fixture_macro})
+    endif()
+endforeach()
 if(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE)
     target_compile_definitions(wire-peer PRIVATE WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE)
 endif()

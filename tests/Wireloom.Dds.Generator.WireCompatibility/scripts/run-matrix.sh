@@ -24,11 +24,13 @@ readonly non_default_fixture_cases=(
     01-boundaries 01-full-widths
     02-names-constants 02-scopes 02-constant-expressions 02-formatting 02-multiple
         03-alias-aggregate 03-alias-collections
-    04-strings 04-boundaries
+    04-strings 04-boundaries 04-unbounded-string-aliases 04-string-alias-chains
+    05-unbounded-sequence-aliases
     05-collections 05-shapes 06-aggregates
     06-alias-composition
     07-unions 07-union-enum 07-union-multilabel 07-union-short
-    07-union-char 07-union-scoped 07-union-boolean 07-union-aliases 07-union-wchar-label
+    07-union-char 07-union-char-numeric 07-union-scoped 07-union-boolean 07-union-aliases 07-union-wchar-label
+    07-union-string-sequence-aliases 07-union-string-sequence-bounded-direct
     08-keys 08-key-nested 08-key-inherited 08-key-boundaries 08-key-union
     09-extensibility 09-default 09-id-gaps 09-evolution-optional
     09-optional-collections 09-autoid-hash 09-defaults-ranges
@@ -92,6 +94,15 @@ fixtures_for_case() {
         04-strings)
             printf '%s\n' string-empty string-boundary non-default
             ;;
+        04-unbounded-string-aliases)
+            printf '%s\n' string-empty string-boundary
+            ;;
+        04-string-alias-chains)
+            printf '%s\n' string-empty string-boundary
+            ;;
+        05-unbounded-sequence-aliases)
+            printf '%s\n' sequence-empty sequence-multiple
+            ;;
         04-boundaries)
             printf '%s\n' string-boundary non-default
             ;;
@@ -139,6 +150,15 @@ fixtures_for_case() {
             ;;
         07-union-aliases)
             printf '%s\n' union-zero union-ten
+            ;;
+        07-union-char-numeric)
+            printf '%s\n' union-254 union-255 union-default
+            ;;
+        07-union-string-sequence-aliases)
+            printf '%s\n' union-direct-narrow union-direct-wide union-alias-narrow union-alias-wide union-bounded-narrow union-bounded-wide
+            ;;
+        07-union-string-sequence-bounded-direct)
+            printf '%s\n' union-narrow-empty union-narrow-multiple union-wide-empty union-wide-multiple
             ;;
         *)
             if [[ " ${non_default_fixture_cases[*]} " == *" $1 "* ]]; then
@@ -528,7 +548,7 @@ for case_id in "${case_ids[@]}"; do
         define_args+=( -D "$define" )
     done
     idl_path="$repo_root/docs/corpus/$idl_relative"
-    if [[ "$case_id" == "02-multiple" || "$case_id" == "03-enum-values-prefix" || "$case_id" == "03-enum-values-explicit" ]]; then
+    if [[ -f "$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/$case_id.idl" ]]; then
         idl_path="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/$case_id.idl"
     fi
     rti_csharp_dir="$case_dir/rti-csharp-generated"
@@ -679,6 +699,16 @@ for case_id in "${case_ids[@]}"; do
     if [[ "$case_id" == "04-strings" ]]; then
         cmake_adaptation_args+=( -DWIRELOOM_TYPED_WIDE_STRINGS_FIXTURE=ON )
     fi
+    case "$case_id" in
+        04-unbounded-string-aliases) cmake_adaptation_args+=( -DWIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES=ON ) ;;
+        07-union-char-numeric)
+            cmake_adaptation_args+=( -DWIRELOOM_TYPED_NUMERIC_CHAR_UNION=ON -DWIRELOOM_UNSIGNED_CHAR_NUMERIC_UNION=ON )
+            ;;
+        04-string-alias-chains) cmake_adaptation_args+=( -DWIRELOOM_TYPED_STRING_ALIAS_CHAINS=ON ) ;;
+        05-unbounded-sequence-aliases) cmake_adaptation_args+=( -DWIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES=ON ) ;;
+        07-union-string-sequence-aliases) cmake_adaptation_args+=( -DWIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES=ON ) ;;
+        07-union-string-sequence-bounded-direct) cmake_adaptation_args+=( -DWIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED=ON ) ;;
+    esac
     if [[ "$case_id" == "04-boundaries" ]]; then
         cmake_adaptation_args+=( -DWIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE=ON )
     fi

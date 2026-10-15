@@ -86,12 +86,13 @@ int main(int argc, char **argv)
         dynamic_type.extensibility_kind(
             dds::core::xtypes::ExtensibilityKind::EXTENSIBLE);
 #else
-        // Normal cases use type metadata emitted by rtiddsgen. Only the
-        // wchar-label union above supplies a hand-built DynamicType.
+        // Normal cases use metadata emitted by rtiddsgen. Character-union
+        // probes that expose RTI code-generation issues use an equivalent
+        // hand-built DynamicType instead.
         const auto &dynamic_type = rti::topic::dynamic_type<DdsType>::get();
 #endif
         dds::domain::DomainParticipant participant(0);
-#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE)
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED)
         if (case_id == "09-optional-string-sequences"
             || case_id == "04-strings" || case_id == "04-boundaries"
             || case_id == "09-optional-aggregate-member" || case_id == "09-optional-recursive-array") {
@@ -103,6 +104,20 @@ int main(int argc, char **argv)
                 return run_typed_fixture_peer(
                     participant, role, topic_name, timeout_seconds, case_id, fixture);
             }
+        }
+#endif
+#if defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED)
+        if (case_id == "04-unbounded-string-aliases" || case_id == "04-string-alias-chains"
+            || case_id == "05-unbounded-sequence-aliases" || case_id == "07-union-string-sequence-aliases"
+            || case_id == "07-union-string-sequence-bounded-direct") {
+            return run_typed_fixture_peer(
+                participant, role, topic_name, timeout_seconds, case_id, fixture);
+        }
+#endif
+#ifdef WIRELOOM_TYPED_NUMERIC_CHAR_UNION
+        if (case_id == "07-union-char-numeric") {
+            return run_typed_fixture_peer(
+                participant, role, topic_name, timeout_seconds, case_id, fixture);
         }
 #endif
         dds::topic::Topic<DynamicData> topic(participant, topic_name, dynamic_type);

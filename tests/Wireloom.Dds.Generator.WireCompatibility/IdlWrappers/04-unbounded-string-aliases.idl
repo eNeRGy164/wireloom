@@ -1,0 +1,8 @@
+#include "features/04-unbounded-string-aliases.idl"
+
+module CorpusUnboundedStrings {
+    struct StringAliasesSample {
+        Text narrow;
+        WideText wide;
+    };
+};
