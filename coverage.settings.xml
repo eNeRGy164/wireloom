@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Configuration>
+  <IncludeTestAssembly>True</IncludeTestAssembly>
   <CodeCoverage>
+    <ModulePaths>
+      <Include>
+        <ModulePath>.*Wireloom\.Dds\.Generator\.dll$</ModulePath>
+      </Include>
+    </ModulePaths>
     <Sources>
       <Exclude>
         <Source>.*[\\/]obj[\\/].*</Source>

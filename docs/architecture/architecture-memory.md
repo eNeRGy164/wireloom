@@ -60,7 +60,12 @@ or ADRs first, then refresh this file and
   See [chapters 6](arc42/06-runtime-view.md) and [7](arc42/07-deployment-view.md).
 - **Cross-cutting concerns:** Evidence vocabulary, deterministic source
   identity, explicit compiler phases, diagnostics, test separation, measured
-  invalidation, and supply-chain controls apply across the system. See
+  invalidation, and supply-chain controls apply across the system. Build-time
+  generated runtime contract fixtures execute typed managed/native/support
+  APIs on Windows and Linux, with separate generated-source coverage and
+  explicit deferred findings. RTI C# is a baseline, not an API ceiling;
+  improvements supported by RTI C++ evidence retain separate wire verification.
+  See
   [chapter 8](arc42/08-crosscutting-concepts.md) and the [incremental baseline](../performance/incremental-generator-baseline.md).
 - **Decisions:** Roslyn hosting, explicit roots, independent semantic models,
   project-wide root metadata, explicit parse/bind/validate phases, explicit

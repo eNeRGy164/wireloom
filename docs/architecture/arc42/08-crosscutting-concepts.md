@@ -44,12 +44,23 @@ output shape; packed-package tests validate the actual NuGet consumption path.
 The corpus shape comparison does not establish exact generated-source, native
 support, runtime, or wire equivalence.
 
+The separate [runtime contract suite](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
+uses build-time generation and strongly typed calls to managed, native, and
+type-support APIs. Focused IDL fixtures and tests are grouped by responsibility.
+Windows and Linux validation complement maintained generator source coverage;
+generated fixture files and test project code are excluded from Coveralls.
+Explicit skipped contracts and opt-in compile reproductions retain unresolved
+findings; they do not establish a complete API contract or wire compatibility.
+
 ## 8.6 RTI-compatible generated value semantics
 
-The generated API and native plugin are compatibility artifacts. When the RTI
-oracle exposes an observable implementation detail, Wireloom preserves it even
-when a different implementation would be more elegant or produce stronger
-hashes.
+The generated API and native plugin are compatibility artifacts. The goal is
+RTI C# or better: RTI's observable behavior provides a baseline and evidence,
+not a ceiling. Existing quirks remain characterized until an intentional
+behavior change is implemented and documented. RTI C++ wire support can justify
+a more capable managed API; interoperability claims still require wire
+verification. The current behavior below is not a requirement to reproduce
+every RTI limitation in future APIs.
 
 - Array hash codes use the first element, not the array length. This preserves
   RTI's intentionally weak hash behavior. Empty arrays are not a supported

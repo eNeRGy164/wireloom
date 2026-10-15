@@ -1,0 +1,5 @@
+// Opt-in compile reproduction: -p:RuntimeContractKnownFailure=unbounded-strings
+module RuntimeUnboundedStrings {
+    typedef string Text;
+    typedef wstring WideText;
+};
