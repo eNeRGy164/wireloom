@@ -6,9 +6,9 @@ The peer package version is selected by
 `WireCompatibilityRtiVersion` (default `7.7.0`); use the matching exact RTI
 toolchain to generate and build the reference peers.
 
-The nested `RtiOracleProbe` also supports a typed, local API probe of retained
-unbounded typedef oracles. See [commands and observations](../../docs/corpus/UNBOUNDED-ALIASES.md).
-It runs without a DDS exchange and supplies separate runtime API evidence.
+The nested `RtiOracleProbe` also supports typed, local API probes of retained
+unbounded typedef oracles C135/C136. The corresponding managed contracts are
+covered by the [runtime contract suite](../Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix).
 
 Each case has a curated fixture catalog. Every fixture is sent in a separate
 producer/consumer exchange with its own topic and report row across all nine
@@ -152,8 +152,8 @@ Wireloom mapping rather than a negative IDL syntax case.
 `09-optional-aggregate-member` includes absent and present fixtures for an
 optional struct value and an optional union value whose selected branch
 contains a nested payload, including typedef aliases. Wireloom generates these
-values and the matrix schedules each fixture across all nine directed pairings;
-all 18 exchanges passed in the licensed RTI 7.7.0 matrix on October 14, 2026. Aggregate aliases use the underlying
+values and the matrix schedules each fixture across all nine directed pairings.
+Aggregate aliases use the underlying
 generated struct or union type in managed APIs and native conversions, while
 optional aggregate DynamicType metadata retains the declared typedef alias.
 Expected `05-array-of-sequences`
@@ -217,8 +217,13 @@ generated. Matrix utility setup and locked-restore failures preserve a nonzero
 workflow status even when a report is available. Run the container
 with the repository mounted at `/workspace`, the license mounted read-only at
 `/run/secrets/rti_license.dat`, and `WIRE_COMPATIBILITY_CASE_FILTER=05-collections`
-for the focused non-default fixture. Omit the filter to run all 70
-wire-testable Wireloom-positive cases.
+for the focused non-default fixture. Omit the filter to schedule all currently
+selected positive cases. The two unbounded typedef
+cases currently select standalone alias roots that the C++ topic harness cannot
+build; their 18 exchanges remain NOT_RUN until aggregate wrapper fixtures are
+added. The other cases can execute, with reference-peer and known mapping
+failures still visible. Managed API coverage is listed in the
+[runtime contract matrix](../Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix).
 Generated build outputs and artifacts are written to the mounted repository;
 the runner checks its selected RTI version against 7.7.0.
 
@@ -266,5 +271,4 @@ and disables TypeObject/TypeCode propagation on all peers because default RTI
 7.7.0 TypeObject v2 rejects recursive types. Both managed array peers bootstrap
 their plugins in the harness before accessing the singleton; scratch RTI C++ generation forwards the
 visited-node chain for the recursive array TypeCode. Retained C# oracle sources
-are unmodified. All 27 focused exchanges passed on October 14, 2026; reports mark
-these adapted results explicitly.
+are unmodified. Reports mark these adapted results explicitly.

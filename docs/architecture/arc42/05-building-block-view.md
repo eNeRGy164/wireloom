@@ -9,9 +9,17 @@ and branch comparisons retain the original character values. Narrow `char`
 labels and default selection are limited to the native byte range 0..255,
 including character literals and typedef discriminators. Wide `wchar` labels
 retain the 16-bit range 0..65535.
-The [discriminator value and metadata label guide](../../corpus/UNION-DISCRIMINATOR-MATRIX.md#discriminator-values-and-rti-metadata-labels)
-separates logical IDL labels, managed values, wire bytes, and RTI metadata,
-including character 254 with metadata label -2.
+Union construction uses the XTypes default of the discriminator type: zero
+for integers and characters, false for booleans, and the first enum literal,
+including negative values. Selecting the default branch through its setter
+still chooses an unused discriminator. Null-source copies initialize the same
+discriminator and selected branch as the parameterless constructor. The shared
+initialization emitter runs only on the null-copy path, avoiding replacement
+allocations for non-null sources. Enum casts parenthesize negative operands.
+These managed contracts are covered by
+[`UnionConstructionSpecs`](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/Unions/UnionConstructionSpecs.cs),
+[`UnionConstructionNativeSpecs`](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/Native/UnionConstructionNativeSpecs.cs),
+and the [corpus feature index](../../corpus/FEATURE-COVERAGE.md).
 
 ## 5.1 Level 1: White-box overall system
 
@@ -50,8 +58,8 @@ Retained corpus cases C135/C136 confirm these defaults against RTI-generated
 C# with a typed runtime probe on Windows and Linux. The probe also records
 RTI's independent aggregate sequence element copies and its scalar sequence
 element typedef erasure; Wireloom currently retains scalar wrappers. These
-are API observations, with no new wire compatibility claim. See
-[the unbounded typedef evidence](../../corpus/UNBOUNDED-ALIASES.md).
+are API observations, with no wire compatibility claim. Runtime behavior is
+covered by the [runtime contract matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix).
 
 Alias formatting keeps RTI type-support formatting for struct and union roots
 and aggregate elements. Scalar, enum, and string roots use their managed
@@ -66,7 +74,8 @@ support factory and singleton initialization remain unchanged. Wide-string
 alias annotations use `WideStringValue` and `TypeKind.WideString`, matching
 RTI and allowing the support instance to initialize. These diagnostic helpers
 add no runtime dependency or new serialization behavior. See the
-[F2 comparison and contract](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/F2-EVIDENCE.md).
+[`AliasFormattingSpecs`](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/Aliases/AliasFormattingSpecs.cs)
+runtime contract.
 
 Optional struct members whose value type is a struct or union use nullable
 managed references and `NativeManagedOptional` storage. Their conversion plan

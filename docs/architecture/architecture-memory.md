@@ -37,6 +37,11 @@ or ADRs first, then refresh this file and
   classes hide the nonvirtual default formatter for unsupported root kinds.
   Loops and escaping stay in support documents. Wide-string alias annotations
   preserve their wide kind/value so support instances initialize.
+  Union constructors use XTypes discriminator type defaults, including negative
+  first enum literals. Null-source copies share parameterless initialization;
+  non-null copies avoid temporary default-branch allocations. Default-branch
+  setters independently select unused labels, and negative enum casts are
+  parenthesized.
   Optional struct members whose value is a struct or union preserve null
   presence with `NativeManagedOptional` conversions and optional DynamicType
   metadata. Their DynamicType preserves declared typedef aliases to match RTI,
@@ -62,17 +67,16 @@ or ADRs first, then refresh this file and
   execution charset. Present optional wide-string
   sequences use the DynamicData C API peer; absent, empty, and narrow-only
   controls use typed peers. Optional aggregate values are supported by the
-  generator, and all 18 exact RTI 7.7.0 exchanges passed in the October 14, 2026
-  licensed run. RTI 7.3.1 generated-code compatibility is not established.
+  generator. RTI 7.3.1 generated-code compatibility is not established.
   See [chapters 6](arc42/06-runtime-view.md) and [7](arc42/07-deployment-view.md).
 - **Cross-cutting concerns:** Evidence vocabulary, deterministic source
   identity, explicit compiler phases, diagnostics, test separation, measured
   invalidation, and supply-chain controls apply across the system. Build-time
   generated runtime contract fixtures execute typed managed/native/support
-  APIs on Windows and Linux, with separate generated-source coverage and
-  explicit deferred findings. Retained unbounded typedef RTI C# oracles also
-  run typed API/native probes on both platforms, confirming default bounds and
-  independent aggregate element copying; scalar sequence wrapper APIs differ.
+  APIs on Windows and Linux. Coveralls measures maintained generator source;
+  generated fixtures and test project code are excluded. The behavior matrix
+  keeps unresolved contracts visible. Retained RTI C# oracle sources and
+  typed runtime fixtures cover unbounded typedef behavior.
   RTI C# is a baseline, not an API ceiling;
   improvements supported by RTI C++ evidence retain separate wire verification.
   See
@@ -89,8 +93,7 @@ or ADRs first, then refresh this file and
 - **Quality and risk:** `05-array-of-sequences` is included with DDSG0105 as a
   warning; both retained C# mappings flatten the IDL array while RTI C++ preserves it,
   so pairings involving Wireloom C# fail discovery and do not establish array
-  shape fidelity. Optional aggregate values passed all 18 exact RTI 7.7.0
-  exchanges; generated reports contain the current outcome for each selected
+  shape fidelity. Generated reports contain the outcome for each selected
   fixture and pairing. The wchar union uses manually constructed RTI C++
   `DynamicType` metadata, and the FlatData case validates standard C++ mapping,
   not RTI's FlatData-specific C++ layout. The C++ peer uses DynamicData C API
@@ -136,18 +139,3 @@ does not use them.
 - [incremental generator baseline](../performance/incremental-generator-baseline.md)
 - [repository architecture guidance](../../AGENTS.md)
 - [machine-readable architecture memory](../../.agents/architecture-memory.yaml)
-
-## Recursive fixed-array evidence
-
-Optional fixed arrays break value-layout cycles after typedef resolution.
-Self-referencing optional arrays retain fixed-array metadata, indirect native
-storage, RTI-compatible singleton-based array metadata without plugin bootstrap
-calls, forwarded optional-array
-key conversion, and RTI-compatible first-child/absent
-hashing. See [chapter 5](arc42/05-building-block-view.md) and
-[chapter 8](arc42/08-crosscutting-concepts.md).
-C134 (optional recursive fixed arrays) passed 27 focused typed exchanges on RTI 7.7.0 with explicit participant
-QoS and harness initialization adaptations for both managed array peers. Default TypeObject v2 and
-unadapted RTI peer initialization remain limitations. See
-[chapter 6](arc42/06-runtime-view.md), [chapter 10](arc42/10-quality-requirements.md),
-and [chapter 11](arc42/11-risks-and-technical-debt.md).
