@@ -80,7 +80,7 @@ internal static class Program
         using var serializer = typeSupport.CreateSerializer();
         DynamicData? fixture = null;
         if (options.CaseId is not ("09-optional-recursive-array" or "05-unbounded-sequence-aliases"
-            or "07-union-char-numeric" or "07-union-string-sequence-aliases"))
+            or "07-union-char-numeric" or "07-union-char-numeric-255" or "07-union-string-sequence-aliases"))
         {
             fixture = FixtureCatalog.CreateFixture(typeSupport.DynamicType, options.CaseId, options.Fixture);
         }
@@ -100,6 +100,9 @@ internal static class Program
 #endif
 #if WIRE_COMPATIBILITY_NUMERIC_CHAR_UNION
             "07-union-char-numeric" => CreateNumericCharacterUnionFixture<T>(options.Fixture),
+#endif
+#if WIRE_COMPATIBILITY_NUMERIC_CHAR_255_UNION
+            "07-union-char-numeric-255" => CreateHighNumericCharacterUnionFixture<T>(options.Fixture),
 #endif
             _ => serializer.FromDynamicData(expectedDynamic!)
         };
@@ -241,16 +244,32 @@ internal static class Program
         switch (fixture)
         {
             case "union-127":
-                choice.Setvalue(13701, (char)127);
-                break;
-            case "union-255":
-                choice.Setvalue(13702, (char)255);
+                choice.value = 13701;
                 break;
             case "union-default":
                 choice.Setfallback(13703, (char)65);
                 break;
             default:
                 throw new FixtureException($"Unknown numeric character union fixture '{fixture}'.");
+        }
+        return (T)(object)choice;
+    }
+#endif
+
+#if WIRE_COMPATIBILITY_NUMERIC_CHAR_255_UNION
+    private static T CreateHighNumericCharacterUnionFixture<T>(string fixture)
+    {
+        var choice = new CorpusNumericChar255Union.Choice();
+        switch (fixture)
+        {
+            case "union-255":
+                choice.value = 13702;
+                break;
+            case "union-default":
+                choice.Setfallback(13703, (char)65);
+                break;
+            default:
+                throw new FixtureException($"Unknown high numeric character union fixture '{fixture}'.");
         }
         return (T)(object)choice;
     }
@@ -410,7 +429,7 @@ internal static class Program
                                 $"Expected {expected}; received {sample} for {options.CaseId} fixture {options.Fixture}.");
                         }
                     }
-                    else if (options.CaseId == "07-union-char-numeric")
+                    else if (options.CaseId is "07-union-char-numeric" or "07-union-char-numeric-255")
                     {
                         if (!EqualityComparer<T>.Default.Equals(expected, sample))
                         {

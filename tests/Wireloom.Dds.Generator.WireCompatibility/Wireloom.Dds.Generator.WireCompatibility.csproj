@@ -13,6 +13,9 @@
     <DdsIdlIncludeDirectories>$(MSBuildProjectDirectory)\..\..\docs\corpus\idl;$(MSBuildProjectDirectory)\..\..\docs\corpus\idl\includes</DdsIdlIncludeDirectories>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '07-union-char-numeric-255'">
+    <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_NUMERIC_CHAR_255_UNION</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '07-union-char-numeric'">
     <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_NUMERIC_CHAR_UNION</DefineConstants>
   </PropertyGroup>

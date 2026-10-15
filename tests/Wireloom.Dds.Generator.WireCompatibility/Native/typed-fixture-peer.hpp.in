@@ -164,7 +164,7 @@ static int run_typed_fixture_peer(
     }
 #endif
 #ifdef WIRELOOM_TYPED_NUMERIC_CHAR_UNION
-    if (case_id == "07-union-char-numeric") {
+    if (case_id == "07-union-char-numeric" || case_id == "07-union-char-numeric-255") {
         if (fixture == "union-127") {
             expected.value(13701);
         } else if (fixture == "union-255") {

@@ -18,7 +18,7 @@ public sealed class CorpusComplianceSpecs
     public void CorpusManifestAndOracleLibraryHaveTheSameCaseSet()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(140);
+        cases.Length.ShouldBe(141);
         cases.ShouldBeUnique();
         CorpusRepository.OracleCaseIds.ShouldBe(cases.OrderBy(id => id, StringComparer.Ordinal).ToArray());
 
@@ -187,14 +187,33 @@ public sealed class CorpusComplianceSpecs
         // Act
         var oracleContainsRawIntegerLabels = oracle.Contains("Discriminator != 127", StringComparison.Ordinal) &&
             oracle.Contains("case 127:", StringComparison.Ordinal) &&
-            oracle.Contains("case 255:", StringComparison.Ordinal);
+            oracle.Contains("Discriminator = 127;", StringComparison.Ordinal);
         var generatedContainsCharacterCasts = generated.Contains("Discriminator != (char)127", StringComparison.Ordinal) &&
             generated.Contains("case (char)127:", StringComparison.Ordinal) &&
-            generated.Contains("case (char)255:", StringComparison.Ordinal);
+            !generated.Contains("(char)255", StringComparison.Ordinal);
 
         // Assert
         oracleContainsRawIntegerLabels.ShouldBeTrue();
         generatedContainsCharacterCasts.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void HighNumericCharacterUnionLabelRemainsInASeparateCorpusFixture()
+    {
+        // Arrange
+        var corpusCase = CorpusRepository.Cases.Single(item => item.Id == "07-union-char-numeric-255");
+        var oracle = string.Join(Environment.NewLine, CorpusRepository.OracleFiles(corpusCase).Select(File.ReadAllText));
+        var generated = string.Join(Environment.NewLine, Compile(corpusCase).Values.Select(source => source.Source));
+
+        // Act
+        var oracleContainsRawIntegerLabel = oracle.Contains("case 255:", StringComparison.Ordinal) &&
+            oracle.Contains("Discriminator = 255;", StringComparison.Ordinal);
+        var generatedContainsCharacterCast = generated.Contains("case (char)255:", StringComparison.Ordinal) &&
+            generated.Contains("Discriminator = (char)255;", StringComparison.Ordinal);
+
+        // Assert
+        oracleContainsRawIntegerLabel.ShouldBeTrue();
+        generatedContainsCharacterCast.ShouldBeTrue();
     }
 
     [Fact]

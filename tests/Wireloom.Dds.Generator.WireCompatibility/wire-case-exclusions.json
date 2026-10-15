@@ -44,6 +44,115 @@
       "reason": "RTI 7.7.0 C# TypeSupport throws NullReferenceException in FromDynamicData while reading the sequence-alias aggregate. The same IDL exchanges successfully with Wireloom C# and RTI C++."
     },
     {
+      "id": "07-union-char-numeric",
+      "writer": "Wireloom C#",
+      "reader": "RTI C#",
+      "reason": "RTI 7.7.0 rtiddsgen emits integer label 127 into char discriminator assignments; the generated C# peer fails to compile with CS0266."
+    },
+    {
+      "id": "07-union-char-numeric",
+      "writer": "RTI C#",
+      "reader": "Wireloom C#",
+      "reason": "RTI 7.7.0 rtiddsgen emits integer label 127 into char discriminator assignments; the generated C# peer fails to compile with CS0266."
+    },
+    {
+      "id": "07-union-char-numeric",
+      "writer": "RTI C#",
+      "reader": "RTI C#",
+      "reason": "RTI 7.7.0 rtiddsgen emits integer label 127 into char discriminator assignments; the generated C# peer fails to compile with CS0266."
+    },
+    {
+      "id": "07-union-char-numeric",
+      "writer": "RTI C#",
+      "reader": "RTI C++",
+      "reason": "RTI 7.7.0 rtiddsgen emits integer label 127 into char discriminator assignments; the generated C# peer fails to compile with CS0266."
+    },
+    {
+      "id": "07-union-char-numeric",
+      "writer": "RTI C++",
+      "reader": "RTI C#",
+      "reason": "RTI 7.7.0 rtiddsgen emits integer label 127 into char discriminator assignments; the generated C# peer fails to compile with CS0266."
+    },
+    {
+      "id": "07-union-char-numeric",
+      "fixture": "union-default",
+      "writer": "Wireloom C#",
+      "reader": "RTI C++",
+      "reason": "RTI 7.7.0 C++ writes the default union branch with a NUL discriminator while Wireloom's fixture uses 'A'; the received branch value matches but the discriminator does not."
+    },
+    {
+      "id": "07-union-char-numeric",
+      "fixture": "union-default",
+      "writer": "RTI C++",
+      "reader": "Wireloom C#",
+      "reason": "RTI 7.7.0 C++ writes the default union branch with a NUL discriminator while Wireloom's fixture uses 'A'; the received branch value matches but the discriminator does not."
+    },
+    {
+      "id": "07-union-char-numeric-255",
+      "writer": "Wireloom C#",
+      "reader": "RTI C#",
+      "reason": "RTI 7.7.0 rtiddsgen emits integer label 255 into char discriminator assignments; the generated C# peer fails to compile with CS0266."
+    },
+    {
+      "id": "07-union-char-numeric-255",
+      "writer": "RTI C#",
+      "reader": "Wireloom C#",
+      "reason": "RTI 7.7.0 rtiddsgen emits integer label 255 into char discriminator assignments; the generated C# peer fails to compile with CS0266."
+    },
+    {
+      "id": "07-union-char-numeric-255",
+      "writer": "RTI C#",
+      "reader": "RTI C#",
+      "reason": "RTI 7.7.0 rtiddsgen emits integer label 255 into char discriminator assignments; the generated C# peer fails to compile with CS0266."
+    },
+    {
+      "id": "07-union-char-numeric-255",
+      "writer": "RTI C#",
+      "reader": "RTI C++",
+      "reason": "RTI 7.7.0 rtiddsgen emits integer label 255 into char discriminator assignments; the generated C# peer fails to compile with CS0266."
+    },
+    {
+      "id": "07-union-char-numeric-255",
+      "writer": "RTI C++",
+      "reader": "RTI C#",
+      "reason": "RTI 7.7.0 rtiddsgen emits integer label 255 into char discriminator assignments; the generated C# peer fails to compile with CS0266."
+    },
+    {
+      "id": "07-union-char-numeric-255",
+      "fixture": "union-255",
+      "writer": "Wireloom C#",
+      "reader": "RTI C++",
+      "reason": "RTI 7.7.0 C++ reports no compatible non-default union label for char label 255 during type discovery."
+    },
+    {
+      "id": "07-union-char-numeric-255",
+      "fixture": "union-255",
+      "writer": "RTI C++",
+      "reader": "Wireloom C#",
+      "reason": "RTI 7.7.0 C++ reports no compatible non-default union label for char label 255 during type discovery."
+    },
+    {
+      "id": "07-union-char-numeric-255",
+      "fixture": "union-255",
+      "writer": "RTI C++",
+      "reader": "RTI C++",
+      "reason": "RTI 7.7.0 typed C++ self-round-trip selects char label 255 but delivers member value 0 instead of the written 13702."
+    },
+    {
+      "id": "07-union-char-numeric-255",
+      "fixture": "union-default",
+      "writer": "Wireloom C#",
+      "reader": "RTI C++",
+      "reason": "RTI 7.7.0 C++ reports the union definitions as not assignable because they have no common non-default label, even for the default-branch sample."
+    },
+    {
+      "id": "07-union-char-numeric-255",
+      "fixture": "union-default",
+      "writer": "RTI C++",
+      "reader": "Wireloom C#",
+      "reason": "RTI 7.7.0 C++ reports the union definitions as not assignable because they have no common non-default label, even for the default-branch sample."
+    },
+    {
       "id": "07-union-string-sequence-aliases",
       "writer": "Wireloom C#",
       "reader": "RTI C#",

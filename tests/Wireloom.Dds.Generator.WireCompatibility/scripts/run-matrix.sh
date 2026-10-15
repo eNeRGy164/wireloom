@@ -29,7 +29,7 @@ readonly non_default_fixture_cases=(
     05-collections 05-shapes 06-aggregates
     06-alias-composition
     07-unions 07-union-enum 07-union-multilabel 07-union-short
-    07-union-char 07-union-char-numeric 07-union-scoped 07-union-boolean 07-union-aliases 07-union-wchar-label
+    07-union-char 07-union-char-numeric 07-union-char-numeric-255 07-union-scoped 07-union-boolean 07-union-aliases 07-union-wchar-label
     07-union-string-sequence-aliases 07-union-string-sequence-bounded-direct
     08-keys 08-key-nested 08-key-inherited 08-key-boundaries 08-key-union
     09-extensibility 09-default 09-id-gaps 09-evolution-optional
@@ -152,7 +152,10 @@ fixtures_for_case() {
             printf '%s\n' union-zero union-ten
             ;;
         07-union-char-numeric)
-            printf '%s\n' union-127 union-255 union-default
+            printf '%s\n' union-127 union-default
+            ;;
+        07-union-char-numeric-255)
+            printf '%s\n' union-255 union-default
             ;;
         07-union-string-sequence-aliases)
             printf '%s\n' union-direct-narrow union-direct-wide union-alias-narrow union-alias-wide union-bounded-narrow union-bounded-wide
@@ -701,7 +704,7 @@ for case_id in "${case_ids[@]}"; do
     fi
     case "$case_id" in
         04-unbounded-string-aliases) cmake_adaptation_args+=( -DWIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES=ON ) ;;
-        07-union-char-numeric)
+        07-union-char-numeric|07-union-char-numeric-255)
             cmake_adaptation_args+=( -DWIRELOOM_TYPED_NUMERIC_CHAR_UNION=ON -DWIRELOOM_UNSIGNED_CHAR_NUMERIC_UNION=ON )
             ;;
         04-string-alias-chains) cmake_adaptation_args+=( -DWIRELOOM_TYPED_STRING_ALIAS_CHAINS=ON ) ;;

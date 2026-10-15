@@ -374,6 +374,7 @@ void DiscoverCases(string[] commandArgs)
             "04-string-alias-chains" => "StringAliasChainsSample",
             "07-union-string-sequence-aliases" => "StringSequenceUnionsSample",
             "07-union-char-numeric" => "Choice",
+            "07-union-char-numeric-255" => "Choice",
             "07-union-string-sequence-bounded-direct" => "DirectBoundedStringSequences",
             "08-key-inherited" => "Derived",
             "08-key-nested" => "Outer",
@@ -419,6 +420,7 @@ void DiscoverRti(string[] commandArgs)
         "04-string-alias-chains" => "StringAliasChainsSample",
         "07-union-string-sequence-aliases" => "StringSequenceUnionsSample",
         "07-union-char-numeric" => "Choice",
+        "07-union-char-numeric-255" => "Choice",
         "07-union-string-sequence-bounded-direct" => "DirectBoundedStringSequences",
         "08-key-inherited" => "Derived",
         "08-key-nested" => "Outer",
@@ -579,9 +581,9 @@ void RenderReport(string[] commandArgs)
             return "Single-byte C++ execution charset (ISO-8859-1): RTI emits the char8 label literally; preserve byte 255 and signed metadata label -1 instead of a UTF-8 multicharacter constant.";
         }
 
-        if (id == "07-union-char-numeric")
+        if (id is "07-union-char-numeric" or "07-union-char-numeric-255")
         {
-            return "Compile the typed RTI C++ peer with unsigned char so generated branch guards can represent IDL char label 255 on Linux.";
+            return "Compile the typed RTI C++ peer with unsigned char so generated branch guards can represent high IDL char labels on Linux.";
         }
 
         if (id == "09-optional-string-sequences" && fixture is ("optional-wide-only" or "optional-multiple"))
