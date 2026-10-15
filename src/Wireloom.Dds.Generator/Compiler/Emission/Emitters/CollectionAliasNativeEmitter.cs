@@ -60,7 +60,7 @@ internal static class CollectionAliasNativeEmitter
         {
             if (isString)
             {
-                nativeElementType = declaration.IsWideString ? "NativeWstring" : "NativeString";
+                nativeElementType = plan.IsWideString ? "NativeWstring" : "NativeString";
             }
             else
             {
@@ -233,7 +233,7 @@ internal static class CollectionAliasNativeEmitter
                 }
                 else if (isString)
                 {
-                    writer.WriteLine($"Value.Initialize(size: {declaration.StringBound}, allocateMemory);");
+                    writer.WriteLine($"Value.Initialize(size: {plan.StringBound}, allocateMemory);");
                 }
                 else
                 {
@@ -286,7 +286,7 @@ internal static class CollectionAliasNativeEmitter
                 }
                 else if (isString)
                 {
-                    writer.WriteLine($"Value.ToNative(sample.Value, {declaration.StringBound});");
+                    writer.WriteLine($"Value.ToNative(sample.Value, {plan.StringBound});");
                 }
                 else
                 {

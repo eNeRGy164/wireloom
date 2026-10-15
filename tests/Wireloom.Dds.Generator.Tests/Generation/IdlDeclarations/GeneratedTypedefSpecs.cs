@@ -325,6 +325,68 @@ public sealed class GeneratedTypedefSpecs
     }
 
     [Fact]
+    public void PreservesStringKindAndBoundsThroughTypedefChains()
+    {
+        // Arrange
+        var input = Input("string-alias-chains.idl",
+            """
+            module StringAliasChains {
+                typedef string<16> BoundedText;
+                typedef BoundedText BoundedTextChain;
+                typedef BoundedTextChain BoundedTextChain2;
+                typedef wstring<8> BoundedWideText;
+                typedef BoundedWideText BoundedWideTextChain;
+                typedef BoundedWideTextChain BoundedWideTextChain2;
+                typedef wstring WideText;
+                typedef WideText WideTextChain;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        foreach (var name in new[] { "BoundedTextChain", "BoundedTextChain2" })
+        {
+            var managed = documents[$"StringAliasChains.{name}.g.cs"].Source;
+            managed.ShouldContain("[Bound(16)]");
+            managed.ShouldContain("Its IDL bound is <c>16</c> UTF-8 bytes.");
+            managed.ShouldContain("public string Value { get; set; } = string.Empty;");
+
+            var plugin = documents[$"StringAliasChains.Implementation.{name}Plugin.g.cs"].Source;
+            plugin.ShouldContain("dtf.CreateString(16)");
+            plugin.ShouldNotContain("CreateWideString");
+
+            var native = documents[$"StringAliasChains.Implementation.{name}Unmanaged.g.cs"].Source;
+            native.ShouldContain("private NativeString Value;");
+            native.ShouldContain("Value.Initialize(size: 16, allocateMemory);");
+            native.ShouldContain("Value.ToNative(sample.Value, 16);");
+        }
+
+        foreach (var name in new[] { "BoundedWideTextChain", "BoundedWideTextChain2" })
+        {
+            var managed = documents[$"StringAliasChains.{name}.g.cs"].Source;
+            managed.ShouldContain("[Bound(8)]");
+            managed.ShouldContain("Its IDL bound is <c>8</c> UTF-16 code units.");
+            managed.ShouldContain("public string Value { get; set; } = string.Empty;");
+
+            var plugin = documents[$"StringAliasChains.Implementation.{name}Plugin.g.cs"].Source;
+            plugin.ShouldContain("dtf.CreateWideString(8)");
+            plugin.ShouldContain("TypeKind.WideString");
+
+            var native = documents[$"StringAliasChains.Implementation.{name}Unmanaged.g.cs"].Source;
+            native.ShouldContain("private NativeWstring Value;");
+            native.ShouldContain("Value.Initialize(size: 8, allocateMemory);");
+            native.ShouldContain("Value.ToNative(sample.Value, 8);");
+        }
+
+        documents["StringAliasChains.Implementation.WideTextChainPlugin.g.cs"].Source
+            .ShouldContain("dtf.CreateWideString(255)");
+        documents["StringAliasChains.Implementation.WideTextChainUnmanaged.g.cs"].Source
+            .ShouldContain("private NativeWstring Value;");
+    }
+
+    [Fact]
     public void EmitsBoundedStringSequenceAliasContracts()
     {
         // Arrange

@@ -42,11 +42,6 @@ internal static class CollectionAliasEmitter
         }
 
 
-        if (declaration is { IsCollection: false, IsString: false })
-        {
-            element = compilation.ResolveUnderlyingType(element, declaration.Namespace);
-        }
-
         IdlType? resolvedElementType = null;
         EmissionTypePlan elementPlan;
         if (declaration.IsString)
@@ -55,8 +50,27 @@ internal static class CollectionAliasEmitter
         }
         else
         {
-            resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
-            elementPlan = EmissionTypeProjector.ToCollectionElementType(resolvedElementType, declaration.Namespace);
+            if (!declaration.IsCollection)
+            {
+                resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
+                elementPlan = EmissionTypeProjector.ToCollectionElementType(resolvedElementType, declaration.Namespace);
+
+                if (elementPlan.Shape.IsString)
+                {
+                    elementPlan = EmissionTypeProjector.UnwrapValueEmissionType(elementPlan);
+                }
+                else
+                {
+                    element = compilation.ResolveUnderlyingType(element, declaration.Namespace);
+                    resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
+                    elementPlan = EmissionTypeProjector.ToCollectionElementType(resolvedElementType, declaration.Namespace);
+                }
+            }
+            else
+            {
+                resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
+                elementPlan = EmissionTypeProjector.ToCollectionElementType(resolvedElementType, declaration.Namespace);
+            }
         }
 
         string? elementNativeType = null;

@@ -1,0 +1,12 @@
+module RuntimeStringAliasContracts {
+    typedef string Text;
+    typedef Text TextChain;
+    typedef string<16> BoundedText;
+    typedef BoundedText BoundedTextChain;
+    typedef BoundedTextChain BoundedTextChain2;
+    typedef wstring WideText;
+    typedef WideText WideTextChain;
+    typedef wstring<8> BoundedWideText;
+    typedef BoundedWideText BoundedWideTextChain;
+    typedef BoundedWideTextChain BoundedWideTextChain2;
+};

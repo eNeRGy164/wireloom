@@ -381,3 +381,24 @@ interoperability for numeric character labels.
 | Coverage verifier                  | Passed                                                                            |
 | Community Qodana                   | Exit 0; zero problems; `Done`                                                     |
 | CI / Coveralls                     | Pending push and workflow execution                                               |
+
+## F7 scalar string typedef-chain repair
+
+Scalar typedef chains now preserve narrow/wide string kind, declared bounds,
+managed initialization, DynamicType metadata, and native storage through
+managed, plugin, and native emission. The regular fixture covers one- and
+two-hop narrow and wide chains. RTI C# source generation supports the same
+properties; no DDS wire interoperability claim is made.
+
+| Validation                            | Result                                                                                   |
+| ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Locked restores                       | Generator, generator tests, runtime contracts, and corpus compliance restored cleanly   |
+| Generator Release build                | Passed; 0 warnings, 0 errors                                                            |
+| Generator tests                        | 1,245 passed, 0 failed, 0 skipped                                                       |
+| Runtime contracts                      | 503 passed, 0 failed, 0 skipped                                                         |
+| Corpus compliance                      | 289 passed, 1 existing export-only skip                                                 |
+| Maintained-source coverage             | 4,724 / 5,022 branches (94.07%); 6,965 / 7,033 lines (99.03%)                            |
+| Generated-fixture coverage             | 1,345 / 2,398 branches (56.09%); 5,536 / 8,188 lines (67.61%); 571 classes               |
+| Changed planner/emitter branches       | All covered: 124 / 124 across the alias plan and managed/native/plugin emission paths    |
+| Community Qodana                       | Exit 0; zero problems; fresh SARIF; log ends with `Done`                                 |
+| CI / Coveralls                         | Pending push and workflow execution                                                     |

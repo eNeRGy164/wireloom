@@ -43,6 +43,9 @@ internal sealed class CollectionAliasEmissionPlan(
 
     public bool IsWideString => ElementPlan.IsWideString;
 
+    public bool IsStringBounded =>
+        EmissionTypeProjector.UnwrapValueEmissionType(ElementPlan) is StringEmissionType { IsBounded: true };
+
     public int StringBound => ElementPlan.Bound ?? 255;
 
     /// <summary>Gets the RTI dynamic-type primitive name for a primitive element.</summary>
