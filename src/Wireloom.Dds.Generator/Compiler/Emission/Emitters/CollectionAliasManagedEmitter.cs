@@ -27,7 +27,7 @@ internal static class CollectionAliasManagedEmitter
         var requiresNullForgivingValueInitializer = !declaration.IsCollection && plan is { IsAggregate: true, IsPrimitive: false, IsEnum: false };
         var writer = EmissionSupport.CreateSource(
             declaration.Namespace,
-            EmissionSupport.GetManagedTypeUsings([plan.ElementPlan], usesOmgTypes: plan.IsSequence || declaration.Bound is not null || declaration.IsString, usesSequence: plan.IsSequence),
+            EmissionSupport.GetManagedTypeUsings([plan.ElementPlan], usesOmgTypes: plan.IsSequence || declaration.Bound is not null || plan.IsString, usesSequence: plan.IsSequence),
             sourceIdlFileName);
 
         writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> IDL typedef declared in <c>{sourceIdlFileName}</c>.");
@@ -204,30 +204,30 @@ internal static class CollectionAliasManagedEmitter
         else
         {
             var valueSummary = "Gets or sets the value represented by this typedef.";
-            if (declaration is { IsString: true, IsStringBounded: true })
+            if (plan.IsStringBounded)
             {
-                valueSummary += $" Its IDL bound is <c>{declaration.StringBound}</c> {MemberEmissionRenderer.StringBoundUnit(declaration.IsWideString)}.";
+                valueSummary += $" Its IDL bound is <c>{plan.StringBound}</c> {MemberEmissionRenderer.StringBoundUnit(plan.IsWideString)}.";
             }
 
             writer.WriteXmlSummary(valueSummary);
 
-            if (declaration.IsString)
+            if (plan.IsString)
             {
-                var stringKind = declaration.IsWideString ? "wide" : "narrow";
-                var unit = MemberEmissionRenderer.StringBoundUnit(declaration.IsWideString);
-                var stringRemarks = declaration.IsStringBounded
+                var stringKind = plan.IsWideString ? "wide" : "narrow";
+                var unit = MemberEmissionRenderer.StringBoundUnit(plan.IsWideString);
+                var stringRemarks = plan.IsStringBounded
                     ? $"The bound on this {stringKind} IDL string is measured in {unit}. The generated C# property does not check the bound when assigned."
                     : $"This unbounded {stringKind} IDL string has an effective limit of 255 {unit}. The generated C# property does not enforce the effective limit when assigned.";
                 writer.WriteXmlRemarks(stringRemarks);
                 writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", "RTI Connext 7.7.0 string and wide-string bounds");
             }
 
-            if (declaration.IsString)
+            if (plan.IsString)
             {
-                writer.WriteLine($"[Bound({declaration.StringBound})]");
+                writer.WriteLine($"[Bound({plan.StringBound})]");
             }
 
-            writer.WriteLine($"public {elementReference} Value {{ get; set; }}{(declaration.IsString ? " = string.Empty;" : requiresNullForgivingValueInitializer ? " = null!;" : string.Empty)}");
+            writer.WriteLine($"public {elementReference} Value {{ get; set; }}{(plan.IsString ? " = string.Empty;" : requiresNullForgivingValueInitializer ? " = null!;" : string.Empty)}");
             writer.BlankLine();
 
             writer.WriteXmlSummary("Initializes the typedef value to its default value.");

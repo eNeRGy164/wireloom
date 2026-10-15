@@ -66,14 +66,14 @@ internal static class CollectionAliasPluginEmitter
 
             if (isString)
             {
-                if (declaration.IsWideString)
+                if (plan.IsWideString)
                 {
-                    writer.WriteLine($"using var dtWString = dtf.CreateWideString({declaration.StringBound});");
+                    writer.WriteLine($"using var dtWString = dtf.CreateWideString({plan.StringBound});");
                     dynamicType = "dtWString";
                 }
                 else
                 {
-                    writer.WriteLine($"using var dtString = dtf.CreateString({declaration.StringBound});");
+                    writer.WriteLine($"using var dtString = dtf.CreateString({plan.StringBound});");
                     dynamicType = "dtString";
                 }
             }
@@ -94,7 +94,7 @@ internal static class CollectionAliasPluginEmitter
 
         if (!plan.IsCollection && (plan.IsString || plan.IsPrimitive))
         {
-            EmitAliasAnnotations(writer, declaration, plan);
+            EmitAliasAnnotations(writer, plan);
 
             writer.BlankLine();
             writer.WriteLine("return aliasType;");
@@ -105,15 +105,15 @@ internal static class CollectionAliasPluginEmitter
         return [new GeneratedIdlSource(names.Plugin.HintName, writer.ToString())];
     }
 
-    private static void EmitAliasAnnotations(GeneratedSourceWriter writer, IdlTypedef declaration, CollectionAliasEmissionPlan plan)
+    private static void EmitAliasAnnotations(GeneratedSourceWriter writer, CollectionAliasEmissionPlan plan)
     {
-        if (declaration.IsString)
+        if (plan.IsString)
         {
             writer.BlankLine();
             writer.OpenBrace();
             writer.WriteLine("var annotations = new Annotations(");
             writer.Indent();
-            var stringKind = declaration.IsWideString ? "WideString" : "String";
+            var stringKind = plan.IsWideString ? "WideString" : "String";
             writer.WriteLine($"TypeKind.{stringKind},");
             writer.WriteLine($"defaultValue: new AnnotationParameterValue {{ {stringKind}Value = \"\" }},");
             writer.WriteLine("minValue: null,");
