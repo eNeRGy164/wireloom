@@ -115,7 +115,7 @@ int main(int argc, char **argv)
         }
 #endif
 #ifdef WIRELOOM_TYPED_NUMERIC_CHAR_UNION
-        if (case_id == "07-union-char-numeric") {
+        if (case_id == "07-union-char-numeric" || case_id == "07-union-char-numeric-255") {
             return run_typed_fixture_peer(
                 participant, role, topic_name, timeout_seconds, case_id, fixture);
         }

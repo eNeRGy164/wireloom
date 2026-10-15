@@ -143,14 +143,15 @@ keeping fixture variations grouped without repeating the same filename.
 Wireloom-positive selection is independent of RTI oracle status. Each run's
 report records outcomes for the selected fixtures and pairings.
 
-The recently added positive corpus cases C135–C140 have fixtures that exercise
+The recently added positive corpus cases C135–C141 have fixtures that exercise
 their declared variations rather than default-only samples:
 
 | Case | Wire fixtures | Variation checked |
 | --- | --- | --- |
 | C135 `04-unbounded-string-aliases` | `string-empty`, `string-boundary` | Empty narrow/wide aliases and 255-character narrow/wide values. |
 | C136 `05-unbounded-sequence-aliases` | `sequence-empty`, `sequence-multiple` | Empty and two-element sequences across primitive, enum, aggregate, scalar-alias, narrow/wide, and bounded-string element aliases. |
-| C137 `07-union-char-numeric` | `union-127`, `union-255`, `union-default` | A signed-char boundary label, the maximum char label, and a default-label branch. The 254 fixture was replaced with 127 to separate the RTI C# compile failure from high-label behavior. Wire results for the updated IDL are pending a fresh RTI matrix run. The C++ peer uses unsigned-char compilation for label 255. |
+| C137 `07-union-char-numeric` | `union-127`, `union-default` | A 127 numeric label and a default-label branch. RTI 7.7.0 accepts the IDL but its C# output assigns integer 127 to `char`, producing CS0266. For `union-127`, Wireloom C# and RTI C++ exchanges pass in both directions and RTI C++ self-exchange passes. Default-branch exchanges pass only within each implementation because the peers observe different discriminator values. |
+| C141 `07-union-char-numeric-255` | `union-255`, `union-default` | The maximum `char` label and a default-label branch. RTI 7.7.0 accepts the IDL but its C# output assigns integer 255 to `char`, producing CS0266. The C++ peer uses unsigned-char compilation. In the isolated run, Wireloom C# self-exchange passed for label 255, but RTI C++ pairings failed type discovery or value verification; default-branch exchanges passed only within each implementation because the union definitions have no common non-default label. |
 | C138 `04-string-alias-chains` | `string-empty`, `string-boundary` | Empty values and exact narrow/wide bounds through bounded and unbounded alias chains. |
 | C139 `07-union-string-sequence-aliases` | `union-direct-narrow`, `union-direct-wide`, `union-alias-narrow`, `union-alias-wide`, `union-bounded-narrow`, `union-bounded-wide` | Direct, alias, and bounded-alias branches with three sequence elements; bounded branches include strings at their declared length limits. Wireloom C# and RTI C++ pairings pass (24/24); the 30 RTI C# pairings fail with `FromDynamicData` `NullReferenceException`. |
 | C140 `07-union-string-sequence-bounded-direct` | narrow/wide `empty` and `multiple` | Empty and three-element direct bounded sequence branches, including strings at the element bounds. All nine pairings pass. |

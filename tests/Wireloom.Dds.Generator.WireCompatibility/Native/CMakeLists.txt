@@ -20,8 +20,8 @@ if(WIRELOOM_CHAR8_LITERAL_FIXTURE)
 endif()
 if(WIRELOOM_UNSIGNED_CHAR_NUMERIC_UNION)
     # RTI's generated char-discriminator union stores IDL char in C++ char.
-    # On Linux's default signed-char ABI, label 255 becomes -1 and
-    # the generated branch guards reject their own assigned discriminator.
+    # On Linux's default signed-char ABI, label 255 becomes -1 and the
+    # generated branch guard rejects its assigned discriminator.
     target_compile_options(wire-peer PRIVATE -funsigned-char)
 endif()
 if(WIRELOOM_DYNAMIC_WCHAR_UNION)
