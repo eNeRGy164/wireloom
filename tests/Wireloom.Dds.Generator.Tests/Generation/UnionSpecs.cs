@@ -65,6 +65,47 @@ public sealed class UnionSpecs
     }
 
     [Fact]
+    public void EmitsDirectBoundedStringSequenceUnionBranchesWithSpecializedNativeStorage()
+    {
+        // Arrange
+        var input = Input("union-string-sequences.idl",
+            """
+            module Example {
+                const long NarrowBound = 8;
+                const long WideBound = 4;
+                union Choice switch(long) {
+                    case 0: sequence<string<NarrowBound>, 3> narrow;
+                    case 1: sequence<wstring<WideBound>, 3> wide;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Example.Choice.g.cs"].Source;
+        managed.ShouldContain("public ISequence<string> narrow");
+        managed.ShouldContain("public ISequence<string> wide");
+
+        var native = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
+        native.ShouldContain("private NativeStringSeq narrow;");
+        native.ShouldContain("private NativeWstringSeq wide;");
+        native.ShouldContain("narrow.Initialize(max: 3, absoluteMax: 3, maxStrLen: 8, allocateMemory);");
+        native.ShouldContain("wide.Initialize(max: 3, absoluteMax: 3, maxStrLen: 4, allocateMemory);");
+        native.ShouldContain("narrow.ToNative(sample.narrow, 8);");
+        native.ShouldContain("wide.ToNative(sample.wide, 4);");
+        native.ShouldContain("narrow.FromNative(sample.narrow);");
+        native.ShouldContain("wide.FromNative(sample.wide);");
+        native.ShouldContain("narrow.Destroy();");
+        native.ShouldContain("wide.Destroy();");
+
+        var plugin = documents["Example.Implementation.ChoicePlugin.g.cs"].Source;
+        plugin.ShouldContain("CreateSequenceWithAccessInfo(dtf, dtf.CreateString(8), 3)");
+        plugin.ShouldContain("CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(4), 3)");
+    }
+
+    [Fact]
     public void MultiLabelUnionAccessorsAndFromNativePreserveTheNativeDiscriminator()
     {
         // Arrange

@@ -15,13 +15,7 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsSequence)
         {
-            var element = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
-            if (HasAggregateElement)
-            {
-                return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory);";
-            }
-
-            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory);";
+            return BuildSequenceInitializeStatement(namespaceName, nativeFieldPrefix);
         }
 
         if (IsAggregate)

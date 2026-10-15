@@ -1,0 +1,17 @@
+module RuntimeUnionStringSequences {
+    typedef sequence<string, 3> NarrowTexts;
+    typedef sequence<wstring, 3> WideTexts;
+    typedef sequence<string<8>, 3> BoundedNarrowTexts;
+    typedef sequence<wstring<4>, 3> BoundedWideTexts;
+
+    union StringSequences switch(long) {
+        case 0: sequence<string, 3> directNarrow;
+        case 1: sequence<wstring, 3> directWide;
+        case 2: sequence<string<8>, 3> boundedNarrow;
+        case 3: sequence<wstring<4>, 3> boundedWide;
+        case 4: NarrowTexts narrowAlias;
+        case 5: WideTexts wideAlias;
+        case 6: BoundedNarrowTexts boundedNarrowAlias;
+        case 7: BoundedWideTexts boundedWideAlias;
+    };
+};
