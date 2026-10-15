@@ -1,0 +1,25 @@
+module RuntimeSequenceCopy {
+    struct Child { long id; sequence<long, 4> values; };
+    union Choice switch(long) { case 0: Child child; default: long number; };
+    typedef sequence<Child, 4> Children;
+    typedef sequence<Child> UnboundedChildren;
+    typedef Children ChildrenChain;
+    typedef Child ChildAlias;
+    typedef ChildAlias ChildAliasChain;
+    typedef sequence<ChildAliasChain, 4> AliasChildren;
+    typedef sequence<Choice, 4> Choices;
+    typedef Child Points[2];
+    typedef long Scalar;
+    typedef sequence<Scalar, 4> Scalars;
+    typedef sequence<long, 4> Numbers;
+    struct Holder {
+        sequence<Child, 4> direct;
+        Children wrapped;
+        @optional sequence<Child, 4> optionalChildren;
+    };
+    union Container switch(long) {
+        case 0: sequence<Child, 4> direct;
+        case 1: Children wrapped;
+        default: long number;
+    };
+};

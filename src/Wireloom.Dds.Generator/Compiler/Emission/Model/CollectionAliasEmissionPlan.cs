@@ -39,7 +39,7 @@ internal sealed class CollectionAliasEmissionPlan(
 
     public bool NativeValueRequiresCast { get; } = nativeValueRequiresCast;
 
-    public bool CollectionElementIsAggregate => ElementPlan is AliasEmissionType || ElementPlan.Shape.IsAggregate;
+    public bool CollectionElementIsAggregate => CollectionElementCopyPolicy.RequiresManagedCopy(ElementPlan);
 
     public bool IsWideString => ElementPlan.IsWideString;
 

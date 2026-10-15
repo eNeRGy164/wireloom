@@ -196,7 +196,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         if (IsSequence)
         {
             var elementType = TypeReference(ElementCSharpType!, currentNamespace);
-            var copiedSequence = HasAggregateElement
+            var copiedSequence = CollectionElementCopyPolicy.RequiresManagedCopy(ElementType!)
                 ? $"global::System.Linq.Enumerable.Select({source}, element => new {elementType}(element))"
                 : source;
             if (IsOptional)
@@ -229,7 +229,11 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
 
         if (IsSequence)
         {
-            return $"new Sequence<{TypeReference(ElementCSharpType!, currentNamespace)}>({source})";
+            var elementType = TypeReference(ElementCSharpType!, currentNamespace);
+            var copiedSequence = CollectionElementCopyPolicy.RequiresManagedCopy(ElementType!)
+                ? $"global::System.Linq.Enumerable.Select({source}, element => new {elementType}(element))"
+                : source;
+            return $"new Sequence<{elementType}>({copiedSequence})";
         }
 
         if (IsAggregate)

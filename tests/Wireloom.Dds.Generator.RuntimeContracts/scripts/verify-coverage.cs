@@ -26,7 +26,7 @@ foreach (var counter in new[] { "branches-valid", "branches-covered", "lines-val
     }
 }
 
-foreach (var family in new[] { "RuntimeManaged.", "RuntimeUnions.", "RuntimeAliases.", "RuntimeDiscriminators." })
+foreach (var family in new[] { "RuntimeManaged.", "RuntimeUnions.", "RuntimeAliases.", "RuntimeDiscriminators.", "RuntimeSequenceCopy." })
 {
     if (!classes.Any(type => ((string?)type.Attribute("name") ?? "").StartsWith(family, StringComparison.Ordinal)))
     {

@@ -52,7 +52,7 @@ public partial class NestedSequence : global::System.IEquatable<NestedSequence>
             return;
         }
 
-        Value = new Sequence<LongSequence>(other.Value);
+        Value = new Sequence<LongSequence>(global::System.Linq.Enumerable.Select(other.Value, element => new LongSequence(element)));
     }
 
     /// <inheritdoc />

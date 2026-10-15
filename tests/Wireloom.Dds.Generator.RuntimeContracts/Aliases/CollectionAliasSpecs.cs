@@ -87,9 +87,8 @@ public sealed class CollectionAliasSpecs
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
         copy.Value.ShouldNotBeSameAs(source.Value);
-        // Current sequence typedefs copy the container and retain aggregate elements.
-        copy.Value[0].ShouldBeSameAs(source.Value[0]);
-        copy.Value[0] = new Child(99, "replacement");
+        copy.Value[0].ShouldNotBeSameAs(source.Value[0]);
+        copy.Value[0].id = 99;
         source.Value[0].id.ShouldBe(17);
         copy.Equals(source).ShouldBeFalse();
         copy.Value.Clear();

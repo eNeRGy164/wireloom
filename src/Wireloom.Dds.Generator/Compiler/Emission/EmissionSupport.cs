@@ -67,12 +67,12 @@ internal static class EmissionSupport
     }
 
     /// <summary>Gets namespaces required by native storage types and their runtime interfaces.</summary>
-    internal static IReadOnlyList<string> GetUnmanagedTypeUsings(IEnumerable<MemberEmissionPlan> fields, bool usesNativeChar = false)
+    internal static IReadOnlyList<string> GetUnmanagedTypeUsings(IEnumerable<MemberEmissionPlan> fields, bool usesSequence = false, bool usesNativeChar = false)
     {
         var plans = fields.ToArray();
         var types = plans.Select(field => field.Type).ToArray();
         var usesOmgSequence = plans.Any(field => field.IsSequence && field.IsOptional && (field.IsStringSequence || field.HasAggregateElement));
-        var usesSequenceType = plans.Any(field => field is
+        var usesSequenceType = usesSequence || plans.Any(field => field is
         {
             IsSequence: true,
             HasAggregateElement: false,

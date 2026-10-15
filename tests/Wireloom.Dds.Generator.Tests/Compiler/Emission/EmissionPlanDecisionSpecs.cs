@@ -55,8 +55,15 @@ public sealed class EmissionPlanDecisionSpecs
         // Assert
         primitivePlan.IsString.ShouldBeFalse();
         primitivePlan.CollectionElementIsAggregate.ShouldBeTrue();
+        CollectionElementCopyPolicy.RequiresManagedCopy(primitiveAlias).ShouldBeTrue();
         stringPlan.IsString.ShouldBeFalse();
         stringPlan.CollectionElementIsAggregate.ShouldBeTrue();
+        CollectionElementCopyPolicy.RequiresManagedCopy(stringAlias).ShouldBeTrue();
+        CollectionElementCopyPolicy.RequiresManagedCopy(new PrimitiveEmissionType("long", "int")).ShouldBeFalse();
+        CollectionElementCopyPolicy.RequiresManagedCopy(new AliasEmissionType(
+            "Example::ErasedScalar",
+            new PrimitiveEmissionType("long", "int"),
+            "int")).ShouldBeFalse();
     }
 
     [Theory]

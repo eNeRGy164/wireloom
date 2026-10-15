@@ -240,7 +240,7 @@ Generated branch coverage fell as the construction fixture added support,
 metadata, and value APIs beyond the constructor paths being tested; this is
 not complete API coverage. The maintained-source changed methods are fully
 covered, and remaining generated gaps must still be reviewed against the
-matrix. F5–F8 remain deferred, so #39 is not complete.
+matrix. F6–F8 remain deferred, so #39 is not complete.
 
 The fresh package was built with:
 
@@ -259,6 +259,39 @@ normal Release corpus run. Qodana used the documented Community command with
 `global.json` visible and separate Linux intermediates. The original comparison
 probe ran against freshly exported Wireloom IDL output; its parsed Windows and
 Linux observations match. No serialization or DDS wire claim is added.
+
+## F5 sequence-copy repair
+
+On October 15, 2026, the typed sequence-copy probe compared the retained RTI
+C# 7.7.0.1 generator output with Wireloom-generated output. The 11 aggregate
+sequence shapes were equal before mutation and had equal hashes in both
+implementations. RTI independently copied aggregate objects and nested mutable
+sequences in every shape. Baseline Wireloom shared elements through collection
+typedefs, typedef-backed struct members, and direct or typedef-backed union
+sequence branches. A shared copy policy now constructs independent aggregate
+and generated alias elements in those paths. The full shape matrix and repair
+details are in [F5-EVIDENCE.md](F5-EVIDENCE.md).
+
+Windows (.NET 10.0.12) and Linux (.NET 10.0.11) produced identical normalized
+reports per implementation. The baseline probe needed a scratch-only
+`using Rti.Types;` because union native emission omitted the direct sequence
+branch import. F11 is now resolved, and the runtime fixture exercises that
+branch. These are generated-source and managed API observations; no
+serialization or DDS wire exchange was performed.
+
+Validated October 15, 2026:
+
+| Gate                                    | Result                                                                                          |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Full generator suite, Windows           | 1,242 passed, no skips                                                                          |
+| Runtime contracts, Windows and Linux    | 491 passed on each, no skips                                                                    |
+| Corpus compliance with generator export | 287 passed, no skips                                                                            |
+| Fresh `0.3.0-f5` package integration    | 17 passed                                                                                       |
+| Maintained-source branch coverage       | `CollectionElementCopyPolicy.RequiresManagedCopy` 4/4; changed copy-expression branches covered |
+| Generated-fixture coverage, Windows     | 1,293 / 2,222 branches (58.19%); 5,272 / 7,463 lines (70.64%); 511 classes                      |
+| Generated coverage report validation    | Passed; includes `RuntimeSequenceCopy` fixtures                                                 |
+| Community Qodana                        | Exit 0; zero problems; `Done`                                                                   |
+| CI / Coveralls                          | Pending push and workflow execution                                                             |
 
 ## F4 wire regression run
 

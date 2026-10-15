@@ -52,7 +52,7 @@ public partial class Rows : global::System.IEquatable<Rows>
             return;
         }
 
-        Value = new Sequence<Row>(other.Value);
+        Value = new Sequence<Row>(global::System.Linq.Enumerable.Select(other.Value, element => new Row(element)));
     }
 
     /// <inheritdoc />
