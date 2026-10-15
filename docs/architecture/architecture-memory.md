@@ -33,7 +33,9 @@ or ADRs first, then refresh this file and
   Sequence typedef plans share the effective 100-element fallback across
   managed attributes, native allocation, and metadata. String typedefs import
   their bound attribute namespace and retain the effective 255-byte/code-unit
-  limit. Alias data classes retain their RTI formatting delegate; support
+  limit. Direct union string-sequence branches use specialized narrow/wide
+  native storage and pass element bounds through initialization and conversion;
+  typedef-backed branches delegate through generated alias wrappers. Alias data classes retain their RTI formatting delegate; support
   classes hide the nonvirtual default formatter for unsupported root kinds.
   Loops and escaping stay in support documents. Wide-string alias annotations
   preserve their wide kind/value so support instances initialize.
@@ -73,7 +75,8 @@ or ADRs first, then refresh this file and
   identity, explicit compiler phases, diagnostics, test separation, measured
   invalidation, and supply-chain controls apply across the system. Build-time
   generated runtime contract fixtures execute typed managed/native/support
-  APIs on Windows and Linux. Coveralls measures maintained generator source;
+  APIs on Windows and Linux, including direct and typedef-backed string
+  sequence union branches. Coveralls measures maintained generator source;
   generated fixtures and test project code are excluded. The behavior matrix
   keeps unresolved contracts visible. Retained RTI C# oracle sources and
   typed runtime fixtures cover unbounded typedef behavior.

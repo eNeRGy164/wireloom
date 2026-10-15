@@ -54,12 +54,20 @@ native allocation, and DynamicType metadata consume that same resolved bound;
 the semantic declaration retains whether the IDL supplied an explicit bound.
 String typedefs retain their effective 255-byte/code-unit limit and import the
 attribute namespace whenever their generated value property uses `Bound`.
+Direct union branches that contain string sequences use the same specialized
+`NativeStringSeq` or `NativeWstringSeq` lifecycle as ordinary sequence members.
+The resolved element bound flows through native initialization and conversion;
+typedef-backed union branches delegate through their generated alias wrappers.
 Retained corpus cases C135/C136 confirm these defaults against RTI-generated
 C# with a typed runtime probe on Windows and Linux. The probe also records
 RTI's independent aggregate sequence element copies and its scalar sequence
 element typedef erasure; Wireloom currently retains scalar wrappers. These
 are API observations, with no wire compatibility claim. Runtime behavior is
 covered by the [runtime contract matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix).
+Direct and typedef-backed narrow/wide string-sequence union branches are also
+covered by [`StringSequenceUnionSpecs`](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/Unions/StringSequenceUnionSpecs.cs)
+and retained RTI C# API oracles. Source-shape comparison does not establish DDS
+wire interoperability for those shapes.
 
 Alias formatting keeps RTI type-support formatting for struct and union roots
 and aggregate elements. Scalar, enum, and string roots use their managed
