@@ -8,8 +8,8 @@ The corpus covers IDL parsing, preprocessing, semantic diagnostics, RTI
 annotations, and generated C# source shape. It does not cover runtime behavior,
 serialization bytes, wire compatibility, keyhashes, or live DDS communication.
 Those concerns belong in the relevant implementation and integration tests.
-Union discriminator acceptance, compilation, range, and runtime evidence is
-summarized in the [union discriminator compatibility matrix](UNION-DISCRIMINATOR-MATRIX.md).
+Generated API runtime behavior is covered by the
+[runtime contract suite](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md).
 
 ## Contents
 
@@ -22,7 +22,7 @@ corpus/
 │   ├── negative/       rejection and diagnostic probes
 │   ├── integration/    integration entry points and support IDL
 │   └── includes/       shared IDL included by feature cases
-└── oracles/            RTI-generated C# reference sources
+├── oracles/            RTI-generated C# reference sources
 └── generator/          Wireloom-generated C# sources exported from the corpus
 ```
 
@@ -39,10 +39,10 @@ The current inventory contains:
 
 | Group                    | Count | Location                             |
 | ------------------------ | ----: | ------------------------------------ |
-| Positive feature cases   |    73 | [`idl/features`](idl/features)       |
+| Positive feature cases   |    74 | [`idl/features`](idl/features)       |
 | Negative cases           |    60 | [`idl/negative`](idl/negative)       |
 | Integration entry points |     4 | [`idl/integration`](idl/integration) |
-| Total                    |   137 | —                                    |
+| Total                    |   138 | —                                    |
 
 Each case has a manifest ID, such as `01-primitives`, and a stable `C###`
 provenance tag. Tags are used by the feature index and test diagnostics.
@@ -170,5 +170,6 @@ dotnet run --project tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.
 
 Rejected cases are omitted because they do not produce generated sources.
 
-Unbounded typedef cases C135/C136 and their typed RTI C# runtime probe are
-documented in [unbounded typedef evidence](UNBOUNDED-ALIASES.md).
+Unbounded typedef cases C135/C136 retain their RTI C# oracle pairs under
+`oracles/features`. Their generated API behavior is covered by the runtime
+contract suite.

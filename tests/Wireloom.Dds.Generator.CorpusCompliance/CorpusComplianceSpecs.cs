@@ -18,7 +18,7 @@ public sealed class CorpusComplianceSpecs
     public void CorpusManifestAndOracleLibraryHaveTheSameCaseSet()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(137);
+        cases.Length.ShouldBe(138);
         cases.ShouldBeUnique();
         CorpusRepository.OracleCaseIds.ShouldBe(cases.OrderBy(id => id, StringComparer.Ordinal).ToArray());
 
@@ -195,6 +195,62 @@ public sealed class CorpusComplianceSpecs
         // Assert
         oracleContainsRawIntegerLabels.ShouldBeTrue();
         generatedContainsCharacterCasts.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ScalarStringAliasChainsPreserveTheRetainedRtiCSharpContract()
+    {
+        // Arrange
+        var corpusCase = CorpusRepository.Cases.Single(item => item.Id == "04-string-alias-chains");
+        var oracleFiles = CorpusRepository.OracleFiles(corpusCase);
+        var oracleManaged = File.ReadAllText(oracleFiles.Single(path => !path.EndsWith("Plugin.cs", StringComparison.Ordinal)));
+        var oraclePlugin = File.ReadAllText(oracleFiles.Single(path => path.EndsWith("Plugin.cs", StringComparison.Ordinal)));
+        var generated = Compile(corpusCase);
+        var generatedSources = generated.Values.Select(source => source.Source).ToArray();
+
+        // Act / Assert
+        foreach (var (name, bound, isWide) in new[]
+                 {
+                     ("BoundedNarrowText", 16, false),
+                     ("BoundedNarrowTextChain", 16, false),
+                     ("BoundedNarrowTextChain2", 16, false),
+                     ("BoundedWideText", 8, true),
+                     ("BoundedWideTextChain", 8, true),
+                     ("BoundedWideTextChain2", 8, true)
+                 })
+        {
+            var expectedNativeString = isWide ? "NativeWstring" : "NativeString";
+            var unexpectedNativeString = isWide ? "NativeString" : "NativeWstring";
+            var expectedDynamicString = isWide ? "CreateWideString" : "CreateString";
+            var unexpectedDynamicString = isWide ? "CreateString" : "CreateWideString";
+
+            var oracleValue = TypeText([oracleManaged], name);
+            var generatedValue = TypeText(generatedSources, name);
+            oracleValue.ShouldContain($"[Bound({bound})]");
+            generatedValue.ShouldContain($"[Bound({bound})]");
+            oracleValue.ShouldContain("public string Value { get; set; } = string.Empty;");
+            generatedValue.ShouldContain("public string Value { get; set; } = string.Empty;");
+
+            var oraclePluginType = TypeText([oraclePlugin], $"{name}Plugin");
+            var generatedPluginType = TypeText(generatedSources, $"{name}Plugin");
+            oraclePluginType.ShouldContain(expectedDynamicString);
+            generatedPluginType.ShouldContain(expectedDynamicString);
+            oraclePluginType.ShouldNotContain(unexpectedDynamicString);
+            generatedPluginType.ShouldNotContain(unexpectedDynamicString);
+
+            var oracleNativeType = TypeText([oraclePlugin], $"{name}Unmanaged");
+            var generatedNativeType = TypeText(generatedSources, $"{name}Unmanaged");
+            oracleNativeType.ShouldContain(expectedNativeString);
+            generatedNativeType.ShouldContain(expectedNativeString);
+            oracleNativeType.ShouldNotContain(unexpectedNativeString);
+            generatedNativeType.ShouldNotContain(unexpectedNativeString);
+        }
+
+        static string TypeText(IEnumerable<string> sources, string name) => sources
+            .SelectMany(source => CSharpSyntaxTree.ParseText(source).GetRoot()
+                .DescendantNodes().OfType<TypeDeclarationSyntax>())
+            .Single(type => type.Identifier.ValueText == name)
+            .ToFullString();
     }
 
     [Theory]
