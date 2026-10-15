@@ -38,6 +38,10 @@ Union construction regressions also link the runtime suite's
 defaults, use discriminator type defaults, and initialize independent selected
 reference values when a copy source is null.
 
+The packed analyzer also compiles `union-string-sequences.idl`, covering direct
+narrow/wide sequence branches with nested bounded string syntax and
+typedef-backed string-sequence branches.
+
 ## .NET 8 consumer check
 
 Consumer support starts at .NET 8 with C# 12. Repository projects default to
