@@ -182,3 +182,145 @@ its aggregate percentage is not full API coverage. Review it against the
 matrix and remaining findings rather than treating F2/F3 as completion of #39.
 The expected native diagnostic in the base-dispatch characterization records
 RTI's original failure; the generated support call in the same test succeeds.
+
+## F4 investigation baseline
+
+[F4 evidence](F4-EVIDENCE.md) compares Wireloom, RTI C#, and RTI Modern C++
+across 12 union shapes, including negative integer labels and negative/mixed
+enum values, plus two populated-copy controls. Windows and Linux C# observations
+match for each implementation. At this baseline, both C# generators skipped
+initialization for a null source; C++ has no null-source constructor equivalent and preserves all
+tested default/ordinary-copy states. The evidence distinguishes parameterless
+default policy from null-copy consistency and documents the scratch-only
+compile adaptations needed for the probe.
+
+Review of RTI CODEGENII-1550 and DDS-XTypes 1.3 Table 9 established the
+parameterless integer discriminator difference as a separate conformance
+defect (F10). The probe also exposed invalid negative enum default casts
+(F9, CS0075). These findings and the null-source initialization gap were then
+repaired together, as documented below. The investigation baseline had
+475 runtime tests passing and two skips (F4/F5); those counts describe the
+pre-repair state, not current validation. The temporary F9 opt-in input has
+been promoted into the regular construction fixture.
+
+## F4, F9, and F10 repair
+
+Null-source union copies now use the parameterless constructor's initialization
+through a shared emission helper. Non-null copies initialize only the copied
+branch, avoiding a temporary default aggregate or collection. Parameterless
+discriminators follow XTypes type defaults; default-branch setters retain
+unused-label selection. Negative enum casts parenthesize their operands.
+The F4 skip and F9 opt-in failure are replaced by regular runtime fixtures.
+
+Validated October 15, 2026 with SDK 10.0.401 / .NET 10.0.12 on Windows and
+SDK 10.0.400 / .NET 10.0.11 in the existing Linux container:
+
+| Gate                                                | Result                                                                                                                          |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Locked restores / Release builds                    | Passed                                                                                                                          |
+| Full generator suite                                | 1,242 passed, no skips                                                                                                          |
+| Runtime suite, Windows and Linux                    | 484 passed and one existing F5 skip on each platform                                                                            |
+| Corpus compliance with export                       | 287 passed, no skips; includes seven constructor-default oracle comparisons                                                     |
+| Fresh `0.3.0-f4` packed analyzer integration        | 17 passed                                                                                                                       |
+| Original typed comparison probe, both platforms     | 12 null copies equal default instances; two populated controls preserve values; no Wireloom scratch adaptations                 |
+| Maintained-source branch coverage                   | 4,713 / 5,012 (94.03%)                                                                                                          |
+| Maintained-source line coverage                     | 6,942 / 7,010 (99.03%)                                                                                                          |
+| Changed initialization/default-value methods        | 100% branch and line coverage for `EmitDefaultInitialization`, `FindDefaultDiscriminatorValue`, and `ManagedDiscriminatorValue` |
+| Generated-fixture coverage, both platforms          | 1,211 / 1,942 branches (62.36%); 5,051 / 6,638 lines (76.09%); 435 classes                                                      |
+| Generated report validation / Coveralls preparation | Passed; generator and both runtime reports normalize to existing sources                                                        |
+| Community Qodana                                    | Exit 0; successful fresh SARIF invocation; zero findings; `Done`                                                                |
+| Architecture memory validation                      | Current, no issues                                                                                                              |
+| CI / Coveralls                                      | Pending push and workflow execution                                                                                             |
+
+Commands use the existing root `coverage.settings.xml` and the README's runner
+and verification scripts. Reports are under `coverage/f4-generator`,
+`coverage/f4-runtime`, and `coverage/f4-runtime-linux`; normalized copies used
+to verify Coveralls preparation are under `coverage/f4-coveralls-check`.
+Generated branch coverage fell as the construction fixture added support,
+metadata, and value APIs beyond the constructor paths being tested; this is
+not complete API coverage. The maintained-source changed methods are fully
+covered, and remaining generated gaps must still be reviewed against the
+matrix. F5–F8 remain deferred, so #39 is not complete.
+
+The fresh package was built with:
+
+```powershell
+dotnet pack src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj `
+  --no-restore --configuration Release --output package-test-feed -p:PackageVersion=0.3.0-f4
+dotnet restore tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
+  --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config `
+  -p:WireloomDdsGeneratorPackageVersion=0.3.0-f4
+dotnet run --project tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
+  --no-restore --configuration Release -p:WireloomDdsGeneratorPackageVersion=0.3.0-f4
+```
+
+Corpus export used `CORPUS_GENERATOR_EXPORT_ROOT=docs/corpus/generator` and the
+normal Release corpus run. Qodana used the documented Community command with
+`global.json` visible and separate Linux intermediates. The original comparison
+probe ran against freshly exported Wireloom IDL output; its parsed Windows and
+Linux observations match. No serialization or DDS wire claim is added.
+
+## F4 wire regression run
+
+On October 15, 2026, the existing exact-RTI-7.7.0 three-peer matrix was run
+against the uncommitted F4/F9/F10 repair. All 72 selected positive cases were
+attempted, scheduling 1,224 scenarios across nine directed peer pairings.
+Four repository copies with independent build/scratch directories ran inside
+one cached `wireloom-rti-7.7.0` container. Initial separate-container attempts
+hit WSL mount failures; the single-container run avoided those startup errors.
+The user-provided license was mounted read-only; no license data is retained
+in reports. Orchestration and analysis used shell and file-based C#, without Python.
+
+| Observation                               | Result                                                                                                      |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Original full attempt                     | 1,131 PASS, 75 FAIL, 18 NOT_RUN                                                                             |
+| Readiness-related failures                | Six; startup text preceded `READY` on the same line, defeating the harness's `^READY ` check                |
+| Current-source isolated readiness recheck | All 54 scenarios in the four affected cases passed                                                          |
+| Focused pre-fix comparison                | 198 scenarios: 129 PASS and the same 69 remaining FAIL outcomes                                             |
+| Status regressions versus pre-fix source  | Zero after the isolated readiness recheck                                                                   |
+| Comparison with older two-peer archive    | All 372 archived scenarios matched current case/fixture/peer keys; zero regressions after readiness recheck |
+
+The focused runs changed only readiness detection from `^READY ` to `READY `
+in scratch harness copies. They did not change generated peers, fixture values,
+or payload assertions. The pre-fix run substituted the two committed pre-repair
+generator files from `a3e7136` (`UnionEmitter.cs` and `EmissionUnionPlan.cs`) into the same
+source/harness snapshot. All remaining failing scenario identities and statuses
+match that pre-fix run:
+
+- 60 RTI C# reference-peer setup failures: 15 each for `07-union-octet`
+  (CS0246 for `octet`), `07-union-ulong` and `07-union-uint32` (CS0221 for
+  unsigned metadata labels), and `07-union-wchar-label` (RTI parser rejection).
+- Five `07-union-char-boundaries` high-bit payload failures involving RTI C#.
+- Four `05-array-of-sequences` cross-peer type mismatches, including the two
+  registered expected Wireloom/C++ failures and the corresponding RTI C#/C++
+  failures. Only two of the 69 failures are registered as expected in the
+  current exclusion registry; all 69 were reproduced before the repair.
+
+The 18 NOT_RUN scenarios are the nine pairings for each of
+`04-unbounded-string-aliases` and `05-unbounded-sequence-aliases`. Their C++
+harness setup selects a standalone string/collection typedef as a topic root;
+RTI provides no applicable `dynamic_type<T>::get()` for those root types.
+These cases need topic-capable aggregate wrapper fixtures in a separate
+harness change. They do not establish failed DDS exchanges or a generator
+wire regression.
+
+The raw full attempt remains preserved. Two shard scripts exited on C++ setup
+failure without publishing updated scenario rows. A file-based C# utility
+recovered their 594 completed statuses from sanitized endpoint exit-code/setup
+failure logs; missing exchanges remain NOT_RUN. The seeded type-name columns
+for those shards remain empty rather than inferred. The normal merger rejects
+incomplete runs, so the recovered report is explicitly partial and is not
+presented as a successful combined matrix.
+
+Local artifacts are under `artifacts/wire-compatibility-f4/`: original shard
+logs, `partial/results.{json,md}`, `recheck-current/results.json`,
+`recheck-before/results.json`, and `verification-summary.json`. The latter
+checks exact remaining failure sets and both baseline comparisons. The older
+archive predates several harness changes; the focused committed-source run
+is the direct pre-fix control.
+
+No wire regression attributable to the repair was observed in the existing
+fixtures. This is not a fully green matrix or complete interoperability claim:
+69 pre-existing failures and 18 blocked scenarios remain visible. Dedicated
+negative-enum/null-copy wire fixtures were not added; their new API contracts
+remain established by typed managed/native tests.

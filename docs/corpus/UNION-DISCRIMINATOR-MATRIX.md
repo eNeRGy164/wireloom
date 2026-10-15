@@ -18,6 +18,17 @@ serialize the type.
 
 ## RTI 7.7.0.1 generator results
 
+Default initialization follows DDS-XTypes 1.3 Table 9: the discriminator starts
+at its type's default, independently of a declared default branch. Integer and
+character discriminators start at zero, booleans at false, and enums at the
+first literal (including negative values). A selected member is initialized
+to its type's default. RTI documents the correction in CODEGENII-1550.
+The corpus compliance suite compares primitive constructor constants with the
+retained RTI sources; typed runtime fixtures separately cover nonzero/negative
+enums and initialized reference branches. Null-copy handling is a managed API
+contract beyond RTI's observed behavior. See the
+[F4/F9/F10 comparison and repair evidence](../../tests/Wireloom.Dds.Generator.RuntimeContracts/F4-EVIDENCE.md).
+
 The probes used `rtiddsgen` 4.7.0.1 from
 `rticom/connext-base:7.7.0.1`, with `-ppDisable`, for both `C#` and `C++11`.
 The IDL used minimum and maximum labels plus an unoccupied default branch for
