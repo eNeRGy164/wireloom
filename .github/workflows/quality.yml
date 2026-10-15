@@ -17,10 +17,43 @@ concurrency:
 env:
   DOTNET_NOLOGO: true
   TEST_PROJECT: tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj
+  RUNTIME_TEST_PROJECT: tests/Wireloom.Dds.Generator.RuntimeContracts/Wireloom.Dds.Generator.RuntimeContracts.csproj
 
 jobs:
+  runtime-contracts:
+    name: Runtime contracts (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+
+      - name: Restore locked dependencies
+        run: dotnet restore $env:RUNTIME_TEST_PROJECT --locked-mode
+        shell: pwsh
+
+      - name: Test runtime contracts
+        run: >-
+          dotnet run --project $env:RUNTIME_TEST_PROJECT
+          --no-restore --configuration Release
+        shell: pwsh
+
   coverage:
     name: Test and upload coverage
+    needs: runtime-contracts
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -38,7 +71,8 @@ jobs:
           cache-dependency-path: '**/packages.lock.json'
 
       - name: Restore locked dependencies
-        run: dotnet restore $env:TEST_PROJECT --locked-mode
+        run: |
+          dotnet restore $env:TEST_PROJECT --locked-mode
         shell: pwsh
 
       - name: Test with coverage
@@ -73,12 +107,12 @@ jobs:
         env:
           WIRELOOM_FSCHECK_TESTS: 10000
 
-      - name: Upload coverage results to Coveralls
+      - name: Upload generator coverage to Coveralls
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          file: coverage/coverage.cobertura.xml
           format: cobertura
+          file: coverage/coverage.cobertura.xml
 
   qodana:
     name: Qodana community scan
