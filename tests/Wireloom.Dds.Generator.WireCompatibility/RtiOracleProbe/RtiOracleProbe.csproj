@@ -20,6 +20,7 @@
     <Compile Include="$(RtiOracleProgram)" Link="Program.cs" />
     <Compile Include="../FixtureCatalog.cs" Link="FixtureCatalog.cs" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
     <Compile Include="../IndependentSampleVerifier.cs" Link="IndependentSampleVerifier.cs" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
+    <Compile Include="../ReaderSampleBatch.cs" Link="ReaderSampleBatch.cs" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
     <Compile Include="$(RtiOracleSourceDir)/**/*.cs" Condition="'$(RtiOracleSourceDir)' != ''" />
     <Compile Include="$(RtiOracleSource)" Link="RtiOracle.cs" Condition="'$(RtiOracleSourceDir)' == ''" />
     <Compile Include="$(RtiOraclePlugin)" Link="RtiOraclePlugin.cs" Condition="'$(RtiOracleSourceDir)' == ''" />

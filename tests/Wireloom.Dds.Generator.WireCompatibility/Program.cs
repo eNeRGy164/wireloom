@@ -377,25 +377,18 @@ internal static class Program
         {
             using var samples = reader.Take();
             takeCalls++;
-            var validData = new List<T>();
-            foreach (var sample in samples)
-            {
-                returnedSamples++;
-                if (sample.Info.ValidData)
-                {
-                    validSamples++;
-                    validData.Add(sample.Data);
-                }
-                else
-                {
-                    invalidSamples++;
-                }
-            }
+            var batch = ReaderSampleBatch.Collect(
+                samples,
+                sample => sample.Info.ValidData,
+                sample => sample.Data);
+            returnedSamples += batch.ReturnedSamples;
+            validSamples += batch.ValidData.Count;
+            invalidSamples += batch.InvalidSamples;
 
             // ValidData=false also describes ordinary instance lifecycle notifications,
             // including a writer exiting after its reliable sample was acknowledged.
             // Count those notifications, but require and verify a valid payload.
-            foreach (var sample in validData)
+            foreach (var sample in batch.ValidData)
             {
                 try
                 {
