@@ -150,7 +150,16 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
     }
 
     /// <summary>Builds a managed discriminator expression for an IDL label.</summary>
-    public string ManagedDiscriminatorLabel(string label) => IdlNaming.TypeReference(label, Namespace);
+    public string ManagedDiscriminatorLabel(string label)
+    {
+        if (DiscriminatorCSharpType == "char"
+            && int.TryParse(label, NumberStyles.Integer, CultureInfo.InvariantCulture, out var numericLabel))
+        {
+            return $"(char){numericLabel.ToString(CultureInfo.InvariantCulture)}";
+        }
+
+        return IdlNaming.TypeReference(label, Namespace);
+    }
 
     public string NativeDiscriminatorType
     {

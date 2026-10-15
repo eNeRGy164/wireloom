@@ -357,3 +357,27 @@ fixtures. This is not a fully green matrix or complete interoperability claim:
 69 pre-existing failures and 18 blocked scenarios remain visible. Dedicated
 negative-enum/null-copy wire fixtures were not added; their new API contracts
 remain established by typed managed/native tests.
+
+## F6 numeric character-label repair
+
+Numeric `char` labels now use explicit `(char)` expressions in managed and
+native C# emission, while RTI DynamicType label metadata remains integral. The
+new regular runtime fixture covers `char` labels 254/255 and the Wireloom
+`wchar` extension label 937, including multi-label selection, copies,
+equality/hash behavior, DynamicType labels, and native round trips. This fixes
+the generated C# compile failure; it does not establish DDS wire
+interoperability for numeric character labels.
+
+| Validation                         | Result                                                                            |
+| ---------------------------------- | --------------------------------------------------------------------------------- |
+| Generator build, Release           | Passed; 0 warnings, 0 errors                                                       |
+| Generator tests                    | 1,244 passed, 0 skipped                                                           |
+| Runtime contracts                  | 495 passed on Windows, 0 skipped                                                  |
+| Numeric-character Linux smoke      | 4 passed on .NET 10.0.11, 0 skipped                                               |
+| Corpus compliance                  | 286 passed, 1 existing export-only skip                                          |
+| Maintained-source coverage         | 4,726 / 5,026 branches (94.03%); 6,958 / 7,026 lines (99.03%)                    |
+| Generated-fixture coverage         | 1,331 / 2,298 branches (57.92%); 5,416 / 7,678 lines (70.54%); 521 classes       |
+| Changed label-formatting method    | `ManagedDiscriminatorLabel`: 4 / 4 branch paths covered                          |
+| Coverage verifier                  | Passed                                                                            |
+| Community Qodana                   | Exit 0; zero problems; `Done`                                                     |
+| CI / Coveralls                     | Pending push and workflow execution                                               |

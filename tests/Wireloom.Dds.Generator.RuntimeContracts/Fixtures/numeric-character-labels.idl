@@ -1,0 +1,4 @@
+module RuntimeNumericCharacterLabels {
+    union Narrow switch(char) { case 254: case 255: long value; default: long fallback; };
+    union Wide switch(wchar) { case 937: long value; default: long fallback; };
+};
