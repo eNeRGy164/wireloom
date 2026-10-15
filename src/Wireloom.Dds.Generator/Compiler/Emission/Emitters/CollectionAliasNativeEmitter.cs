@@ -28,9 +28,15 @@ internal static class CollectionAliasNativeEmitter
         }
         var isString = plan.IsString;
         var isStringSequence = plan is { IsSequence: true, IsString: true };
+        var isStringArray = plan is { IsArray: true, IsString: true };
         var stringSequenceNativeType = isStringSequence && plan.IsWideString
             ? "NativeWstringSeq"
             : "NativeStringSeq";
+        var stringArrayNativeType = "NativeStringArray";
+        if (isStringArray && plan.IsWideString)
+        {
+            stringArrayNativeType = "NativeWstringArray";
+        }
         var stringSequenceBound = isStringSequence ? plan.StringBound : 0;
         var isAggregate = plan.IsAggregate;
         var isUnion = plan.IsUnion;
@@ -77,7 +83,18 @@ internal static class CollectionAliasNativeEmitter
         {
             if (plan.IsArray)
             {
-                collectionNative = collectionElementIsAggregate ? "NativeManagedArray" : "NativeUnmanagedArray";
+                if (isStringArray)
+                {
+                    collectionNative = stringArrayNativeType;
+                }
+                else if (collectionElementIsAggregate)
+                {
+                    collectionNative = "NativeManagedArray";
+                }
+                else
+                {
+                    collectionNative = "NativeUnmanagedArray";
+                }
             }
             else
             {
@@ -101,6 +118,10 @@ internal static class CollectionAliasNativeEmitter
                 writer.CloseBlock();
                 writer.BlankLine();
                 writer.WriteLine("Value.Destroy();");
+            }
+            else if (isStringArray)
+            {
+                writer.WriteLine($"Value.Destroy(dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)});");
             }
             else if (plan.IsArray && collectionElementIsAggregate)
             {
@@ -220,6 +241,10 @@ internal static class CollectionAliasNativeEmitter
                 {
                     writer.WriteLine($"Value.Initialize<{implementationElementType}, {collectionElementUnmanagedType}>(dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, allocatePointers: allocatePointers, allocateMemory: allocateMemory);");
                 }
+                else if (isStringArray)
+                {
+                    writer.WriteLine($"Value.Initialize(dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, maxStrLen: {plan.StringBound}, allocateMemory: allocateMemory);");
+                }
                 else
                 {
                     writer.WriteLine($"Value.Initialize<{implementationElementType}>(dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, allocateMemory);");
@@ -272,6 +297,10 @@ internal static class CollectionAliasNativeEmitter
                 if (collectionElementIsAggregate)
                 {
                     writer.WriteLine($"Value.ToNative<{implementationElementType}, {collectionElementUnmanagedType}>(sample.Value, keysOnly: false, dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)});");
+                }
+                else if (isStringArray)
+                {
+                    writer.WriteLine($"Value.ToNative(sample.Value, dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, maxStrLen: {plan.StringBound});");
                 }
                 else
                 {
