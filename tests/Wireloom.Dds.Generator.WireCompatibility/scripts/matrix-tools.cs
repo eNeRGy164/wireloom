@@ -369,6 +369,12 @@ void DiscoverCases(string[] commandArgs)
             "09-optional-recursive-array" => "Node",
             "09-optional-aggregate-member" => "Holder",
             "07-union-aliases" or "06-valuetypes" => "Holder",
+            "04-unbounded-string-aliases" => "StringAliasesSample",
+            "05-unbounded-sequence-aliases" => "SequenceAliasesSample",
+            "04-string-alias-chains" => "StringAliasChainsSample",
+            "07-union-string-sequence-aliases" => "StringSequenceUnionsSample",
+            "07-union-char-numeric" => "Choice",
+            "07-union-string-sequence-bounded-direct" => "DirectBoundedStringSequences",
             "08-key-inherited" => "Derived",
             "08-key-nested" => "Outer",
             _ => null,
@@ -408,6 +414,12 @@ void DiscoverRti(string[] commandArgs)
         "09-optional-recursive-array" => "Node",
         "09-optional-aggregate-member" => "Holder",
         "07-union-aliases" or "06-valuetypes" => "Holder",
+        "04-unbounded-string-aliases" => "StringAliasesSample",
+        "05-unbounded-sequence-aliases" => "SequenceAliasesSample",
+        "04-string-alias-chains" => "StringAliasChainsSample",
+        "07-union-string-sequence-aliases" => "StringSequenceUnionsSample",
+        "07-union-char-numeric" => "Choice",
+        "07-union-string-sequence-bounded-direct" => "DirectBoundedStringSequences",
         "08-key-inherited" => "Derived",
         "08-key-nested" => "Outer",
         _ => null,
@@ -565,6 +577,11 @@ void RenderReport(string[] commandArgs)
         if (id == "07-union-char-boundaries")
         {
             return "Single-byte C++ execution charset (ISO-8859-1): RTI emits the char8 label literally; preserve byte 255 and signed metadata label -1 instead of a UTF-8 multicharacter constant.";
+        }
+
+        if (id == "07-union-char-numeric")
+        {
+            return "Compile the typed RTI C++ peer with unsigned char so generated branch guards can represent IDL char labels 254 and 255 on Linux.";
         }
 
         if (id == "09-optional-string-sequences" && fixture is ("optional-wide-only" or "optional-multiple"))

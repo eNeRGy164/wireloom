@@ -1,0 +1,14 @@
+#include "features/05-unbounded-sequence-aliases.idl"
+
+module CorpusUnboundedSequences {
+    struct SequenceAliasesSample {
+        NumbersChain numbers;
+        States states;
+        Children children;
+        Scalars scalars;
+        Texts texts;
+        WideTexts wideTexts;
+        BoundedTexts boundedTexts;
+        BoundedWideTexts boundedWideTexts;
+    };
+};
