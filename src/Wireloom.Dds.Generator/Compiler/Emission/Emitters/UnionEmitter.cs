@@ -87,16 +87,16 @@ internal static class UnionEmitter
 
         writer.WriteXmlSummary($"Initializes a new union with its RTI default discriminator. {constructorBranchSummary}");
         writer.OpenBlock($"public {typeName}()");
-        writer.WriteLine("Discriminator = DefaultDiscriminator;");
-        EmitDefaultDiscriminatorBranchInitialization(writer, declaration);
+        EmitDefaultInitialization(writer, declaration);
         writer.CloseBlock();
         writer.BlankLine();
 
         writer.WriteXmlSummary($"Initializes a copy of another <see cref=\"{typeName}\"/> union.");
         writer.WriteXmlParam("other", "The union to copy.");
-        writer.WriteXmlRemarks("When <paramref name=\"other\"/> is null, the constructor leaves the discriminator at its default and does not copy a branch value.");
+        writer.WriteXmlRemarks("When <paramref name=\"other\"/> is null, initializes the same discriminator and selected branch value as the parameterless constructor.");
         writer.OpenBlock($"public {typeName}({typeName}? other)");
         writer.OpenBlock("if (other is null)");
+        EmitDefaultInitialization(writer, declaration);
         writer.WriteLine("return;");
         writer.CloseBlock();
         writer.BlankLine();
@@ -178,8 +178,10 @@ internal static class UnionEmitter
         ];
     }
 
-    private static void EmitDefaultDiscriminatorBranchInitialization(GeneratedSourceWriter writer, IdlEmissionUnion declaration)
+    private static void EmitDefaultInitialization(GeneratedSourceWriter writer, IdlEmissionUnion declaration)
     {
+        writer.WriteLine("Discriminator = DefaultDiscriminator;");
+
         var branch = declaration.DefaultDiscriminatorBranch;
         if (branch is null)
         {

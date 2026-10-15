@@ -20,8 +20,9 @@ public sealed class UnionSpecs
 
         // Assert
         choice.Discriminator.ShouldBe(Choice.DefaultDiscriminator);
-        choice.flag.ShouldBeFalse();
-        choice.Get().ShouldBe(false);
+        choice.Discriminator.ShouldBe(0);
+        choice.number.ShouldBe(0);
+        choice.Get().ShouldBe(0);
         choiceCopy.Equals(choice).ShouldBeTrue();
         sparse.Discriminator.ShouldBe(Sparse.DefaultDiscriminator);
         sparse.Get().ShouldBeNull();
