@@ -17,14 +17,21 @@
 
   <ItemGroup>
     <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />
+    <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
+    <ProjectReference Include="..\..\Wireloom.Dds.Generator.TestSupport\Wireloom.Dds.Generator.TestSupport.csproj"
+                      Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Remove="Shouldly;Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(RtiOracleProgram)" Link="Program.cs" />
     <Compile Include="../FixtureCatalog.cs" Link="FixtureCatalog.cs" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
-    <Compile Include="../IndependentSampleVerifier.cs" Link="IndependentSampleVerifier.cs" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
-    <Compile Include="../ReaderSampleBatch.cs" Link="ReaderSampleBatch.cs" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
+    <Compile Include="../Peer/*.cs;../Fixtures/*.cs;../Verification/*.cs" Link="Shared/%(Filename)%(Extension)" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
     <Compile Include="$(RtiOracleSourceDir)/**/*.cs" Condition="'$(RtiOracleSourceDir)' != ''" />
     <Compile Include="$(RtiOracleSource)" Link="RtiOracle.cs" Condition="'$(RtiOracleSourceDir)' == ''" />
     <Compile Include="$(RtiOraclePlugin)" Link="RtiOraclePlugin.cs" Condition="'$(RtiOracleSourceDir)' == ''" />
-    <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
   </ItemGroup>
 </Project>

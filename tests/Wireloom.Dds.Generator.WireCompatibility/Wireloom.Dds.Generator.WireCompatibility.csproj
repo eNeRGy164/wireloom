@@ -31,12 +31,19 @@
     <Compile Remove="RtiOracleProbe/**/*.cs" />
     <!-- File-based matrix utilities are invoked separately, not compiled into the peer. -->
     <Compile Remove="scripts/*.cs" />
-    <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />
-    <Using Remove="Shouldly;Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Wireloom.Dds.Generator\Wireloom.Dds.Generator.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Wireloom.Dds.Generator.TestSupport\Wireloom.Dds.Generator.TestSupport.csproj" />
+    <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />
     <PackageReference Include="Rti.ConnextDds" Version="$(WireCompatibilityRtiVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Remove="Shouldly;Xunit" />
   </ItemGroup>
 
   <ItemGroup>
