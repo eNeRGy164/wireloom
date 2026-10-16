@@ -1,6 +1,6 @@
 using Omg.Types.Dynamic;
 using Rti.Types.Dynamic;
-using Wireloom.Dds.Generator.WireCompatibility;
+using Wireloom.Dds.Generator.TestSupport;
 
 namespace Wireloom.Dds.Generator.Tests.Generation;
 

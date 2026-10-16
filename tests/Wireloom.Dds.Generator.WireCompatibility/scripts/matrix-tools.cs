@@ -144,7 +144,7 @@ void PartitionShard(string[] commandArgs)
     var count = int.Parse(commandArgs[3]);
     var rows = ReadScenarioRows(commandArgs[4]);
     var destination = commandArgs[5];
-    var cases = rows.GroupBy(row => row[0], StringComparer.Ordinal).ToArray();
+    var cases = rows.GroupBy(row => row.CaseId, StringComparer.Ordinal).ToArray();
     if (count < 1 || count > cases.Length || index < 0 || index >= count)
     {
         throw new ArgumentException("Shard count must be positive and no greater than the case count; index must be zero-based and within the shard count.");
@@ -179,8 +179,8 @@ void PartitionShard(string[] commandArgs)
         }).ToArray()
     };
     File.WriteAllText(Path.Combine(destination, "plan.json"), JsonSerializer.Serialize(plan, jsonOptions) + "\n");
-    var selected = rows.Where(row => assignments[row[0]] == index).ToArray();
-    File.WriteAllLines(Path.Combine(destination, "scenarios.tsv"), selected.Select(row => string.Join('\t', row)));
+    var selected = rows.Where(row => assignments[row.CaseId] == index).ToArray();
+    File.WriteAllLines(Path.Combine(destination, "scenarios.tsv"), selected.Select(row => row.ToTsv()));
     File.WriteAllLines(Path.Combine(destination, "selected-cases.txt"), cases.Where(item => assignments[item.Key] == index).Select(item => item.Key));
     File.WriteAllText(Path.Combine(destination, "shard.json"), JsonSerializer.Serialize(new
     {
@@ -208,7 +208,7 @@ void MergeShards(string[] commandArgs)
 
     JsonNode? sharedPlan = null;
     var indices = new HashSet<int>();
-    var exchanges = new Dictionary<string, string[]>(StringComparer.Ordinal);
+    var exchanges = new Dictionary<string, ScenarioRow>(StringComparer.Ordinal);
     var logFiles = new List<string>();
     foreach (var metadataFile in metadataFiles.Order(StringComparer.Ordinal))
     {
@@ -242,12 +242,12 @@ void MergeShards(string[] commandArgs)
         foreach (var row in rows)
         {
             var key = ScenarioKey(row);
-            if (row[8] == "NOT_RUN")
+            if (row.Status == "NOT_RUN")
             {
                 throw new InvalidDataException($"Shard {index} contains an unexecuted exchange; incomplete evidence cannot be combined.");
             }
-            if (!expectedKeys.Contains(key) || row[5] != version || row[7] != version
-                || row[8] is not ("PASS" or "FAIL") || !exchanges.TryAdd(key, row))
+            if (!expectedKeys.Contains(key) || row.WriterVersion != version || row.ReaderVersion != version
+                || row.Status is not ("PASS" or "FAIL") || !exchanges.TryAdd(key, row))
             {
                 throw new InvalidDataException($"Shard {index} contains an unexpected, duplicate, or invalid exchange.");
             }
@@ -277,24 +277,22 @@ void MergeShards(string[] commandArgs)
         File.Copy(file, Path.Combine(logsDestination, Path.GetFileName(file)), overwrite: false);
     }
     var rowsDestination = Path.Combine(destination, "scenarios.tsv");
-    File.WriteAllLines(rowsDestination, orderedKeys.Select(key => string.Join('\t', exchanges[key])));
+    File.WriteAllLines(rowsDestination, orderedKeys.Select(key => exchanges[key].ToTsv()));
     File.WriteAllText(Path.Combine(destination, "plan.json"), sharedPlan.ToJsonString(jsonOptions) + "\n");
     RenderReport(["render-report", version, expectedCount.ToString(), rowsDestination,
         Path.Combine(destination, "results.json"), Path.Combine(destination, "results.md"), logsDestination, commandArgs[5]]);
     Console.WriteLine($"Merged {count} shards: {expectedCount} exchanges verified exactly once.");
 }
 
-List<string[]> ReadScenarioRows(string path)
+List<ScenarioRow> ReadScenarioRows(string path)
 {
-    var rows = File.ReadLines(path).Where(line => line.Length > 0).Select(line => line.Split('\t')).ToList();
-    if (rows.Any(row => row.Length != 10))
-    {
-        throw new InvalidDataException("Scenario TSV row must contain 10 fields.");
-    }
-    return rows;
+    return File.ReadLines(path)
+        .Where(line => line.Length > 0)
+        .Select(ScenarioRow.Parse)
+        .ToList();
 }
 
-string ScenarioKey(string[] row) => JsonSerializer.Serialize(new[] { row[0], row[9], row[4], row[6] }, keyJsonOptions);
+string ScenarioKey(ScenarioRow row) => JsonSerializer.Serialize(new[] { row.CaseId, row.Fixture, row.Writer, row.Reader }, keyJsonOptions);
 
 JsonNode FindCase(JsonNode manifest, string id) => manifest["positiveCases"]!.AsArray()
     .FirstOrDefault(item => (string)item!["id"]! == id)
@@ -533,85 +531,9 @@ void RenderReport(string[] commandArgs)
     {
         ["Wireloom C#"] = ("Wireloom", "C#"), ["RTI C#"] = ("RTI", "C#"), ["RTI C++"] = ("RTI", "C++"),
     };
-    string? ExpectedFailure(string id, string writer, string reader, string fixture)
+    foreach (var row in ReadScenarioRows(sourcePath))
     {
-        var item = expectedFailures.FirstOrDefault(f => (string)f!["id"]! == id && (string)f["writer"]! == writer
-            && (string)f["reader"]! == reader && (f["fixture"] is null || (string)f["fixture"]! == fixture));
-        return item is null ? null : (string)item["reason"]!;
-    }
-    string? Adaptation(string id, string fixture, string peer)
-    {
-        if (id == "09-optional-recursive-array")
-        {
-            var adaptation = "Typed finite recursive array fixture: bypass public DynamicType and disable TypeObject/TypeCode propagation because RTI 7.7.0 does not support recursive TypeObject v2.";
-            if (peer == "RTI C#")
-            {
-                adaptation += " Bootstrap the RTI reference plugin before Support.Instance to avoid RTI 7.7.0 recursive static-initialization null dereference.";
-            }
-            else if (peer == "RTI C++")
-            {
-                adaptation += " Scratch generated-code workaround: forward the visited-node chain when initializing the recursive array TypeCode.";
-            }
-
-            return adaptation;
-        }
-
-        if (id == "09-optional-aggregate-member")
-        {
-            return "Typed optional aggregate fixture: construct Holder optionals and select its union branch through generated members; nested DynamicData paths cannot loan unset optional parents.";
-        }
-
-        if (id is "02-multiple" or "03-enum-values-prefix" or "03-enum-values-explicit")
-        {
-            return "Harness wrapper IDL composes the declarations into a topic type.";
-        }
-
-        if (id == "06-alias-composition" && peer == "RTI C#")
-        {
-            return "Custom generated-code workaround: qualifies the member conversion receiver because RTI 7.7.0 emits a shadowed field access.";
-        }
-
-        if (peer != "RTI C++")
-        {
-            return null;
-        }
-
-        if (id == "07-union-char-boundaries")
-        {
-            return "Single-byte C++ execution charset (ISO-8859-1): RTI emits the char8 label literally; preserve byte 255 and signed metadata label -1 instead of a UTF-8 multicharacter constant.";
-        }
-
-        if (id is "07-union-char-numeric" or "07-union-char-numeric-255")
-        {
-            return "Compile the typed RTI C++ peer with unsigned char so generated branch guards can represent high IDL char labels on Linux.";
-        }
-
-        if (id == "09-optional-string-sequences" && fixture is ("optional-wide-only" or "optional-multiple"))
-        {
-            return "Custom RTI C++ path: DynamicData C API per-element setters bypass the RTI 7.7.0 typed optional wide-string sequence serializer.";
-        }
-
-        if (id == "07-union-wchar-label")
-        {
-            return "Custom RTI DynamicType: manually models the wchar discriminator because rtiddsgen cannot parse wchar union labels.";
-        }
-
-        if (id == "10-flat-data-binding")
-        {
-            return "Custom IDL adaptation: removes @language_binding(FLAT_DATA) before RTI C++ generation.";
-        }
-        return null;
-    }
-
-    foreach (var line in File.ReadLines(sourcePath).Where(line => line.Length > 0))
-    {
-        var fields = line.Split('\t');
-        if (fields.Length != 10)
-        {
-            throw new InvalidDataException("Scenario TSV row must contain 10 fields.");
-        }
-        var (id, wireType, rtiType, cppType, writer, writerVersion, reader, readerVersion, status, fixture) =
-            (fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6], fields[7], fields[8], fields[9]);
+        var (id, wireType, rtiType, cppType, writer, writerVersion, reader, readerVersion, status, fixture) = row;
         Dictionary<string, object?> Endpoint(string peer, string peerVersion)
         {
             var adaptation = Adaptation(id, fixture, peer);
@@ -648,7 +570,7 @@ void RenderReport(string[] commandArgs)
             scenario["adaptations"] = adaptations;
         }
 
-        var expected = ExpectedFailure(id, writer, reader, fixture);
+        var expected = FindExpectedFailure(expectedFailures, id, writer, reader, fixture);
         if (expected is not null)
         {
             scenario["expectedFailure"] = expected;
@@ -678,165 +600,269 @@ void RenderReport(string[] commandArgs)
     File.WriteAllText(outputPath, JsonSerializer.Serialize(report, jsonOptions) + "\n");
     WriteMarkdown(version, scenarios, notImplemented, expectedFailures, markdownPath);
 
-    string ObservedProblem(string id, string fixture, string writer, string reader, string status, string directory)
+
+}
+
+string? FindExpectedFailure(JsonArray expectedFailures, string id, string writer, string reader, string fixture)
+{
+    var item = expectedFailures.FirstOrDefault(f => (string)f!["id"]! == id && (string)f["writer"]! == writer
+        && (string)f["reader"]! == reader && (f["fixture"] is null || (string)f["fixture"]! == fixture));
+    return item is null ? null : (string)item["reason"]!;
+}
+string? Adaptation(string id, string fixture, string peer)
+{
+    if (id == "09-optional-recursive-array")
     {
-        var peerIds = new Dictionary<string, string> { ["Wireloom C#"] = "wireloom-cs", ["RTI C#"] = "rti-cs", ["RTI C++"] = "rti-cpp" };
-        var log = Path.Combine(directory, $"{id}-{fixture}-{peerIds[writer]}-{peerIds[reader]}.log");
-        if (!File.Exists(log))
+        var adaptation = "Typed finite recursive array fixture: bypass public DynamicType and disable TypeObject/TypeCode propagation because RTI 7.7.0 does not support recursive TypeObject v2.";
+        if (peer == "RTI C#")
         {
-            return "scenario log is missing";
+            adaptation += " Bootstrap the RTI reference plugin before Support.Instance to avoid RTI 7.7.0 recursive static-initialization null dereference.";
+        }
+        else if (peer == "RTI C++")
+        {
+            adaptation += " Scratch generated-code workaround: forward the visited-node chain when initializing the recursive array TypeCode.";
         }
 
-        var lines = File.ReadAllLines(log);
-        var notRun = lines.FirstOrDefault(l => l.StartsWith("NOT_RUN_DETAIL ", StringComparison.Ordinal));
-        if (notRun is not null)
-        {
-            return notRun["NOT_RUN_DETAIL ".Length..];
-        }
-
-        if (status == "NOT_RUN")
-        {
-            return "scenario did not run";
-        }
-
-        var observations = lines.Where(l => l.StartsWith("FAIL_DETAIL ", StringComparison.Ordinal) || l.StartsWith("FAIL ", StringComparison.Ordinal))
-            .Select(l => l.StartsWith("FAIL_DETAIL ", StringComparison.Ordinal) ? l[12..].TrimEnd('.') : l[5..].TrimEnd('.')).ToList();
-        var endpointLine = lines.FirstOrDefault(l => l.StartsWith("ENDPOINT_STATUS ", StringComparison.Ordinal));
-        var endpointFields = endpointLine?.Split(' ').Skip(1).Select(p => p.Split('=', 2)).Where(p => p.Length == 2).ToDictionary(p => p[0], p => p[1]) ?? [];
-        foreach (var endpoint in new[] { (Name: "writer", Peer: writer), (Name: "reader", Peer: reader) })
-        {
-            if (endpointFields.GetValueOrDefault($"{endpoint.Name}_exit_code") == "139")
-            {
-                observations.Add($"{endpoint.Peer} {endpoint.Name} terminated with exit 139 (SIGSEGV)");
-            }
-        }
-
-        if (observations.Count > 0)
-        {
-            return string.Join("; ", observations.Distinct());
-        }
-
-        if (lines.Any(l => l.StartsWith("RTI_DIAGNOSTIC ", StringComparison.Ordinal) && l.Contains("different type kinds", StringComparison.Ordinal)))
-        {
-            return "RTI discovery rejected the type: different member type kinds";
-        }
-
-        foreach (var endpoint in new[] { (Name: "writer", Peer: writer), (Name: "reader", Peer: reader) })
-        {
-            if (endpointFields.TryGetValue($"{endpoint.Name}_exit_code", out var code) && code != "0")
-            {
-                return $"{endpoint.Peer} {endpoint.Name} exited with code {code}";
-            }
-        }
-
-        return "endpoint failed; see sanitized scenario log";
+        return adaptation;
     }
 
-    void WriteMarkdown(string rtiVersion, List<Dictionary<string, object?>> all, JsonArray unsupported, JsonArray failureRegistry, string destination)
+    if (id == "09-optional-aggregate-member")
     {
-        var pairings = new[]
-        {
-            ("Wireloom C#", "Wireloom C#"), ("Wireloom C#", "RTI C#"), ("Wireloom C#", "RTI C++"),
-            ("RTI C#", "Wireloom C#"), ("RTI C#", "RTI C#"), ("RTI C#", "RTI C++"),
-            ("RTI C++", "Wireloom C#"), ("RTI C++", "RTI C#"), ("RTI C++", "RTI C++"),
-        };
-        string HeaderPeer(string peer) => peer.Replace("Wireloom", "🧵", StringComparison.Ordinal);
-        string Cell(string id, string fixture, (string Writer, string Reader) pairing, Dictionary<string, object?>? item)
-        {
-            if (item is null)
-            {
-                return "❔";
-            }
-
-            var mark = item.ContainsKey("adaptations") ? "<sup>†</sup>" : "";
-            var state = (string)item["status"]!;
-            if (state == "PASS")
-            {
-                return $"{(mark.Length > 0 ? "🟧" : "✅")}{mark}";
-            }
-
-            if (state == "FAIL")
-            {
-                return $"{(ExpectedFailure(id, pairing.Writer, pairing.Reader, fixture) is not null ? "⚠️" : "⛔")}{mark}";
-            }
-
-            return $"❔{mark}";
-        }
-        var groups = all.GroupBy(item => ((string)item["case"]!, (string)item["fixture"]!)).ToDictionary(group => group.Key, group => group.ToDictionary(item => (((Dictionary<string, object?>)item["writer"]!)["peer"]!.ToString()!, ((Dictionary<string, object?>)item["reader"]!)["peer"]!.ToString()!)));
-        var failed = all.Where(s => (string)s["status"]! == "FAIL").ToArray();
-        var notRunCount = all.Count(s => (string)s["status"]! == "NOT_RUN");
-        var passed = all.Count - failed.Length - notRunCount;
-        var lines = new List<string>
-        {
-            "# Wire compatibility results", "",
-            $"RTI Connext **{rtiVersion}** · **{all.Count}** DDS exchanges · **{passed}** passed · **{failed.Length}** failed (**{failed.Count(s => s.ContainsKey("expectedFailure"))}** expected) · **{notRunCount}** not run · **{unsupported.Count}** case(s) not implemented", "",
-            "Each cell is an independent producer/consumer exchange. A `\"` in the IDL scenario column repeats the case from the row above. Failure details are taken from sanitized endpoint logs.", "",
-            "| Legend | Meaning |",
-            "| :-- | :-- |",
-            "| ✅ | Exchange passed |",
-            "| 🟧<sup>†</sup> | Exchange passed using a test-harness workaround or custom IDL/type model |",
-            "| ⚠️ | Expected failure |",
-            "| ⛔ | Unexpected failure |",
-            "| ❔ | Not run |",
-            "| ⚫ — | Not implemented |",
-            "| <sup>†</sup> | At least one endpoint used an adaptation; details appear in Adaptations. |",
-            "",
-            "The problem column separates observed symptoms from registered expected-failure explanations. Symbols remain distinct without relying on color alone.", "",
-            "| IDL scenario | Variation | " + string.Join(" | ", pairings.Select(p => $"{HeaderPeer(p.Item1)} → {HeaderPeer(p.Item2)}")) + " | Adaptations | Problem / defect |",
-            "| :-- | :-- | " + string.Join(" | ", pairings.Select(_ => ":--:")) + " | :-- | :-- |",
-        };
-        var unsupportedById = unsupported.ToDictionary(item => (string)item!["id"]!, StringComparer.Ordinal);
-        var reportRows = groups.Select(g => (g.Key.Item1, g.Key.Item2, g.Value, unsupportedById.GetValueOrDefault(g.Key.Item1)))
-            .Concat(unsupported.Where(item => !groups.Keys.Any(key => key.Item1 == (string)item!["id"]!))
-                .Select(item => ((string)item!["id"]!, "not implemented", new Dictionary<(string, string), Dictionary<string, object?>>(), (JsonNode?)item)))
-            .OrderBy(row => row.Item1, StringComparer.Ordinal).ThenBy(row => row.Item2, StringComparer.Ordinal).ToArray();
-        string? previous = null;
-        foreach (var (id, fixture, row, unsupportedCase) in reportRows)
-        {
-            var cells = pairings.Select(pair => unsupportedCase is not null && (pair.Item1 == "Wireloom C#" || pair.Item2 == "Wireloom C#")
-                ? "⚫ —" : Cell(id, fixture, pair, row.GetValueOrDefault(pair))).ToArray();
-            var adaptationsInRow = row.Values.SelectMany(s => s.TryGetValue("adaptations", out var value) ? ((Dictionary<string, string>)value!).Select(kv => $"<sup>†</sup> **{kv.Key}:** {kv.Value}") : []).Distinct();
-            var adaptationText = string.Join("<br><br>", adaptationsInRow).Replace("|", "\\|");
-            var problems = new List<(string Pairing, string Detail, string? Expected)>();
-            foreach (var pair in pairings)
-            {
-                if (unsupportedCase is not null && (pair.Item1 == "Wireloom C#" || pair.Item2 == "Wireloom C#"))
-                {
-                    continue;
-                }
-
-                var item = row.GetValueOrDefault(pair);
-                if (item is null || (string)item["status"]! is "FAIL" or "NOT_RUN")
-                {
-                    var detail = item is null ? "scenario did not run" : (string?)item.GetValueOrDefault("observedProblem") ?? "scenario did not run";
-                    var expected = item is not null && (string)item["status"]! == "FAIL"
-                        ? ExpectedFailure(id, pair.Item1, pair.Item2, fixture) : null;
-                    var name = $"{pair.Item1} → {pair.Item2}";
-                    problems.Add((name, detail, expected));
-                }
-            }
-            var problemParts = new List<string>();
-            if (unsupportedCase is not null)
-                problemParts.Add($"Not implemented by Wireloom: `{unsupportedCase["diagnostic"]}`. {unsupportedCase["reason"]} [#{unsupportedCase["issue"]!.ToString()!.TrimEnd('/').Split('/').Last()}]({unsupportedCase["issue"]})".Replace("|", "\\|"));
-            foreach (var problem in problems.GroupBy(item => (item.Detail, item.Expected)))
-            {
-                var names = string.Join(", ", problem.Select(item => item.Pairing));
-                var detail = problem.Key.Detail.Replace("|", "\\|");
-                if (problem.Key.Expected is not null)
-                {
-                    var expected = problem.Key.Expected.Replace("Expected: ", "").Replace("|", "\\|");
-                    problemParts.Add($"**{names} observed:** {detail}<br>**Expected:** {expected}");
-                }
-                else
-                {
-                    problemParts.Add($"**{names}:** {detail}");
-                }
-            }
-            var problemText = problemParts.Count == 0 ? "—" : string.Join("<br><br>", problemParts);
-            var caseCell = id == previous ? "\"" : $"`{id}.idl`";
-            lines.Add($"| {caseCell} | `{fixture}` | {string.Join(" | ", cells)} | {(adaptationText.Length == 0 ? "—" : adaptationText)} | {problemText} |");
-            previous = id;
-        }
-        File.WriteAllText(destination, string.Join("\n", lines) + "\n");
+        return "Typed optional aggregate fixture: construct Holder optionals and select its union branch through generated members; nested DynamicData paths cannot loan unset optional parents.";
     }
+
+    if (id is "02-multiple" or "03-enum-values-prefix" or "03-enum-values-explicit")
+    {
+        return "Harness wrapper IDL composes the declarations into a topic type.";
+    }
+
+    if (id == "06-alias-composition" && peer == "RTI C#")
+    {
+        return "Custom generated-code workaround: qualifies the member conversion receiver because RTI 7.7.0 emits a shadowed field access.";
+    }
+
+    if (peer != "RTI C++")
+    {
+        return null;
+    }
+
+    if (id == "07-union-char-boundaries")
+    {
+        return "Single-byte C++ execution charset (ISO-8859-1): RTI emits the char8 label literally; preserve byte 255 and signed metadata label -1 instead of a UTF-8 multicharacter constant.";
+    }
+
+    if (id is "07-union-char-numeric" or "07-union-char-numeric-255")
+    {
+        return "Compile the typed RTI C++ peer with unsigned char so generated branch guards can represent high IDL char labels on Linux.";
+    }
+
+    if (id == "09-optional-string-sequences" && fixture is ("optional-wide-only" or "optional-multiple"))
+    {
+        return "Custom RTI C++ path: DynamicData C API per-element setters bypass the RTI 7.7.0 typed optional wide-string sequence serializer.";
+    }
+
+    if (id == "07-union-wchar-label")
+    {
+        return "Custom RTI DynamicType: manually models the wchar discriminator because rtiddsgen cannot parse wchar union labels.";
+    }
+
+    if (id == "10-flat-data-binding")
+    {
+        return "Custom IDL adaptation: removes @language_binding(FLAT_DATA) before RTI C++ generation.";
+    }
+    return null;
+}
+
+string ObservedProblem(string id, string fixture, string writer, string reader, string status, string directory)
+{
+    var peerIds = new Dictionary<string, string> { ["Wireloom C#"] = "wireloom-cs", ["RTI C#"] = "rti-cs", ["RTI C++"] = "rti-cpp" };
+    var log = Path.Combine(directory, $"{id}-{fixture}-{peerIds[writer]}-{peerIds[reader]}.log");
+    if (!File.Exists(log))
+    {
+        return "scenario log is missing";
+    }
+
+    var lines = File.ReadAllLines(log);
+    var notRun = lines.FirstOrDefault(l => l.StartsWith("NOT_RUN_DETAIL ", StringComparison.Ordinal));
+    if (notRun is not null)
+    {
+        return notRun["NOT_RUN_DETAIL ".Length..];
+    }
+
+    if (status == "NOT_RUN")
+    {
+        return "scenario did not run";
+    }
+
+    var observations = lines.Where(l => l.StartsWith("FAIL_DETAIL ", StringComparison.Ordinal) || l.StartsWith("FAIL ", StringComparison.Ordinal))
+        .Select(l => l.StartsWith("FAIL_DETAIL ", StringComparison.Ordinal) ? l[12..].TrimEnd('.') : l[5..].TrimEnd('.')).ToList();
+    var endpointLine = lines.FirstOrDefault(l => l.StartsWith("ENDPOINT_STATUS ", StringComparison.Ordinal));
+    var endpointFields = endpointLine?.Split(' ').Skip(1).Select(p => p.Split('=', 2)).Where(p => p.Length == 2).ToDictionary(p => p[0], p => p[1]) ?? [];
+    foreach (var endpoint in new[] { (Name: "writer", Peer: writer), (Name: "reader", Peer: reader) })
+    {
+        if (endpointFields.GetValueOrDefault($"{endpoint.Name}_exit_code") == "139")
+        {
+            observations.Add($"{endpoint.Peer} {endpoint.Name} terminated with exit 139 (SIGSEGV)");
+        }
+    }
+
+    if (observations.Count > 0)
+    {
+        return string.Join("; ", observations.Distinct());
+    }
+
+    if (lines.Any(l => l.StartsWith("RTI_DIAGNOSTIC ", StringComparison.Ordinal) && l.Contains("different type kinds", StringComparison.Ordinal)))
+    {
+        return "RTI discovery rejected the type: different member type kinds";
+    }
+
+    foreach (var endpoint in new[] { (Name: "writer", Peer: writer), (Name: "reader", Peer: reader) })
+    {
+        if (endpointFields.TryGetValue($"{endpoint.Name}_exit_code", out var code) && code != "0")
+        {
+            return $"{endpoint.Peer} {endpoint.Name} exited with code {code}";
+        }
+    }
+
+    return "endpoint failed; see sanitized scenario log";
+}
+
+void WriteMarkdown(string rtiVersion, List<Dictionary<string, object?>> all, JsonArray unsupported, JsonArray failureRegistry, string destination)
+{
+    var pairings = new[]
+    {
+        ("Wireloom C#", "Wireloom C#"), ("Wireloom C#", "RTI C#"), ("Wireloom C#", "RTI C++"),
+        ("RTI C#", "Wireloom C#"), ("RTI C#", "RTI C#"), ("RTI C#", "RTI C++"),
+        ("RTI C++", "Wireloom C#"), ("RTI C++", "RTI C#"), ("RTI C++", "RTI C++"),
+    };
+    string HeaderPeer(string peer) => peer.Replace("Wireloom", "🧵", StringComparison.Ordinal);
+    string Cell(string id, string fixture, (string Writer, string Reader) pairing, Dictionary<string, object?>? item)
+    {
+        if (item is null)
+        {
+            return "❔";
+        }
+
+        var mark = item.ContainsKey("adaptations") ? "<sup>†</sup>" : "";
+        var state = (string)item["status"]!;
+        if (state == "PASS")
+        {
+            return $"{(mark.Length > 0 ? "🟧" : "✅")}{mark}";
+        }
+
+        if (state == "FAIL")
+        {
+            return $"{(FindExpectedFailure(failureRegistry, id, pairing.Writer, pairing.Reader, fixture) is not null ? "⚠️" : "⛔")}{mark}";
+        }
+
+        return $"❔{mark}";
+    }
+    var groups = all.GroupBy(item => ((string)item["case"]!, (string)item["fixture"]!)).ToDictionary(group => group.Key, group => group.ToDictionary(item => (((Dictionary<string, object?>)item["writer"]!)["peer"]!.ToString()!, ((Dictionary<string, object?>)item["reader"]!)["peer"]!.ToString()!)));
+    var failed = all.Where(s => (string)s["status"]! == "FAIL").ToArray();
+    var notRunCount = all.Count(s => (string)s["status"]! == "NOT_RUN");
+    var passed = all.Count - failed.Length - notRunCount;
+    var lines = new List<string>
+    {
+        "# Wire compatibility results", "",
+        $"RTI Connext **{rtiVersion}** · **{all.Count}** DDS exchanges · **{passed}** passed · **{failed.Length}** failed (**{failed.Count(s => s.ContainsKey("expectedFailure"))}** expected) · **{notRunCount}** not run · **{unsupported.Count}** case(s) not implemented", "",
+        "Each cell is an independent producer/consumer exchange. A `\"` in the IDL scenario column repeats the case from the row above. Failure details are taken from sanitized endpoint logs.", "",
+        "| Legend | Meaning |",
+        "| :-- | :-- |",
+        "| ✅ | Exchange passed |",
+        "| 🟧<sup>†</sup> | Exchange passed using a test-harness workaround or custom IDL/type model |",
+        "| ⚠️ | Expected failure |",
+        "| ⛔ | Unexpected failure |",
+        "| ❔ | Not run |",
+        "| ⚫ — | Not implemented |",
+        "| <sup>†</sup> | At least one endpoint used an adaptation; details appear in Adaptations. |",
+        "",
+        "The problem column separates observed symptoms from registered expected-failure explanations. Symbols remain distinct without relying on color alone.", "",
+        "| IDL scenario | Variation | " + string.Join(" | ", pairings.Select(p => $"{HeaderPeer(p.Item1)} → {HeaderPeer(p.Item2)}")) + " | Adaptations | Problem / defect |",
+        "| :-- | :-- | " + string.Join(" | ", pairings.Select(_ => ":--:")) + " | :-- | :-- |",
+    };
+    var unsupportedById = unsupported.ToDictionary(item => (string)item!["id"]!, StringComparer.Ordinal);
+    var reportRows = groups.Select(g => (g.Key.Item1, g.Key.Item2, g.Value, unsupportedById.GetValueOrDefault(g.Key.Item1)))
+        .Concat(unsupported.Where(item => !groups.Keys.Any(key => key.Item1 == (string)item!["id"]!))
+            .Select(item => ((string)item!["id"]!, "not implemented", new Dictionary<(string, string), Dictionary<string, object?>>(), (JsonNode?)item)))
+        .OrderBy(row => row.Item1, StringComparer.Ordinal).ThenBy(row => row.Item2, StringComparer.Ordinal).ToArray();
+    string? previous = null;
+    foreach (var (id, fixture, row, unsupportedCase) in reportRows)
+    {
+        var cells = pairings.Select(pair => unsupportedCase is not null && (pair.Item1 == "Wireloom C#" || pair.Item2 == "Wireloom C#")
+            ? "⚫ —" : Cell(id, fixture, pair, row.GetValueOrDefault(pair))).ToArray();
+        var adaptationsInRow = row.Values.SelectMany(s => s.TryGetValue("adaptations", out var value) ? ((Dictionary<string, string>)value!).Select(kv => $"<sup>†</sup> **{kv.Key}:** {kv.Value}") : []).Distinct();
+        var adaptationText = string.Join("<br><br>", adaptationsInRow).Replace("|", "\\|");
+        var problems = new List<(string Pairing, string Detail, string? Expected)>();
+        foreach (var pair in pairings)
+        {
+            if (unsupportedCase is not null && (pair.Item1 == "Wireloom C#" || pair.Item2 == "Wireloom C#"))
+            {
+                continue;
+            }
+
+            var item = row.GetValueOrDefault(pair);
+            if (item is null || (string)item["status"]! is "FAIL" or "NOT_RUN")
+            {
+                var detail = item is null ? "scenario did not run" : (string?)item.GetValueOrDefault("observedProblem") ?? "scenario did not run";
+                var expected = item is not null && (string)item["status"]! == "FAIL"
+                    ? FindExpectedFailure(failureRegistry, id, pair.Item1, pair.Item2, fixture) : null;
+                var name = $"{pair.Item1} → {pair.Item2}";
+                problems.Add((name, detail, expected));
+            }
+        }
+        var problemParts = new List<string>();
+        if (unsupportedCase is not null)
+            problemParts.Add($"Not implemented by Wireloom: `{unsupportedCase["diagnostic"]}`. {unsupportedCase["reason"]} [#{unsupportedCase["issue"]!.ToString()!.TrimEnd('/').Split('/').Last()}]({unsupportedCase["issue"]})".Replace("|", "\\|"));
+        foreach (var problem in problems.GroupBy(item => (item.Detail, item.Expected)))
+        {
+            var names = string.Join(", ", problem.Select(item => item.Pairing));
+            var detail = problem.Key.Detail.Replace("|", "\\|");
+            if (problem.Key.Expected is not null)
+            {
+                var expected = problem.Key.Expected.Replace("Expected: ", "").Replace("|", "\\|");
+                problemParts.Add($"**{names} observed:** {detail}<br>**Expected:** {expected}");
+            }
+            else
+            {
+                problemParts.Add($"**{names}:** {detail}");
+            }
+        }
+        var problemText = problemParts.Count == 0 ? "—" : string.Join("<br><br>", problemParts);
+        var caseCell = id == previous ? "\"" : $"`{id}.idl`";
+        lines.Add($"| {caseCell} | `{fixture}` | {string.Join(" | ", cells)} | {(adaptationText.Length == 0 ? "—" : adaptationText)} | {problemText} |");
+        previous = id;
+    }
+    File.WriteAllText(destination, string.Join("\n", lines) + "\n");
+}
+
+/// <summary>Names the ten fields shared by the shell runner, shard planner, and reports.</summary>
+internal sealed record ScenarioRow(
+    string CaseId,
+    string WireloomType,
+    string RtiCSharpType,
+    string RtiCppType,
+    string Writer,
+    string WriterVersion,
+    string Reader,
+    string ReaderVersion,
+    string Status,
+    string Fixture)
+{
+    /// <summary>Reads the stable tab-separated interchange format used by run-matrix.sh.</summary>
+    internal static ScenarioRow Parse(string line)
+    {
+        var fields = line.Split('\t');
+        if (fields.Length != 10)
+        {
+            throw new InvalidDataException("Scenario TSV row must contain 10 fields.");
+        }
+
+        return new ScenarioRow(fields[0], fields[1], fields[2], fields[3], fields[4],
+            fields[5], fields[6], fields[7], fields[8], fields[9]);
+    }
+
+    /// <summary>Writes fields in the same order as the shell runner.</summary>
+    internal string ToTsv() => string.Join('\t',
+        CaseId, WireloomType, RtiCSharpType, RtiCppType, Writer, WriterVersion,
+        Reader, ReaderVersion, Status, Fixture);
 }
