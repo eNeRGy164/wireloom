@@ -53,31 +53,70 @@ tests also read required data after optional-only cleanup and verify absence.
 
 ## Coverage matrix
 
-Names below identify test classes; theory parameters identify concrete shapes,
-members, discriminator labels, and allocation/key combinations in test results.
+This summary describes generated API behavior exercised by the suite. It is
+not a generated-code coverage metric or a DDS wire-compatibility claim.
 
-| Generated API / shape                                               | Executable tests                                                                                                                                                                                        | Coverage / interpretation                                                                                                                                                                                                      |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Scalar defaults, value constructor, null/non-null copy, properties  | `ScalarSpecs`                                                                                                                                                                                           | Null copy retains initializers; constructor-only IDL defaults do not run                                                                                                                                                       |
-| Scalar equality overloads and hash consistency                      | `ScalarSpecs`, `ScalarEqualitySpecs`                                                                                                                                                                    | Each primitive width, char/wchar, enum, string/wstring, and explicit default is changed independently                                                                                                                          |
-| Aggregate/collection defaults, copies, properties, equality, hashes | `CollectionSpecs`, `CollectionEqualitySpecs`                                                                                                                                                            | Required/optional, absent/present, bounded/unbounded sequences, primitive/aggregate/string elements, vector/matrix                                                                                                             |
-| Struct and valuetype inheritance                                    | `InheritanceSpecs`, `AggregateNativeSpecs`                                                                                                                                                              | Inherited data, optional members, equality, hashing, formatting, and conversion                                                                                                                                                |
-| Union construction, discriminators, properties, `Get`, setters      | `UnionSpecs`, `DiscriminatorSpecs`, `NumericCharacterLabelSpecs`, `UnionConstructionSpecs`, `UnionConstructionNativeSpecs`                                                                              | Explicit, numeric/high-byte, multiple, default, inactive, and no-active-branch paths; XTypes type defaults, negative enum values, and initialized null copies                                                               |
-| Union copies, equality, hashes, formatting                          | `UnionSpecs`, `DiscriminatorSpecs`, `StringSequenceUnionSpecs`                                                                                                                                         | Primitive, aggregate, sequence, array, direct narrow/wide string-sequence and typedef-backed branches; independent collection copies                                                                                           |
-| Supported discriminator kinds                                       | `DiscriminatorSpecs`, `NumericCharacterLabelSpecs`                                                                                                                                                      | Boolean, int8/uint8, octet, short/ushort, long/ulong, literal/numeric char/wchar, enum, typedef; 64-bit discriminators are non-applicable because RTI rejects them before code generation                                          |
-| Typedef constructors, `Value`, copies, equality, hashes             | `ScalarAliasSpecs`, `StringAliasChainSpecs`, `AggregateAliasSpecs`, `CollectionAliasSpecs`, `UnionAliasSpecs`, `ReferenceOwnershipSpecs`                                                                | Scalar/enum/string/wstring/aggregate/union/sequence/array/chains; value-constructor reference ownership; bounded/unbounded narrow and wide string chains; aggregate sequence copy behavior                                        |
-| Unbounded typedefs                                                  | `UnboundedAliasSpecs`, `UnboundedAliasNativeSpecs`, package `UnboundedAliasSpecs`                                                                                                                       | Narrow/wide strings at 255 code units/bytes; primitive/enum/aggregate/alias/string sequences at effective bound 100; both allocation flags and metadata visibility values                                                      |
-| `ToString` diagnostics                                              | `AliasFormattingSpecs`, `ScalarSpecs`, `CollectionSpecs`, `InheritanceSpecs`, `UnionSpecs`, `AliasMetadataSpecs`, `UnionAliasSpecs`                                                                     | Managed scalar and collection formatting; quoted strings through named aliases, including null elements; RTI formatting for aggregate roots; wide-string alias metadata and support                                                                                               |
-| Native `Initialize`, `ToNative`, `FromNative`, both cleanup modes   | `AggregateNativeSpecs`, `ScalarAliasNativeSpecs`, `StringAliasChainNativeSpecs`, `AggregateAliasNativeSpecs`, `CollectionAliasNativeSpecs`, `StringArrayAliasNativeSpecs`, `UnionNativeSpecs`, `StringSequenceUnionSpecs`, `DiscriminatorSpecs`, `UnionAliasSpecs` | All allocation flag pairs; enum/strings/wstrings, aliases/chains, arrays/matrices including bounded narrow/wide string arrays, bounded/unbounded sequences and direct/typedef-backed union string sequences, optional values/collections, inheritance, every union branch |
-| Key-only behavior in each direction                                 | `AggregateNativeSpecs.FiltersKeysInEachDirection`, `NestedKeySpecs`, alias/union native theories                                                                                                        | Independent source/native/destination sentinels; nested key propagation; optional aggregate-array forwarding                                                                                                                   |
-| Recursive support cold startup | `RecursiveStartupSpecs`, linked package tests | Fresh-process instance/discovery, array/typedef/matrix serialization, sequence support control, public DynamicType rejection |
-| Metadata creation and `Instance`                                    | `MetadataSpecs`, `AliasMetadataSpecs`, `StringAliasChainMetadataSpecs`, `StringArrayAliasMetadataSpecs`, `RuntimeSmokeSpecs`                                                                            | Both visibility values, member types/IDs/keys/optionals, bounds, dimensions, enum values, aliases, inheritance, multi/default/signed-char labels, and narrow/wide string-array shapes                                             |
+| Behavior area                  | Contracts exercised                                                                                                                 |
+| :----------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| Managed values and collections | Defaults, mutation, copies, equality, and hashes across primitives, aggregates, sequences, and arrays.                              |
+| Inheritance                    | Inherited members, optional values, formatting, equality, and native conversion.                                                    |
+| Unions                         | Construction, discriminators, branch access and transitions, copies, equality, and hashes.                                          |
+| Typedefs and aliases           | Constructors, `Value`, copies, formatting, and metadata across scalar, aggregate, collection, and chained aliases.                  |
+| Native APIs                    | Initialization, conversion, key filtering, and cleanup with both allocation modes.                                                  |
+| TypeSupport                    | `Instance`, member metadata, bounds, dimensions, enums, aliases, and metadata visibility.                                           |
+| Recursive startup              | Fresh-process access/discovery, recursive-array serialization, sequence support initialization, and public `DynamicType` rejection. |
 
-Enums do not generate managed constructors/equality methods or native sample
-representations of their own; enum-bearing samples, aliases, metadata, and
-support cover the applicable APIs. Getter-only sequences are mutated through
-their containers. Array hash tests require valid fixed-size arrays and assert
-equal-value consistency, not particular numbers or stronger hash distribution.
+Boundaries and interpretation:
+
+- Null copies retain member initializers; constructor-only IDL defaults do not
+  run. Getter-only sequences are mutated through their containers.
+- RTI rejects 64-bit union discriminators before code generation. Unbounded
+  typedefs use the effective limits of 100 sequence elements and 255 string
+  bytes/code units.
+- `allocateMemory=false` requires existing string and array backing storage.
+  Array hash checks require valid fixed-size arrays and assert equal-value
+  consistency, not particular values or stronger hash distribution.
+- Enums have no generated managed constructors/equality methods or native
+  sample representation; enum-bearing samples, aliases, metadata, and support
+  cover the applicable APIs.
+
+<details>
+<summary>Maintainer reference: test classes by behavior area</summary>
+
+Theory parameters identify the concrete shapes, members, discriminator labels,
+and allocation/key combinations reported by the tests.
+
+### Managed values and inheritance
+
+- `ScalarSpecs`, `ScalarEqualitySpecs`, `CollectionSpecs`, `CollectionEqualitySpecs`
+- `InheritanceSpecs`, `AggregateNativeSpecs`
+
+### Unions
+
+- `UnionSpecs`, `DiscriminatorSpecs`, `NumericCharacterLabelSpecs`
+- `UnionConstructionSpecs`, `UnionConstructionNativeSpecs`, `StringSequenceUnionSpecs`
+
+### Typedefs, aliases, and formatting
+
+- `ScalarAliasSpecs`, `StringAliasChainSpecs`, `AggregateAliasSpecs`
+- `CollectionAliasSpecs`, `UnionAliasSpecs`, `ReferenceOwnershipSpecs`
+- `UnboundedAliasSpecs`, `UnboundedAliasNativeSpecs`, package `UnboundedAliasSpecs`
+- `AliasFormattingSpecs`, `AliasMetadataSpecs`
+
+### Native conversion and key filtering
+
+- `AggregateNativeSpecs`, `ScalarAliasNativeSpecs`, `StringAliasChainNativeSpecs`
+- `AggregateAliasNativeSpecs`, `CollectionAliasNativeSpecs`, `StringArrayAliasNativeSpecs`
+- `UnionNativeSpecs`, `StringSequenceUnionSpecs`, `DiscriminatorSpecs`, `UnionAliasSpecs`
+- `AggregateNativeSpecs.FiltersKeysInEachDirection`, `NestedKeySpecs`, and alias/union native theories
+
+### TypeSupport and recursive startup
+
+- `MetadataSpecs`, `AliasMetadataSpecs`, `StringAliasChainMetadataSpecs`
+- `StringArrayAliasMetadataSpecs`, `RuntimeSmokeSpecs`
+- `RecursiveStartupSpecs` and linked package tests
+
+</details>
 
 ## Coverage
 

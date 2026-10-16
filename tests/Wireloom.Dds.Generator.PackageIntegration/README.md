@@ -7,17 +7,18 @@ package carries the analyzer and its build targets correctly.
 Run it locally by packing the generator into the isolated test feed, then
 restoring and testing this project:
 
-```shell
+```powershell
 dotnet restore src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --locked-mode
 dotnet pack src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj `
-  --no-restore --configuration Release --output package-test-feed `
+  --no-restore --configuration Release --output package-test-feed
 $package = Get-ChildItem package-test-feed -Filter 'Wireloom.Dds.Generator.*.nupkg' |
   Sort-Object LastWriteTime -Descending | Select-Object -First 1
 $packageVersion = $package.BaseName -replace '^Wireloom\.Dds\.Generator\.', ''
 dotnet restore tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
   --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config `
   -p:WireloomDdsGeneratorPackageVersion=$packageVersion
-dotnet test tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj --no-restore
+dotnet test tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
+  --no-restore --configuration Release
 ```
 
 The integration project intentionally does not use central package management
