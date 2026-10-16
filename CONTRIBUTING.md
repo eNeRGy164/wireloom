@@ -149,8 +149,24 @@ The local and CI configurations target only
 compatibility projects are not loaded by this Qodana scan, so excluding them
 does not address WSLC watcher warnings or a local container stall.
 
-For local coverage, the Cobertura report must contain both branch and line
-rates and a positive `branches-valid` count. Check its counters with:
+Generate local Cobertura coverage after restoring the unit-test project. The
+command matches the CI coverage invocation and writes
+`coverage/coverage.cobertura.xml`:
+
+```powershell
+dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
+dotnet test tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
+  --no-restore `
+  --configuration Release `
+  --results-directory coverage `
+  --coverage `
+  --coverage-settings coverage.settings.xml `
+  --coverage-output coverage.cobertura.xml `
+  --coverage-output-format cobertura
+```
+
+The Cobertura report must contain both branch and line rates and a positive
+`branches-valid` count. Check its counters with:
 
 ```powershell
 [xml]$coverageReport = Get-Content -LiteralPath 'coverage\coverage.cobertura.xml'
