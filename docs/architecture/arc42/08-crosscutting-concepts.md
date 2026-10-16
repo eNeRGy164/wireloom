@@ -5,7 +5,7 @@
 The project distinguishes RTI acceptance, managed implementation, generated
 contract shape, runtime eligibility, and verified wire compatibility. The
 corpus feature index is the authoritative status view for source generation.
-The retained oracle capture uses RTI 7.7.0 / `rtiddsgen` 4.7.0, while the
+The retained oracle capture uses RTI 7.7.0 / `rtiddsgen` 4.7.0.
 The generator accepts an RTI package reference from 7.3.1, but this is not a
 claim that current emitted source compiles against every accepted version.
 Wire evidence starts at exact 7.7.0. Future version-aware emission should use
@@ -16,7 +16,18 @@ version, and report unsupported target versions clearly.
 
 Generator-owned diagnostics use stable IDs. IDL failures retain the original
 input path and offset so a consumer can fix the source rather than inspect a
-generated file. Unsupported constructs are errors, not silently ignored output.
+generated file. Unsupported or invalid input that prevents safe managed output
+is rejected with `DDSG0001`. Recognized but unsupported annotation uses report
+`DDSG0102` before generation fails with `DDSG0001`.
+
+Some constructs deliberately continue with a warning or informational
+diagnostic: unknown annotations are ignored with `DDSG0101`, IDL interfaces are accepted without
+emitting C# interface types (`DDSG0103`), and direct arrays of sequences warn
+that the generated mapping may not preserve IDL semantics (`DDSG0105`). Macro
+argument-count mismatches and active `#warning` directives also report
+warnings while preprocessing continues (`DDSG0104`/`DDSG0106`); active
+`#pragma message` directives are informational (`DDSG0107`). The package guide
+documents the adopter impact and how to promote selected diagnostics to errors.
 
 ## 8.3 Determinism and invalidation
 
@@ -100,7 +111,8 @@ with separate evidence from serialization and DDS interoperability.
 ## 8.7 Deterministic preprocessing safety
 
 Preprocessing is finite by contract. A file may perform at most 100,000 macro
-expansion operations and produce at most 4 MiB of preprocessed text. These
+expansion operations and produce at most 4,194,304 UTF-16 code units of
+preprocessed text. The output ceiling counts text units, not memory usage. These
 limits are deterministic rather than elapsed-time based. Exceeding either
 limit, invalid include operands, and cancellation reject the compilation
 instead of returning partial text. Physical line starts are indexed once so

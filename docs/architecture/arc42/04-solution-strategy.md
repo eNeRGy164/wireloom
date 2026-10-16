@@ -11,8 +11,11 @@
    `DdsIdl` starts generation; included IDL is tracked for invalidation but
    does not become another root.
 4. **Fail visibly at unsupported boundaries.**  
-   Unsupported declarations and invalid input produce source-located diagnostics
-   rather than partial output.
+   Invalid input and unsupported contracts that cannot produce safe managed
+   output fail with source-located diagnostics. Deliberately ignored constructs
+   and potentially lossy mappings report diagnostics while generation continues;
+   consumers must review those outcomes. See the
+   [diagnostic rules](08-crosscutting-concepts.md#82-diagnostics-and-source-locations).
 5. **Advance compatibility by case and explicit target.**
    The retained oracle capture uses RTI 7.7.0 / `rtiddsgen` 4.7.0, and the wire
    matrix covers RTI 7.7.0. The accepted runtime package floor (7.3.1) does not
