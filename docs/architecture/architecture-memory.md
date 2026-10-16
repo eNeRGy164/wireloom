@@ -55,6 +55,8 @@ or ADRs first, then refresh this file and
   Parsing, binding, and
   validation are explicit front-end phases, and chapter 5 includes a level-2
   zoom of the compiler and preprocessing boundary.
+  Self-referencing optional arrays use the recursive support accessor, preserving
+  dimensions and native storage while avoiding a first-use singleton null reference.
   See [chapter 5](arc42/05-building-block-view.md).
 - **Runtime and deployment:** The manually triggered wire workflow targets RTI
   Connext 7.7.0 and compares Wireloom-generated C#, RTI-generated C#, and
@@ -69,7 +71,10 @@ or ADRs first, then refresh this file and
   execution charset. Present optional wide-string
   sequences use the DynamicData C API peer; absent, empty, and narrow-only
   controls use typed peers. Optional aggregate values are supported by the
-  generator. RTI 7.3.1 generated-code compatibility is not established.
+  generator. Recursive arrays use ordinary Wireloom support discovery; only the
+  RTI C# reference needs the plugin bootstrap. Fresh-process runtime and package
+  tests cover startup, serialization, and public DynamicType rejection.
+  RTI 7.3.1 generated-code compatibility is not established.
   See [chapters 6](arc42/06-runtime-view.md) and [7](arc42/07-deployment-view.md).
 - **Cross-cutting concerns:** Evidence vocabulary, deterministic source
   identity, explicit compiler phases, diagnostics, test separation, measured

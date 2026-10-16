@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>disable</Nullable>
+    <DefineConstants>$(DefineConstants);RTI_REFERENCE_PEER</DefineConstants>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>

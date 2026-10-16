@@ -544,9 +544,9 @@ void RenderReport(string[] commandArgs)
         if (id == "09-optional-recursive-array")
         {
             var adaptation = "Typed finite recursive array fixture: bypass public DynamicType and disable TypeObject/TypeCode propagation because RTI 7.7.0 does not support recursive TypeObject v2.";
-            if (peer is "RTI C#" or "Wireloom C#")
+            if (peer == "RTI C#")
             {
-                adaptation += " Bootstrap the managed plugin before Support.Instance to avoid the RTI-compatible recursive static-initialization null dereference.";
+                adaptation += " Bootstrap the RTI reference plugin before Support.Instance to avoid RTI 7.7.0 recursive static-initialization null dereference.";
             }
             else if (peer == "RTI C++")
             {

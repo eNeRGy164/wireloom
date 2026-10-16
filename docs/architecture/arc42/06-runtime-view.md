@@ -130,9 +130,17 @@ The `09-optional-recursive-array` case has absent, present, and nested finite-tr
 fixtures. Managed and C++ peers use generated typed members and check the complete tree, including optional
 presence and child values, without requesting public recursive DynamicType.
 This case disables TypeObject/TypeCode propagation in participant QoS: RTI 7.7.0
-cannot register recursive types with default TypeObject v2. Both managed array
-peers start plugin metadata initialization in the harness before accessing the
-generated singleton, matching the RTI plugin's initialization requirements; its RTI
+cannot register recursive types with default TypeObject v2. Wireloom discovers
+generated support and creates its serializer normally. Only the RTI C# reference
+starts plugin metadata initialization before accessing the singleton; its RTI
 C++ scratch source forwards the visited-node chain when initializing the array
 TypeCode. The original IDL remains intact; this adaptation does not establish
 unadapted RTI reference-peer interoperability.
+
+Recursive support startup tests launch the existing runtime-contract test assembly
+in fresh processes for direct singleton access and normal support discovery.
+The package consumer links the same tests and IDL fixtures. They verify complete
+absent, present, and nested array round-trips, multidimensional and typedef forms,
+recursive-sequence support initialization, and rejection of public recursive
+DynamicType. A child completion marker ensures a filter cannot silently skip
+the assertions; process failures and timeouts fail the parent test.

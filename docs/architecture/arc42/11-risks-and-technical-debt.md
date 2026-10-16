@@ -50,8 +50,9 @@ The current deterministic limits are:
 
 Recursive fixed-array evidence is limited to self-referencing typed trees on
 RTI 7.7.0. Default TypeObject v2 registration rejects recursive types. Unadapted
-managed array-plugin initialization can dereference its singleton before assignment
-when entered through `Support.Instance`, matching RTI C#; generated
+RTI C# array-plugin initialization can dereference its singleton before assignment
+when entered through `Support.Instance`; Wireloom uses its recursive accessor
+and verifies cold startup without that workaround. Generated
 C++ array TypeCode initialization omits the visited-node chain, causing unbounded
 metadata recursion. The wire harness records scoped adaptations for those
 limitations. General mutual recursion, recursive collection typedef runtime

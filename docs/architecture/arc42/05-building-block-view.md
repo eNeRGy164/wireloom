@@ -129,9 +129,11 @@ central result boundary, which owns duplicate hint-name validation.
 Optional fixed-array members break recursive value-layout cycles because their
 native storage is indirect. Validation unwraps typedefs before identifying the
 array and preserves required-array and inline aggregate cycle diagnostics.
-Self-referencing optional arrays read `Support.Instance` in member metadata,
-matching RTI C#. Plugins do not emit a standalone support bootstrap call.
-Recursive sequences retain RTI's `GetOrCreateInstanceImpl()` member expression.
+Self-referencing optional arrays and recursive sequences use
+`GetOrCreateInstanceImpl()` in member metadata. The recursive plugin placeholder
+allows reentrant support construction before the singleton initializer assigns
+`Instance`. This intentionally improves on RTI 7.7.0 recursive-array output:
+applications need no standalone plugin bootstrap before normal support discovery.
 Optional arrays retain fixed-array dimensions and `NativeManagedOptionalArray`
 conversions. Optional aggregate-array
 conversions forward `keysOnly` to the element support and preserve positional
