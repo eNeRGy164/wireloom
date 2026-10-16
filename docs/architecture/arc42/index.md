@@ -5,9 +5,6 @@ RTI Connext DDS IDL into C# data types and RTI type-specific support during a
 Roslyn build. The RTI runtime remains responsible for DDS communication,
 serialization, and representation negotiation.
 
-Owner: Michaël Hompus  
-Last reviewed: 2026-10-02
-
 | Chapter                                                        | Status  | Description                                          |
 | :------------------------------------------------------------- | :------ | :--------------------------------------------------- |
 | [1. Introduction and goals](01-introduction-and-goals.md)      | current | Purpose, goals, and stakeholders                     |
@@ -24,5 +21,7 @@ Last reviewed: 2026-10-02
 | [12. Glossary](12-glossary.md)                                 | current | Project terminology                                  |
 
 > [!NOTE]
-> Additional information: This architecture context is also summarized in [Architecture memory](../architecture-memory.md) and `.agents/architecture-memory.yaml` so implementation agents can use it efficiently in limited context windows.
-> The arc42 chapters, linked ADRs, and contracts remain the primary source documents. If the derived memory differs, update the source docs first and refresh the derived memory.
+> This architecture context is also summarized in [Architecture memory](../architecture-memory.md)
+> and `.agents/architecture-memory.yaml` for implementation agents.
+> The arc42 chapters, linked ADRs, and contracts remain the primary sources.
+> If the derived memory differs, update the source docs first and refresh it.

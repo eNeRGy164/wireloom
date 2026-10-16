@@ -9,6 +9,7 @@ scenarios below make the current verification approach concrete.
 Wireloom quality
 ├── Compatibility evidence
 ├── Build-time developer experience
+├── Build safety
 ├── Diagnostic clarity
 ├── Compiler maintainability
 └── Supply-chain integrity
@@ -16,30 +17,56 @@ Wireloom quality
 
 ## 10.2 Quality scenarios
 
-| ID   | Quality                | Stimulus                                                         | Response                                                                                                                                                                                          | Metric / target                                                                                                                                                                                                                                                                                                         | Chapter 1 goal      |
-| :--- | :--------------------- | :--------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------ |
-| Q-01 | Compatibility evidence | Run the manifest-driven corpus                                   | Positive cases compile and accepted output preserves required oracle contract shape and targeted DynamicType metadata                                                                            | Corpus compliance validates every manifest case; source export remains a separate opt-in check                                                                                                                                                                                                   | Compatibility       |
-| Q-02 | Diagnostic clarity     | Add invalid or unsupported IDL                                   | Build fails with a stable diagnostic at the source location                                                                                                                                       | No silent omission; `DDSG0001` for generation failures                                                                                                                                                                                                                                                                  | Diagnostics         |
-| Q-03 | Package integration    | Consume the packed `.nupkg` without a project reference          | Analyzer targets load and generated types compile                                                                                                                                                 | Dedicated package integration suite passes                                                                                                                                                                                                                                                                              | Build integration   |
-| Q-04 | Maintainability        | Change one compiler stage                                        | Focused tests can exercise the stage without the full repository corpus                                                                                                                           | In-memory unit-test layer remains independent                                                                                                                                                                                                                                                                           | Maintainability     |
-| Q-05 | Supply chain           | Publish a preview or release package                             | Tests, SBOM, and provenance steps run in CI                                                                                                                                                       | Workflow gates remain green                                                                                                                                                                                                                                                                                             | Supply-chain safety |
-| Q-06 | Build safety           | Supply adversarial macro expansion or cancel generation          | Generation terminates deterministically without partial parser input                                                                                                                              | 100,000 macro operations; 4 MiB output; cancellation observed                                                                                                                                                                                                                                                           | Reliability         |
-| Q-07 | Incremental build      | Change a root, include, unrelated input, or one of several roots | Roslyn reuses unaffected input steps and the measured invalidation scope remains explicit                                                                                                         | Baseline harness records tracked-step reasons and elapsed timings; per-root output caching remains a documented follow-up                                                                                                                                                                                               | Build integration   |
-| Q-08 | Wire compatibility     | Manually dispatch the licensed DDS matrix                        | Every curated Wireloom-positive fixture runs as an independent exchange across all nine directed pairings of Wireloom C#, RTI C#, and RTI C++ on exact RTI 7.7.0; Markdown and JSON reports record all outcomes and sanitized diagnostics | Generated reports record each selected fixture and pairing; Wireloom C# array-of-sequences shape failures remain expected                                                                                                                                                                         | Compatibility       |
+### Compatibility evidence
+
+| ID   | Scenario                     | Acceptance and evidence                                                                                                                                           |
+| :--- | :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q-01 | Run the manifest corpus      | Positive cases compile and preserve required oracle shape and targeted DynamicType metadata; compliance covers every manifest case. Source export remains opt-in. |
+| Q-08 | Dispatch the licensed matrix | Nine directed pairings among Wireloom C#, RTI C#, and RTI C++ run on exact RTI 7.7.0; reports show outcomes and expected array-of-sequences failures.             |
+
+### Build-time developer experience
+
+| ID   | Scenario                                | Acceptance and evidence                                                                                                              |
+| :--- | :-------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| Q-03 | Consume the packed `.nupkg`             | Analyzer targets load and generated types compile without a project reference; package integration passes.                           |
+| Q-07 | Change roots, includes, or other inputs | Roslyn reuses unaffected inputs; the baseline records tracked-step reasons and timings. Per-root output caching remains a follow-up. |
+
+### Build safety
+
+| ID   | Scenario                                   | Acceptance and evidence                                                                                                                                 |
+| :--- | :----------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Q-06 | Exercise macro limits or cancel generation | Processing ends without partial parser input; caps are 100,000 macro operations and 4,194,304 UTF-16 code units per file, and cancellation is observed. |
+
+### Diagnostic clarity
+
+| ID   | Scenario                       | Acceptance and evidence                                                                                                                                                                     |
+| :--- | :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Q-02 | Add invalid or unsupported IDL | Input that prevents safe managed output fails with source-located `DDSG0001`; deliberately ignored constructs and potentially lossy mappings report diagnostics while generation continues. |
+
+### Compiler maintainability
+
+| ID   | Scenario                  | Acceptance and evidence                                                      |
+| :--- | :------------------------ | :--------------------------------------------------------------------------- |
+| Q-04 | Change one compiler stage | Focused in-memory tests exercise that stage without running the full corpus. |
+
+### Supply-chain integrity
+
+| ID   | Scenario                             | Acceptance and evidence                                                             |
+| :--- | :----------------------------------- | :---------------------------------------------------------------------------------- |
+| Q-05 | Publish a preview or release package | CI runs tests, SBOM generation, and provenance steps; required workflow gates pass. |
 
 The C134 recursive fixed-array scenario checks absent/present hashing,
 independent nested copies, equality, and optional annotations. Fresh-process
 runtime and package tests check singleton/discovery startup and complete
 recursive-array serialization, including multidimensional and typedef forms.
 The original RTI C# oracle retains a separately reproducible startup limitation.
-Its wire
-adaptations and limitations are described in chapter 6.
+Its wire adaptations and limitations are described in [chapter 6](06-runtime-view.md).
 
 Generated API runtime contracts are verified separately from corpus shape and
 wire compatibility. The runtime suite builds focused IDL fixtures and executes
 managed value methods, native conversion/lifecycle APIs, and DynamicType/support
 APIs on Windows and Linux. Its [coverage matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
 identifies executable coverage, applicable gaps, and the RTI C# or better
-Coveralls measures maintained generator source; generated fixture and test
-project code are excluded. Unresolved required contracts remain gaps rather
-than completed compatibility evidence.
+expectation. Coveralls measures maintained generator source; generated fixture
+and test project code are excluded. Unresolved required contracts remain gaps
+rather than completed compatibility evidence.

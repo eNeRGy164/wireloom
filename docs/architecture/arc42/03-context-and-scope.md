@@ -1,13 +1,13 @@
 # 3. Context and scope
 
-Wireloom is a build-time component between a .NET consumer project and the
-generated C# contract consumed by the application. It does not sit in the DDS
-data path.
+Wireloom is an independent build-time component between a .NET consumer project
+and the generated C# contract consumed by the application. It has no official
+relationship with RTI and does not sit in the DDS data path. The RTI runtime
+remains responsible for serialization and communication.
 
 ## 3.1 Business context
 
-The source for the context diagram is
-[system-context.puml](images/03/system-context.puml).
+![System context: Wireloom generates C# during the consumer build; the generated application uses the RTI Connext DDS runtime.](images/03/system-context.png)
 
 | Neighbor                                  | Direction                 | Exchanged value / data                                                        |
 | :---------------------------------------- | :------------------------ | :---------------------------------------------------------------------------- |

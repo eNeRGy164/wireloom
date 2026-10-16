@@ -1,5 +1,61 @@
 # 5. Building block view
 
+Wireloom separates build integration, input discovery and preprocessing,
+semantic compilation, emission planning, and generated-source writing. The
+level-1 view shows those boundaries; level 2 expands the compiler. Detailed
+emission contracts follow the structural views.
+
+## 5.1 Level 1: White-box overall system
+
+![Level 1 building blocks from consumer project and MSBuild inputs through the Roslyn generator to generated C# and the RTI runtime.](images/05/level-1-overview.png)
+
+At level 1, the managed compiler is intentionally shown as a black box. Its
+front end, preprocessing boundary, resolution, validation, emission planning,
+and writer handoff are expanded in the level-2 view below.
+
+| Building block               | Role                                                    | Main boundary                                     |
+| :--------------------------- | :------------------------------------------------------ | :------------------------------------------------ |
+| Roslyn generator             | Accepts inputs, reports diagnostics, and adds documents | `Generator`                                       |
+| Input graph and preprocessor | Resolves IDL roots/includes and applies preprocessing   | `IdlInputGraph`, `IdlPreprocessor`                |
+| Front end                    | Parses, binds, and validates declarations               | `Compiler/FrontEnd`                               |
+| Compilation orchestration    | Coordinates compilation state and emission handoff      | `IdlCompilation`, `CompilationContext`            |
+| Emission planning            | Selects managed, native, and support output shapes      | `Emission/Model`, `Planning`                      |
+| Emitters                     | Write generated C# documents                            | Managed, native, TypeSupport, and plugin emitters |
+| MSBuild targets              | Pass IDL roots and include metadata to Roslyn           | Packed NuGet package                              |
+| Corpus and integration tests | Verify acceptance, API shape, and package use           | Separate test layers                              |
+
+## 5.2 Level 2: Compiler and preprocessing
+
+The compiler front end and its preprocessing boundary are the most useful
+level-2 zoom because they separate build-input ownership from target-independent
+IDL meaning.
+
+![Compiler and preprocessing flow from build metadata and IDL inputs through parsing, semantic validation, and emission planning.](images/05/level-2-compiler-and-preprocessing.png)
+
+| Stage                     | Responsibility                                           | Main implementation                                                                                                |
+| :------------------------ | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
+| Root intake               | Builds the graph from `DdsIdl` roots and project options | [`IdlInputGraph`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlInputGraph.cs)            |
+| Include resolution        | Resolves paths while preserving root/include identity    | [`IdlIncludeResolver`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlIncludeResolver.cs)  |
+| Preprocessing             | Applies directives and macros with source mapping        | [`IdlPreprocessor`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlPreprocessor.cs)        |
+| Parsing                   | Converts preprocessed text into declarations             | [`IdlDeclarationParser`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs)    |
+| Semantic model            | Assigns stable symbols and target-independent meaning    | [`IdlSymbolTable`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Symbols/IdlSymbolTable.cs)                |
+| Compilation state         | Coordinates parse, bind, and validate phases             | [`IdlCompilation`](../../../src/Wireloom.Dds.Generator/Compiler/IdlCompilation.cs)                                 |
+| Resolution and validation | Resolves references and reports semantic errors          | [`CompilationResolver`](../../../src/Wireloom.Dds.Generator/Compiler/CompilationResolver.cs)                       |
+| Emission planning         | Projects validated declarations into output plans        | [`EmissionTypeProjector`](../../../src/Wireloom.Dds.Generator/Compiler/Emission/Planning/EmissionTypeProjector.cs) |
+
+This view is structural rather than a runtime sequence: it shows ownership and
+handoffs, while build-time ordering and failure scenarios remain in [chapter 6](06-runtime-view.md).
+
+The front end follows an explicit parse -> bind -> validate sequence. Parsing
+records syntax and source context, binding resolves references and deferred
+bounds against the complete symbol graph, and validation applies semantic
+rules before emission planning begins. Emitters return generated documents to a
+central result boundary, which owns duplicate hint-name validation.
+
+## 5.3 Generated contract rules
+
+### Union discriminators and construction
+
 Union type-support emission preserves the managed discriminator's IDL value
 range while adapting metadata labels to RTI's signed native representation.
 Unsigned 32-bit labels use an explicit unchecked `int` conversion. Narrow
@@ -21,24 +77,7 @@ These managed contracts are covered by
 [`UnionConstructionNativeSpecs`](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/Native/UnionConstructionNativeSpecs.cs),
 and the [corpus feature index](../../corpus/FEATURE-COVERAGE.md).
 
-## 5.1 Level 1: White-box overall system
-
-The source for the diagram is [level-1-overview.puml](images/05/level-1-overview.puml).
-
-At level 1, the managed compiler is intentionally shown as a black box. Its
-front end, preprocessing boundary, resolution, validation, emission planning,
-and writer handoff are expanded in the level-2 view below.
-
-| Building block               | Responsibility                                                                                        | Depends on                   | Notes                                                         |
-| :--------------------------- | :---------------------------------------------------------------------------------------------------- | :--------------------------- | :------------------------------------------------------------ |
-| Roslyn generator boundary    | Reads `AdditionalFiles`, checks host prerequisites, reports diagnostics, and adds generated documents | Roslyn                       | `Generator`                                                   |
-| Input graph and preprocessor | Resolves roots/includes and applies defines, undefines, and conditional directives                    | IDL files and build metadata | `IdlInputGraph`, `IdlPreprocessor`                            |
-| Front end                    | Preprocesses input, parses declarations, binds references, and validates semantics                    | Preprocessed IDL             | `Compiler/FrontEnd`; independent of Roslyn                    |
-| Compilation orchestration    | Coordinates compilation state, resolution, and the handoff to emission                                | Front end and emission       | `IdlCompilation`, `CompilationContext`, `CompilationResolver` |
-| Emission model and plans     | Projects resolved declarations into managed/native/support emission decisions                         | Resolved semantic model      | `Emission/Model`, `Planning`, and shared member policies      |
-| Emitters                     | Writes managed types, native companions, TypeSupport, plugins, unions, and metadata                   | Emission plans               | Deterministic generated source                                |
-| MSBuild package targets      | Converts `DdsIdl` roots and IDL include locations into compiler inputs                                | Consumer project             | Packed in the NuGet package                                   |
-| Corpus and integration tests | Checks acceptance, diagnostics, RTI C# shape, and packed-package consumption                          | Generator and fixtures       | Separate fast, corpus, and package layers                     |
+### Aliases, collections, and optional members
 
 Emission planning uses the underlying struct or union type for aggregate
 members and array or sequence elements whose IDL type is a typedef chain.
@@ -93,38 +132,7 @@ DynamicType metadata preserves the declared alias support, matching RTI; the
 managed property and native conversion still use the underlying aggregate.
 Absent values remain null in the managed contract.
 
-The input graph and preprocessor enforce deterministic work boundaries: macro
-expansion is capped at 100,000 expansion operations and each preprocessed file
-at 4 MiB of text, while conditional expressions are capped at 256 nested
-parser levels. Source-origin spans map generated fragments back to exact input
-text or to the macro invocation that generated them, including EOF.
-
-## 5.2 Level 2: Compiler and preprocessing
-
-The compiler front end and its preprocessing boundary are the most useful
-level-2 zoom because they separate build-input ownership from target-independent
-IDL meaning. The source for the diagram is
-[level-2-compiler-and-preprocessing.puml](images/05/level-2-compiler-and-preprocessing.puml).
-
-| Building block                 | Responsibility                                                                                                                                                                                                    | Key dependencies and interfaces                                                                                                                                                                                                                                                                                             |
-| :----------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Root and build-metadata intake | Turns `DdsIdl` roots and project-wide include/define metadata into an explicit input graph and owns recursive traversal, active-path tracking, and cycle/depth diagnostics.                                       | [`IdlInputGraph`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlInputGraph.cs); MSBuild metadata enters through the Roslyn generator boundary.                                                                                                                                                     |
-| Include resolver               | Resolves candidate paths for `#include` references and preserves the root/include distinction.                                                                                                                    | [`IdlIncludeResolver`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlIncludeResolver.cs); IDL files and include directories.                                                                                                                                                                       |
-| IDL preprocessor               | Applies defines, undefines, conditional directives, and macros while retaining source-origin information and enforcing expansion and output limits. Focused services sit behind the stable preprocessor boundary. | [`IdlPreprocessor`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlPreprocessor.cs); `PreprocessedIdl` is the parser-facing handoff.                                                                                                                                                                |
-| Parser                         | Converts preprocessed IDL text into declaration-level syntax and source context without performing full semantic validation.                                                                                      | [`IdlDeclarationParser`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs) and specialized parsers; consumes `PreprocessedIdl`.                                                                                                                                                        |
-| Symbol and semantic model      | Gives declarations stable names and target-independent meaning during binding, before any generated C# or native shape is selected.                                                                               | [`IdlSymbolTable`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Symbols/IdlSymbolTable.cs), semantic model types, and type resolution.                                                                                                                                                                             |
-| Compilation state              | Owns the target-independent compilation unit and coordinates the explicit parse, bind, and validate phases with project-wide context.                                                                             | [`IdlCompilation`](../../../src/Wireloom.Dds.Generator/Compiler/IdlCompilation.cs) and [`CompilationContext`](../../../src/Wireloom.Dds.Generator/Compiler/CompilationContext.cs).                                                                                                                                          |
-| Resolution and validation      | Resolves references after the declaration graph is available and runs deferred semantic checks, producing source-located diagnostics instead of incomplete meaning.                                               | [`CompilationResolver`](../../../src/Wireloom.Dds.Generator/Compiler/CompilationResolver.cs), [`IdlTypeResolver`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Semantic/IdlTypeResolver.cs), and [`IdlSemanticValidator`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Semantic/IdlSemanticValidator.cs). |
-| Emission model and plans       | Projects validated declarations into resolved shape, naming, union, member, and document plans consumed by managed, native, and TypeSupport emitters.                                                             | [`EmissionTypeProjector`](../../../src/Wireloom.Dds.Generator/Compiler/Emission/Planning/EmissionTypeProjector.cs); hands off to the level-1 Emission model and plans block.                                                                                                                                                |
-
-This view is structural rather than a runtime sequence: it shows ownership and
-handoffs, while build-time ordering and failure scenarios remain in [chapter 6](06-runtime-view.md).
-
-The front end follows an explicit parse -> bind -> validate sequence. Parsing
-records syntax and source context, binding resolves references and deferred
-bounds against the complete symbol graph, and validation applies semantic
-rules before emission planning begins. Emitters return generated documents to a
-central result boundary, which owns duplicate hint-name validation.
+### Recursive fixed arrays
 
 Optional fixed-array members break recursive value-layout cycles because their
 native storage is indirect. Validation unwraps typedefs before identifying the
@@ -140,3 +148,11 @@ conversions forward `keysOnly` to the element support and preserve positional
 `optionalsOnly` cleanup.
 Optional aggregate-array hashing adds the first element when present and `-1`
 when absent, matching the RTI C# oracle.
+
+## 5.4 Preprocessing limits
+
+The input graph and preprocessor enforce deterministic work boundaries: macro
+expansion is capped at 100,000 expansion operations and each preprocessed file
+at 4,194,304 UTF-16 code units of text, while conditional expressions are capped at 256 nested
+parser levels. Source-origin spans map generated fragments back to exact input
+text or to the macro invocation that generated them, including EOF.

@@ -29,3 +29,42 @@
 - **Generator target API version** — The RTI API surface Wireloom is asked to
   emit against; it is a future explicit configuration input and is distinct
   from the RTI package version resolved by the consumer.
+- **DDS-XTypes (XTypes)** — The DDS type system for describing data types and
+  their compatibility and evolution rules. See RTI's
+  [Extensible Types Guide](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/extensible_types_guide/RTI_ConnextDDS_CoreLibraries_ExtensibleTypes_Guide.pdf).
+- **XCDR2** — The second-generation XCDR data representation used to encode
+  DDS samples. It is a wire representation, separate from the type metadata
+  used to describe a sample's structure. See the RTI
+  [Extensible Types Guide](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/extensible_types_guide/RTI_ConnextDDS_CoreLibraries_ExtensibleTypes_Guide.pdf).
+- **TypeObject** — A serialized DDS-XTypes representation of type information
+  used for type discovery and consistency checks; it describes a type rather
+  than carrying a topic sample. See the RTI
+  [Extensible Types Guide](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/extensible_types_guide/RTI_ConnextDDS_CoreLibraries_ExtensibleTypes_Guide.pdf).
+- **TypeCode** — An RTI API representation of a type description used by
+  language bindings and type-support APIs. It is distinct from sample data and
+  from the TypeObject wire representation. See the RTI
+  [Extensible Types Guide](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/extensible_types_guide/RTI_ConnextDDS_CoreLibraries_ExtensibleTypes_Guide.pdf).
+- **DynamicType** — An RTI runtime object that describes a DDS type, including
+  its members and their types. It can be used to build type metadata at
+  runtime. See the RTI [DDS-XTypes API reference](https://community.rti.com/static/documentation/connext-dds/current/doc/api/connext_dds/api_cpp2/group__DDSXTypesModule.html).
+- **DynamicData** — An RTI runtime value object for creating, reading, or
+  writing a sample by member name or ID without relying on a generated
+  application data class. See the RTI [DDS-XTypes API reference](https://community.rti.com/static/documentation/connext-dds/current/doc/api/connext_dds/api_cpp2/group__DDSXTypesModule.html).
+- **Extensibility** — A DDS-XTypes setting that determines which type changes,
+  such as adding or reordering members, can remain compatible. Extensibility
+  alone does not guarantee that two peers can exchange a type; their type
+  consistency settings and representations also matter. See the RTI
+  [Extensible Types Guide](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/extensible_types_guide/RTI_ConnextDDS_CoreLibraries_ExtensibleTypes_Guide.pdf).
+- **Optional presence** — Whether an optional member is absent or present.
+  A present member can contain a default or empty value, so presence is
+  separate from the member's value. See the
+  [generated value semantics guide](../../guides/generated-value-semantics.md).
+- **Qodana** — JetBrains' code-quality analysis platform, used in this
+  repository to inspect code and report maintainability issues. See the
+  [Qodana documentation](https://www.jetbrains.com/help/qodana/about-qodana.html)
+  and the local [quality procedure](../../../CONTRIBUTING.md#quality-evidence).
+- **WSL Containers (`wslc`)** — Microsoft's command-line interface for
+  building and running Linux containers on Windows with Windows Subsystem for
+  Linux. This repository uses it to run the Linux-based Qodana container. See
+  [Microsoft Learn](https://learn.microsoft.com/en-us/windows/nodejs/containers)
+  and the local [quality procedure](../../../CONTRIBUTING.md#quality-evidence).

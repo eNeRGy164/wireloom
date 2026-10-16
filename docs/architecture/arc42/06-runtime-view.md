@@ -1,38 +1,12 @@
 # 6. Runtime view
 
-The manual wire workflow partitions whole cases across four independent runners.
-Each runner derives the same deterministic plan from all selected exchanges,
-assigns larger cases first to the currently smaller shard, and runs every
-fixture and pairing belonging to its cases. Each shard seeds its assigned
-exchanges before peer builds, preserving explicit not-run outcomes on failure.
-The report job requires all shard artifacts and verifies matching plans,
-versions, identities, and exact exchange coverage before regenerating one
-combined JSON and Markdown report. Duplicate or missing evidence fails the
-merge; peer failures remain visible scenario outcomes. Unexpected setup errors
-keep a nonzero job exit even after peer execution begins. Partial reports and
-seeded not-run rows remain available in shard artifacts, but any not-run row
-prevents publication of a complete combined report.
-
-Wire readers count `ValidData=false` instance lifecycle notifications without
-treating them as corrupted payloads. A writer may exit after acknowledgment
-before the reader takes its sample, producing a `NotAliveNoWriters`
-notification alongside valid data. Every reader still requires a valid sample
-and verifies its complete fixture; lifecycle-only traffic times out.
-The independent verifier normalizes signed RTI labels and discriminator values
-using the declared discriminator type before comparing branches and snapshots.
-Character boundary fixtures are seeded and checked through managed members,
-independently of RTI DynamicData's branch selection. Their C++ peer uses
-`-fexec-charset=ISO-8859-1` so RTI's literal U+00FF label becomes byte 255 and
-signed metadata label -1, rather than a UTF-8 multicharacter constant.
-
 Wireloom has no long-running runtime process. Its primary runtime scenario is
 the consumer's build, followed later by the generated application's use of the
 RTI runtime.
 
 ## 6.1 Consumer build and generation
 
-The source for the build-time sequence diagram is
-[consumer-build-sequence.puml](images/06/consumer-build-sequence.puml).
+![Consumer build sequence from MSBuild IDL inputs through Roslyn generation and compilation to application use of the RTI runtime.](images/06/consumer-build-sequence.png)
 
 1. MSBuild adds explicit `DdsIdl` roots and tracks other `.idl` files as
    non-generating inputs.
@@ -45,8 +19,11 @@ The source for the build-time sequence diagram is
 4. `IdlCompiler` resolves the include graph and preprocesses input. The front
    end then parses declarations, binds references and deferred bounds against
    the complete symbol graph, and validates semantics.
-5. Emitters return generated C# documents to the central emission result. An invalid or unsupported input instead
-   produces `DDSG0001` at the original IDL location.
+5. Emitters return generated C# documents to the central emission result.
+   Input that prevents safe managed output produces `DDSG0001` at its IDL
+   location. Deliberately ignored constructs and potentially lossy mappings
+   report diagnostics while generation continues; see the
+   [diagnostic rules](08-crosscutting-concepts.md#82-diagnostics-and-source-locations).
 6. The consumer compiles generated types together with its hand-written code.
 
 ## 6.2 Failure paths
@@ -63,84 +40,32 @@ The source for the build-time sequence diagram is
 
 ## 6.3 Wire compatibility evidence
 
-The manually dispatched wire-compatibility workflow targets positive corpus
-cases that Wireloom can generate and for which RTI Connext DDS 7.7.0 can provide
-reference peers, using generated C# and C++ sources or a runtime `DynamicType`
-where needed. It builds three endpoints per case: Wireloom-generated C#,
-RTI-generated C#, and RTI-generated C++. Every curated fixture runs in its own
-process exchange on a unique topic for all nine directed sender/receiver
-pairings. The report names both implementation and language for each endpoint,
-plus case, fixture, runtime versions, and status. Readers compare the complete
-expected sample after checking sample validity; successful discovery alone does
-not count as a pass. Markdown has one status cell per pairing and a
-problem/defect column; JSON retains the full structured metadata.
+The manually dispatched matrix compares Wireloom-generated C#, RTI-generated
+C#, and RTI-generated C++ across all nine directed peer pairings for selected
+Wireloom-positive corpus fixtures. A pass requires valid samples and complete
+payload comparison; successful discovery alone is insufficient. The matrix is
+qualified against RTI Connext 7.7.0. Compatibility with 7.3.1 is not
+established.
 
-Fixtures include independently absent and present optional members, optional
-empty/single/multiple collection values, union branch choices, string
-boundaries, and contrasting values for the remaining supported shapes. The
-catalog determines the scenario count, so every case can contribute several
-independently reported scenarios. The `02-multiple` case wraps both top-level
-declarations in one topic sample, and enum-only IDLs use a wrapper topic
-member. All peers request reliable delivery. Data-representation cases select
-XCDR2 explicitly in all applicable peers. Wireloom C# uses generated typed
-readers and writers to exercise its conversion paths. RTI C# uses the pinned
-code generator to produce a typed peer from the same IDL input; generated files
-stay in scratch and are not uploaded. RTI C++ uses `DynamicData` except where
-RTI omits required string template specializations; those cases use generated
-typed readers/writers. For present optional wide-string sequence fixtures, the
-C++ peer uses DynamicData and RTI's C API setters to avoid a crash in RTI
-7.7.0's typed `std::wstring` sequence serializer. Absent, empty, and
-narrow-only controls remain typed. Diagnostic output includes match counters,
-read/take counts, sample validity, and selected type-consistency diagnostics.
-Artifacts contain structured results and sanitized endpoint logs only.
+The manual wire workflow runs independent peer exchanges for selected corpus
+cases. A combined report is published only when the selected work has complete,
+consistent evidence; setup failures fail the workflow. The [wire compatibility
+runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#case-shards-and-combined-reports)
+documents shard planning, artifact validation, failure handling, and local
+operations.
 
-The matrix covers RTI Connext 7.7.0. Generated-code compatibility with RTI
-7.3.1 is not established because current output uses APIs absent from its C# package.
+Wire validation requires a valid sample and complete fixture comparison;
+discovery or lifecycle-only traffic is not a pass. The runbook documents reader
+handling, verifier normalization, and fixture-specific peer behavior.
 
-The RTI-positive `09-optional-aggregate-member` generates optional struct and
-union values. Its absent and present fixtures carry nested payloads, including
-typedef aliases, and are scheduled as independent exchanges across all nine
-directed pairings.
-`05-array-of-sequences`
-is included despite warning DDSG0105: Wireloom currently maps the C# members to
-flat sequences, matching the retained RTI C# oracle, while RTI C++ preserves
-the IDL arrays. Pairings that
-include Wireloom C# fail endpoint discovery because RTI reports different
-member type kinds. The report marks those Wireloom cross-peer failures as
-expected; this case's wire test does not establish preservation of the two-slot
-array shape. Aggregate alias members use the underlying
-generated struct or union type in managed APIs and native conversions; for
-optional struct members with aggregate values, DynamicType metadata retains
-the declared typedef alias as RTI does. The generated result artifact records
-the current status and scenario totals for every selected fixture and pairing.
-Expected `05-array-of-sequences` failures
-involve Wireloom C# pairings. The three-peer matrix uses DynamicData and RTI's
-C API setters for present wide-string fixtures in `09-optional-string-sequences`
-to exercise their intended wire shape without invoking RTI's crashing typed
-serializer. Absent, empty, and narrow-only controls remain typed. C# verification
-uses independent fixture values, and C++ controls check optional presence
-separately from sequence length and values.
-The wchar union's C++ peer uses a manually constructed RTI `DynamicType` because
-`rtiddsgen` cannot parse wchar union labels. For `10-flat-data-binding`, C++
-generation removes only the C#-ignored `@language_binding(FLAT_DATA)` annotation
-while retaining the type shape and XCDR2 requirement; this does not validate
-RTI's FlatData-specific C++ layout.
-
-The `09-optional-recursive-array` case has absent, present, and nested finite-tree
-fixtures. Managed and C++ peers use generated typed members and check the complete tree, including optional
-presence and child values, without requesting public recursive DynamicType.
-This case disables TypeObject/TypeCode propagation in participant QoS: RTI 7.7.0
-cannot register recursive types with default TypeObject v2. Wireloom discovers
-generated support and creates its serializer normally. Only the RTI C# reference
-starts plugin metadata initialization before accessing the singleton; its RTI
-C++ scratch source forwards the visited-node chain when initializing the array
-TypeCode. The original IDL remains intact; this adaptation does not establish
-unadapted RTI reference-peer interoperability.
-
-Recursive support startup tests launch the existing runtime-contract test assembly
-in fresh processes for direct singleton access and normal support discovery.
-The package consumer links the same tests and IDL fixtures. They verify complete
-absent, present, and nested array round-trips, multidimensional and typedef forms,
-recursive-sequence support initialization, and rejection of public recursive
-DynamicType. A child completion marker ensures a filter cannot silently skip
-the assertions; process failures and timeouts fail the parent test.
+Known limits remain visible in the evidence: `05-array-of-sequences` has
+expected Wireloom C# interoperability failures because its managed shape does
+not preserve the IDL array; selected optional wide-string and recursive-array
+cases use documented peer/QoS adaptations for RTI 7.7.0 limitations; and the
+FlatData fixture validates standard C++ mapping, not RTI's FlatData-specific
+layout. These adaptations do not establish unadapted interoperability. The
+[wire compatibility runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
+owns fixture setup, peer construction, shard execution, artifacts, and report
+details. The separate [runtime contract suite](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
+covers generated API and serialization behavior without establishing the wire
+matrix results.
