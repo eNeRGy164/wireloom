@@ -35,14 +35,16 @@ notices.
 
 ## Case inventory
 
-The current inventory contains:
+The manifest currently contains **77 positive cases**, **60 negative probes**,
+and **4 integration entry points** (141 entries total). These counts follow
+`manifest.json`, the source of truth for the corpus inventory.
 
 | Group                    | Count | Location                             |
 | ------------------------ | ----: | ------------------------------------ |
-| Positive feature cases   |    76 | [`idl/features`](idl/features)       |
-| Negative cases           |    60 | [`idl/negative`](idl/negative)       |
+| Positive feature cases   |    77 | [`idl/features`](idl/features)       |
+| Negative probes          |    60 | [`idl/negative`](idl/negative)       |
 | Integration entry points |     4 | [`idl/integration`](idl/integration) |
-| Total                    |   140 | —                                    |
+| Total                    |   141 | —                                    |
 
 Each case has a manifest ID, such as `01-primitives`, and a stable `C###`
 provenance tag. Tags are used by the feature index and test diagnostics.

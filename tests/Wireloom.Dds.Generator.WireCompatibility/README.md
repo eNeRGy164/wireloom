@@ -6,6 +6,12 @@ The peer package version is selected by
 `WireCompatibilityRtiVersion` (default `7.7.0`); use the matching exact RTI
 toolchain to generate and build the reference peers.
 
+The [current recorded evidence baseline](../../docs/corpus/FEATURE-COVERAGE.md#runtime-evidence-baseline)
+identifies the main-branch run, exact revision, combined artifact, and scenario
+totals. It includes both C137 and C141. Workflow success means the report was
+collected and validated; failed scenarios and peer adaptations remain part of
+the result.
+
 The nested `RtiOracleProbe` also supports typed, local API probes of retained
 unbounded typedef oracles C135/C136. The corresponding managed contracts are
 covered by the [runtime contract suite](../Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix).
@@ -36,7 +42,31 @@ fixtures on both managed and C++ peers because RTI 7.7.0 DynamicData resolves
 the nested typedef members against the wrong type. Readers compare the public
 optional values and selected union branch directly.
 
+## Recorded reference-peer findings
+
+The named main-branch run includes RTI C# compilation failures in
+`07-union-octet` (`CS0246`, generated `octet` discriminator type) and
+`07-union-ulong` / `07-union-uint32` (`CS0221`, unchecked conversion missing
+for the maximum unsigned label). The retained RTI oracle pairs reproduce these
+compiler errors. Scenarios requiring those peers fail before DDS exchange;
+the Wireloom C#/RTI C++ pairings still execute and pass for their fixtures.
+
+`07-union-char-boundaries` compiles, but its maximum-character fixture fails
+payload verification in all pairings involving RTI C#. The corresponding
+Wireloom C#/RTI C++ controls pass. `07-union-wchar-label` cannot generate the
+RTI C# reference peer; the passing Wireloom C#/RTI C++ profile uses the documented
+manually constructed C++ DynamicType. These outcomes do not establish complete
+three-peer interoperability for either case.
+
+Consult the linked baseline and combined report for the exact revision,
+fixtures, pairings, failure classification, and adaptations. An unexpected
+report outcome is not by itself an attribution of a defect to Wireloom.
+
 ## Case shards and combined reports
+
+This is the operational source of truth for wire-matrix sharding, peer
+execution, artifacts, and report assembly. Architecture chapters summarize the
+qualification boundary and link here for procedure.
 
 The GitHub workflow runs four case shards concurrently (`fail-fast: false`).
 Each shard loads its image through a cached Docker build. Package installation
@@ -146,15 +176,15 @@ report records outcomes for the selected fixtures and pairings.
 The recently added positive corpus cases C135–C141 have fixtures that exercise
 their declared variations rather than default-only samples:
 
-| Case | Wire fixtures | Variation checked |
-| --- | --- | --- |
-| C135 `04-unbounded-string-aliases` | `string-empty`, `string-boundary` | Empty narrow/wide aliases and 255-character narrow/wide values. |
-| C136 `05-unbounded-sequence-aliases` | `sequence-empty`, `sequence-multiple` | Empty and two-element sequences across primitive, enum, aggregate, scalar-alias, narrow/wide, and bounded-string element aliases. |
-| C137 `07-union-char-numeric` | `union-127`, `union-default` | A 127 numeric label and a default-label branch. RTI 7.7.0 accepts the IDL but its C# output assigns integer 127 to `char`, producing CS0266. For `union-127`, Wireloom C# and RTI C++ exchanges pass in both directions and RTI C++ self-exchange passes. Default-branch exchanges pass only within each implementation because the peers observe different discriminator values. |
-| C141 `07-union-char-numeric-255` | `union-255`, `union-default` | The maximum `char` label and a default-label branch. RTI 7.7.0 accepts the IDL but its C# output assigns integer 255 to `char`, producing CS0266. The C++ peer uses unsigned-char compilation. In the isolated run, Wireloom C# self-exchange passed for label 255, but RTI C++ pairings failed type discovery or value verification; default-branch exchanges passed only within each implementation because the union definitions have no common non-default label. |
-| C138 `04-string-alias-chains` | `string-empty`, `string-boundary` | Empty values and exact narrow/wide bounds through bounded and unbounded alias chains. |
-| C139 `07-union-string-sequence-aliases` | `union-direct-narrow`, `union-direct-wide`, `union-alias-narrow`, `union-alias-wide`, `union-bounded-narrow`, `union-bounded-wide` | Direct, alias, and bounded-alias branches with three sequence elements; bounded branches include strings at their declared length limits. Wireloom C# and RTI C++ pairings pass (24/24); the 30 RTI C# pairings fail with `FromDynamicData` `NullReferenceException`. |
-| C140 `07-union-string-sequence-bounded-direct` | narrow/wide `empty` and `multiple` | Empty and three-element direct bounded sequence branches, including strings at the element bounds. All nine pairings pass. |
+| Case                                           | Wire fixtures                                                                                                                      | Variation checked                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C135 `04-unbounded-string-aliases`             | `string-empty`, `string-boundary`                                                                                                  | Empty narrow/wide aliases and 255-character narrow/wide values.                                                                                                                                                                                                                                                                                                                                                                                                       |
+| C136 `05-unbounded-sequence-aliases`           | `sequence-empty`, `sequence-multiple`                                                                                              | Empty and two-element sequences across primitive, enum, aggregate, scalar-alias, narrow/wide, and bounded-string element aliases.                                                                                                                                                                                                                                                                                                                                     |
+| C137 `07-union-char-numeric`                   | `union-127`, `union-default`                                                                                                       | A 127 numeric label and a default-label branch. RTI 7.7.0 accepts the IDL but its C# output assigns integer 127 to `char`, producing CS0266. For `union-127`, Wireloom C# and RTI C++ exchanges pass in both directions and RTI C++ self-exchange passes. Default-branch exchanges pass only within each implementation because the peers observe different discriminator values.                                                                                     |
+| C141 `07-union-char-numeric-255`               | `union-255`, `union-default`                                                                                                       | The maximum `char` label and a default-label branch. RTI 7.7.0 accepts the IDL but its C# output assigns integer 255 to `char`, producing CS0266. The C++ peer uses unsigned-char compilation. In the current recorded main-branch run, Wireloom C# self-exchange passed for label 255, but RTI C++ pairings failed type discovery or value verification; default-branch exchanges passed only within each implementation because the union definitions have no common non-default label. |
+| C138 `04-string-alias-chains`                  | `string-empty`, `string-boundary`                                                                                                  | Empty values and exact narrow/wide bounds through bounded and unbounded alias chains.                                                                                                                                                                                                                                                                                                                                                                                 |
+| C139 `07-union-string-sequence-aliases`        | `union-direct-narrow`, `union-direct-wide`, `union-alias-narrow`, `union-alias-wide`, `union-bounded-narrow`, `union-bounded-wide` | Direct, alias, and bounded-alias branches with three sequence elements; bounded branches include strings at their declared length limits. Wireloom C# and RTI C++ pairings pass (24/24); the 30 RTI C# pairings fail with `FromDynamicData` `NullReferenceException`.                                                                                                                                                                                                 |
+| C140 `07-union-string-sequence-bounded-direct` | narrow/wide `empty` and `multiple`                                                                                                 | Empty and three-element direct bounded sequence branches, including strings at the element bounds. All nine pairings pass.                                                                                                                                                                                                                                                                                                                                            |
 
 Expected failures remain individual matrix outcomes with fixture and pairing
 scope in `wire-case-exclusions.json`; they do not suppress the exchange or turn
@@ -237,11 +267,13 @@ workflow status even when a report is available. Run the container
 with the repository mounted at `/workspace`, the license mounted read-only at
 `/run/secrets/rti_license.dat`, and `WIRE_COMPATIBILITY_CASE_FILTER=05-collections`
 for the focused non-default fixture. Omit the filter to schedule all currently
-selected positive cases. The two unbounded typedef
-cases currently select standalone alias roots that the C++ topic harness cannot
-build; their 18 exchanges remain NOT_RUN until aggregate wrapper fixtures are
-added. The other cases can execute, with reference-peer and known mapping
-failures still visible. Managed API coverage is listed in the
+selected positive cases. The unbounded string and sequence typedef cases use
+aggregate wrapper roots so the C++ topic harness can build samples containing
+those aliases. The string case has 18 successful exchanges across Wireloom C#,
+RTI C#, and RTI C++. The sequence case exercises empty and two-element fixtures
+across all sequence element families: Wireloom C# and RTI C++ exchanges pass,
+while RTI C# combinations fail with `NullReferenceException` in
+`FromDynamicData`. Managed API coverage is listed in the
 [runtime contract matrix](../Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix).
 Generated build outputs and artifacts are written to the mounted repository;
 the runner checks its selected RTI version against 7.7.0.
