@@ -25,9 +25,9 @@ public sealed class GeneratedOptionalCollectionSpecs
         var plugin = documents["RecursiveArrays.Implementation.NodePlugin.g.cs"].Source;
         plugin.ShouldContain("isRecursiveType = true");
         plugin.ShouldContain("CreateArrayWithAccessInfo<NodeUnmanaged>");
-        plugin.ShouldContain("NodeSupport.Instance.GetDynamicTypeInternal(isPublic)");
+        plugin.ShouldContain("NodeSupport.GetOrCreateInstanceImpl().GetDynamicTypeInternal(isPublic)");
         plugin.ShouldContain("\n\n        isInitialized = true;\n\n        var members");
-        plugin.ShouldNotContain("GetOrCreateInstanceImpl");
+        plugin.ShouldNotContain("NodeSupport.Instance.GetDynamicTypeInternal(isPublic)");
         plugin.ShouldContain("\n\n        isInitialized = false;");
         plugin.ShouldContain("\n                .WithExtensibility(ExtensibilityKind.Extensible)");
         plugin.ShouldContain($"new uint[] {{ {dimensions} }}");

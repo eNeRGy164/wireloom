@@ -287,7 +287,10 @@ C++ readers compare generated typed values.
 
 Recursive types do not expose public DynamicType. This case bypasses DynamicData
 and disables TypeObject/TypeCode propagation on all peers because default RTI
-7.7.0 TypeObject v2 rejects recursive types. Both managed array peers bootstrap
-their plugins in the harness before accessing the singleton; scratch RTI C++ generation forwards the
+7.7.0 TypeObject v2 rejects recursive types. Wireloom uses ordinary type-support
+discovery and serializer creation. Only the RTI C# reference peer bootstraps its
+plugin before accessing the singleton; scratch RTI C++ generation forwards the
 visited-node chain for the recursive array TypeCode. Retained C# oracle sources
-are unmodified. Reports mark these adapted results explicitly.
+are unmodified. All 27 exchanges pass with ordinary Wireloom initialization.
+Reports mark the remaining adaptations explicitly. Cold-start and serialization
+checks are documented in the [runtime startup comparison](../Wireloom.Dds.Generator.RuntimeContracts/README.md#recursive-support-startup).

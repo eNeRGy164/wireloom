@@ -6,11 +6,9 @@ namespace Wireloom.Dds.Generator.PackageIntegration;
 public sealed class OptionalRecursiveArraySpecs
 {
     [Fact]
-    public void RecursiveArraySupportRejectsPublicDynamicTypeAfterPluginInitialization()
+    public void RecursiveArraySupportRejectsPublicDynamicType()
     {
         // Arrange
-        // Match the RTI array plugin's initialization order without changing generated code.
-        CorpusOptionalRecursiveArray.Implementation.NodePlugin.CreateDynamicType(isPublic: false);
         var support = NodeSupport.Instance;
 
         // Act

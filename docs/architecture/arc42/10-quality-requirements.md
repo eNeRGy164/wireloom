@@ -28,7 +28,11 @@ Wireloom quality
 | Q-08 | Wire compatibility     | Manually dispatch the licensed DDS matrix                        | Every curated Wireloom-positive fixture runs as an independent exchange across all nine directed pairings of Wireloom C#, RTI C#, and RTI C++ on exact RTI 7.7.0; Markdown and JSON reports record all outcomes and sanitized diagnostics | Generated reports record each selected fixture and pairing; Wireloom C# array-of-sequences shape failures remain expected                                                                                                                                                                         | Compatibility       |
 
 The C134 recursive fixed-array scenario checks absent/present hashing,
-independent nested copies, equality, and optional annotations. Its wire
+independent nested copies, equality, and optional annotations. Fresh-process
+runtime and package tests check singleton/discovery startup and complete
+recursive-array serialization, including multidimensional and typedef forms.
+The original RTI C# oracle retains a separately reproducible startup limitation.
+Its wire
 adaptations and limitations are described in chapter 6.
 
 Generated API runtime contracts are verified separately from corpus shape and

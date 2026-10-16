@@ -92,6 +92,17 @@ generator rejects before C# emission
 ([C113](docs/corpus/idl/features/07-union-wchar-label.idl)). This is a
 generation extension; consult the separate wire evidence before adopting it.
 
+### Recursive-array support on first use
+
+Wireloom initializes self-referencing optional fixed-array support through
+ordinary `Support.Instance` access and type-support discovery, without application
+bootstrapping. With RTI 7.7.0, the retained rtiddsgen 4.7.0.1 C# output instead
+requires plugin initialization first. Fresh-process tests check startup and
+serialization of absent, present, and nested arrays; see the
+[reproducible comparison](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#recursive-support-startup).
+Public recursive DynamicType and default recursive TypeObject discovery remain
+RTI limitations.
+
 ## Get started
 
 Add the generator and RTI runtime to the project that owns your DDS contracts.

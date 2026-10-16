@@ -1,0 +1,8 @@
+module RuntimeRecursiveStartup {
+    struct Node { long value; @optional Node children[2]; };
+    struct MatrixNode { long value; @optional MatrixNode children[2][3]; };
+    typedef AliasNode First;
+    typedef First Second;
+    struct AliasNode { long value; @optional Second children[2]; };
+    struct SequenceNode { long value; sequence<SequenceNode> children; };
+};

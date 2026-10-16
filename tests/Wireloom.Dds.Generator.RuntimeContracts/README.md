@@ -70,6 +70,7 @@ members, discriminator labels, and allocation/key combinations in test results.
 | `ToString` diagnostics                                              | `AliasFormattingSpecs`, `ScalarSpecs`, `CollectionSpecs`, `InheritanceSpecs`, `UnionSpecs`, `AliasMetadataSpecs`, `UnionAliasSpecs`                                                                     | Managed scalar and collection formatting; quoted strings through named aliases, including null elements; RTI formatting for aggregate roots; wide-string alias metadata and support                                                                                               |
 | Native `Initialize`, `ToNative`, `FromNative`, both cleanup modes   | `AggregateNativeSpecs`, `ScalarAliasNativeSpecs`, `StringAliasChainNativeSpecs`, `AggregateAliasNativeSpecs`, `CollectionAliasNativeSpecs`, `StringArrayAliasNativeSpecs`, `UnionNativeSpecs`, `StringSequenceUnionSpecs`, `DiscriminatorSpecs`, `UnionAliasSpecs` | All allocation flag pairs; enum/strings/wstrings, aliases/chains, arrays/matrices including bounded narrow/wide string arrays, bounded/unbounded sequences and direct/typedef-backed union string sequences, optional values/collections, inheritance, every union branch |
 | Key-only behavior in each direction                                 | `AggregateNativeSpecs.FiltersKeysInEachDirection`, `NestedKeySpecs`, alias/union native theories                                                                                                        | Independent source/native/destination sentinels; nested key propagation; optional aggregate-array forwarding                                                                                                                   |
+| Recursive support cold startup | `RecursiveStartupSpecs`, linked package tests | Fresh-process instance/discovery, array/typedef/matrix serialization, sequence support control, public DynamicType rejection |
 | Metadata creation and `Instance`                                    | `MetadataSpecs`, `AliasMetadataSpecs`, `StringAliasChainMetadataSpecs`, `StringArrayAliasMetadataSpecs`, `RuntimeSmokeSpecs`                                                                            | Both visibility values, member types/IDs/keys/optionals, bounds, dimensions, enum values, aliases, inheritance, multi/default/signed-char labels, and narrow/wide string-array shapes                                             |
 
 Enums do not generate managed constructors/equality methods or native sample
@@ -88,3 +89,41 @@ generated fixture files under `obj` and test project code are excluded.
 The corpus oracle fixtures and the typed runtime tests provide the compatibility
 baseline. API behavior, serialization, and DDS wire interoperability remain
 separate validation concerns.
+
+## Recursive support startup
+
+`RecursiveStartupSpecs` runs direct singleton access and normal
+`TypeSupportHelper` discovery in separate processes. Each child runs only the
+startup test and writes a completion marker after its assertions. It checks
+self-referencing optional arrays, multidimensional arrays, and typedef chains:
+serializer creation and complete absent, present, and nested round-trips must
+succeed without plugin pre-initialization. A recursive-sequence control checks
+support initialization. Public recursive DynamicType must still throw.
+The package-integration project links these tests and fixtures to exercise the
+freshly packed analyzer as well.
+
+```powershell
+dotnet run --project tests/Wireloom.Dds.Generator.RuntimeContracts -c Release -- --filter-class Wireloom.Dds.Generator.RuntimeContracts.TypeSupport.RecursiveStartupSpecs
+```
+
+On Windows and Linux with RTI Connext 7.7.0, Wireloom passes both cold-start
+paths. The untouched C134 oracle from rtiddsgen 4.7.0.1 fails both paths with a
+`NullReferenceException` inside recursive plugin metadata construction. Its
+bootstrap control passes absent, present, and nested serialization checks.
+Reproduce that comparison without editing retained oracle files:
+
+```powershell
+$root = (Get-Location).Path
+$probe = 'tests/Wireloom.Dds.Generator.WireCompatibility/RtiOracleProbe'
+dotnet run --project $probe -c Release "-p:RtiOracleProgram=$root/$probe/RecursiveArrayStartupProbe.cs" "-p:RtiOracleSourceDir=$root/docs/corpus/oracles/features/09-optional-recursive-array" -- instance
+dotnet "$probe/bin/Release/net10.0/WireCompatibility.RtiOracleProbe.dll" discovery
+dotnet "$probe/bin/Release/net10.0/WireCompatibility.RtiOracleProbe.dll" bootstrap
+```
+
+The oracle probe fails if the expected limitation changes or its bootstrap
+control fails. These are startup and serialization results, distinct from the
+[licensed wire matrix](../Wireloom.Dds.Generator.WireCompatibility/README.md).
+The matrix uses ordinary Wireloom support discovery, retains only the RTI C#
+bootstrap, and records the separate discovery and C++ TypeCode adaptations.
+This improvement does not establish general mutual recursion or recursive
+sequence native allocation support.

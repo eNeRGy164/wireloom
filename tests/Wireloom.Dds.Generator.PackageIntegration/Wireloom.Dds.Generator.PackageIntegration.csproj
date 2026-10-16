@@ -19,6 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="../Wireloom.Dds.Generator.RuntimeContracts/TypeSupport/RecursiveStartup*.cs" Link="TypeSupport/%(Filename)%(Extension)" />
+    <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/recursive-startup.idl" />
     <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/unbounded-strings.idl" />
     <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/unbounded-sequence.idl" />
     <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/union-construction.idl" />

@@ -22,7 +22,8 @@ try
         ["05-collections"] = ["sequence-empty", "sequence-single", "sequence-multiple"],
         ["07-union-char-boundaries"] = ["union-minimum", "union-maximum", "union-default"],
         ["07-union-ulong"] = ["union-minimum", "union-maximum", "union-default"],
-        ["09-optional-aggregate-member"] = ["optional-absent", "optional-present"]
+        ["09-optional-aggregate-member"] = ["optional-absent", "optional-present"],
+        ["09-optional-recursive-array"] = ["optional-absent", "optional-present", "optional-nested"]
     };
     var pairings = peers.SelectMany(writer => peers.Select(reader => (Writer: writer, Reader: reader))).ToArray();
     var rows = new List<string[]>();
@@ -98,6 +99,20 @@ try
 
     // Assert: payload/report evidence survives, including registry entries and failure reasons.
     Check(JsonNode.DeepEquals(Read(baseline), Read(Path.Combine(merged, "results.json"))), "Combined JSON equals the unsharded report.");
+    var recursiveScenarios = Read(baseline)["scenarios"]!.AsArray()
+        .Where(item => (string?)item!["case"] == "09-optional-recursive-array").ToArray();
+    Check(recursiveScenarios.Length == 27, "All recursive array exchanges are retained.");
+    foreach (var scenario in recursiveScenarios)
+    {
+        foreach (var role in new[] { "writer", "reader" })
+        {
+            var peer = scenario![role]!;
+            var adaptation = (string?)peer["adaptation"] ?? "";
+            Check(adaptation.Contains("Bootstrap", StringComparison.Ordinal) == ((string?)peer["peer"] == "RTI C#"),
+                "Only the RTI C# reference reports a recursive support bootstrap.");
+        }
+    }
+
     Check(File.ReadAllText(Path.Combine(root, "baseline.md")) == File.ReadAllText(Path.Combine(merged, "results.md")), "Combined Markdown equals the unsharded report.");
     var unsignedScenarios = Read(Path.Combine(merged, "results.json"))["scenarios"]!.AsArray()
         .Where(item => (string?)item!["case"] == "07-union-ulong").ToArray();

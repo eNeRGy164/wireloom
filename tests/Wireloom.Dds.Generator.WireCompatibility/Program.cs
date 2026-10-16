@@ -65,13 +65,15 @@ internal static class Program
 
     private static void RunTypedPeer<T>(PeerOptions options)
     {
+#if RTI_REFERENCE_PEER
         if (options.CaseId == "09-optional-recursive-array")
         {
-            // Both generated array plugins match RTI's Support.Instance access.
-            // Start from the plugin so its recursive placeholder exists before that read.
+            // RTI 7.7.0 array metadata reads Support.Instance before it is assigned.
+            // Wireloom uses its recursive accessor and needs no bootstrap.
             var plugin = typeof(T).Assembly.GetType($"{typeof(T).Namespace}.Implementation.NodePlugin", throwOnError: true)!;
             plugin.GetMethod("CreateDynamicType", BindingFlags.Public | BindingFlags.Static)!.Invoke(null, [false]);
         }
+#endif
 
         // Use Wireloom's generated type and serializer end-to-end. The reference
         // DynamicData fixture only seeds the expected managed sample; typed

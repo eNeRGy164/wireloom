@@ -428,8 +428,11 @@ public sealed class CorpusComplianceSpecs
         native.ShouldNotContain("children.Initialize");
         var plugin = generated["CorpusOptionalRecursiveArray.Implementation.NodePlugin.g.cs"].Source;
         plugin.ShouldContain("CreateArrayWithAccessInfo<NodeUnmanaged>");
-        plugin.ShouldContain("NodeSupport.Instance.GetDynamicTypeInternal(isPublic)");
-        plugin.ShouldNotContain("GetOrCreateInstanceImpl");
+
+        // Deliberately improve cold startup while retaining the untouched RTI oracle.
+        oracle.ShouldContain("NodeSupport.Instance.GetDynamicTypeInternal(isPublic)");
+        plugin.ShouldContain("NodeSupport.GetOrCreateInstanceImpl().GetDynamicTypeInternal(isPublic)");
+        plugin.ShouldNotContain("NodeSupport.Instance.GetDynamicTypeInternal(isPublic)");
         plugin.ShouldContain("new uint[] { 2 }");
         plugin.ShouldContain("isOptional: true, id: 1");
         plugin.ShouldContain("isRecursiveType = true");

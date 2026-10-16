@@ -30,7 +30,7 @@ internal sealed partial class MemberEmissionPlan
                 return $"tsf.CreateSequenceWithAccessInfo(dtf, {recursiveSupportType}.GetDynamicTypeInternal(isPublic), {Bound})";
             }
 
-            var supportType = $"{IdlNaming.GeneratedSupportTypeReference(recursiveTypeName!, implementationNamespace)}Support.Instance";
+            var supportType = $"{IdlNaming.GeneratedSupportTypeReference(recursiveTypeName!, implementationNamespace)}Support.GetOrCreateInstanceImpl()";
             return $"tsf.CreateArrayWithAccessInfo<{ElementUnmanagedType(implementationNamespace)}>(dtf, {supportType}.GetDynamicTypeInternal(isPublic), new uint[] {{ {string.Join(", ", Dimensions)} }})";
         }
 
