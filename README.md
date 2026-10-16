@@ -21,28 +21,41 @@ Your application continues to use RTI's runtime, APIs, and configuration.
 
 ## Why Wireloom?
 
+- **Keep build images and developer machines lean.** Restore a small NuGet
+  generator package and use the .NET build to create C# from IDL. Generation
+  needs no separate RTI generator installation, Java toolchain, or external
+  preprocessor.
 - **Understand your contracts without leaving the editor.** Generated XML
   documentation explains DDS keys, optional presence, string and collection
   bounds, defaults, member IDs, and union branch selection. Remarks, examples,
   exception documentation, and RTI API links put the contract beside the code
   you are writing.
 - **Keep strict C# builds clean.** Generated code uses nullable reference types,
-  file-scoped namespaces, collection expressions, and current .NET APIs. In the
-  latest corpus Qodana run, Wireloom had **6 remaining warnings** after
-  excluding collision-safe `global::` qualifiers, RTI-parity hashing findings,
-  and intentional partial declarations. For comparison, the earlier matched
-  RTI scan reported **8,544 total findings**. See the [measurement and
-  scope](docs/corpus/csharp-quality.md) for the scan details.
-- **Add generation in two project entries.** One `PackageReference` and one
+  file-scoped namespaces, collection expressions, and current .NET APIs. In
+  the October 9, 2026 comparison across the same **65 corpus cases**, Wireloom
+  output produced **0 compiler warnings**, compared with **2,686** in the
+  retained RTI output, with nullable and XML-documentation checks enabled.
+  Roslyn supplies generated documents to compilation, so they do not need to
+  live in the codebase as ordinary source files. See the [quality report](docs/corpus/csharp-quality.md)
+  for the measured versions, compiler checks, and separate Qodana findings.
+- **Make generation setup repeatable.** One `PackageReference` and one
   `DdsIdl` item connect IDL to the build. Includes and defines are declarative
-  MSBuild settings. Generation needs no custom `Exec` target, generator
-  installation paths, or toolchain environment variables.
+  MSBuild settings carried with the project. A clean restore and build use that
+  configuration without custom `Exec` targets, generator installation paths,
+  or generation-tool environment variables.
 - **Work directly from IDL.** Roslyn exposes generated documents in the IDE;
   diagnostics point back to the IDL or included file. Root and include changes
   are tracked as compiler inputs, so regeneration belongs to the normal build.
 - **Extend your types without editing generated files.** Generated data classes
   are `partial`, so application helpers can live in separate, maintained C#
   files and survive regeneration.
+
+Wireloom fits C# projects whose IDL shapes are covered and whose RTI runtime
+version is qualified, especially when build and IDE integration matters and
+best-effort support is acceptable. Keep RTI generation for shapes or options
+outside that coverage, or when your requirements call for a generation tool
+covered by your RTI support agreement. See the
+[support and compatibility policy](docs/guides/support-and-compatibility.md).
 
 RTI's generator serves multiple languages, platforms, and release toolchains.
 Wireloom focuses on the C# developer experience within that ecosystem. The
@@ -62,46 +75,33 @@ the member is absent:
 
 ![IntelliSense for the nullable producer property explains optional presence, the 16 UTF-8 byte string bound, and the meaning of null.](docs/assets/intellisense-optional-member.png)
 
-### A smaller generation setup
+### Less tooling to install
 
-The local Wireloom 0.3.0 package measured **169,012 bytes (about 170 kB)**.
-For scale, RTI documents an approximately **2 GB Connext installation** in an
-[example development setup](https://www.rti.com/hubfs/_Collateral/Simplified-Real-Time-Data-Sharing.pdf).
-That example concerns Connext 6.1; installation size varies by release,
-platform, and selected components. This compares a full development
-installation with a compressed generator package. Both approaches still need
-the .NET SDK and the RTI runtime for the application.
+Generate C# from IDL using the SDK already building your application and a
+small generator package. The local Wireloom 0.3.0 package measured
+**169,012 bytes (about 170 kB)**. The RTI runtime remains a NuGet dependency
+in either workflow; the package measurement covers generation tooling.
 
-| Generation concern | External `rtiddsgen` workflow | Wireloom workflow |
-| :-- | :-- | :-- |
-| Tool provisioning | Install or provide the RTI code generator and its Java tooling | Restore one small NuGet generator package |
-| IDL preprocessing | Configure the external C/C++ preprocessor when needed | Managed preprocessing inside the generator |
-| Build integration | Invoke the generator and manage tool paths, arguments, outputs, and generated compile inputs | Declare the package and IDL roots in the project |
-| Generated files | Generate physical C# files and arrange their inclusion in the build | Roslyn generated documents; optional export for inspection |
-| Error navigation | Surface external-tool output through your build integration | Source-located compiler diagnostics for IDL and includes |
+The footprint matters in practice: provisioning RTI generation tooling added
+about **2 GB** to the C# Docker build images in the pipeline that motivated
+Wireloom. That is an observation from the original setup, whose selected tools
+determined its size. See the [project background](docs/architecture/arc42/01-introduction-and-goals.md)
+for the other requirements that shaped Wireloom, and the
+[package-size evidence](docs/corpus/csharp-quality.md#package-size) for the local
+package measurement.
+
+| Generation concern | External `rtiddsgen` workflow                                                                | Wireloom workflow                                          |
+| :----------------- | :------------------------------------------------------------------------------------------- | :--------------------------------------------------------- |
+| Tool provisioning  | Install or provide the RTI code generator and its Java tooling                               | Restore one small NuGet generator package                  |
+| IDL preprocessing  | Configure the external C/C++ preprocessor when needed                                        | Managed preprocessing inside the generator                 |
+| Build integration  | Invoke the generator and manage tool paths, arguments, outputs, and generated compile inputs | Declare the package and IDL roots in the project           |
+| Generated files    | Generate physical C# files and arrange their inclusion in the build                          | Roslyn generated documents; optional export for inspection |
+| Error navigation   | Surface external-tool output through your build integration                                  | Source-located compiler diagnostics for IDL and includes   |
 
 RTI's [C# getting-started guide](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/connext_dds_professional/getting_started_guide/csharp/intro_pubsub_csharp.html)
 describes generator invocation, path setup, and external preprocessing. Existing
 projects may already automate these steps; Wireloom makes them part of the
 package's compiler integration.
-
-### Wide-character union support
-
-Wireloom accepts the `wchar` discriminator case that the retained RTI 7.7.0.1
-generator rejects before C# emission
-([C113](docs/corpus/idl/features/07-union-wchar-label.idl)). This is a
-generation extension; consult the separate wire evidence before adopting it.
-
-### Recursive-array support on first use
-
-Wireloom initializes self-referencing optional fixed-array support through
-ordinary `Support.Instance` access and type-support discovery, without application
-bootstrapping. With RTI 7.7.0, the retained rtiddsgen 4.7.0.1 C# output instead
-requires plugin initialization first. Fresh-process tests check startup and
-serialization of absent, present, and nested arrays; see the
-[reproducible comparison](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#recursive-support-startup).
-Public recursive DynamicType and default recursive TypeObject discovery remain
-RTI limitations.
 
 ## Get started
 
@@ -109,11 +109,23 @@ Add the generator and RTI runtime to the project that owns your DDS contracts.
 The runtime reference is explicit because your application controls its runtime
 version and configuration.
 
+For this first example, create a console application:
+
+```powershell
+dotnet new console --name WireloomQuickstart --framework net8.0
+cd WireloomQuickstart
+```
+
+Replace `WireloomQuickstart.csproj` with:
+
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>12.0</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -126,7 +138,7 @@ version and configuration.
 </Project>
 ```
 
-For example, `Contracts\Telemetry.idl` can contain:
+Create a `Contracts` directory and save this as `Contracts/Telemetry.idl`:
 
 ```idl
 module Telemetry {
@@ -142,6 +154,64 @@ The `DdsIdl` item identifies a generation root. Files included by that root are
 tracked as inputs but are not generated as independent roots. For include
 directories and preprocessing options, see the [package usage guide](src/Wireloom.Dds.Generator/README.md).
 
+Replace `Program.cs` with code that uses the generated API:
+
+```csharp
+var sample = new Telemetry.Sample
+{
+    id = 42,
+    label = "temperature"
+};
+
+sample.values.Add(20.5F);
+using var serializer = Telemetry.SampleSupport.Instance.CreateSerializer();
+```
+
+```powershell
+dotnet build
+```
+
+A successful build confirms that the generator ran, emitted the expected
+`Telemetry.Sample` and `Telemetry.SampleSupport` APIs, and that the compiler
+accepted them against the referenced RTI runtime.
+
+Continue with the [Hello World publisher/subscriber tutorial](docs/guides/hello-world.md)
+to run two applications and exchange samples. It follows RTI's familiar C#
+getting-started flow, with generation supplied by the Wireloom package.
+
+### Follow an IDL diagnostic into generated C\#
+
+If an IDL declaration uses an annotation that Wireloom recognizes but does not
+support, the build reports the problem at the IDL source and withholds the
+generated type. For example, this declaration uses unsupported `@position`:
+
+```idl
+module Sample {
+  @position(1) struct Value { long value; };
+};
+```
+
+The build reports `DDSG0102` for the unsupported annotation and a contextual
+`DDSG0001` error because generation cannot continue. Remove the unsupported
+annotation, then build again:
+
+```idl
+module Sample {
+  struct Value { long value; };
+};
+```
+
+The generated `Sample.Value` can then be used from application code:
+
+```csharp
+var value = new Sample.Value { value = 42 };
+```
+
+This example shows the IDL-to-diagnostic-to-C# workflow; it does not claim a
+measured productivity or build-time improvement. See the [diagnostic
+reference](src/Wireloom.Dds.Generator/README.md#diagnostics) for the complete
+diagnostic catalog.
+
 Generated source appears in the IDE as Roslyn generated documents. To write it
 under `obj` for inspection, add:
 
@@ -151,6 +221,30 @@ under `obj` for inspection, add:
   <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
 </PropertyGroup>
 ```
+
+## Additional advantages over RTI C\#
+
+These less common cases are additional Wireloom advantages over the retained
+RTI 7.7.0 C# output. They follow the quick start so readers see the everyday
+workflow first; each claim links to its evidence and states its limits.
+
+### Wide-character union support
+
+Wireloom accepts the `wchar` discriminator case that the retained RTI 7.7.0
+generator rejects before C# emission
+([C113](docs/corpus/idl/features/07-union-wchar-label.idl)). This is a
+generation extension; consult the separate wire evidence before adopting it.
+
+### Recursive-array support on first use
+
+Wireloom initializes self-referencing optional fixed-array support through
+ordinary `Support.Instance` access and type-support discovery, without application
+bootstrapping. With RTI 7.7.0, the retained rtiddsgen 4.7.0.1 C# output instead
+requires plugin initialization first. Fresh-process tests check startup and
+serialization of absent, present, and nested arrays; see the
+[reproducible comparison](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#recursive-support-startup).
+Public recursive DynamicType and default recursive TypeObject discovery remain
+RTI limitations.
 
 ## Support and compatibility
 
@@ -162,9 +256,9 @@ silently omitted.
 
 Check the [feature coverage index](docs/corpus/FEATURE-COVERAGE.md) for the
 current status of individual IDL shapes. The checked compatibility corpus uses
-RTI Connext DDS 7.7.0 / `rtiddsgen` 4.7.0 reference output. Use RTI **7.7.0** as
-the tested runtime baseline; the package's minimum-version guard of 7.3.1 is
-not a claim that every generated API works with older releases.
+RTI Connext DDS 7.7.0 / `rtiddsgen` 4.7.0 reference output. RTI **7.7.0** is the
+currently qualified runtime version; the package's minimum-version guard of
+7.3.1 is not a supported-version range.
 Optional aggregate support is covered by
 [C115](docs/corpus/idl/features/09-optional-aggregate-member.idl).
 
@@ -189,17 +283,27 @@ limitation; use a sequence typedef before declaring the array. Wireloom is not
 yet a universal drop-in replacement for every `rtiddsgen` option or generated
 API shape.
 
+Follow the [migration guide](docs/migration/rtiddsgen-to-wireloom.md) to
+inventory options, compare generated APIs, and validate runtime and wire
+behavior before switching a consumer project. See the
+[support and compatibility policy](docs/guides/support-and-compatibility.md)
+for Wireloom's support boundary, exact-version qualification, stability
+expectations, and guidance on choosing a generation path.
+
 ## Documentation
 
-- [Package usage and configuration](src/Wireloom.Dds.Generator/README.md)
-- [Feature coverage](docs/corpus/FEATURE-COVERAGE.md)
-- [Generated C# quality comparison](docs/corpus/csharp-quality.md)
-- [Wire compatibility matrix](tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
-- [Preprocessor feature matrix](docs/PREPROCESSOR-FEATURES.md)
-- [Code style](docs/CODE-STYLE.md)
-- [Architecture overview](docs/architecture/arc42/index.md)
-- [Incremental generator baseline](docs/performance/incremental-generator-baseline.md)
-- [Contributing and maintainer guide](CONTRIBUTING.md)
+| If you want to...                                                             | Read...                                                                                                                                          |
+| :---------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Build and run your first publisher and subscriber                             | [Hello World tutorial](docs/guides/hello-world.md)                                                                                               |
+| Add IDL generation to a project or configure includes and preprocessing       | [Package usage and configuration](src/Wireloom.Dds.Generator/README.md)                                                                          |
+| Check supported IDL shapes and preprocessing behavior                         | [Feature coverage](docs/corpus/FEATURE-COVERAGE.md) · [Preprocessor feature matrix](docs/PREPROCESSOR-FEATURES.md)                               |
+| Understand generated member types, mutation, and value semantics              | [Generated value semantics](docs/guides/generated-value-semantics.md)                                                                            |
+| Migrate from `rtiddsgen` and compare generated APIs                           | [Migration guide](docs/migration/rtiddsgen-to-wireloom.md)                                                                                       |
+| Check runtime and DDS wire compatibility evidence                             | [Wire compatibility matrix](tests/Wireloom.Dds.Generator.WireCompatibility/README.md)                                                            |
+| Compare generated C# quality findings                                         | [Generated C# quality comparison](docs/corpus/csharp-quality.md)                                                                                 |
+| Understand version qualification, support boundaries, and generation-path fit | [Support and compatibility policy](docs/guides/support-and-compatibility.md)                                                                     |
+| Learn the architecture or incremental-generation baseline                     | [Architecture overview](docs/architecture/arc42/index.md) · [Incremental generator baseline](docs/performance/incremental-generator-baseline.md) |
+| Contribute code or documentation                                              | [Code style](docs/CODE-STYLE.md) · [Contributing and maintainer guide](CONTRIBUTING.md)                                                          |
 
 ## License
 

@@ -1,12 +1,39 @@
-MD004:
-  style: dash
-MD013:
-  enabled: false
-MD024:
+default: true
+
+line-length:
+  line_length: 160
+  heading_line_length: 80
+  stern: false
+  tables: false
+  code_blocks: false
+
+no-duplicate-heading:
   siblings_only: true
-MD029:
+
+no-trailing-punctuation:
+  punctuation: '.,;:'
+
+heading-style:
+  style: atx
+
+ul-style:
+  style: dash
+
+ol-prefix:
   style: ordered
-MD049:
+
+no-inline-html:
+  allowed_elements:
+    - details
+    - summary
+    - br
+
+emphasis-style:
   style: underscore
-MD050:
+
+strong-style:
   style: asterisk
+
+table-column-style:
+  aligned_delimiter: true
+  style: aligned
