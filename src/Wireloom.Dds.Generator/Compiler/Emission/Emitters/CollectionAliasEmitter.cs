@@ -53,7 +53,7 @@ internal static class CollectionAliasEmitter
             if (!declaration.IsCollection)
             {
                 resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
-                elementPlan = EmissionTypeProjector.ToCollectionElementType(resolvedElementType, declaration.Namespace);
+                elementPlan = EmissionTypeProjector.ToTypedefValueType(resolvedElementType, declaration.Namespace);
 
                 if (elementPlan.Shape.IsString)
                 {
@@ -63,7 +63,7 @@ internal static class CollectionAliasEmitter
                 {
                     element = compilation.ResolveUnderlyingType(element, declaration.Namespace);
                     resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
-                    elementPlan = EmissionTypeProjector.ToCollectionElementType(resolvedElementType, declaration.Namespace);
+                    elementPlan = EmissionTypeProjector.ToTypedefValueType(resolvedElementType, declaration.Namespace);
                 }
             }
             else
@@ -74,9 +74,22 @@ internal static class CollectionAliasEmitter
         }
 
         string? elementNativeType = null;
-        if (resolvedElementType is not null and not IdlType.StringType)
+        if (resolvedElementType is not null)
         {
-            elementNativeType = compilation.ResolveNativeType(resolvedElementType, declaration.Namespace);
+            var nativeElementType = resolvedElementType;
+            if (elementPlan is not AliasEmissionType aliasPlan
+                || string.Equals(aliasPlan.CSharpType, aliasPlan.Target.CSharpType, StringComparison.Ordinal))
+            {
+                while (nativeElementType is IdlType.Alias nativeAlias)
+                {
+                    nativeElementType = nativeAlias.Target;
+                }
+            }
+
+            if (nativeElementType is not IdlType.StringType)
+            {
+                elementNativeType = compilation.ResolveNativeType(nativeElementType, declaration.Namespace);
+            }
         }
 
         return new CollectionAliasEmissionPlan(

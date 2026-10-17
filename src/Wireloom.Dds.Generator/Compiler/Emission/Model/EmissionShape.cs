@@ -20,7 +20,7 @@ internal sealed class EmissionShape(EmissionShapeKind kind, EmissionShape? eleme
 
     public EmissionShape? Element { get; } = element;
 
-    public bool IsPrimitive => Kind == EmissionShapeKind.Primitive;
+    public bool IsPrimitive => Kind == EmissionShapeKind.Primitive || IsAliasOf(shape => shape.IsPrimitive);
 
     public bool IsString => Kind == EmissionShapeKind.String || IsAliasOf(shape => shape.IsString);
 

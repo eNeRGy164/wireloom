@@ -144,8 +144,11 @@ public sealed class GeneratedAggregateSpecs
         var itemAliasUnmanaged = documents["Aliases.Implementation.ItemAliasUnmanaged.g.cs"].Source;
         itemAliasUnmanaged.ShouldContain("Value.Destroy(optionalsOnly);");
 
+        var items = documents["Aliases.Items.g.cs"].Source;
+        items.ShouldContain("ISequence<Item> Value");
+
         var itemsUnmanaged = documents["Aliases.Implementation.ItemsUnmanaged.g.cs"].Source;
-        itemsUnmanaged.ShouldContain("Value.Destroy<ItemAlias, ItemAliasUnmanaged>(optionalsOnly);");
+        itemsUnmanaged.ShouldContain("Value.Destroy<Item, ItemUnmanaged>(optionalsOnly);");
 
         var nestedUnmanaged = documents["Aliases.Implementation.NestedUnmanaged.g.cs"].Source;
         nestedUnmanaged.ShouldContain("Value.Destroy<Items, ItemsUnmanaged>(optionalsOnly);");

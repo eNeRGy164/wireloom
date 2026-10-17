@@ -27,7 +27,7 @@ internal sealed class CollectionAliasEmissionPlan(
 
     public bool IsCollection => IsSequence || IsArray;
 
-    public bool IsString => ElementPlan is StringEmissionType;
+    public bool IsString => ElementPlan.Shape.IsString;
 
     public bool IsPrimitive => ElementPlan.Shape.IsPrimitive;
 

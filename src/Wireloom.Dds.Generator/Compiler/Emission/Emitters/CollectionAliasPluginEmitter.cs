@@ -179,7 +179,10 @@ internal static class CollectionAliasPluginEmitter
             return $"dtf.GetPrimitiveType<{plan.PrimitiveDynamicType}>()";
         }
 
-        var supportType = plan.ElementPlan.SupportType ?? plan.ElementType;
+        var elementPlan = plan.IsEnum
+            ? EmissionTypeProjector.UnwrapValueEmissionType(plan.ElementPlan)
+            : plan.ElementPlan;
+        var supportType = elementPlan.SupportType ?? elementPlan.CSharpType;
         return $"{IdlNaming.GeneratedSupportTypeReference(supportType, currentNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic)";
     }
 }

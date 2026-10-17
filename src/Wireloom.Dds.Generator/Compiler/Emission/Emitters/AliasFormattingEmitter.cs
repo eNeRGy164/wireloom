@@ -95,9 +95,12 @@ internal static class AliasFormattingEmitter
 
     private static string FormatValue(EmissionTypePlan type, string value, bool quoteStrings)
     {
-        if (type is AliasEmissionType alias && IsStringAlias(alias))
+        if (type is AliasEmissionType alias)
         {
-            return FormatValue(EmissionTypeProjector.UnwrapValueEmissionType(alias), $"{value}?.Value", quoteStrings);
+            if (string.Equals(alias.CSharpType, alias.Target.CSharpType, StringComparison.Ordinal))
+            {
+                return FormatValue(alias.Target, value, quoteStrings);
+            }
         }
 
         if (type is StringEmissionType)
