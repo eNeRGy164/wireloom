@@ -87,6 +87,12 @@ prove DDS wire interoperability.
 
 The option names below follow RTI's [Code Generator command-line reference][rti-codegen-args]
 for the 7.7 release line. Wireloom does not parse or forward these switches.
+The selected RTI NuGet reference also selects Wireloom's API profile: versions
+7.3.1 through below 7.7.0 use the 7.3.1 profile, while 7.7.0 and later use
+the 7.7.0 profile. There is no profile override. Rebuild and review generated
+contracts when migrating across that boundary, and consult the
+[support and compatibility guide](../guides/support-and-compatibility.md) for
+the exact-version qualification status.
 Translate the intent into MSBuild configuration or an explicit build-process
 change. Classifications describe the current Wireloom package, not an intent to
 add future support.
@@ -126,13 +132,13 @@ the [feature coverage matrix](../corpus/FEATURE-COVERAGE.md) and
 for the specific evidence. A C# API difference is not by itself a DDS wire
 difference.
 
-| IDL shape or behavior             | RTI 7.7.0 C#                                                                                                    | Wireloom C#                                                                                | Source migration impact                                                                                                               |
-| :-------------------------------- | :-------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
-| Optional collection members       | Optional metadata matches in the retained examples; RTI-generated source has no nullable reference annotations. | Uses nullable annotations, such as `ISequence<int>?` and `int[]?`.                         | With nullable analysis enabled, callers may see additional compiler warnings and should handle absence explicitly.                    |
-| Direct arrays of sequence members | RTI warns and ignores the direct sequence-array layer in the retained oracle.                                   | Reports `DDSG0105`; generated shape may not preserve IDL semantics.                        | Treat this as a contract gap. The documented sequence-typedef workaround needs separate qualification for the application's shape.    |
-| Union branch access               | Retained RTI output exposes branch members and rejects inactive-branch reads with `InvalidOperationException`.  | Exposes branch members and rejects inactive-branch reads with `InvalidOperationException`. | The covered public behavior is the same; validate additional discriminator and default-branch shapes individually.                    |
-| Alias `ToString` output           | RTI has known unsupported scalar/collection alias formatting paths in the retained baseline.                    | Adds typed formatting for aliases where the RTI path is unsupported.                       | This improves diagnostic display and can change text observed in logs or snapshots. It does not change the DDS sample representation. |
-| Collection element alias mapping  | Primitive/string aliases erase; enum/aggregate aliases map to their targets; nested collection aliases stay named.            | Follows the same target-kind mapping.                                                        | Wireloom 0.3.0 callers may need to use primitive values instead of scalar-wrapper collection elements.                               |
+| IDL shape or behavior             | RTI 7.7.0 C#                                                                                                       | Wireloom C#                                                                                | Source migration impact                                                                                                               |
+| :-------------------------------- | :----------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
+| Optional collection members       | Optional metadata matches in the retained examples; RTI-generated source has no nullable reference annotations.    | Uses nullable annotations, such as `ISequence<int>?` and `int[]?`.                         | With nullable analysis enabled, callers may see additional compiler warnings and should handle absence explicitly.                    |
+| Direct arrays of sequence members | RTI warns and ignores the direct sequence-array layer in the retained oracle.                                      | Reports `DDSG0105`; generated shape may not preserve IDL semantics.                        | Treat this as a contract gap. The documented sequence-typedef workaround needs separate qualification for the application's shape.    |
+| Union branch access               | Retained RTI output exposes branch members and rejects inactive-branch reads with `InvalidOperationException`.     | Exposes branch members and rejects inactive-branch reads with `InvalidOperationException`. | The covered public behavior is the same; validate additional discriminator and default-branch shapes individually.                    |
+| Alias `ToString` output           | RTI has known unsupported scalar/collection alias formatting paths in the retained baseline.                       | Adds typed formatting for aliases where the RTI path is unsupported.                       | This improves diagnostic display and can change text observed in logs or snapshots. It does not change the DDS sample representation. |
+| Collection element alias mapping  | Primitive/string aliases erase; enum/aggregate aliases map to their targets; nested collection aliases stay named. | Follows the same target-kind mapping.                                                      | Wireloom 0.3.0 callers may need to use primitive values instead of scalar-wrapper collection elements.                                |
 
 The runtime contract suite also exercises collection copying and ownership,
 optional presence, native conversion, and cleanup. Those tests establish

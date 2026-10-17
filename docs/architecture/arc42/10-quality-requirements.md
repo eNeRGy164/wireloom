@@ -22,7 +22,7 @@ Wireloom quality
 | ID   | Scenario                     | Acceptance and evidence                                                                                                                                           |
 | :--- | :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Q-01 | Run the manifest corpus      | Positive cases compile and preserve required oracle shape and targeted DynamicType metadata; compliance covers every manifest case. Source export remains opt-in. |
-| Q-08 | Dispatch the licensed matrix | Nine directed pairings among Wireloom C#, RTI C#, and RTI C++ run on exact RTI 7.7.0; reports show outcomes and expected array-of-sequences failures.             |
+| Q-08 | Dispatch the licensed matrix | Exact LTS package and container versions are paired; reports show all nine directed pairings and expected array-of-sequences failures for the selected target.    |
 
 ### Build-time developer experience
 
@@ -66,8 +66,7 @@ Generated API runtime contracts are verified separately from corpus shape and
 wire compatibility. The runtime suite builds focused IDL fixtures and executes
 managed value methods, native conversion/lifecycle APIs, and DynamicType/support
 APIs on Windows and Linux. Its [coverage matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
-identifies executable coverage, applicable gaps, and the RTI C# API contract,
-with deviations limited to documented corrections for reproducible RTI C#
-defects. Coveralls measures maintained generator source; generated fixture
+identifies executable coverage, applicable gaps, and the RTI C# or better
+expectation. Coveralls measures maintained generator source; generated fixture
 and test project code are excluded. Unresolved required contracts remain gaps
 rather than completed compatibility evidence.

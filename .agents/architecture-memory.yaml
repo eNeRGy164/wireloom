@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-17T06:32:16Z
+  generated_at: 2026-10-17T20:08:17Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -23,60 +23,62 @@ sources:
   contracts:
     - docs/corpus/README.md
     - docs/corpus/FEATURE-COVERAGE.md
+    - docs/guides/support-and-compatibility.md
+    - tests/Wireloom.Dds.Generator.RuntimeContracts/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/README.md
   evidence:
     - docs/performance/incremental-generator-baseline.md
-    - docs/guides/support-and-compatibility.md
   defaults:
     - skill: dotnet-bootstrap
       resource: attachments/dotnet-defaults.yaml
       status: standard
 summary:
   goals:
-    text: Minimize generation footprint and developer-machine setup, replace environment-variable/MSBuild wiring with declarative repeatable builds, and produce C# suited to strict compiler and analyzer policies. The original pipeline gained about 2 GB of Docker image tooling and substantial generated-source analyzer noise. Keep Connext IDL generation inside the .NET build and grow compatibility through evidence-backed cases.
+    text: Keep Connext IDL generation inside the .NET build and advance compatibility through evidence-backed cases.
     sources:
       - docs/architecture/arc42/01-introduction-and-goals.md
   constraints:
-    text: The analyzer targets netstandard2.0; consumers need .NET 8+ and C# 12+. RTI runtime 7.3.1+ is a package-reference floor, but only exact RTI 7.7.0 is qualified. Oracles use RTI 7.7.0 / rtiddsgen 4.7.0.
+    text: The analyzer targets netstandard2.0; consumer applications support .NET 8 and higher with C# 12+, while repository projects default to .NET 10. An explicit RTI runtime reference of at least 7.3.1 is required. The resolved RTI assembly selects the 7.3.1 profile for versions below 7.7.0 and the 7.7.0 profile for 7.7.0 and later. Only exact 7.3.1 and 7.7.0 LTS versions are qualification targets.
     sources:
       - docs/architecture/arc42/02-architecture-constraints.md
   context:
-    text: Wireloom is an independent compile-time generator integrated through Roslyn/MSBuild. Best-effort scope covers generated code, samples, plugins, and build/IDE integration; RTI owns runtime, licensing, DDS operation, and support. No official RTI relationship.
+    text: Wireloom is a compile-time component between a consumer project and generated C#; it is not in the DDS data path.
     sources:
       - docs/architecture/arc42/03-context-and-scope.md
   strategy:
-    text: Use explicit DdsIdl roots and project-wide metadata, then resolve/preprocess, parse, bind, validate, plan, and emit managed C# through a managed Roslyn pipeline. Input that prevents safe managed output fails with source-located diagnostics; deliberately ignored constructs and potentially lossy mappings report diagnostics while generation continues.
+    text: Use a managed Roslyn pipeline with explicit roots, project-wide root metadata, independent semantic modeling, and source-located diagnostics. The Roslyn adapter selects one immutable RTI API profile from the resolved assembly version; semantic parsing and validation remain RTI-independent.
     sources:
       - docs/architecture/arc42/04-solution-strategy.md
   building_blocks:
-    text: Keep Roslyn hosting, preprocessing/input graph, target-independent parse-bind-validate, emission planning, and writers as separate stages. Preserve managed API, native conversion, and DynamicType contracts for aliases, optional presence, bounded collections, and union discriminators. Collection element aliases follow RTI C# target-kind mapping: primitive/string aliases erase, enum and aggregate aliases use their underlying type, and sequence/array aliases remain named when nested; declared scalar aliases can remain in struct-member DynamicType metadata while managed sequence properties use the underlying primitive.
+    text: Union constructors use profile-specific defaults: XTypes discriminator defaults in 7.7.0 and legacy zero/enum-label selection in 7.3.1, including negative first enum literals. Null-source copies share parameterless initialization while non-null copies avoid temporary default-branch allocations. Default-branch setters independently select unused labels; negative enum casts parenthesize their operand. Direct string-sequence union branches use NativeStringSeq or NativeWstringSeq storage and pass element bounds through initialization and conversion; typedef-backed branches delegate through generated alias wrappers. Alias data classes retain the RTI Support.Instance.ToString(this) delegate; generated support classes hide the nonvirtual default formatter for unsupported scalar and collection roots, keeping loops and escaping in support documents. Base-typed and explicit print-format calls retain RTI behavior. Wide-string alias annotations preserve WideString kind/value so support instances initialize. Sequence typedef emission plans share the effective 100-element fallback across managed attributes, native allocation, and metadata; string typedefs import the bound attribute namespace and retain the effective 255-byte/code-unit limit. Separate Roslyn hosting, input graph and preprocessing, explicit parse-bind-validate front-end phases, compilation orchestration and resolution, emission models and plans, and output emitters. Aggregate members and raw array or sequence elements declared through struct or union typedef chains use the underlying aggregate type in generated APIs and native conversions while standalone typedef declarations remain generated. Optional struct members whose value is a struct or union preserve null presence through NativeManagedOptional conversions and optional DynamicType metadata. For those optional members, DynamicType retains declared alias support to match RTI while managed APIs and native conversions use the underlying aggregate; optional union branches follow RTI's required selected-branch shape. Union metadata uses signed 8-bit narrow-character labels matching correctly compiled RTI C++ and signed full-width unsigned labels while preserving managed discriminator ranges. Narrow char labels and default selection are restricted to 0..255, including literals and typedefs; wchar retains 0..65535. Optional fixed arrays break value-layout cycles after typedef unwrapping; self-referencing optional arrays and recursive sequences use GetOrCreateInstanceImpl in member metadata, retaining dimensions and native storage while allowing ordinary cold support discovery without plugin bootstrapping. Fresh-process runtime and package tests verify array serialization and preserve public recursive DynamicType rejection. Optional aggregate-array conversions forward keysOnly to element support.
     sources:
       - docs/architecture/arc42/05-building-block-view.md
   runtime:
-    text: Consumer compilation performs generation. Manual wire evidence targets RTI 7.7.0 across nine directed pairings of Wireloom C#, RTI C#, and RTI C++; passes require valid payload comparison. Array-of-sequences has known expected Wireloom C# failures. Some RTI 7.7.0 cases require peer/QoS adaptations; these do not establish unadapted interoperability. See the wire runbook.
+    text: Generation occurs during consumer compilation; the manual wire workflow can target exact RTI Connext 7.3.1 or 7.7.0. Whole cases are balanced by exchange count across four isolated shard runners; a report job verifies matching plans and exact coverage and rejects any not-run exchange before regenerating combined evidence. Unexpected setup errors retain a nonzero exit status while partial shard reports remain available. Each fixture runs across all nine directed pairings of Wireloom C#, RTI-generated C#, and RTI-generated C++. Readers require and verify valid fixture payloads while counting ordinary instance lifecycle notifications separately. Discriminator verification normalizes RTI signed storage to the declared width; character fixtures use typed assignments and independent expected values. The character-boundary case now tests printable ASCII tilde (U+007E, 126); focused C130 runs on both LTS profiles passed all 27 exchanges using the shared IDL without case-specific C++ adaptations. Present optional wide-string sequence fixtures use DynamicData and RTI C API setters in the C++ peer; absent, empty, and narrow-only controls use typed peers. Optional aggregate values are included and aggregate DynamicType metadata preserves declared aliases. Recursive array exchanges disable TypeObject/TypeCode propagation and use scoped managed/C++ peer initialization adaptations. RTI 7.3.1 compile/runtime evidence is retained separately; full profile wire qualification remains pending. The wchar union uses a manually constructed RTI C++ DynamicType; FlatData uses standard C++ mapping, not RTI's FlatData-specific C++ layout.
     sources:
       - docs/architecture/arc42/06-runtime-view.md
   deployment:
-    text: Deliver the analyzer as a NuGet package; consumers deploy with their selected RTI runtime. Wire peer execution uses licensed RTI 7.7.0 jobs, while report assembly runs without the RTI secret. Version expansion needs a matching toolchain and compatible generator target.
+    text: The analyzer is delivered as a NuGet package; manual wire evidence uses four isolated shard jobs for the selected RTI LTS version with parallel cached image builds; shard zero exports the shared Docker build cache. Each shard receives a runtime-scoped license file; the .NET-only artifact merge job has no RTI secret. Add other releases only with a matching toolchain and compatible generator target.
     sources:
       - docs/architecture/arc42/07-deployment-view.md
   cross_cutting:
-    text: "Keep evidence categories distinct: required types/properties/enum-member checks, runtime contracts, serialization, and DDS wire interoperability. Shape checks do not establish identical public APIs. Reject unsafe input; use explicit diagnostics for limited or lossy constructs. Coveralls measures maintained generator source, not generated fixtures or test code."
+    text: Evidence vocabulary, deterministic inputs and invalidation, explicit compiler stages, diagnostics, test separation, deterministic preprocessing limits, and supply-chain controls apply across the system. Build-time generated runtime fixtures execute typed managed, native, and support APIs on Windows and Linux, including direct and typedef-backed string-sequence union branches. Coveralls measures maintained generator source; generated fixtures and test project code are excluded. The behavior matrix keeps unresolved contracts visible. RTI C# is a baseline, not an API ceiling; improvements supported by RTI C++ evidence require separate wire verification.
     sources:
       - docs/architecture/arc42/08-crosscutting-concepts.md
   decisions:
-    text: Match RTI C# unless a reproducible RTI C# defect justifies a documented correction; RTI C++ wire behavior alone does not justify a different managed API shape. Wire qualification targets all nine directed pairings of Wireloom C#, RTI C#, and RTI C++ for selected fixtures on exact RTI 7.7.0. Keep RTI-positive cases rejected by Wireloom visible as unimplemented.
+    text: Roslyn hosting, explicit roots, independent semantic modeling, project-wide root metadata, explicit parse-bind-validate phases, explicit runtime ownership, case-level evidence, separated compiler orchestration/resolution/emission, bounded preprocessing work, manually triggered wire evidence targeting exact RTI 7.3.1 or 7.7.0, preservation of declared alias metadata for optional aggregate members to match RTI, inclusion of warning-only Wireloom-positive cases, and union metadata normalization matching RTI C++ while preserving managed discriminator ranges are current decisions. RTI C# is the managed API baseline, with deliberate improvements allowed and separately evidenced. The wire matrix distinguishes Wireloom C#, RTI C#, and RTI C++ endpoints and exercises all directed pairings; RTI-positive cases rejected by Wireloom remain visible as not implemented.
     sources:
       - docs/architecture/arc42/09-architectural-decisions.md
   quality:
-    text: Track generated shape, generated C# compiler/analyzer quality, repeatable package-based setup, diagnostics, maintainability, incremental behavior, supply chain, and version-qualified wire compatibility. Runtime contract tests establish generated API behavior, not wire compatibility; wire reports record per-fixture and per-pairing outcomes.
+    text: Compatibility shape, diagnostics, package integration, maintainability, incremental build evidence, wire compatibility across Wireloom-positive cases and separate exact 7.3.1 and 7.7.0 three-peer fixture matrices, and supply-chain integrity are the primary quality goals. The runtime contract matrix separately records generated API behavior, compile-blocked inputs, and skipped contracts without establishing wire compatibility. Retained RTI C# oracle sources and typed runtime fixtures cover unbounded typedef behavior. Generated wire reports contain per-fixture and per-pairing outcomes.
     sources:
       - docs/architecture/arc42/10-quality-requirements.md
   risks:
-    text: Unqualified areas include RTI 7.3.1 and host/IDE combinations, corpus-external IDL, array-of-sequences shape/interoperability, and unadapted recursive/optional wire scenarios. See chapter 11 and the support policy.
+    text: Coverage outside the retained corpus, coarse per-root output invalidation, fixed-limit compatibility, licensed exact-version wire environments, RTI C# binding shape limitation for direct arrays of sequences, optional aggregate wire evidence limited to exact RTI 7.7.0, RTI typed C++ serialization of present optional wide-string sequences (bypassed by a DynamicData C API test-peer workaround), manually maintained C++ DynamicType metadata for the wchar union, RTI 7.3.1 wire qualification, time-sensitive reader match status, high-bit character payload loss in unadapted RTI C# reference bindings, default TypeObject v2 recursive registration, unadapted RTI C# recursive-array singleton and RTI C++ array TypeCode initialization, general mutual recursion and recursive collection typedef runtime behavior, and host qualification remain open risks.
     sources:
       - docs/architecture/arc42/11-risks-and-technical-debt.md
   glossary:
-    text: The glossary defines Connext IDL and generation roots, DDS-XTypes and XCDR2, TypeObject/TypeCode metadata, DynamicType/DynamicData, extensibility and optional presence, plus repository tools Qodana and WSL Containers.
+    text: Connext IDL, DdsIdl root, included IDL, type-specific support, RTI oracle, wire compatibility, and wire compatibility matrix have project-specific meanings.
     sources:
       - docs/architecture/arc42/12-glossary.md
 defaults:
@@ -143,10 +145,6 @@ defaults:
     rti_runtime_eligibility:
       value: ">= 7.3.1"
       source: chapter-2
-      status: explicit
-    qualified_rti_versions:
-      value: "7.7.0"
-      source: docs/guides/support-and-compatibility.md
       status: explicit
     rti_oracle_baseline:
       value: "7.7.0 / rtiddsgen 4.7.0"

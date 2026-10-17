@@ -12,14 +12,14 @@ RTI runtime.
    non-generating inputs.
 2. Roslyn supplies the files, item metadata, compiler options, and compilation
    references to `Generator`.
-3. The generator requires C# 12 or later and a resolved RTI runtime reference of
-   at least 7.3.1.
-   The retained oracle corpus is captured with RTI 7.7.0 / `rtiddsgen` 4.7.0;
-   this is an evidence baseline, not the minimum runtime version.
+3. The generator requires C# 12 or later and a resolved RTI runtime reference
+   of at least 7.3.1. The Roslyn adapter reads the resolved assembly version
+   and compilation orchestration selects the matching immutable profile.
 4. `IdlCompiler` resolves the include graph and preprocesses input. The front
    end then parses declarations, binds references and deferred bounds against
    the complete symbol graph, and validates semantics.
-5. Emitters return generated C# documents to the central emission result.
+5. Emission planning applies profile-specific API policies; emitters render the
+   resolved plans and return generated C# documents to the central result.
    Input that prevents safe managed output produces `DDSG0001` at its IDL
    location. Deliberately ignored constructs and potentially lossy mappings
    report diagnostics while generation continues; see the
@@ -43,9 +43,10 @@ RTI runtime.
 The manually dispatched matrix compares Wireloom-generated C#, RTI-generated
 C#, and RTI-generated C++ across all nine directed peer pairings for selected
 Wireloom-positive corpus fixtures. A pass requires valid samples and complete
-payload comparison; successful discovery alone is insufficient. The matrix is
-qualified against RTI Connext 7.7.0. Compatibility with 7.3.1 is not
-established.
+payload comparison; successful discovery alone is insufficient. Exact 7.7.0
+wire evidence is retained. The 7.3.1 profile passes the package integration
+build and all 527 runtime-contract tests against its exact NuGet package;
+exact-version wire qualification remains pending.
 
 The manual wire workflow runs independent peer exchanges for selected corpus
 cases. A combined report is published only when the selected work has complete,

@@ -236,7 +236,7 @@ generation extension; consult the separate wire evidence before adopting it.
 
 Wireloom initializes self-referencing optional fixed-array support through
 ordinary `Support.Instance` access and type-support discovery, without application
-bootstrapping. With RTI 7.7.0, the retained rtiddsgen 4.7.0.1 C# output instead
+bootstrapping. With RTI 7.7.0, the retained rtiddsgen 4.7.0 C# output instead
 requires plugin initialization first. Fresh-process tests check startup and
 serialization of absent, present, and nested arrays; see the
 [reproducible comparison](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#recursive-support-startup).
@@ -252,12 +252,12 @@ Unsupported declarations are reported with diagnostics instead of being
 silently omitted.
 
 Check the [feature coverage index](docs/corpus/FEATURE-COVERAGE.md) for the
-current status of individual IDL shapes. The checked compatibility corpus uses
-RTI Connext DDS 7.7.0 / `rtiddsgen` 4.7.0 reference output. RTI **7.7.0** is the
-currently qualified runtime version; the package's minimum-version guard of
-7.3.1 is not a supported-version range.
-Optional aggregate support is covered by
-[C115](docs/corpus/idl/features/09-optional-aggregate-member.idl).
+current status of individual IDL shapes. Wireloom selects a generated API
+profile from the resolved RTI package: 7.3.1 through 7.6.x use the 7.3.1
+profile, while 7.7.0 and later use the 7.7.0 profile. Versions below 7.3.1
+produce `DDSG0003`. Only exact RTI 7.3.1 and 7.7.0 LTS versions are
+qualification targets; the mapping does not qualify every intervening or later
+release. See the [support and compatibility guide](docs/guides/support-and-compatibility.md).
 
 Consumer projects can target **.NET 8 and higher** and must use **C# 12 or
 later**. The generator package targets `netstandard2.0` for Roslyn host
@@ -305,6 +305,7 @@ expectations, and guidance on choosing a generation path.
 ## License
 
 Wireloom is licensed under the [MIT License](LICENSE). That license does not
-apply to the RTI-generated oracle sources in [`docs/corpus/oracles`](docs/corpus/oracles)
-or other third-party materials. Review the [corpus guidance](docs/corpus/README.md)
-before redistributing or changing those reference artifacts.
+apply to the RTI-generated oracle sources under
+[`docs/corpus/<version>/rtiddsgen`](docs/corpus/README.md) or other third-party
+materials. Review the [corpus guidance](docs/corpus/README.md) before
+redistributing or changing those reference artifacts.
