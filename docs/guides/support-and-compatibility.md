@@ -53,9 +53,6 @@ against Wireloom output for supported IDL shapes. That is a goal verified by
 shape-specific evidence, not a blanket claim for every IDL construct or RTI
 release. Check the [feature coverage index](../corpus/FEATURE-COVERAGE.md) and
 the API comparison in the [migration guide](../migration/rtiddsgen-to-wireloom.md).
-For example, C136 currently exposes `ISequence<Scalar>` in Wireloom where the
-RTI 7.7.0 C# oracle exposes `ISequence<int>`. This is tracked for investigation
-in [issue #62](https://github.com/eNeRGy164/wireloom/issues/62).
 
 The configuration API differs from `rtiddsgen` options. It may change when
 issues are found; consult release notes and the package guide before upgrading.

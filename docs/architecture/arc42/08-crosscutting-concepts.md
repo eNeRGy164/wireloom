@@ -65,13 +65,13 @@ findings; they do not establish a complete API contract or wire compatibility.
 
 ## 8.6 RTI-compatible generated value semantics
 
-The generated API and native plugin are compatibility artifacts. The goal is
-RTI C# or better: RTI's observable behavior provides a baseline and evidence,
-not a ceiling. Existing quirks remain characterized until an intentional
-behavior change is implemented and documented. RTI C++ wire support can justify
-a more capable managed API; interoperability claims still require wire
-verification. The current behavior below is not a requirement to reproduce
-every RTI limitation in future APIs.
+The generated API and native plugin are compatibility artifacts. Generated
+managed API shape and behavior match RTI C# by default. A deviation requires a
+reproducible finding that RTI C# is defective for that case, with the defect
+and the corrective behavior documented and covered by focused evidence. RTI
+C++ behavior can help establish expected wire semantics, but it does not by
+itself justify a different managed API. Interoperability claims still require
+wire verification.
 
 Alias diagnostic formatting intentionally improves on RTI C#'s unsupported
 scalar and collection root formatting. Struct and union formatting continues

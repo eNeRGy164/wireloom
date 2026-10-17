@@ -40,9 +40,9 @@ and [machine-readable memory](../../.agents/architecture-memory.yaml).
   licensed wire evidence checks all nine directed pairings among Wireloom C#,
   RTI C#, and RTI C++. See the [corpus guide](../corpus/README.md),
   [feature coverage](../corpus/FEATURE-COVERAGE.md), and [wire runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
-- **API policy:** RTI C# is a baseline, not an API ceiling. Deliberate API
-  differences and improvements need explicit evidence; an API-shape match does
-  not establish wire compatibility. See [decisions](arc42/09-architectural-decisions.md).
+- **API policy:** Match RTI C# unless a reproducible RTI C# defect justifies a
+  documented correction. RTI C++ evidence alone does not justify a different
+  managed API shape. See [decisions](arc42/09-architectural-decisions.md).
 - **High-risk contracts:** Preserve optional presence, union discriminator
   ranges and RTI metadata representation, bounded collection semantics, and
   alias behavior across managed/native/metadata emission. Check the detailed
@@ -64,8 +64,6 @@ and [machine-readable memory](../../.agents/architecture-memory.yaml).
 
 - RTI 7.3.1 generated-code compatibility and other intervening releases are
   unqualified.
-- C136 exposes `ISequence<Scalar>` where RTI C# exposes `ISequence<int>`;
-  investigation is tracked in [issue #62](https://github.com/eNeRGy164/wireloom/issues/62).
 - `05-array-of-sequences` does not preserve the IDL array shape in managed C#;
   Wireloom C# wire pairings fail as recorded in the feature index.
 - Compatibility beyond retained cases, host/IDE combinations, and adapted RTI
