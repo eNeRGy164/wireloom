@@ -30,17 +30,17 @@ public sealed class EmissionPlanDecisionSpecs
     }
 
     [Fact]
-    public void CollectionAliasPlanTreatsNamedAliasesAsAggregateElements()
+    public void CollectionAliasPlanTreatsTransparentAliasesAsUnderlyingValues()
     {
         // Arrange
         var primitiveAlias = new AliasEmissionType(
             "Example::Scalar",
             new PrimitiveEmissionType("long", "int"),
-            "Example.Scalar");
+            "int");
         var stringAlias = new AliasEmissionType(
             "Example::Name",
             new StringEmissionType(isWide: false, bound: 9, isBounded: true),
-            "Example.Name");
+            "string");
         var primitivePlan = new CollectionAliasEmissionPlan(
             primitiveAlias,
             isSequence: true,
@@ -54,11 +54,11 @@ public sealed class EmissionPlanDecisionSpecs
 
         // Assert
         primitivePlan.IsString.ShouldBeFalse();
-        primitivePlan.CollectionElementIsAggregate.ShouldBeTrue();
-        CollectionElementCopyPolicy.RequiresManagedCopy(primitiveAlias).ShouldBeTrue();
-        stringPlan.IsString.ShouldBeFalse();
-        stringPlan.CollectionElementIsAggregate.ShouldBeTrue();
-        CollectionElementCopyPolicy.RequiresManagedCopy(stringAlias).ShouldBeTrue();
+        primitivePlan.CollectionElementIsAggregate.ShouldBeFalse();
+        CollectionElementCopyPolicy.RequiresManagedCopy(primitiveAlias).ShouldBeFalse();
+        stringPlan.IsString.ShouldBeTrue();
+        stringPlan.CollectionElementIsAggregate.ShouldBeFalse();
+        CollectionElementCopyPolicy.RequiresManagedCopy(stringAlias).ShouldBeFalse();
         CollectionElementCopyPolicy.RequiresManagedCopy(new PrimitiveEmissionType("long", "int")).ShouldBeFalse();
         CollectionElementCopyPolicy.RequiresManagedCopy(new AliasEmissionType(
             "Example::ErasedScalar",

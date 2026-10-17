@@ -49,7 +49,7 @@ public sealed class EmissionShapeSpecs
     }
 
     [Fact]
-    public void CollectionElementProjectionPreservesNamedAliasIdentityAndShape()
+    public void CollectionElementProjectionUsesUnderlyingAggregateType()
     {
         // Arrange
         var alias = new IdlType.Alias(
@@ -58,6 +58,23 @@ public sealed class EmissionShapeSpecs
 
         // Act
         var plan = EmissionTypeProjector.ToCollectionElementType(alias, "Example");
+
+        // Assert
+        plan.CSharpType.ShouldBe("Item");
+        plan.Shape.IsAggregate.ShouldBeTrue();
+        plan.Shape.Kind.ShouldBe(EmissionShapeKind.Struct);
+    }
+
+    [Fact]
+    public void TypedefValueProjectionPreservesNamedAliasIdentityAndShape()
+    {
+        // Arrange
+        var alias = new IdlType.Alias(
+            "Example::ItemAlias",
+            new IdlType.Struct("Example::Item"));
+
+        // Act
+        var plan = EmissionTypeProjector.ToTypedefValueType(alias, "Example");
 
         // Assert
         plan.CSharpType.ShouldBe("ItemAlias");

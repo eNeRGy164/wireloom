@@ -444,6 +444,6 @@ public sealed class GeneratedTypedefSpecs
 
         var items = documents["DestroyAliases.Implementation.ItemsUnmanaged.g.cs"].Source;
         items.ShouldContain("if (optionalsOnly)");
-        items.ShouldContain("Value.Destroy<ItemAlias, ItemAliasUnmanaged>(optionalsOnly);");
+        items.ShouldContain("Value.Destroy<Item, ItemUnmanaged>(optionalsOnly);");
     }
 }

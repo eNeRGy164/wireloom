@@ -47,12 +47,16 @@ internal static class EmissionTypeProjector
             declaredType);
     }
 
-    /// <summary>Projects a collection element while preserving a named alias identity.</summary>
+    /// <summary>Projects a collection element using the RTI C# alias mapping.</summary>
     internal static EmissionTypePlan ToCollectionElementType(IdlType type, string? currentNamespace)
+        => ProjectMemberType(type, currentNamespace);
+
+    /// <summary>Projects a typedef value while preserving each named alias identity.</summary>
+    internal static EmissionTypePlan ToTypedefValueType(IdlType type, string? currentNamespace)
     {
         if (type is IdlType.Alias alias)
         {
-            var target = ToCollectionElementType(alias.Target, currentNamespace);
+            var target = ToTypedefValueType(alias.Target, currentNamespace);
             var aliasName = IdlNaming.ResolvedTypeReference(alias.QualifiedName, currentNamespace);
             var supportName = IdlNaming.SupportTypeName(alias.QualifiedName, currentNamespace);
             return new AliasEmissionType(alias.QualifiedName, target, aliasName, supportName);

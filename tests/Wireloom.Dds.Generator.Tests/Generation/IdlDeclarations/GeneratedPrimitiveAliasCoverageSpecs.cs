@@ -144,16 +144,34 @@ public sealed class GeneratedPrimitiveAliasCoverageSpecs
     }
 
     [Fact]
-    public void NamedPrimitiveAndStringAliasesUseAggregateCollectionContracts()
+    public void CollectionElementsFollowRtiAliasTargetMapping()
     {
         // Arrange
         var input = Input("named-collection-aliases.idl",
             """
             module NamedCollectionAliases {
                 typedef long Scalar;
+                typedef Scalar ScalarChain;
                 typedef sequence<Scalar, 2> Scalars;
+                typedef sequence<ScalarChain, 2> ScalarChains;
+                struct ScalarHolder { sequence<Scalar> values; };
                 typedef string<8> Name;
+                typedef Name NameChain;
                 typedef sequence<Name, 3> Names;
+                typedef sequence<NameChain, 3> NameChains;
+                enum State { Idle, Ready };
+                typedef State StateAlias;
+                typedef sequence<StateAlias, 2> States;
+                struct Item { long value; };
+                typedef Item ItemAlias;
+                typedef sequence<ItemAlias, 2> Items;
+                union Choice switch (long) { case 0: Item item; default: long number; };
+                typedef Choice ChoiceAlias;
+                typedef sequence<ChoiceAlias, 2> Choices;
+                typedef long ScalarArray[2];
+                typedef sequence<ScalarArray, 2> ScalarArrays;
+                typedef sequence<long, 2> Numbers;
+                typedef sequence<Numbers, 2> NestedNumbers;
             };
             """);
 
@@ -161,21 +179,51 @@ public sealed class GeneratedPrimitiveAliasCoverageSpecs
         var documents = CompileSources(input);
 
         // Assert
+        documents["NamedCollectionAliases.Scalars.g.cs"].Source.ShouldContain("ISequence<int> Value");
         var scalarsPlugin = documents["NamedCollectionAliases.Implementation.ScalarsPlugin.g.cs"].Source;
-        scalarsPlugin.ShouldContain("ScalarSupport.Instance.GetDynamicTypeInternal(isPublic)");
+        scalarsPlugin.ShouldContain("dtf.GetPrimitiveType<int>()");
+        scalarsPlugin.ShouldNotContain("ScalarSupport.Instance.GetDynamicTypeInternal(isPublic)");
 
         var scalarsNative = documents["NamedCollectionAliases.Implementation.ScalarsUnmanaged.g.cs"].Source;
         scalarsNative.ShouldContain("private NativeSeq Value;");
-        scalarsNative.ShouldContain("Value.Initialize<Scalar, ScalarUnmanaged>");
-        scalarsNative.ShouldContain("Value.FromNative<Scalar, ScalarUnmanaged>");
+        scalarsNative.ShouldContain("Value.Initialize<int>");
+        scalarsNative.ShouldContain("Value.FromNative((Sequence<int>)sample.Value)");
 
+        documents["NamedCollectionAliases.ScalarChains.g.cs"].Source.ShouldContain("ISequence<int> Value");
+        documents["NamedCollectionAliases.Implementation.ScalarChainsPlugin.g.cs"].Source.ShouldContain("dtf.GetPrimitiveType<int>()");
+
+        var scalarHolder = documents["NamedCollectionAliases.ScalarHolder.g.cs"].Source;
+        scalarHolder.ShouldContain("ISequence<int> values");
+        documents["NamedCollectionAliases.Implementation.ScalarHolderPlugin.g.cs"].Source
+            .ShouldContain("ScalarSupport.Instance.GetDynamicTypeInternal(isPublic)");
+
+        documents["NamedCollectionAliases.Names.g.cs"].Source.ShouldContain("ISequence<string> Value");
         var namesPlugin = documents["NamedCollectionAliases.Implementation.NamesPlugin.g.cs"].Source;
-        namesPlugin.ShouldContain("NameSupport.Instance.GetDynamicTypeInternal(isPublic)");
+        namesPlugin.ShouldContain("CreateString(8)");
+        namesPlugin.ShouldNotContain("NameSupport.Instance.GetDynamicTypeInternal(isPublic)");
 
         var namesNative = documents["NamedCollectionAliases.Implementation.NamesUnmanaged.g.cs"].Source;
-        namesNative.ShouldContain("private NativeSeq Value;");
-        namesNative.ShouldContain("Value.Initialize<Name, NameUnmanaged>");
-        namesNative.ShouldContain("Value.FromNative<Name, NameUnmanaged>");
+        namesNative.ShouldContain("private NativeStringSeq Value;");
+        namesNative.ShouldContain("Value.Initialize(max: 3, absoluteMax: 3, maxStrLen: 8");
+
+        documents["NamedCollectionAliases.NameChains.g.cs"].Source.ShouldContain("ISequence<string> Value");
+        documents["NamedCollectionAliases.Implementation.NameChainsPlugin.g.cs"].Source.ShouldContain("CreateString(8)");
+
+        documents["NamedCollectionAliases.States.g.cs"].Source.ShouldContain("ISequence<State> Value");
+        documents["NamedCollectionAliases.Implementation.StatesPlugin.g.cs"].Source
+            .ShouldContain("StateSupport.Instance.GetDynamicTypeInternal(isPublic)");
+        documents["NamedCollectionAliases.Items.g.cs"].Source.ShouldContain("ISequence<Item> Value");
+        documents["NamedCollectionAliases.Implementation.ItemsPlugin.g.cs"].Source
+            .ShouldContain("ItemSupport.Instance.GetDynamicTypeInternal(isPublic)");
+        documents["NamedCollectionAliases.Choices.g.cs"].Source.ShouldContain("ISequence<Choice> Value");
+        documents["NamedCollectionAliases.Implementation.ChoicesPlugin.g.cs"].Source
+            .ShouldContain("ChoiceSupport.Instance.GetDynamicTypeInternal(isPublic)");
+        documents["NamedCollectionAliases.ScalarArrays.g.cs"].Source.ShouldContain("ISequence<ScalarArray> Value");
+        documents["NamedCollectionAliases.Implementation.ScalarArraysPlugin.g.cs"].Source
+            .ShouldContain("ScalarArraySupport.Instance.GetDynamicTypeInternal(isPublic)");
+        documents["NamedCollectionAliases.NestedNumbers.g.cs"].Source.ShouldContain("ISequence<Numbers> Value");
+        documents["NamedCollectionAliases.Implementation.NestedNumbersPlugin.g.cs"].Source
+            .ShouldContain("NumbersSupport.Instance.GetDynamicTypeInternal(isPublic)");
     }
 
     [Fact]
@@ -196,13 +244,13 @@ public sealed class GeneratedPrimitiveAliasCoverageSpecs
 
         // Assert
         var managed = documents["Nested.Values.g.cs"].Source;
-        managed.ShouldContain("ISequence<global::Scalar>");
+        managed.ShouldContain("ISequence<int>");
 
         var plugin = documents["Nested.Implementation.ValuesPlugin.g.cs"].Source;
-        plugin.ShouldContain("ScalarSupport.Instance.GetDynamicTypeInternal(isPublic)");
+        plugin.ShouldContain("dtf.GetPrimitiveType<int>()");
 
         var native = documents["Nested.Implementation.ValuesUnmanaged.g.cs"].Source;
-        native.ShouldContain("Value.Initialize<global::Scalar, global::Implementation.ScalarUnmanaged>");
+        native.ShouldContain("Value.Initialize<int>");
     }
 
     private static void AssertPrimitiveAlias(

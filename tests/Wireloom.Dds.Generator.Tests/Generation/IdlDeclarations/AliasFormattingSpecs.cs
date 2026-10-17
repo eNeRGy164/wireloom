@@ -102,8 +102,8 @@ public sealed class AliasFormattingSpecs
         var sources = CompileSources(input);
 
         // Assert
-        sources["Example.TextsSupport.g.cs"].Source.ShouldContain("FormatString(value[index]?.Value)");
-        sources["Example.LabelsSupport.g.cs"].Source.ShouldContain("FormatString(value[index]?.Value)");
+        sources["Example.TextsSupport.g.cs"].Source.ShouldContain("FormatString(value[index])");
+        sources["Example.LabelsSupport.g.cs"].Source.ShouldContain("FormatString(value[index])");
     }
 
 }
