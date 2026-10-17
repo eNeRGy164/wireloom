@@ -86,15 +86,15 @@ public sealed class AliasFormattingSpecs
     public void QuotesNamedStringAliasesInCollections()
     {
         // Arrange
-        var values = new RuntimeAliasFormatting.Texts(new Sequence<RuntimeAliasFormatting.Text>
+        var values = new RuntimeAliasFormatting.Texts(new Sequence<string>
         {
-            new("hello"),
-            new((string)null!),
+            "hello",
+            null!,
             null!
         });
-        var labels = new RuntimeAliasFormatting.Labels(new Sequence<RuntimeAliasFormatting.Label>
+        var labels = new RuntimeAliasFormatting.Labels(new Sequence<string>
         {
-            new("world")
+            "world"
         });
 
         // Act

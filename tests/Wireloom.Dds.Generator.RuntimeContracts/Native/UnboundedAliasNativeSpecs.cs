@@ -94,14 +94,14 @@ public sealed class UnboundedAliasNativeSpecs
     public void ConvertsUnboundedScalarAliases(bool keysOnly, bool allocatePointers, bool allocateMemory)
     {
         // Arrange
-        var source = new Scalars(new Sequence<Scalar> { new Scalar(17), new Scalar(18) });
+        var source = new Scalars(new Sequence<int> { 17, 18 });
 
         // Act
         var result = NativeSample.RoundTrip<Scalars, ScalarsUnmanaged>(source, allocatePointers, allocateMemory, keysOnly);
 
         // Assert
-        result.Value[0].Value.ShouldBe(17);
-        result.Value[1].Value.ShouldBe(18);
+        result.Value[0].ShouldBe(17);
+        result.Value[1].ShouldBe(18);
     }
 
     /// <summary>Checks narrow-string sequence allocation with default element bounds.</summary>

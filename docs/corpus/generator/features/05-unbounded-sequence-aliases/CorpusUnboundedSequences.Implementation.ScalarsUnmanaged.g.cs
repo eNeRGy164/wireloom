@@ -22,12 +22,7 @@ public struct ScalarsUnmanaged : INativeTopicType<Scalars>
     /// <param name="optionalsOnly">Indicates whether only optional members should be released.</param>
     public void Destroy(bool optionalsOnly)
     {
-        if (optionalsOnly)
-        {
-            return;
-        }
-
-        Value.Destroy<Scalar, ScalarUnmanaged>(optionalsOnly);
+        Value.Destroy(optionalsOnly);
     }
 
     /// <summary>
@@ -37,7 +32,7 @@ public struct ScalarsUnmanaged : INativeTopicType<Scalars>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void FromNative(Scalars sample, bool keysOnly = false)
     {
-        Value.FromNative<Scalar, ScalarUnmanaged>((Sequence<Scalar>)sample.Value);
+        Value.FromNative((Sequence<int>)sample.Value);
     }
 
     /// <summary>
@@ -47,7 +42,7 @@ public struct ScalarsUnmanaged : INativeTopicType<Scalars>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize<Scalar, ScalarUnmanaged>(max: 100, absoluteMax: 100, allocateMemory);
+        Value.Initialize<int>(max: 100, absoluteMax: 100, allocateMemory);
     }
 
     /// <summary>
@@ -57,6 +52,6 @@ public struct ScalarsUnmanaged : INativeTopicType<Scalars>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void ToNative(Scalars sample, bool keysOnly = false)
     {
-        Value.ToNative<Scalar, ScalarUnmanaged>((Sequence<Scalar>)sample.Value);
+        Value.ToNative((Sequence<int>)sample.Value);
     }
 }

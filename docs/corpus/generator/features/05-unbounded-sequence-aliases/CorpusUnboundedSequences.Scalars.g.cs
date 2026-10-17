@@ -20,14 +20,14 @@ public partial class Scalars : global::System.IEquatable<Scalars>
     /// <remarks>Use the mutable sequence instance to add or remove elements; the property itself is getter-only. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
     [Bound(100)]
-    public ISequence<Scalar> Value { get; } = null!;
+    public ISequence<int> Value { get; } = null!;
 
     /// <summary>
     /// Initializes an empty sequence typedef.
     /// </summary>
     public Scalars()
     {
-        Value = new Sequence<Scalar>();
+        Value = new Sequence<int>();
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public partial class Scalars : global::System.IEquatable<Scalars>
     /// </summary>
     /// <param name="value">The sequence value to store.</param>
     /// <remarks>The typedef stores the supplied sequence reference; it does not make a copy.</remarks>
-    public Scalars(ISequence<Scalar> value)
+    public Scalars(ISequence<int> value)
     {
         Value = value;
     }
@@ -52,7 +52,7 @@ public partial class Scalars : global::System.IEquatable<Scalars>
             return;
         }
 
-        Value = new Sequence<Scalar>(global::System.Linq.Enumerable.Select(other.Value, element => new Scalar(element)));
+        Value = new Sequence<int>(other.Value);
     }
 
     /// <inheritdoc />
