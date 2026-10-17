@@ -46,7 +46,7 @@ and the [Hello World prerequisites](https://github.com/eNeRGy164/wireloom/blob/m
 <ItemGroup>
   <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
   <PackageReference Include="Wireloom.Dds.Generator"
-                    Version="0.3.0"
+                    Version="0.4.0"
                     PrivateAssets="all" />
 </ItemGroup>
 ```
@@ -142,7 +142,7 @@ not need the generator package unless they also declare their own IDL roots.
 <ItemGroup>
   <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
   <PackageReference Include="Wireloom.Dds.Generator"
-                    Version="0.3.0"
+                    Version="0.4.0"
                     PrivateAssets="all" />
   <DdsIdl Include="Contracts\Telemetry.idl" />
 </ItemGroup>
@@ -180,7 +180,7 @@ describes how bounds relate to mutation and DDS processing.
 | `long id;`                                                          | `int id { get; set; }`<br>Assign with `sample.id = 42;`.                                                                          | Same member type and accessors.                                                                       | [RTI][rti-01] · [generated][wire-01]                              |
 | `typedef sequence<long, 4> BoundedLongs;`                           | `ISequence<int> Value` with `[Bound(4)]`.<br>Use `var bounded = new BoundedLongs(); bounded.Value.Add(17);`.                      | Same generated public shape.                                                                          | [RTI][rti-05] · [generated][wire-05]                              |
 | `@optional sequence<long, 4> values;`<br>`@optional long items[2];` | `ISequence<int>? values`; `int[]? items`.<br>Set `items = [1, 2]`; set `values = new Sequence<int> { 17 }` or `null` for absence. | Optional metadata matches. Wireloom adds nullable C# annotations absent from the retained RTI source. | [RTI][rti-09] · [generated][wire-09]                              |
-| `typedef long Scalar;`<br>`typedef sequence<Scalar> Scalars;`       | `ISequence<Scalar>` preserves the scalar wrapper.                                                                                 | API difference: RTI exposes `ISequence<int>`. Callers using that shape must adapt to `Scalar`.        | [RTI][rti-05a] · [generated][wire-05a] · [C136][cov-c136]         |
+| `typedef long Scalar;`<br>`typedef sequence<Scalar> Scalars;`       | `ISequence<int> Value`; the scalar alias is erased for this collection element.                                                   | Same public element type.                                                                             | [RTI][rti-05a] · [generated][wire-05a] · [C136][cov-c136]         |
 | `union Choice switch(Kind) { case Number: long number; ... };`      | `int number`; assigning selects the branch. Reading an inactive branch throws `InvalidOperationException`.                        | Same generated branch API and guard.                                                                  | [RTI][rti-07] · [generated][wire-07] · [runtime test][union-test] |
 
 [rti-01]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/oracles/features/01-primitives/

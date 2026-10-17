@@ -52,10 +52,10 @@ minimum consumer framework without adding a project:
 ```powershell
 dotnet restore tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
   --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config `
-  -p:WireloomDdsGeneratorPackageVersion=0.3.0 -p:TargetFramework=net8.0
+  -p:WireloomDdsGeneratorPackageVersion=0.4.0 -p:TargetFramework=net8.0
 dotnet run --project tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
   --no-restore --configuration Release `
-  -p:WireloomDdsGeneratorPackageVersion=0.3.0 -p:TargetFramework=net8.0 -p:LangVersion=12.0
+  -p:WireloomDdsGeneratorPackageVersion=0.4.0 -p:TargetFramework=net8.0 -p:LangVersion=12.0
 ```
 
 This verifies the consumer framework; it does not establish compatibility
