@@ -16,18 +16,19 @@ internal static class ClassEmitter
         string sourceIdlFileName,
         string? baseType,
         IReadOnlyList<IdlMember> inheritedFields,
-        bool isTopic)
+        bool isTopic,
+        RtiApiProfile profile)
     {
         var names = IdlNaming.CreateGeneratedTypeNames(currentNamespace, name);
         var escapedName = names.ManagedTypeName;
         var emissionFields = fields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace)).ToArray();
         var emissionInheritedFields = inheritedFields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace)).ToArray();
-        var initialFieldPlans = emissionFields.Select(field => new MemberEmissionPlan(field, currentNamespace)).ToArray();
+        var initialFieldPlans = emissionFields.Select(field => new MemberEmissionPlan(field, currentNamespace, profile: profile)).ToArray();
         var managedBackingNames = ResolveManagedBackingNames(escapedName: names.ManagedTypeName, initialFieldPlans);
         var fieldPlans = initialFieldPlans
-            .Select((field, index) => new MemberEmissionPlan(field.Field, currentNamespace, managedBackingNames[index]))
+            .Select((field, index) => new MemberEmissionPlan(field.Field, currentNamespace, managedBackingNames[index], profile))
             .ToArray();
-        var inheritedFieldPlans = emissionInheritedFields.Select(field => new MemberEmissionPlan(field, currentNamespace)).ToArray();
+        var inheritedFieldPlans = emissionInheritedFields.Select(field => new MemberEmissionPlan(field, currentNamespace, profile: profile)).ToArray();
         var hasTypeSupport = fieldPlans.All(field => field.HasTypeSupport);
         var runtimeTypeName = currentNamespace is null ? name : $"{currentNamespace}.{name}";
         var isRecursive = fieldPlans.Any(field => field.IsRecursive(runtimeTypeName));
@@ -67,7 +68,8 @@ internal static class ClassEmitter
             currentNamespace,
             fieldPlans,
             inheritedFieldPlans,
-            baseType);
+            baseType,
+            profile);
 
         if (hasTypeSupport)
         {
@@ -92,7 +94,8 @@ internal static class ClassEmitter
                 extensibility,
                 sourceIdlFileName,
                 baseType,
-                isRecursive));
+                isRecursive,
+                profile));
         }
 
         return documents;

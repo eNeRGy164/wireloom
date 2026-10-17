@@ -10,7 +10,7 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class CollectionAliasPluginEmitter
 {
     /// <summary>Emits the typedef plugin document.</summary>
-    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName, RtiApiProfile profile)
     {
         var typeName = names.ManagedTypeName;
         var implementationTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.ImplementationNamespace);
@@ -28,13 +28,14 @@ internal static class CollectionAliasPluginEmitter
             EmissionSupport.GetPluginUsings(
                 [plan.ElementPlan],
                 usesExtensibility: false,
-                usesAnnotations: !plan.IsCollection && (plan.IsString || plan.IsPrimitive)),
+                usesAnnotations: profile.SupportsDynamicTypeAnnotations && !plan.IsCollection && (plan.IsString || plan.IsPrimitive)),
             sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI runtime plugin for the {typeName} typedef. This implementation detail is not intended for application code.");
         writer.OpenBlock($"internal class {names.PluginTypeName} : InterpretedTypePlugin<{implementationTypeName}, {names.UnmanagedTypeName}>");
         writer.WriteXmlSummary($"Initializes the RTI plugin for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"internal {names.PluginTypeName}() : base(\"{names.RuntimeTypeName}\", isKeyed: false, CreateDynamicType(isPublic: false))");
+        EmissionSupport.EmitPluginCompatibility(writer, profile);
         writer.CloseBlock();
         writer.BlankLine();
         writer.WriteXmlSummary($"Creates the RTI dynamic type description for <see cref=\"{typeName}\"/>.");
@@ -98,7 +99,10 @@ internal static class CollectionAliasPluginEmitter
 
         if (!plan.IsCollection && (plan.IsString || plan.IsPrimitive))
         {
-            EmitAliasAnnotations(writer, plan);
+            if (profile.SupportsDynamicTypeAnnotations)
+            {
+                EmitAliasAnnotations(writer, plan);
+            }
 
             writer.BlankLine();
             writer.WriteLine("return aliasType;");

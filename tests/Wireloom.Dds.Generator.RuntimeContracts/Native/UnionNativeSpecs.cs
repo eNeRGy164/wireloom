@@ -82,6 +82,15 @@ public sealed class UnionNativeSpecs
 
         // Assert
         result.Discriminator.ShouldBe(Sparse.DefaultDiscriminator);
-        result.Get().ShouldBeNull();
+        if (RtiRuntimeProfile.Uses731Profile)
+        {
+            result.Discriminator.ShouldBe(1);
+            result.Get().ShouldBe(0);
+            result.number.ShouldBe(0);
+        }
+        else
+        {
+            result.Get().ShouldBeNull();
+        }
     }
 }

@@ -89,7 +89,9 @@ public static partial class IndependentSampleVerifier
         {
             TypeKind.UInt32 => unchecked((uint)numericValue),
             TypeKind.Uint16 or TypeKind.Char16 => unchecked((ushort)numericValue),
-            TypeKind.Uint8 or TypeKind.Octet or TypeKind.Char8 => unchecked((byte)numericValue),
+            TypeKind.Uint8 or TypeKind.Char8 => unchecked((byte)numericValue),
+            _ when string.Equals(discriminatorType.Kind.ToString(), "Octet", StringComparison.Ordinal)
+                => unchecked((byte)numericValue),
             _ => numericValue
         };
     }

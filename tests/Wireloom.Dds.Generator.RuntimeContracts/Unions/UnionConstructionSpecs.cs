@@ -6,15 +6,25 @@ namespace Wireloom.Dds.Generator.RuntimeContracts.Unions;
 /// <summary>Checks XTypes defaults and null-source initialization independently of RTI's null-copy quirks.</summary>
 public sealed class UnionConstructionSpecs
 {
-    /// <summary>Uses zero even when negative or zero labels precede a default branch.</summary>
+    /// <summary>Uses the selected profile when zero labels precede a default branch.</summary>
     [Fact]
-    public void IntegerDefaultsUseZeroRatherThanAnUnusedLabel()
+    public void IntegerDefaultsFollowTheSelectedProfile()
     {
         // Arrange/Act/Assert
-        AssertDefault(() => new Choice(), () => new Choice(null), value => value.Discriminator, value => value.Get(), 0, 0);
+        if (RtiRuntimeProfile.Uses731Profile)
+        {
+            AssertDefault(() => new Choice(), () => new Choice(null), value => value.Discriminator, value => value.Get(), 6, false);
+            AssertDefault(() => new NegativeAndZero(), () => new NegativeAndZero(null), value => value.Discriminator, value => value.Get(), 1, false);
+        }
+        else
+        {
+            AssertDefault(() => new Choice(), () => new Choice(null), value => value.Discriminator, value => value.Get(), 0, 0);
+            AssertDefault(() => new NegativeAndZero(), () => new NegativeAndZero(null), value => value.Discriminator, value => value.Get(), 0, 0);
+        }
         AssertDefault(() => new NegativeLabels(), () => new NegativeLabels(null), value => value.Discriminator, value => value.Get(), 0, false);
-        AssertDefault(() => new NegativeAndZero(), () => new NegativeAndZero(null), value => value.Discriminator, value => value.Get(), 0, 0);
-        AssertDefault(() => new Sparse(), () => new Sparse(null), value => value.Discriminator, value => value.Get(), 0, null);
+        var sparseDiscriminator = RtiRuntimeProfile.Uses731Profile ? 1 : 0;
+        AssertDefault(() => new Sparse(), () => new Sparse(null), value => value.Discriminator, value => value.Get(), sparseDiscriminator,
+            RtiRuntimeProfile.Uses731Profile ? 0 : null);
     }
 
     /// <summary>Preserves primitive and string field initialization for a false discriminator.</summary>
@@ -23,7 +33,14 @@ public sealed class UnionConstructionSpecs
     {
         // Arrange/Act/Assert
         AssertDefault(() => new ZeroScalar(), () => new ZeroScalar(null), value => value.Discriminator, value => value.Get(), false, 0);
-        AssertDefault(() => new BooleanDefault(), () => new BooleanDefault(null), value => value.Discriminator, value => value.Get(), false, 0);
+        if (RtiRuntimeProfile.Uses731Profile)
+        {
+            AssertDefault(() => new BooleanDefault(), () => new BooleanDefault(null), value => value.Discriminator, value => value.Get(), true, new RuntimeUnionNullCopy.Child());
+        }
+        else
+        {
+            AssertDefault(() => new BooleanDefault(), () => new BooleanDefault(null), value => value.Discriminator, value => value.Get(), false, 0);
+        }
         AssertDefault(() => new ZeroString(), () => new ZeroString(null), value => value.Discriminator, value => value.Get(), false, "");
     }
 
@@ -32,10 +49,32 @@ public sealed class UnionConstructionSpecs
     public void EnumDefaultsPreservePositiveAndNegativeFirstLiterals()
     {
         // Arrange/Act/Assert
-        AssertDefault(() => new EnumNoDefault(), () => new EnumNoDefault(null), value => value.Discriminator, value => value.Get(), Mode.First, 0);
-        AssertDefault(() => new EnumWithDefault(), () => new EnumWithDefault(null), value => value.Discriminator, value => value.Get(), Mode.First, 0);
-        AssertDefault(() => new NegativeEnum(), () => new NegativeEnum(null), value => value.Discriminator, value => value.Get(), NegativeMode.NegativeFirst, 0);
-        AssertDefault(() => new MixedEnum(), () => new MixedEnum(null), value => value.Discriminator, value => value.Get(), MixedMode.MixedFirst, 0);
+        AssertDefault(() => new EnumNoDefault(), () => new EnumNoDefault(null), value => value.Discriminator, value => value.Get(),
+            Mode.First, 0);
+        AssertDefault(() => new EnumWithDefault(), () => new EnumWithDefault(null), value => value.Discriminator, value => value.Get(),
+            Mode.First, 0);
+        AssertDefault(() => new NegativeEnum(), () => new NegativeEnum(null), value => value.Discriminator, value => value.Get(),
+            NegativeMode.NegativeFirst, 0);
+        AssertDefault(() => new MixedEnum(), () => new MixedEnum(null), value => value.Discriminator, value => value.Get(),
+            MixedMode.MixedFirst, 0);
+    }
+
+    /// <summary>Executes default-only and aliased enum constructors with a non-first default literal.</summary>
+    [Fact]
+    public void EnumFallbackConstructorsPreserveTheProfileDefault()
+    {
+        // Arrange
+        var expected = RtiRuntimeProfile.Uses731Profile ? AnnotatedMode.FirstDeclared : AnnotatedMode.Preferred;
+
+        // Act
+        var defaultOnly = new EnumDefaultOnly();
+        var laterCase = new EnumLaterCase(null);
+
+        // Assert
+        defaultOnly.Discriminator.ShouldBe(expected);
+        defaultOnly.fallback.ShouldBe(0);
+        laterCase.Discriminator.ShouldBe(expected);
+        laterCase.fallback.ShouldBe(0);
     }
 
     /// <summary>Creates independently owned aggregate, sequence, and array values for null sources.</summary>

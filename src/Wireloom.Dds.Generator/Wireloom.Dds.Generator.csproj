@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Wireloom.Dds.Generator.Tests" />
+    <InternalsVisibleTo Include="Wireloom.Dds.Generator.CorpusCompliance" />
   </ItemGroup>
 
   <ItemGroup>

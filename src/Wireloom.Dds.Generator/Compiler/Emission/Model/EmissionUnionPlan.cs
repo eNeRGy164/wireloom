@@ -16,7 +16,7 @@ internal sealed class UnionBranchEmissionPlan(IdlEmissionField field, MemberEmis
 }
 
 /// <summary>Describes an IDL union after projection to the generated target model.</summary>
-internal sealed class IdlEmissionUnion(string name, string? @namespace, string discriminatorIdlType, string discriminatorCSharpType, bool discriminatorIsEnum, int? discriminatorDefaultValue, IReadOnlyList<UnionBranchEmissionPlan> branches, IdlExtensibilityKind extensibility, string? discriminatorEnumQualifiedName = null)
+internal sealed class IdlEmissionUnion(string name, string? @namespace, string discriminatorIdlType, string discriminatorCSharpType, bool discriminatorIsEnum, int? discriminatorDefaultValue, int? discriminatorFirstValue, IReadOnlyList<UnionBranchEmissionPlan> branches, IdlExtensibilityKind extensibility, string? discriminatorEnumQualifiedName = null, RtiApiProfile? profile = null)
 {
     public string Name { get; } = name;
     public string? Namespace { get; } = @namespace;
@@ -27,6 +27,8 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
     /// <summary>Gets whether native discriminator conversion uses the RTI character helpers.</summary>
     public bool UsesNativeCharDiscriminator => !DiscriminatorIsEnum && DiscriminatorIdlType == "char";
     private int? DiscriminatorDefaultValue { get; } = discriminatorDefaultValue;
+    private int? DiscriminatorFirstValue { get; } = discriminatorFirstValue;
+    private RtiApiProfile Profile { get; } = profile ?? RtiApiProfile.Rtiddsgen470;
     public IReadOnlyList<UnionBranchEmissionPlan> Branches { get; } = branches;
     public IdlExtensibilityKind Extensibility { get; } = extensibility;
     public IReadOnlyList<UnionBranchEmissionPlan> ExplicitBranches =>
@@ -58,7 +60,7 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
         }
     }
 
-    /// <summary>Gets the XTypes default value of the discriminator type, independently of default branch labels.</summary>
+    /// <summary>Gets the constructor discriminator selected by the RTI API profile.</summary>
     public string ManagedDefaultDiscriminator => ManagedDiscriminatorValue(FindDefaultDiscriminatorValue());
 
     /// <summary>Gets the branch selected by the managed default discriminator, if any.</summary>
@@ -138,7 +140,7 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
         var defaultConditions = explicitValues.Select(value =>
         {
             var isTrue = value != 0;
-            return isTrue == negated ? $"!{discriminatorName}" : discriminatorName;
+            return isTrue == negated ? discriminatorName : $"!{discriminatorName}";
         }).ToArray();
 
         if (defaultConditions.Length == 0)
@@ -175,7 +177,9 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
     }
 
     /// <summary>Gets the RTI dynamic-type primitive name for a primitive discriminator.</summary>
-    public string PrimitiveDiscriminatorDynamicType => PrimitiveTypeMapping.Resolve(DiscriminatorIdlType).DynamicType;
+    public string PrimitiveDiscriminatorDynamicType => DiscriminatorIdlType == "octet"
+        ? Profile.OctetDynamicType
+        : PrimitiveTypeMapping.Resolve(DiscriminatorIdlType).DynamicType;
 
     /// <summary>Builds the native-to-managed discriminator conversion expression.</summary>
     public string NativeDiscriminatorReadExpression(string source)
@@ -201,6 +205,24 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
 
     private long FindDefaultDiscriminatorValue()
     {
+        if (Profile == RtiApiProfile.Rtiddsgen431)
+        {
+            if (DefaultBranch is not null)
+            {
+                if (DiscriminatorIsEnum)
+                {
+                    return DiscriminatorFirstValue ?? 0;
+                }
+
+                return FindUnoccupiedDiscriminatorValue();
+            }
+
+            var firstLabel = ExplicitBranches
+                .SelectMany(branch => branch.LabelValues)
+                .FirstOrDefault();
+            return firstLabel;
+        }
+
         if (DiscriminatorIsEnum)
         {
             return DiscriminatorDefaultValue ?? 0;

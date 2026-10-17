@@ -975,6 +975,61 @@ public sealed class IdlValidationSpecs
         output.ShouldContain("public class Choice");
     }
 
+    /// <summary>Preserves hexadecimal escape values in narrow, wide, and aliased union metadata.</summary>
+    [Theory]
+    [InlineData("char", "'\\x7e'", 126)]
+    [InlineData("char", "'\\xFF'", -1)]
+    [InlineData("Kind", "'\\xFF'", -1)]
+    [InlineData("wchar", "L'\\xFFFF'", 65535)]
+    [InlineData("wchar", "'\\x100'", 256)]
+    public void ResolvesHexadecimalCharacterUnionLabels(string discriminator, string label, int expectedMetadataLabel)
+    {
+        // Arrange
+        var input = Input("hex-character-union.idl", $$"""
+            typedef char Kind;
+            union Choice switch({{discriminator}}) { case {{label}}: long value; default: long fallback; };
+            """);
+
+        // Act
+        var output = Compile(input);
+
+        // Assert
+        output.ShouldContain($"new[] {{ {expectedMetadataLabel} }}");
+    }
+
+    /// <summary>Rejects hexadecimal character escapes outside the discriminator's supported range.</summary>
+    [Theory]
+    [InlineData("char", "'\\x100'", "outside the range of char")]
+    [InlineData("wchar", "L'\\x10000'", "Unknown union discriminator label")]
+    [InlineData("wchar", "L'\\x100000000'", "Unknown union discriminator label")]
+    public void RejectsOutOfRangeHexadecimalCharacterUnionLabels(string discriminator, string label, string expectedMessage)
+    {
+        // Arrange
+        var input = Input("invalid-hex-character-union.idl", $$"""
+            union Choice switch({{discriminator}}) { case {{label}}: long value; };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain(expectedMessage);
+    }
+
+    [Fact]
+    public void AcceptsPrintableAsciiTildeCharacterUnionLabel()
+    {
+        // Arrange
+        var input = Input("ascii-tilde-union-label.idl", "union Choice switch(char) { case '~': long printable; };");
+
+        // Act
+        var output = Compile(input);
+
+        // Assert
+        output.ShouldContain("'~' =>");
+        output.ShouldContain("126");
+    }
+
     [Fact]
     public void AcceptsCharacterLiteralsForWideCharacterUnionDiscriminators()
     {

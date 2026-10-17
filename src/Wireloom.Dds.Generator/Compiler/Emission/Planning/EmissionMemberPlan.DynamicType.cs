@@ -48,7 +48,8 @@ internal sealed partial class MemberEmissionPlan
     {
         if (ValueType is PrimitiveEmissionType primitive)
         {
-            return PrimitiveTypeMapping.Resolve(primitive.IdlName).DynamicType;
+            var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
+            return primitive.IdlName == "octet" ? Profile.OctetDynamicType : mapping.DynamicType;
         }
 
         return NullableValueType();

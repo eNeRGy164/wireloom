@@ -19,4 +19,8 @@ module RuntimeUnionNullCopy {
     union NegativeAndZero switch(long) { case -1: long negative; case 0: long zero; default: boolean flag; };
     union NegativeEnum switch(NegativeMode) { case NegativeFirst: long number; case NegativeSecond: long other; };
     union MixedEnum switch(MixedMode) { case MixedFirst: long number; case MixedZero: long zero; default: boolean flag; };
+    enum AnnotatedMode { FirstDeclared = 5, @default_literal Preferred = 8, LastDeclared = 12 };
+    typedef AnnotatedMode AnnotatedModeAlias;
+    union EnumDefaultOnly switch(AnnotatedModeAlias) { default: long fallback; };
+    union EnumLaterCase switch(AnnotatedMode) { case LastDeclared: long selected; default: long fallback; };
 };

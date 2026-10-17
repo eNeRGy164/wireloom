@@ -50,24 +50,21 @@ public sealed class WireSampleVerifierSpecs
         Should.Throw<InvalidDataException>(verifyIncorrect).Message.ShouldContain("Received sample differs");
     }
 
-    /// <summary>Checks independent character payloads against signed and unsigned metadata labels.</summary>
+    /// <summary>Checks independent character payloads against the printable ASCII wire fixture.</summary>
     [Theory]
-    [InlineData("union-minimum", '\0', false)]
-    [InlineData("union-default", '\u0001', false)]
-    [InlineData("union-maximum", 'ÿ', false)]
-    [InlineData("union-minimum", '\0', true)]
-    [InlineData("union-default", '\u0001', true)]
-    [InlineData("union-maximum", 'ÿ', true)]
-    public void CharacterFixturesCheckPayloadsWithEitherMetadataRepresentation(string fixture, char discriminator, bool signedLabels)
+    [InlineData("union-minimum", '\0')]
+    [InlineData("union-default", '\u0001')]
+    [InlineData("union-maximum", '~')]
+    public void CharacterFixturesCheckPayloads(string fixture, char discriminator)
     {
         // Arrange
         var factory = DynamicTypeFactory.Instance;
         var type = factory.BuildUnion()
-            .WithName($"CharacterVerifier_{(int)discriminator}_{signedLabels}")
+            .WithName($"CharacterVerifier_{(int)discriminator}")
             .WithDiscriminator(factory.GetPrimitiveType<char>())
             .AddMembers([
                 new UnionMember("minimum", factory.GetPrimitiveType<int>(), [0]),
-                new UnionMember("maximum", factory.GetPrimitiveType<int>(), [signedLabels ? -1 : 255]),
+                new UnionMember("maximum", factory.GetPrimitiveType<int>(), [126]),
                 new UnionMember("fallback", factory.GetPrimitiveType<int>(), [UnionMember.DefaultLabel])])
             .Create();
         var correct = new CharacterSample(discriminator, value: 8201);
@@ -79,6 +76,33 @@ public sealed class WireSampleVerifierSpecs
 
         // Assert
         Should.Throw<InvalidDataException>(verifyIncorrect).Message.ShouldContain("Received sample differs");
+    }
+
+    /// <summary>Rejects the obsolete high-bit fixture even when its branch and payload match.</summary>
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(255)]
+    public void CharacterFixturesRejectObsoleteHighBitDiscriminators(int maximumLabel)
+    {
+        // Arrange
+        var factory = DynamicTypeFactory.Instance;
+        var type = factory.BuildUnion()
+            .WithName($"ObsoleteCharacterVerifier_{maximumLabel}")
+            .WithDiscriminator(factory.GetPrimitiveType<char>())
+            .AddMembers([
+                new UnionMember("minimum", factory.GetPrimitiveType<int>(), [0]),
+                new UnionMember("maximum", factory.GetPrimitiveType<int>(), [maximumLabel]),
+                new UnionMember("fallback", factory.GetPrimitiveType<int>(), [UnionMember.DefaultLabel])])
+            .Create();
+        var obsolete = new CharacterSample('\u00ff', value: 8201);
+
+        // Act
+        var verify = () => IndependentSampleVerifier.VerifyCharacterUnionFixture(type, obsolete, "union-maximum");
+
+        // Assert
+        var exception = Should.Throw<InvalidDataException>(verify);
+        exception.Message.ShouldContain("\"$discriminator\":126");
+        exception.Message.ShouldContain("\"$discriminator\":255");
     }
 
     /// <summary>Creates a real RTI DynamicData fixture with explicit and default union branches.</summary>

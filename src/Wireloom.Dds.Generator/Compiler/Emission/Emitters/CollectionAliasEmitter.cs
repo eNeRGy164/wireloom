@@ -9,20 +9,20 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class CollectionAliasEmitter
 {
     /// <summary>Emits all documents for a collection or value typedef.</summary>
-    public static IReadOnlyList<GeneratedIdlSource> Emit(CompilationContext compilation, IdlTypedef declaration, string sourceIdlFileName)
+    public static IReadOnlyList<GeneratedIdlSource> Emit(CompilationContext compilation, IdlTypedef declaration, string sourceIdlFileName, RtiApiProfile profile)
     {
-        var plan = CreatePlan(compilation, declaration);
+        var plan = CreatePlan(compilation, declaration, profile);
         var names = IdlNaming.CreateGeneratedTypeNames(declaration.Namespace, declaration.Name);
 
         return [
-            .. CollectionAliasManagedEmitter.Emit(declaration, names, plan, sourceIdlFileName),
-            .. CollectionAliasPluginEmitter.Emit(declaration, names, plan, sourceIdlFileName),
+            .. CollectionAliasManagedEmitter.Emit(declaration, names, plan, sourceIdlFileName, profile),
+            .. CollectionAliasPluginEmitter.Emit(declaration, names, plan, sourceIdlFileName, profile),
             .. CollectionAliasNativeEmitter.Emit(declaration, names, plan, sourceIdlFileName),
             .. CollectionAliasTypeSupportEmitter.Emit(declaration, names, plan, sourceIdlFileName)
         ];
     }
 
-    private static CollectionAliasEmissionPlan CreatePlan(CompilationContext compilation, IdlTypedef declaration)
+    private static CollectionAliasEmissionPlan CreatePlan(CompilationContext compilation, IdlTypedef declaration, RtiApiProfile profile)
     {
         string? element;
         if (declaration.IsString)
@@ -98,7 +98,8 @@ internal static class CollectionAliasEmitter
             declaration.IsArray,
             RequiresNativeValueCast(elementPlan),
             elementNativeType,
-            sequenceBound: declaration.Bound);
+            sequenceBound: declaration.Bound,
+            profile: profile);
     }
 
     private static bool RequiresNativeValueCast(EmissionTypePlan elementPlan)

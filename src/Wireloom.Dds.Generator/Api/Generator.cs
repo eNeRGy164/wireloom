@@ -40,7 +40,7 @@ public sealed class Generator : IIncrementalGenerator
                 return;
             }
 
-            if (!RuntimeReferenceGuard.HasCompatibleRuntime(compilation))
+            if (!RuntimeReferenceGuard.TryGetProfile(compilation, out var profile))
             {
                 production.ReportDiagnostic(Diagnostic.Create(GeneratorDiagnostics.RuntimeReferenceError, Location.None));
                 return;
@@ -50,7 +50,7 @@ public sealed class Generator : IIncrementalGenerator
 
             try
             {
-                var outputs = IdlCompiler.CompileSourcesWithDiagnostics([.. files], diagnostics, production.CancellationToken);
+                var outputs = IdlCompiler.CompileSourcesWithDiagnostics([.. files], diagnostics, production.CancellationToken, profile);
                 GeneratorDiagnostics.Report(production, diagnostics);
 
                 foreach (var output in outputs.Values)

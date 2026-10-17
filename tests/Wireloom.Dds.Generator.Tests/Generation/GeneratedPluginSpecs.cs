@@ -1,11 +1,70 @@
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
 using Wireloom;
 using Wireloom.Dds.Generator.Tests;
+using Wireloom.Compiler.Emission;
 
 namespace Wireloom.Generation.Tests;
 
 public sealed class GeneratedPluginSpecs
 {
+    /// <summary>Uses a free primitive discriminator for legacy fallback constructors and the type default for current constructors.</summary>
+    [Theory]
+    [InlineData("7.3.1", "long", "case 0: case 1: long selected; default: long fallback;", "", "2")]
+    [InlineData("7.3.1", "Kind", "case 0: case 1: long selected; default: long fallback;", "typedef long Kind;", "2")]
+    [InlineData("7.3.1", "long", "case 5: long selected; default: long fallback;", "", "0")]
+    [InlineData("7.3.1", "long", "default: long fallback;", "", "0")]
+    [InlineData("7.3.1", "boolean", "case FALSE: long selected; default: long fallback;", "", "true")]
+    [InlineData("7.3.1", "boolean", "case TRUE: long selected; default: long fallback;", "", "false")]
+    [InlineData("7.3.1", "char", "case '\\0': long selected; default: long fallback;", "", "(char)1")]
+    [InlineData("7.3.1", "long", "case 5: long first; case 1: long second;", "", "5")]
+    [InlineData("7.7.0", "long", "case 0: case 1: long selected; default: long fallback;", "", "0")]
+    [InlineData("7.7.0", "boolean", "case FALSE: long selected; default: long fallback;", "", "false")]
+    public void PrimitiveUnionConstructorsUseTheSelectedProfilesDefault(string version, string discriminator, string branches, string alias, string expected)
+    {
+        // Arrange
+        var input = Input("primitive-union-default.idl", $$"""
+            {{alias}}
+            union Choice switch({{discriminator}}) { {{branches}} };
+            """);
+        var profile = RtiApiProfile.ForVersion(Version.Parse(version));
+
+        // Act
+        var documents = IdlCompiler.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, profile);
+
+        // Assert
+        documents["Choice.g.cs"].Source.ShouldContain($"DefaultDiscriminator = {expected};");
+        documents["Choice.g.cs"].Source.ShouldContain("Discriminator = DefaultDiscriminator;");
+        documents["Implementation.ChoiceUnmanaged.g.cs"].Source.ShouldContain("Choice.DefaultDiscriminator");
+    }
+
+    /// <summary>Retains the enum constructor defaults observed with RTI 4.3.1, including default-only and aliased discriminators.</summary>
+    [Theory]
+    [InlineData("7.3.1", "", "default: long fallback;", "", 5)]
+    [InlineData("7.3.1", "", "case C: long selected; default: long fallback;", "", 5)]
+    [InlineData("7.3.1", "@default_literal", "case C: long selected; default: long fallback;", "", 5)]
+    [InlineData("7.3.1", "@default_literal", "default: long fallback;", "typedef E Discriminator;", 5)]
+    [InlineData("7.3.1", "", "case C: long selected;", "", 12)]
+    [InlineData("7.7.0", "@default_literal", "default: long fallback;", "", 8)]
+    [InlineData("7.7.0", "@default_literal", "case C: long selected; default: long fallback;", "typedef E Discriminator;", 8)]
+    public void EnumUnionConstructorsUseTheSelectedProfilesDeclarationDefault(string version, string defaultAnnotation, string branches, string alias, int expected)
+    {
+        // Arrange
+        var discriminator = alias.Length == 0 ? "E" : "Discriminator";
+        var input = Input("enum-union-default.idl", $$"""
+            enum E { A=5, {{defaultAnnotation}} B=8, C=12 };
+            {{alias}}
+            union Choice switch({{discriminator}}) { {{branches}} };
+            """);
+        var profile = RtiApiProfile.ForVersion(Version.Parse(version));
+
+        // Act
+        var documents = IdlCompiler.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, profile);
+
+        // Assert
+        documents["Choice.g.cs"].Source.ShouldContain($"DefaultDiscriminator = (E){expected};");
+        documents["Choice.g.cs"].Source.ShouldContain("Discriminator = DefaultDiscriminator;");
+    }
+
     [Fact]
     public void MaximumOnlyRangesAreDocumentedAndValidatedByTheGeneratedProperty()
     {
@@ -184,6 +243,23 @@ public sealed class GeneratedPluginSpecs
         var plugin = documents["AutoIdHash.Implementation.SamplePlugin.g.cs"].Source;
         plugin.ShouldContain("new StructMember(\"id\", dtf.GetPrimitiveType<int>(), isMustUnderstand: true, id: 75475440)");
         plugin.ShouldContain("new StructMember(\"text\", dtf.CreateString(16), id: 206680604)");
+    }
+
+    [Fact]
+    public void MustUnderstandIsRejectedByRtiddsgen431ProfileAndAcceptedByRtiddsgen470Profile()
+    {
+        // Arrange
+        var input = Input("must-understand-profile.idl", "struct Sample { @must_understand long value; };");
+        var diagnostics = new List<IdlDiagnostic>();
+
+        // Act
+        var oldProfileOutputs = IdlCompiler.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen431);
+        var currentProfileOutputs = IdlCompiler.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen470);
+
+        // Assert
+        oldProfileOutputs.ShouldBeEmpty();
+        diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0004");
+        currentProfileOutputs.Values.Single(output => output.HintName.Contains("SamplePlugin", StringComparison.Ordinal)).Source.ShouldContain("isMustUnderstand: true");
     }
 
     [Fact]

@@ -7,7 +7,7 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class EnumEmitter
 {
     /// <summary>Emits the managed enum, plugin, and type-support documents.</summary>
-    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlEnum declaration, string sourceIdlFileName)
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlEnum declaration, string sourceIdlFileName, RtiApiProfile profile)
     {
         var names = IdlNaming.CreateGeneratedTypeNames(declaration.Namespace, declaration.Name);
         var writer = EmissionSupport.CreateSource(declaration.Namespace, [], sourceIdlFileName, nullableContext: false);
@@ -33,19 +33,19 @@ internal static class EnumEmitter
 
         return [
             new GeneratedIdlSource(names.Managed.HintName, writer.ToString()),
-            .. EmitPlugin(declaration, names, sourceIdlFileName),
+            .. EmitPlugin(declaration, names, sourceIdlFileName, profile),
             .. EmitTypeSupport(declaration, names, sourceIdlFileName)
         ];
     }
 
-    private static IReadOnlyList<GeneratedIdlSource> EmitPlugin(IdlEnum declaration, GeneratedTypeNames names, string sourceIdlFileName)
+    private static IReadOnlyList<GeneratedIdlSource> EmitPlugin(IdlEnum declaration, GeneratedTypeNames names, string sourceIdlFileName, RtiApiProfile profile)
     {
         var typeName = names.ManagedTypeName;
         var runtimeName = names.RuntimeTypeName;
 
         var writer = EmissionSupport.CreateSource(
             names.ImplementationNamespace,
-            EmissionSupport.GetPluginUsings([], usesExtensibility: true, usesAnnotations: true),
+            EmissionSupport.GetPluginUsings([], usesExtensibility: true, usesAnnotations: profile.SupportsDynamicTypeAnnotations),
             sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI runtime plugin for the <see cref=\"{typeName}\"/> enumeration. This implementation detail is not intended for application code.");
@@ -74,17 +74,20 @@ internal static class EnumEmitter
         writer.WriteLine(".Create();");
         writer.Unindent();
         writer.BlankLine();
-        writer.OpenBrace();
-        writer.WriteLine("var annotations = new Annotations(");
-        writer.Indent();
-        writer.WriteLine("TypeKind.Enumeration,");
-        writer.WriteLine($"defaultValue: new AnnotationParameterValue {{ EnumValue = {declaration.DefaultMember.Value} }},");
-        writer.WriteLine("minValue: null,");
-        writer.WriteLine("maxValue: null,");
-        writer.WriteLine("unit: null);");
-        writer.Unindent();
-        writer.WriteLine("enumType.SetAnnotations(annotations);");
-        writer.CloseBlock();
+        if (profile.SupportsDynamicTypeAnnotations)
+        {
+            writer.OpenBrace();
+            writer.WriteLine("var annotations = new Annotations(");
+            writer.Indent();
+            writer.WriteLine("TypeKind.Enumeration,");
+            writer.WriteLine($"defaultValue: new AnnotationParameterValue {{ EnumValue = {declaration.DefaultMember.Value} }},");
+            writer.WriteLine("minValue: null,");
+            writer.WriteLine("maxValue: null,");
+            writer.WriteLine("unit: null);");
+            writer.Unindent();
+            writer.WriteLine("enumType.SetAnnotations(annotations);");
+            writer.CloseBlock();
+        }
         writer.WriteLine("return enumType;");
         writer.CloseBlock();
         writer.CloseBlock();

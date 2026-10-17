@@ -20,15 +20,33 @@ public sealed class UnionSpecs
 
         // Assert
         choice.Discriminator.ShouldBe(Choice.DefaultDiscriminator);
-        choice.Discriminator.ShouldBe(0);
-        choice.number.ShouldBe(0);
-        choice.Get().ShouldBe(0);
+        if (RtiRuntimeProfile.Uses731Profile)
+        {
+            choice.Discriminator.ShouldBe(6);
+            choice.flag.ShouldBeFalse();
+            choice.Get().ShouldBe(false);
+        }
+        else
+        {
+            choice.Discriminator.ShouldBe(0);
+            choice.number.ShouldBe(0);
+            choice.Get().ShouldBe(0);
+        }
         choiceCopy.Equals(choice).ShouldBeTrue();
         sparse.Discriminator.ShouldBe(Sparse.DefaultDiscriminator);
-        sparse.Get().ShouldBeNull();
+        if (RtiRuntimeProfile.Uses731Profile)
+        {
+            sparse.Discriminator.ShouldBe(1);
+            sparse.Get().ShouldBe(0);
+            sparse.number.ShouldBe(0);
+        }
+        else
+        {
+            sparse.Get().ShouldBeNull();
+            Should.Throw<InvalidOperationException>(() => sparse.number);
+        }
         sparseCopy.Equals(sparse).ShouldBeTrue();
         sparse.GetHashCode().ShouldBe(sparseCopy.GetHashCode());
-        Should.Throw<InvalidOperationException>(() => sparse.number);
     }
 
     /// <summary>Selects Multiple Labels And Rejects Invalid Discriminators.</summary>

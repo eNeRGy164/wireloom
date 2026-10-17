@@ -7,9 +7,9 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits the public managed representation of one IDL data type.</summary>
 internal static class ManagedDataTypeEmitter
 {
-    public static void Emit(GeneratedSourceWriter writer, string typeName, string? currentNamespace, IReadOnlyList<MemberEmissionPlan> fields, IReadOnlyList<MemberEmissionPlan> inheritedFields, string? baseType)
+    public static void Emit(GeneratedSourceWriter writer, string typeName, string? currentNamespace, IReadOnlyList<MemberEmissionPlan> fields, IReadOnlyList<MemberEmissionPlan> inheritedFields, string? baseType, RtiApiProfile profile)
     {
-        EmitDataMembers(writer, typeName, fields);
+        EmitDataMembers(writer, typeName, fields, profile);
         EmitDefaultConstructor(writer, typeName, fields);
 
         if (fields.Count > 0 || inheritedFields.Count > 0)
@@ -22,7 +22,7 @@ internal static class ManagedDataTypeEmitter
         EmitEquality(writer, typeName, fields, baseType is not null);
     }
 
-    private static void EmitDataMembers(GeneratedSourceWriter writer, string typeName, IReadOnlyList<MemberEmissionPlan> fields)
+    private static void EmitDataMembers(GeneratedSourceWriter writer, string typeName, IReadOnlyList<MemberEmissionPlan> fields, RtiApiProfile profile)
     {
         var rangedFields = fields.Where(field => field.HasManagedRange).ToArray();
         foreach (var field in rangedFields)
@@ -116,13 +116,13 @@ internal static class ManagedDataTypeEmitter
 
             if (field.IsString)
             {
-                writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", "RTI Connext 7.7.0 string and wide-string bounds");
+                writer.WriteXmlSeeAlso($"https://community.rti.com/static/documentation/connext-dds/{profile.RtiVersion}/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", $"RTI Connext {profile.RtiVersion} string and wide-string bounds");
             }
 
             if (field.IsSequence)
             {
                 writer.WriteXmlRemarks("The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.");
-                writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html", "RTI Connext 7.7.0 ISequence API");
+                writer.WriteXmlSeeAlso($"https://community.rti.com/static/documentation/connext-dds/{profile.RtiVersion}/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html", $"RTI Connext {profile.RtiVersion} ISequence API");
                 var sequenceExample = field.IsOptional
                     ? $"var sample = new {typeName}();\nsample.{field.EscapedName} = new Sequence<{IdlNaming.TypeReference(field.ElementCSharpType!, field.CurrentNamespace)}>();\nsample.{field.EscapedName}.Add(default!);\nsample.{field.EscapedName}.RemoveAt(sample.{field.EscapedName}.Count - 1);"
                     : $"var sample = new {typeName}();\nsample.{field.EscapedName}.Add(default!);\nsample.{field.EscapedName}.RemoveAt(sample.{field.EscapedName}.Count - 1);";

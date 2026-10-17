@@ -6,6 +6,19 @@ store generated values. It does not establish RTI wire compatibility for every
 IDL shape; use the [wire compatibility evidence](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
 for tested cross-language exchanges.
 
+The generated API profile follows the resolved RTI package version. RTI 7.3.1
+through versions below 7.7.0 use the 7.3.1 API profile; 7.7.0 and later use
+the 7.7.0 profile. DynamicType octet names, annotation metadata, and union
+constructor initialization can therefore differ between generated outputs.
+Regenerate and review contracts when changing across the 7.7.0 boundary.
+For union constructors, 7.7.0 uses the discriminator type's XTypes default.
+The 7.3.1 profile uses an unused primitive discriminator when a default branch
+exists; enum unions with a default branch use the first declared enum value,
+independently of explicit case labels or `@default_literal`. This also applies
+to default-only unions and aliased enum discriminators. Unions without a default
+branch use the first declared case label. Default-branch setters continue to
+select an unused discriminator.
+
 ## Initialize values
 
 Required sequences start empty, required arrays are allocated, and required

@@ -8,9 +8,8 @@ namespace Wireloom.Compiler.Emission.Emitters;
 /// <summary>Emits native and type-support documents for generated unions.</summary>
 internal static class UnionTypeSupportEmitter
 {
-    /// <summary>Emits the RTI native representation, plugin, and type support for an IDL union.</summary>
     /// <summary>Emits native, plugin, and type-support documents for a union.</summary>
-    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlEmissionUnion declaration, GeneratedTypeNames names, string sourceIdlFileName)
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlEmissionUnion declaration, GeneratedTypeNames names, string sourceIdlFileName, RtiApiProfile profile)
     {
         var typeName = names.ManagedTypeName;
         var runtimeTypeName = names.RuntimeTypeName;
@@ -78,7 +77,7 @@ internal static class UnionTypeSupportEmitter
             EmissionSupport.GetPluginUsings(
                 declaration.Branches.Select(branch => branch.Plan.Type),
                 usesExtensibility: true,
-                usesAnnotations: declaration.Branches.Any(branch => EmissionSupport.UsesPrimitiveAnnotation(branch.Plan)),
+                usesAnnotations: profile.SupportsDynamicTypeAnnotations && declaration.Branches.Any(branch => EmissionSupport.UsesPrimitiveAnnotation(branch.Plan)),
                 usesRtiTypes: declaration is { DiscriminatorIsEnum: false, PrimitiveDiscriminatorDynamicType: "Octet" }),
             sourceIdlFileName);
 
@@ -86,6 +85,7 @@ internal static class UnionTypeSupportEmitter
         writer.OpenBlock($"internal class {names.PluginTypeName} : InterpretedTypePlugin<{implementationTypeName}, {names.UnmanagedTypeName}>");
         writer.WriteXmlSummary($"Initializes the RTI plugin for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"internal {names.PluginTypeName}() : base(\"{runtimeTypeName}\", isKeyed: false, CreateDynamicType(isPublic: false))");
+        EmissionSupport.EmitPluginCompatibility(writer, profile);
         writer.CloseBlock();
         writer.BlankLine();
 
@@ -145,7 +145,10 @@ internal static class UnionTypeSupportEmitter
 
         for (var index = 0; index < declaration.Branches.Count; index++)
         {
-            TypeSupportAnnotationEmitter.Emit(writer, index, declaration.Branches[index].Plan);
+            if (profile.SupportsDynamicTypeAnnotations)
+            {
+                TypeSupportAnnotationEmitter.Emit(writer, index, declaration.Branches[index].Plan);
+            }
         }
 
         writer.BlankLine();
