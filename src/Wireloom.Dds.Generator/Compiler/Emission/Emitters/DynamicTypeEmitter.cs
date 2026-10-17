@@ -15,7 +15,8 @@ internal static class DynamicTypeEmitter
         IdlExtensibilityKind extensibility,
         string sourceIdlFileName,
         string? baseType,
-        bool isRecursive)
+        bool isRecursive,
+        RtiApiProfile profile)
     {
         var typeName = names.ManagedTypeName;
         var runtimeTypeName = names.RuntimeTypeName;
@@ -28,7 +29,7 @@ internal static class DynamicTypeEmitter
             EmissionSupport.GetPluginUsings(
                 allFields.Select(field => field.Type),
                 usesExtensibility: true,
-                usesAnnotations: allFields.Any(EmissionSupport.UsesPrimitiveAnnotation)),
+                usesAnnotations: profile.SupportsDynamicTypeAnnotations && allFields.Any(EmissionSupport.UsesPrimitiveAnnotation)),
             sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI interpreted type plugin for <see cref=\"{typeName}\"/>.");
@@ -44,10 +45,12 @@ internal static class DynamicTypeEmitter
         writer.WriteXmlSummary($"Initializes the RTI plugin for <see cref=\"{typeName}\"/>.");
         writer.OpenBlock($"internal {names.PluginTypeName}() : base(\"{runtimeTypeName}\", isKeyed: {(inheritedFields.Concat(fields).Any(field => field.IsKey) ? "true" : "false")}, CreateDynamicType(isPublic: false))");
 
-        if (isRecursive)
+        if (isRecursive && profile.SupportsRecursiveTypeFlag)
         {
             writer.WriteLine("isRecursiveType = true;");
         }
+
+        EmissionSupport.EmitPluginCompatibility(writer, profile);
 
         writer.CloseBlock();
         writer.BlankLine();
@@ -113,7 +116,10 @@ internal static class DynamicTypeEmitter
 
         for (var index = 0; index < fields.Count; index++)
         {
-            TypeSupportAnnotationEmitter.Emit(writer, index, fields[index]);
+            if (profile.SupportsDynamicTypeAnnotations)
+            {
+                TypeSupportAnnotationEmitter.Emit(writer, index, fields[index]);
+            }
         }
 
         if (isRecursive)

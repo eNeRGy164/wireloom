@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "Rti.ConnextDds": {
+        "type": "Direct",
+        "requested": "[7.3.1, )",
+        "resolved": "7.3.1",
+        "contentHash": "LTKrQLydwEKELynASncA0aOso6ByD1pZe0MZdL5L54zPSsVv8OqXfspj39BMsgcW4bywy8GsrGxGCym2EKEcHQ==",
+        "dependencies": {
+          "Microsoft.Bcl.HashCode": "1.1.0",
+          "Rti.ConnextDds.Native": "7.3.1"
+        }
+      },
+      "Microsoft.Bcl.HashCode": {
+        "type": "Transitive",
+        "resolved": "1.1.0",
+        "contentHash": "J2G1k+u5unBV+aYcwxo94ip16Rkp65pgWFb0R6zwJipzWNMgvqlWeuI7/+R+e8bob66LnSG+llLJ+z8wI94cHg=="
+      },
+      "Rti.ConnextDds.Native": {
+        "type": "Transitive",
+        "resolved": "7.3.1",
+        "contentHash": "maorDcIdvyUcqV1OwtCtJKohu1vgkENyGPNCqXoIlDZfekWuBNHSL7RaCtzYjRcDW3TJZzoXFPiaHASqR14gWg=="
+      }
+    }
+  }
+}

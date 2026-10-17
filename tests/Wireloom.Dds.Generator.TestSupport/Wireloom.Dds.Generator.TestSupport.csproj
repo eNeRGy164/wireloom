@@ -5,6 +5,7 @@
     <IsTestProject>false</IsTestProject>
     <IsPackable>false</IsPackable>
     <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
+    <NuGetLockFilePath Condition="'$(RtiConnextDdsVersion)' != '7.7.0'">packages.$(RtiConnextDdsVersion).lock.json</NuGetLockFilePath>
   </PropertyGroup>
 
   <ItemGroup>

@@ -66,7 +66,7 @@ internal static class EmissionTypeProjector
     }
 
     /// <summary>Projects a semantic union into an emission union.</summary>
-    internal static IdlEmissionUnion ToEmissionUnion(IdlUnion union) =>
+    internal static IdlEmissionUnion ToEmissionUnion(IdlUnion union, RtiApiProfile profile) =>
         new(
             union.Name,
             union.Namespace,
@@ -74,18 +74,20 @@ internal static class EmissionTypeProjector
             ProjectDiscriminatorCSharpType(union),
             union.DiscriminatorIsEnum,
             union.DiscriminatorDefaultValue,
+            union.DiscriminatorFirstValue,
             [.. union.Branches.Select(branch =>
             {
                 var field = ToEmissionField(branch.Field, union.Namespace);
                 return new UnionBranchEmissionPlan(
                     field,
-                    new MemberEmissionPlan(field, union.Namespace),
+                    new MemberEmissionPlan(field, union.Namespace, profile: profile),
                     ProjectUnionLabels(union, branch),
                     branch.LabelValues,
                     branch.IsDefault);
             })],
             union.Extensibility,
-            union.DiscriminatorEnumQualifiedName);
+            union.DiscriminatorEnumQualifiedName,
+            profile);
 
     private static string ProjectDiscriminatorIdlType(IdlUnion union)
     {

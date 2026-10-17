@@ -15,8 +15,9 @@ namespace Wireloom.Compiler.Emission.Planning;
 /// support are not frozen into reusable source fragments.
 /// </summary>
 [PublicAPI]
-internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string? currentNamespace, string? managedBackingFieldName = null)
+internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string? currentNamespace, string? managedBackingFieldName = null, RtiApiProfile? profile = null)
 {
+    private RtiApiProfile Profile { get; } = profile ?? RtiApiProfile.Rtiddsgen470;
     private readonly MemberEmissionFacts facts = new(field, currentNamespace);
     private readonly MemberEmissionShape shape = new(field.Type);
     private MemberEmissionRenderer Renderer => new(facts, currentNamespace);

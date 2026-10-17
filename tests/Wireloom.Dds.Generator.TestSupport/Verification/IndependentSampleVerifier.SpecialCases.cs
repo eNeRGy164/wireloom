@@ -13,7 +13,7 @@ public static partial class IndependentSampleVerifier
         var (branch, discriminator) = fixture switch
         {
             "union-minimum" => ("minimum", 0L),
-            "union-maximum" => ("maximum", 255L),
+            "union-maximum" => ("maximum", 126L),
             "union-default" => ("fallback", 1L),
             _ => throw new InvalidDataException($"Unknown character union fixture '{fixture}'.")
         };

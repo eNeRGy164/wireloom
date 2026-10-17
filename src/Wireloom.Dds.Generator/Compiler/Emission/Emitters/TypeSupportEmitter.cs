@@ -15,8 +15,9 @@ internal static class TypeSupportEmitter
         IdlExtensibilityKind extensibility,
         string sourceIdlFileName,
         string? baseType,
-        bool isRecursive) =>
-        EmitDocuments(names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive);
+        bool isRecursive,
+        RtiApiProfile profile) =>
+        EmitDocuments(names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive, profile);
 
     private static IReadOnlyList<GeneratedIdlSource> EmitDocuments(
         GeneratedTypeNames names,
@@ -25,7 +26,8 @@ internal static class TypeSupportEmitter
         IdlExtensibilityKind extensibility,
         string sourceIdlFileName,
         string? baseType,
-        bool isRecursive)
+        bool isRecursive,
+        RtiApiProfile profile)
     {
         var typeName = names.ManagedTypeName;
         var implementationTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.ImplementationNamespace);
@@ -53,15 +55,15 @@ internal static class TypeSupportEmitter
             new(names.Unmanaged.HintName, writer.ToString())
         };
 
-        documents.AddRange(DynamicTypeEmitter.EmitStructPlugin(names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive));
+        documents.AddRange(DynamicTypeEmitter.EmitStructPlugin(names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive, profile));
 
         var dynamicTypeExample = isRecursive ? string.Empty : $"\nvar dynamicType = {names.SupportTypeName}.Instance.DynamicType;";
 
         writer = EmissionSupport.CreateSource(names.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides application-facing formatting, serialization, and dynamic-type utilities for <see cref=\"{typeName}\"/>. RTI uses its internal plugin and native representation to process samples.");
-        writer.WriteXmlRemarks("The referenced API documentation targets RTI Connext 7.7.0, Wireloom's current compatibility baseline. Verify API details against the runtime version used by the consuming project.");
-        writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Dds_1_1Topics_1_1TypeSupport.html", "RTI Connext C# TypeSupport API (7.7.0)");
+        writer.WriteXmlRemarks($"The referenced API documentation targets RTI Connext {profile.RtiVersion}; verify API details against the runtime version used by the consuming project.");
+        writer.WriteXmlSeeAlso($"https://community.rti.com/static/documentation/connext-dds/{profile.RtiVersion}/doc/api/connext_dds/api_csharp/classRti_1_1Dds_1_1Topics_1_1TypeSupport.html", $"RTI Connext C# TypeSupport API ({profile.RtiVersion})");
         writer.WriteXmlExample($"var sample = new {typeName}();\nvar text = {names.SupportTypeName}.Instance.ToString(sample);{dynamicTypeExample}\nvar serializer = {names.SupportTypeName}.Instance.CreateSerializer();");
         writer.OpenBlock($"public class {names.SupportTypeName} : TypeSupport<{supportTypeName}>");
 

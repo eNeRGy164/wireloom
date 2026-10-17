@@ -24,7 +24,10 @@ dotnet test tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generat
 The integration project intentionally does not use central package management
 or a lock file: its generator package reference must be resolved from the
 freshly created local feed. The other package versions remain explicit and
-pinned in the project file. The build writes generated C# files under the
+pinned in the project file. Its RTI package cache is isolated by
+`RtiConnextDdsVersion`. Select either exact LTS package with
+`-p:RtiConnextDdsVersion=7.3.1` or `-p:RtiConnextDdsVersion=7.7.0` on restore
+and build; 7.7.0 is the default. The build writes generated C# files under the
 project's `obj` directory, and the tests exercise those generated types at
 compile time and at runtime.
 

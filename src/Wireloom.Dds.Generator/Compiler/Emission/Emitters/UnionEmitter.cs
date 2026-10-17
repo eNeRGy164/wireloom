@@ -10,10 +10,10 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class UnionEmitter
 {
     /// <summary>Emits the managed, native, plugin, and type-support documents for an IDL union.</summary>
-    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlUnion declaration, string sourceIdlFileName) =>
-        EmitUnionCore(EmissionTypeProjector.ToEmissionUnion(declaration), sourceIdlFileName);
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlUnion declaration, string sourceIdlFileName, RtiApiProfile profile) =>
+        EmitUnionCore(EmissionTypeProjector.ToEmissionUnion(declaration, profile), sourceIdlFileName, profile);
 
-    private static IReadOnlyList<GeneratedIdlSource> EmitUnionCore(IdlEmissionUnion declaration, string sourceIdlFileName)
+    private static IReadOnlyList<GeneratedIdlSource> EmitUnionCore(IdlEmissionUnion declaration, string sourceIdlFileName, RtiApiProfile profile)
     {
         var names = IdlNaming.CreateGeneratedTypeNames(declaration.Namespace, declaration.Name);
         var typeName = names.ManagedTypeName;
@@ -66,7 +66,7 @@ internal static class UnionEmitter
 
         foreach (var branch in declaration.Branches)
         {
-            EmitUnionBranchProperty(writer, declaration, branch);
+            EmitUnionBranchProperty(writer, declaration, branch, profile);
         }
 
         writer.BlankLine();
@@ -174,7 +174,7 @@ internal static class UnionEmitter
 
         return [
             new GeneratedIdlSource(names.Managed.HintName, writer.ToString()),
-            .. UnionTypeSupportEmitter.Emit(declaration, names, sourceIdlFileName)
+            .. UnionTypeSupportEmitter.Emit(declaration, names, sourceIdlFileName, profile)
         ];
     }
 
@@ -197,7 +197,7 @@ internal static class UnionEmitter
     }
 
     /// <summary>Emits one public union branch and its discriminator guard.</summary>
-    private static void EmitUnionBranchProperty(GeneratedSourceWriter writer, IdlEmissionUnion declaration, UnionBranchEmissionPlan branch)
+    private static void EmitUnionBranchProperty(GeneratedSourceWriter writer, IdlEmissionUnion declaration, UnionBranchEmissionPlan branch, RtiApiProfile profile)
     {
         writer.BlankLine();
         var branchSummary = branch.IsDefault
@@ -223,7 +223,7 @@ internal static class UnionEmitter
 
         if (branch.Plan.IsString)
         {
-            writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", "RTI Connext 7.7.0 string and wide-string bounds");
+            writer.WriteXmlSeeAlso($"https://community.rti.com/static/documentation/connext-dds/{profile.RtiVersion}/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", $"RTI Connext {profile.RtiVersion} string and wide-string bounds");
         }
 
         if (branch.Plan.Bound is int bound)

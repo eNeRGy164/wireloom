@@ -24,9 +24,13 @@ dotnet run --project $project --no-restore --configuration Release
 
 Use Microsoft.Testing.Platform filters after `--`, for example
 `-- --filter-namespace Wireloom.Dds.Generator.RuntimeContracts.Native`.
-The suite uses RTI 7.7.0 native libraries supplied by the existing NuGet package.
-It creates no domain participants and requires no DDS peers, discovery, or RTI
-generator installation. A native-loading failure is a test failure, not a skip.
+The default suite uses RTI 7.7.0; the matching 7.3.1 package and lock file are
+available for profile checks. Package restores are isolated by RTI version.
+For the 7.3.1 run, use `-p:RtiConnextDdsVersion=7.3.1`; its lock file is
+`packages.7.3.1.lock.json`. Both suites use the matching RTI native libraries
+from NuGet. They create no domain participants and require no DDS peers,
+discovery, or RTI generator installation. A native-loading failure is a test
+failure, not a skip.
 The quality workflow executes the suite on Windows and Ubuntu; preview and
 release workflows run it before packaging for integration validation.
 
@@ -146,7 +150,7 @@ dotnet run --project tests/Wireloom.Dds.Generator.RuntimeContracts -c Release --
 ```
 
 On Windows and Linux with RTI Connext 7.7.0, Wireloom passes both cold-start
-paths. The untouched C134 oracle from rtiddsgen 4.7.0.1 fails both paths with a
+paths. The untouched C134 oracle from rtiddsgen 4.7.0 fails both paths with a
 `NullReferenceException` inside recursive plugin metadata construction. Its
 bootstrap control passes absent, present, and nested serialization checks.
 Reproduce that comparison without editing retained oracle files:
@@ -154,7 +158,7 @@ Reproduce that comparison without editing retained oracle files:
 ```powershell
 $root = (Get-Location).Path
 $probe = 'tests/Wireloom.Dds.Generator.WireCompatibility/RtiOracleProbe'
-dotnet run --project $probe -c Release "-p:RtiOracleProgram=$root/$probe/RecursiveArrayStartupProbe.cs" "-p:RtiOracleSourceDir=$root/docs/corpus/oracles/features/09-optional-recursive-array" -- instance
+dotnet run --project $probe -c Release "-p:RtiOracleProgram=$root/$probe/RecursiveArrayStartupProbe.cs" "-p:RtiOracleSourceDir=$root/docs/corpus/7.7.0/rtiddsgen/csharp/features/09-optional-recursive-array" -- instance
 dotnet "$probe/bin/Release/net10.0/WireCompatibility.RtiOracleProbe.dll" discovery
 dotnet "$probe/bin/Release/net10.0/WireCompatibility.RtiOracleProbe.dll" bootstrap
 ```

@@ -7,6 +7,26 @@ namespace Wireloom.Compiler.Emission.Tests;
 
 public sealed class EmissionUnionPlanSpecs
 {
+    /// <summary>Allows a boolean fallback exactly when no explicit branch matches.</summary>
+    [Theory]
+    [InlineData(0, false, "discriminator")]
+    [InlineData(0, true, "!discriminator")]
+    [InlineData(1, false, "!discriminator")]
+    [InlineData(1, true, "discriminator")]
+    public void BooleanDefaultConditionsComplementTheExplicitBranch(long explicitLabel, bool negated, string expected)
+    {
+        // Arrange
+        var explicitBranch = CreateBranch("selected", [explicitLabel == 0 ? "false" : "true"], [explicitLabel]);
+        var fallback = CreateBranch("fallback", [], [], isDefault: true);
+        var plan = CreateUnion("Choice", "bool", discriminatorIsEnum: false, discriminatorDefaultValue: null, [explicitBranch, fallback]);
+
+        // Act
+        var condition = plan.SelectionCondition(fallback, negated, discriminatorName: "discriminator");
+
+        // Assert
+        condition.ShouldBe(expected);
+    }
+
     [Fact]
     public void SeparatesTypeDefaultFromDefaultBranchSelection()
     {
@@ -107,8 +127,8 @@ public sealed class EmissionUnionPlanSpecs
         // Assert
         trueGetter.ShouldBe("!discriminator");
         falseSetter.ShouldBe("!discriminator");
-        defaultGetter.ShouldBe("!discriminator || discriminator");
-        defaultSetter.ShouldBe("discriminator && !discriminator");
+        defaultGetter.ShouldBe("discriminator || !discriminator");
+        defaultSetter.ShouldBe("!discriminator && discriminator");
     }
 
     [Theory]
@@ -356,6 +376,7 @@ public sealed class EmissionUnionPlanSpecs
             discriminatorType,
             discriminatorIsEnum,
             discriminatorDefaultValue,
+            discriminatorFirstValue: discriminatorDefaultValue,
             branches,
             IdlExtensibilityKind.Extensible);
 

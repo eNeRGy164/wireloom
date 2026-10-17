@@ -9,6 +9,7 @@ internal static class GeneratorDiagnostics
     internal static readonly DiagnosticDescriptor GenerationError = new("DDSG0001", "IDL generation failed", "{0}", "DDS Source Generator", DiagnosticSeverity.Error, true);
     internal static readonly DiagnosticDescriptor LanguageVersionError = new("DDSG0002", "C# 12 or later is required", "The DDS source generator requires C# 12 or later; the project uses C# {0}", "DDS Source Generator", DiagnosticSeverity.Error, true);
     internal static readonly DiagnosticDescriptor RuntimeReferenceError = new("DDSG0003", "Compatible RTI runtime not found", $"A resolved Rti.ConnextDds reference with version {RuntimeReferenceGuard.MinimumSupportedRtiVersion} or later is required", "DDS Source Generator", DiagnosticSeverity.Error, true);
+    private static readonly DiagnosticDescriptor profileCompatibilityError = new("DDSG0004", "IDL feature is not supported by the RTI target profile", "{0}", "DDS Source Generator", DiagnosticSeverity.Error, true);
     private static readonly DiagnosticDescriptor unknownAnnotationWarning = new("DDSG0101", "Unknown IDL annotation", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
     private static readonly DiagnosticDescriptor unsupportedAnnotationWarning = new("DDSG0102", "Unsupported IDL annotation", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
     private static readonly DiagnosticDescriptor ignoredInterfaceWarning = new("DDSG0103", "IDL interface ignored", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
@@ -25,6 +26,7 @@ internal static class GeneratorDiagnostics
             var span = new TextSpan(Math.Min(diagnostic.Offset, text.Length), 0);
             var descriptor = diagnostic.Id switch
             {
+                "DDSG0004" => profileCompatibilityError,
                 "DDSG0102" => unsupportedAnnotationWarning,
                 "DDSG0103" => ignoredInterfaceWarning,
                 "DDSG0104" => macroArityWarning,

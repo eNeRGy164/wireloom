@@ -46,16 +46,30 @@ and the [Hello World prerequisites](https://github.com/eNeRGy164/wireloom/blob/m
 <ItemGroup>
   <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
   <PackageReference Include="Wireloom.Dds.Generator"
-                    Version="0.4.0"
+                    Version="0.3.0"
                     PrivateAssets="all" />
 </ItemGroup>
 ```
 
-The retained oracle corpus was generated with RTI Connext DDS 7.7.0 /
-`rtiddsgen` 4.7.0. Use RTI 7.7.0 as the tested runtime baseline. The package's
-minimum-version guard accepts 7.3.1 and later; it does not establish that every
-generated API works with older releases. The consumer project must resolve a
-compatible `Rti.ConnextDds` reference.
+The generator selects its API profile from the resolved `Rti.ConnextDds`
+assembly. Versions 7.3.1 through versions below 7.7.0 select the 7.3.1
+profile; 7.7.0 and later select the 7.7.0 profile. Missing references and
+versions below 7.3.1 produce `DDSG0003`. Only exact 7.3.1 and 7.7.0 LTS
+versions are qualification targets; intermediate and later versions are mapped
+but not individually qualified. The consumer project must resolve the RTI
+version whose API and generated contracts it intends to use.
+
+In the implementation, profile identifiers use the matching `rtiddsgen`
+version: `Rtiddsgen431` represents RTI 7.3.1, and `Rtiddsgen470` represents
+RTI 7.7.0. Runtime assembly versions still select the profile, while the
+profile's separate version fields identify both the runtime documentation and
+the code-generator API being matched.
+
+The `7.7.0` profile is selected automatically for a 7.7.0 reference. There is
+no public profile override because selecting older API code while compiling
+against a newer RTI package can produce incorrect contracts. Rebuild and review
+generated code when changing between profiles. See the [support and
+compatibility guide](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/support-and-compatibility.md).
 
 The generator itself targets `netstandard2.0` for Roslyn host compatibility.
 The repository's .NET 10 build and test defaults do not impose a .NET 10
@@ -142,7 +156,7 @@ not need the generator package unless they also declare their own IDL roots.
 <ItemGroup>
   <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
   <PackageReference Include="Wireloom.Dds.Generator"
-                    Version="0.4.0"
+                    Version="0.3.0"
                     PrivateAssets="all" />
   <DdsIdl Include="Contracts\Telemetry.idl" />
 </ItemGroup>
@@ -180,20 +194,20 @@ describes how bounds relate to mutation and DDS processing.
 | `long id;`                                                          | `int id { get; set; }`<br>Assign with `sample.id = 42;`.                                                                          | Same member type and accessors.                                                                       | [RTI][rti-01] · [generated][wire-01]                              |
 | `typedef sequence<long, 4> BoundedLongs;`                           | `ISequence<int> Value` with `[Bound(4)]`.<br>Use `var bounded = new BoundedLongs(); bounded.Value.Add(17);`.                      | Same generated public shape.                                                                          | [RTI][rti-05] · [generated][wire-05]                              |
 | `@optional sequence<long, 4> values;`<br>`@optional long items[2];` | `ISequence<int>? values`; `int[]? items`.<br>Set `items = [1, 2]`; set `values = new Sequence<int> { 17 }` or `null` for absence. | Optional metadata matches. Wireloom adds nullable C# annotations absent from the retained RTI source. | [RTI][rti-09] · [generated][wire-09]                              |
-| `typedef long Scalar;`<br>`typedef sequence<Scalar> Scalars;`       | `ISequence<int> Value`; the scalar alias is erased for this collection element.                                                   | Same public element type.                                                                             | [RTI][rti-05a] · [generated][wire-05a] · [C136][cov-c136]         |
+| `typedef long Scalar;`<br>`typedef sequence<Scalar> Scalars;`       | `ISequence<Scalar>` preserves the scalar wrapper.                                                                                 | API difference: RTI exposes `ISequence<int>`. Callers using that shape must adapt to `Scalar`.        | [RTI][rti-05a] · [generated][wire-05a] · [C136][cov-c136]         |
 | `union Choice switch(Kind) { case Number: long number; ... };`      | `int number`; assigning selects the branch. Reading an inactive branch throws `InvalidOperationException`.                        | Same generated branch API and guard.                                                                  | [RTI][rti-07] · [generated][wire-07] · [runtime test][union-test] |
 
-[rti-01]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/oracles/features/01-primitives/
-[wire-01]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/generator/features/01-primitives/
-[rti-05]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/oracles/features/05-collections/
-[wire-05]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/generator/features/05-collections/
-[rti-09]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/oracles/features/09-optional-collections/
-[wire-09]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/generator/features/09-optional-collections/
-[rti-05a]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/oracles/features/05-unbounded-sequence-aliases/
-[wire-05a]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/generator/features/05-unbounded-sequence-aliases/
+[rti-01]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/rtiddsgen/csharp/features/01-primitives/
+[wire-01]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/features/01-primitives/
+[rti-05]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/rtiddsgen/csharp/features/05-collections/
+[wire-05]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/features/05-collections/
+[rti-09]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/rtiddsgen/csharp/features/09-optional-collections/
+[wire-09]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/features/09-optional-collections/
+[rti-05a]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/rtiddsgen/csharp/features/05-unbounded-sequence-aliases/
+[wire-05a]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/features/05-unbounded-sequence-aliases/
 [cov-c136]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/FEATURE-COVERAGE.md#positive-cases
-[rti-07]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/oracles/features/07-union-enum/
-[wire-07]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/generator/features/07-union-enum/
+[rti-07]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/rtiddsgen/csharp/features/07-union-enum/
+[wire-07]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/features/07-union-enum/
 [union-test]: https://github.com/eNeRGy164/wireloom/blob/main/tests/Wireloom.Dds.Generator.RuntimeContracts/Unions/UnionSpecs.cs
 
 This is a quick reference, not a complete mapping catalog. Consult the
@@ -383,7 +397,7 @@ C# member signature.
 | `@final`, `@appendable`, `@mutable`                                                                                                          | Set the corresponding extensibility kind in generated DynamicType metadata for covered declarations.                                                                                                                                                                                                                         | [`09-extensibility.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-extensibility.idl)                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `@default`, `@min`, `@max`, `@range`, `@unit`                                                                                                | Supported on primitive/enum members as applicable. Defaults initialize supported values; ranges and units are represented in generated type support annotations. Ranges require primitive members; defaults also support enums.                                                                                              | [`09-defaults-ranges.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-defaults-ranges.idl), [`10-annotations-rti.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/10-annotations-rti.idl)                                                                                                                                                                                                                                                                                               |
 | `@value`, `@default_literal`                                                                                                                 | Set explicit enum numeric values and the default enum literal for covered enum shapes.                                                                                                                                                                                                                                       | [`03-enum-values-prefix.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/03-enum-values-prefix.idl), [`09-defaults-ranges.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-defaults-ranges.idl)                                                                                                                                                                                                                                                                                         |
-| `@must_understand`                                                                                                                           | Preserved as a member property in generated DynamicType metadata for the covered RTI annotation case.                                                                                                                                                                                                                        | [`09-autoid-hash.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-autoid-hash.idl)                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `@must_understand`                                                                                                                           | Preserved as a member property in generated DynamicType metadata with the 7.7.0 profile. The 7.3.1 profile reports `DDSG0004` and emits no code because that RTI release does not support the annotation.                                                                                                                                                                                                                        | [`09-autoid-hash.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-autoid-hash.idl)                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `@external`                                                                                                                                  | Accepted in the tested annotation case but does not create a distinct managed C# member shape. Check runtime/wire evidence before relying on any external-member serialization effect.                                                                                                                                       | [`10-annotations-rti.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/10-annotations-rti.idl)                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `@language_binding`, `@transfer_mode`, `@data_representation`, `@allowed_data_representation`, `@nested`, `@default_nested`, `@resolve_name` | Recognized/consumed syntax, but not all have an effect in emitted C# or generated DynamicType. The corpus comparisons establish only the listed case outcomes; do not rely on these annotations to configure wire representation or naming without separate runtime/wire evidence. `FLAT_DATA` is ignored for C# generation. | [`10-annotations-rti.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/10-annotations-rti.idl), [`09-data-representation.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-data-representation.idl), [`09-allowed-data-representation.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-allowed-data-representation.idl), [`10-flat-data-binding.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/10-flat-data-binding.idl) |
 | Unknown annotation                                                                                                                           | Emits warning `DDSG0101` and continues while ignoring the annotation. Verify that ignoring it does not change the contract you need.                                                                                                                                                                                         | [`12-unknown-annotation.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/negative/12-unknown-annotation.idl)                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -400,7 +414,8 @@ contract, not as evidence that the annotation is harmless.
 | :--------- | :------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------- |
 | `DDSG0001` | IDL generation failed                                                | Fix the source-located parse, include, semantic, or unsupported-feature error                              |
 | `DDSG0002` | C# 12 or later is required                                           | Set the consumer's language version to C# 12 or later                                                      |
-| `DDSG0003` | A compatible RTI runtime was not found                               | Add an explicit `Rti.ConnextDds` reference at the tested compatible version                                |
+| `DDSG0003` | A compatible RTI runtime was not found                               | Add an explicit `Rti.ConnextDds` reference at version 7.3.1 or later                                       |
+| `DDSG0004` | An IDL feature is unavailable in the selected RTI API profile         | Remove the unsupported feature or use a compatible RTI version; `@must_understand` requires 7.7.0 or later |
 | `DDSG0101` | An unknown IDL annotation was ignored                                | Verify the annotation is supported by the managed generator if it affects the generated contract           |
 | `DDSG0102` | A recognized but unsupported annotation use was reported             | Remove the annotation or use a supported declaration context; this warning accompanies rejected generation |
 | `DDSG0103` | An IDL interface was ignored because no C# interface type is emitted | Interfaces are accepted as service declarations, but are not emitted as C# types                           |
@@ -420,7 +435,7 @@ severity through the consumer's `.editorconfig`, for example:
 dotnet_diagnostic.DDSG0101.severity = error
 ```
 
-The default severities are grouped by diagnostic family: `DDSG0001`–`DDSG0003`
+The default severities are grouped by diagnostic family: `DDSG0001`–`DDSG0004`
 are errors, `DDSG0101`–`DDSG0106` are warnings, and `DDSG0107` is informational.
 Warnings do not all mean generation continues: `DDSG0102` reports an unsupported
 annotation use and is followed by a generation error. `DDSG0101`, `DDSG0103`,

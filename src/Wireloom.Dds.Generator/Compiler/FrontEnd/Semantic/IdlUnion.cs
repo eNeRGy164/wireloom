@@ -156,6 +156,13 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
             _ => '\0'
         };
 
+        if (content.StartsWith("\\x", StringComparison.Ordinal)
+            && int.TryParse(content[2..], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var hexadecimalValue)
+            && hexadecimalValue <= char.MaxValue)
+        {
+            character = (char)hexadecimalValue;
+        }
+
         if (content.Length != 1 && character == '\0' && content != "\\0")
         {
             return false;
@@ -204,6 +211,8 @@ internal sealed class IdlUnion(
     internal int DiscriminatorOffset { get; } = discriminatorOffset;
     public bool DiscriminatorIsEnum { get; private set; } = discriminatorIsEnum;
     public int? DiscriminatorDefaultValue { get; private set; } = discriminatorDefaultValue;
+    /// <summary>Gets the first declared enum value independently of an explicit default literal.</summary>
+    internal int? DiscriminatorFirstValue { get; private set; }
     public string? DiscriminatorEnumQualifiedName { get; private set; }
     public string? DiscriminatorPrimitiveIdlType { get; private set; }
     public IReadOnlyList<IdlUnionBranch> Branches { get; } = branches;
@@ -218,6 +227,7 @@ internal sealed class IdlUnion(
         {
             DiscriminatorIsEnum = true;
             DiscriminatorDefaultValue = enumType.DefaultValue;
+            DiscriminatorFirstValue = discriminatorEnum.Members[0].Value;
             DiscriminatorEnumQualifiedName = enumType.QualifiedName;
             return;
         }

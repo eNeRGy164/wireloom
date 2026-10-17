@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
+using Wireloom.Compiler.Emission;
 
 namespace Wireloom.Generation.Tests;
 
@@ -89,6 +90,142 @@ public sealed class GeneratorSpecs
         // Assert
         result.Diagnostics.ShouldContain(d => d.Id == "DDSG0003");
         result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData("7.3.1.0", "byte", false, true)]
+    [InlineData("7.6.1.0", "byte", false, true)]
+    [InlineData("7.7.0.0", "Octet", true, false)]
+    [InlineData("7.7.0.1", "Octet", true, false)]
+    [InlineData("8.0.0.0", "Octet", true, false)]
+    public void SelectsTheNearestRtiApiProfileFromTheResolvedAssemblyVersion(string version, string octetDynamicType, bool includesAnnotations, bool hasLegacyComplianceMask)
+    {
+        // Arrange
+        const string input = "module Sample { enum Color { Red, Green }; struct Value { octet count; long value; }; };";
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: false, runtimeVersion: version);
+
+        // Assert
+        result.Diagnostics.ShouldBeEmpty();
+        var plugin = result.Output.SyntaxTrees
+            .Select(tree => tree.GetText().ToString())
+            .Single(source => source.Contains("class ValuePlugin", StringComparison.Ordinal));
+        plugin.ShouldContain($"dtf.GetPrimitiveType<{octetDynamicType}>()");
+        plugin.Contains("AnnotationParameterValue", StringComparison.Ordinal).ShouldBe(includesAnnotations);
+        plugin.Contains("xTypesComplianceMask = 0x0000068C;", StringComparison.Ordinal).ShouldBe(hasLegacyComplianceMask);
+    }
+
+    [Theory]
+    [InlineData("7.3.1.0", "7.3.1", "4.3.1")]
+    [InlineData("7.6.1.0", "7.3.1", "4.3.1")]
+    [InlineData("7.7.0.0", "7.7.0", "4.7.0")]
+    [InlineData("7.7.0.1", "7.7.0", "4.7.0")]
+    [InlineData("8.0.0.0", "7.7.0", "4.7.0")]
+    public void NamesEmissionProfilesByRtiddsgenVersion(string runtimeVersion, string expectedRtiVersion, string expectedRtiddsgenVersion)
+    {
+        // Arrange
+        var version = Version.Parse(runtimeVersion);
+
+        // Act
+        var profile = RtiApiProfile.ForVersion(version);
+
+        // Assert
+        profile.RtiVersion.ShouldBe(expectedRtiVersion);
+        profile.RtiddsgenVersion.ShouldBe(expectedRtiddsgenVersion);
+    }
+
+    [Fact]
+    public void RejectsResolvedRuntimeVersionsBelowTheMinimum()
+    {
+        // Arrange
+        const string input = "module Sample { struct Value { long value; }; };";
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: false, runtimeVersion: "7.3.0.0");
+
+        // Assert
+        result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0003");
+        result.Output.SyntaxTrees.Any(tree => tree.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ReportsProfileDiagnosticAndEmitsNoSourcesForMustUnderstandOnRtiddsgen431()
+    {
+        // Arrange
+        const string input = "struct Sample { @must_understand long value; };";
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: false, runtimeVersion: "7.3.1.0");
+
+        // Assert
+        result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0004" && diagnostic.Severity == DiagnosticSeverity.Error);
+        result.Output.SyntaxTrees.Any(tree => tree.GetText().ToString().Contains("class Sample", StringComparison.Ordinal)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void RegeneratesOutputWhenTheResolvedRtiReferenceChanges()
+    {
+        // Arrange
+        const string input = "module Sample { struct Value { octet count; long value; }; };";
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+        var parseOptions = new CSharpParseOptions(LanguageVersion.CSharp12);
+        var source = new TestAdditionalText("sample.idl", input);
+        var runtime731 = CreateRuntimeReference("7.3.1.0");
+        var runtime770 = CreateRuntimeReference("7.7.0.0");
+        var baseReferences = FrameworkReferences().ToArray();
+        var compilation731 = CSharpCompilation.Create(
+            "GeneratorInput",
+            [CSharpSyntaxTree.ParseText("namespace Input; public sealed class Marker { }", parseOptions, cancellationToken: TestContext.Current.CancellationToken)],
+            [.. baseReferences, runtime731],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            [new Generator().AsSourceGenerator()],
+            [source],
+            parseOptions,
+            new TestAnalyzerConfigOptionsProvider(metadata));
+
+        // Act
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation731, out var output731, out _, TestContext.Current.CancellationToken);
+        var compilation770 = CSharpCompilation.Create(
+            "GeneratorInput",
+            [CSharpSyntaxTree.ParseText("namespace Input; public sealed class Marker { }", parseOptions, cancellationToken: TestContext.Current.CancellationToken)],
+            [.. baseReferences, runtime770],
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        driver.RunGeneratorsAndUpdateCompilation(compilation770, out var output770, out _, TestContext.Current.CancellationToken);
+
+        // Assert
+        var source731 = output731.SyntaxTrees.Select(tree => tree.GetText().ToString())
+            .Single(text => text.Contains("class ValuePlugin", StringComparison.Ordinal));
+        var source770 = output770.SyntaxTrees.Select(tree => tree.GetText().ToString())
+            .Single(text => text.Contains("class ValuePlugin", StringComparison.Ordinal));
+        source731.ShouldContain("GetPrimitiveType<byte>()");
+        source731.ShouldNotContain("AnnotationParameterValue");
+        source770.ShouldContain("GetPrimitiveType<Octet>()");
+        source770.ShouldContain("AnnotationParameterValue");
+    }
+
+    [Theory]
+    [InlineData("7.3.1.0", "DefaultDiscriminator = 5;")]
+    [InlineData("7.7.0.0", "DefaultDiscriminator = 0;")]
+    public void UsesTheSelectedProfilesUnionConstructorDiscriminatorPolicy(string version, string expected)
+    {
+        // Arrange
+        const string input = "module Sample { union Choice switch(long) { case 5: long high; case -2: long low; }; };";
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: false, runtimeVersion: version);
+
+        // Assert
+        result.Diagnostics.ShouldBeEmpty();
+        var union = result.Output.SyntaxTrees
+            .Select(tree => tree.GetText().ToString())
+            .Single(source => source.Contains("DefaultDiscriminator =", StringComparison.Ordinal));
+        union.ShouldContain(expected);
     }
 
     [Fact]
@@ -731,13 +868,16 @@ public sealed class GeneratorSpecs
         bool includeRuntime,
         DocumentationMode documentationMode = DocumentationMode.Parse,
         string? source = null,
-        string assemblyName = "GeneratorInput")
+        string assemblyName = "GeneratorInput",
+        string? runtimeVersion = null)
     {
         var parseOptions = new CSharpParseOptions(languageVersion, documentationMode: documentationMode);
         var compilation = CSharpCompilation.Create(
             assemblyName,
             [CSharpSyntaxTree.ParseText(source ?? "namespace Input; public sealed class Marker { }", parseOptions)],
-            includeRuntime ? RuntimeReferences() : FrameworkReferences(),
+            runtimeVersion is not null
+                ? FrameworkReferences().Append(CreateRuntimeReference(runtimeVersion))
+                : includeRuntime ? RuntimeReferences() : FrameworkReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var driver = CSharpGeneratorDriver.Create(
@@ -779,6 +919,20 @@ public sealed class GeneratorSpecs
         references.Add(MetadataReference.CreateFromFile(runtime));
 
         return references;
+    }
+
+    private static MetadataReference CreateRuntimeReference(string version)
+    {
+        var assembly = CSharpCompilation.Create(
+            "Rti.ConnextDds",
+            [CSharpSyntaxTree.ParseText($"[assembly: System.Reflection.AssemblyVersion(\"{version}\")]")],
+            FrameworkReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        using var stream = new MemoryStream();
+        var emitResult = assembly.Emit(stream);
+        emitResult.Success.ShouldBeTrue(string.Join(Environment.NewLine, emitResult.Diagnostics));
+
+        return MetadataReference.CreateFromImage(stream.ToArray());
     }
 
     private sealed record GeneratorRunResult(Compilation Output, ImmutableArray<Diagnostic> Diagnostics);

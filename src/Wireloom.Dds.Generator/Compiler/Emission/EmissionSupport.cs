@@ -122,6 +122,15 @@ internal static class EmissionSupport
         return usings;
     }
 
+    /// <summary>Emits the RTI 7.3.x XTypes compliance value required by its plugin API.</summary>
+    internal static void EmitPluginCompatibility(GeneratedSourceWriter writer, RtiApiProfile profile)
+    {
+        if (profile.PluginComplianceMask is { } mask)
+        {
+            writer.WriteLine($"xTypesComplianceMask = {mask};");
+        }
+    }
+
     /// <summary>Builds a namespace list for a generated document from its type and runtime requirements.</summary>
     private static List<string> GetTypeUsings(IEnumerable<EmissionTypePlan> types, bool usesOmgTypes, bool usesSequence, bool includeNativeTopicTypePlugin, bool requireNativeRtiTypes, bool usesNativeChar = false)
     {

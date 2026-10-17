@@ -10,8 +10,10 @@ internal sealed class CollectionAliasEmissionPlan(
     bool isArray,
     bool nativeValueRequiresCast,
     string? elementNativeType = null,
-    int? sequenceBound = null)
+    int? sequenceBound = null,
+    RtiApiProfile? profile = null)
 {
+    private RtiApiProfile Profile { get; } = profile ?? RtiApiProfile.Rtiddsgen470;
     public EmissionTypePlan ElementPlan { get; } = elementPlan;
 
     public string ElementType => ElementPlan.CSharpType;
@@ -60,7 +62,8 @@ internal sealed class CollectionAliasEmissionPlan(
                 throw new InvalidOperationException("Expected a primitive collection element.");
             }
 
-            return PrimitiveTypeMapping.Resolve(primitive.IdlName).DynamicType;
+            var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
+            return primitive.IdlName == "octet" ? Profile.OctetDynamicType : mapping.DynamicType;
         }
     }
 }

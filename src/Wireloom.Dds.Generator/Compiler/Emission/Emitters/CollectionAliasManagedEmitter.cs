@@ -10,7 +10,7 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class CollectionAliasManagedEmitter
 {
     /// <summary>Emits the managed typedef document.</summary>
-    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName, RtiApiProfile profile)
     {
         var typeName = names.ManagedTypeName;
         string? resolvedElement;
@@ -43,7 +43,7 @@ internal static class CollectionAliasManagedEmitter
             }
             writer.WriteXmlSummary(sequenceSummary);
             writer.WriteXmlRemarks("Use the mutable sequence instance to add or remove elements; the property itself is getter-only. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.");
-            writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html", "RTI Connext 7.7.0 ISequence API");
+            writer.WriteXmlSeeAlso($"https://community.rti.com/static/documentation/connext-dds/{profile.RtiVersion}/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html", $"RTI Connext {profile.RtiVersion} ISequence API");
             writer.WriteLine($"[Bound({plan.SequenceBound})]");
             writer.WriteLine($"public ISequence<{elementReference}> Value {{ get; }} = null!;");
             writer.BlankLine();
@@ -219,7 +219,7 @@ internal static class CollectionAliasManagedEmitter
                     ? $"The bound on this {stringKind} IDL string is measured in {unit}. The generated C# property does not check the bound when assigned."
                     : $"This unbounded {stringKind} IDL string has an effective limit of 255 {unit}. The generated C# property does not enforce the effective limit when assigned.";
                 writer.WriteXmlRemarks(stringRemarks);
-                writer.WriteXmlSeeAlso("https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", "RTI Connext 7.7.0 string and wide-string bounds");
+                writer.WriteXmlSeeAlso($"https://community.rti.com/static/documentation/connext-dds/{profile.RtiVersion}/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", $"RTI Connext {profile.RtiVersion} string and wide-string bounds");
             }
 
             if (plan.IsString)
