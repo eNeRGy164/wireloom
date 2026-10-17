@@ -1,4 +1,5 @@
-FROM rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca
+ARG RTI_BASE_IMAGE=rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca
+FROM ${RTI_BASE_IMAGE}
 
 USER 0:0
 

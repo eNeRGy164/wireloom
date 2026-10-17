@@ -25,6 +25,15 @@ internal static class PeerTransport
             writerQos = writerQos.WithRepresentation(PeerQos.Xcdr2Only);
         }
 
+        if (options.CaseId == "09-optional-recursive-array")
+        {
+            // The recursive maximum size makes RTI 7.3.1 preallocate about 64 GiB.
+            // Larger samples can still allocate outside this small fast pool.
+            writerQos = writerQos.WithProperty(properties => properties.Add(
+                "dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size",
+                new Property.Entry("4096", false)));
+        }
+
         using var writer = participant.ImplicitPublisher.CreateDataWriter(topic, writerQos);
         var deadline = Stopwatch.StartNew();
 

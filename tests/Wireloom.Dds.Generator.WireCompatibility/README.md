@@ -1,16 +1,24 @@
 # Wire compatibility peers
 
 This project compares Wireloom-generated C# with RTI-generated C# and C++ DDS
-peers for selected positive corpus cases. The matrix uses RTI Connext 7.7.0.
-The peer package version is selected by
-`WireCompatibilityRtiVersion` (default `7.7.0`); use the matching exact RTI
-toolchain to generate and build the reference peers.
+peers for selected positive corpus cases. The matrix supports exact RTI
+Connext 7.3.1 and 7.7.0 runs. The peer package version is selected by
+`WireCompatibilityRtiVersion` (default `7.7.0`); use the matching RTI image,
+NuGet package, and `rtiddsgen` toolchain. Exclusions and output paths are
+version-scoped so evidence and expected failures do not carry across profiles.
 
 The [current recorded evidence baseline](../../docs/corpus/FEATURE-COVERAGE.md#runtime-evidence-baseline)
 identifies the main-branch run, exact revision, combined artifact, and scenario
 totals. It includes both C137 and C141. Workflow success means the report was
 collected and validated; failed scenarios and peer adaptations remain part of
 the result.
+
+Version-specific registries separate `notApplicableCases` from
+`notImplementedCases`. A feature introduced after the selected RTI version is
+not applicable: it contributes no exchanges, failures, or implementation gaps.
+JSON and Markdown reports retain its case ID and reason separately. The
+combined `09-autoid-hash` fixture requires `@must_understand` and is N/A on
+7.3.1; explicitly requesting it is rejected before type-support discovery.
 
 The nested `RtiOracleProbe` also supports typed, local API probes of retained
 unbounded typedef oracles C135/C136. The corresponding managed contracts are
@@ -94,7 +102,7 @@ left by an interrupted C++ setup. Unexpected setup errors retain their nonzero
 job exit even when a partial report is generated. Otherwise it regenerates
 the combined report from validated rows and logs, preserving failure details,
 adaptations, not-run outcomes, and the exclusion registry once. The combined
-artifact keeps the name `wire-compatibility-rti-7.7.0`; partial shard artifacts
+artifact is named `wire-compatibility-rti-<version>`; partial shard artifacts
 use a `-shard-<index>` suffix. Setup failures fail the workflow even if another
 shard completes; observed peer failures remain reported outcomes as before.
 Only the combined report job publishes a workflow summary; shards retain
@@ -131,11 +139,12 @@ mismatches remain failures.
 The independent verifier compares discriminator values using their declared
 width, so RTI's signed label storage does not overflow or change a selected
 branch. Character boundary fixtures use typed assignments and independent
-expected values. For `07-union-char-boundaries`, the unchanged RTI C++ output
-is compiled with `-fexec-charset=ISO-8859-1`: its literal U+00FF must become one
-byte, not a UTF-8 multicharacter integer. The resulting C++ metadata label is
--1, matching Wireloom. The report records this C++ adaptation; RTI C# reference
-failures remain visible.
+expected values. The `07-union-char-boundaries` case now uses NUL and ASCII
+DEL (U+007F). Focused local runs on both LTS versions passed 22 of 27 exchanges
+with numeric labels in the RTI C++ scratch IDL. The five remaining failures are
+default-branch exchanges involving RTI C#: the received sample selects the NUL
+branch instead of fallback. An unadapted 7.7.0 run showed that RTI C++ also
+needs numeric scratch labels for the escaped DEL source.
 
 Wireloom's generated C# type is the implementation under test. The shell
 runner builds the Wireloom C# peer, asks `rtiddsgen` for RTI C# and C++ reference
@@ -173,6 +182,32 @@ keeping fixture variations grouped without repeating the same filename.
 Wireloom-positive selection is independent of RTI oracle status. Each run's
 report records outcomes for the selected fixtures and pairings.
 
+Case-specific RTI C++ code-generator requirements are configured on their
+positive-case entries in `docs/corpus/manifest.json` under `wireMatrix`.
+`rtiCppCodegenOptions` is passed only to that case's C++ `rtiddsgen` invocation.
+The `qualification` note is copied into each affected scenario in `results.json`
+and rendered in the Markdown report's **Case-specific RTI C++ generation**
+section. The recursive aggregate and optional recursive array cases use
+`-unboundedSupport`; RTI documents recursive-structure support as experimental,
+so their results must be read with that qualification. This setting affects the
+RTI C++ reference peer only; it does not change the IDL, Wireloom output, or RTI
+C# peer generation.
+
+`rtiCppIdlAdaptations` configures narrowly scoped, version-qualified changes to
+the scratch IDL used only by RTI C++ generation. The 7.3.1
+`07-union-char-boundaries` C++ peers use equivalent numeric char labels for
+both LTS versions. The unadapted 7.7.0 C++ peer did not select the expected
+branches for escaped DEL; wire reports identify the scratch-only adaptation.
+
+For a C++ compilation sweep without DDS exchanges, set
+`WIRE_COMPATIBILITY_CPP_COMPILE_ONLY=1` in the pinned RTI container and run
+`scripts/run-matrix.sh`. The runner records each case in `cpp-compilation.tsv`
+and continues after failures. A Wireloom C# build failure does not prevent the
+independent RTI C++ compilation check. The current 7.3.1 sweep compiles 76 of
+77 peers: 75 RTI-generated peers plus the custom DynamicType peer for
+`07-union-wchar-label`. `09-autoid-hash` remains rejected because `rtiddsgen`
+4.3.1 reports `@must_understand` as unsupported.
+
 The recently added positive corpus cases C135–C141 have fixtures that exercise
 their declared variations rather than default-only samples:
 
@@ -187,7 +222,7 @@ their declared variations rather than default-only samples:
 | C140 `07-union-string-sequence-bounded-direct` | narrow/wide `empty` and `multiple`                                                                                                 | Empty and three-element direct bounded sequence branches, including strings at the element bounds. All nine pairings pass.                                                                                                                                                                                                                                                                                                                                            |
 
 Expected failures remain individual matrix outcomes with fixture and pairing
-scope in `wire-case-exclusions.json`; they do not suppress the exchange or turn
+scope in the matching `wire-case-exclusions-<version>.json`; they do not suppress the exchange or turn
 an observed peer failure into a pass. Check the generated report when an oracle
 failure changes, because Wireloom self-coverage, RTI API behavior, and DDS wire
 interoperability are separate evidence.
@@ -231,14 +266,14 @@ mounted read-only at `/run/secrets/rti_license.dat`. It compiles the retained
 RTI C# oracle sources and pairs them with an RTI-generated C++ peer. The probe
 reports endpoint and discovery results for that control.
 
-The runner writes `artifacts/wire-compatibility/results.md` and
+The runner writes `artifacts/wire-compatibility-rti-<version>/results.md` and
 `results.json`; these generated files are local run output and are not
 committed. The manually triggered GitHub Actions workflow uploads them as the
-`wire-compatibility-rti-7.7.0` artifact, even when a build or exchange fails.
+`wire-compatibility-rti-<version>` artifact, even when a build or exchange fails.
 The manually triggered workflow runs all wire-testable
 Wireloom-positive corpus cases and all nine same-version directed pairings,
-with each fixture as an independent scenario, using the immutable exact RTI
-7.7.0 image. Configure the repository secret
+with each fixture as an independent scenario, using the selected RTI LTS image.
+Choose 7.3.1 or 7.7.0 from the workflow's `rti_version` input. Configure the repository secret
 `RTI_CONNEXT_LICENSE` with the license contents before dispatching it. The
 secret is written to a runtime-only file inside the job and excluded from
 artifacts. The workflow retains the structured and Markdown results plus status-only
@@ -246,16 +281,20 @@ sanitized endpoint logs for 14 days. Each scenario result records its fixture
 kind; C++ endpoint logs additionally record match counters and reader sample
 counters.
 
-For local runs, build the helper image once from the repository root:
+For local 7.7.0 runs, build the helper image from the repository root:
 
 ```powershell
 wslc build -f tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile `
   -t wireloom-rti-7.7.0 .
 ```
 
-The image pins the exact RTI 7.7.0 base image and installs .NET 10.0.400 plus
+The workflow pins both RTI base images by digest: 7.3.1 uses
+`rticom/connext-base:7.3.1@sha256:f33a61ec6381a8fb73cbb019fbb5c081f434dc5217eb14283fad995306be0f04`,
+and 7.7.0 uses
+`rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca`.
+Both install .NET 10.0.400 plus
 the C++ build tools, including ccache. GitHub Actions builds this same image
-in each shard with BuildKit's GitHub Actions cache, scoped to RTI 7.7.0,
+in each shard with BuildKit's GitHub Actions cache, scoped to the selected RTI version,
 so its package installation and .NET setup layers can be reused on later runs.
 Each fresh runner still retrieves and loads the cached image layers. The image does
 not contain a license. The shell harness uses the .NET 10 C# file-based utility
@@ -276,7 +315,10 @@ while RTI C# combinations fail with `NullReferenceException` in
 `FromDynamicData`. Managed API coverage is listed in the
 [runtime contract matrix](../Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix).
 Generated build outputs and artifacts are written to the mounted repository;
-the runner checks its selected RTI version against 7.7.0.
+the runner accepts only exact 7.3.1 and 7.7.0 toolchains. Local runs set
+`WIRE_COMPATIBILITY_RTI_VERSION` to select the profile and matching
+`wire-case-exclusions-<version>.json` registry. The 7.3.1 registry starts with
+no expected-failure classifications; record evidence before adding any.
 
 ## Build and discover one C# case
 

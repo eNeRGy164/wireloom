@@ -18,6 +18,8 @@ check_finalization() {
         start_workflow_group() { :; }
         workflow_annotation() { printf '%s\n' "$*"; }
         write_report() { touch "$scratch/$name.report"; return "$report_status"; }
+        cpp_compile_only=0
+        output_dir="$scratch"
         overall_status=1
         passed_scenario_count=0
         expected_scenario_count=9

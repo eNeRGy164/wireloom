@@ -1,0 +1,77 @@
+{
+  "notImplementedCases": [],
+  "expectedFailures": [
+    {
+      "id": "05-array-of-sequences",
+      "writer": "Wireloom C#",
+      "reader": "RTI C++",
+      "reason": "Expected: DDSG0105 warns that Wireloom's generated C# binding flattens the array-of-sequences shape, and RTI reports a different member type kind during cross-peer discovery."
+    },
+    {
+      "id": "05-array-of-sequences",
+      "writer": "RTI C++",
+      "reader": "Wireloom C#",
+      "reason": "Expected: DDSG0105 warns that Wireloom's generated C# binding flattens the array-of-sequences shape, and RTI reports a different member type kind during cross-peer discovery."
+    },
+    {
+      "id": "05-unbounded-sequence-aliases",
+      "writer": "Wireloom C#",
+      "reader": "RTI C#",
+      "reason": "RTI 7.7.0 C# TypeSupport throws NullReferenceException in FromDynamicData while reading the sequence-alias aggregate, for both empty and populated sequence fixtures. The same IDL exchanges successfully with RTI C++."
+    },
+    {
+      "id": "05-unbounded-sequence-aliases",
+      "writer": "RTI C#",
+      "reader": "Wireloom C#",
+      "reason": "RTI 7.7.0 C# TypeSupport throws NullReferenceException in FromDynamicData while constructing the sequence-alias aggregate, before publishing a sample. The same IDL exchanges successfully with RTI C++."
+    },
+    {
+      "id": "05-unbounded-sequence-aliases",
+      "writer": "RTI C#",
+      "reader": "RTI C#",
+      "reason": "RTI 7.7.0 C# TypeSupport throws NullReferenceException in FromDynamicData while constructing the sequence-alias aggregate, before publishing a sample. The same IDL exchanges successfully with RTI C++."
+    },
+    {
+      "id": "05-unbounded-sequence-aliases",
+      "writer": "RTI C#",
+      "reader": "RTI C++",
+      "reason": "RTI 7.7.0 C# TypeSupport throws NullReferenceException in FromDynamicData while constructing the sequence-alias aggregate, before publishing a sample. The same IDL exchanges successfully with RTI C++."
+    },
+    {
+      "id": "05-unbounded-sequence-aliases",
+      "writer": "RTI C++",
+      "reader": "RTI C#",
+      "reason": "RTI 7.7.0 C# TypeSupport throws NullReferenceException in FromDynamicData while reading the sequence-alias aggregate. The same IDL exchanges successfully with Wireloom C# and RTI C++."
+    },
+    {
+      "id": "07-union-string-sequence-aliases",
+      "writer": "Wireloom C#",
+      "reader": "RTI C#",
+      "reason": "RTI 7.7.0 C# TypeSupport throws NullReferenceException in FromDynamicData for union branches containing narrow/wide string sequences, both direct and typedef-alias branches. The equivalent exchanges pass with RTI C++."
+    },
+    {
+      "id": "07-union-string-sequence-aliases",
+      "writer": "RTI C#",
+      "reader": "Wireloom C#",
+      "reason": "RTI 7.7.0 C# TypeSupport throws NullReferenceException in FromDynamicData for union branches containing narrow/wide string sequences, both direct and typedef-alias branches. The equivalent exchanges pass with RTI C++."
+    },
+    {
+      "id": "07-union-string-sequence-aliases",
+      "writer": "RTI C#",
+      "reader": "RTI C#",
+      "reason": "RTI 7.7.0 C# TypeSupport throws NullReferenceException in FromDynamicData for union branches containing narrow/wide string sequences, both direct and typedef-alias branches. The equivalent exchanges pass with RTI C++."
+    },
+    {
+      "id": "07-union-string-sequence-aliases",
+      "writer": "RTI C#",
+      "reader": "RTI C++",
+      "reason": "RTI 7.7.0 C# TypeSupport throws NullReferenceException in FromDynamicData for union branches containing narrow/wide string sequences, both direct and typedef-alias branches. The equivalent exchanges pass with RTI C++."
+    },
+    {
+      "id": "07-union-string-sequence-aliases",
+      "writer": "RTI C++",
+      "reader": "RTI C#",
+      "reason": "RTI 7.7.0 C# TypeSupport throws NullReferenceException in FromDynamicData for union branches containing narrow/wide string sequences, both direct and typedef-alias branches. The equivalent exchanges pass with RTI C++."
+    }
+  ]
+}

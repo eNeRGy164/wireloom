@@ -1,6 +1,21 @@
 #pragma once
 #include <sstream>
 #include <utility>
+#ifdef WIRELOOM_RTI_7_3_1
+#define WIRELOOM_SET_TYPED_STRING(member, value) expected.member(value)
+#define WIRELOOM_SET_TYPED_MEMBER(member, value) expected.member(value)
+#define WIRELOOM_SET_TYPED_MEMBER_ON(object, member, value) object.member(value)
+#define WIRELOOM_TYPED_MEMBER(object, member) object.member()
+#define WIRELOOM_SET_MEMBER_ON(object, member, value) object.member(value)
+#define WIRELOOM_BOUNDED_SEQUENCE ::rti::core::bounded_sequence
+#else
+#define WIRELOOM_SET_TYPED_STRING(member, value) expected.member = value
+#define WIRELOOM_SET_TYPED_MEMBER(member, value) expected.member = value
+#define WIRELOOM_SET_TYPED_MEMBER_ON(object, member, value) object.member = value
+#define WIRELOOM_TYPED_MEMBER(object, member) object.member
+#define WIRELOOM_SET_MEMBER_ON(object, member, value) object.member = value
+#define WIRELOOM_BOUNDED_SEQUENCE ::omg::types::bounded_sequence
+#endif
 #if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED)
 // RTI's generated DynamicData API omits some string template instantiations.
 // Use RTI-generated typed C++ endpoints for these fixtures and compare the
@@ -16,42 +31,42 @@ static int run_typed_fixture_peer(
     DdsType expected;
 #ifdef WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES
     if (case_id == "05-unbounded-sequence-aliases" && fixture == "sequence-multiple") {
-        decltype(expected.numbers) numbers;
+        ::CorpusUnboundedSequences::Numbers numbers;
         numbers.push_back(101);
         numbers.push_back(-102);
-        expected.numbers = std::move(numbers);
-        decltype(expected.states) states;
+        WIRELOOM_SET_TYPED_MEMBER(numbers, std::move(numbers));
+        ::CorpusUnboundedSequences::States states;
         states.push_back(::CorpusUnboundedSequences::State::Idle);
         states.push_back(::CorpusUnboundedSequences::State::Ready);
-        expected.states = std::move(states);
-        decltype(expected.children) children;
+        WIRELOOM_SET_TYPED_MEMBER(states, std::move(states));
+        ::CorpusUnboundedSequences::Children children;
         ::CorpusUnboundedSequences::Child first_child;
-        first_child.value = 301;
+        WIRELOOM_SET_TYPED_MEMBER_ON(first_child, value, 301);
         ::CorpusUnboundedSequences::Child second_child;
-        second_child.value = -302;
+        WIRELOOM_SET_TYPED_MEMBER_ON(second_child, value, -302);
         children.push_back(first_child);
         children.push_back(second_child);
-        expected.children = std::move(children);
-        decltype(expected.scalars) scalars;
+        WIRELOOM_SET_TYPED_MEMBER(children, std::move(children));
+        ::CorpusUnboundedSequences::Scalars scalars;
         scalars.push_back(201);
         scalars.push_back(-202);
-        expected.scalars = std::move(scalars);
-        decltype(expected.texts) texts;
+        WIRELOOM_SET_TYPED_MEMBER(scalars, std::move(scalars));
+        ::CorpusUnboundedSequences::Texts texts;
         texts.push_back("narrow-1");
         texts.push_back("narrow-2");
-        expected.texts = std::move(texts);
-        decltype(expected.wideTexts) wide_texts;
+        WIRELOOM_SET_TYPED_MEMBER(texts, std::move(texts));
+        ::CorpusUnboundedSequences::WideTexts wide_texts;
         wide_texts.push_back(L"wide-λ");
         wide_texts.push_back(L"wide-2");
-        expected.wideTexts = std::move(wide_texts);
-        decltype(expected.boundedTexts) bounded_texts;
+        WIRELOOM_SET_TYPED_MEMBER(wideTexts, std::move(wide_texts));
+        ::CorpusUnboundedSequences::BoundedTexts bounded_texts;
         bounded_texts.push_back("12345678");
         bounded_texts.push_back("bounded");
-        expected.boundedTexts = std::move(bounded_texts);
-        decltype(expected.boundedWideTexts) bounded_wide_texts;
+        WIRELOOM_SET_TYPED_MEMBER(boundedTexts, std::move(bounded_texts));
+        ::CorpusUnboundedSequences::BoundedWideTexts bounded_wide_texts;
         bounded_wide_texts.push_back(L"ABCD");
         bounded_wide_texts.push_back(L"wide");
-        expected.boundedWideTexts = std::move(bounded_wide_texts);
+        WIRELOOM_SET_TYPED_MEMBER(boundedWideTexts, std::move(bounded_wide_texts));
     }
 #endif
 #ifdef WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES
@@ -63,47 +78,47 @@ static int run_typed_fixture_peer(
         ::RuntimeUnionStringSequences::StringSequenceAliases aliases;
         if (fixture.find("direct") != std::string::npos) {
             if (wide) {
-                ::omg::types::bounded_sequence<std::wstring, 3> values;
+                WIRELOOM_BOUNDED_SEQUENCE<std::wstring, 3> values;
                 values.push_back(L"wide-λ");
                 values.push_back(L"wide-2");
                 values.push_back(L"wide-3");
                 direct.wide(std::move(values));
             } else {
-                ::omg::types::bounded_sequence<std::string, 3> values;
+                WIRELOOM_BOUNDED_SEQUENCE<std::string, 3> values;
                 values.push_back("narrow-1");
                 values.push_back("narrow-2");
                 values.push_back("narrow-3");
                 direct.narrow(std::move(values));
             }
-            expected.direct = std::move(direct);
+            WIRELOOM_SET_TYPED_MEMBER(direct, std::move(direct));
         } else if (bounded && wide) {
             ::RuntimeUnionStringSequences::BoundedWideTexts values;
             values.push_back(L"ABCD");
             values.push_back(L"wide");
             values.push_back(L"LAST");
             aliases.boundedWide(std::move(values));
-            expected.aliases = std::move(aliases);
+            WIRELOOM_SET_TYPED_MEMBER(aliases, std::move(aliases));
         } else if (bounded) {
             ::RuntimeUnionStringSequences::BoundedNarrowTexts values;
             values.push_back("12345678");
             values.push_back("bounded");
             values.push_back("ABCDEFGH");
             aliases.boundedNarrow(std::move(values));
-            expected.aliases = std::move(aliases);
+            WIRELOOM_SET_TYPED_MEMBER(aliases, std::move(aliases));
         } else if (wide) {
             ::RuntimeUnionStringSequences::WideTexts values;
             values.push_back(L"wide-λ");
             values.push_back(L"wide-2");
             values.push_back(L"wide-3");
             aliases.wide(std::move(values));
-            expected.aliases = std::move(aliases);
+            WIRELOOM_SET_TYPED_MEMBER(aliases, std::move(aliases));
         } else {
             ::RuntimeUnionStringSequences::NarrowTexts values;
             values.push_back("narrow-1");
             values.push_back("narrow-2");
             values.push_back("narrow-3");
             aliases.narrow(std::move(values));
-            expected.aliases = std::move(aliases);
+            WIRELOOM_SET_TYPED_MEMBER(aliases, std::move(aliases));
         }
     }
 #endif
@@ -112,7 +127,7 @@ static int run_typed_fixture_peer(
         const bool wide = fixture.find("wide") != std::string::npos;
         const bool multiple = fixture.find("multiple") != std::string::npos;
         if (wide) {
-            ::omg::types::bounded_sequence<std::wstring, 3> values;
+            WIRELOOM_BOUNDED_SEQUENCE<std::wstring, 3> values;
             if (multiple) {
                 values.push_back(L"ABCD");
                 values.push_back(L"WIDE");
@@ -120,7 +135,7 @@ static int run_typed_fixture_peer(
             }
             expected.wide(std::move(values));
         } else {
-            ::omg::types::bounded_sequence<std::string, 3> values;
+            WIRELOOM_BOUNDED_SEQUENCE<std::string, 3> values;
             if (multiple) {
                 values.push_back("12345678");
                 values.push_back("87654321");
@@ -132,8 +147,8 @@ static int run_typed_fixture_peer(
 #endif
 #ifdef WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE
     if (case_id == "09-optional-string-sequences" && fixture != "optional-absent") {
-        ::omg::types::bounded_sequence<std::string, 4> narrow_values;
-        ::omg::types::bounded_sequence<std::wstring, 4> wide_values;
+        WIRELOOM_BOUNDED_SEQUENCE<std::string, 4> narrow_values;
+        WIRELOOM_BOUNDED_SEQUENCE<std::wstring, 4> wide_values;
         if (fixture == "optional-empty" || fixture == "optional-multiple"
             || fixture == "optional-narrow-only") {
             if (fixture == "optional-multiple") {
@@ -143,7 +158,7 @@ static int run_typed_fixture_peer(
             } else if (fixture == "optional-narrow-only") {
                 narrow_values.push_back("narrow-only");
             }
-            expected.narrowValues = std::move(narrow_values);
+            WIRELOOM_SET_MEMBER_ON(expected, narrowValues, std::move(narrow_values));
         }
         if (fixture == "optional-empty" || fixture == "optional-multiple"
             || fixture == "optional-wide-only") {
@@ -153,14 +168,14 @@ static int run_typed_fixture_peer(
             } else if (fixture == "optional-wide-only") {
                 wide_values.push_back(L"wide-only");
             }
-            expected.wideValues = std::move(wide_values);
+            WIRELOOM_SET_MEMBER_ON(expected, wideValues, std::move(wide_values));
         }
     }
 #endif
 #ifdef WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES
     if (case_id == "04-unbounded-string-aliases") {
-        expected.narrow = fixture == "string-empty" ? "" : std::string(255, 'n');
-        expected.wide = fixture == "string-empty" ? L"" : std::wstring(255, L'λ');
+        WIRELOOM_SET_TYPED_STRING(narrow, fixture == "string-empty" ? "" : std::string(255, 'n'));
+        WIRELOOM_SET_TYPED_STRING(wide, fixture == "string-empty" ? L"" : std::wstring(255, L'λ'));
     }
 #endif
 #ifdef WIRELOOM_TYPED_NUMERIC_CHAR_UNION
@@ -171,6 +186,7 @@ static int run_typed_fixture_peer(
             expected.value(13702);
         } else if (fixture == "union-default") {
             expected.fallback(13703);
+            expected._d(static_cast<char>(65));
         } else {
             throw std::runtime_error("Unknown numeric character union fixture: " + fixture);
         }
@@ -181,42 +197,42 @@ static int run_typed_fixture_peer(
         const bool empty = fixture == "string-empty";
         const std::string narrow = empty ? "" : "1234567890123456";
         const std::wstring wide = empty ? L"" : L"12345678";
-        expected.narrow = narrow;
-        expected.narrowChain = narrow;
-        expected.boundedNarrow = narrow;
-        expected.boundedNarrowChain = narrow;
-        expected.boundedNarrowChain2 = narrow;
-        expected.wide = wide;
-        expected.wideChain = wide;
-        expected.boundedWide = wide;
-        expected.boundedWideChain = wide;
-        expected.boundedWideChain2 = wide;
+        WIRELOOM_SET_TYPED_STRING(narrow, narrow);
+        WIRELOOM_SET_TYPED_STRING(narrowChain, narrow);
+        WIRELOOM_SET_TYPED_STRING(boundedNarrow, narrow);
+        WIRELOOM_SET_TYPED_STRING(boundedNarrowChain, narrow);
+        WIRELOOM_SET_TYPED_STRING(boundedNarrowChain2, narrow);
+        WIRELOOM_SET_TYPED_STRING(wide, wide);
+        WIRELOOM_SET_TYPED_STRING(wideChain, wide);
+        WIRELOOM_SET_TYPED_STRING(boundedWide, wide);
+        WIRELOOM_SET_TYPED_STRING(boundedWideChain, wide);
+        WIRELOOM_SET_TYPED_STRING(boundedWideChain2, wide);
     }
 #endif
 #ifdef WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE
     if (case_id == "04-strings") {
         if (fixture == "string-empty") {
-            expected.unbounded = "";
-            expected.bounded = "";
-            expected.wideUnbounded = L"";
-            expected.wideBounded = L"";
+            WIRELOOM_SET_TYPED_STRING(unbounded, "");
+            WIRELOOM_SET_TYPED_STRING(bounded, "");
+            WIRELOOM_SET_TYPED_STRING(wideUnbounded, L"");
+            WIRELOOM_SET_TYPED_STRING(wideBounded, L"");
         } else if (fixture == "string-boundary") {
-            expected.unbounded = "unbounded-boundary";
-            expected.bounded = "12345678";
-            expected.wideUnbounded = L"wide-boundary";
-            expected.wideBounded = L"ABCDEFGH";
+            WIRELOOM_SET_TYPED_STRING(unbounded, "unbounded-boundary");
+            WIRELOOM_SET_TYPED_STRING(bounded, "12345678");
+            WIRELOOM_SET_TYPED_STRING(wideUnbounded, L"wide-boundary");
+            WIRELOOM_SET_TYPED_STRING(wideBounded, L"ABCDEFGH");
         } else {
-            expected.unbounded = "narrow-unbounded";
-            expected.bounded = "bound801";
-            expected.wideUnbounded = L"wide-unbounded";
-            expected.wideBounded = L"wide801";
+            WIRELOOM_SET_TYPED_STRING(unbounded, "narrow-unbounded");
+            WIRELOOM_SET_TYPED_STRING(bounded, "bound801");
+            WIRELOOM_SET_TYPED_STRING(wideUnbounded, L"wide-unbounded");
+            WIRELOOM_SET_TYPED_STRING(wideBounded, L"wide801");
         }
     }
 #endif
 #ifdef WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE
     if (case_id == "04-boundaries") {
-        expected.narrow = fixture == "string-boundary" ? "12345678" : "edge-8";
-        expected.wide = fixture == "string-boundary" ? L"ABCDEFGH" : L"wide-8";
+        WIRELOOM_SET_TYPED_STRING(narrow, fixture == "string-boundary" ? "12345678" : "edge-8");
+        WIRELOOM_SET_TYPED_STRING(wide, fixture == "string-boundary" ? L"ABCDEFGH" : L"wide-8");
     }
 #endif
 #ifdef WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE
@@ -229,10 +245,10 @@ static int run_typed_fixture_peer(
         ::CorpusOptionalAggregate::Choice choice_alias;
         choice.payload(std::move(choice_payload));
         choice_alias.payload(std::move(choice_alias_payload));
-        expected.payload = std::move(payload);
-        expected.payloadAlias = std::move(payload_alias);
-        expected.choice = std::move(choice);
-        expected.choiceAlias = std::move(choice_alias);
+        WIRELOOM_SET_TYPED_MEMBER(payload, std::move(payload));
+        WIRELOOM_SET_TYPED_MEMBER(payloadAlias, std::move(payload_alias));
+        WIRELOOM_SET_TYPED_MEMBER(choice, std::move(choice));
+        WIRELOOM_SET_TYPED_MEMBER(choiceAlias, std::move(choice_alias));
     }
 #endif
 
@@ -240,18 +256,27 @@ static int run_typed_fixture_peer(
     if (fixture != "optional-absent" && fixture != "optional-present" && fixture != "optional-nested") {
         throw std::runtime_error("Unknown optional recursive array fixture: " + fixture);
     }
-    expected.value = 9801;
+    WIRELOOM_SET_TYPED_MEMBER(value, 9801);
     if (fixture != "optional-absent") {
         ::dds::core::array<DdsType, 2> children;
-        children[0].value = 9811;
-        children[1].value = 9812;
+        WIRELOOM_SET_TYPED_MEMBER_ON(children[0], value, 9811);
+        WIRELOOM_SET_TYPED_MEMBER_ON(children[1], value, 9812);
         if (fixture == "optional-nested") {
             ::dds::core::array<DdsType, 2> grandchildren;
-            grandchildren[0].value = 9821;
-            grandchildren[1].value = 9822;
+            WIRELOOM_SET_TYPED_MEMBER_ON(grandchildren[0], value, 9821);
+            WIRELOOM_SET_TYPED_MEMBER_ON(grandchildren[1], value, 9822);
+#ifdef WIRELOOM_RTI_7_3_1
+            children[0].children(::dds::core::optional<::dds::core::array<DdsType, 2>>(
+                std::move(grandchildren)));
+#else
             children[0].children = std::move(grandchildren);
+#endif
         }
+#ifdef WIRELOOM_RTI_7_3_1
+        expected.children(::dds::core::optional<::dds::core::array<DdsType, 2>>(std::move(children)));
+#else
         expected.children = std::move(children);
+#endif
     }
 #endif
 
@@ -261,6 +286,14 @@ static int run_typed_fixture_peer(
         auto writer_qos = publisher.default_datawriter_qos();
         writer_qos << dds::core::policy::Reliability(
             dds::core::policy::ReliabilityKind::RELIABLE);
+        if (case_id == "09-optional-recursive-array") {
+            // Avoid allocating the recursive maximum size for every initial sample.
+            // Samples larger than the fast-pool threshold can allocate separately.
+            writer_qos.policy<rti::core::policy::Property>().set({
+                "dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size",
+                "4096"});
+        }
+
         dds::pub::DataWriter<DdsType> writer(publisher, topic, writer_qos);
         const auto deadline = std::chrono::steady_clock::now()
             + std::chrono::seconds(timeout_seconds);
@@ -282,12 +315,12 @@ static int run_typed_fixture_peer(
             // Report optional presence separately from sequence length: an
             // absent member and a present empty sequence are distinct values.
             std::cout << "OPTIONAL_FIXTURE narrow_present="
-                      << expected.narrowValues.has_value()
-                      << " narrow_length=" << (expected.narrowValues.has_value()
-                            ? expected.narrowValues->size() : 0)
-                      << " wide_present=" << expected.wideValues.has_value()
-                      << " wide_length=" << (expected.wideValues.has_value()
-                            ? expected.wideValues->size() : 0) << std::endl;
+                      << WIRELOOM_TYPED_MEMBER(expected, narrowValues).has_value()
+                      << " narrow_length=" << (WIRELOOM_TYPED_MEMBER(expected, narrowValues).has_value()
+                            ? WIRELOOM_TYPED_MEMBER(expected, narrowValues)->size() : 0)
+                      << " wide_present=" << WIRELOOM_TYPED_MEMBER(expected, wideValues).has_value()
+                      << " wide_length=" << (WIRELOOM_TYPED_MEMBER(expected, wideValues).has_value()
+                            ? WIRELOOM_TYPED_MEMBER(expected, wideValues)->size() : 0) << std::endl;
         }
 #endif
         writer.write(expected);
@@ -334,24 +367,41 @@ static int run_typed_fixture_peer(
 
                 bool sample_matches = sample.data() == expected;
                 std::string optional_mismatch;
+#ifdef WIRELOOM_TYPED_NUMERIC_CHAR_UNION
+                if (case_id == "07-union-char-numeric" || case_id == "07-union-char-numeric-255") {
+                    const auto &actual = sample.data();
+                    const auto discriminator = static_cast<unsigned char>(actual._d());
+                    if (fixture == "union-default") {
+                        sample_matches = discriminator == 65 && actual.fallback() == 13703;
+                    } else if (fixture == "union-127") {
+                        sample_matches = discriminator == 127 && actual.value() == 13701;
+                    } else if (fixture == "union-255") {
+                        sample_matches = discriminator == 255 && actual.value() == 13702;
+                    }
+                }
+#endif
 #ifdef WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE
                 if (case_id == "09-optional-string-sequences") {
                     // Check both presence and content explicitly. Whole-sample
                     // equality alone can obscure whether absence, emptiness,
                     // or the actual string values caused a fixture failure.
                     const auto &actual = sample.data();
-                    if (actual.narrowValues.has_value() != expected.narrowValues.has_value()) {
+                    if (WIRELOOM_TYPED_MEMBER(actual, narrowValues).has_value()
+                        != WIRELOOM_TYPED_MEMBER(expected, narrowValues).has_value()) {
                         sample_matches = false;
                         optional_mismatch = "narrowValues presence differs";
-                    } else if (actual.narrowValues.has_value()
-                        && *actual.narrowValues != *expected.narrowValues) {
+                    } else if (WIRELOOM_TYPED_MEMBER(actual, narrowValues).has_value()
+                        && *WIRELOOM_TYPED_MEMBER(actual, narrowValues)
+                            != *WIRELOOM_TYPED_MEMBER(expected, narrowValues)) {
                         sample_matches = false;
                         optional_mismatch = "narrowValues sequence differs";
-                    } else if (actual.wideValues.has_value() != expected.wideValues.has_value()) {
+                    } else if (WIRELOOM_TYPED_MEMBER(actual, wideValues).has_value()
+                        != WIRELOOM_TYPED_MEMBER(expected, wideValues).has_value()) {
                         sample_matches = false;
                         optional_mismatch = "wideValues presence differs";
-                    } else if (actual.wideValues.has_value()
-                        && *actual.wideValues != *expected.wideValues) {
+                    } else if (WIRELOOM_TYPED_MEMBER(actual, wideValues).has_value()
+                        && *WIRELOOM_TYPED_MEMBER(actual, wideValues)
+                            != *WIRELOOM_TYPED_MEMBER(expected, wideValues)) {
                         sample_matches = false;
                         optional_mismatch = "wideValues sequence differs";
                     }

@@ -15,4 +15,9 @@
     <PackageReference Include="Rti.ConnextDds" />
     <PackageReference Include="FsCheck" PrivateAssets="all" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Exercise the real typed wire-fixture builders without adding a peer project dependency. -->
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility/Fixtures/ManagedFixtures.Values.cs" Link="WireFixtures/ManagedFixtures.Values.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility/Fixtures/FixtureException.cs" Link="WireFixtures/FixtureException.cs" />
+  </ItemGroup>
 </Project>

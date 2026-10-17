@@ -12,13 +12,15 @@ readonly native_template="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibil
 readonly rti_csharp_project="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/RtiOracleProbe/RtiOracleProbe.csproj"
 readonly matrix_tools="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/scripts/matrix-tools.cs"
 readonly manifest="$repo_root/docs/corpus/manifest.json"
-readonly exclusions="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/wire-case-exclusions.json"
 readonly rti_version="${WIRE_COMPATIBILITY_RTI_VERSION:-7.7.0}"
+readonly exclusions="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/wire-case-exclusions-$rti_version.json"
 readonly timeout_seconds=20
+readonly cpp_compile_only="${WIRE_COMPATIBILITY_CPP_COMPILE_ONLY:-0}"
 readonly output_dir="${WIRE_COMPATIBILITY_OUTPUT_DIR:-$repo_root/artifacts/wire-compatibility}"
 readonly scratch="${RUNNER_TEMP:-/tmp}/wireloom-wire-compatibility"
 readonly cases_tsv="$scratch/cases.tsv"
 readonly scenarios_tsv="$scratch/scenarios.tsv"
+readonly cpp_compilation_tsv="$scratch/cpp-compilation.tsv"
 workflow_group_open=0
 readonly non_default_fixture_cases=(
     01-boundaries 01-full-widths
@@ -173,9 +175,14 @@ fixtures_for_case() {
     esac
 }
 
-if [[ "$rti_version" != "7.7.0" ]]; then
-    echo "This initial runner supports exact RTI 7.7.0 only." >&2
+if [[ "$rti_version" != "7.3.1" && "$rti_version" != "7.7.0" ]]; then
+    echo "The wire runner supports exact RTI 7.3.1 and 7.7.0 only." >&2
     exit 2
+fi
+if [[ "$rti_version" == "7.3.1" ]]; then
+    readonly connextdds_arch="x64Linux4gcc7.3.0"
+else
+    readonly connextdds_arch="x64Linux4gcc8.5.0"
 fi
 if [[ -z "${RTI_LICENSE_FILE:-}" || ! -r "$RTI_LICENSE_FILE" ]]; then
     echo "RTI_LICENSE_FILE must name a readable RTI license file." >&2
@@ -191,6 +198,7 @@ mkdir -p "$scratch" "$output_dir/logs"
 rm -f "$output_dir/logs"/*.log
 : > "$cases_tsv"
 : > "$scenarios_tsv"
+printf 'case_id\tstatus\tdetail\n' > "$cpp_compilation_tsv"
 printf '{"rtiVersion":"%s","scenarios":[]}' "$rti_version" > "$output_dir/results.json"
 
 # Always write a structured report, including when a build or scenario fails.
@@ -198,9 +206,13 @@ printf '{"rtiVersion":"%s","scenarios":[]}' "$rti_version" > "$output_dir/result
 # diagnostics so the report artifacts do not include arbitrary process output.
 write_report() {
     cp "$scenarios_tsv" "$output_dir/scenarios.tsv"
+    if [[ "$cpp_compile_only" == "1" ]]; then
+        cp "$cpp_compilation_tsv" "$output_dir/cpp-compilation.tsv"
+        return 0
+    fi
     matrix_tool render-report \
         "$rti_version" "$expected_scenario_count" "$scenarios_tsv" \
-        "$output_dir/results.json" "$output_dir/results.md" "$output_dir/logs" "$exclusions"
+        "$output_dir/results.json" "$output_dir/results.md" "$output_dir/logs" "$exclusions" "$manifest"
 }
 matrix_tool() {
     if [[ -f "$scratch/matrix-tools.dll" ]]; then
@@ -214,6 +226,20 @@ finish_run() {
     local run_status=$?
     trap - EXIT
     end_workflow_group
+    if [[ "$cpp_compile_only" == "1" ]]; then
+        if write_report; then
+            local compiled failed
+            compiled=$(awk -F '\t' '$2 == "compiled" { count++ } END { print count + 0 }' "$cpp_compilation_tsv")
+            failed=$(awk -F '\t' 'NR > 1 && $2 != "compiled" { count++ } END { print count + 0 }' "$cpp_compilation_tsv")
+            echo "RTI C++ compile sweep: $compiled compiled, $failed failed; see $output_dir/cpp-compilation.tsv."
+            if [[ "$run_status" -ne 0 || "${overall_status:-0}" -ne 0 ]]; then
+                exit 1
+            fi
+            exit 0
+        fi
+        echo "Failed to save the RTI C++ compilation report." >&2
+        exit 1
+    fi
     start_workflow_group "Generate wire compatibility report"
     if write_report; then
         end_workflow_group
@@ -265,12 +291,13 @@ if [[ -n "${WIRE_COMPATIBILITY_CASE_FILTER:-}" ]]; then
     IFS=',' read -r -a requested_cases <<< "$WIRE_COMPATIBILITY_CASE_FILTER"
     for requested_case in "${requested_cases[@]}"; do
         if [[ ! " ${case_ids[*]} " =~ " ${requested_case} " ]]; then
-            echo "Unknown or non-positive corpus case: $requested_case" >&2
+            echo "Unknown or inapplicable corpus case for RTI $rti_version: $requested_case" >&2
             exit 2
         fi
     done
     case_ids=("${requested_cases[@]}")
 fi
+if [[ "$cpp_compile_only" != "1" ]]; then
 for case_id in "${case_ids[@]}"; do
     mapfile -t case_fixtures < <(fixtures_for_case "$case_id")
     if [[ -n "${rti_only_cases[$case_id]:-}" ]]; then
@@ -314,6 +341,10 @@ expected_scenario_count=$(wc -l < "$scenarios_tsv")
 printf 'Shard %s/%s: %d cases, %d scenario exchanges planned.\n' \
     "${WIRE_COMPATIBILITY_SHARD_INDEX:-0}" "${WIRE_COMPATIBILITY_SHARD_COUNT:-1}" \
     "${#case_ids[@]}" "$expected_scenario_count"
+else
+    printf 'RTI Connext %s: compiling C++ peers for %d cases (wire exchanges disabled).\n' \
+        "$rti_version" "${#case_ids[@]}"
+fi
 
 end_workflow_group
 
@@ -414,6 +445,22 @@ run_scenario() {
         return 0
     fi
 
+    if [[ "${wireloom_cs_available:-1}" -eq 0 \
+        && ( "$writer_peer" == "Wireloom C#" || "$reader_peer" == "Wireloom C#" ) ]]; then
+        printf 'FAIL_DETAIL %s\n' "$wireloom_cs_failure_reason" \
+            > "$output_dir/logs/${label}.log"
+        record_scenario "$case_id" "$wireloom_type" "$rti_type" "$cpp_type" \
+            "$writer_peer" "$reader_peer" FAIL "$fixture" || return 1
+        completed_scenario_count=$((completed_scenario_count + 1))
+        failed_scenario_count=$((failed_scenario_count + 1))
+        progress_percent=$((completed_scenario_count * 100 / expected_scenario_count))
+        printf 'WIRE_MATRIX_PROGRESS completed=%d/%d percent=%d%% passed=%d failed=%d elapsed=%ss latest=FAIL %s [%s] %s -> %s\n' \
+            "$completed_scenario_count" "$expected_scenario_count" "$progress_percent" \
+            "$passed_scenario_count" "$failed_scenario_count" "$SECONDS" \
+            "$case_id" "$fixture" "$writer_peer" "$reader_peer"
+        return 0
+    fi
+
     # Start the reader first and wait until it has created its DDS entities.
     # This avoids losing the writer's single sample before discovery completes.
     start_peer "$reader_peer" reader "$topic" "$case_id" "$wireloom_type" "$rti_type" "$fixture" > "$reader_log" 2>&1 &
@@ -491,9 +538,14 @@ run_scenario() {
 # case-specific builds so the full matrix does not repeat the same restore.
 dotnet restore "$project" \
     -p:WireCompatibilityRtiVersion="$rti_version" \
-    --locked-mode \
+    -p:RtiConnextDdsVersion="$rti_version" \
     --verbosity quiet
-dotnet restore "$rti_csharp_project" --locked-mode --verbosity quiet
+if [[ "$cpp_compile_only" != "1" ]]; then
+    dotnet restore "$rti_csharp_project" \
+        -p:WireCompatibilityRtiVersion="$rti_version" \
+        -p:RtiConnextDdsVersion="$rti_version" \
+        --verbosity quiet
+fi
 
 # Unexpected setup errors must fail the job even after peer execution starts.
 # Handled peer failures are recorded as FAIL rows and allow the matrix to continue.
@@ -504,12 +556,15 @@ case_index=0
 for case_id in "${case_ids[@]}"; do
     case_index=$((case_index + 1))
     start_workflow_group "Case $case_index/${#case_ids[@]}: $case_id"
-    printf 'WIRE_MATRIX_CASE %d/%d case=%s phase=csharp-build completed-scenarios=%d/%d elapsed=%ss\n' \
+    printf 'WIRE_MATRIX_CASE %d/%d case=%s phase=%s completed-scenarios=%d/%d elapsed=%ss\n' \
         "$case_index" "${#case_ids[@]}" "$case_id" \
+        "$([[ "$cpp_compile_only" == "1" ]] && printf 'cpp-compile' || printf 'csharp-build')" \
         "$completed_scenario_count" "$expected_scenario_count" "$SECONDS"
     case_dir="$scratch/$case_id"
     native_dir="$case_dir/native"
     mkdir -p "$native_dir"
+    wireloom_cs_available=1
+    wireloom_cs_failure_reason="Wireloom C# build failed for $case_id"
 
     # Build Wireloom's C# output against the selected RTI runtime. The resulting
     # generated type name is discovered from Wireloom's emitted TypeSupport.
@@ -523,6 +578,7 @@ for case_id in "${case_ids[@]}"; do
         --no-restore --configuration Release
         -p:WireCompatibilityCase="$case_id"
         -p:WireCompatibilityRtiVersion="$rti_version"
+        -p:RtiConnextDdsVersion="$rti_version"
         --verbosity quiet
     )
     if [[ "$case_id" == "05-array-of-sequences" ]]; then
@@ -530,7 +586,19 @@ for case_id in "${case_ids[@]}"; do
         # keeping the repository's warnings-as-errors policy for all others.
         build_args+=( -p:WarningsNotAsErrors=DDSG0105 )
     fi
-    dotnet build "$project" "${build_args[@]}"
+    wireloom_build_log="$case_dir/wireloom-csharp-build.log"
+    if ! dotnet build "$project" "${build_args[@]}" > "$wireloom_build_log" 2>&1; then
+        wireloom_cs_available=0
+        overall_status=1
+        compiler_error="$(sed -n 's/.*: error \(CS[0-9]*: .*\) \[.*$/\1/p' "$wireloom_build_log" | head -n 1 || true)"
+        if [[ -n "$compiler_error" ]]; then
+            wireloom_cs_failure_reason+="; $compiler_error"
+        fi
+        echo "$wireloom_cs_failure_reason; pairings requiring this peer will be marked failed." >&2
+        grep -Ei 'error|warning|failed|exception' "$wireloom_build_log" | head -n 30 >&2 || true
+    elif [[ "$cpp_compile_only" == "1" ]]; then
+        tail -n 8 "$wireloom_build_log"
+    fi
 
     generated_root="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/obj/wireloom-generated"
     registry="$case_dir/case.json"
@@ -543,6 +611,8 @@ for case_id in "${case_ids[@]}"; do
     idl_relative="${discovered[2]}"
     case_defines=("${discovered[@]:3}")
     fi
+    mapfile -t rti_cpp_codegen_options < <(matrix_tool case-field "$manifest" "$case_id" rti-cpp-codegen-options)
+    mapfile -t rti_cpp_idl_adaptations < <(matrix_tool case-field "$manifest" "$case_id" rti-cpp-idl-adaptations)
     cs_peer="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/bin/Release/net10.0/WireCompatibility.${case_id}.dll"
 
     define_args=()
@@ -554,6 +624,7 @@ for case_id in "${case_ids[@]}"; do
     if [[ -f "$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/$case_id.idl" ]]; then
         idl_path="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/$case_id.idl"
     fi
+    if [[ "$cpp_compile_only" != "1" ]]; then
     rti_csharp_dir="$case_dir/rti-csharp-generated"
     rti_cs_peer="$case_dir/rti-bin/WireCompatibility.RtiOracleProbe.dll"
     rti_build_log="$case_dir/rti-csharp-build.log"
@@ -605,6 +676,11 @@ for case_id in "${case_ids[@]}"; do
                 "$rti_csharp_dir/${case_id}Plugin.cs"
         fi
     fi
+    if [[ "$rti_csharp_generated" == 1 && "$case_id" == 07-union-char-numeric* ]]; then
+        # Apply the documented post-generation binding corrections, preserving
+        # declared character values and the incoming fallback discriminator.
+        matrix_tool adapt-rti-characters csharp "$case_id" "$rti_csharp_dir"
+    fi
     if [[ "$rti_csharp_generated" == 1 ]]; then
         rti_cs_failure_reason="RTI C# generated-type discovery failed for $case_id"
     fi
@@ -613,6 +689,7 @@ for case_id in "${case_ids[@]}"; do
         rti_type_name="$(matrix_tool json-field "$oracle_registry" rtiCSharpType)"
         if dotnet build "$rti_csharp_project" --no-restore --configuration Release --verbosity quiet \
             -p:RtiOracleSourceDir="$rti_csharp_dir" \
+            -p:WireCompatibilityCase="$case_id" \
             -p:BaseIntermediateOutputPath="$case_dir/rti-obj/" \
             -p:MSBuildProjectExtensionsPath="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/RtiOracleProbe/obj/" \
             -p:OutputPath="$case_dir/rti-bin/" > "$rti_build_log" 2>&1; then
@@ -634,6 +711,7 @@ for case_id in "${case_ids[@]}"; do
         overall_status=1
         echo "$rti_cs_failure_reason; its matrix pairings will be marked failed." >&2
     fi
+    fi
     # Normally both peers use the same corpus IDL. These two adaptations keep
     # RTI C++ generation possible while preserving the intended wire shape:
     # rtiddsgen cannot parse wchar union labels, and it rejects the C#-only
@@ -644,19 +722,32 @@ for case_id in "${case_ids[@]}"; do
         # RTI ignores this mapping on the C# side. Generate a standard C++ peer
         # while preserving the original type shape and XCDR2 requirement.
         sed '/@language_binding(FLAT_DATA)/d' "$idl_path" > "$native_dir/idl.idl"
+    elif [[ " ${rti_cpp_idl_adaptations[*]} " == *" ${rti_version}:numeric-char-labels "* ]]; then
+        # Numeric char labels preserve the declared values in RTI scratch IDL.
+        sed "s/case '\\\\0':/case 0:/; s/case '~':/case 126:/" \
+            "$idl_path" > "$native_dir/idl.idl"
     else
         cp "$idl_path" "$native_dir/idl.idl"
     fi
     rtiddsgen_args=(
-        -language C++11 -replace -generateIncludeFiles -d "$native_dir"
+        -language C++11 -replace
+        "${rti_cpp_codegen_options[@]}"
         "${define_args[@]}"
         -I "$repo_root/docs/corpus/idl"
         -I "$repo_root/docs/corpus/idl/includes"
-        "$native_dir/idl.idl"
     )
+    if [[ "$rti_version" == "7.7.0" ]]; then
+        rtiddsgen_args+=( -generateIncludeFiles )
+    fi
+    rtiddsgen_args+=( -d "$native_dir" "$native_dir/idl.idl" )
     if [[ "$case_id" != "07-union-wchar-label" ]]; then
-        run_tool "rtiddsgen for $case_id" "$case_dir/rtiddsgen.log" \
-            "$NDDSHOME/bin/rtiddsgen" "${rtiddsgen_args[@]}"
+        if ! run_tool "rtiddsgen for $case_id" "$case_dir/rtiddsgen.log" \
+            "$NDDSHOME/bin/rtiddsgen" "${rtiddsgen_args[@]}"; then
+            printf '%s\trtiddsgen-failed\tsee %s\n' "$case_id" "$case_dir/rtiddsgen.log" >> "$cpp_compilation_tsv"
+            overall_status=1
+            end_workflow_group
+            continue
+        fi
     fi
 
     declare -A generated_include_sources=()
@@ -671,8 +762,13 @@ for case_id in "${case_ids[@]}"; do
                 -I "$repo_root/docs/corpus/idl/includes"
                 "$include_source"
             )
-            run_tool "rtiddsgen include for $case_id" "$case_dir/rtiddsgen-include.log" \
-                "$NDDSHOME/bin/rtiddsgen" "${dependency_args[@]}"
+            if ! run_tool "rtiddsgen include for $case_id" "$case_dir/rtiddsgen-include.log" \
+                "$NDDSHOME/bin/rtiddsgen" "${dependency_args[@]}"; then
+                printf '%s\trtiddsgen-include-failed\tsee %s\n' "$case_id" "$case_dir/rtiddsgen-include.log" >> "$cpp_compilation_tsv"
+                overall_status=1
+                end_workflow_group
+                continue 2
+            fi
             generated_include_sources[$include_source]=1
         fi
 
@@ -686,8 +782,8 @@ for case_id in "${case_ids[@]}"; do
     done < <(matrix_tool includes "$native_dir/idl.idl" "$repo_root/docs/corpus/idl" "$repo_root/docs/corpus/idl/includes")
     cpp_template_type="$cpp_type"
     cmake_adaptation_args=()
-    if [[ "$case_id" == "07-union-char-boundaries" ]]; then
-        cmake_adaptation_args+=( -DWIRELOOM_CHAR8_LITERAL_FIXTURE=ON )
+    if [[ "$rti_version" == "7.3.1" ]]; then
+        cmake_adaptation_args+=( -DWIRELOOM_RTI_7_3_1=ON )
     fi
     if ccache_path="$(command -v ccache || true)" && [[ -n "$ccache_path" ]]; then
         cmake_adaptation_args+=( "-DCMAKE_CXX_COMPILER_LAUNCHER=$ccache_path" )
@@ -724,21 +820,55 @@ for case_id in "${case_ids[@]}"; do
         # Adjust scratch reference code only; the declared IDL shape is intact.
         grep -F 'Node_g_tc_children_array._data._typeCode' "$native_dir/idl.cxx" >/dev/null
         sed -i '/Node_g_tc_children_array._data._typeCode/s/::get().native()/::get(\&node).native()/' "$native_dir/idl.cxx"
+        if [[ "$rti_version" == "7.3.1" ]]; then
+            # Code Generator 4.3.1 emits this recursive TypeCode reference
+            # without the containing IDL module qualification.
+            sed -i 's/dynamic_type< Node>/dynamic_type< ::CorpusOptionalRecursiveArray::Node>/g' \
+                "$native_dir/idl.cxx"
+        fi
         cmake_adaptation_args+=( -DWIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE=ON )
+    fi
+    if [[ "$case_id" == "06-aggregates" && "$rti_version" == "7.3.1" ]]; then
+        # Code Generator 4.3.1 has the same missing qualification for the
+        # recursive aggregate TypeCode reference.
+        sed -i 's/dynamic_type< Recursive>/dynamic_type< ::CorpusAggregates::Recursive>/g' \
+            "$native_dir/idl.cxx"
+    fi
+    if [[ "$case_id" == "07-union-char-numeric-255" ]]; then
+        # RTI's native char label lookup requires the signed byte representation.
+        matrix_tool adapt-rti-characters cpp "$case_id" "$native_dir"
     fi
     sed "s|@IDL_BASE@|idl|g; s|@CPP_TYPE@|$cpp_template_type|g" \
         "$native_template/main.cpp.in" > "$native_dir/main.cpp"
     cp "$native_template/typed-fixture-peer.hpp.in" "$native_dir/typed-fixture-peer.hpp"
 
     cp "$native_template/CMakeLists.txt" "$native_dir/CMakeLists.txt"
-    run_tool "CMake configure for $case_id" "$case_dir/cmake-configure.log" \
+    if ! run_tool "CMake configure for $case_id" "$case_dir/cmake-configure.log" \
         cmake -S "$native_dir" -B "$native_dir/build" \
         -DCMAKE_MODULE_PATH="$NDDSHOME/resource/cmake" \
-        -DCONNEXTDDS_ARCH=x64Linux4gcc8.5.0 "${cmake_adaptation_args[@]}"
-    run_tool "C++ build for $case_id" "$case_dir/cmake-build.log" \
-        cmake --build "$native_dir/build" --parallel 2
+        -DCONNEXTDDS_ARCH="$connextdds_arch" "${cmake_adaptation_args[@]}"; then
+        printf '%s\tcmake-configure-failed\tsee %s\n' "$case_id" "$case_dir/cmake-configure.log" >> "$cpp_compilation_tsv"
+        overall_status=1
+        end_workflow_group
+        continue
+    fi
+    if ! run_tool "C++ build for $case_id" "$case_dir/cmake-build.log" \
+        cmake --build "$native_dir/build" --parallel 2; then
+        overall_status=1
+        echo "RTI C++ peer failed to compile for $case_id; see $case_dir/cmake-build.log." >&2
+        printf '%s\tcompile-failed\tsee %s\n' "$case_id" "$case_dir/cmake-build.log" >> "$cpp_compilation_tsv"
+        end_workflow_group
+        continue
+    fi
+    printf '%s\tcompiled\t%s\n' "$case_id" "$native_dir/build/wire-peer" >> "$cpp_compilation_tsv"
     cpp_peer="$native_dir/build/wire-peer"
     printf '%s\t%s\t%s\n' "$case_id" "$type_name" "$cpp_type" >> "$cases_tsv"
+
+    if [[ "$cpp_compile_only" == "1" ]]; then
+        echo "RTI C++ peer compiled: $case_id"
+        end_workflow_group
+        continue
+    fi
 
     # Run both same-language controls before the cross-language checks. A
     # failed pairing is recorded but does not stop later cases from running.

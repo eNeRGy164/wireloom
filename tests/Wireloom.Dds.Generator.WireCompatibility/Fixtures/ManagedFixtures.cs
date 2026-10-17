@@ -13,6 +13,8 @@ internal static partial class ManagedFixtures
     {
         return options.CaseId switch
         {
+            "09-defaults-ranges" => CreateDefaultsAndRangesFixture<T>(options.Fixture),
+            "01-boundaries" or "01-full-widths" => CreatePrimitiveBoundaryFixture<T>(options.CaseId, options.Fixture),
             "09-optional-recursive-array" => CreateOptionalRecursiveArrayFixture<T>(options.Fixture),
             "09-optional-string-sequences" => CreateOptionalStringSequenceFixture<T>(options.Fixture),
             "09-optional-aggregate-member" => CreateOptionalAggregateMemberFixture<T>(options.Fixture),
