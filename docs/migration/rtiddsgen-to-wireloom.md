@@ -45,7 +45,7 @@ prove DDS wire interoperability.
    </PropertyGroup>
    <ItemGroup>
      <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
-     <PackageReference Include="Wireloom.Dds.Generator" Version="0.3.0" PrivateAssets="all" />
+     <PackageReference Include="Wireloom.Dds.Generator" Version="0.4.0" PrivateAssets="all" />
      <DdsIdl Include="Contracts\Telemetry.idl" Defines="PRODUCT=Widget" />
    </ItemGroup>
    ```
@@ -132,6 +132,7 @@ difference.
 | Direct arrays of sequence members | RTI warns and ignores the direct sequence-array layer in the retained oracle.                                   | Reports `DDSG0105`; generated shape may not preserve IDL semantics.                        | Treat this as a contract gap. The documented sequence-typedef workaround needs separate qualification for the application's shape.    |
 | Union branch access               | Retained RTI output exposes branch members and rejects inactive-branch reads with `InvalidOperationException`.  | Exposes branch members and rejects inactive-branch reads with `InvalidOperationException`. | The covered public behavior is the same; validate additional discriminator and default-branch shapes individually.                    |
 | Alias `ToString` output           | RTI has known unsupported scalar/collection alias formatting paths in the retained baseline.                    | Adds typed formatting for aliases where the RTI path is unsupported.                       | This improves diagnostic display and can change text observed in logs or snapshots. It does not change the DDS sample representation. |
+| Collection element alias mapping  | Primitive/string aliases erase; enum/aggregate aliases map to their targets; nested collection aliases stay named.            | Follows the same target-kind mapping.                                                        | Wireloom 0.3.0 callers may need to use primitive values instead of scalar-wrapper collection elements.                               |
 
 The runtime contract suite also exercises collection copying and ownership,
 optional presence, native conversion, and cleanup. Those tests establish

@@ -30,14 +30,11 @@ Your application continues to use RTI's runtime, APIs, and configuration.
   bounds, defaults, member IDs, and union branch selection. Remarks, examples,
   exception documentation, and RTI API links put the contract beside the code
   you are writing.
-- **Keep strict C# builds clean.** Generated code uses nullable reference types,
-  file-scoped namespaces, collection expressions, and current .NET APIs. In
-  the October 9, 2026 comparison across the same **65 corpus cases**, Wireloom
-  output produced **0 compiler warnings**, compared with **2,686** in the
-  retained RTI output, with nullable and XML-documentation checks enabled.
-  Roslyn supplies generated documents to compilation, so they do not need to
-  live in the codebase as ordinary source files. See the [quality report](docs/corpus/csharp-quality.md)
-  for the measured versions, compiler checks, and separate Qodana findings.
+- **Keep generated C# clean and readable.** It compiles with zero warnings. In
+  the reported Qodana scans, Wireloom had 1,290 raw findings versus 8,544 for
+  retained RTI output; after review, six Wireloom warnings remained. This keeps
+  generated-code noise low so issues in your code stand out. See the
+  [quality report](docs/corpus/csharp-quality.md) for scope and results.
 - **Make generation setup repeatable.** One `PackageReference` and one
   `DdsIdl` item connect IDL to the build. Includes and defines are declarative
   MSBuild settings carried with the project. A clean restore and build use that
@@ -78,8 +75,8 @@ the member is absent:
 ### Less tooling to install
 
 Generate C# from IDL using the SDK already building your application and a
-small generator package. The local Wireloom 0.3.0 package measured
-**169,012 bytes (about 170 kB)**. The RTI runtime remains a NuGet dependency
+small generator package. The locally packed Wireloom 0.4.0 package measured
+**175,113 bytes (about 175 kB)**. The RTI runtime remains a NuGet dependency
 in either workflow; the package measurement covers generation tooling.
 
 The footprint matters in practice: provisioning RTI generation tooling added
@@ -131,7 +128,7 @@ Replace `WireloomQuickstart.csproj` with:
   <ItemGroup>
     <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
     <PackageReference Include="Wireloom.Dds.Generator"
-                      Version="0.3.0"
+                      Version="0.4.0"
                       PrivateAssets="all" />
     <DdsIdl Include="Contracts\Telemetry.idl" />
   </ItemGroup>
