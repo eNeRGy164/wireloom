@@ -32,6 +32,6 @@ internal class ScalarsPlugin : InterpretedTypePlugin<Scalars, ScalarsUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<ScalarsUnmanaged>(dtf, "Scalars", tsf.CreateSequenceWithAccessInfo(dtf, ScalarSupport.Instance.GetDynamicTypeInternal(isPublic), 100));
+        return tsf.CreateAliasWithAccessInfo<ScalarsUnmanaged>(dtf, "Scalars", tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), 100));
     }
 }

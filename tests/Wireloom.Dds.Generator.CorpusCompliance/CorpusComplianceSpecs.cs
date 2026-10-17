@@ -309,19 +309,9 @@ public sealed class CorpusComplianceSpecs
             var actualType = actual.Single(candidate => candidate.Name == expectedType.Name && candidate.Kind == expectedType.Kind);
             foreach (var expectedProperty in expectedType.Properties)
             {
-                var expectedManagedType = expectedProperty.Type;
-                if (corpusCase.Id == "05-unbounded-sequence-aliases" &&
-                    expectedType.Name == "CorpusUnboundedSequences.Scalars" && expectedProperty.Name == "Value")
-                {
-                    // RTI erases this scalar element typedef. Wireloom preserves its managed wrapper.
-                    // Assert both shapes explicitly; do not normalize unrelated aliases away.
-                    expectedProperty.Type.ShouldBe("ISequence<int>");
-                    expectedManagedType = "ISequence<Scalar>";
-                }
-
                 actualType.Properties.ShouldContain(
-                    candidate => candidate.Name == expectedProperty.Name && candidate.Type == expectedManagedType,
-                    $"{corpusCase.Id}: generated output is missing {expectedType.Name}.{expectedProperty.Name} with type {expectedManagedType}.");
+                    candidate => candidate.Name == expectedProperty.Name && candidate.Type == expectedProperty.Type,
+                    $"{corpusCase.Id}: generated output is missing {expectedType.Name}.{expectedProperty.Name} with type {expectedProperty.Type}.");
             }
 
             expectedType.EnumMembers.ShouldBeSubsetOf(actualType.EnumMembers,

@@ -57,7 +57,7 @@ public class ScalarsSupport : TypeSupport<Scalars>
                 text.Append(", ");
             }
 
-            text.Append(value[index]?.ToString() ?? "null");
+            text.Append(global::System.Convert.ToString(value[index], global::System.Globalization.CultureInfo.InvariantCulture));
         }
         text.Append(']');
 

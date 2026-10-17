@@ -14,7 +14,7 @@ public sealed class SequenceCopySpecs
         var boundedSource = new Children(ChildrenWithChild());
         var unboundedSource = new UnboundedChildren(ChildrenWithChild());
         var chainSource = new ChildrenChain(new Children(ChildrenWithChild()));
-        var aliasSource = new AliasChildren(new Sequence<ChildAlias> { new ChildAlias(ChildWithValue()) });
+        var aliasSource = new AliasChildren(new Sequence<Child> { ChildWithValue() });
 
         // Act
         var boundedCopy = new Children(boundedSource);
@@ -30,29 +30,29 @@ public sealed class SequenceCopySpecs
         chainCopy.Value.Value[0].ShouldNotBeSameAs(chainSource.Value.Value[0]);
         aliasCopy.Equals(aliasSource).ShouldBeTrue();
         aliasCopy.GetHashCode().ShouldBe(aliasSource.GetHashCode());
-        aliasCopy.Value[0].Value.ShouldNotBeSameAs(aliasSource.Value[0].Value);
+        aliasCopy.Value[0].ShouldNotBeSameAs(aliasSource.Value[0]);
 
         boundedCopy.Value[0].id = 99;
         boundedCopy.Value[0].values[0] = 77;
         unboundedCopy.Value[0].id = 98;
         chainCopy.Value.Value[0].id = 97;
-        aliasCopy.Value[0].Value.id = 96;
-        aliasCopy.Value[0].Value.values[0] = 95;
+        aliasCopy.Value[0].id = 96;
+        aliasCopy.Value[0].values[0] = 95;
 
         boundedSource.Value[0].id.ShouldBe(17);
         boundedSource.Value[0].values[0].ShouldBe(7);
         unboundedSource.Value[0].id.ShouldBe(17);
         chainSource.Value.Value[0].id.ShouldBe(17);
-        aliasSource.Value[0].Value.id.ShouldBe(17);
-        aliasSource.Value[0].Value.values[0].ShouldBe(7);
+        aliasSource.Value[0].id.ShouldBe(17);
+        aliasSource.Value[0].values[0].ShouldBe(7);
     }
 
-    /// <summary>Copies scalar alias wrappers independently when they are sequence elements.</summary>
+    /// <summary>Copies scalar alias elements as primitive values.</summary>
     [Fact]
-    public void SequenceTypedefCopiesOwnScalarAliasElements()
+    public void SequenceTypedefCopiesScalarAliasElementsByValue()
     {
         // Arrange
-        var source = new Scalars(new Sequence<Scalar> { new Scalar(17) });
+        var source = new Scalars(new Sequence<int> { 17 });
 
         // Act
         var copy = new Scalars(source);
@@ -61,13 +61,12 @@ public sealed class SequenceCopySpecs
         copy.Equals(source).ShouldBeTrue();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
         copy.Value.ShouldNotBeSameAs(source.Value);
-        copy.Value[0].ShouldNotBeSameAs(source.Value[0]);
 
         // Act
-        copy.Value[0].Value = 99;
+        copy.Value[0] = 99;
 
         // Assert
-        source.Value[0].Value.ShouldBe(17);
+        source.Value[0].ShouldBe(17);
     }
 
     /// <summary>Copies union elements and their active aggregate branches independently.</summary>

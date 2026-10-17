@@ -10,13 +10,8 @@ Observe("unbounded-struct-typedef", () => new UnboundedChildren(ChildrenValues()
     value => value.Value, value => value.Value[0]);
 Observe("sequence-alias-chain", () => new ChildrenChain(new Children(ChildrenValues())), value => new ChildrenChain(value),
     value => value.Value.Value, value => value.Value.Value[0]);
-#if WIRELOOM
-Observe("aggregate-alias-elements", () => new AliasChildren(new Sequence<ChildAliasChain> { new ChildAliasChain(ChildValue()) }), value => new AliasChildren(value),
-    value => value.Value, value => value.Value[0].Value);
-#else
 Observe("aggregate-alias-elements", () => new AliasChildren(ChildrenValues()), value => new AliasChildren(value),
     value => value.Value, value => value.Value[0]);
-#endif
 Observe("union-elements", () => new Choices(new Sequence<Choice> { new Choice { child = ChildValue() } }), value => new Choices(value),
     value => value.Value, value => value.Value[0].child);
 Observe("aggregate-array-control", () => new Points(new[] { ChildValue(), ChildValue() }), value => new Points(value),
@@ -38,18 +33,10 @@ var numbersCopy = new Numbers(numbers);
 numbersCopy.Value[0] = 99;
 observations.Add(new { shape = "primitive-sequence-control", storageShared = ReferenceEquals(numbers.Value, numbersCopy.Value), sourceValueAfter = numbers.Value[0] });
 
-#if WIRELOOM
-var scalar = new Scalar(17);
-var scalars = new Scalars(new Sequence<Scalar> { scalar });
-var scalarsCopy = new Scalars(scalars);
-scalarsCopy.Value[0].Value = 99;
-observations.Add(new { shape = "scalar-alias-elements", elementShared = ReferenceEquals(scalars.Value[0], scalarsCopy.Value[0]), sourceValueAfter = scalars.Value[0].Value, elementApi = "Scalar" });
-#else
 var scalars = new Scalars(new Sequence<int> { 17 });
 var scalarsCopy = new Scalars(scalars);
 scalarsCopy.Value[0] = 99;
-observations.Add(new { shape = "scalar-alias-elements", sourceValueAfter = scalars.Value[0], elementApi = "int (RTI erases element alias)" });
-#endif
+observations.Add(new { shape = "scalar-alias-elements", sourceValueAfter = scalars.Value[0], elementApi = "int" });
 
 var supplied = ChildrenValues();
 var fromValue = new Children(supplied);

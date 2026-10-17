@@ -25,7 +25,7 @@ public sealed class UnboundedAliasSpecs
         new NumbersChain(new Numbers(new Sequence<int> { 17 })).ToString().ShouldBe("[17]");
         new States(new Sequence<State> { State.Ready }).ToString().ShouldBe("[Ready]");
         new Children(new Sequence<Child> { child }).ToString().ShouldBe($"[{child}]");
-        new Scalars(new Sequence<Scalar> { new(17) }).ToString().ShouldBe("[17]");
+        new Scalars(new Sequence<int> { 17 }).ToString().ShouldBe("[17]");
         new Texts(new Sequence<string> { "hello" }).ToString().ShouldBe("[\"hello\"]");
         new WideTexts(new Sequence<string> { "世界" }).ToString().ShouldBe("[\"世界\"]");
         new BoundedTexts(new Sequence<string> { "hello" }).ToString().ShouldBe("[\"hello\"]");
@@ -109,7 +109,9 @@ public sealed class UnboundedAliasSpecs
         // Assert
         numbers.RelatedType.ShouldBeOfType<SequenceType>().Bounds.ShouldBe(100U);
         children.RelatedType.ShouldBeOfType<SequenceType>().Bounds.ShouldBe(100U);
-        scalars.RelatedType.ShouldBeOfType<SequenceType>().Bounds.ShouldBe(100U);
+        var scalarSequence = scalars.RelatedType.ShouldBeOfType<SequenceType>();
+        scalarSequence.Bounds.ShouldBe(100U);
+        scalarSequence.ContentType.Kind.ShouldBe(TypeKind.Int32);
         states.RelatedType.ShouldBeOfType<SequenceType>().Bounds.ShouldBe(100U);
         var textSequence = texts.RelatedType.ShouldBeOfType<SequenceType>();
         textSequence.Bounds.ShouldBe(100U);
