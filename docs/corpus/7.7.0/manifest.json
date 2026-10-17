@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "rtiProduct": "RTI Connext DDS",
+  "rtiddsgenVersion": "4.7.0",
+  "sharedCaseInventory": "../manifest.json",
+  "wireQualification": "qualified-evidence-indexed-in-root-feature-coverage",
+  "generatorSourceRoot": "generator",
+  "oracleRoot": "rtiddsgen/csharp",
+  "oracleCaseCount": 141
+}

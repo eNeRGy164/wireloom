@@ -1,0 +1,3714 @@
+{
+  "schemaVersion": 1,
+  "rtiVersion": "7.3.1",
+  "rtiddsgenVersion": "4.3.1",
+  "image": "rticom/connext-base:7.3.1@sha256:f33a61ec6381a8fb73cbb019fbb5c081f434dc5217eb14283fad995306be0f04",
+  "language": "C++11",
+  "sharedCaseInventory": "../../../manifest.json",
+  "capturedAtUtc": "2026-10-17T18:42:34+00:00",
+  "generatedCaseCount": 90,
+  "failedCaseCount": 51,
+  "cases": [
+    {
+      "id": "01-primitives",
+      "category": "features",
+      "idl": "idl/features/01-primitives.idl",
+      "input": "../../../idl/features/01-primitives.idl",
+      "sourceSha256": "146a8f893afa7bfcf66851a8bf03b7824fbb10e841a56cee1250f00ac7b78db0",
+      "generatedInputSha256": "146a8f893afa7bfcf66851a8bf03b7824fbb10e841a56cee1250f00ac7b78db0",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "01-primitives.cxx",
+        "01-primitives.hpp",
+        "01-primitivesPlugin.cxx",
+        "01-primitivesPlugin.hpp"
+      ],
+      "log": "features/01-primitives/rtiddsgen.log"
+    },
+    {
+      "id": "01-boundaries",
+      "category": "features",
+      "idl": "idl/features/01-boundaries.idl",
+      "input": "../../../idl/features/01-boundaries.idl",
+      "sourceSha256": "e6a282c68024672e859d6c99ab6718093cdb26263686d06dd2ef671ed825244f",
+      "generatedInputSha256": "e6a282c68024672e859d6c99ab6718093cdb26263686d06dd2ef671ed825244f",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "01-boundaries.cxx",
+        "01-boundaries.hpp",
+        "01-boundariesPlugin.cxx",
+        "01-boundariesPlugin.hpp"
+      ],
+      "log": "features/01-boundaries/rtiddsgen.log"
+    },
+    {
+      "id": "01-full-widths",
+      "category": "features",
+      "idl": "idl/features/01-full-widths.idl",
+      "input": "../../../idl/features/01-full-widths.idl",
+      "sourceSha256": "359d723a19395edb48ce28cc6bf37b5b05300ac324fcbd46447fc38a29e80c6a",
+      "generatedInputSha256": "359d723a19395edb48ce28cc6bf37b5b05300ac324fcbd46447fc38a29e80c6a",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "01-full-widths.cxx",
+        "01-full-widths.hpp",
+        "01-full-widthsPlugin.cxx",
+        "01-full-widthsPlugin.hpp"
+      ],
+      "log": "features/01-full-widths/rtiddsgen.log"
+    },
+    {
+      "id": "02-names-constants",
+      "category": "features",
+      "idl": "idl/features/02-names-constants.idl",
+      "input": "../../../idl/features/02-names-constants.idl",
+      "sourceSha256": "17096dec8f8ba45655fa79252db6047af48673bacd329e6ed0ed2cfe5aa5d7d7",
+      "generatedInputSha256": "17096dec8f8ba45655fa79252db6047af48673bacd329e6ed0ed2cfe5aa5d7d7",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "02-names-constants.cxx",
+        "02-names-constants.hpp",
+        "02-names-constantsPlugin.cxx",
+        "02-names-constantsPlugin.hpp"
+      ],
+      "log": "features/02-names-constants/rtiddsgen.log"
+    },
+    {
+      "id": "02-scopes",
+      "category": "features",
+      "idl": "idl/features/02-scopes.idl",
+      "input": "../../../idl/features/02-scopes.idl",
+      "sourceSha256": "6baf9a74ef130f2f7f56b8ae047796bae50380d809a913f2d0f899208e71d199",
+      "generatedInputSha256": "6baf9a74ef130f2f7f56b8ae047796bae50380d809a913f2d0f899208e71d199",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "02-scopes.cxx",
+        "02-scopes.hpp",
+        "02-scopesPlugin.cxx",
+        "02-scopesPlugin.hpp"
+      ],
+      "log": "features/02-scopes/rtiddsgen.log"
+    },
+    {
+      "id": "02-constant-expressions",
+      "category": "features",
+      "idl": "idl/features/02-constant-expressions.idl",
+      "input": "../../../idl/features/02-constant-expressions.idl",
+      "sourceSha256": "c7e60476a23282aa4e415c4168b7d3fed071e13b1d8d7b2194bb6c0b17427af5",
+      "generatedInputSha256": "c7e60476a23282aa4e415c4168b7d3fed071e13b1d8d7b2194bb6c0b17427af5",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "02-constant-expressions.cxx",
+        "02-constant-expressions.hpp",
+        "02-constant-expressionsPlugin.cxx",
+        "02-constant-expressionsPlugin.hpp"
+      ],
+      "log": "features/02-constant-expressions/rtiddsgen.log"
+    },
+    {
+      "id": "02-formatting",
+      "category": "features",
+      "idl": "idl/features/02-formatting.idl",
+      "input": "../../../idl/features/02-formatting.idl",
+      "sourceSha256": "c6579187c4db535cba29550ce3404b89eb05b25524a987880b905917ece5d2ff",
+      "generatedInputSha256": "c6579187c4db535cba29550ce3404b89eb05b25524a987880b905917ece5d2ff",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "02-formatting.cxx",
+        "02-formatting.hpp",
+        "02-formattingPlugin.cxx",
+        "02-formattingPlugin.hpp"
+      ],
+      "log": "features/02-formatting/rtiddsgen.log"
+    },
+    {
+      "id": "02-multiple",
+      "category": "features",
+      "idl": "idl/features/02-multiple.idl",
+      "input": "../../../idl/features/02-multiple.idl",
+      "sourceSha256": "3fdbaac615089748dc87faa2676e7226896ace87cbdbfe075090b4501133f5f2",
+      "generatedInputSha256": "3fdbaac615089748dc87faa2676e7226896ace87cbdbfe075090b4501133f5f2",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "02-multiple.cxx",
+        "02-multiple.hpp",
+        "02-multiplePlugin.cxx",
+        "02-multiplePlugin.hpp"
+      ],
+      "log": "features/02-multiple/rtiddsgen.log"
+    },
+    {
+      "id": "03-enums-aliases",
+      "category": "features",
+      "idl": "idl/features/03-enums-aliases.idl",
+      "input": "../../../idl/features/03-enums-aliases.idl",
+      "sourceSha256": "759f528e47008f0c8c190b3b2df3b339078490f185c578dc2aee124bd160d6fe",
+      "generatedInputSha256": "759f528e47008f0c8c190b3b2df3b339078490f185c578dc2aee124bd160d6fe",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "03-enums-aliases.cxx",
+        "03-enums-aliases.hpp",
+        "03-enums-aliasesPlugin.cxx",
+        "03-enums-aliasesPlugin.hpp"
+      ],
+      "log": "features/03-enums-aliases/rtiddsgen.log"
+    },
+    {
+      "id": "03-enum-values-prefix",
+      "category": "features",
+      "idl": "idl/features/03-enum-values-prefix.idl",
+      "input": "../../../idl/features/03-enum-values-prefix.idl",
+      "sourceSha256": "f8b78b800b862fcce26ad7ed2b95f771edfb938152aaea38e158b4bb67f99a7b",
+      "generatedInputSha256": "f8b78b800b862fcce26ad7ed2b95f771edfb938152aaea38e158b4bb67f99a7b",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "03-enum-values-prefix.cxx",
+        "03-enum-values-prefix.hpp",
+        "03-enum-values-prefixPlugin.cxx",
+        "03-enum-values-prefixPlugin.hpp"
+      ],
+      "log": "features/03-enum-values-prefix/rtiddsgen.log"
+    },
+    {
+      "id": "03-enum-values-explicit",
+      "category": "features",
+      "idl": "idl/features/03-enum-values-explicit.idl",
+      "input": "../../../idl/features/03-enum-values-explicit.idl",
+      "sourceSha256": "4013811a3503dfbb756c0ec6df12c128943c3e2c46d5adf3f50be17a6886595b",
+      "generatedInputSha256": "4013811a3503dfbb756c0ec6df12c128943c3e2c46d5adf3f50be17a6886595b",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "03-enum-values-explicit.cxx",
+        "03-enum-values-explicit.hpp",
+        "03-enum-values-explicitPlugin.cxx",
+        "03-enum-values-explicitPlugin.hpp"
+      ],
+      "log": "features/03-enum-values-explicit/rtiddsgen.log"
+    },
+    {
+      "id": "03-alias-aggregate",
+      "category": "features",
+      "idl": "idl/features/03-alias-aggregate.idl",
+      "input": "../../../idl/features/03-alias-aggregate.idl",
+      "sourceSha256": "a4a3d041c49b7da04272e51a9b6affb6a762f5d1b1702573215bd4736a103963",
+      "generatedInputSha256": "a4a3d041c49b7da04272e51a9b6affb6a762f5d1b1702573215bd4736a103963",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "03-alias-aggregate.cxx",
+        "03-alias-aggregate.hpp",
+        "03-alias-aggregatePlugin.cxx",
+        "03-alias-aggregatePlugin.hpp"
+      ],
+      "log": "features/03-alias-aggregate/rtiddsgen.log"
+    },
+    {
+      "id": "03-alias-collections",
+      "category": "features",
+      "idl": "idl/features/03-alias-collections.idl",
+      "input": "../../../idl/features/03-alias-collections.idl",
+      "sourceSha256": "e0a118331a9ea69c46e14f5734d8ce7d21e45adc5be4e965b58b88d2a24b981d",
+      "generatedInputSha256": "e0a118331a9ea69c46e14f5734d8ce7d21e45adc5be4e965b58b88d2a24b981d",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "03-alias-collections.cxx",
+        "03-alias-collections.hpp",
+        "03-alias-collectionsPlugin.cxx",
+        "03-alias-collectionsPlugin.hpp"
+      ],
+      "log": "features/03-alias-collections/rtiddsgen.log"
+    },
+    {
+      "id": "04-strings",
+      "category": "features",
+      "idl": "idl/features/04-strings.idl",
+      "input": "../../../idl/features/04-strings.idl",
+      "sourceSha256": "0688ed61d8091be446962d6a89081534f731a6456bbec4029c77a3c9cd0c8db8",
+      "generatedInputSha256": "0688ed61d8091be446962d6a89081534f731a6456bbec4029c77a3c9cd0c8db8",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "04-strings.cxx",
+        "04-strings.hpp",
+        "04-stringsPlugin.cxx",
+        "04-stringsPlugin.hpp"
+      ],
+      "log": "features/04-strings/rtiddsgen.log"
+    },
+    {
+      "id": "04-boundaries",
+      "category": "features",
+      "idl": "idl/features/04-boundaries.idl",
+      "input": "../../../idl/features/04-boundaries.idl",
+      "sourceSha256": "09d4766dd970305438fbeeff3613c5445c58c3347c042a5e2d5c9fc0a879ed10",
+      "generatedInputSha256": "09d4766dd970305438fbeeff3613c5445c58c3347c042a5e2d5c9fc0a879ed10",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "04-boundaries.cxx",
+        "04-boundaries.hpp",
+        "04-boundariesPlugin.cxx",
+        "04-boundariesPlugin.hpp"
+      ],
+      "log": "features/04-boundaries/rtiddsgen.log"
+    },
+    {
+      "id": "05-collections",
+      "category": "features",
+      "idl": "idl/features/05-collections.idl",
+      "input": "../../../idl/features/05-collections.idl",
+      "sourceSha256": "1a566c9000fcea9df5cb1bb95e97bdce43cdb83a34f0065bfaa929248db2eca9",
+      "generatedInputSha256": "1a566c9000fcea9df5cb1bb95e97bdce43cdb83a34f0065bfaa929248db2eca9",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "05-collections.cxx",
+        "05-collections.hpp",
+        "05-collectionsPlugin.cxx",
+        "05-collectionsPlugin.hpp"
+      ],
+      "log": "features/05-collections/rtiddsgen.log"
+    },
+    {
+      "id": "05-shapes",
+      "category": "features",
+      "idl": "idl/features/05-shapes.idl",
+      "input": "../../../idl/features/05-shapes.idl",
+      "sourceSha256": "5d2de4ed66de4d918b829ee9f8d3d74753b675ce8d9899d92367c1734b49bc07",
+      "generatedInputSha256": "5d2de4ed66de4d918b829ee9f8d3d74753b675ce8d9899d92367c1734b49bc07",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "05-shapes.cxx",
+        "05-shapes.hpp",
+        "05-shapesPlugin.cxx",
+        "05-shapesPlugin.hpp"
+      ],
+      "log": "features/05-shapes/rtiddsgen.log"
+    },
+    {
+      "id": "05-array-of-sequences",
+      "category": "features",
+      "idl": "idl/features/05-array-of-sequences.idl",
+      "input": "../../../idl/features/05-array-of-sequences.idl",
+      "sourceSha256": "ee438aa923bca8dd73cb76934b64f120df765187344a8378997301128de61d81",
+      "generatedInputSha256": "ee438aa923bca8dd73cb76934b64f120df765187344a8378997301128de61d81",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "05-array-of-sequences.cxx",
+        "05-array-of-sequences.hpp",
+        "05-array-of-sequencesPlugin.cxx",
+        "05-array-of-sequencesPlugin.hpp"
+      ],
+      "log": "features/05-array-of-sequences/rtiddsgen.log"
+    },
+    {
+      "id": "06-aggregates",
+      "category": "features",
+      "idl": "idl/features/06-aggregates.idl",
+      "input": "../../../idl/features/06-aggregates.idl",
+      "sourceSha256": "ed9172573bcc1962e2ef8535a0ba0df200bd1d3fe57b279d8df4d57ee7351041",
+      "generatedInputSha256": "ed9172573bcc1962e2ef8535a0ba0df200bd1d3fe57b279d8df4d57ee7351041",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-unboundedSupport",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "06-aggregates.cxx",
+        "06-aggregates.hpp",
+        "06-aggregatesPlugin.cxx",
+        "06-aggregatesPlugin.hpp"
+      ],
+      "log": "features/06-aggregates/rtiddsgen.log"
+    },
+    {
+      "id": "06-valuetypes",
+      "category": "features",
+      "idl": "idl/features/06-valuetypes.idl",
+      "input": "../../../idl/features/06-valuetypes.idl",
+      "sourceSha256": "fa195b5c2f826f8915725fc1f1c8170349ecb508644e5e7cc366cff89bc483c2",
+      "generatedInputSha256": "fa195b5c2f826f8915725fc1f1c8170349ecb508644e5e7cc366cff89bc483c2",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "06-valuetypes.cxx",
+        "06-valuetypes.hpp",
+        "06-valuetypesPlugin.cxx",
+        "06-valuetypesPlugin.hpp"
+      ],
+      "log": "features/06-valuetypes/rtiddsgen.log"
+    },
+    {
+      "id": "06-alias-composition",
+      "category": "features",
+      "idl": "idl/features/06-alias-composition.idl",
+      "input": "../../../idl/features/06-alias-composition.idl",
+      "sourceSha256": "bdad984fabe9e09fd818323f3302984efb0114d9afd629ab80972b27f637629b",
+      "generatedInputSha256": "bdad984fabe9e09fd818323f3302984efb0114d9afd629ab80972b27f637629b",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "06-alias-composition.cxx",
+        "06-alias-composition.hpp",
+        "06-alias-compositionPlugin.cxx",
+        "06-alias-compositionPlugin.hpp"
+      ],
+      "log": "features/06-alias-composition/rtiddsgen.log"
+    },
+    {
+      "id": "07-unions",
+      "category": "features",
+      "idl": "idl/features/07-unions.idl",
+      "input": "../../../idl/features/07-unions.idl",
+      "sourceSha256": "8fbfed15feb5f892fbe428f73abde1e563ec9d7e5bb38018c0ef5a4be9115af2",
+      "generatedInputSha256": "8fbfed15feb5f892fbe428f73abde1e563ec9d7e5bb38018c0ef5a4be9115af2",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-unions.cxx",
+        "07-unions.hpp",
+        "07-unionsPlugin.cxx",
+        "07-unionsPlugin.hpp"
+      ],
+      "log": "features/07-unions/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-enum",
+      "category": "features",
+      "idl": "idl/features/07-union-enum.idl",
+      "input": "../../../idl/features/07-union-enum.idl",
+      "sourceSha256": "4084e9256cc4156e1099fe5d59061146f49906ed7520a9dfb15e84ce13a04456",
+      "generatedInputSha256": "4084e9256cc4156e1099fe5d59061146f49906ed7520a9dfb15e84ce13a04456",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-enum.cxx",
+        "07-union-enum.hpp",
+        "07-union-enumPlugin.cxx",
+        "07-union-enumPlugin.hpp"
+      ],
+      "log": "features/07-union-enum/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-scoped",
+      "category": "features",
+      "idl": "idl/features/07-union-scoped.idl",
+      "input": "../../../idl/features/07-union-scoped.idl",
+      "sourceSha256": "229fc456da0345ba94f86a4def7cdba209184045582080253651180533155862",
+      "generatedInputSha256": "229fc456da0345ba94f86a4def7cdba209184045582080253651180533155862",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-scoped.cxx",
+        "07-union-scoped.hpp",
+        "07-union-scopedPlugin.cxx",
+        "07-union-scopedPlugin.hpp"
+      ],
+      "log": "features/07-union-scoped/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-multilabel",
+      "category": "features",
+      "idl": "idl/features/07-union-multilabel.idl",
+      "input": "../../../idl/features/07-union-multilabel.idl",
+      "sourceSha256": "5030b1b0b3c2a1573e5cfb33fcdd6dd6536a3017fd5def31abdf3034e27504c3",
+      "generatedInputSha256": "5030b1b0b3c2a1573e5cfb33fcdd6dd6536a3017fd5def31abdf3034e27504c3",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-multilabel.cxx",
+        "07-union-multilabel.hpp",
+        "07-union-multilabelPlugin.cxx",
+        "07-union-multilabelPlugin.hpp"
+      ],
+      "log": "features/07-union-multilabel/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-short",
+      "category": "features",
+      "idl": "idl/features/07-union-short.idl",
+      "input": "../../../idl/features/07-union-short.idl",
+      "sourceSha256": "b288f429c69de80cde2aded69f2fcf5fe4c2872164d367e0f70a7652cca141ce",
+      "generatedInputSha256": "b288f429c69de80cde2aded69f2fcf5fe4c2872164d367e0f70a7652cca141ce",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-short.cxx",
+        "07-union-short.hpp",
+        "07-union-shortPlugin.cxx",
+        "07-union-shortPlugin.hpp"
+      ],
+      "log": "features/07-union-short/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-short-boundaries",
+      "category": "features",
+      "idl": "idl/features/07-union-short-boundaries.idl",
+      "input": "../../../idl/features/07-union-short-boundaries.idl",
+      "sourceSha256": "2e6057708cef6b519bee48b7481ac07bd12f4cc916f13f3bdf6e172c1dd7c793",
+      "generatedInputSha256": "2e6057708cef6b519bee48b7481ac07bd12f4cc916f13f3bdf6e172c1dd7c793",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-short-boundaries.cxx",
+        "07-union-short-boundaries.hpp",
+        "07-union-short-boundariesPlugin.cxx",
+        "07-union-short-boundariesPlugin.hpp"
+      ],
+      "log": "features/07-union-short-boundaries/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-char",
+      "category": "features",
+      "idl": "idl/features/07-union-char.idl",
+      "input": "../../../idl/features/07-union-char.idl",
+      "sourceSha256": "1620376cfeb0808f7e43da47257b426d9fe121909247f8c4834d82844cfccd70",
+      "generatedInputSha256": "1620376cfeb0808f7e43da47257b426d9fe121909247f8c4834d82844cfccd70",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-char.cxx",
+        "07-union-char.hpp",
+        "07-union-charPlugin.cxx",
+        "07-union-charPlugin.hpp"
+      ],
+      "log": "features/07-union-char/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-char-numeric",
+      "category": "features",
+      "idl": "idl/features/07-union-char-numeric.idl",
+      "input": "../../../idl/features/07-union-char-numeric.idl",
+      "sourceSha256": "45aec84c4adfdffe1cfda0b27848bf3e68701d41fea2a7f45374bb1088d3fd13",
+      "generatedInputSha256": "45aec84c4adfdffe1cfda0b27848bf3e68701d41fea2a7f45374bb1088d3fd13",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-char-numeric.cxx",
+        "07-union-char-numeric.hpp",
+        "07-union-char-numericPlugin.cxx",
+        "07-union-char-numericPlugin.hpp"
+      ],
+      "log": "features/07-union-char-numeric/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-wchar-label",
+      "category": "features",
+      "idl": "idl/features/07-union-wchar-label.idl",
+      "input": "../../../idl/features/07-union-wchar-label.idl",
+      "sourceSha256": "395b67d04690979967d6a555e83024e7a68eeec5df220bd694f9a71cfd25c253",
+      "generatedInputSha256": "395b67d04690979967d6a555e83024e7a68eeec5df220bd694f9a71cfd25c253",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "features/07-union-wchar-label/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-boolean",
+      "category": "features",
+      "idl": "idl/features/07-union-boolean.idl",
+      "input": "../../../idl/features/07-union-boolean.idl",
+      "sourceSha256": "9362b4a862bab4bed4d30323aa9b6b7d2870e0cbc1b27eef28c4b1e5612d9826",
+      "generatedInputSha256": "9362b4a862bab4bed4d30323aa9b6b7d2870e0cbc1b27eef28c4b1e5612d9826",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-boolean.cxx",
+        "07-union-boolean.hpp",
+        "07-union-booleanPlugin.cxx",
+        "07-union-booleanPlugin.hpp"
+      ],
+      "log": "features/07-union-boolean/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-aliases",
+      "category": "features",
+      "idl": "idl/features/07-union-aliases.idl",
+      "input": "../../../idl/features/07-union-aliases.idl",
+      "sourceSha256": "627aae41c24fb375c09da2b76ffc98e504c6fd3d0704f8fc913d4620b8329a79",
+      "generatedInputSha256": "627aae41c24fb375c09da2b76ffc98e504c6fd3d0704f8fc913d4620b8329a79",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-aliases.cxx",
+        "07-union-aliases.hpp",
+        "07-union-aliasesPlugin.cxx",
+        "07-union-aliasesPlugin.hpp"
+      ],
+      "log": "features/07-union-aliases/rtiddsgen.log"
+    },
+    {
+      "id": "08-keys",
+      "category": "features",
+      "idl": "idl/features/08-keys.idl",
+      "input": "../../../idl/features/08-keys.idl",
+      "sourceSha256": "cd994f19d13123dc1f1e18a0ce2a2e29198c01ca2ad8ed9c8730109d7e052278",
+      "generatedInputSha256": "cd994f19d13123dc1f1e18a0ce2a2e29198c01ca2ad8ed9c8730109d7e052278",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "08-keys.cxx",
+        "08-keys.hpp",
+        "08-keysPlugin.cxx",
+        "08-keysPlugin.hpp"
+      ],
+      "log": "features/08-keys/rtiddsgen.log"
+    },
+    {
+      "id": "08-key-nested",
+      "category": "features",
+      "idl": "idl/features/08-key-nested.idl",
+      "input": "../../../idl/features/08-key-nested.idl",
+      "sourceSha256": "b703c37c01024540fccb26bade775a5763dd91a5839d8767b75938aa2edfecaa",
+      "generatedInputSha256": "b703c37c01024540fccb26bade775a5763dd91a5839d8767b75938aa2edfecaa",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "08-key-nested.cxx",
+        "08-key-nested.hpp",
+        "08-key-nestedPlugin.cxx",
+        "08-key-nestedPlugin.hpp"
+      ],
+      "log": "features/08-key-nested/rtiddsgen.log"
+    },
+    {
+      "id": "08-key-inherited",
+      "category": "features",
+      "idl": "idl/features/08-key-inherited.idl",
+      "input": "../../../idl/features/08-key-inherited.idl",
+      "sourceSha256": "3d5ba4f2518a5b1d5f8c01dd1080bf40aa266bb366657888118892d539891a78",
+      "generatedInputSha256": "3d5ba4f2518a5b1d5f8c01dd1080bf40aa266bb366657888118892d539891a78",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "08-key-inherited.cxx",
+        "08-key-inherited.hpp",
+        "08-key-inheritedPlugin.cxx",
+        "08-key-inheritedPlugin.hpp"
+      ],
+      "log": "features/08-key-inherited/rtiddsgen.log"
+    },
+    {
+      "id": "08-key-boundaries",
+      "category": "features",
+      "idl": "idl/features/08-key-boundaries.idl",
+      "input": "../../../idl/features/08-key-boundaries.idl",
+      "sourceSha256": "96778f4d933a7a363300cb0c6cda6fcd8e73bbfd1f0f732585a1396b8721c9e3",
+      "generatedInputSha256": "96778f4d933a7a363300cb0c6cda6fcd8e73bbfd1f0f732585a1396b8721c9e3",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "08-key-boundaries.cxx",
+        "08-key-boundaries.hpp",
+        "08-key-boundariesPlugin.cxx",
+        "08-key-boundariesPlugin.hpp"
+      ],
+      "log": "features/08-key-boundaries/rtiddsgen.log"
+    },
+    {
+      "id": "08-key-union",
+      "category": "features",
+      "idl": "idl/features/08-key-union.idl",
+      "input": "../../../idl/features/08-key-union.idl",
+      "sourceSha256": "35cae83d604d15c1b43ad3659462681dbe87ad219e0884604fd20d117cb4dbe4",
+      "generatedInputSha256": "35cae83d604d15c1b43ad3659462681dbe87ad219e0884604fd20d117cb4dbe4",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "08-key-union.cxx",
+        "08-key-union.hpp",
+        "08-key-unionPlugin.cxx",
+        "08-key-unionPlugin.hpp"
+      ],
+      "log": "features/08-key-union/rtiddsgen.log"
+    },
+    {
+      "id": "09-extensibility",
+      "category": "features",
+      "idl": "idl/features/09-extensibility.idl",
+      "input": "../../../idl/features/09-extensibility.idl",
+      "sourceSha256": "2be1e01a7cbc23ab8a327081539c3f8d1aeccd9ced65b087d425106fd0e7838e",
+      "generatedInputSha256": "2be1e01a7cbc23ab8a327081539c3f8d1aeccd9ced65b087d425106fd0e7838e",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "09-extensibility.cxx",
+        "09-extensibility.hpp",
+        "09-extensibilityPlugin.cxx",
+        "09-extensibilityPlugin.hpp"
+      ],
+      "log": "features/09-extensibility/rtiddsgen.log"
+    },
+    {
+      "id": "09-default",
+      "category": "features",
+      "idl": "idl/features/09-default.idl",
+      "input": "../../../idl/features/09-default.idl",
+      "sourceSha256": "08dafd431bdf258f95813c527d8a86c6fc344ae23cedc1bafc75131b423bbb7c",
+      "generatedInputSha256": "08dafd431bdf258f95813c527d8a86c6fc344ae23cedc1bafc75131b423bbb7c",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "09-default.cxx",
+        "09-default.hpp",
+        "09-defaultPlugin.cxx",
+        "09-defaultPlugin.hpp"
+      ],
+      "log": "features/09-default/rtiddsgen.log"
+    },
+    {
+      "id": "09-id-gaps",
+      "category": "features",
+      "idl": "idl/features/09-id-gaps.idl",
+      "input": "../../../idl/features/09-id-gaps.idl",
+      "sourceSha256": "f5ade9e0cd28099f48c65d4f4ffbdbf9ff2931d47e15c1c9ed7aafa8a0ba0538",
+      "generatedInputSha256": "f5ade9e0cd28099f48c65d4f4ffbdbf9ff2931d47e15c1c9ed7aafa8a0ba0538",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "09-id-gaps.cxx",
+        "09-id-gaps.hpp",
+        "09-id-gapsPlugin.cxx",
+        "09-id-gapsPlugin.hpp"
+      ],
+      "log": "features/09-id-gaps/rtiddsgen.log"
+    },
+    {
+      "id": "09-evolution-optional",
+      "category": "features",
+      "idl": "idl/features/09-evolution-optional.idl",
+      "input": "../../../idl/features/09-evolution-optional.idl",
+      "sourceSha256": "52be8ee64a1ff40821be69db8271baa3364eb37b05a96b33fadf967eae15d5c8",
+      "generatedInputSha256": "52be8ee64a1ff40821be69db8271baa3364eb37b05a96b33fadf967eae15d5c8",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "09-evolution-optional.cxx",
+        "09-evolution-optional.hpp",
+        "09-evolution-optionalPlugin.cxx",
+        "09-evolution-optionalPlugin.hpp"
+      ],
+      "log": "features/09-evolution-optional/rtiddsgen.log"
+    },
+    {
+      "id": "09-optional-collections",
+      "category": "features",
+      "idl": "idl/features/09-optional-collections.idl",
+      "input": "../../../idl/features/09-optional-collections.idl",
+      "sourceSha256": "4c62ce186b778a7f185259692e1550d8b37fab5becd04c98bb644fe792f09f0c",
+      "generatedInputSha256": "4c62ce186b778a7f185259692e1550d8b37fab5becd04c98bb644fe792f09f0c",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "09-optional-collections.cxx",
+        "09-optional-collections.hpp",
+        "09-optional-collectionsPlugin.cxx",
+        "09-optional-collectionsPlugin.hpp"
+      ],
+      "log": "features/09-optional-collections/rtiddsgen.log"
+    },
+    {
+      "id": "09-autoid-hash",
+      "category": "features",
+      "idl": "idl/features/09-autoid-hash.idl",
+      "input": "../../../idl/features/09-autoid-hash.idl",
+      "sourceSha256": "d40e9762a5b4fb2118925230917d65c90476bb543ec373627b63a49d6b20db11",
+      "generatedInputSha256": "d40e9762a5b4fb2118925230917d65c90476bb543ec373627b63a49d6b20db11",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "features/09-autoid-hash/rtiddsgen.log"
+    },
+    {
+      "id": "09-data-representation",
+      "category": "features",
+      "idl": "idl/features/09-data-representation.idl",
+      "input": "../../../idl/features/09-data-representation.idl",
+      "sourceSha256": "0c7ca0eed66cbfde09db41f09e7d44bd9d048a58f1381687d3595a5cf251ed1d",
+      "generatedInputSha256": "0c7ca0eed66cbfde09db41f09e7d44bd9d048a58f1381687d3595a5cf251ed1d",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "09-data-representation.cxx",
+        "09-data-representation.hpp",
+        "09-data-representationPlugin.cxx",
+        "09-data-representationPlugin.hpp"
+      ],
+      "log": "features/09-data-representation/rtiddsgen.log"
+    },
+    {
+      "id": "09-defaults-ranges",
+      "category": "features",
+      "idl": "idl/features/09-defaults-ranges.idl",
+      "input": "../../../idl/features/09-defaults-ranges.idl",
+      "sourceSha256": "086dde26ebafedcaf280722cbc2fbbb6a60f02ac53edc0675b9801013f86d8ce",
+      "generatedInputSha256": "086dde26ebafedcaf280722cbc2fbbb6a60f02ac53edc0675b9801013f86d8ce",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "09-defaults-ranges.cxx",
+        "09-defaults-ranges.hpp",
+        "09-defaults-rangesPlugin.cxx",
+        "09-defaults-rangesPlugin.hpp"
+      ],
+      "log": "features/09-defaults-ranges/rtiddsgen.log"
+    },
+    {
+      "id": "09-allowed-data-representation",
+      "category": "features",
+      "idl": "idl/features/09-allowed-data-representation.idl",
+      "input": "../../../idl/features/09-allowed-data-representation.idl",
+      "sourceSha256": "2acb2c5342609bff1cfcbbf5761b8b8fcf8bdc61608b7ebcff1d2cd04b1d6507",
+      "generatedInputSha256": "2acb2c5342609bff1cfcbbf5761b8b8fcf8bdc61608b7ebcff1d2cd04b1d6507",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "09-allowed-data-representation.cxx",
+        "09-allowed-data-representation.hpp",
+        "09-allowed-data-representationPlugin.cxx",
+        "09-allowed-data-representationPlugin.hpp"
+      ],
+      "log": "features/09-allowed-data-representation/rtiddsgen.log"
+    },
+    {
+      "id": "10-annotations",
+      "category": "features",
+      "idl": "idl/features/10-annotations.idl",
+      "input": "../../../idl/features/10-annotations.idl",
+      "sourceSha256": "dcec1e914fb45d9b45636cc5ed1b53fb9ed5b3d53188c304ec9a712ed2e9ad8f",
+      "generatedInputSha256": "dcec1e914fb45d9b45636cc5ed1b53fb9ed5b3d53188c304ec9a712ed2e9ad8f",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "10-annotations.cxx",
+        "10-annotations.hpp",
+        "10-annotationsPlugin.cxx",
+        "10-annotationsPlugin.hpp"
+      ],
+      "log": "features/10-annotations/rtiddsgen.log"
+    },
+    {
+      "id": "10-annotations-extended",
+      "category": "features",
+      "idl": "idl/features/10-annotations-extended.idl",
+      "input": "../../../idl/features/10-annotations-extended.idl",
+      "sourceSha256": "c39e06823410d396d04b4526c017f9557155bfa8cb24ca9f2641471ac341b2d2",
+      "generatedInputSha256": "c39e06823410d396d04b4526c017f9557155bfa8cb24ca9f2641471ac341b2d2",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "10-annotations-extended.cxx",
+        "10-annotations-extended.hpp",
+        "10-annotations-extendedPlugin.cxx",
+        "10-annotations-extendedPlugin.hpp"
+      ],
+      "log": "features/10-annotations-extended/rtiddsgen.log"
+    },
+    {
+      "id": "10-annotations-rti",
+      "category": "features",
+      "idl": "idl/features/10-annotations-rti.idl",
+      "input": "../../../idl/features/10-annotations-rti.idl",
+      "sourceSha256": "8f81b778e5cc9f716136e3b0ed59aacbf1dd57b380451f230d4ff0ad84263084",
+      "generatedInputSha256": "8f81b778e5cc9f716136e3b0ed59aacbf1dd57b380451f230d4ff0ad84263084",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "10-annotations-rti.cxx",
+        "10-annotations-rti.hpp",
+        "10-annotations-rtiPlugin.cxx",
+        "10-annotations-rtiPlugin.hpp"
+      ],
+      "log": "features/10-annotations-rti/rtiddsgen.log"
+    },
+    {
+      "id": "10-flat-data-binding",
+      "category": "features",
+      "idl": "idl/features/10-flat-data-binding.idl",
+      "input": "../../../idl/features/10-flat-data-binding.idl",
+      "sourceSha256": "6b446281b8c30b70a03adb1356dfc77bdec593624d35263bb4035100495fadb7",
+      "generatedInputSha256": "307ea2b6217c20784c686706fac17d5686d08ff19ca8e14b14fa65e37e384711",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [
+        "Removed @language_binding(FLAT_DATA) for RTI C++ generation."
+      ],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "10-flat-data-binding.cxx",
+        "10-flat-data-binding.hpp",
+        "10-flat-data-bindingPlugin.cxx",
+        "10-flat-data-bindingPlugin.hpp"
+      ],
+      "log": "features/10-flat-data-binding/rtiddsgen.log"
+    },
+    {
+      "id": "11-preprocessing",
+      "category": "features",
+      "idl": "idl/features/11-preprocessing.idl",
+      "input": "../../../idl/features/11-preprocessing.idl",
+      "sourceSha256": "02270b8e7d0835d45e9c3bd6f4efd30cfdcdeb78dc90ebda7187c2b4f3895c13",
+      "generatedInputSha256": "02270b8e7d0835d45e9c3bd6f4efd30cfdcdeb78dc90ebda7187c2b4f3895c13",
+      "defines": [
+        "CORPUS_CAPTURE_DEFINE"
+      ],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-D",
+        "CORPUS_CAPTURE_DEFINE",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "11-preprocessing.cxx",
+        "11-preprocessing.hpp",
+        "11-preprocessingPlugin.cxx",
+        "11-preprocessingPlugin.hpp"
+      ],
+      "log": "features/11-preprocessing/rtiddsgen.log"
+    },
+    {
+      "id": "11-conditionals",
+      "category": "features",
+      "idl": "idl/features/11-conditionals.idl",
+      "input": "../../../idl/features/11-conditionals.idl",
+      "sourceSha256": "8e8a074d1dd85b52be4507cd1de0068573731ba6595a076878857262207ae124",
+      "generatedInputSha256": "8e8a074d1dd85b52be4507cd1de0068573731ba6595a076878857262207ae124",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "11-conditionals.cxx",
+        "11-conditionals.hpp",
+        "11-conditionalsPlugin.cxx",
+        "11-conditionalsPlugin.hpp"
+      ],
+      "log": "features/11-conditionals/rtiddsgen.log"
+    },
+    {
+      "id": "11-macros",
+      "category": "features",
+      "idl": "idl/features/11-macros.idl",
+      "input": "../../../idl/features/11-macros.idl",
+      "sourceSha256": "fe9d7952d6cd1aed85434eeb03c5af734150e7bcdbc23da1d04db48a0456b6e7",
+      "generatedInputSha256": "fe9d7952d6cd1aed85434eeb03c5af734150e7bcdbc23da1d04db48a0456b6e7",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "11-macros.cxx",
+        "11-macros.hpp",
+        "11-macrosPlugin.cxx",
+        "11-macrosPlugin.hpp"
+      ],
+      "log": "features/11-macros/rtiddsgen.log"
+    },
+    {
+      "id": "11-macro-operators",
+      "category": "features",
+      "idl": "idl/features/11-macro-operators.idl",
+      "input": "../../../idl/features/11-macro-operators.idl",
+      "sourceSha256": "4179f0fee969963445c1b04863d0518588e5aba3d8d5994522114c5a7a621313",
+      "generatedInputSha256": "4179f0fee969963445c1b04863d0518588e5aba3d8d5994522114c5a7a621313",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "11-macro-operators.cxx",
+        "11-macro-operators.hpp",
+        "11-macro-operatorsPlugin.cxx",
+        "11-macro-operatorsPlugin.hpp"
+      ],
+      "log": "features/11-macro-operators/rtiddsgen.log"
+    },
+    {
+      "id": "11-preprocessor-advanced",
+      "category": "features",
+      "idl": "idl/features/11-preprocessor-advanced.idl",
+      "input": "../../../idl/features/11-preprocessor-advanced.idl",
+      "sourceSha256": "03edd204e01c95cf71fb1040814fe749cd0b8b91ed25902127c2ad3673bb3788",
+      "generatedInputSha256": "03edd204e01c95cf71fb1040814fe749cd0b8b91ed25902127c2ad3673bb3788",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "11-preprocessor-advanced.cxx",
+        "11-preprocessor-advanced.hpp",
+        "11-preprocessor-advancedPlugin.cxx",
+        "11-preprocessor-advancedPlugin.hpp"
+      ],
+      "log": "features/11-preprocessor-advanced/rtiddsgen.log"
+    },
+    {
+      "id": "11-include-search",
+      "category": "features",
+      "idl": "idl/features/11-include-search.idl",
+      "input": "../../../idl/features/11-include-search.idl",
+      "sourceSha256": "3765dbad77d4a476696222c491dd3078865680b7f44e1706803dd6258007674b",
+      "generatedInputSha256": "3765dbad77d4a476696222c491dd3078865680b7f44e1706803dd6258007674b",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "11-include-search.cxx",
+        "11-include-search.hpp",
+        "11-include-searchPlugin.cxx",
+        "11-include-searchPlugin.hpp"
+      ],
+      "log": "features/11-include-search/rtiddsgen.log"
+    },
+    {
+      "id": "11-comments",
+      "category": "features",
+      "idl": "idl/features/11-comments.idl",
+      "input": "../../../idl/features/11-comments.idl",
+      "sourceSha256": "623ebdba9930571dd533677cc00365059d762df8b79fafab46f877294ebfbd36",
+      "generatedInputSha256": "623ebdba9930571dd533677cc00365059d762df8b79fafab46f877294ebfbd36",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "11-comments.cxx",
+        "11-comments.hpp",
+        "11-commentsPlugin.cxx",
+        "11-commentsPlugin.hpp"
+      ],
+      "log": "features/11-comments/rtiddsgen.log"
+    },
+    {
+      "id": "09-optional-string-sequences",
+      "category": "features",
+      "idl": "idl/features/09-optional-string-sequences.idl",
+      "input": "../../../idl/features/09-optional-string-sequences.idl",
+      "sourceSha256": "8793d268ba117caf291f42d3dd344116148dd006c47bb28646e81614bbaa5330",
+      "generatedInputSha256": "8793d268ba117caf291f42d3dd344116148dd006c47bb28646e81614bbaa5330",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "09-optional-string-sequences.cxx",
+        "09-optional-string-sequences.hpp",
+        "09-optional-string-sequencesPlugin.cxx",
+        "09-optional-string-sequencesPlugin.hpp"
+      ],
+      "log": "features/09-optional-string-sequences/rtiddsgen.log"
+    },
+    {
+      "id": "09-optional-aggregate-member",
+      "category": "features",
+      "idl": "idl/features/09-optional-aggregate-member.idl",
+      "input": "../../../idl/features/09-optional-aggregate-member.idl",
+      "sourceSha256": "16a3f272e44e30a5857e63f59fb7900f0b25682a14fce6167f449bb2e841703b",
+      "generatedInputSha256": "16a3f272e44e30a5857e63f59fb7900f0b25682a14fce6167f449bb2e841703b",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "09-optional-aggregate-member.cxx",
+        "09-optional-aggregate-member.hpp",
+        "09-optional-aggregate-memberPlugin.cxx",
+        "09-optional-aggregate-memberPlugin.hpp"
+      ],
+      "log": "features/09-optional-aggregate-member/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-octet",
+      "category": "features",
+      "idl": "idl/features/07-union-octet.idl",
+      "input": "../../../idl/features/07-union-octet.idl",
+      "sourceSha256": "4dd65e55683006cf1cc0146b0a31a33d965dbf8c78f6060e40f122e7c459a246",
+      "generatedInputSha256": "4dd65e55683006cf1cc0146b0a31a33d965dbf8c78f6060e40f122e7c459a246",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-octet.cxx",
+        "07-union-octet.hpp",
+        "07-union-octetPlugin.cxx",
+        "07-union-octetPlugin.hpp"
+      ],
+      "log": "features/07-union-octet/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-ushort",
+      "category": "features",
+      "idl": "idl/features/07-union-ushort.idl",
+      "input": "../../../idl/features/07-union-ushort.idl",
+      "sourceSha256": "7dc59bfbeaf788a5a47d7bef7d74d2bd418e82c00f9a8802b664ff23bddf1635",
+      "generatedInputSha256": "7dc59bfbeaf788a5a47d7bef7d74d2bd418e82c00f9a8802b664ff23bddf1635",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-ushort.cxx",
+        "07-union-ushort.hpp",
+        "07-union-ushortPlugin.cxx",
+        "07-union-ushortPlugin.hpp"
+      ],
+      "log": "features/07-union-ushort/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-ulong",
+      "category": "features",
+      "idl": "idl/features/07-union-ulong.idl",
+      "input": "../../../idl/features/07-union-ulong.idl",
+      "sourceSha256": "aabc18a0640764aa32fba5b84564d865a9fef0a60b5984e9116d706bed3fd8b3",
+      "generatedInputSha256": "aabc18a0640764aa32fba5b84564d865a9fef0a60b5984e9116d706bed3fd8b3",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-ulong.cxx",
+        "07-union-ulong.hpp",
+        "07-union-ulongPlugin.cxx",
+        "07-union-ulongPlugin.hpp"
+      ],
+      "log": "features/07-union-ulong/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-int8",
+      "category": "features",
+      "idl": "idl/features/07-union-int8.idl",
+      "input": "../../../idl/features/07-union-int8.idl",
+      "sourceSha256": "4ebd31d97544b7d87de4600aad5112aba8926ddc9dfa08719d55c22a00d8a59c",
+      "generatedInputSha256": "4ebd31d97544b7d87de4600aad5112aba8926ddc9dfa08719d55c22a00d8a59c",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-int8.cxx",
+        "07-union-int8.hpp",
+        "07-union-int8Plugin.cxx",
+        "07-union-int8Plugin.hpp"
+      ],
+      "log": "features/07-union-int8/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-uint8",
+      "category": "features",
+      "idl": "idl/features/07-union-uint8.idl",
+      "input": "../../../idl/features/07-union-uint8.idl",
+      "sourceSha256": "4d6ce01c599b8a95817119fb6e789ed9ad5d89193246f2a2be8730ad408d9ff3",
+      "generatedInputSha256": "4d6ce01c599b8a95817119fb6e789ed9ad5d89193246f2a2be8730ad408d9ff3",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-uint8.cxx",
+        "07-union-uint8.hpp",
+        "07-union-uint8Plugin.cxx",
+        "07-union-uint8Plugin.hpp"
+      ],
+      "log": "features/07-union-uint8/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-int16",
+      "category": "features",
+      "idl": "idl/features/07-union-int16.idl",
+      "input": "../../../idl/features/07-union-int16.idl",
+      "sourceSha256": "61f47c97b4495fbc46aaf57ba51631ec94f08b10422e8787113f110a9283c953",
+      "generatedInputSha256": "61f47c97b4495fbc46aaf57ba51631ec94f08b10422e8787113f110a9283c953",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-int16.cxx",
+        "07-union-int16.hpp",
+        "07-union-int16Plugin.cxx",
+        "07-union-int16Plugin.hpp"
+      ],
+      "log": "features/07-union-int16/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-uint16",
+      "category": "features",
+      "idl": "idl/features/07-union-uint16.idl",
+      "input": "../../../idl/features/07-union-uint16.idl",
+      "sourceSha256": "c2f728ae5f492c18ac0bb6c8a7899939d5b833a5d5d34412edf3e67ca48f5925",
+      "generatedInputSha256": "c2f728ae5f492c18ac0bb6c8a7899939d5b833a5d5d34412edf3e67ca48f5925",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-uint16.cxx",
+        "07-union-uint16.hpp",
+        "07-union-uint16Plugin.cxx",
+        "07-union-uint16Plugin.hpp"
+      ],
+      "log": "features/07-union-uint16/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-int32",
+      "category": "features",
+      "idl": "idl/features/07-union-int32.idl",
+      "input": "../../../idl/features/07-union-int32.idl",
+      "sourceSha256": "d5de928917e76f0f84d47eb6f77308f72e0d76b6fb26e4eb1ab36d8ea6b5b2b8",
+      "generatedInputSha256": "d5de928917e76f0f84d47eb6f77308f72e0d76b6fb26e4eb1ab36d8ea6b5b2b8",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-int32.cxx",
+        "07-union-int32.hpp",
+        "07-union-int32Plugin.cxx",
+        "07-union-int32Plugin.hpp"
+      ],
+      "log": "features/07-union-int32/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-uint32",
+      "category": "features",
+      "idl": "idl/features/07-union-uint32.idl",
+      "input": "../../../idl/features/07-union-uint32.idl",
+      "sourceSha256": "dfd6f30ce6b438e45ec2820e14aa920d929bd8d500712f4e9fb0948b71f1bed7",
+      "generatedInputSha256": "dfd6f30ce6b438e45ec2820e14aa920d929bd8d500712f4e9fb0948b71f1bed7",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-uint32.cxx",
+        "07-union-uint32.hpp",
+        "07-union-uint32Plugin.cxx",
+        "07-union-uint32Plugin.hpp"
+      ],
+      "log": "features/07-union-uint32/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-long",
+      "category": "features",
+      "idl": "idl/features/07-union-long.idl",
+      "input": "../../../idl/features/07-union-long.idl",
+      "sourceSha256": "cb26c5f41a356231569c431e02a39e27a525d55ead101ac9e463de5b9b926f31",
+      "generatedInputSha256": "cb26c5f41a356231569c431e02a39e27a525d55ead101ac9e463de5b9b926f31",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-long.cxx",
+        "07-union-long.hpp",
+        "07-union-longPlugin.cxx",
+        "07-union-longPlugin.hpp"
+      ],
+      "log": "features/07-union-long/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-char-boundaries",
+      "category": "features",
+      "idl": "idl/features/07-union-char-boundaries.idl",
+      "input": "../../../idl/features/07-union-char-boundaries.idl",
+      "sourceSha256": "f1171de2e7a7b843252006bc792385fd31e9d190df5d574993db970a69cb2224",
+      "generatedInputSha256": "f1171de2e7a7b843252006bc792385fd31e9d190df5d574993db970a69cb2224",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-char-boundaries.cxx",
+        "07-union-char-boundaries.hpp",
+        "07-union-char-boundariesPlugin.cxx",
+        "07-union-char-boundariesPlugin.hpp"
+      ],
+      "log": "features/07-union-char-boundaries/rtiddsgen.log"
+    },
+    {
+      "id": "09-optional-recursive-array",
+      "category": "features",
+      "idl": "idl/features/09-optional-recursive-array.idl",
+      "input": "../../../idl/features/09-optional-recursive-array.idl",
+      "sourceSha256": "ad6ddf1fe47228766f15633e4fca3aef89e493ebc962789086212787ea011491",
+      "generatedInputSha256": "ad6ddf1fe47228766f15633e4fca3aef89e493ebc962789086212787ea011491",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-unboundedSupport",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "09-optional-recursive-array.cxx",
+        "09-optional-recursive-array.hpp",
+        "09-optional-recursive-arrayPlugin.cxx",
+        "09-optional-recursive-arrayPlugin.hpp"
+      ],
+      "log": "features/09-optional-recursive-array/rtiddsgen.log"
+    },
+    {
+      "id": "04-unbounded-string-aliases",
+      "category": "features",
+      "idl": "idl/features/04-unbounded-string-aliases.idl",
+      "input": "../../../idl/features/04-unbounded-string-aliases.idl",
+      "sourceSha256": "8df9c44c3d410d92eeefec78b74282229dcab5bad06ef685284250e7301e359e",
+      "generatedInputSha256": "8df9c44c3d410d92eeefec78b74282229dcab5bad06ef685284250e7301e359e",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "04-unbounded-string-aliases.cxx",
+        "04-unbounded-string-aliases.hpp",
+        "04-unbounded-string-aliasesPlugin.cxx",
+        "04-unbounded-string-aliasesPlugin.hpp"
+      ],
+      "log": "features/04-unbounded-string-aliases/rtiddsgen.log"
+    },
+    {
+      "id": "05-unbounded-sequence-aliases",
+      "category": "features",
+      "idl": "idl/features/05-unbounded-sequence-aliases.idl",
+      "input": "../../../idl/features/05-unbounded-sequence-aliases.idl",
+      "sourceSha256": "b8d45edf7759e9f72f656670b1e4cc164c8720322c872f3594a686a89ce4b58f",
+      "generatedInputSha256": "b8d45edf7759e9f72f656670b1e4cc164c8720322c872f3594a686a89ce4b58f",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "05-unbounded-sequence-aliases.cxx",
+        "05-unbounded-sequence-aliases.hpp",
+        "05-unbounded-sequence-aliasesPlugin.cxx",
+        "05-unbounded-sequence-aliasesPlugin.hpp"
+      ],
+      "log": "features/05-unbounded-sequence-aliases/rtiddsgen.log"
+    },
+    {
+      "id": "04-string-alias-chains",
+      "category": "features",
+      "idl": "idl/features/04-string-alias-chains.idl",
+      "input": "../../../idl/features/04-string-alias-chains.idl",
+      "sourceSha256": "7f9e546341897dd601e70652a5edcf9de8a30f4a5f771a9eb33759a7d2c8c175",
+      "generatedInputSha256": "7f9e546341897dd601e70652a5edcf9de8a30f4a5f771a9eb33759a7d2c8c175",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "04-string-alias-chains.cxx",
+        "04-string-alias-chains.hpp",
+        "04-string-alias-chainsPlugin.cxx",
+        "04-string-alias-chainsPlugin.hpp"
+      ],
+      "log": "features/04-string-alias-chains/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-string-sequence-aliases",
+      "category": "features",
+      "idl": "idl/features/07-union-string-sequence-aliases.idl",
+      "input": "../../../idl/features/07-union-string-sequence-aliases.idl",
+      "sourceSha256": "83e177230435753e93f34b3370809681663878620b3c1b34cd34cc087a68263e",
+      "generatedInputSha256": "83e177230435753e93f34b3370809681663878620b3c1b34cd34cc087a68263e",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-string-sequence-aliases.cxx",
+        "07-union-string-sequence-aliases.hpp",
+        "07-union-string-sequence-aliasesPlugin.cxx",
+        "07-union-string-sequence-aliasesPlugin.hpp"
+      ],
+      "log": "features/07-union-string-sequence-aliases/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-string-sequence-bounded-direct",
+      "category": "features",
+      "idl": "idl/features/07-union-string-sequence-bounded-direct.idl",
+      "input": "../../../idl/features/07-union-string-sequence-bounded-direct.idl",
+      "sourceSha256": "37322971fd2a9f7badc88a4b2fb976ee9f96d7e375d2c000919b51d2dd5bbb57",
+      "generatedInputSha256": "37322971fd2a9f7badc88a4b2fb976ee9f96d7e375d2c000919b51d2dd5bbb57",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-string-sequence-bounded-direct.cxx",
+        "07-union-string-sequence-bounded-direct.hpp",
+        "07-union-string-sequence-bounded-directPlugin.cxx",
+        "07-union-string-sequence-bounded-directPlugin.hpp"
+      ],
+      "log": "features/07-union-string-sequence-bounded-direct/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-char-numeric-255",
+      "category": "features",
+      "idl": "idl/features/07-union-char-numeric-255.idl",
+      "input": "../../../idl/features/07-union-char-numeric-255.idl",
+      "sourceSha256": "d037b8ada9bbdbc4fdec1e9ddb8d1ddebfcf86612783491965964e93a749f427",
+      "generatedInputSha256": "d037b8ada9bbdbc4fdec1e9ddb8d1ddebfcf86612783491965964e93a749f427",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-union-char-numeric-255.cxx",
+        "07-union-char-numeric-255.hpp",
+        "07-union-char-numeric-255Plugin.cxx",
+        "07-union-char-numeric-255Plugin.hpp"
+      ],
+      "log": "features/07-union-char-numeric-255/rtiddsgen.log"
+    },
+    {
+      "id": "12-lexical",
+      "category": "negative",
+      "idl": "idl/negative/12-lexical.idl",
+      "input": "../../../idl/negative/12-lexical.idl",
+      "sourceSha256": "715c73747c9d026b7070e50f82cde20edc1115d0bbf9d4b0065ef61b143e88c5",
+      "generatedInputSha256": "715c73747c9d026b7070e50f82cde20edc1115d0bbf9d4b0065ef61b143e88c5",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-lexical/rtiddsgen.log"
+    },
+    {
+      "id": "12-duplicate-member",
+      "category": "negative",
+      "idl": "idl/negative/12-duplicate-member.idl",
+      "input": "../../../idl/negative/12-duplicate-member.idl",
+      "sourceSha256": "dc7852504c979fe4f0aafe5cc639afd97e872c349182f3b868c585e9ee32ac79",
+      "generatedInputSha256": "dc7852504c979fe4f0aafe5cc639afd97e872c349182f3b868c585e9ee32ac79",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-duplicate-member/rtiddsgen.log"
+    },
+    {
+      "id": "03-enum-values-suffix",
+      "category": "negative",
+      "idl": "idl/negative/03-enum-values-suffix.idl",
+      "input": "../../../idl/negative/03-enum-values-suffix.idl",
+      "sourceSha256": "3b6fa0e6430819f000e35dd026275add797d92c84e9caeebfb15634109d9810f",
+      "generatedInputSha256": "3b6fa0e6430819f000e35dd026275add797d92c84e9caeebfb15634109d9810f",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/03-enum-values-suffix/rtiddsgen.log"
+    },
+    {
+      "id": "05-direct-sequence-of-sequences",
+      "category": "negative",
+      "idl": "idl/negative/05-direct-sequence-of-sequences.idl",
+      "input": "../../../idl/negative/05-direct-sequence-of-sequences.idl",
+      "sourceSha256": "260b699349c0a10b287a4b364e4a322fa3c776162e94add16343ef28fb2b35cc",
+      "generatedInputSha256": "260b699349c0a10b287a4b364e4a322fa3c776162e94add16343ef28fb2b35cc",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/05-direct-sequence-of-sequences/rtiddsgen.log"
+    },
+    {
+      "id": "10-topic-module",
+      "category": "negative",
+      "idl": "idl/negative/10-topic-module.idl",
+      "input": "../../../idl/negative/10-topic-module.idl",
+      "sourceSha256": "746386654f30c394da7f9cc5a6e69c1c6be8824092e74db88f2d4e2ae68f25e7",
+      "generatedInputSha256": "746386654f30c394da7f9cc5a6e69c1c6be8824092e74db88f2d4e2ae68f25e7",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/10-topic-module/rtiddsgen.log"
+    },
+    {
+      "id": "12-missing-include",
+      "category": "negative",
+      "idl": "idl/negative/12-missing-include.idl",
+      "input": "../../../idl/negative/12-missing-include.idl",
+      "sourceSha256": "2cbf3a3974735e397667aad0489c63a94a53cff4040e9469cc937da05dbfff0a",
+      "generatedInputSha256": "2cbf3a3974735e397667aad0489c63a94a53cff4040e9469cc937da05dbfff0a",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-missing-include/rtiddsgen.log"
+    },
+    {
+      "id": "12-malformed-condition",
+      "category": "negative",
+      "idl": "idl/negative/12-malformed-condition.idl",
+      "input": "../../../idl/negative/12-malformed-condition.idl",
+      "sourceSha256": "1208886b7775edaecb1bdfa8cc1187f9f0288a4231f8d9efea73f58395d752de",
+      "generatedInputSha256": "1208886b7775edaecb1bdfa8cc1187f9f0288a4231f8d9efea73f58395d752de",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-malformed-condition/rtiddsgen.log"
+    },
+    {
+      "id": "12-unsupported-map",
+      "category": "negative",
+      "idl": "idl/negative/12-unsupported-map.idl",
+      "input": "../../../idl/negative/12-unsupported-map.idl",
+      "sourceSha256": "de03d76c9dccc3d9bf4ca7b4357f7843239d3dd7ed6743b95077bf41ec9b60b5",
+      "generatedInputSha256": "de03d76c9dccc3d9bf4ca7b4357f7843239d3dd7ed6743b95077bf41ec9b60b5",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-unsupported-map/rtiddsgen.log"
+    },
+    {
+      "id": "12-invalid-annotation",
+      "category": "negative",
+      "idl": "idl/negative/12-invalid-annotation.idl",
+      "input": "../../../idl/negative/12-invalid-annotation.idl",
+      "sourceSha256": "05862be996a76f30f4fb62e9e1203b13e0b5ba9dedb4bc389674cf9cc3685eaf",
+      "generatedInputSha256": "05862be996a76f30f4fb62e9e1203b13e0b5ba9dedb4bc389674cf9cc3685eaf",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-invalid-annotation/rtiddsgen.log"
+    },
+    {
+      "id": "12-unknown-annotation",
+      "category": "negative",
+      "idl": "idl/negative/12-unknown-annotation.idl",
+      "input": "../../../idl/negative/12-unknown-annotation.idl",
+      "sourceSha256": "6919a5b709cc0aaf5a3660c05497e8369c5a683316f94d1a46e59861c01e6c2e",
+      "generatedInputSha256": "6919a5b709cc0aaf5a3660c05497e8369c5a683316f94d1a46e59861c01e6c2e",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "12-unknown-annotation.cxx",
+        "12-unknown-annotation.hpp",
+        "12-unknown-annotationPlugin.cxx",
+        "12-unknown-annotationPlugin.hpp"
+      ],
+      "log": "negative/12-unknown-annotation/rtiddsgen.log"
+    },
+    {
+      "id": "12-inline-nested",
+      "category": "negative",
+      "idl": "idl/negative/12-inline-nested.idl",
+      "input": "../../../idl/negative/12-inline-nested.idl",
+      "sourceSha256": "e012ffae192cbb63fae1d53ad4d00894c5874b8a768b395c294646a7edcf2448",
+      "generatedInputSha256": "e012ffae192cbb63fae1d53ad4d00894c5874b8a768b395c294646a7edcf2448",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-inline-nested/rtiddsgen.log"
+    },
+    {
+      "id": "12-legacy-name",
+      "category": "negative",
+      "idl": "idl/negative/12-legacy-name.idl",
+      "input": "../../../idl/negative/12-legacy-name.idl",
+      "sourceSha256": "89f6a22d97ab36f96182fae609f26ca72ea3bb2d9f1a61e6d5c024cd57adad74",
+      "generatedInputSha256": "89f6a22d97ab36f96182fae609f26ca72ea3bb2d9f1a61e6d5c024cd57adad74",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "12-legacy-name.cxx",
+        "12-legacy-name.hpp",
+        "12-legacy-namePlugin.cxx",
+        "12-legacy-namePlugin.hpp"
+      ],
+      "log": "negative/12-legacy-name/rtiddsgen.log"
+    },
+    {
+      "id": "12-missing-brace",
+      "category": "negative",
+      "idl": "idl/negative/12-missing-brace.idl",
+      "input": "../../../idl/negative/12-missing-brace.idl",
+      "sourceSha256": "b439f5e5b1d24b1d2f9ed94ac78818aca9d423a44f9ed9699a32972dd4c0faab",
+      "generatedInputSha256": "b439f5e5b1d24b1d2f9ed94ac78818aca9d423a44f9ed9699a32972dd4c0faab",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-missing-brace/rtiddsgen.log"
+    },
+    {
+      "id": "12-missing-semicolon",
+      "category": "negative",
+      "idl": "idl/negative/12-missing-semicolon.idl",
+      "input": "../../../idl/negative/12-missing-semicolon.idl",
+      "sourceSha256": "da673c5d499d0903dd6aa363ea1cd4fe969a2926379a186774b8f5ee6715f4be",
+      "generatedInputSha256": "da673c5d499d0903dd6aa363ea1cd4fe969a2926379a186774b8f5ee6715f4be",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-missing-semicolon/rtiddsgen.log"
+    },
+    {
+      "id": "12-unresolved-type",
+      "category": "negative",
+      "idl": "idl/negative/12-unresolved-type.idl",
+      "input": "../../../idl/negative/12-unresolved-type.idl",
+      "sourceSha256": "42793c2bdefe4c2e8d9c710b865dce4574a6cd1dddf909d718e7a74bcc22cbcf",
+      "generatedInputSha256": "42793c2bdefe4c2e8d9c710b865dce4574a6cd1dddf909d718e7a74bcc22cbcf",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-unresolved-type/rtiddsgen.log"
+    },
+    {
+      "id": "12-zero-bound",
+      "category": "negative",
+      "idl": "idl/negative/12-zero-bound.idl",
+      "input": "../../../idl/negative/12-zero-bound.idl",
+      "sourceSha256": "31ab73c6220d9c0ada32f9207ac05a7d8d05ed19118f85071b95e3d944eb7431",
+      "generatedInputSha256": "31ab73c6220d9c0ada32f9207ac05a7d8d05ed19118f85071b95e3d944eb7431",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "12-zero-bound.cxx",
+        "12-zero-bound.hpp",
+        "12-zero-boundPlugin.cxx",
+        "12-zero-boundPlugin.hpp"
+      ],
+      "log": "negative/12-zero-bound/rtiddsgen.log"
+    },
+    {
+      "id": "12-enum-separator",
+      "category": "negative",
+      "idl": "idl/negative/12-enum-separator.idl",
+      "input": "../../../idl/negative/12-enum-separator.idl",
+      "sourceSha256": "656404888a1aa44471dccca89fc93ccea25e11f471abb599f4736bd15a93bae9",
+      "generatedInputSha256": "656404888a1aa44471dccca89fc93ccea25e11f471abb599f4736bd15a93bae9",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-enum-separator/rtiddsgen.log"
+    },
+    {
+      "id": "12-missing-name",
+      "category": "negative",
+      "idl": "idl/negative/12-missing-name.idl",
+      "input": "../../../idl/negative/12-missing-name.idl",
+      "sourceSha256": "a84693a508c89fc267f5bff904b1f072ccca5bdf3229c0f32adb0f02eca9ca27",
+      "generatedInputSha256": "a84693a508c89fc267f5bff904b1f072ccca5bdf3229c0f32adb0f02eca9ca27",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-missing-name/rtiddsgen.log"
+    },
+    {
+      "id": "12-array-bracket",
+      "category": "negative",
+      "idl": "idl/negative/12-array-bracket.idl",
+      "input": "../../../idl/negative/12-array-bracket.idl",
+      "sourceSha256": "3d3911641917e4e6c8c70280e03ed7bb80318406df21efc65309112e4491c11e",
+      "generatedInputSha256": "3d3911641917e4e6c8c70280e03ed7bb80318406df21efc65309112e4491c11e",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-array-bracket/rtiddsgen.log"
+    },
+    {
+      "id": "12-const-equals",
+      "category": "negative",
+      "idl": "idl/negative/12-const-equals.idl",
+      "input": "../../../idl/negative/12-const-equals.idl",
+      "sourceSha256": "c6b1a687cfa95f84d76b0b9ec4b032ab33720bf8348faeffa28c0d627b1fd4cd",
+      "generatedInputSha256": "c6b1a687cfa95f84d76b0b9ec4b032ab33720bf8348faeffa28c0d627b1fd4cd",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-const-equals/rtiddsgen.log"
+    },
+    {
+      "id": "12-truncated",
+      "category": "negative",
+      "idl": "idl/negative/12-truncated.idl",
+      "input": "../../../idl/negative/12-truncated.idl",
+      "sourceSha256": "8d49853afbd480c14bd0b05f3a29b1c01c004a755ede9248e99e28a4e920496b",
+      "generatedInputSha256": "8d49853afbd480c14bd0b05f3a29b1c01c004a755ede9248e99e28a4e920496b",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-truncated/rtiddsgen.log"
+    },
+    {
+      "id": "12-union-without-switch",
+      "category": "negative",
+      "idl": "idl/negative/12-union-without-switch.idl",
+      "input": "../../../idl/negative/12-union-without-switch.idl",
+      "sourceSha256": "06af19e32678cb2a668bc010cded057fd974544a6de5bd8ebd906918c1a326bf",
+      "generatedInputSha256": "06af19e32678cb2a668bc010cded057fd974544a6de5bd8ebd906918c1a326bf",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-union-without-switch/rtiddsgen.log"
+    },
+    {
+      "id": "12-include-cycle-a",
+      "category": "negative",
+      "idl": "idl/negative/12-include-cycle-a.idl",
+      "input": "../../../idl/negative/12-include-cycle-a.idl",
+      "sourceSha256": "8cb64a4752c9b0e55839d5df6e880766dd13a9eb84d76391fc530db81d6287af",
+      "generatedInputSha256": "8cb64a4752c9b0e55839d5df6e880766dd13a9eb84d76391fc530db81d6287af",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-include-cycle-a/rtiddsgen.log"
+    },
+    {
+      "id": "12-include-cycle-b",
+      "category": "negative",
+      "idl": "idl/negative/12-include-cycle-b.idl",
+      "input": "../../../idl/negative/12-include-cycle-b.idl",
+      "sourceSha256": "2d6984de8e66b01dbf1fed82ce541226dad91843c3fb4f74d0302c357a6c5d66",
+      "generatedInputSha256": "2d6984de8e66b01dbf1fed82ce541226dad91843c3fb4f74d0302c357a6c5d66",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-include-cycle-b/rtiddsgen.log"
+    },
+    {
+      "id": "12-include-cycle-root",
+      "category": "negative",
+      "idl": "idl/negative/12-include-cycle-root.idl",
+      "input": "../../../idl/negative/12-include-cycle-root.idl",
+      "sourceSha256": "222b711fa091c69d64ebac0d849a901bb503202d594bbaefd9664192bd5b8cf1",
+      "generatedInputSha256": "222b711fa091c69d64ebac0d849a901bb503202d594bbaefd9664192bd5b8cf1",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-include-cycle-root/rtiddsgen.log"
+    },
+    {
+      "id": "12-malformed-preprocessor",
+      "category": "negative",
+      "idl": "idl/negative/12-malformed-preprocessor.idl",
+      "input": "../../../idl/negative/12-malformed-preprocessor.idl",
+      "sourceSha256": "33cf1bba0d9255ea57ef10e5f5d73e9e4a2cb43e7ef75be24347095ad82e69c9",
+      "generatedInputSha256": "33cf1bba0d9255ea57ef10e5f5d73e9e4a2cb43e7ef75be24347095ad82e69c9",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-malformed-preprocessor/rtiddsgen.log"
+    },
+    {
+      "id": "02-forward-declarations",
+      "category": "negative",
+      "idl": "idl/features/02-forward-declarations.idl",
+      "input": "../../../idl/features/02-forward-declarations.idl",
+      "sourceSha256": "ab2a4f7970c627062ef5711cc647ca2cbddd36416356d333a39de8ce28a9d278",
+      "generatedInputSha256": "ab2a4f7970c627062ef5711cc647ca2cbddd36416356d333a39de8ce28a9d278",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/02-forward-declarations/rtiddsgen.log"
+    },
+    {
+      "id": "07-union-long-long",
+      "category": "negative",
+      "idl": "idl/features/07-union-long-long.idl",
+      "input": "../../../idl/features/07-union-long-long.idl",
+      "sourceSha256": "7b8d3c0b05ae36d051d58a5dd6aa12a8eec31c1ced5ae5faab02336294b07077",
+      "generatedInputSha256": "7b8d3c0b05ae36d051d58a5dd6aa12a8eec31c1ced5ae5faab02336294b07077",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/07-union-long-long/rtiddsgen.log"
+    },
+    {
+      "id": "02-alias-cycle",
+      "category": "negative",
+      "idl": "idl/negative/02-alias-cycle.idl",
+      "input": "../../../idl/negative/02-alias-cycle.idl",
+      "sourceSha256": "f078b87b56d69a1e4e7473c28c38de13a175712899083115bdb8a3eb6263a394",
+      "generatedInputSha256": "f078b87b56d69a1e4e7473c28c38de13a175712899083115bdb8a3eb6263a394",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/02-alias-cycle/rtiddsgen.log"
+    },
+    {
+      "id": "05-negative-bound",
+      "category": "negative",
+      "idl": "idl/negative/05-negative-bound.idl",
+      "input": "../../../idl/negative/05-negative-bound.idl",
+      "sourceSha256": "619e23b314c63969996d6be0fcd3d653a43a8dc71e33b6db3956a86728727d26",
+      "generatedInputSha256": "619e23b314c63969996d6be0fcd3d653a43a8dc71e33b6db3956a86728727d26",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/05-negative-bound/rtiddsgen.log"
+    },
+    {
+      "id": "05-overflow-bound",
+      "category": "negative",
+      "idl": "idl/negative/05-overflow-bound.idl",
+      "input": "../../../idl/negative/05-overflow-bound.idl",
+      "sourceSha256": "e10717f55635cbb71eb0c164864c5c22af6445b977b5897ba1b6b27cb1a56a50",
+      "generatedInputSha256": "e10717f55635cbb71eb0c164864c5c22af6445b977b5897ba1b6b27cb1a56a50",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/05-overflow-bound/rtiddsgen.log"
+    },
+    {
+      "id": "07-invalid-discriminator",
+      "category": "negative",
+      "idl": "idl/negative/07-invalid-discriminator.idl",
+      "input": "../../../idl/negative/07-invalid-discriminator.idl",
+      "sourceSha256": "106c41bcb8198e75026e56e2c13bc917ad114443ace1503b5d0487280d49f27a",
+      "generatedInputSha256": "106c41bcb8198e75026e56e2c13bc917ad114443ace1503b5d0487280d49f27a",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/07-invalid-discriminator/rtiddsgen.log"
+    },
+    {
+      "id": "07-duplicate-label",
+      "category": "negative",
+      "idl": "idl/negative/07-duplicate-label.idl",
+      "input": "../../../idl/negative/07-duplicate-label.idl",
+      "sourceSha256": "bcedf95522e7ef64ed62b60c3868ff067f7af3c284b7ed72cec314de0114075e",
+      "generatedInputSha256": "bcedf95522e7ef64ed62b60c3868ff067f7af3c284b7ed72cec314de0114075e",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-duplicate-label.cxx",
+        "07-duplicate-label.hpp",
+        "07-duplicate-labelPlugin.cxx",
+        "07-duplicate-labelPlugin.hpp"
+      ],
+      "log": "negative/07-duplicate-label/rtiddsgen.log"
+    },
+    {
+      "id": "07-duplicate-default",
+      "category": "negative",
+      "idl": "idl/negative/07-duplicate-default.idl",
+      "input": "../../../idl/negative/07-duplicate-default.idl",
+      "sourceSha256": "dac7238965260d2a2b4b8a4d1b0ca8777c44c7c10ef09a1d09066484216ce034",
+      "generatedInputSha256": "dac7238965260d2a2b4b8a4d1b0ca8777c44c7c10ef09a1d09066484216ce034",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "07-duplicate-default.cxx",
+        "07-duplicate-default.hpp",
+        "07-duplicate-defaultPlugin.cxx",
+        "07-duplicate-defaultPlugin.hpp"
+      ],
+      "log": "negative/07-duplicate-default/rtiddsgen.log"
+    },
+    {
+      "id": "08-member-id-conflict",
+      "category": "negative",
+      "idl": "idl/negative/08-member-id-conflict.idl",
+      "input": "../../../idl/negative/08-member-id-conflict.idl",
+      "sourceSha256": "34958958f0bdfa8452a7f9c830e8dbc0dc72fd9858cc2cd928e3eb50c2fa43b2",
+      "generatedInputSha256": "34958958f0bdfa8452a7f9c830e8dbc0dc72fd9858cc2cd928e3eb50c2fa43b2",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "08-member-id-conflict.cxx",
+        "08-member-id-conflict.hpp",
+        "08-member-id-conflictPlugin.cxx",
+        "08-member-id-conflictPlugin.hpp"
+      ],
+      "log": "negative/08-member-id-conflict/rtiddsgen.log"
+    },
+    {
+      "id": "10-unsupported-annotations",
+      "category": "negative",
+      "idl": "idl/negative/10-unsupported-annotations.idl",
+      "input": "../../../idl/negative/10-unsupported-annotations.idl",
+      "sourceSha256": "df2c0476756f6ed32a547e4c31a740075f68fc2c3fbfa55c3501014456158da5",
+      "generatedInputSha256": "df2c0476756f6ed32a547e4c31a740075f68fc2c3fbfa55c3501014456158da5",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/10-unsupported-annotations/rtiddsgen.log"
+    },
+    {
+      "id": "10-ignored-annotations",
+      "category": "negative",
+      "idl": "idl/negative/10-ignored-annotations.idl",
+      "input": "../../../idl/negative/10-ignored-annotations.idl",
+      "sourceSha256": "ed3b3ea0dfe2a933259dffc6b5dd079b3da310261190fc6b36278aa4f17cc3de",
+      "generatedInputSha256": "ed3b3ea0dfe2a933259dffc6b5dd079b3da310261190fc6b36278aa4f17cc3de",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "10-ignored-annotations.cxx",
+        "10-ignored-annotations.hpp",
+        "10-ignored-annotationsPlugin.cxx",
+        "10-ignored-annotationsPlugin.hpp"
+      ],
+      "log": "negative/10-ignored-annotations/rtiddsgen.log"
+    },
+    {
+      "id": "10-service-annotation",
+      "category": "negative",
+      "idl": "idl/negative/10-service-annotation.idl",
+      "input": "../../../idl/negative/10-service-annotation.idl",
+      "sourceSha256": "a0eccfe544d65128ecebde62b53f9c1ad1ba36edd9b0e482d38fa924728f4537",
+      "generatedInputSha256": "a0eccfe544d65128ecebde62b53f9c1ad1ba36edd9b0e482d38fa924728f4537",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/10-service-annotation/rtiddsgen.log"
+    },
+    {
+      "id": "12-bitmask",
+      "category": "negative",
+      "idl": "idl/negative/12-bitmask.idl",
+      "input": "../../../idl/negative/12-bitmask.idl",
+      "sourceSha256": "5e245788eac75608e73f3cb2d5004e870b8c48cdf1b5d27a83e6d20b3fc2e7f2",
+      "generatedInputSha256": "5e245788eac75608e73f3cb2d5004e870b8c48cdf1b5d27a83e6d20b3fc2e7f2",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-bitmask/rtiddsgen.log"
+    },
+    {
+      "id": "12-bitset",
+      "category": "negative",
+      "idl": "idl/negative/12-bitset.idl",
+      "input": "../../../idl/negative/12-bitset.idl",
+      "sourceSha256": "ba48627a6119da86718f6eca27016aca6f6b2f9aef21f092975f7486019e057f",
+      "generatedInputSha256": "ba48627a6119da86718f6eca27016aca6f6b2f9aef21f092975f7486019e057f",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-bitset/rtiddsgen.log"
+    },
+    {
+      "id": "12-fixed",
+      "category": "negative",
+      "idl": "idl/negative/12-fixed.idl",
+      "input": "../../../idl/negative/12-fixed.idl",
+      "sourceSha256": "455f7c95106e718cb4fc21f39aab48f70b9c7ba46e401665b01da94481d931f2",
+      "generatedInputSha256": "455f7c95106e718cb4fc21f39aab48f70b9c7ba46e401665b01da94481d931f2",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-fixed/rtiddsgen.log"
+    },
+    {
+      "id": "12-any",
+      "category": "negative",
+      "idl": "idl/negative/12-any.idl",
+      "input": "../../../idl/negative/12-any.idl",
+      "sourceSha256": "da679874fd930cec3d5331b8421e93dcd6269bd68a148c692aff1ea2074a2eba",
+      "generatedInputSha256": "da679874fd930cec3d5331b8421e93dcd6269bd68a148c692aff1ea2074a2eba",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-any/rtiddsgen.log"
+    },
+    {
+      "id": "12-interface",
+      "category": "negative",
+      "idl": "idl/negative/12-interface.idl",
+      "input": "../../../idl/negative/12-interface.idl",
+      "sourceSha256": "187712f60b1e64fc5081203076fdd8d65b3eb310b8b2762b9159ca9d4be5442f",
+      "generatedInputSha256": "187712f60b1e64fc5081203076fdd8d65b3eb310b8b2762b9159ca9d4be5442f",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "12-interface.cxx",
+        "12-interface.hpp",
+        "12-interfacePlugin.cxx",
+        "12-interfacePlugin.hpp"
+      ],
+      "log": "negative/12-interface/rtiddsgen.log"
+    },
+    {
+      "id": "12-import",
+      "category": "negative",
+      "idl": "idl/negative/12-import.idl",
+      "input": "../../../idl/negative/12-import.idl",
+      "sourceSha256": "9a2d20cb09738380d085e291f0e8227844eec8de3ccc899baaab5945eaaf0d37",
+      "generatedInputSha256": "9a2d20cb09738380d085e291f0e8227844eec8de3ccc899baaab5945eaaf0d37",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-import/rtiddsgen.log"
+    },
+    {
+      "id": "12-module-idl",
+      "category": "negative",
+      "idl": "idl/negative/12-module-idl.idl",
+      "input": "../../../idl/negative/12-module-idl.idl",
+      "sourceSha256": "144b6909fe79b72f9d28177ded4524f394456ed070ebfc13c5d59009856b4848",
+      "generatedInputSha256": "144b6909fe79b72f9d28177ded4524f394456ed070ebfc13c5d59009856b4848",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "12-module-idl.cxx",
+        "12-module-idl.hpp",
+        "12-module-idlPlugin.cxx",
+        "12-module-idlPlugin.hpp"
+      ],
+      "log": "negative/12-module-idl/rtiddsgen.log"
+    },
+    {
+      "id": "12-union-64bit-label",
+      "category": "negative",
+      "idl": "idl/negative/12-union-64bit-label.idl",
+      "input": "../../../idl/negative/12-union-64bit-label.idl",
+      "sourceSha256": "21cf425725a32255650a8e5d760a9049ac3eb07c775cdcb257ddaf998140ede4",
+      "generatedInputSha256": "21cf425725a32255650a8e5d760a9049ac3eb07c775cdcb257ddaf998140ede4",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-union-64bit-label/rtiddsgen.log"
+    },
+    {
+      "id": "12-unterminated-string",
+      "category": "negative",
+      "idl": "idl/negative/12-unterminated-string.idl",
+      "input": "../../../idl/negative/12-unterminated-string.idl",
+      "sourceSha256": "19248bb00f4615cc2ac9384ce9e07b0873276649b75bee8bfb3fac95ab58c668",
+      "generatedInputSha256": "19248bb00f4615cc2ac9384ce9e07b0873276649b75bee8bfb3fac95ab58c668",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-unterminated-string/rtiddsgen.log"
+    },
+    {
+      "id": "12-unterminated-comment",
+      "category": "negative",
+      "idl": "idl/negative/12-unterminated-comment.idl",
+      "input": "../../../idl/negative/12-unterminated-comment.idl",
+      "sourceSha256": "27c1c0fe31ce1a506b988736b33696d79be192b6ad518d8cca9c771130e22e8b",
+      "generatedInputSha256": "27c1c0fe31ce1a506b988736b33696d79be192b6ad518d8cca9c771130e22e8b",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-unterminated-comment/rtiddsgen.log"
+    },
+    {
+      "id": "12-macro-recursion",
+      "category": "negative",
+      "idl": "idl/negative/12-macro-recursion.idl",
+      "input": "../../../idl/negative/12-macro-recursion.idl",
+      "sourceSha256": "07535b26c821569be4ce89b78f529d651a8064b55f261f8eef7d36c6a53a3434",
+      "generatedInputSha256": "07535b26c821569be4ce89b78f529d651a8064b55f261f8eef7d36c6a53a3434",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "12-macro-recursion.cxx",
+        "12-macro-recursion.hpp",
+        "12-macro-recursionPlugin.cxx",
+        "12-macro-recursionPlugin.hpp"
+      ],
+      "log": "negative/12-macro-recursion/rtiddsgen.log"
+    },
+    {
+      "id": "12-macro-arity-windows",
+      "category": "negative",
+      "idl": "idl/negative/12-macro-arity.idl",
+      "input": "../../../idl/negative/12-macro-arity.idl",
+      "sourceSha256": "5eb4dfbe91536e205b88dfd731a7ed6d8c0adc3a924993ef99f1c637565b9ba2",
+      "generatedInputSha256": "5eb4dfbe91536e205b88dfd731a7ed6d8c0adc3a924993ef99f1c637565b9ba2",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-macro-arity-windows/rtiddsgen.log"
+    },
+    {
+      "id": "12-macro-arity-linux",
+      "category": "negative",
+      "idl": "idl/negative/12-macro-arity.idl",
+      "input": "../../../idl/negative/12-macro-arity.idl",
+      "sourceSha256": "5eb4dfbe91536e205b88dfd731a7ed6d8c0adc3a924993ef99f1c637565b9ba2",
+      "generatedInputSha256": "5eb4dfbe91536e205b88dfd731a7ed6d8c0adc3a924993ef99f1c637565b9ba2",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-macro-arity-linux/rtiddsgen.log"
+    },
+    {
+      "id": "12-error-directive",
+      "category": "negative",
+      "idl": "idl/negative/12-error-directive.idl",
+      "input": "../../../idl/negative/12-error-directive.idl",
+      "sourceSha256": "e9695d86aa83d49726419b046b8e22b427814dcc2e27f0c58167b5f8e671bdbf",
+      "generatedInputSha256": "e9695d86aa83d49726419b046b8e22b427814dcc2e27f0c58167b5f8e671bdbf",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-error-directive/rtiddsgen.log"
+    },
+    {
+      "id": "12-angle-missing",
+      "category": "negative",
+      "idl": "idl/negative/12-angle-missing.idl",
+      "input": "../../../idl/negative/12-angle-missing.idl",
+      "sourceSha256": "ba2b50acd8ee01b839d99c411a1acd6f629c8326cecc8ae3432079bc87d2994e",
+      "generatedInputSha256": "ba2b50acd8ee01b839d99c411a1acd6f629c8326cecc8ae3432079bc87d2994e",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-angle-missing/rtiddsgen.log"
+    },
+    {
+      "id": "12-included-error",
+      "category": "negative",
+      "idl": "idl/negative/12-included-error.idl",
+      "input": "../../../idl/negative/12-included-error.idl",
+      "sourceSha256": "d56c946b428b523c36a506842ee47a4e6a9824409cf01860f9655d9698f6355c",
+      "generatedInputSha256": "d56c946b428b523c36a506842ee47a4e6a9824409cf01860f9655d9698f6355c",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-included-error/rtiddsgen.log"
+    },
+    {
+      "id": "12-name-collisions",
+      "category": "negative",
+      "idl": "idl/negative/12-name-collisions.idl",
+      "input": "../../../idl/negative/12-name-collisions.idl",
+      "sourceSha256": "85b2743a3faca7028053683176c1bcdc4ef9580aa5d759c19402105a3c253146",
+      "generatedInputSha256": "85b2743a3faca7028053683176c1bcdc4ef9580aa5d759c19402105a3c253146",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "12-name-collisions.cxx",
+        "12-name-collisions.hpp",
+        "12-name-collisionsPlugin.cxx",
+        "12-name-collisionsPlugin.hpp"
+      ],
+      "log": "negative/12-name-collisions/rtiddsgen.log"
+    },
+    {
+      "id": "12-union-unsigned-long-long",
+      "category": "negative",
+      "idl": "idl/negative/12-union-unsigned-long-long.idl",
+      "input": "../../../idl/negative/12-union-unsigned-long-long.idl",
+      "sourceSha256": "9207608c145a1016a3c076230dd4818274e59624a70473f0fdd3ab73b408fb49",
+      "generatedInputSha256": "9207608c145a1016a3c076230dd4818274e59624a70473f0fdd3ab73b408fb49",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-union-unsigned-long-long/rtiddsgen.log"
+    },
+    {
+      "id": "12-union-int64",
+      "category": "negative",
+      "idl": "idl/negative/12-union-int64.idl",
+      "input": "../../../idl/negative/12-union-int64.idl",
+      "sourceSha256": "33e825b180251d9b25a1f852c2077212b0e8d4cf7c3c36afc83c64abc29e317c",
+      "generatedInputSha256": "33e825b180251d9b25a1f852c2077212b0e8d4cf7c3c36afc83c64abc29e317c",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-union-int64/rtiddsgen.log"
+    },
+    {
+      "id": "12-union-uint64",
+      "category": "negative",
+      "idl": "idl/negative/12-union-uint64.idl",
+      "input": "../../../idl/negative/12-union-uint64.idl",
+      "sourceSha256": "cb65fea330dffc96fe76e75bf92b52c5332fa05436c33ffb769bd85fbadcd068",
+      "generatedInputSha256": "cb65fea330dffc96fe76e75bf92b52c5332fa05436c33ffb769bd85fbadcd068",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-union-uint64/rtiddsgen.log"
+    },
+    {
+      "id": "12-union-long-long",
+      "category": "negative",
+      "idl": "idl/negative/12-union-long-long.idl",
+      "input": "../../../idl/negative/12-union-long-long.idl",
+      "sourceSha256": "4779203367ffdbc092a4a162c1ffa3bfeac0a3e15173425447efc06b7e61284d",
+      "generatedInputSha256": "4779203367ffdbc092a4a162c1ffa3bfeac0a3e15173425447efc06b7e61284d",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-union-long-long/rtiddsgen.log"
+    },
+    {
+      "id": "12-union-wchar-rti-limit",
+      "category": "negative",
+      "idl": "idl/features/07-union-wchar-label.idl",
+      "input": "../../../idl/features/07-union-wchar-label.idl",
+      "sourceSha256": "395b67d04690979967d6a555e83024e7a68eeec5df220bd694f9a71cfd25c253",
+      "generatedInputSha256": "395b67d04690979967d6a555e83024e7a68eeec5df220bd694f9a71cfd25c253",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "rejected-or-failed",
+      "exitCode": 255,
+      "generatedFiles": [],
+      "log": "negative/12-union-wchar-rti-limit/rtiddsgen.log"
+    },
+    {
+      "id": "13-integration",
+      "category": "integration",
+      "idl": "idl/integration/contracts/13-integration.idl",
+      "input": "../../../idl/integration/contracts/13-integration.idl",
+      "sourceSha256": "1a78a96ace8cc9a727603f586cf30e50315120e916382e1abab30e6928c467d0",
+      "generatedInputSha256": "1a78a96ace8cc9a727603f586cf30e50315120e916382e1abab30e6928c467d0",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "13-integration.cxx",
+        "13-integration.hpp",
+        "13-integrationPlugin.cxx",
+        "13-integrationPlugin.hpp"
+      ],
+      "log": "integration/13-integration/rtiddsgen.log"
+    },
+    {
+      "id": "13-modules",
+      "category": "integration",
+      "idl": "idl/integration/contracts/13-modules.idl",
+      "input": "../../../idl/integration/contracts/13-modules.idl",
+      "sourceSha256": "a34bba51a92e007212ed4d75b9b05ee11d8d0c4af0e6ee80276b41023a37476a",
+      "generatedInputSha256": "a34bba51a92e007212ed4d75b9b05ee11d8d0c4af0e6ee80276b41023a37476a",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "13-modules.cxx",
+        "13-modules.hpp",
+        "13-modulesPlugin.cxx",
+        "13-modulesPlugin.hpp"
+      ],
+      "log": "integration/13-modules/rtiddsgen.log"
+    },
+    {
+      "id": "13-alias-inheritance",
+      "category": "integration",
+      "idl": "idl/integration/contracts/13-alias-inheritance.idl",
+      "input": "../../../idl/integration/contracts/13-alias-inheritance.idl",
+      "sourceSha256": "6d5270e4ef5577f6aaf143ff49f8dd08fecc86b2d2cec7df25b1374a2a9ac599",
+      "generatedInputSha256": "6d5270e4ef5577f6aaf143ff49f8dd08fecc86b2d2cec7df25b1374a2a9ac599",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "13-alias-inheritance.cxx",
+        "13-alias-inheritance.hpp",
+        "13-alias-inheritancePlugin.cxx",
+        "13-alias-inheritancePlugin.hpp"
+      ],
+      "log": "integration/13-alias-inheritance/rtiddsgen.log"
+    },
+    {
+      "id": "13-compositions",
+      "category": "integration",
+      "idl": "idl/integration/collections/13-compositions.idl",
+      "input": "../../../idl/integration/collections/13-compositions.idl",
+      "sourceSha256": "bc789da30175440f6ffee7896e5302dc0049bdd2fc9cc085c513181434ad0330",
+      "generatedInputSha256": "bc789da30175440f6ffee7896e5302dc0049bdd2fc9cc085c513181434ad0330",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "13-compositions.cxx",
+        "13-compositions.hpp",
+        "13-compositionsPlugin.cxx",
+        "13-compositionsPlugin.hpp"
+      ],
+      "log": "integration/13-compositions/rtiddsgen.log"
+    }
+  ]
+}

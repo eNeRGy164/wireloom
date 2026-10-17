@@ -102,7 +102,11 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "13-compositions"
     ];
 
-    public bool ExpectedToCompile => ManagedAcceptedCaseIds.Contains(Id);
+    public bool ExpectedToCompile => ExpectedToCompileForProfile(CorpusRepository.RtiProfile);
+
+    public bool ExpectedToCompileForProfile(string? rtiProfile) =>
+        ManagedAcceptedCaseIds.Contains(Id) &&
+        !(Id == "09-autoid-hash" && string.Equals(rtiProfile, "7.3.1", StringComparison.Ordinal));
 
     public bool HasOracleOutput =>
         !string.Equals(Classification, "rejected", StringComparison.OrdinalIgnoreCase) &&
@@ -156,6 +160,14 @@ internal sealed class OracleEntry
 
     [JsonPropertyName("classification")]
     public string Classification { get; init; } = string.Empty;
+
+    /// <summary>Gets the generation outcome captured for the selected LTS version.</summary>
+    [JsonPropertyName("outcome")]
+    public string Outcome { get; init; } = string.Empty;
+
+    /// <summary>Gets the captured oracle directory relative to the LTS profile.</summary>
+    [JsonPropertyName("sourceDirectory")]
+    public string SourceDirectory { get; init; } = string.Empty;
 }
 
 internal static class CorpusRepository
@@ -168,7 +180,15 @@ internal static class CorpusRepository
 
     public static string IdlRoot => Path.Combine(CorpusRoot, "idl");
 
-    public static string OracleRoot => Path.Combine(CorpusRoot, "oracles");
+    /// <summary>Gets the exact LTS oracle selected for the current compliance run.</summary>
+    public static string RtiProfile => Environment.GetEnvironmentVariable("CORPUS_RTI_PROFILE") switch
+    {
+        null or "7.7.0" => "7.7.0",
+        "7.3.1" => "7.3.1",
+        var profile => throw new InvalidOperationException($"Unsupported corpus RTI profile: {profile}")
+    };
+
+    public static string OracleRoot => Path.Combine(CorpusRoot, RtiProfile, "rtiddsgen", "csharp");
 
     public static IReadOnlyList<CorpusCase> Cases => Current.Value.Cases;
 
@@ -180,7 +200,11 @@ internal static class CorpusRepository
 
     public static IReadOnlyList<string> OracleFiles(CorpusCase corpusCase)
     {
-        var directory = corpusCase.OracleDirectory;
+        return OracleFiles(corpusCase.OracleDirectory);
+    }
+
+    private static IReadOnlyList<string> OracleFiles(string directory)
+    {
         if (Directory.Exists(directory))
         {
             return [.. Directory.EnumerateFiles(directory, "*.cs", SearchOption.TopDirectoryOnly).OrderBy(p => p, StringComparer.Ordinal)];
@@ -218,16 +242,28 @@ internal static class CorpusRepository
             .Concat(manifest.NegativeCases.Select(entry => (entry, Classification: entry.ObservedOutcome ?? "rejected")))
             .ToDictionary(entry => entry.entry.Id, entry => entry.Classification, StringComparer.Ordinal);
 
+        var profileRoot = Path.Combine(corpusRoot, RtiProfile);
+        Dictionary<string, OracleEntry>? capturedCases = null;
+        if (RtiProfile == "7.3.1")
+        {
+            capturedCases = Read<OracleManifest>(Path.Combine(profileRoot, "manifest.json")).Cases
+                .ToDictionary(entry => entry.Id, StringComparer.Ordinal);
+            foreach (var id in classifications.Keys.ToArray())
+            {
+                classifications[id] = capturedCases[id].Outcome == "generated" ? "accepted" : "rejected";
+            }
+        }
+
         var cases = new List<CorpusCase>();
 
         foreach (var entry in manifest.PositiveCases)
         {
-            cases.Add(CreateCase(entry, "features", classifications, corpusRoot));
+            cases.Add(CreateCase(entry, "features", classifications, profileRoot, capturedCases));
         }
 
         foreach (var entry in manifest.NegativeCases)
         {
-            cases.Add(CreateCase(entry, "negative", classifications, corpusRoot));
+            cases.Add(CreateCase(entry, "negative", classifications, profileRoot, capturedCases));
         }
 
         foreach (var idl in manifest.IntegrationEntryPoints)
@@ -241,7 +277,9 @@ internal static class CorpusRepository
                 idl,
                 [],
                 "accepted",
-                Path.Combine(corpusRoot, "oracles", "integration", group, id)));
+                Path.Combine(profileRoot, capturedCases is null
+                    ? Path.Combine("rtiddsgen", "csharp", "integration", group, id)
+                    : capturedCases[id].SourceDirectory)));
         }
 
         var explicitTagNumbers = cases
@@ -287,7 +325,7 @@ internal static class CorpusRepository
                 .ToList());
     }
 
-    private static CorpusCase CreateCase(ManifestEntry entry, string sourceKind, Dictionary<string, string> classifications, string corpusRoot)
+    private static CorpusCase CreateCase(ManifestEntry entry, string sourceKind, Dictionary<string, string> classifications, string profileRoot, Dictionary<string, OracleEntry>? capturedCases)
     {
         return new CorpusCase(
             entry.Id,
@@ -295,7 +333,9 @@ internal static class CorpusRepository
             entry.Idl,
             entry.Defines,
             classifications[entry.Id],
-            Path.Combine(corpusRoot, "oracles", sourceKind, entry.Id),
+            Path.Combine(profileRoot, capturedCases is null
+                ? Path.Combine("rtiddsgen", "csharp", sourceKind, entry.Id)
+                : capturedCases[entry.Id].SourceDirectory),
             entry.Tag);
     }
 
@@ -317,9 +357,6 @@ internal static class CorpusRepository
 
         throw new DirectoryNotFoundException("Could not find the repository root from the test output directory.");
     }
-
-    private static string FindCorpusRoot() =>
-        Path.Combine(FindRepositoryRoot(), "docs", "corpus");
 
     private static StringComparison PathComparer =>
         OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;

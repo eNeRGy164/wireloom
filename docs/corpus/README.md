@@ -5,8 +5,9 @@ the managed source generator. It is the shared boundary between authored IDL
 feature cases, RTI-generated C# reference sources, and compatibility tests.
 
 The corpus covers IDL parsing, preprocessing, semantic diagnostics, RTI
-annotations, and generated C# source shape. It does not cover runtime behavior,
-serialization bytes, wire compatibility, keyhashes, or live DDS communication.
+annotations, and RTI and Wireloom generated-source shape. It does not cover
+runtime behavior, serialization bytes, wire compatibility, keyhashes, or live
+DDS communication.
 Those concerns belong in the relevant implementation and integration tests.
 Generated API runtime behavior is covered by the
 [runtime contract suite](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md).
@@ -17,14 +18,28 @@ Generated API runtime behavior is covered by the
 corpus/
 ├── manifest.json       authored case inventory and input configuration
 ├── FEATURE-COVERAGE.md feature index and implementation status
+├── csharp-quality.md   retained C# generated-source quality evidence
 ├── idl/
 │   ├── features/       positive feature cases
 │   ├── negative/       rejection and diagnostic probes
 │   ├── integration/    integration entry points and support IDL
 │   └── includes/       shared IDL included by feature cases
-├── oracles/            RTI-generated C# reference sources
-└── generator/          Wireloom-generated C# sources exported from the corpus
+├── 7.3.1/              version manifest, coverage, RTI oracles, and Wireloom exports
+├── 7.7.0/              version manifest, coverage, RTI oracles, and Wireloom exports
+├── scripts/            corpus evidence capture tools
+└── LTS-PROFILES.md     versioned evidence overview
 ```
+
+The root `idl/` inventory is shared by both profiles. Versioned files record
+RTI C# and C++ generation outcomes and Wireloom output independently. RTI
+outputs live under `<version>/rtiddsgen/`; Wireloom exports live under
+`<version>/generator/`. The 7.3.1 generated
+contracts compile against the exact NuGet package, and its runtime-contract
+suite passes; exact-version wire qualification remains pending. The 7.7.0 test
+loader reads its RTI C# oracle tree from `7.7.0/rtiddsgen/csharp/`.
+Acceptance can also vary by target profile: `09-autoid-hash` is a Wireloom
+negative case under 7.3.1 because `@must_understand` is unavailable there, and
+is accepted under 7.7.0.
 
 The repository's MIT License does not apply to the checked-in RTI-generated
 oracle sources. They are third-party reference material, provided as-is for
@@ -64,10 +79,12 @@ authoritative mapping is [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md).
 
 ## Oracle library
 
-The `oracles/` tree mirrors the IDL case structure and contains the RTI
-Connext DDS 7.7.0 / `rtiddsgen` 4.7.0 generated C# used for source-shape
-comparison. RTI acceptance is reference data only; it does not imply that the
-managed generator supports the same feature.
+Each LTS directory's `rtiddsgen/csharp/` tree mirrors RTI-generated C# for that
+exact version. RTI acceptance is reference data only; it does not imply that
+the managed generator supports the same feature. The
+[7.7.0 profile](7.7.0/FEATURE-COVERAGE.md) is the current retained comparison
+baseline. The [7.3.1 profile](7.3.1/FEATURE-COVERAGE.md) records the captured
+run and its outstanding qualification evidence.
 
 Rejected cases may have no managed generated C# source, while remaining in the
 case inventory so accepted, rejected, and observed outcomes stay explicit.
@@ -104,8 +121,79 @@ wslc run --rm -v "${PWD}:/work" -w /work rticom/connext-base:7.7.0.1 sh -lc 'apt
 ```
 
 Record the RTI and `cpp` versions, outcome, and diagnostic in `manifest.json`.
-Copy generated sources into `oracles/` only when RTI accepts the case and the
-license permits retaining them.
+Copy generated sources into `<version>/rtiddsgen/csharp/` only when RTI accepts
+the case and the license permits retaining them.
+
+## Capturing C++ oracle output
+
+Generate C++11 output for every shared positive, negative, and integration case
+with the matching RTI LTS image. The script writes version-scoped sources,
+per-case logs, and a generation manifest under
+`<version>/rtiddsgen/cpp/`. Case manifests refer to the canonical input under
+`idl/`; rejected cases retain their diagnostic log without partial generated
+sources. Generation evidence does not assert that the output compiles or that
+the feature is wire-compatible.
+
+From PowerShell at the repository root, mount the local license file and run
+the generator once for each profile:
+
+```powershell
+$licenseFile = Join-Path $env:USERPROFILE 'Downloads/rti_license.dat'
+
+wslc run --rm --user 0:0 `
+  -v "${PWD}:/work" `
+  -v "${licenseFile}:/run/secrets/rti_license.dat:ro" `
+  -e RTI_LICENSE_FILE=/run/secrets/rti_license.dat `
+  --entrypoint bash `
+  rticom/connext-base:7.3.1@sha256:f33a61ec6381a8fb73cbb019fbb5c081f434dc5217eb14283fad995306be0f04 `
+  -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends g++ python3 && python3 /work/docs/corpus/scripts/generate-rtiddsgen-cpp.py --version 7.3.1'
+
+wslc run --rm --user 0:0 `
+  -v "${PWD}:/work" `
+  -v "${licenseFile}:/run/secrets/rti_license.dat:ro" `
+  -e RTI_LICENSE_FILE=/run/secrets/rti_license.dat `
+  --entrypoint bash `
+  rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca `
+  -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends g++ python3 && python3 /work/docs/corpus/scripts/generate-rtiddsgen-cpp.py --version 7.7.0'
+```
+
+The script verifies the expected `rtiddsgen` version before generating. It
+uses `-generateIncludeFiles` for 7.7.0 and applies the experimental
+`-unboundedSupport` option where the shared manifest requires it. The C++
+FlatData case uses the same narrow annotation removal as the wire harness.
+Check each generated `manifest.json` for per-case results and any generator
+failures. Each case points to its canonical source under `idl/`; the output
+folders do not contain copies of the IDL. The FlatData adaptation exists only
+in the temporary generation workspace and is recorded with source and adapted
+input hashes in the manifest. The generator captures per-case rejections and
+continues through the inventory; its process exit status reports whether the
+capture completed, while case outcomes remain in the manifest.
+
+## Wire matrix generation profiles
+
+Positive-case entries may define a `wireMatrix` object in `manifest.json` for
+case-specific reference-peer requirements. `rtiCppCodegenOptions` supplies
+additional arguments to RTI C++ `rtiddsgen` for that case only, and
+`qualification` explains constraints on interpreting its result. The wire
+runner copies this configuration into each affected scenario in `results.json`
+and lists it in the generated `results.md` under **Case-specific RTI C++
+generation**. Use this for documented experimental RTI features or required
+code-generator switches; keep ordinary shared IDL and Wireloom generation
+independent of those RTI-specific options.
+
+`rtiCppIdlAdaptations` lists narrowly scoped, version-qualified changes to the
+scratch IDL used only by RTI C++ generation. The `07-union-char-boundaries`
+case covers NUL and printable ASCII tilde (U+007E, 126). Both exact LTS
+profiles pass all 27 exchanges with the shared IDL and no case-specific C++
+IDL adaptation. These focused results apply to this case and do not qualify an
+entire RTI profile.
+
+The recursive aggregate and optional recursive array cases request
+`-unboundedSupport`. RTI describes recursive-structure support as experimental;
+successful compilation or an exchange under that profile does not establish
+that recursion is production-qualified for RTI. See the [wire matrix
+procedure](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md) for
+the runner and result semantics.
 
 ## Test responsibilities
 
@@ -154,7 +242,7 @@ evidence separate from runtime or interoperability claims.
 
 ## Review rules
 
-- Do not use dated directories inside `idl/` or `oracles/`.
+- Do not use dated directories inside `idl/` or `<version>/rtiddsgen/csharp/`.
 - Do not make tests depend on external capture history.
 - Keep RTI acceptance separate from managed-generator support status.
 - Keep runtime, serialization, and wire claims out of source-generation status.
@@ -162,16 +250,22 @@ evidence separate from runtime or interoperability claims.
 
 ## Exporting managed-generator sources
 
-Set `CORPUS_GENERATOR_EXPORT_ROOT` and run the corpus export test to publish
-generated sources under `generator/<source-kind>/<case-id>`:
+Set `CORPUS_RTI_PROFILE` to `7.3.1` or `7.7.0` and set
+`CORPUS_GENERATOR_EXPORT_ROOT` to the matching version's `generator/` folder.
+The export test writes sources under `<profile>/generator/<source-kind>/<case-id>`:
 
 ```powershell
-$env:CORPUS_GENERATOR_EXPORT_ROOT = "docs/corpus/generator"
+$env:CORPUS_RTI_PROFILE = "7.7.0"
+$env:CORPUS_GENERATOR_EXPORT_ROOT = "docs/corpus/7.7.0/generator"
 dotnet run --project tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --configuration Release -- --filter-method Wireloom.Dds.Generator.CorpusCompliance.CorpusComplianceSpecs.ExportAcceptedCorpusSources
 ```
 
-Rejected cases are omitted because they do not produce generated sources.
+Rejected cases are omitted because they do not produce generated sources. Run
+the same command with `CORPUS_RTI_PROFILE=7.3.1` and the 7.3.1 export root to
+refresh that profile. The profile choice affects RTI-specific emission only;
+the shared IDL inventory and Wireloom acceptance classifications stay the
+same.
 
 Unbounded typedef cases C135/C136 retain their RTI C# oracle pairs under
-`oracles/features`. Their generated API behavior is covered by the runtime
+`7.7.0/rtiddsgen/csharp/features`. Their generated API behavior is covered by the runtime
 contract suite.

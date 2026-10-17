@@ -2,6 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Xml.Linq;
+using Wireloom.Compiler.Emission;
 
 namespace Wireloom.Dds.Generator.CorpusCompliance;
 
@@ -25,9 +26,14 @@ public sealed class CorpusComplianceSpecs
         foreach (var corpusCase in CorpusRepository.Cases)
         {
             File.Exists(CorpusRepository.GetIdlPath(corpusCase.Idl)).ShouldBeTrue(corpusCase.Idl);
-            CorpusRepository.OracleFiles(corpusCase).Count.ShouldBe(
-                corpusCase.HasOracleOutput ? 2 : 0,
-                corpusCase.Id);
+            var oracleFiles = CorpusRepository.OracleFiles(corpusCase);
+            oracleFiles.Count.ShouldBe(corpusCase.HasOracleOutput ? 2 : 0, corpusCase.Id);
+            foreach (var oracleFile in oracleFiles)
+            {
+                Path.GetRelativePath(CorpusRepository.OracleRoot, oracleFile).ShouldNotStartWith("..");
+                var version = RequestedRtiProfile == "7.3.1" ? "4.3.1" : "4.7.0";
+                File.ReadAllText(oracleFile).ShouldContain($"version {version}");
+            }
         }
     }
 
@@ -63,7 +69,7 @@ public sealed class CorpusComplianceSpecs
         var root = Path.GetFullPath(exportRoot, CorpusRepository.RepositoryRoot);
         Directory.CreateDirectory(root);
 
-        foreach (var corpusCase in CorpusRepository.Cases.Where(corpusCase => corpusCase.ExpectedToCompile))
+        foreach (var corpusCase in CorpusRepository.Cases.Where(IsExpectedToCompile))
         {
             var caseRoot = Path.Combine(root, corpusCase.SourceKind, corpusCase.Id);
             Directory.CreateDirectory(caseRoot);
@@ -82,7 +88,7 @@ public sealed class CorpusComplianceSpecs
     public void EveryGeneratedXmlDocumentationBlockIsWellFormed()
     {
         // Arrange
-        var acceptedCases = CorpusRepository.Cases.Where(corpusCase => corpusCase.ExpectedToCompile);
+        var acceptedCases = CorpusRepository.Cases.Where(IsExpectedToCompile);
 
         // Act
         var documentationBlocks = acceptedCases
@@ -150,14 +156,14 @@ public sealed class CorpusComplianceSpecs
 
     /// <summary>Checks constructor defaults separately from the public API shape and default-branch setters.</summary>
     [Theory]
-    [InlineData("07-unions", "0")]
-    [InlineData("07-union-octet", "0")]
-    [InlineData("07-union-uint8", "0")]
-    [InlineData("07-union-uint16", "0")]
-    [InlineData("07-union-uint32", "0")]
-    [InlineData("07-union-int8", "0")]
-    [InlineData("07-union-boolean", "false")]
-    public void UnionTypeDefaultsMatchXTypesAndTheRetainedOracle(string caseId, string expected)
+    [InlineData("07-unions", "2", "0")]
+    [InlineData("07-union-octet", "1", "0")]
+    [InlineData("07-union-uint8", "1", "0")]
+    [InlineData("07-union-uint16", "1", "0")]
+    [InlineData("07-union-uint32", "1", "0")]
+    [InlineData("07-union-int8", "0", "0")]
+    [InlineData("07-union-boolean", "true", "false")]
+    public void UnionConstructorDefaultsMatchTheSelectedOracle(string caseId, string expected731, string expected770)
     {
         // Arrange
         var corpusCase = CorpusRepository.Cases.Single(item => item.Id == caseId);
@@ -167,6 +173,7 @@ public sealed class CorpusComplianceSpecs
         var generated = string.Join(Environment.NewLine, Compile(corpusCase).Values.Select(source => source.Source));
 
         // Assert
+        var expected = RequestedRtiProfile == "7.3.1" ? expected731 : expected770;
         DefaultExpression(oracle).ShouldBe(expected);
         DefaultExpression(generated).ShouldBe(expected);
 
@@ -276,9 +283,23 @@ public sealed class CorpusComplianceSpecs
     [MemberData(nameof(CorpusCases))]
     public void EveryCorpusCaseMatchesItsExpectedAcceptance(CorpusCase corpusCase)
     {
-        if (corpusCase.ExpectedToCompile)
+        if (IsExpectedToCompile(corpusCase))
         {
             Should.NotThrow(() => Compile(corpusCase), $"Case {corpusCase.Id} should compile.");
+            return;
+        }
+
+        if (corpusCase.Id == "09-autoid-hash" && string.Equals(RequestedRtiProfile, "7.3.1", StringComparison.Ordinal))
+        {
+            // Arrange
+            var diagnostics = new List<IdlDiagnostic>();
+
+            // Act
+            var generated = Compile(corpusCase, diagnostics);
+
+            // Assert
+            generated.ShouldBeEmpty();
+            diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0004");
             return;
         }
 
@@ -290,7 +311,7 @@ public sealed class CorpusComplianceSpecs
     [MemberData(nameof(CorpusCases))]
     public void EveryAcceptedCorpusCasePreservesTheOracleDataContractShape(CorpusCase corpusCase)
     {
-        if (!corpusCase.ExpectedToCompile)
+        if (!IsExpectedToCompile(corpusCase))
         {
             return;
         }
@@ -388,6 +409,7 @@ public sealed class CorpusComplianceSpecs
     {
         // Arrange
         var corpusCase = CorpusRepository.Cases.Single(item => item.Id == "09-optional-recursive-array");
+        var rti731 = string.Equals(RequestedRtiProfile, "7.3.1", StringComparison.Ordinal);
         var oracle = string.Join("\n", CorpusRepository.OracleFiles(corpusCase).Select(File.ReadAllText));
 
         // Act
@@ -396,14 +418,23 @@ public sealed class CorpusComplianceSpecs
         // Assert
         oracle.ShouldContain("NativeManagedOptionalArray children");
         oracle.ShouldContain("CreateArrayWithAccessInfo");
-        oracle.ShouldContain("isRecursiveType = true");
         oracle.ShouldContain("[Optional]");
         oracle.ShouldContain("hash.Add(this.children[0]);");
         oracle.ShouldContain("hash.Add(-1);");
         oracle.ShouldContain("children.Destroy<");
         oracle.ShouldContain("children.FromNative<");
         oracle.ShouldContain("children.ToNative<");
-        oracle.ShouldContain("result.SetMemberAnnotations(");
+        if (rti731)
+        {
+            oracle.ShouldContain("xTypesComplianceMask = 0x0000068C;");
+            oracle.ShouldNotContain("isRecursiveType = true");
+            oracle.ShouldNotContain("result.SetMemberAnnotations(");
+        }
+        else
+        {
+            oracle.ShouldContain("isRecursiveType = true");
+            oracle.ShouldContain("result.SetMemberAnnotations(");
+        }
         var node = generated["CorpusOptionalRecursiveArray.Node.g.cs"].Source;
         node.ShouldContain("public Node[]? children { get; set; }");
         node.ShouldNotContain("children = new Node[2]");
@@ -425,17 +456,44 @@ public sealed class CorpusComplianceSpecs
         plugin.ShouldNotContain("NodeSupport.Instance.GetDynamicTypeInternal(isPublic)");
         plugin.ShouldContain("new uint[] { 2 }");
         plugin.ShouldContain("isOptional: true, id: 1");
-        plugin.ShouldContain("isRecursiveType = true");
-        plugin.ShouldContain("defaultValue: new AnnotationParameterValue { Int32Value = 0 }");
-        plugin.ShouldContain("minValue: new AnnotationParameterValue { Int32Value = int.MinValue }");
-        plugin.ShouldContain("maxValue: new AnnotationParameterValue { Int32Value = int.MaxValue }");
-        plugin.ShouldContain("result.SetMemberAnnotations(0, annotations);");
+        if (rti731)
+        {
+            plugin.ShouldContain("xTypesComplianceMask = 0x0000068C;");
+            plugin.ShouldNotContain("isRecursiveType = true");
+            plugin.ShouldNotContain("SetMemberAnnotations");
+        }
+        else
+        {
+            plugin.ShouldContain("isRecursiveType = true");
+            plugin.ShouldContain("defaultValue: new AnnotationParameterValue { Int32Value = 0 }");
+            plugin.ShouldContain("minValue: new AnnotationParameterValue { Int32Value = int.MinValue }");
+            plugin.ShouldContain("maxValue: new AnnotationParameterValue { Int32Value = int.MaxValue }");
+            plugin.ShouldContain("result.SetMemberAnnotations(0, annotations);");
+        }
         var support = generated["CorpusOptionalRecursiveArray.NodeSupport.g.cs"].Source;
         support.ShouldContain("internal static NodeSupport GetOrCreateInstanceImpl()");
     }
 
-    private static IReadOnlyDictionary<string, GeneratedIdlSource> Compile(CorpusCase corpusCase) =>
-        IdlCompiler.CompileSources(CorpusRepository.BuildInputs(corpusCase), TestContext.Current.CancellationToken);
+    private static Dictionary<string, GeneratedIdlSource> Compile(CorpusCase corpusCase, ICollection<IdlDiagnostic>? diagnostics = null)
+    {
+        var profile = RequestedRtiProfile switch
+        {
+            null or "7.7.0" => RtiApiProfile.Rtiddsgen470,
+            "7.3.1" => RtiApiProfile.Rtiddsgen431,
+            _ => throw new InvalidOperationException($"Unsupported corpus RTI profile: {RequestedRtiProfile}")
+        };
+
+        return IdlCompiler.CompileSourcesWithDiagnostics(
+            CorpusRepository.BuildInputs(corpusCase),
+            diagnostics,
+            TestContext.Current.CancellationToken,
+            profile);
+    }
+
+    private static string RequestedRtiProfile => CorpusRepository.RtiProfile;
+
+    private static bool IsExpectedToCompile(CorpusCase corpusCase) =>
+        corpusCase.ExpectedToCompileForProfile(RequestedRtiProfile);
 
     private static IReadOnlyList<TypeShape> ReadFileShapes(IEnumerable<string> sourcePaths) =>
         ReadSourceShapes(sourcePaths.Select(File.ReadAllText), validateSyntax: false);

@@ -152,7 +152,7 @@ documentation. Compliance and compiler diagnostic checks are separate evidence.
    ```
 
 2. For each exported case, read all its `.g.cs` documents and locate the matching
-   retained oracle directory under `oracles/`. Compile each implementation's
+   retained oracle directory under `7.7.0/rtiddsgen/csharp/`. Compile each implementation's
    source set separately with the SDK's Roslyn assemblies. No generator or
    oracle sources are edited.
 3. Parse with `LanguageVersion.CSharp12` and `DocumentationMode.Diagnose`.
@@ -162,7 +162,7 @@ documentation. Compliance and compiler diagnostic checks are separate evidence.
    `NullableContextOptions.Enable`, and `allowUnsafe: true`, leaving the warning
    level at its default of 4. No warnings are suppressed.
 4. Reference the .NET 10.0.12 reference assemblies and the RTI 7.7.0
-   `netstandard2.0` assembly. First compile the retained `oracles/includes`
+   `netstandard2.0` assembly. First compile the retained `7.7.0/rtiddsgen/csharp/includes`
    source/plugin pair into a reference assembly. Reference it only for the RTI
    `11-include-search` and `11-preprocessing` cases: Wireloom already emits their
    included declarations, so adding that reference to Wireloom would introduce
