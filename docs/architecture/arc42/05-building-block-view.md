@@ -98,10 +98,16 @@ Direct union branches that contain string sequences use the same specialized
 The resolved element bound flows through native initialization and conversion;
 typedef-backed union branches delegate through their generated alias wrappers.
 Retained corpus cases C135/C136 confirm these defaults against RTI-generated
-C# with a typed runtime probe on Windows and Linux. The probe also records
-RTI's independent aggregate sequence element copies and its scalar sequence
-element typedef erasure; Wireloom currently retains scalar wrappers. These
-are API observations, with no wire compatibility claim. Runtime behavior is
+C# with a typed runtime probe on Windows and Linux. A focused `rtiddsgen`
+probe also confirmed the collection-element alias mapping: scalar and string
+alias chains use their underlying managed value, enum aliases use the enum,
+aggregate aliases use the underlying aggregate, and aliases to sequence or
+array typedefs retain their named type when nested. Collection typedef
+emission now follows those distinctions.
+RTI preserves a declared scalar alias in a struct member's DynamicType
+metadata even when the public sequence property uses the primitive type;
+Wireloom retains that metadata while matching the property shape. These are
+API observations, with no wire compatibility claim. Runtime behavior is
 covered by the [runtime contract matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix).
 Direct and typedef-backed narrow/wide string-sequence union branches are also
 covered by [`StringSequenceUnionSpecs`](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/Unions/StringSequenceUnionSpecs.cs)

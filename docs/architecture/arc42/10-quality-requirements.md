@@ -66,7 +66,8 @@ Generated API runtime contracts are verified separately from corpus shape and
 wire compatibility. The runtime suite builds focused IDL fixtures and executes
 managed value methods, native conversion/lifecycle APIs, and DynamicType/support
 APIs on Windows and Linux. Its [coverage matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
-identifies executable coverage, applicable gaps, and the RTI C# or better
-expectation. Coveralls measures maintained generator source; generated fixture
+identifies executable coverage, applicable gaps, and the RTI C# API contract,
+with deviations limited to documented corrections for reproducible RTI C#
+defects. Coveralls measures maintained generator source; generated fixture
 and test project code are excluded. Unresolved required contracts remain gaps
 rather than completed compatibility evidence.

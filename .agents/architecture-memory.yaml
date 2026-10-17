@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-17T05:54:17Z
+  generated_at: 2026-10-17T06:32:16Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -48,7 +48,7 @@ summary:
     sources:
       - docs/architecture/arc42/04-solution-strategy.md
   building_blocks:
-    text: Keep Roslyn hosting, preprocessing/input graph, target-independent parse-bind-validate, emission planning, and writers as separate stages. Preserve managed API, native conversion, and DynamicType contracts for aliases, optional presence, bounded collections, and union discriminators; consult chapter 5 and executable evidence for detailed behavior.
+    text: Keep Roslyn hosting, preprocessing/input graph, target-independent parse-bind-validate, emission planning, and writers as separate stages. Preserve managed API, native conversion, and DynamicType contracts for aliases, optional presence, bounded collections, and union discriminators. Collection element aliases follow RTI C# target-kind mapping: primitive/string aliases erase, enum and aggregate aliases use their underlying type, and sequence/array aliases remain named when nested; declared scalar aliases can remain in struct-member DynamicType metadata while managed sequence properties use the underlying primitive.
     sources:
       - docs/architecture/arc42/05-building-block-view.md
   runtime:
@@ -64,7 +64,7 @@ summary:
     sources:
       - docs/architecture/arc42/08-crosscutting-concepts.md
   decisions:
-    text: RTI C# is the managed API baseline, not an API ceiling; improvements need separate evidence. Wire qualification targets all nine directed pairings of Wireloom C#, RTI C#, and RTI C++ for selected fixtures on exact RTI 7.7.0. Keep RTI-positive cases rejected by Wireloom visible as unimplemented.
+    text: Match RTI C# unless a reproducible RTI C# defect justifies a documented correction; RTI C++ wire behavior alone does not justify a different managed API shape. Wire qualification targets all nine directed pairings of Wireloom C#, RTI C#, and RTI C++ for selected fixtures on exact RTI 7.7.0. Keep RTI-positive cases rejected by Wireloom visible as unimplemented.
     sources:
       - docs/architecture/arc42/09-architectural-decisions.md
   quality:
@@ -72,7 +72,7 @@ summary:
     sources:
       - docs/architecture/arc42/10-quality-requirements.md
   risks:
-    text: Unqualified areas include RTI 7.3.1 and host/IDE combinations, corpus-external IDL, C136 ISequence<Scalar> versus RTI ISequence<int> (issue #62), array-of-sequences shape/interoperability, and unadapted recursive/optional wire scenarios. See chapter 11 and the support policy.
+    text: Unqualified areas include RTI 7.3.1 and host/IDE combinations, corpus-external IDL, array-of-sequences shape/interoperability, and unadapted recursive/optional wire scenarios. See chapter 11 and the support policy.
     sources:
       - docs/architecture/arc42/11-risks-and-technical-debt.md
   glossary:
