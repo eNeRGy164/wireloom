@@ -16,6 +16,21 @@ expectation:
   positive feature cases and integration entry points, plus selected probes in
   the negative bucket, such as `12-unknown-annotation`, `12-interface`, and
   `12-union-wchar-rti-limit`.
+- Acceptance is profile-aware where RTI APIs impose a target limitation:
+  `09-autoid-hash` is rejected with `DDSG0004` and no generated sources under
+  the 7.3.1 profile, while it remains accepted under 7.7.0.
+- The optional-recursive-array comparison uses the matching RTI oracle. It
+  expects the 7.7.0 `isRecursiveType` flag and member-annotation APIs only in
+  that profile; 7.3.1 instead uses its `xTypesComplianceMask` and has no member
+  annotation metadata API.
+- Every oracle read uses the selected `CORPUS_RTI_PROFILE` (7.7.0 by default),
+  including inventory, constructors, general shape checks, and targeted metadata
+  comparisons. The 7.3.1 capture manifest supplies its source directories and
+  generation outcomes; it is never compared against 7.7.0 sources.
+- The optional-recursive-array comparison uses the matching RTI oracle. It
+  expects the 7.7.0 `isRecursiveType` flag and member-annotation APIs only in
+  that profile; 7.3.1 instead uses its `xTypesComplianceMask` and has no member
+  annotation metadata API.
 - Cases outside the map are expected to throw `IdlException`, regardless of
   their manifest bucket.
 - For accepted cases with retained RTI oracle output, the suite checks required

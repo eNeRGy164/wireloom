@@ -1,0 +1,403 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "rtiProduct": "RTI Connext DDS",
+  "rtiddsgenVersion": "4.3.1",
+  "sharedCaseInventory": "../manifest.json",
+  "wireQualification": "not-qualified",
+  "generatorSourceRoot": "generator",
+  "oracleRoot": "rtiddsgen/csharp",
+  "capturedCaseCount": 78,
+  "cases": [
+    {
+      "id": "01-boundaries",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/01-boundaries"
+    },
+    {
+      "id": "01-full-widths",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/01-full-widths"
+    },
+    {
+      "id": "01-primitives",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/01-primitives"
+    },
+    {
+      "id": "02-constant-expressions",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/02-constant-expressions"
+    },
+    {
+      "id": "02-formatting",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/02-formatting"
+    },
+    {
+      "id": "02-multiple",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/02-multiple"
+    },
+    {
+      "id": "02-names-constants",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/02-names-constants"
+    },
+    {
+      "id": "02-scopes",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/02-scopes"
+    },
+    {
+      "id": "03-alias-aggregate",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/03-alias-aggregate"
+    },
+    {
+      "id": "03-alias-collections",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/03-alias-collections"
+    },
+    {
+      "id": "03-enum-values-explicit",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/03-enum-values-explicit"
+    },
+    {
+      "id": "03-enum-values-prefix",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/03-enum-values-prefix"
+    },
+    {
+      "id": "03-enums-aliases",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/03-enums-aliases"
+    },
+    {
+      "id": "04-boundaries",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/04-boundaries"
+    },
+    {
+      "id": "04-string-alias-chains",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/04-string-alias-chains"
+    },
+    {
+      "id": "04-strings",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/04-strings"
+    },
+    {
+      "id": "04-unbounded-string-aliases",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/04-unbounded-string-aliases"
+    },
+    {
+      "id": "05-array-of-sequences",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/05-array-of-sequences"
+    },
+    {
+      "id": "05-collections",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/05-collections"
+    },
+    {
+      "id": "05-shapes",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/05-shapes"
+    },
+    {
+      "id": "05-unbounded-sequence-aliases",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/05-unbounded-sequence-aliases"
+    },
+    {
+      "id": "06-aggregates",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/06-aggregates"
+    },
+    {
+      "id": "06-alias-composition",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/06-alias-composition"
+    },
+    {
+      "id": "06-valuetypes",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/06-valuetypes"
+    },
+    {
+      "id": "07-union-aliases",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-aliases"
+    },
+    {
+      "id": "07-union-boolean",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-boolean"
+    },
+    {
+      "id": "07-union-char",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-char"
+    },
+    {
+      "id": "07-union-char-boundaries",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-char-boundaries"
+    },
+    {
+      "id": "07-union-char-numeric",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-char-numeric"
+    },
+    {
+      "id": "07-union-char-numeric-255",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-char-numeric-255"
+    },
+    {
+      "id": "07-union-enum",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-enum"
+    },
+    {
+      "id": "07-union-int16",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-int16"
+    },
+    {
+      "id": "07-union-int32",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-int32"
+    },
+    {
+      "id": "07-union-int8",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-int8"
+    },
+    {
+      "id": "07-union-long",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-long"
+    },
+    {
+      "id": "07-union-multilabel",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-multilabel"
+    },
+    {
+      "id": "07-union-octet",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-octet"
+    },
+    {
+      "id": "07-union-scoped",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-scoped"
+    },
+    {
+      "id": "07-union-short",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-short"
+    },
+    {
+      "id": "07-union-short-boundaries",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-short-boundaries"
+    },
+    {
+      "id": "07-union-string-sequence-aliases",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-string-sequence-aliases"
+    },
+    {
+      "id": "07-union-string-sequence-bounded-direct",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-string-sequence-bounded-direct"
+    },
+    {
+      "id": "07-union-uint16",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-uint16"
+    },
+    {
+      "id": "07-union-uint32",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-uint32"
+    },
+    {
+      "id": "07-union-uint8",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-uint8"
+    },
+    {
+      "id": "07-union-ulong",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-ulong"
+    },
+    {
+      "id": "07-union-ushort",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-ushort"
+    },
+    {
+      "id": "07-union-wchar-label",
+      "outcome": "rejected",
+      "sourceDirectory": "rtiddsgen/csharp/07-union-wchar-label"
+    },
+    {
+      "id": "07-unions",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/07-unions"
+    },
+    {
+      "id": "08-key-boundaries",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/08-key-boundaries"
+    },
+    {
+      "id": "08-key-inherited",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/08-key-inherited"
+    },
+    {
+      "id": "08-key-nested",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/08-key-nested"
+    },
+    {
+      "id": "08-key-union",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/08-key-union"
+    },
+    {
+      "id": "08-keys",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/08-keys"
+    },
+    {
+      "id": "09-allowed-data-representation",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/09-allowed-data-representation"
+    },
+    {
+      "id": "09-autoid-hash",
+      "outcome": "rejected",
+      "sourceDirectory": "rtiddsgen/csharp/09-autoid-hash"
+    },
+    {
+      "id": "09-data-representation",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/09-data-representation"
+    },
+    {
+      "id": "09-default",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/09-default"
+    },
+    {
+      "id": "09-defaults-ranges",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/09-defaults-ranges"
+    },
+    {
+      "id": "09-evolution-optional",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/09-evolution-optional"
+    },
+    {
+      "id": "09-extensibility",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/09-extensibility"
+    },
+    {
+      "id": "09-id-gaps",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/09-id-gaps"
+    },
+    {
+      "id": "09-optional-aggregate-member",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/09-optional-aggregate-member"
+    },
+    {
+      "id": "09-optional-collections",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/09-optional-collections"
+    },
+    {
+      "id": "09-optional-recursive-array",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/09-optional-recursive-array"
+    },
+    {
+      "id": "09-optional-string-sequences",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/09-optional-string-sequences"
+    },
+    {
+      "id": "10-annotations",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/10-annotations"
+    },
+    {
+      "id": "10-annotations-extended",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/10-annotations-extended"
+    },
+    {
+      "id": "10-annotations-rti",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/10-annotations-rti"
+    },
+    {
+      "id": "10-flat-data-binding",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/10-flat-data-binding"
+    },
+    {
+      "id": "11-comments",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/11-comments"
+    },
+    {
+      "id": "11-conditionals",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/11-conditionals"
+    },
+    {
+      "id": "11-include-search",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/11-include-search"
+    },
+    {
+      "id": "11-macro-operators",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/11-macro-operators"
+    },
+    {
+      "id": "11-macros",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/11-macros"
+    },
+    {
+      "id": "11-preprocessing",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/11-preprocessing"
+    },
+    {
+      "id": "11-preprocessor-advanced",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/11-preprocessor-advanced"
+    },
+    {
+      "id": "includes",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/includes"
+    }
+  ]
+}

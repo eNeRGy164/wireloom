@@ -52,7 +52,7 @@ jobs:
           dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility/RtiOracleProbe/RtiOracleProbe.csproj
           --no-restore --configuration Release
           -p:RtiOracleProgram=UnboundedAliasProbe.cs
-          '-p:RtiOracleSourceDir=../../../docs/corpus/oracles/features/*-unbounded-*-aliases'
+          '-p:RtiOracleSourceDir=../../../docs/corpus/7.7.0/rtiddsgen/csharp/features/*-unbounded-*-aliases'
         shell: pwsh
 
       - name: Test runtime contracts
