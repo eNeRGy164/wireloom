@@ -26,8 +26,8 @@ internal static partial class ManagedFixtures
         sample.states.Value.Add(CorpusUnboundedSequences.State.Ready);
         sample.children.Value.Add(new CorpusUnboundedSequences.Child(301));
         sample.children.Value.Add(new CorpusUnboundedSequences.Child(-302));
-        sample.scalars.Value.Add(new CorpusUnboundedSequences.Scalar(201));
-        sample.scalars.Value.Add(new CorpusUnboundedSequences.Scalar(-202));
+        sample.scalars.Value.Add(201);
+        sample.scalars.Value.Add(-202);
         sample.texts.Value.Add("narrow-1");
         sample.texts.Value.Add("narrow-2");
         sample.wideTexts.Value.Add("wide-λ");

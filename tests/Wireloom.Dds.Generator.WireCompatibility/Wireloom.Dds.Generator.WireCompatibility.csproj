@@ -9,6 +9,10 @@
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)wireloom-generated</CompilerGeneratedFilesOutputPath>
     <WireCompatibilityCase Condition="'$(WireCompatibilityCase)' == ''">01-primitives</WireCompatibilityCase>
     <WireCompatibilityRtiVersion Condition="'$(WireCompatibilityRtiVersion)' == ''">7.7.0</WireCompatibilityRtiVersion>
+    <RtiConnextDdsVersion Condition="'$(RtiConnextDdsVersion)' == ''">$(WireCompatibilityRtiVersion)</RtiConnextDdsVersion>
+    <NuGetLockFilePath Condition="'$(WireCompatibilityRtiVersion)' != '7.7.0'">packages.$(WireCompatibilityRtiVersion).lock.json</NuGetLockFilePath>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestorePackagesPath>$(MSBuildProjectDirectory)\obj\packages\$(WireCompatibilityRtiVersion)</RestorePackagesPath>
     <AssemblyName>WireCompatibility.$(WireCompatibilityCase)</AssemblyName>
     <DdsIdlIncludeDirectories>$(MSBuildProjectDirectory)\..\..\docs\corpus\idl;$(MSBuildProjectDirectory)\..\..\docs\corpus\idl\includes</DdsIdlIncludeDirectories>
   </PropertyGroup>

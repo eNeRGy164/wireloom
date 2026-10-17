@@ -6,6 +6,9 @@ project(WireloomWirePeer LANGUAGES CXX)
 if(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE)
     add_compile_definitions(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE)
 endif()
+if(WIRELOOM_RTI_7_3_1)
+    add_compile_definitions(WIRELOOM_RTI_7_3_1)
+endif()
 
 find_package(RTIConnextDDS REQUIRED)
 

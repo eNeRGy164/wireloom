@@ -14,6 +14,13 @@ internal static class ReceivedSampleVerifier
         var context = $"{options.CaseId} fixture {options.Fixture}";
         switch (options.CaseId)
         {
+            case "09-defaults-ranges":
+                IndependentSampleVerifier.VerifyDefaultsAndRangesFixture(sample!, context);
+                break;
+            case "01-boundaries":
+            case "01-full-widths":
+                IndependentSampleVerifier.VerifyPrimitiveBoundaryFixture(sample!, options.CaseId, context);
+                break;
             case "07-union-char-boundaries":
                 IndependentSampleVerifier.VerifyCharacterUnionFixture(expectedDynamic!.Type, sample!, options.Fixture);
                 break;
@@ -26,9 +33,11 @@ internal static class ReceivedSampleVerifier
             case "09-optional-aggregate-member":
                 IndependentSampleVerifier.VerifyOptionalAggregateMemberFixture(expected!, sample!, context);
                 break;
-            case "05-unbounded-sequence-aliases":
             case "07-union-char-numeric":
             case "07-union-char-numeric-255":
+                IndependentSampleVerifier.VerifyNumericCharacterUnionFixture(sample!, options.CaseId, options.Fixture);
+                break;
+            case "05-unbounded-sequence-aliases":
             case "07-union-string-sequence-aliases":
                 VerifyTypedValue(expected, sample, context);
                 break;

@@ -1,0 +1,67 @@
+{
+  "notImplementedCases": [],
+  "expectedFailures": [
+    {
+      "id": "07-union-int8",
+      "fixture": "union-minimum",
+      "writer": "Wireloom C#",
+      "reader": "Wireloom C#",
+      "reason": "RTI CORE-14660: RTI 7.3.1 stores a negative int8 union discriminator as unsigned (label -128 becomes 128). Managed DynamicData branch lookup fails, and interpreted C# serialization loses the selected payload. Only the negative-value fixture is affected; RTI C++ self-exchange passes. Fixed in RTI 7.6.0: https://community.rti.com/static/documentation/connext-dds/7.7.0.1/doc/manuals/connext_dds_professional/release_notes/whats_fixed/760/fixes_dynamic_data.html"
+    },
+    {
+      "id": "07-union-int8",
+      "fixture": "union-minimum",
+      "writer": "Wireloom C#",
+      "reader": "RTI C#",
+      "reason": "RTI CORE-14660: RTI 7.3.1 stores a negative int8 union discriminator as unsigned (label -128 becomes 128). Managed DynamicData branch lookup fails, and interpreted C# serialization loses the selected payload. Only the negative-value fixture is affected; RTI C++ self-exchange passes. Fixed in RTI 7.6.0: https://community.rti.com/static/documentation/connext-dds/7.7.0.1/doc/manuals/connext_dds_professional/release_notes/whats_fixed/760/fixes_dynamic_data.html"
+    },
+    {
+      "id": "07-union-int8",
+      "fixture": "union-minimum",
+      "writer": "Wireloom C#",
+      "reader": "RTI C++",
+      "reason": "RTI CORE-14660: RTI 7.3.1 stores a negative int8 union discriminator as unsigned (label -128 becomes 128). Managed DynamicData branch lookup fails, and interpreted C# serialization loses the selected payload. Only the negative-value fixture is affected; RTI C++ self-exchange passes. Fixed in RTI 7.6.0: https://community.rti.com/static/documentation/connext-dds/7.7.0.1/doc/manuals/connext_dds_professional/release_notes/whats_fixed/760/fixes_dynamic_data.html"
+    },
+    {
+      "id": "07-union-int8",
+      "fixture": "union-minimum",
+      "writer": "RTI C#",
+      "reader": "Wireloom C#",
+      "reason": "RTI CORE-14660: RTI 7.3.1 stores a negative int8 union discriminator as unsigned (label -128 becomes 128). Managed DynamicData branch lookup fails, and interpreted C# serialization loses the selected payload. Only the negative-value fixture is affected; RTI C++ self-exchange passes. Fixed in RTI 7.6.0: https://community.rti.com/static/documentation/connext-dds/7.7.0.1/doc/manuals/connext_dds_professional/release_notes/whats_fixed/760/fixes_dynamic_data.html"
+    },
+    {
+      "id": "07-union-int8",
+      "fixture": "union-minimum",
+      "writer": "RTI C#",
+      "reader": "RTI C#",
+      "reason": "RTI CORE-14660: RTI 7.3.1 stores a negative int8 union discriminator as unsigned (label -128 becomes 128). Managed DynamicData branch lookup fails, and interpreted C# serialization loses the selected payload. Only the negative-value fixture is affected; RTI C++ self-exchange passes. Fixed in RTI 7.6.0: https://community.rti.com/static/documentation/connext-dds/7.7.0.1/doc/manuals/connext_dds_professional/release_notes/whats_fixed/760/fixes_dynamic_data.html"
+    },
+    {
+      "id": "07-union-int8",
+      "fixture": "union-minimum",
+      "writer": "RTI C#",
+      "reader": "RTI C++",
+      "reason": "RTI CORE-14660: RTI 7.3.1 stores a negative int8 union discriminator as unsigned (label -128 becomes 128). Managed DynamicData branch lookup fails, and interpreted C# serialization loses the selected payload. Only the negative-value fixture is affected; RTI C++ self-exchange passes. Fixed in RTI 7.6.0: https://community.rti.com/static/documentation/connext-dds/7.7.0.1/doc/manuals/connext_dds_professional/release_notes/whats_fixed/760/fixes_dynamic_data.html"
+    },
+    {
+      "id": "07-union-int8",
+      "fixture": "union-minimum",
+      "writer": "RTI C++",
+      "reader": "Wireloom C#",
+      "reason": "RTI CORE-14660: RTI 7.3.1 stores a negative int8 union discriminator as unsigned (label -128 becomes 128). Managed DynamicData branch lookup fails, and interpreted C# serialization loses the selected payload. Only the negative-value fixture is affected; RTI C++ self-exchange passes. Fixed in RTI 7.6.0: https://community.rti.com/static/documentation/connext-dds/7.7.0.1/doc/manuals/connext_dds_professional/release_notes/whats_fixed/760/fixes_dynamic_data.html"
+    },
+    {
+      "id": "07-union-int8",
+      "fixture": "union-minimum",
+      "writer": "RTI C++",
+      "reader": "RTI C#",
+      "reason": "RTI CORE-14660: RTI 7.3.1 stores a negative int8 union discriminator as unsigned (label -128 becomes 128). Managed DynamicData branch lookup fails, and interpreted C# serialization loses the selected payload. Only the negative-value fixture is affected; RTI C++ self-exchange passes. Fixed in RTI 7.6.0: https://community.rti.com/static/documentation/connext-dds/7.7.0.1/doc/manuals/connext_dds_professional/release_notes/whats_fixed/760/fixes_dynamic_data.html"
+    }
+  ],
+  "notApplicableCases": [
+    {
+      "id": "09-autoid-hash",
+      "reason": "The combined fixture requires @must_understand, which is unavailable in RTI 7.3.1 and rejected by rtiddsgen 4.3.1."
+    }
+  ]
+}
