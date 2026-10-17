@@ -13,16 +13,18 @@ At level 1, the managed compiler is intentionally shown as a black box. Its
 front end, preprocessing boundary, resolution, validation, emission planning,
 and writer handoff are expanded in the level-2 view below.
 
-| Building block               | Role                                                    | Main boundary                                     |
-| :--------------------------- | :------------------------------------------------------ | :------------------------------------------------ |
-| Roslyn generator             | Accepts inputs, reports diagnostics, and adds documents | `Generator`                                       |
-| Input graph and preprocessor | Resolves IDL roots/includes and applies preprocessing   | `IdlInputGraph`, `IdlPreprocessor`                |
-| Front end                    | Parses, binds, and validates declarations               | `Compiler/FrontEnd`                               |
-| Compilation orchestration    | Coordinates compilation state and emission handoff      | `IdlCompilation`, `CompilationContext`            |
-| Emission planning            | Selects managed, native, and support output shapes      | `Emission/Model`, `Planning`                      |
-| Emitters                     | Write generated C# documents                            | Managed, native, TypeSupport, and plugin emitters |
-| MSBuild targets              | Pass IDL roots and include metadata to Roslyn           | Packed NuGet package                              |
-| Corpus and integration tests | Verify acceptance, API shape, and package use           | Separate test layers                              |
+| Building block               | Role                                                       | Main boundary                                     |
+| :--------------------------- | :--------------------------------------------------------- | :------------------------------------------------ |
+| Roslyn generator             | Accepts inputs, reports diagnostics, and adds documents    | `Generator`                                       |
+| Runtime reference adapter    | Resolves RTI assembly version and reports reference errors | `RuntimeReferenceGuard`                           |
+| Input graph and preprocessor | Resolves IDL roots/includes and applies preprocessing      | `IdlInputGraph`, `IdlPreprocessor`                |
+| Front end                    | Parses, binds, and validates declarations                  | `Compiler/FrontEnd`                               |
+| Compilation orchestration    | Coordinates compilation state and emission handoff         | `IdlCompilation`, `CompilationContext`            |
+| Emission planning            | Selects managed, native, and support output shapes         | `Emission/Model`, `Planning`                      |
+| RTI target profile           | Holds immutable API emission policies for one compile      | `RtiApiProfile`                                   |
+| Emitters                     | Write generated C# documents                               | Managed, native, TypeSupport, and plugin emitters |
+| MSBuild targets              | Pass IDL roots and include metadata to Roslyn              | Packed NuGet package                              |
+| Corpus and integration tests | Verify acceptance, API shape, and package use              | Separate test layers                              |
 
 ## 5.2 Level 2: Compiler and preprocessing
 
@@ -52,6 +54,14 @@ bounds against the complete symbol graph, and validation applies semantic
 rules before emission planning begins. Emitters return generated documents to a
 central result boundary, which owns duplicate hint-name validation.
 
+The runtime reference adapter inspects the resolved `Rti.ConnextDds` assembly
+identity. `IdlCompilation` receives the selected immutable `RtiApiProfile` and
+passes it into target-specific emission planning. `CompilationContext` and
+front-end semantic types remain focused on symbols and IDL meaning. Emitters
+render the decisions in their plans; they do not compare RTI versions. A
+future LTS profile adds catalog policies and evidence without duplicating the
+parse, bind, validate, or emission pipeline.
+
 ## 5.3 Generated contract rules
 
 ### Union discriminators and construction
@@ -65,13 +75,18 @@ and branch comparisons retain the original character values. Narrow `char`
 labels and default selection are limited to the native byte range 0..255,
 including character literals and typedef discriminators. Wide `wchar` labels
 retain the 16-bit range 0..65535.
-Union construction uses the XTypes default of the discriminator type: zero
+For the 7.7.0 profile, union construction uses the XTypes default of the discriminator type: zero
 for integers and characters, false for booleans, and the first enum literal,
 including negative values. Selecting the default branch through its setter
 still chooses an unused discriminator. Null-source copies initialize the same
 discriminator and selected branch as the parameterless constructor. The shared
 initialization emitter runs only on the null-copy path, avoiding replacement
 allocations for non-null sources. Enum casts parenthesize negative operands.
+The 7.3.1 profile retains its legacy constructor selection: zero for primitive
+discriminators with a default branch; for enum discriminators, zero when it is
+an explicit label and otherwise the lowest labeled case. Without a default
+branch it uses the lowest labeled case. Default-branch setters remain
+independent and choose an unused discriminator in either profile.
 These managed contracts are covered by
 [`UnionConstructionSpecs`](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/Unions/UnionConstructionSpecs.cs),
 [`UnionConstructionNativeSpecs`](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/Native/UnionConstructionNativeSpecs.cs),
@@ -98,16 +113,10 @@ Direct union branches that contain string sequences use the same specialized
 The resolved element bound flows through native initialization and conversion;
 typedef-backed union branches delegate through their generated alias wrappers.
 Retained corpus cases C135/C136 confirm these defaults against RTI-generated
-C# with a typed runtime probe on Windows and Linux. A focused `rtiddsgen`
-probe also confirmed the collection-element alias mapping: scalar and string
-alias chains use their underlying managed value, enum aliases use the enum,
-aggregate aliases use the underlying aggregate, and aliases to sequence or
-array typedefs retain their named type when nested. Collection typedef
-emission now follows those distinctions.
-RTI preserves a declared scalar alias in a struct member's DynamicType
-metadata even when the public sequence property uses the primitive type;
-Wireloom retains that metadata while matching the property shape. These are
-API observations, with no wire compatibility claim. Runtime behavior is
+C# with a typed runtime probe on Windows and Linux. The probe also records
+RTI's independent aggregate sequence element copies and its scalar sequence
+element typedef erasure; Wireloom currently retains scalar wrappers. These
+are API observations, with no wire compatibility claim. Runtime behavior is
 covered by the [runtime contract matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix).
 Direct and typedef-backed narrow/wide string-sequence union branches are also
 covered by [`StringSequenceUnionSpecs`](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/Unions/StringSequenceUnionSpecs.cs)

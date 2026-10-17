@@ -5,12 +5,13 @@
 The project distinguishes RTI acceptance, managed implementation, generated
 contract shape, runtime eligibility, and verified wire compatibility. The
 corpus feature index is the authoritative status view for source generation.
-The retained oracle capture uses RTI 7.7.0 / `rtiddsgen` 4.7.0.
-The generator accepts an RTI package reference from 7.3.1, but this is not a
-claim that current emitted source compiles against every accepted version.
-Wire evidence starts at exact 7.7.0. Future version-aware emission should use
-an explicit generator target API version, distinct from the runtime package
-version, and report unsupported target versions clearly.
+The generator selects an immutable emission profile from the resolved
+`Rti.ConnextDds` assembly identity. Missing and below-minimum references report
+`DDSG0003`; versions 7.3.1 through below 7.7.0 select the 7.3.1 profile, and
+7.7.0 or later select the 7.7.0 profile. No separate target-version override
+is exposed. Only exact 7.3.1 and 7.7.0 have qualification status; mapping other
+versions to a profile does not assert that they have been tested. The root
+corpus IDL is shared, with version-scoped oracle and generated output folders.
 
 ## 8.2 Diagnostics and source locations
 
@@ -19,6 +20,11 @@ input path and offset so a consumer can fix the source rather than inspect a
 generated file. Unsupported or invalid input that prevents safe managed output
 is rejected with `DDSG0001`. Recognized but unsupported annotation uses report
 `DDSG0102` before generation fails with `DDSG0001`.
+
+Target-profile incompatibilities have a separate error path. The 7.3.1 profile
+does not support `@must_understand`; using it reports `DDSG0004` at the source
+location and emits no generated sources. The 7.7.0 profile preserves it in
+DynamicType metadata.
 
 Some constructs deliberately continue with a warning or informational
 diagnostic: unknown annotations are ignored with `DDSG0101`, IDL interfaces are accepted without
@@ -65,13 +71,13 @@ findings; they do not establish a complete API contract or wire compatibility.
 
 ## 8.6 RTI-compatible generated value semantics
 
-The generated API and native plugin are compatibility artifacts. Generated
-managed API shape and behavior match RTI C# by default. A deviation requires a
-reproducible finding that RTI C# is defective for that case, with the defect
-and the corrective behavior documented and covered by focused evidence. RTI
-C++ behavior can help establish expected wire semantics, but it does not by
-itself justify a different managed API. Interoperability claims still require
-wire verification.
+The generated API and native plugin are compatibility artifacts. The goal is
+RTI C# or better: RTI's observable behavior provides a baseline and evidence,
+not a ceiling. Existing quirks remain characterized until an intentional
+behavior change is implemented and documented. RTI C++ wire support can justify
+a more capable managed API; interoperability claims still require wire
+verification. The current behavior below is not a requirement to reproduce
+every RTI limitation in future APIs.
 
 Alias diagnostic formatting intentionally improves on RTI C#'s unsupported
 scalar and collection root formatting. Struct and union formatting continues

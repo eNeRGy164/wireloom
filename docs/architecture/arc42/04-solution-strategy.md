@@ -16,10 +16,12 @@
    and potentially lossy mappings report diagnostics while generation continues;
    consumers must review those outcomes. See the
    [diagnostic rules](08-crosscutting-concepts.md#82-diagnostics-and-source-locations).
-5. **Advance compatibility by case and explicit target.**
-   The retained oracle capture uses RTI 7.7.0 / `rtiddsgen` 4.7.0, and the wire
-   matrix covers RTI 7.7.0. The accepted runtime package floor (7.3.1) does not
-   guarantee that emitted code compiles against every accepted package version.
-   Generated-code compatibility with older RTI APIs is not established. A
-   feature becomes a compatibility claim only after relevant source-shape,
-   runtime, and interoperability evidence.
+5. **Select the RTI API profile from the resolved runtime reference.**
+   The Roslyn adapter reports missing or below-minimum references; compilation
+   orchestration selects one immutable profile and passes it to emission
+   planning. Parsing, binding, and semantic validation remain independent of
+   RTI. Versions 7.3.1 through below 7.7.0 select the 7.3.1 profile; 7.7.0 and
+   later select the 7.7.0 profile. Only exact 7.3.1 and 7.7.0 versions receive
+   qualification claims. Profile mapping does not qualify every version in a
+   mapped range. A feature becomes a compatibility claim only after relevant
+   source-shape, runtime, and interoperability evidence.

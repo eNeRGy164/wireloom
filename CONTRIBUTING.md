@@ -76,8 +76,9 @@ When adding or changing a corpus case, follow the detailed [corpus authoring
 rules](docs/corpus/README.md). Keep each case focused on one feature, preserve
 append-only case ordering for stable `C###` tags, update the manifest and
 feature index, and respect the licensing rules for RTI-generated sources.
-Exported managed-generator sources belong under `docs/corpus/generator` and
-should be refreshed using the corpus guide's documented export command.
+Exported managed-generator sources belong under the matching version's
+`docs/corpus/<version>/generator/` folder and should be refreshed using the
+corpus guide's documented export command.
 
 ## Quality evidence
 

@@ -22,29 +22,29 @@ replace the runtime or its license.
 
 ## RTI version qualification
 
-Wireloom qualifies exact RTI Connext versions for which the evidence has been
-run and reviewed. The current qualified version is **7.7.0**. The runtime
-package guard accepts versions from **7.3.1** onward, but that lower bound is a
-reference check, not a supported-version range.
+The generator selects an API profile from the resolved `Rti.ConnextDds`
+assembly version. Versions below **7.3.1**, or a missing runtime reference,
+produce `DDSG0003` and no generated output. Versions from 7.3.1 up to 7.7.0
+select the 7.3.1 profile; 7.7.0 and later select the 7.7.0 profile. There is no
+target-version override: generated code follows the runtime actually resolved
+by the consumer's build.
 
-The next compatibility step is to qualify 7.3.1 and investigate intervening
-versions. A version becomes qualified only after checking the generated API
-against its RTI C# oracle, compiling and exercising the generated runtime
-contracts, and running the full directed wire matrix among Wireloom C#, RTI
-C#, and RTI C++ peers. The wire-matrix target is all nine directed pairings
-for each selected fixture and exact RTI version. An unlisted version is
-unqualified, even if the package guard accepts it.
+Only the exact **7.3.1** and **7.7.0** LTS versions are qualification targets.
+Other versions map to the nearest profile but are not separately tested or
+qualified by that mapping. Qualification requires checking generated APIs
+against the matching RTI C# oracle, compiling and exercising generated runtime
+contracts, and reviewing wire evidence for the exact LTS toolchain. The wire
+matrix target is all nine directed pairings for each selected fixture and
+exact RTI version. See the [versioned corpus](../corpus/README.md#versioned-lts-evidence)
+and [wire compatibility guide](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
 
-For an upgrade, check this list and the linked evidence before changing the
-consumer's RTI package. Keep the prior qualified package version available for
-rollback. If the candidate version is not listed or its required evidence is
-incomplete, retain the qualified version until that candidate is investigated
-and qualified. The [current recorded wire evidence](../corpus/FEATURE-COVERAGE.md#runtime-evidence-baseline)
-identifies the tested revision, report, remaining failures, and peer adaptations.
-The [wire compatibility guide](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
-explains the matrix and reproduction. Version qualification remains specific to
-the documented feature and peer profiles; it is not a claim that every scenario
-passed.
+For an upgrade, check the selected profile and its exact-version evidence before
+changing the consumer's RTI package. Crossing the 7.7.0 boundary changes the
+generated API profile; rebuild and review generated contracts when moving
+between the profiles. The [recorded wire evidence](../corpus/FEATURE-COVERAGE.md#runtime-evidence-baseline)
+identifies tested revisions, reports, remaining failures, and peer adaptations.
+Qualification is specific to the documented features and peer profiles; it is
+not a claim that every scenario passed.
 
 ## Compatibility and stability
 
@@ -53,6 +53,9 @@ against Wireloom output for supported IDL shapes. That is a goal verified by
 shape-specific evidence, not a blanket claim for every IDL construct or RTI
 release. Check the [feature coverage index](../corpus/FEATURE-COVERAGE.md) and
 the API comparison in the [migration guide](../migration/rtiddsgen-to-wireloom.md).
+For example, C136 currently exposes `ISequence<Scalar>` in Wireloom where the
+RTI 7.7.0 C# oracle exposes `ISequence<int>`. This is tracked for investigation
+in [issue #62](https://github.com/eNeRGy164/wireloom/issues/62).
 
 The configuration API differs from `rtiddsgen` options. It may change when
 issues are found; consult release notes and the package guide before upgrading.

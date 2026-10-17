@@ -26,9 +26,11 @@
 - **Wire fixture** — A deterministic, complete sample variant for one corpus
   case. Each fixture is exchanged independently and receives its own result
   entry across the configured language pairings.
-- **Generator target API version** — The RTI API surface Wireloom is asked to
-  emit against; it is a future explicit configuration input and is distinct
-  from the RTI package version resolved by the consumer.
+- **RTI API profile** — The generated-code API surface selected automatically
+  from the resolved `Rti.ConnextDds` assembly version. Versions from 7.3.1 to
+  below 7.7.0 select the 7.3.1 profile; 7.7.0 and later select the 7.7.0
+  profile. The profile does not imply qualification for intermediate or later
+  RTI releases.
 - **DDS-XTypes (XTypes)** — The DDS type system for describing data types and
   their compatibility and evolution rules. See RTI's
   [Extensible Types Guide](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/extensible_types_guide/RTI_ConnextDDS_CoreLibraries_ExtensibleTypes_Guide.pdf).
