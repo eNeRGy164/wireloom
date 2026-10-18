@@ -51,6 +51,23 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   remain independent of constructor defaults. Profile-specific annotation
   incompatibilities are diagnosed before emission. See the [building block
   view](arc42/05-building-block-view.md).
+- **Continuous LTS verification:** Quality CI runs matching-oracle corpus
+  jobs for RTI 7.3.1 and 7.7.0, plus eight Windows/Ubuntu × RTI LTS ×
+  `net8.0`/`net10.0` runtime and fresh-package jobs. The repository SDK builds
+  all cells; package consumers use C# 12. Consumer runtimes do not qualify
+  older SDK/Roslyn hosts or replace licensed wire evidence. See
+  [deployment](arc42/07-deployment-view.md) and
+  [verification scope](../guides/support-and-compatibility.md#continuous-lts-verification).
+- **LTS evidence applicability:** Corpus oracle reads use the selected LTS
+  source directories and outcomes. Wire planning reports unavailable RTI
+  features separately as `notApplicableCases`; they add no exchanges, failures,
+  or Wireloom implementation gaps. C040 isolates hash IDs on both LTS versions;
+  C142 isolates `@must_understand`, which is N/A on 7.3.1. Historical wire
+  results do not qualify these split inputs. New capture/export evidence retains
+  source identity, input/output hashes, tools, arguments, and outcomes; legacy
+  missing provenance stays unknown, and dirty-tree runs identify a base commit
+  rather than a clean tested revision. The [LTS runbook](../corpus/LTS-PROFILES.md)
+  owns reproduction. See [evidence vocabulary](arc42/08-crosscutting-concepts.md#81-evidence-vocabulary).
 - **Compatibility evidence:** Keep generated API shape, runtime behavior,
   serialization, and DDS wire interoperability as separate claims. Corpus
   oracles check required types, properties/types, and enum members, rather than

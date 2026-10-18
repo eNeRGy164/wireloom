@@ -9,6 +9,11 @@ values. Each run compares against that version's retained oracle captures.
 Runtime and fresh-package jobs separately cover both LTS packages on .NET 8
 and .NET 10 across Windows and Ubuntu.
 
+See the [LTS reproduction runbook](../../docs/corpus/LTS-PROFILES.md) for fresh
+oracle capture and export evidence. `Export-CorpusGeneratorSources.ps1` performs
+locked restore, runs Release tests, and retains per-profile source/input/output
+hashes and test logs. Select a new output root to avoid stale export files.
+
 The tests deliberately load the JSON manifest and discover the IDL and oracle
 files from the repository. They therefore cover every positive, negative, and
 integration entry without duplicating fixture lists in the project file.

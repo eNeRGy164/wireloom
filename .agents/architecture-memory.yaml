@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-18T07:35:16Z
+  generated_at: 2026-10-18T09:14:59Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -23,6 +23,7 @@ sources:
   contracts:
     - docs/corpus/README.md
     - docs/corpus/FEATURE-COVERAGE.md
+    - docs/corpus/LTS-PROFILES.md
     - docs/guides/support-and-compatibility.md
     - tests/Wireloom.Dds.Generator.RuntimeContracts/README.md
     - tests/Wireloom.Dds.Generator.WireCompatibility/README.md
@@ -58,11 +59,11 @@ summary:
     sources:
       - docs/architecture/arc42/06-runtime-view.md
   deployment:
-    text: The analyzer is delivered as a NuGet package; manual wire evidence runs both qualified RTI LTS versions as a matrix, with four isolated shards per version (up to eight jobs total) and separate report jobs, summaries, and artifacts. Builds use version-scoped cached images; shard zero per version exports its shared Docker build cache. Each shard receives a runtime-scoped license file; the .NET-only artifact merge jobs have no RTI secret. Add other releases only with a matching toolchain and compatible generator target.
+    text: The analyzer is delivered as a NuGet package. Quality CI checks both LTS corpus profiles and eight Windows/Ubuntu, RTI 7.3.1/7.7.0, net8.0/net10.0 runtime and fresh-package combinations. The repository SDK builds all cells; consumers use C# 12. These runtime checks do not qualify older SDK/Roslyn hosts. Manual wire evidence runs both qualified RTI LTS versions as a matrix, with four isolated shards per version (up to eight jobs total) and separate report jobs, summaries, and artifacts. Builds use version-scoped cached images; shard zero per version exports its shared Docker build cache. Each shard receives a runtime-scoped license file; the .NET-only artifact merge jobs have no RTI secret. Add other releases only with a matching toolchain and compatible generator target.
     sources:
       - docs/architecture/arc42/07-deployment-view.md
   cross_cutting:
-    text: Evidence vocabulary, deterministic inputs and invalidation, explicit compiler stages, diagnostics, test separation, deterministic preprocessing limits, and supply-chain controls apply across the system. Build-time generated runtime fixtures execute typed managed, native, and support APIs on Windows and Linux, including direct and typedef-backed string-sequence union branches. Coveralls measures maintained generator source; generated fixtures and test project code are excluded. The behavior matrix keeps unresolved contracts visible. RTI C# is a baseline, not an API ceiling; improvements supported by RTI C++ evidence require separate wire verification.
+    text: Corpus oracle reads use the selected LTS capture. Wire planning records unavailable RTI features as notApplicableCases, excluded from exchanges, compatibility failures, and Wireloom implementation gaps. C040 isolates hash IDs on both LTS versions; C142 isolates must-understand, which is N/A on 7.3.1. Historical wire results do not qualify these split inputs. New capture/export evidence retains source identity, input/output hashes, tool versions, arguments, and outcomes; legacy missing provenance stays unknown. The LTS runbook owns reproduction. Evidence vocabulary, deterministic inputs and invalidation, explicit compiler stages, diagnostics, test separation, deterministic preprocessing limits, and supply-chain controls apply across the system. Build-time generated runtime fixtures execute typed managed, native, and support APIs on Windows and Linux, including direct and typedef-backed string-sequence union branches. Coveralls measures maintained generator source; generated fixtures and test project code are excluded. The behavior matrix keeps unresolved contracts visible. RTI C# is a baseline, not an API ceiling; improvements supported by RTI C++ evidence require separate wire verification.
     sources:
       - docs/architecture/arc42/08-crosscutting-concepts.md
   decisions:
@@ -70,7 +71,7 @@ summary:
     sources:
       - docs/architecture/arc42/09-architectural-decisions.md
   quality:
-    text: Compatibility shape, diagnostics, package integration, maintainability, incremental build evidence, wire compatibility across Wireloom-positive cases and separate exact 7.3.1 and 7.7.0 three-peer fixture matrices, and supply-chain integrity are the primary quality goals. The runtime contract matrix separately records generated API behavior, compile-blocked inputs, and skipped contracts without establishing wire compatibility. Retained RTI C# oracle sources and typed runtime fixtures cover unbounded typedef behavior. Generated wire reports contain per-fixture and per-pairing outcomes.
+    text: Compatibility shape, diagnostics, package integration, maintainability, incremental build evidence, wire compatibility across Wireloom-positive cases and separate exact 7.3.1 and 7.7.0 three-peer fixture matrices, and supply-chain integrity are the primary quality goals. Continuous Quality CI runs matching-profile corpus checks plus Windows/Ubuntu runtime and fresh-package tests for both LTS packages on net8.0 and net10.0. The runtime contract matrix separately records generated API behavior, compile-blocked inputs, and skipped contracts without establishing wire compatibility. Retained RTI C# oracle sources and typed runtime fixtures cover unbounded typedef behavior. Generated wire reports contain per-fixture and per-pairing outcomes.
     sources:
       - docs/architecture/arc42/10-quality-requirements.md
   risks:

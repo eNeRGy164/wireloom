@@ -13,6 +13,18 @@ is exposed. Only exact 7.3.1 and 7.7.0 have qualification status; mapping other
 versions to a profile does not assert that they have been tested. The root
 corpus IDL is shared, with version-scoped oracle and generated output folders.
 
+Oracle comparisons always use the selected exact LTS capture, including its
+source directories and generation outcomes. Wire planning separately records
+`notApplicableCases` for features unavailable in the selected RTI version.
+Those cases retain explanatory evidence but contribute no exchanges,
+compatibility failures, or Wireloom implementation gaps. Requesting such a
+case explicitly fails before peer builds and type-support discovery. New oracle captures and Wireloom exports retain source revision/dirty state, input and output hashes, tool versions, arguments, and outcomes. Legacy missing provenance remains unknown; unattributed local totals cannot establish qualification. The [LTS runbook](../../corpus/LTS-PROFILES.md) owns reproduction commands and attribution requirements.
+Feature cases isolate availability boundaries: C040 (`09-autoid-hash`)
+checks hash member IDs on both LTS versions; C142 (`09-must-understand`) is
+not applicable to 7.3.1. The shared positive inventory contains 78 cases, of
+which 77 apply to 7.3.1 and all 78 apply to 7.7.0. Historical wire evidence
+predating this split does not qualify the revised case inputs.
+
 ## 8.2 Diagnostics and source locations
 
 Generator-owned diagnostics use stable IDs. IDL failures retain the original

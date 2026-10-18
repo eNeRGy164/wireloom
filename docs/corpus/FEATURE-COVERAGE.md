@@ -32,22 +32,25 @@ points; their outcomes are recorded on the detailed pages.
 | C040 · `09-autoid-hash`     | Hash IDs supported; RTI C# and C++ generation accepted                      | Hash IDs supported; RTI C# and C++ generation accepted |
 | C142 · `09-must-understand` | N/A: introduced after this release; explicit compilation reports `DDSG0004` | Supported; RTI C# and C++ generation accepted          |
 
-The split preserves all existing provenance tags. C142 has an explicit new
-tag. Both cases have fresh exact-version RTI captures. Historical wire results
-below predate the split: they do not qualify the revised C040 or new C142
-inputs. Fresh wire exchanges for these inputs remain pending.
+## Recorded wire evidence
 
-## Recent local wire results
+Generation coverage and DDS interoperability are separate. The profile pages
+record the current limitations and required peer setup. Detailed fixture,
+pairing, and adaptation results belong in wire reports; see the
+[wire-matrix guide](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#read-the-results)
+and [reproduction runbook](LTS-PROFILES.md).
 
-Wire results are separate from generation coverage. Each matrix exchange uses
-a producer and consumer pair; a pass count does not establish support for every
-case in a category.
-
-| RTI version | Exchanges | Passed | Failed | Status of the recorded run                                                                                                                                                                                                                  |
-| :---------- | --------: | -----: | -----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 7.3.1       |     1,377 |  1,233 |    144 | Full local matrix completed in four Docker shards.                                                                                            |
-| 7.7.0       |     1,386 |  1,249 |    137 | Retained full local matrix; 69 failures were classified as expected in that report. |
+| Limitation or required setup                              | RTI 7.3.1                                                                                                                                                                                                                   | RTI 7.7.0                                               |
+| :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------ |
+| Direct arrays of sequences (C018)                         | C# mappings flatten the array layer; cross-language interoperability is unsupported.                                                                                                                                        | Same limitation.                                        |
+| Sequence-alias aggregates and union branches (C136, C139) | RTI C# reference conversion fails in `FromDynamicData`.                                                                                                                                                                     | Same limitation.                                        |
+| Numeric `char` union labels (C137, C141)                  | RTI generated bindings require the [character-binding corrections](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#reproducible-rti-character-binding-workarounds).                                          | Same corrections.                                       |
+| Negative `int8` union discriminator (C120)                | RTI CORE-14660 affects the `-128` fixture; recorded as an expected failure.                                                                                                                                                 | —                                                       |
+| `uint32` / `unsigned long` union labels (C125, C119)      | RTI C# generated metadata fails compilation with `CS0221`.                                                                                                                                                                  | Same limitation.                                        |
+| `octet` union discriminator (C117)                        | —                                                                                                                                                                                                                           | RTI C# generates an unresolved `octet` type (`CS0246`). |
+| `wchar` union discriminator (C113)                        | RTI C# generation is unavailable; the C++ reference uses a manually constructed `DynamicType`.                                                                                                                              | Same limitation and setup.                              |
+| Optional recursive fixed arrays (C134)                    | Requires the [recursive peer setup and writer memory configuration](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#recursive-array-writer-memory). Default `TypeObject` v2 interoperability is unqualified. | Same setup and qualification limit.                     |
 
 See the [7.3.1 feature details](7.3.1/FEATURE-COVERAGE.md) and
 [7.7.0 feature details](7.7.0/FEATURE-COVERAGE.md) for per-case artifacts,
-RTI generator outcomes, limitations, and links to the underlying wire reports.
+RTI generator outcomes, restrictions, and workarounds.

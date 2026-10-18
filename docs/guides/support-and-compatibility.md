@@ -35,13 +35,13 @@ qualified by that mapping. Qualification requires checking generated APIs
 against the matching RTI C# oracle, compiling and exercising generated runtime
 contracts, and reviewing wire evidence for the exact LTS toolchain. The wire
 matrix target is all nine directed pairings for each selected fixture and
-exact RTI version. See the [versioned corpus](../corpus/README.md#versioned-lts-evidence)
+exact RTI version. See the [versioned corpus](../corpus/README.md#lts-evidence-and-reproduction)
 and [wire compatibility guide](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
 
 For an upgrade, check the selected profile and its exact-version evidence before
 changing the consumer's RTI package. Crossing the 7.7.0 boundary changes the
 generated API profile; rebuild and review generated contracts when moving
-between the profiles. The [recorded wire evidence](../corpus/FEATURE-COVERAGE.md#runtime-evidence-baseline)
+between the profiles. The [recorded wire evidence](../corpus/FEATURE-COVERAGE.md#recorded-wire-evidence)
 identifies tested revisions, reports, remaining failures, and peer adaptations.
 Qualification is specific to the documented features and peer profiles; it is
 not a claim that every scenario passed.
