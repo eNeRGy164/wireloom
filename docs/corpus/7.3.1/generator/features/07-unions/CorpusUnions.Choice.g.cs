@@ -25,7 +25,7 @@ public partial class Choice : global::System.IEquatable<Choice>
     /// <summary>
     /// Gets the discriminator value used by the parameterless constructor.
     /// </summary>
-    public const int DefaultDiscriminator = 0;
+    public const int DefaultDiscriminator = 2;
 
     /// <summary>
     /// Gets or sets the union branch selected when <see cref="Discriminator"/> is one of: <c>0</c>.

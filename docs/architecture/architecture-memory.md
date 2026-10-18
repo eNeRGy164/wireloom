@@ -5,7 +5,7 @@ authoritative architecture lives in the [arc42 chapters](arc42/index.md),
 contracts, and support policy; edit those sources first, then refresh this file
 and [machine-readable memory](../../.agents/architecture-memory.yaml).
 
-Refreshed from the current arc42 sources on 2026-10-17. Treat the source map
+Refreshed from the current arc42 sources on 2026-10-18. Treat the source map
 below as authoritative; this summary is a retrieval aid, not a replacement.
 
 ## Agent summary
