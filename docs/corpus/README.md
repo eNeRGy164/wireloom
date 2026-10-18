@@ -100,76 +100,32 @@ probe. When source generation does not establish runtime behavior, record that
 separately with `runtimeSupport` (`uncertain` or an observed result) and a
 `runtimeSupportNote`; a code-generation rejection alone is not runtime evidence.
 
-## Reproducing RTI results
+## LTS evidence and reproduction
 
-Run `rtiddsgen` through `wslc` and the RTI container image; RTI does not need to
-be installed on the host. From PowerShell at the repository root, generate a
-case without preprocessor directives into a mounted workspace directory:
+Use the [LTS runbook](LTS-PROFILES.md) for complete, profile-specific commands
+and evidence attribution. It covers locked restore, both corpus profiles,
+fresh Wireloom exports, RTI C# and C++ capture, exact-package compilation,
+runtime/package verification, and licensed wire runs. PowerShell and shell
+scripts are checked in under `scripts/`; no Python interpreter is required.
 
-```powershell
-New-Item -ItemType Directory -Force .tmp/rti-output | Out-Null
-wslc run --rm -v "${PWD}:/work" -w /work rticom/connext-base:7.7.0.1 rtiddsgen -ppDisable -language "C#" -d /work/.tmp/rti-output /work/docs/corpus/idl/features/09-optional-aggregate-member.idl
-```
-
-The container is removed after the run; output under `/work` remains in the
-mounted repository. `-ppDisable` is suitable for IDL without preprocessor
-directives. For IDL using `#include` or macros, enable the C/C++ preprocessor.
-If the image does not contain `cpp`, install `g++` inside the disposable
-container in the same invocation. This example records the preprocessor version
-and reproduces a preprocessor rejection without a host install:
+Capture either or both oracle languages into a fresh artifact directory:
 
 ```powershell
-wslc run --rm -v "${PWD}:/work" -w /work rticom/connext-base:7.7.0.1 sh -lc 'apt-get update && apt-get install -y g++ && cpp --version && rtiddsgen -language "C#" -d /work/.tmp/rti-output /work/docs/corpus/idl/negative/12-error-directive.idl'
+./docs/corpus/scripts/Capture-RtiOracles.ps1 -Version 7.3.1 -CaseId 09-autoid-hash,09-must-understand
+./docs/corpus/scripts/Capture-RtiOracles.ps1 -Version 7.7.0 -CaseId 09-autoid-hash,09-must-understand
 ```
 
-Record the RTI and `cpp` versions, outcome, and diagnostic in `manifest.json`.
-Copy generated sources into `<version>/rtiddsgen/csharp/` only when RTI accepts
-the case and the license permits retaining them.
+Omit `-CaseId` to capture all manifest roots, or select `-Language csharp` or
+`-Language cpp`. Captures verify the selected pinned image and generator,
+record canonical and adapted input hashes, command arguments, toolchain
+versions, exit codes, output hashes, and raw logs. They never overwrite retained
+oracles automatically. Compare and review the capture before promoting sources
+or updating version manifests. Generation alone does not establish compilation,
+runtime behavior, or wire interoperability.
 
-## Capturing C++ oracle output
-
-Generate C++11 output for every shared positive, negative, and integration case
-with the matching RTI LTS image. The script writes version-scoped sources,
-per-case logs, and a generation manifest under
-`<version>/rtiddsgen/cpp/`. Case manifests refer to the canonical input under
-`idl/`; rejected cases retain their diagnostic log without partial generated
-sources. Generation evidence does not assert that the output compiles or that
-the feature is wire-compatible.
-
-From PowerShell at the repository root, mount the local license file and run
-the generator once for each profile:
-
-```powershell
-$licenseFile = Join-Path $env:USERPROFILE 'Downloads/rti_license.dat'
-
-wslc run --rm --user 0:0 `
-  -v "${PWD}:/work" `
-  -v "${licenseFile}:/run/secrets/rti_license.dat:ro" `
-  -e RTI_LICENSE_FILE=/run/secrets/rti_license.dat `
-  --entrypoint bash `
-  rticom/connext-base:7.3.1@sha256:f33a61ec6381a8fb73cbb019fbb5c081f434dc5217eb14283fad995306be0f04 `
-  -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends g++ python3 && python3 /work/docs/corpus/scripts/generate-rtiddsgen-cpp.py --version 7.3.1'
-
-wslc run --rm --user 0:0 `
-  -v "${PWD}:/work" `
-  -v "${licenseFile}:/run/secrets/rti_license.dat:ro" `
-  -e RTI_LICENSE_FILE=/run/secrets/rti_license.dat `
-  --entrypoint bash `
-  rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca `
-  -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends g++ python3 && python3 /work/docs/corpus/scripts/generate-rtiddsgen-cpp.py --version 7.7.0'
-```
-
-The script verifies the expected `rtiddsgen` version before generating. It
-uses `-generateIncludeFiles` for 7.7.0 and applies the experimental
-`-unboundedSupport` option where the shared manifest requires it. The C++
-FlatData case uses the same narrow annotation removal as the wire harness.
-Check each generated `manifest.json` for per-case results and any generator
-failures. Each case points to its canonical source under `idl/`; the output
-folders do not contain copies of the IDL. The FlatData adaptation exists only
-in the temporary generation workspace and is recorded with source and adapted
-input hashes in the manifest. The generator captures per-case rejections and
-continues through the inventory; its process exit status reports whether the
-capture completed, while case outcomes remain in the manifest.
+Commit reviewed corpus sources and manifests. Keep capture/export reports,
+SDK details, test logs, and toolchain records under `artifacts/` or in CI
+artifacts; they are not part of the retained corpus.
 
 ## Wire matrix generation profiles
 
@@ -215,8 +171,8 @@ dotnet run --project tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.
 ```
 
 The package preview and release workflows restore and run this suite before
-packing. The quality workflow remains focused on the fast unit-test and
-coverage path.
+packing. The Quality workflow also runs both exact LTS corpus profiles and
+the runtime/package consumer matrix; see the [LTS runbook](LTS-PROFILES.md).
 
 Use the feature index to find the exact IDL, oracle files, managed status, and
 test entry points: [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md).
@@ -252,6 +208,10 @@ evidence separate from runtime or interoperability claims.
 
 ## Exporting managed-generator sources
 
+Prefer `Export-CorpusGeneratorSources.ps1` for locked restore and retained
+source/output hashes, SDK details, and test logs. The direct command below is
+an export-only alternative and does not create that provenance bundle.
+
 Set `CORPUS_RTI_PROFILE` to `7.3.1` or `7.7.0` and set
 `CORPUS_GENERATOR_EXPORT_ROOT` to the matching version's `generator/` folder.
 The export test writes sources under `<profile>/generator/<source-kind>/<case-id>`:
@@ -264,9 +224,9 @@ dotnet run --project tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.
 
 Rejected cases are omitted because they do not produce generated sources. Run
 the same command with `CORPUS_RTI_PROFILE=7.3.1` and the 7.3.1 export root to
-refresh that profile. The profile choice affects RTI-specific emission only;
-the shared IDL inventory and Wireloom acceptance classifications stay the
-same.
+refresh that profile. The shared IDL inventory stays the same; applicability
+and expected generation outcomes follow the selected profile. In particular,
+C142 is omitted from the 7.3.1 export because `@must_understand` is unavailable.
 
 Unbounded typedef cases C135/C136 retain their RTI C# oracle pairs under
 `7.7.0/rtiddsgen/csharp/features`. Their generated API behavior is covered by the runtime
