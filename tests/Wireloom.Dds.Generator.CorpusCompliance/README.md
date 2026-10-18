@@ -3,6 +3,12 @@
 `Wireloom.Dds.Generator.CorpusCompliance.csproj` is the manifest-driven test
 project for the central IDL corpus under `docs/corpus`.
 
+The Quality workflow runs this suite separately for both exact LTS profiles
+on every pull request and push to `main`, using explicit `CORPUS_RTI_PROFILE`
+values. Each run compares against that version's retained oracle captures.
+Runtime and fresh-package jobs separately cover both LTS packages on .NET 8
+and .NET 10 across Windows and Ubuntu.
+
 The tests deliberately load the JSON manifest and discover the IDL and oracle
 files from the repository. They therefore cover every positive, negative, and
 integration entry without duplicating fixture lists in the project file.

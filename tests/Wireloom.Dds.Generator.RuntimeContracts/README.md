@@ -31,8 +31,22 @@ For the 7.3.1 run, use `-p:RtiConnextDdsVersion=7.3.1`; its lock file is
 from NuGet. They create no domain participants and require no DDS peers,
 discovery, or RTI generator installation. A native-loading failure is a test
 failure, not a skip.
-The quality workflow executes the suite on Windows and Ubuntu; preview and
-release workflows run it before packaging for integration validation.
+The Quality workflow executes all eight combinations of Windows/Ubuntu,
+RTI 7.3.1/7.7.0, and `net8.0`/`net10.0`, together with fresh-package tests.
+Preview and release workflows retain their default-target validation.
+
+To select a consumer target without retargeting the referenced analyzer, pass
+`-p:WireloomConsumerTargetFramework=net8.0` on both restore and run. The .NET 8
+runtime must be installed alongside the repository SDK. For example:
+
+```powershell
+dotnet restore $project --locked-mode -p:RtiConnextDdsVersion=7.3.1 -p:WireloomConsumerTargetFramework=net8.0
+dotnet run --project $project --no-restore --configuration Release -p:RtiConnextDdsVersion=7.3.1 -p:WireloomConsumerTargetFramework=net8.0
+```
+
+The `net8.0` restores use `packages.<RTI-version>.net8.0.lock.json`. Default
+`net10.0` restores keep the existing lock files. The analyzer continues to
+target `netstandard2.0`.
 
 ## Ownership and organization
 

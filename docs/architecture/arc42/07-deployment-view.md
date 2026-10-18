@@ -16,6 +16,17 @@ selected RTI Connext DDS runtime.
 | RTI runtime environment    | Application-selected `Rti.ConnextDds` libraries                   | Owns DDS communication and serialization                                |
 | Evidence repository        | Corpus IDL, retained oracle sources, and wire-compatibility peers | Supports source-shape and DDS wire verification, not production runtime |
 
+The Quality workflow continuously checks both exact RTI LTS packages on
+Windows 2025 and Ubuntu 24.04. Its eight runtime/package jobs combine RTI
+7.3.1 and 7.7.0 with consumer targets `net8.0` and `net10.0`; each packs a fresh
+analyzer and compiles the package consumer with C# 12. Two separate corpus
+jobs select the matching retained LTS oracles and verify applicability and
+shard reporting. These jobs need no RTI license secret and retain runtime and
+package test logs. The repository SDK remains selected by `global.json`;
+.NET 8 is installed alongside it for consumer execution. This checks target
+frameworks, not older SDK/Roslyn hosts. See
+[continuous LTS verification](../../guides/support-and-compatibility.md#continuous-lts-verification).
+
 The manually triggered wire-compatibility workflow runs both qualified LTS
 profiles as a version matrix. Each version has four isolated case-shard jobs
 (up to four probes per version) and its own report job, workflow summary, and

@@ -21,6 +21,14 @@ dotnet test tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generat
   --no-restore --configuration Release
 ```
 
+The Quality workflow tests a fresh package across RTI 7.3.1/7.7.0 and
+`net8.0`/`net10.0` on Windows and Ubuntu. To reproduce a combination, pass
+`-p:WireloomConsumerTargetFramework=net8.0` (or `net10.0`) and the selected
+`RtiConnextDdsVersion` on both restore and run, along with
+`WireloomDdsGeneratorPackageVersion`. CI uses `-p:LangVersion=12.0` on run to
+check the minimum emitted C# language baseline. The repository SDK builds the
+analyzer; install the .NET 8 runtime to execute a `net8.0` consumer.
+
 The integration project intentionally does not use central package management
 or a lock file: its generator package reference must be resolved from the
 freshly created local feed. The other package versions remain explicit and
@@ -55,10 +63,10 @@ minimum consumer framework without adding a project:
 ```powershell
 dotnet restore tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
   --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config `
-  -p:WireloomDdsGeneratorPackageVersion=0.4.0 -p:TargetFramework=net8.0
+  -p:WireloomDdsGeneratorPackageVersion=0.4.0 -p:WireloomConsumerTargetFramework=net8.0
 dotnet run --project tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
   --no-restore --configuration Release `
-  -p:WireloomDdsGeneratorPackageVersion=0.4.0 -p:TargetFramework=net8.0 -p:LangVersion=12.0
+  -p:WireloomDdsGeneratorPackageVersion=0.4.0 -p:WireloomConsumerTargetFramework=net8.0 -p:LangVersion=12.0
 ```
 
 This verifies the consumer framework; it does not establish compatibility
