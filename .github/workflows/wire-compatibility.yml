@@ -2,15 +2,6 @@ name: Wire compatibility
 
 on:
   workflow_dispatch:
-    inputs:
-      rti_version:
-        description: Exact qualified RTI LTS profile for this wire run
-        type: choice
-        required: true
-        default: 7.7.0
-        options:
-          - 7.3.1
-          - 7.7.0
 
 permissions:
   contents: read
@@ -20,18 +11,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  rti-7-7-0:
-    name: RTI Connext ${{ inputs.rti_version }} wire shard ${{ matrix.shard }}
+  wire-shards:
+    name: RTI Connext ${{ matrix.rti_version }} wire shard ${{ matrix.shard }}
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     strategy:
       fail-fast: false
-      max-parallel: 4
+      # Four shards exist for each version, allowing up to four probes per
+      # version to run concurrently (eight runners total).
+      max-parallel: 8
       matrix:
+        rti_version: ['7.3.1', '7.7.0']
         shard: [0, 1, 2, 3]
+        include:
+          - rti_version: '7.3.1'
+            rti_base_image: rticom/connext-base:7.3.1@sha256:f33a61ec6381a8fb73cbb019fbb5c081f434dc5217eb14283fad995306be0f04
+          - rti_version: '7.7.0'
+            rti_base_image: rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca
     env:
-      WIRE_COMPATIBILITY_RTI_VERSION: ${{ inputs.rti_version }}
-      WIRE_COMPATIBILITY_OUTPUT_DIR: artifacts/wire-compatibility-rti-${{ inputs.rti_version }}
+      WIRE_COMPATIBILITY_RTI_VERSION: ${{ matrix.rti_version }}
+      WIRE_COMPATIBILITY_OUTPUT_DIR: artifacts/wire-compatibility-rti-${{ matrix.rti_version }}
       WIRE_COMPATIBILITY_SHARD_INDEX: ${{ matrix.shard }}
       WIRE_COMPATIBILITY_SHARD_COUNT: 4
     steps:
@@ -50,12 +49,12 @@ jobs:
         with:
           context: .
           file: tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile
-          tags: wireloom-rti-${{ inputs.rti_version }}:local
+          tags: wireloom-rti-${{ matrix.rti_version }}:local
           build-args: |
-            RTI_BASE_IMAGE=${{ inputs.rti_version == '7.3.1' && 'rticom/connext-base:7.3.1@sha256:f33a61ec6381a8fb73cbb019fbb5c081f434dc5217eb14283fad995306be0f04' || 'rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca' }}
+            RTI_BASE_IMAGE=${{ matrix.rti_base_image }}
           load: true
-          cache-from: type=gha,scope=wireloom-rti-${{ inputs.rti_version }}
-          cache-to: ${{ matrix.shard == 0 && format('type=gha,scope=wireloom-rti-{0},mode=max', inputs.rti_version) || '' }}
+          cache-from: type=gha,scope=wireloom-rti-${{ matrix.rti_version }}
+          cache-to: ${{ matrix.shard == 0 && format('type=gha,scope=wireloom-rti-{0},mode=max', matrix.rti_version) || '' }}
 
       - name: Prepare persistent build caches
         shell: bash
@@ -92,7 +91,7 @@ jobs:
           umask 077
           printf '%s' "$RTI_CONNEXT_LICENSE" > "$RUNNER_TEMP/rti_license.dat"
 
-      - name: Verify RTI toolchain and run ${{ inputs.rti_version }} wire matrix
+      - name: Verify RTI toolchain and run ${{ matrix.rti_version }} wire matrix
         shell: bash
         run: |
           docker run --rm --user 0:0 \
@@ -141,14 +140,14 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: wire-compatibility-rti-${{ inputs.rti_version }}-shard-${{ matrix.shard }}
+          name: wire-compatibility-rti-${{ matrix.rti_version }}-shard-${{ matrix.shard }}
           path: |
-            artifacts/wire-compatibility-rti-${{ inputs.rti_version }}/results.json
-            artifacts/wire-compatibility-rti-${{ inputs.rti_version }}/results.md
-            artifacts/wire-compatibility-rti-${{ inputs.rti_version }}/logs/
-            artifacts/wire-compatibility-rti-${{ inputs.rti_version }}/scenarios.tsv
-            artifacts/wire-compatibility-rti-${{ inputs.rti_version }}/plan.json
-            artifacts/wire-compatibility-rti-${{ inputs.rti_version }}/shard.json
+            artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/results.json
+            artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/results.md
+            artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/logs/
+            artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/scenarios.tsv
+            artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/plan.json
+            artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/shard.json
           if-no-files-found: warn
           retention-days: 14
 
@@ -157,13 +156,17 @@ jobs:
         run: rm -f "$RUNNER_TEMP/rti_license.dat"
 
   report:
-    name: Combine wire matrix shards
-    needs: rti-7-7-0
+    name: Combine RTI ${{ matrix.rti_version }} wire matrix
+    needs: wire-shards
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        rti_version: ['7.3.1', '7.7.0']
     env:
-      WIRE_COMPATIBILITY_RTI_VERSION: ${{ inputs.rti_version }}
+      WIRE_COMPATIBILITY_RTI_VERSION: ${{ matrix.rti_version }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -178,7 +181,7 @@ jobs:
       - name: Download shard evidence
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          pattern: wire-compatibility-rti-${{ inputs.rti_version }}-shard-*
+          pattern: wire-compatibility-rti-${{ matrix.rti_version }}-shard-*
           path: artifacts/wire-shards
 
       - name: Build matrix reporting utility
@@ -197,14 +200,14 @@ jobs:
       - name: Validate and combine all exchanges
         run: >-
           dotnet "$RUNNER_TEMP/matrix-tools/matrix-tools.dll"
-          merge-shards ${{ inputs.rti_version }} 4 artifacts/wire-shards artifacts/wire-compatibility-rti-${{ inputs.rti_version }}
-          tests/Wireloom.Dds.Generator.WireCompatibility/wire-case-exclusions-${{ inputs.rti_version }}.json
+          merge-shards ${{ matrix.rti_version }} 4 artifacts/wire-shards artifacts/wire-compatibility-rti-${{ matrix.rti_version }}
+          tests/Wireloom.Dds.Generator.WireCompatibility/wire-case-exclusions-${{ matrix.rti_version }}.json
 
       - name: Publish combined wire matrix summary
         if: always()
         shell: bash
         run: |
-          report=artifacts/wire-compatibility-rti-${{ inputs.rti_version }}/results.md
+          report=artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/results.md
           if [[ -f "$report" ]]; then
             cat "$report" >> "$GITHUB_STEP_SUMMARY"
           else
@@ -215,7 +218,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: wire-compatibility-rti-${{ inputs.rti_version }}
-          path: artifacts/wire-compatibility-rti-${{ inputs.rti_version }}/
+          name: wire-compatibility-rti-${{ matrix.rti_version }}
+          path: artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/
           if-no-files-found: warn
           retention-days: 14
