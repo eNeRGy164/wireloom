@@ -60,8 +60,8 @@
   ],
   "notApplicableCases": [
     {
-      "id": "09-autoid-hash",
-      "reason": "The combined fixture requires @must_understand, which is unavailable in RTI 7.3.1 and rejected by rtiddsgen 4.3.1."
+      "id": "09-must-understand",
+      "reason": "The @must_understand feature was introduced in RTI 7.7.0 and is rejected by rtiddsgen 4.3.1. Hash-ID coverage is independent in C040 and applies to both LTS versions."
     }
   ]
 }

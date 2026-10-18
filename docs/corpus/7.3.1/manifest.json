@@ -7,7 +7,7 @@
   "wireQualification": "not-qualified",
   "generatorSourceRoot": "generator",
   "oracleRoot": "rtiddsgen/csharp",
-  "capturedCaseCount": 142,
+  "capturedCaseCount": 143,
   "cases": [
     {
       "id": "01-boundaries",
@@ -286,8 +286,13 @@
     },
     {
       "id": "09-autoid-hash",
-      "outcome": "rejected",
+      "outcome": "generated",
       "sourceDirectory": "rtiddsgen/csharp/features/09-autoid-hash"
+    },
+    {
+      "id": "09-must-understand",
+      "outcome": "rejected",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-must-understand"
     },
     {
       "id": "09-data-representation",

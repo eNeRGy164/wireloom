@@ -174,7 +174,6 @@ namespace rti {
                 Sample_g_tc_members[0]._annotations._minValue._u.long_value = RTIXCdrLong_MIN;
                 Sample_g_tc_members[0]._annotations._maxValue._d = RTI_XCDR_TK_LONG;
                 Sample_g_tc_members[0]._annotations._maxValue._u.long_value = RTIXCdrLong_MAX;
-                Sample_g_tc_members[0]._annotations._isMustUnderstand = RTI_XCDR_TRUE;
                 Sample_g_tc_members[1]._annotations._defaultValue._d = RTI_XCDR_TK_STRING;
                 Sample_g_tc_members[1]._annotations._defaultValue._u.string_value = (DDS_Char *) "";
 

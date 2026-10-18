@@ -17,12 +17,9 @@ expectation:
   the negative bucket, such as `12-unknown-annotation`, `12-interface`, and
   `12-union-wchar-rti-limit`.
 - Acceptance is profile-aware where RTI APIs impose a target limitation:
-  `09-autoid-hash` is rejected with `DDSG0004` and no generated sources under
-  the 7.3.1 profile, while it remains accepted under 7.7.0.
-- The optional-recursive-array comparison uses the matching RTI oracle. It
-  expects the 7.7.0 `isRecursiveType` flag and member-annotation APIs only in
-  that profile; 7.3.1 instead uses its `xTypesComplianceMask` and has no member
-  annotation metadata API.
+  `09-must-understand` (C142) is rejected with `DDSG0004` and no generated sources under
+  the 7.3.1 profile, while it remains accepted under 7.7.0. Hash member IDs
+  remain independently covered by `09-autoid-hash` (C040) in both profiles.
 - Every oracle read uses the selected `CORPUS_RTI_PROFILE` (7.7.0 by default),
   including inventory, constructors, general shape checks, and targeted metadata
   comparisons. The 7.3.1 capture manifest supplies its source directories and

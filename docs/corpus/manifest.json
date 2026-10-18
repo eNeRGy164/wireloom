@@ -58,6 +58,7 @@
     { "id": "09-evolution-optional", "theme": "optional primitive and reference members", "idl": "idl/features/09-evolution-optional.idl", "defines": [] },
     { "id": "09-optional-collections", "theme": "optional collection members", "idl": "idl/features/09-optional-collections.idl", "defines": [] },
     { "id": "09-autoid-hash", "theme": "automatic hash member identifiers", "idl": "idl/features/09-autoid-hash.idl", "defines": [] },
+    { "id": "09-must-understand", "theme": "must-understand member annotation; available from RTI 7.7.0", "idl": "idl/features/09-must-understand.idl", "defines": [], "tag": "C142" },
     { "id": "09-data-representation", "theme": "data representation annotation", "idl": "idl/features/09-data-representation.idl", "defines": [] },
     { "id": "09-defaults-ranges", "theme": "default literals and primitive ranges", "idl": "idl/features/09-defaults-ranges.idl", "defines": [] },
     { "id": "09-allowed-data-representation", "theme": "legacy allowed data representation annotation", "idl": "idl/features/09-allowed-data-representation.idl", "defines": [] },

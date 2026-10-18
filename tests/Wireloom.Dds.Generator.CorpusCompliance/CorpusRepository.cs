@@ -77,6 +77,7 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "09-optional-recursive-array",
         "09-optional-string-sequences",
         "09-autoid-hash",
+        "09-must-understand",
         "09-defaults-ranges",
         "10-annotations",
         "10-annotations-extended",
@@ -106,7 +107,7 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
 
     public bool ExpectedToCompileForProfile(string? rtiProfile) =>
         ManagedAcceptedCaseIds.Contains(Id) &&
-        !(Id == "09-autoid-hash" && string.Equals(rtiProfile, "7.3.1", StringComparison.Ordinal));
+        !(Id == "09-must-understand" && string.Equals(rtiProfile, "7.3.1", StringComparison.Ordinal));
 
     public bool HasOracleOutput =>
         !string.Equals(Classification, "rejected", StringComparison.OrdinalIgnoreCase) &&

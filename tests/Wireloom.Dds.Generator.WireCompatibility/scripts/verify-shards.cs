@@ -27,10 +27,11 @@ try
             Environment.SetEnvironmentVariable("WIRE_COMPATIBILITY_RTI_VERSION", version);
             var registryPath = Path.Combine(repositoryRoot, "tests", "Wireloom.Dds.Generator.WireCompatibility", $"wire-case-exclusions-{version}.json");
             var selected = Invoke(true, "list-cases", manifestPath, registryPath).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            Check(selected.Length == (version == "7.3.1" ? 76 : 77), "Only applicable positive cases are selected.");
-            Check(selected.Contains("09-autoid-hash") == (version == "7.7.0"), "The must-understand fixture is available only on 7.7.0.");
+            Check(selected.Length == (version == "7.3.1" ? 77 : 78), "Only applicable positive cases are selected.");
+            Check(selected.Contains("09-autoid-hash"), "Hash-ID coverage applies to both LTS versions.");
+            Check(selected.Contains("09-must-understand") == (version == "7.7.0"), "The must-understand fixture is available only on 7.7.0.");
             var generatedRoot = Path.Combine(repositoryRoot, "docs", "corpus", version, "generator");
-            var discovery = Invoke(version == "7.7.0", "discover-cases", manifestPath, generatedRoot, Path.Combine(root, "discovered.json"), "09-autoid-hash");
+            var discovery = Invoke(version == "7.7.0", "discover-cases", manifestPath, generatedRoot, Path.Combine(root, "discovered.json"), "09-must-understand");
             if (version == "7.3.1")
             {
                 Check(discovery.Contains("not a wire-testable", StringComparison.Ordinal), "Inapplicable cases are rejected before type discovery.");
@@ -92,7 +93,7 @@ try
     File.WriteAllText(exclusions, """
         {
           "notImplementedCases": [{"id":"09-optional-aggregate-member","diagnostic":"TEST","reason":"RTI-only control","issue":"https://github.com/eNeRGy164/wireloom/issues/15"}],
-          "notApplicableCases": [{"id":"09-autoid-hash","reason":"RTI feature unavailable in this test profile"}],
+          "notApplicableCases": [{"id":"09-must-understand","reason":"RTI feature unavailable in this test profile"}],
           "expectedFailures": [{"id":"05-array-of-sequences","writer":"Wireloom C#","reader":"RTI C++","reason":"registered failure"}]
         }
         """);
@@ -136,11 +137,11 @@ try
     // Assert: payload/report evidence survives, including registry entries and failure reasons.
     Check(JsonNode.DeepEquals(Read(baseline), Read(Path.Combine(merged, "results.json"))), "Combined JSON equals the unsharded report.");
     Check((int)Read(baseline)["notApplicableCount"]! == 1, "Unavailable features are recorded separately from failures.");
-    Check(Read(baseline)["scenarios"]!.AsArray().All(item => (string?)item!["case"] != "09-autoid-hash"), "Unavailable features add no exchanges to the denominator.");
+    Check(Read(baseline)["scenarios"]!.AsArray().All(item => (string?)item!["case"] != "09-must-understand"), "Unavailable features add no exchanges to the denominator.");
     Check(File.ReadAllText(Path.Combine(merged, "results.md")).Contains("Not applicable", StringComparison.Ordinal), "The Markdown report explains unavailable features.");
     var unavailableSeed = Path.Combine(root, "unavailable.tsv");
     var unavailableRow = rows[0].ToArray();
-    unavailableRow[0] = "09-autoid-hash";
+    unavailableRow[0] = "09-must-understand";
     File.WriteAllText(unavailableSeed, string.Join('\t', unavailableRow));
     var unavailableResult = Invoke(false, "render-report", rtiVersion, "1", unavailableSeed,
         Path.Combine(root, "unavailable.json"), Path.Combine(root, "unavailable.md"),

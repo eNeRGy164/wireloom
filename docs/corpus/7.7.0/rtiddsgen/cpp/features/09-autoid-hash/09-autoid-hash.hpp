@@ -10,8 +10,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the Code Generator User's Manual.
 */
 
-#ifndef _09_autoid_hash_1090522934_hpp
-#define _09_autoid_hash_1090522934_hpp
+#ifndef _09_autoid_hash_1090522917_hpp
+#define _09_autoid_hash_1090522917_hpp
 
 #include <iosfwd>
 
@@ -165,4 +165,4 @@ namespace rti {
 #define NDDSUSERDllExport
 #endif
 
-#endif // _09_autoid_hash_1090522934_hpp
+#endif // _09_autoid_hash_1090522917_hpp

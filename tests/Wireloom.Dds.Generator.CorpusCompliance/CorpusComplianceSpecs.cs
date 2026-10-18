@@ -15,11 +15,30 @@ public sealed class CorpusComplianceSpecs
                 string.Equals(corpusCase.Id, Environment.GetEnvironmentVariable("CORPUS_CASE"), StringComparison.Ordinal))
             .Select(corpusCase => new object[] { corpusCase });
 
+    /// <summary>Checks hash IDs independently of the newer must-understand feature in both selected LTS runs.</summary>
+    [Fact]
+    public void HashMemberIdsDoNotRequireMustUnderstand()
+    {
+        // Arrange
+        var corpusCase = CorpusRepository.Cases.Single(item => item.Id == "09-autoid-hash");
+
+        // Act
+        var generated = Compile(corpusCase);
+
+        // Assert
+        generated.ShouldNotBeEmpty();
+        var plugin = generated["CorpusAutoId.Implementation.SamplePlugin.g.cs"].Source;
+        plugin.ShouldContain("id: 75475440");
+        plugin.ShouldContain("id: 206680604");
+        plugin.ShouldNotContain("isMustUnderstand");
+        generated["CorpusAutoId.Sample.g.cs"].Source.ShouldNotContain("MustUnderstand");
+    }
+
     [Fact]
     public void CorpusManifestAndOracleLibraryHaveTheSameCaseSet()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(141);
+        cases.Length.ShouldBe(142);
         cases.ShouldBeUnique();
         CorpusRepository.OracleCaseIds.ShouldBe(cases.OrderBy(id => id, StringComparer.Ordinal).ToArray());
 
@@ -55,6 +74,8 @@ public sealed class CorpusComplianceSpecs
         // Assert
         integrationTags.ShouldBe(["C108", "C109", "C110", "C111"]);
         cases["12-name-collisions"].Tag.ShouldBe("C112");
+        cases["09-autoid-hash"].Tag.ShouldBe("C040");
+        cases["09-must-understand"].Tag.ShouldBe("C142");
     }
 
     [Fact]
@@ -289,7 +310,7 @@ public sealed class CorpusComplianceSpecs
             return;
         }
 
-        if (corpusCase.Id == "09-autoid-hash" && string.Equals(RequestedRtiProfile, "7.3.1", StringComparison.Ordinal))
+        if (corpusCase.Id == "09-must-understand" && string.Equals(RequestedRtiProfile, "7.3.1", StringComparison.Ordinal))
         {
             // Arrange
             var diagnostics = new List<IdlDiagnostic>();

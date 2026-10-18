@@ -73,7 +73,7 @@ namespace CorpusAutoId
                 // Sample struct
                 var SampleStructMembers = new StructMember[]
                 {
-                    new StructMember("id", dtf.GetPrimitiveType<int>(), isMustUnderstand: true, id: 75475440),
+                    new StructMember("id", dtf.GetPrimitiveType<int>(), id: 75475440),
                     new StructMember("text", dtf.CreateString(((int) 16)), id: 206680604)
 
                 };

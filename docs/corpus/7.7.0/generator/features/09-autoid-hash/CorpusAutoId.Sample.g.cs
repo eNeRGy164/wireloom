@@ -14,7 +14,7 @@ namespace CorpusAutoId;
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
-    /// Gets or sets the <c>id</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. Its DDS member ID is generated from the hash of <c>stable_id</c> through <c>@hashid</c>. A DDS reader that does not understand this member cannot safely read the sample. Its DDS member ID is <c>75475440</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
+    /// Gets or sets the <c>id</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. Its DDS member ID is generated from the hash of <c>stable_id</c> through <c>@hashid</c>. Its DDS member ID is <c>75475440</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
     public int id { get; set; }
 

@@ -10,8 +10,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the Code Generator User's Manual.
 */
 
-#ifndef _09_autoid_hashPlugin_1090522934_h
-#define _09_autoid_hashPlugin_1090522934_h
+#ifndef _09_autoid_hashPlugin_1090522917_h
+#define _09_autoid_hashPlugin_1090522917_h
 
 #include "09-autoid-hash.hpp"
 
@@ -196,4 +196,4 @@ namespace CorpusAutoId {
 #define NDDSUSERDllExport
 #endif
 
-#endif /* _09_autoid_hashPlugin_1090522934_h */
+#endif /* _09_autoid_hashPlugin_1090522917_h */
