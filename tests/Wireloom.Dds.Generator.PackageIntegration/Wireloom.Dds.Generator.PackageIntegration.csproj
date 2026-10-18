@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Wireloom.Dds.Generator.PackageIntegration</RootNamespace>
+    <!-- Override the consumer target without retargeting the analyzer project. -->
+    <TargetFramework Condition="'$(WireloomConsumerTargetFramework)' != ''">$(WireloomConsumerTargetFramework)</TargetFramework>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <!-- This consumer is restored only after the package-under-test is created. -->
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>

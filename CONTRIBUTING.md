@@ -80,6 +80,17 @@ Exported managed-generator sources belong under the matching version's
 `docs/corpus/<version>/generator/` folder and should be refreshed using the
 corpus guide's documented export command.
 
+## Continuous LTS verification
+
+The [Quality workflow](.github/workflows/quality.yml) checks both RTI 7.3.1 and
+7.7.0 corpus profiles. Its runtime/package matrix combines both RTI packages,
+.NET 8 and .NET 10 consumer targets, and Windows and Ubuntu. Each job tests a
+freshly packed analyzer with C# 12 and retains its output. The pinned repository
+SDK builds every cell; install .NET 8 alongside it for `net8.0` execution.
+See the [verification scope](docs/guides/support-and-compatibility.md#continuous-lts-verification)
+and the runtime/package guides for local commands and lock-file selection.
+Licensed DDS wire qualification remains a separate manual workflow.
+
 ## Quality evidence
 
 For changes that affect generator quality, the repository requires a successful

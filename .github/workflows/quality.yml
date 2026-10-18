@@ -18,52 +18,145 @@ env:
   DOTNET_NOLOGO: true
   TEST_PROJECT: tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj
   RUNTIME_TEST_PROJECT: tests/Wireloom.Dds.Generator.RuntimeContracts/Wireloom.Dds.Generator.RuntimeContracts.csproj
+  CORPUS_TEST_PROJECT: tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj
+  PACKAGE_PROJECT: src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
+  PACKAGE_INTEGRATION_TEST_PROJECT: tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj
 
 jobs:
-  runtime-contracts:
-    name: Runtime contracts (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+  corpus-compliance:
+    name: Corpus (RTI ${{ matrix.rti_version }})
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-2025]
+        rti_version: ['7.3.1', '7.7.0']
+    env:
+      CORPUS_RTI_PROFILE: ${{ matrix.rti_version }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Set up .NET
+      - name: Set up repository SDK
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
-          dotnet-version: 10.0.x
+          global-json-file: global.json
           cache: true
-          cache-dependency-path: '**/packages.lock.json'
+          cache-dependency-path: '**/packages*.lock.json'
 
       - name: Restore locked dependencies
-        run: |
-          dotnet restore $env:RUNTIME_TEST_PROJECT --locked-mode
-          dotnet restore tests/Wireloom.Dds.Generator.WireCompatibility/RtiOracleProbe/RtiOracleProbe.csproj --locked-mode
-        shell: pwsh
+        run: dotnet restore "$CORPUS_TEST_PROJECT" --locked-mode
 
-      - name: Check retained RTI C# unbounded alias oracle
+      - name: Test matching LTS corpus
+        run: dotnet run --project "$CORPUS_TEST_PROJECT" --no-restore --configuration Release
+
+      - name: Verify matrix applicability and shard reports
+        run: |
+          dotnet build tests/Wireloom.Dds.Generator.WireCompatibility/scripts/matrix-tools.cs --output "$RUNNER_TEMP/matrix-tools"
+          dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-shards.cs -- "$RUNNER_TEMP/matrix-tools/matrix-tools.dll"
+          bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-harness.sh
+        env:
+          WIRE_COMPATIBILITY_RTI_VERSION: ${{ matrix.rti_version }}
+
+  runtime-contracts:
+    name: LTS contracts (${{ matrix.os }}, RTI ${{ matrix.rti_version }}, ${{ matrix.framework }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+        rti_version: ['7.3.1', '7.7.0']
+        framework: [net8.0, net10.0]
+    env:
+      RTI_VERSION: ${{ matrix.rti_version }}
+      CONSUMER_FRAMEWORK: ${{ matrix.framework }}
+      TEST_PACKAGE_VERSION: 0.4.0-lts-verification
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up repository SDK and .NET 8 runtime
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+          dotnet-version: 8.0.x
+          cache: true
+          cache-dependency-path: '**/packages*.lock.json'
+
+      - name: Restore locked runtime dependencies
         run: >-
-          dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility/RtiOracleProbe/RtiOracleProbe.csproj
-          --no-restore --configuration Release
-          -p:RtiOracleProgram=UnboundedAliasProbe.cs
-          '-p:RtiOracleSourceDir=../../../docs/corpus/7.7.0/rtiddsgen/csharp/features/*-unbounded-*-aliases'
+          dotnet restore $env:RUNTIME_TEST_PROJECT --locked-mode
+          -p:RtiConnextDdsVersion=$env:RTI_VERSION
+          -p:WireloomConsumerTargetFramework=$env:CONSUMER_FRAMEWORK
         shell: pwsh
 
       - name: Test runtime contracts
-        run: >-
-          dotnet run --project $env:RUNTIME_TEST_PROJECT
-          --no-restore --configuration Release
+        run: |
+          New-Item -ItemType Directory -Force artifacts/lts | Out-Null
+          dotnet run --project $env:RUNTIME_TEST_PROJECT --no-restore --configuration Release `
+            -p:RtiConnextDdsVersion=$env:RTI_VERSION `
+            -p:WireloomConsumerTargetFramework=$env:CONSUMER_FRAMEWORK |
+            Tee-Object artifacts/lts/runtime-contracts.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         shell: pwsh
+
+      - name: Restore generator dependencies
+        run: dotnet restore $env:PACKAGE_PROJECT --locked-mode
+        shell: pwsh
+
+      - name: Pack fresh analyzer
+        run: >-
+          dotnet pack $env:PACKAGE_PROJECT --no-restore --configuration Release
+          --output package-test-feed -p:PackageVersion=$env:TEST_PACKAGE_VERSION
+        shell: pwsh
+
+      - name: Restore fresh-package consumer
+        run: >-
+          dotnet restore $env:PACKAGE_INTEGRATION_TEST_PROJECT
+          --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config
+          -p:WireloomDdsGeneratorPackageVersion=$env:TEST_PACKAGE_VERSION
+          -p:RtiConnextDdsVersion=$env:RTI_VERSION
+          -p:WireloomConsumerTargetFramework=$env:CONSUMER_FRAMEWORK
+        shell: pwsh
+
+      - name: Test fresh-package consumer with C# 12
+        run: |
+          dotnet run --project $env:PACKAGE_INTEGRATION_TEST_PROJECT --no-restore --configuration Release `
+            -p:WireloomDdsGeneratorPackageVersion=$env:TEST_PACKAGE_VERSION `
+            -p:RtiConnextDdsVersion=$env:RTI_VERSION `
+            -p:WireloomConsumerTargetFramework=$env:CONSUMER_FRAMEWORK -p:LangVersion=12.0 |
+            Tee-Object artifacts/lts/package-integration.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        shell: pwsh
+
+      - name: Check retained RTI C# 7.7.0 unbounded alias oracle
+        if: matrix.rti_version == '7.7.0' && matrix.framework == 'net10.0'
+        run: |
+          $probe = 'tests/Wireloom.Dds.Generator.WireCompatibility/RtiOracleProbe/RtiOracleProbe.csproj'
+          dotnet restore $probe --locked-mode
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet run --project $probe --no-restore --configuration Release `
+            -p:RtiOracleProgram=UnboundedAliasProbe.cs `
+            '-p:RtiOracleSourceDir=../../../docs/corpus/7.7.0/rtiddsgen/csharp/features/*-unbounded-*-aliases'
+        shell: pwsh
+
+      - name: Retain LTS test output
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lts-${{ matrix.os }}-rti-${{ matrix.rti_version }}-${{ matrix.framework }}
+          path: artifacts/lts/
+          if-no-files-found: warn
+          retention-days: 14
 
   coverage:
     name: Test and upload coverage
-    needs: runtime-contracts
+    needs: [runtime-contracts, corpus-compliance]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

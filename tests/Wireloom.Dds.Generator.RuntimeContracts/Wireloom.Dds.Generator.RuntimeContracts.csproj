@@ -1,10 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Wireloom.Dds.Generator.RuntimeContracts</RootNamespace>
+    <!-- Override the consumer target without retargeting the analyzer project. -->
+    <TargetFramework Condition="'$(WireloomConsumerTargetFramework)' != ''">$(WireloomConsumerTargetFramework)</TargetFramework>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <RestorePackagesPath>$(MSBuildProjectDirectory)\obj\packages\$(RtiConnextDdsVersion)</RestorePackagesPath>
     <NuGetLockFilePath Condition="'$(RtiConnextDdsVersion)' != '' and '$(RtiConnextDdsVersion)' != '7.7.0'">packages.$(RtiConnextDdsVersion).lock.json</NuGetLockFilePath>
     <RestorePackagesWithLockFile Condition="'$(RtiConnextDdsVersion)' != '' and '$(RtiConnextDdsVersion)' != '7.7.0'">true</RestorePackagesWithLockFile>
+    <NuGetLockFilePath Condition="'$(TargetFramework)' == 'net8.0'">packages.$(RtiConnextDdsVersion).net8.0.lock.json</NuGetLockFilePath>
   </PropertyGroup>
 
   <ItemGroup>

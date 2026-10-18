@@ -65,7 +65,11 @@ Its wire adaptations and limitations are described in [chapter 6](06-runtime-vie
 Generated API runtime contracts are verified separately from corpus shape and
 wire compatibility. The runtime suite builds focused IDL fixtures and executes
 managed value methods, native conversion/lifecycle APIs, and DynamicType/support
-APIs on Windows and Linux. Its [coverage matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
+APIs on Windows and Linux. The Quality workflow runs both exact RTI LTS
+packages across `net8.0` and `net10.0` consumer targets on both hosts, with
+fresh packed-analyzer integration and matching-profile corpus runs. The pinned
+repository SDK builds all cells; consumer runtime checks do not qualify older
+SDK/Roslyn hosts. Licensed wire checks remain separate. Its [coverage matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
 identifies executable coverage, applicable gaps, and the RTI C# or better
 expectation. Coveralls measures maintained generator source; generated fixture
 and test project code are excluded. Unresolved required contracts remain gaps

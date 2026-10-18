@@ -46,6 +46,36 @@ identifies tested revisions, reports, remaining failures, and peer adaptations.
 Qualification is specific to the documented features and peer profiles; it is
 not a claim that every scenario passed.
 
+## Continuous LTS verification
+
+The [Quality workflow](../../.github/workflows/quality.yml) runs on pull
+requests, pushes to `main`, and manual dispatches. It checks both exact RTI
+LTS versions without requiring a licensed wire environment:
+
+| Check                                                | RTI versions | Consumer targets              | Hosts                      |
+| :--------------------------------------------------- | :----------- | :---------------------------- | :------------------------- |
+| Corpus compliance against matching retained oracles  | 7.3.1, 7.7.0 | Repository target (`net10.0`) | Ubuntu 24.04               |
+| Generated runtime contracts                          | 7.3.1, 7.7.0 | `net8.0`, `net10.0`           | Windows 2025, Ubuntu 24.04 |
+| Fresh packed-analyzer integration with C# 12         | 7.3.1, 7.7.0 | `net8.0`, `net10.0`           | Windows 2025, Ubuntu 24.04 |
+| Applicability, shard planning, and report validation | 7.3.1, 7.7.0 | Repository tooling            | Ubuntu 24.04               |
+
+All eight runtime/package combinations fail their jobs on errors, with
+independent failure reporting and retained test output. Runtime restores use version- and
+target-specific lock files. Corpus runs select `CORPUS_RTI_PROFILE` explicitly;
+unavailable features remain N/A and contribute no compatibility failures.
+The existing 7.7.0 unbounded-alias oracle probe also runs on both hosts.
+
+Builds use the SDK selected by `global.json`; .NET 8 is installed alongside it
+so `net8.0` consumers execute on the .NET 8 runtime. This matrix verifies
+consumer targets and generated APIs, and does not establish compatibility with
+the .NET 8 SDK's older Roslyn host. Repository defaults remain `net10.0`, and
+the analyzer remains `netstandard2.0`.
+
+These checks do not establish DDS wire compatibility. Licensed, exact-toolchain
+wire exchanges remain in the manually dispatched wire workflow. The local
+and CI evidence for a particular revision must still be reviewed before
+claiming qualification.
+
 ## Compatibility and stability
 
 The compatibility goal is for existing application code to compile unchanged
@@ -69,11 +99,11 @@ after 1.0 has not been decided.
 
 ## Choosing a generation path
 
-| Choose Wireloom when | Keep or choose RTI generation when |
-| :-- | :-- |
-| Your IDL shapes are covered and your RTI version is qualified. | Required IDL shapes or `rtiddsgen` options are outside Wireloom's coverage. |
-| You want IDL generation and diagnostics integrated into the .NET build and IDE. | Your existing generation workflow is qualified and meets your needs. |
-| Best-effort support is acceptable and your team can own validation. | Your requirements include a generation tool covered by your RTI support agreement. |
+| Choose Wireloom when                                                            | Keep or choose RTI generation when                                                 |
+| :------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------- |
+| Your IDL shapes are covered and your RTI version is qualified.                  | Required IDL shapes or `rtiddsgen` options are outside Wireloom's coverage.        |
+| You want IDL generation and diagnostics integrated into the .NET build and IDE. | Your existing generation workflow is qualified and meets your needs.               |
+| Best-effort support is acceptable and your team can own validation.             | Your requirements include a generation tool covered by your RTI support agreement. |
 
 Both paths use the RTI Connext DDS runtime. Wireloom is an independent
 generator project and does not establish or change a support relationship with
