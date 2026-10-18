@@ -16,10 +16,12 @@ selected RTI Connext DDS runtime.
 | RTI runtime environment    | Application-selected `Rti.ConnextDds` libraries                   | Owns DDS communication and serialization                                |
 | Evidence repository        | Corpus IDL, retained oracle sources, and wire-compatibility peers | Supports source-shape and DDS wire verification, not production runtime |
 
-The manually triggered wire-compatibility workflow currently retains the exact
-`rticom/connext-base:7.7.0` evidence run. A separate 7.3.1 run uses its matching
-RTI container, NuGet package, and `rtiddsgen` toolchain. RTI license access is
-limited to peer-execution jobs; report assembly runs without that secret. The
+The manually triggered wire-compatibility workflow runs both qualified LTS
+profiles as a version matrix. Each version has four isolated case-shard jobs
+(up to four probes per version) and its own report job, workflow summary, and
+combined evidence artifact. Each profile uses its matching RTI container,
+NuGet package, and `rtiddsgen` toolchain. RTI license access is limited to
+peer-execution jobs; report assembly runs without that secret. The
 [wire compatibility runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#case-shards-and-combined-reports)
 owns shard execution, image/cache handling, artifact contents, and report
 assembly details.
