@@ -56,7 +56,9 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   oracles check required types, properties/types, and enum members, rather than
   identical public APIs; runtime contracts execute generated APIs;
   licensed wire evidence checks all nine directed pairings among Wireloom C#,
-  RTI C#, and RTI C++. See the [corpus guide](../corpus/README.md),
+  RTI C#, and RTI C++. The manual workflow runs both qualified LTS profiles,
+  with four isolated shards per version and a separate report, summary, and
+  artifact for each. See the [corpus guide](../corpus/README.md),
   [feature coverage](../corpus/FEATURE-COVERAGE.md), and [wire runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
 - **API policy:** RTI C# is a baseline, not an API ceiling. Deliberate API
   differences and improvements need explicit evidence; an API-shape match does
