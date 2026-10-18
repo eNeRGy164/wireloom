@@ -6,7 +6,7 @@
   "language": "C++11",
   "sharedCaseInventory": "../../../manifest.json",
   "capturedAtUtc": "2026-10-17T18:42:34+00:00",
-  "generatedCaseCount": 90,
+  "generatedCaseCount": 91,
   "failedCaseCount": 51,
   "cases": [
     {
@@ -1186,10 +1186,41 @@
       "category": "features",
       "idl": "idl/features/09-autoid-hash.idl",
       "input": "../../../idl/features/09-autoid-hash.idl",
-      "sourceSha256": "d40e9762a5b4fb2118925230917d65c90476bb543ec373627b63a49d6b20db11",
-      "generatedInputSha256": "d40e9762a5b4fb2118925230917d65c90476bb543ec373627b63a49d6b20db11",
+      "sourceSha256": "22e1b3e311658bd9a3661feb6e3cccd7825e72d01722f376f9fe132645f90fbb",
+      "generatedInputSha256": "22e1b3e311658bd9a3661feb6e3cccd7825e72d01722f376f9fe132645f90fbb",
       "defines": [],
       "options": [
+        "-ppDisable",
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "09-autoid-hash.cxx",
+        "09-autoid-hash.hpp",
+        "09-autoid-hashPlugin.cxx",
+        "09-autoid-hashPlugin.hpp"
+      ],
+      "log": "features/09-autoid-hash/rtiddsgen.log",
+      "capturedAtUtc": "2026-10-18T08:29:49Z"
+    },
+    {
+      "id": "09-must-understand",
+      "category": "features",
+      "idl": "idl/features/09-must-understand.idl",
+      "input": "../../../idl/features/09-must-understand.idl",
+      "sourceSha256": "c69aa295e70f8d6211241e422e1d1b7ac3cc4615b5aa2fe820a20486f1a0d2f3",
+      "generatedInputSha256": "c69aa295e70f8d6211241e422e1d1b7ac3cc4615b5aa2fe820a20486f1a0d2f3",
+      "defines": [],
+      "options": [
+        "-ppDisable",
         "-language",
         "C++11",
         "-replace",
@@ -1202,7 +1233,8 @@
       "status": "rejected-or-failed",
       "exitCode": 255,
       "generatedFiles": [],
-      "log": "features/09-autoid-hash/rtiddsgen.log"
+      "log": "features/09-must-understand/rtiddsgen.log",
+      "capturedAtUtc": "2026-10-18T08:29:49Z"
     },
     {
       "id": "09-data-representation",

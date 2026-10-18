@@ -1,0 +1,5 @@
+module CorpusMustUnderstand {
+    @appendable struct Sample {
+        @must_understand long value;
+    };
+};

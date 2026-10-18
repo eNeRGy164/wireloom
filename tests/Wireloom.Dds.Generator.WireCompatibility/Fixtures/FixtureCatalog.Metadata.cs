@@ -75,6 +75,12 @@ internal static partial class FixtureCatalog
             return true;
         }
 
+        if (caseId == "09-must-understand")
+        {
+            SetFixtureValue(sample, "value", 9651);
+            return true;
+        }
+
         if (caseId == "09-defaults-ranges")
         {
             SetFixtureValue(sample, "value", 97);

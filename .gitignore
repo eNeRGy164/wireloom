@@ -5,6 +5,11 @@ Desktop.ini
 
 # Logs and temp files
 *.log
+# Retain diagnostics for reviewed annotation captures.
+!/docs/corpus/*/rtiddsgen/csharp/features/09-autoid-hash/rtiddsgen.log
+!/docs/corpus/*/rtiddsgen/cpp/features/09-autoid-hash/rtiddsgen.log
+!/docs/corpus/*/rtiddsgen/csharp/features/09-must-understand/rtiddsgen.log
+!/docs/corpus/*/rtiddsgen/cpp/features/09-must-understand/rtiddsgen.log
 *.tmp
 *.temp
 

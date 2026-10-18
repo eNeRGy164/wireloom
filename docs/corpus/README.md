@@ -37,9 +37,11 @@ outputs live under `<version>/rtiddsgen/`; Wireloom exports live under
 contracts compile against the exact NuGet package, and its runtime-contract
 suite passes; exact-version wire qualification remains pending. The 7.7.0 test
 loader reads its RTI C# oracle tree from `7.7.0/rtiddsgen/csharp/`.
-Acceptance can also vary by target profile: `09-autoid-hash` is a Wireloom
-negative case under 7.3.1 because `@must_understand` is unavailable there, and
-is accepted under 7.7.0.
+C040 (`09-autoid-hash`) checks hash member IDs on both LTS profiles. The
+separate C142 (`09-must-understand`) checks `@must_understand`, which is not
+applicable to 7.3.1 and is accepted under 7.7.0. Explicitly compiling C142
+against 7.3.1 reports `DDSG0004`; this target diagnostic is not a compatibility
+failure for a feature unavailable in that release.
 
 The repository's MIT License does not apply to the checked-in RTI-generated
 oracle sources. They are third-party reference material, provided as-is for
@@ -50,16 +52,16 @@ notices.
 
 ## Case inventory
 
-The manifest currently contains **77 positive cases**, **60 negative probes**,
-and **4 integration entry points** (141 entries total). These counts follow
+The manifest currently contains **78 positive cases**, **60 negative probes**,
+and **4 integration entry points** (142 entries total). These counts follow
 `manifest.json`, the source of truth for the corpus inventory.
 
 | Group                    | Count | Location                             |
 | ------------------------ | ----: | ------------------------------------ |
-| Positive feature cases   |    77 | [`idl/features`](idl/features)       |
+| Positive feature cases   |    78 | [`idl/features`](idl/features)       |
 | Negative probes          |    60 | [`idl/negative`](idl/negative)       |
 | Integration entry points |     4 | [`idl/integration`](idl/integration) |
-| Total                    |   141 | —                                    |
+| Total                    |   142 | —                                    |
 
 Each case has a manifest ID, such as `01-primitives`, and a stable `C###`
 provenance tag. Tags are used by the feature index and test diagnostics.

@@ -350,6 +350,8 @@ int main(int argc, char **argv)
         } else if (case_id == "09-autoid-hash" && fixture == "non-default") {
             expected.value("id", int32_t{9601});
             expected.value("text", std::string("autoid-9601"));
+        } else if (case_id == "09-must-understand" && fixture == "non-default") {
+            expected.value("value", int32_t{9651});
         } else if (case_id == "09-defaults-ranges" && fixture == "non-default") {
             expected.value("value", int32_t{97});
             expected.value("ranged", int32_t{-17});

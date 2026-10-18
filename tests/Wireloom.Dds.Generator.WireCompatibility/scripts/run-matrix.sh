@@ -35,7 +35,7 @@ readonly non_default_fixture_cases=(
     07-union-string-sequence-aliases 07-union-string-sequence-bounded-direct
     08-keys 08-key-nested 08-key-inherited 08-key-boundaries 08-key-union
     09-extensibility 09-default 09-id-gaps 09-evolution-optional
-    09-optional-collections 09-autoid-hash 09-defaults-ranges
+    09-optional-collections 09-autoid-hash 09-must-understand 09-defaults-ranges
     10-annotations 10-annotations-extended 10-annotations-rti 10-flat-data-binding
     09-data-representation 09-allowed-data-representation
     11-preprocessing 11-conditionals 11-macros 11-macro-operators

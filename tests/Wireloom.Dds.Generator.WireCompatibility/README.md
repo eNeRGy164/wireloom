@@ -16,9 +16,12 @@ not qualification of every feature or RTI release.
 Version-specific registries separate `notApplicableCases` from
 `notImplementedCases`. A feature introduced after the selected RTI version is
 not applicable: it contributes no exchanges, failures, or implementation gaps.
-JSON and Markdown reports retain its case ID and reason separately. The
-combined `09-autoid-hash` fixture requires `@must_understand` and is N/A on
-7.3.1; explicitly requesting it is rejected before type-support discovery.
+JSON and Markdown reports retain its case ID and reason separately. For
+example, `09-must-understand` (C142) is not applicable to 7.3.1; explicitly
+requesting it is rejected before peer builds or type-support discovery.
+`09-autoid-hash` (C040) independently checks hash member IDs on both versions.
+Both cases have non-default fixtures. Wire results recorded before the split
+do not qualify these revised inputs; fresh exchanges remain pending.
 
 ## Run the matrix
 

@@ -216,36 +216,39 @@ public sealed class GeneratedPluginSpecs
         plugin.ShouldNotContain("result.SetMemberAnnotations(3, annotations);");
     }
 
-    [Fact]
+    [Theory]
+    [InlineData("7.3.1")]
+    [InlineData("7.7.0")]
     [Trait("Corpus", "C040")]
-    public void AutoIdHashAndHashIdAnnotationsProduceXTypesMemberIds()
+    public void AutoIdHashAndHashIdAnnotationsProduceXTypesMemberIds(string version)
     {
         // Arrange
         var input = Input("autoid-hash.idl",
             """
             module AutoIdHash {
                 @autoid(HASH) @appendable struct Sample {
-                    @must_understand @hashid("stable_id") long id;
+                    @hashid("stable_id") long id;
                     @hashid string<16> text;
                 };
             };
             """);
 
         // Act
-        var documents = CompileSources(input);
+        var documents = IdlCompiler.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, RtiApiProfile.ForVersion(Version.Parse(version)));
 
         // Assert
         var managed = documents["AutoIdHash.Sample.g.cs"].Source;
         managed.ShouldContain("Its DDS member ID is generated from the hash of <c>stable_id</c> through <c>@hashid</c>.");
-        managed.ShouldContain("A DDS reader that does not understand this member cannot safely read the sample.");
+        managed.ShouldNotContain("MustUnderstand");
         managed.ShouldContain("Its DDS member ID is generated from the hash of <c>text</c> through <c>@hashid</c>.");
 
         var plugin = documents["AutoIdHash.Implementation.SamplePlugin.g.cs"].Source;
-        plugin.ShouldContain("new StructMember(\"id\", dtf.GetPrimitiveType<int>(), isMustUnderstand: true, id: 75475440)");
+        plugin.ShouldContain("new StructMember(\"id\", dtf.GetPrimitiveType<int>(), id: 75475440)");
         plugin.ShouldContain("new StructMember(\"text\", dtf.CreateString(16), id: 206680604)");
     }
 
     [Fact]
+    [Trait("Corpus", "C142")]
     public void MustUnderstandIsRejectedByRtiddsgen431ProfileAndAcceptedByRtiddsgen470Profile()
     {
         // Arrange

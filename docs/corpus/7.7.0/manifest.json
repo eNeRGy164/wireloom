@@ -7,5 +7,5 @@
   "wireQualification": "qualified-evidence-indexed-in-root-feature-coverage",
   "generatorSourceRoot": "generator",
   "oracleRoot": "rtiddsgen/csharp",
-  "oracleCaseCount": 141
+  "oracleCaseCount": 142
 }
