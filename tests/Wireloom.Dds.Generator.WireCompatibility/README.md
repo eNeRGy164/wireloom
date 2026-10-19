@@ -126,14 +126,15 @@ case set must contain at least as many cases as the shard count.
 The runner writes `results.json` and `results.md`, plus `logs/`, `scenarios.tsv`,
 `plan.json`, and `shard.json`. A complete run combines the shard reports into
 one version-specific report. Use the JSON for structured outcomes and the
-Markdown report for review.
+Markdown report for review. Its title identifies the RTI profile; shared
+adaptations list all affected peers once. Technical terms use code spans, and
+observed error bodies are quoted verbatim.
 
 Each result records the case, fixture, writer and reader peers, runtime
 versions, and outcome. The Markdown report summarizes pairings and includes
-observed problems and any registered expected-failure explanation. Expected
-failures remain visible outcomes; an exclusion does not skip an exchange or
-convert a failure into a pass. Not-run and not-implemented cases are distinct
-from observed exchange failures.
+observed problems. Failed exchanges remain visible in both reports. Not-run,
+not-implemented, and not-applicable cases remain distinct from observed
+exchange failures.
 
 The report merger checks that shards share the same plan and RTI version and
 that their exchanges are complete, unique, and assigned to the correct shard.
@@ -143,32 +144,59 @@ workflow result even when partial reports are available.
 
 ## Fixtures and peer setup
 
-`FixtureCatalog.cs` and the native fixture helpers define expected values and
-variations for each case. Keep fixtures aligned with their corpus IDL, including
-optional presence, collection lengths, selected union branches, and member
-paths. Readers verify complete values rather than only checking endpoint
-discovery.
+### Case-specific fixture construction
 
-The managed peers construct `09-defaults-ranges` through its generated typed
-constructor, set only `value` and `ranged`, and leave `color` untouched. The
-reader independently requires the IDL-declared `BLUE` value (`2`), so a wrong
-constructor default still fails. RTI 7.3.1 DynamicData otherwise substitutes
-`0` because that profile cannot attach the newer member-default annotations.
+Use case-specific typed sample construction and independent value checks for
+new or revised wire cases. Share participant/writer/reader lifetime, matching,
+timeouts, and report capture. Keep member assignments, optional presence, collection
+contents, and union selection in the case's fixture code. Avoid reflection or
+string paths where generated member access can make a wrong mapping fail compilation.
+Exercise each builder and its independent verifier before starting DDS participants.
+A fixture should fail with the case and member identified, rather than becoming
+a reader-readiness timeout or an apparent vendor compatibility failure.
 
-The managed peers also construct `01-boundaries` and `01-full-widths` through
-typed public members. This preserves negative int8 fixture values without
-passing them through RTI 7.3.1 DynamicData, which reports int8 as `Uint8` and
-rejects negative `sbyte` assignments. Independent reader checks cover every
-signed and unsigned scalar member; generated serializers remain unchanged.
-Both profiles use the same typed fixture path. JSON endpoint adaptations and
-the Markdown Adaptations column identify these choices on managed endpoints;
-the C++ fixture path is unchanged. The negative int8 union discriminator bug
-CORE-14660 remains a separate, fixture-specific expected failure on 7.3.1.
+The existing harness still has a generic DynamicData fixture path. It is a test
+convenience, not an independent oracle for generated defaults or a prerequisite
+for using generated types. A fixture-building failure must be investigated as
+a harness/API-path problem before it is attributed to DDS interoperability.
 
-RTI C# sources are generated in scratch with the selected `rtiddsgen`. RTI C++
-peers use `DynamicData` by default; typed generated peers are used when a needed
-DynamicData string specialization is unavailable. Some cases configure a
-peer-specific setup in `docs/corpus/manifest.json`:
+Managed case helpers are in `Fixtures/ManagedFixtures.*.cs`; C++ case-specific
+construction is in `Native/typed-fixture-peer.hpp.in`. Typed sample construction
+and topic wrappers are normal test setup and do not produce adaptation markers.
+The [workaround guide](WORKAROUNDS.md) covers changes beyond that baseline.
+
+### DynamicData fixture API limits
+
+These observations concern the fixture-building API, not the tested typed wire path:
+
+- RTI `7.3.1` DynamicData exposes IDL `int8` as `Uint8`; negative `sbyte` assignment
+  fails. Scalar fixtures assign generated members directly and readers check all values.
+- RTI `7.3.1` DynamicData does not carry the member-default annotation used by C042.
+  The fixture uses the generated constructor, assigns `value` and `ranged`, and leaves
+  `color` untouched. The reader independently requires `BLUE` (`2`); setting it explicitly
+  would hide a constructor-default defect.
+- The tested C++ libraries do not link `DynamicData::value<std::wstring>` on either LTS.
+  String and collection cases construct generated typed samples; this is ordinary C++
+  usage and leaves their serializer and IDL unchanged.
+
+The negative `int8` union discriminator issue [CORE-14660](#rti-731-negative-int8-union-discriminator)
+affects the actual wire/serializer path; the report shows its observed failures.
+
+### Recursive fixture metadata
+
+RTI explicitly rejects public `TypeSupport.DynamicType` access for recursive types
+with `NotSupportedException`; see the [documented C# limitation](https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/manuals/connext_dds_professional/release_notes/known_issues/known_issues_with_dynamic_data.html).
+Constructing a finite typed tree avoids that unsupported API and is normal fixture
+setup. Absent, present, and nested fixtures still require independent checks of every node.
+Generated plugin initialization, TypeCode traversal, discovery limits, and writer memory
+are separate adjustments documented in the workaround guide.
+
+### Reference generation settings
+
+RTI C# sources are generated in scratch with the selected `rtiddsgen`. The native
+runner retains its generic DynamicData path for existing cases and typed paths
+for explicitly selected cases. Some cases configure reference generation in
+`docs/corpus/manifest.json`:
 
 - `rtiCppCodegenOptions` passes options only to that case's C++ generator. Any
   documented qualification, such as RTI's experimental recursive-structure
@@ -177,10 +205,8 @@ peer-specific setup in `docs/corpus/manifest.json`:
   generation. It does not change the corpus IDL or Wireloom and RTI C# inputs.
 
 The exclusion registries `wire-case-exclusions-7.3.1.json` and
-`wire-case-exclusions-7.7.0.json` keep expected outcomes separate by RTI
-version. Add or change an expected-failure entry only when supported by the
-matching version's evidence, and keep its case, fixture, pairing, and reason
-scope as narrow as possible.
+`wire-case-exclusions-7.7.0.json` record cases that are not applicable to each
+RTI profile. They do not classify exchange failures.
 
 ### Numeric character-union expected values
 
@@ -194,57 +220,14 @@ Both managed and C++ peers require the same discriminator and selected payload:
 
 The C++ default fixture explicitly selects 65 after assigning its fallback value;
 its generated constructor otherwise retains 0. Readers check these fixed values
-independently of fixture construction and generated equality. The C++ report
-adaptation describes the expected values.
+independently of fixture construction and generated equality. Selecting the fixture's
+discriminator is ordinary sample construction.
 
 ### Reproducible RTI character-binding workarounds
 
-For these two numeric character cases, the runner applies guarded corrections
-to freshly generated RTI reference sources on both LTS versions:
-
-- RTI C#: add the missing numeric-to-`char` casts so the bindings compile,
-  and deserialize fallback branches through `Setfallback` to preserve the
-  incoming discriminator instead of resetting it to the constructor default.
-  The reference uses typed public-member fixture construction.
-- Label 255 only, RTI C# and C++: store the internal union label as signed-byte
-  `-1`. Public values remain 255, the wire byte remains `FF`, and the payload
-  remains 13702. This corrects the unadapted C++ serializer's zero payload and
-  cross-peer discovery mismatch.
-- RTI C++: compile these generated bindings with `-funsigned-char` on GCC,
-  preserving the generated branch guards for the full IDL char range.
-
-These are post-generation binding corrections that an RTI application can apply
-in its production build after each `rtiddsgen` invocation. They retain RTI's
-generated data classes and actual serializers; no fixture value, wire schema,
-runtime binary, or reader check is replaced. The utility validates the expected
-generated source shape before writing and supports repeated application.
-Unexpected generator output stops the build for review.
-
-Build `scripts/matrix-tools.cs` as described below, then apply the same commands
-to a generated-source directory:
-
-```sh
-dotnet matrix-tools.dll adapt-rti-characters csharp 07-union-char-numeric <generated-csharp-dir>
-dotnet matrix-tools.dll adapt-rti-characters csharp 07-union-char-numeric-255 <generated-csharp-dir>
-dotnet matrix-tools.dll adapt-rti-characters cpp 07-union-char-numeric-255 <generated-cpp-dir>
-```
-
-For C++, the runner's generated source is named `idl.cxx`; use that basename
-when reproducing its command. Compile the generated C++ sources and application
-translation units that include these bindings consistently with
-`-funsigned-char`. The C# commands use the case ID as the generated basename.
-
-These commands reproduce the two retained IDL examples. For other type or member
-names, scope the equivalent post-generation edits to the affected bindings and
-repeat the discriminator/payload contract checks.
-
-The baseline defects are reproduced in
-[wire run 39161010741](https://github.com/eNeRGy164/wireloom/actions/runs/39161010741)
-at `10dd169b`. No published RTI issue ID has been established for these
-character defects; the negative-int8 CORE-14660 issue is separate. Retained
-oracle captures stay unmodified. JSON writer/reader adaptations and Markdown
-Adaptations disclose each correction, so an adapted pass does not claim that
-the original RTI-generated bindings work unchanged.
+See [numeric character unions](WORKAROUNDS.md#numeric-character-unions) for the
+failing generated code, guarded post-generation commands, compiler settings,
+and exact discriminator/payload checks.
 
 ### Recursive-array writer memory
 
@@ -263,20 +246,17 @@ adaptations. This harness configuration does not modify generated bindings.
 ### RTI 7.3.1 negative int8 union discriminator
 
 `07-union-int8` remains valid positive IDL. Its `union-minimum` fixture uses
-`-128` and has eight registered expected failures on RTI 7.3.1; the RTI C++
-self-exchange passes. RTI stores the negative discriminator as an unsigned
+`-128` and has eight failing pairings on RTI 7.3.1. RTI stores the negative discriminator as an unsigned
 value, causing managed DynamicData branch lookup failures and interpreted C#
 serializer payload loss. RTI documents this as
 [CORE-14660, fixed in 7.6.0](https://community.rti.com/static/documentation/connext-dds/7.7.0.1/doc/manuals/connext_dds_professional/release_notes/whats_fixed/760/fixes_dynamic_data.html).
-The classification is supported by
+The observed failures are documented in
 [wire run 39131568513](https://github.com/eNeRGy164/wireloom/actions/runs/39131568513)
 at revision `3e9450f2` and focused serializer probes against both the unchanged
 RTI oracle and Wireloom output.
 
-These entries apply only to `union-minimum` and the observed failing pairings.
-The maximum and default fixtures remain positive controls on 7.3.1, and all
-three fixtures pass on 7.7.0. Expected failures remain executed and reported as
-failures; this runtime defect does not make the feature not applicable.
+The observed failures apply only to `union-minimum` and the affected pairings.
+This runtime defect does not make the feature not applicable.
 
 ## Maintainer checks
 

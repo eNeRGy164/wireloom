@@ -763,8 +763,8 @@ for case_id in "${case_ids[@]}"; do
     fi
     # RTI C++ build: normally both peers use the same corpus IDL. These two adaptations keep
     # RTI C++ generation possible while preserving the intended wire shape:
-    # rtiddsgen cannot parse wchar union labels, and it rejects the C#-only
-    # FlatData mapping annotation.
+    # rtiddsgen rejects wchar discriminators; the FlatData input has incompatible
+    # default extensibility, so its reference uses plain C++ mapping.
     if [[ "$case_id" == "07-union-wchar-label" ]]; then
         cp "$idl_path" "$native_dir/idl.idl"
     elif [[ "$case_id" == "10-flat-data-binding" ]]; then
@@ -850,7 +850,10 @@ for case_id in "${case_ids[@]}"; do
     case "$case_id" in
         04-unbounded-string-aliases) cmake_adaptation_args+=( -DWIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES=ON ) ;;
         07-union-char-numeric|07-union-char-numeric-255)
-            cmake_adaptation_args+=( -DWIRELOOM_TYPED_NUMERIC_CHAR_UNION=ON -DWIRELOOM_UNSIGNED_CHAR_NUMERIC_UNION=ON )
+            cmake_adaptation_args+=( -DWIRELOOM_TYPED_NUMERIC_CHAR_UNION=ON )
+            if [[ "$case_id" == "07-union-char-numeric-255" ]]; then
+                cmake_adaptation_args+=( -DWIRELOOM_UNSIGNED_CHAR_NUMERIC_UNION=ON )
+            fi
             ;;
         04-string-alias-chains) cmake_adaptation_args+=( -DWIRELOOM_TYPED_STRING_ALIAS_CHAINS=ON ) ;;
         05-unbounded-sequence-aliases) cmake_adaptation_args+=( -DWIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES=ON ) ;;

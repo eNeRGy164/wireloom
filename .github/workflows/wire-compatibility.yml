@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   wire-shards:
-    name: RTI Connext ${{ matrix.rti_version }} wire shard ${{ matrix.shard }}
+    name: ${{ matrix.rti_version }} wire test shard ${{ matrix.shard }}
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     strategy:
@@ -156,7 +156,7 @@ jobs:
         run: rm -f "$RUNNER_TEMP/rti_license.dat"
 
   report:
-    name: Combine RTI ${{ matrix.rti_version }} wire matrix
+    name: ${{ matrix.rti_version }} wire test results
     needs: wire-shards
     if: always()
     runs-on: ubuntu-24.04

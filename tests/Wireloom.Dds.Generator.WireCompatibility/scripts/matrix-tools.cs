@@ -587,7 +587,6 @@ void RenderReport(string[] commandArgs)
     var exclusions = ReadJson(commandArgs[7]);
     var manifest = ReadJson(commandArgs[8]);
     var notImplemented = exclusions["notImplementedCases"]!.AsArray();
-    var expectedFailures = exclusions["expectedFailures"]?.AsArray() ?? [];
     var notApplicable = exclusions["notApplicableCases"]?.AsArray() ?? [];
     var unavailableIds = notApplicable.Select(item => (string)item!["id"]!).ToHashSet(StringComparer.Ordinal);
     var wireMatrixConfiguration = manifest["positiveCases"]!.AsArray()
@@ -655,12 +654,6 @@ void RenderReport(string[] commandArgs)
             scenario["adaptations"] = adaptations;
         }
 
-        var expected = FindExpectedFailure(expectedFailures, id, writer, reader, fixture);
-        if (expected is not null)
-        {
-            scenario["expectedFailure"] = expected;
-        }
-
         if (wireType.Length + rtiType.Length + cppType.Length > 0)
         {
             scenario["types"] = new Dictionary<string, string>
@@ -685,17 +678,15 @@ void RenderReport(string[] commandArgs)
         ["expectedScenarioCount"] = expectedCount,
         ["scenarioCount"] = scenarios.Count,
         ["fixtureCount"] = scenarios.Select(scenario => (scenario["case"], scenario["fixture"])).Distinct().Count(),
-        ["expectedFailureCount"] = scenarios.Count(scenario => (string)scenario["status"]! == "FAIL" && scenario.ContainsKey("expectedFailure")),
         ["notImplementedCount"] = notImplemented.Count,
         ["adaptedScenarioCount"] = scenarios.Count(scenario => scenario.ContainsKey("adaptations")),
         ["notApplicableCount"] = notApplicable.Count,
         ["notApplicableCases"] = notApplicable,
         ["notImplementedCases"] = notImplemented,
-        ["expectedFailures"] = expectedFailures,
         ["scenarios"] = scenarios,
     };
     File.WriteAllText(outputPath, JsonSerializer.Serialize(report, jsonOptions) + "\n");
-    WriteMarkdown(version, scenarios, notImplemented, expectedFailures, notApplicable, markdownPath);
+    WriteMarkdown(version, scenarios, notImplemented, notApplicable, markdownPath);
 }
 
 // Report modes describe the actual endpoint setup, independently of PASS/FAIL.
@@ -714,104 +705,49 @@ string EndpointMode(string peer, string? adaptation)
     return "rti-default";
 }
 
-string? FindExpectedFailure(JsonArray expectedFailures, string id, string writer, string reader, string fixture)
-{
-    var item = expectedFailures.FirstOrDefault(failure =>
-        (string)failure!["id"]! == id
-        && (string)failure["writer"]! == writer
-        && (string)failure["reader"]! == reader
-        && (failure["fixture"] is null || (string)failure["fixture"]! == fixture));
-    if (item is null)
-    {
-        return null;
-    }
-
-    return (string)item["reason"]!;
-}
 string? Adaptation(string id, string fixture, string peer, string peerVersion)
 {
-    if (peer != "RTI C++" && fixture == "non-default")
-    {
-        if (id == "09-defaults-ranges")
-        {
-            var adaptation = "Typed constructor fixture: set value/ranged and leave color untouched; independently require the IDL @default(BLUE) value 2.";
-            if (peerVersion == "7.3.1")
-            {
-                adaptation += " RTI 7.3.1 DynamicData otherwise substitutes 0 for that constructor default.";
-            }
-
-            return adaptation;
-        }
-
-        if (id is "01-boundaries" or "01-full-widths")
-        {
-            var adaptation = "Typed signed-boundary fixture: assign negative int8 values through public members and independently verify every scalar.";
-            if (peerVersion == "7.3.1")
-            {
-                adaptation += " This bypasses RTI 7.3.1 DynamicData, which reports int8 as Uint8 and rejects negative sbyte assignments.";
-            }
-
-            return adaptation;
-        }
-    }
-
     if (id == "09-optional-recursive-array")
     {
-        var adaptation = "Typed finite recursive array fixture: bypass public DynamicType and disable TypeObject/TypeCode propagation for the recursive peer profile.";
-        adaptation += " Writer QoS sets dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size=4096 bytes; larger samples can allocate separately.";
+        var adaptation = "Disable TypeObject/TypeCode propagation.";
+        adaptation += " Writer dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size=4096 bytes; larger samples allocate separately.";
         if (peerVersion == "7.3.1")
         {
-            adaptation += " This avoids RTI 7.3.1 preallocating about 64 GiB for the recursive maximum size.";
+            adaptation += " Avoids RTI 7.3.1 preallocating about 64 GiB.";
         }
         if (peer == "RTI C#")
         {
-            adaptation += " Bootstrap the RTI reference plugin before Support.Instance to avoid recursive static-initialization null dereference.";
+            adaptation += "\nBootstrap plugin before Support.Instance to avoid recursive initialization NullReferenceException.";
         }
         else if (peer == "RTI C++")
         {
-            adaptation += " Scratch generated-code workaround: forward the visited-node chain when initializing the recursive array TypeCode.";
+            adaptation += "\nForward the visited-node chain during TypeCode initialization.";
         }
 
         return adaptation;
     }
 
-    if (id == "09-optional-aggregate-member")
-    {
-        return "Typed optional aggregate fixture: construct Holder optionals and select its union branch through generated members; nested DynamicData paths cannot loan unset optional parents.";
-    }
-
-    if (id is "02-multiple" or "03-enum-values-prefix" or "03-enum-values-explicit")
-    {
-        return "Harness wrapper IDL composes the declarations into a topic type.";
-    }
-
     if (id == "06-alias-composition" && peer == "RTI C#")
     {
-        return "Custom generated-code workaround: qualifies the member conversion receiver to correct a shadowed field access.";
+        return "Qualify the conversion receiver to fix shadowed member access.";
     }
 
     if (id is "07-union-char-numeric" or "07-union-char-numeric-255")
     {
         if (peer == "RTI C#")
         {
-            var adaptation = "Post-generation RTI C# binding correction: add missing char casts, preserve the received fallback discriminator with Setfallback, and construct typed fixtures through generated public members. Exact discriminator and payload checks remain enabled.";
+            var adaptation = "Post-generation RTI C# correction: add char casts; preserve fallback discriminator with Setfallback.";
             if (id == "07-union-char-numeric-255")
             {
-                adaptation += " Normalize only the internal char-255 UnionMember label to signed-byte -1; the public and wire character remains 255 (FF).";
+                adaptation += " UnionMember label: 255 → -1; public 255 and wire 0xFF unchanged.";
             }
 
             return adaptation;
         }
 
-        if (peer == "RTI C++")
+        if (peer == "RTI C++" && id == "07-union-char-numeric-255")
         {
-            var adaptation = "Compile the typed RTI C++ peer with unsigned char so generated branch guards can represent high IDL char labels on Linux. Numeric character fixtures independently require discriminator/payload 127/13701 or 255/13702 for explicit branches, and 65/13703 for the default branch; the C++ default fixture explicitly selects 65 to match the managed fixture.";
-            if (id == "07-union-char-numeric-255")
-            {
-                adaptation += " Post-generation RTI C++ binding correction: normalize the internal TypeCode label from 255 to signed-byte -1, preserving public discriminator 255, wire byte FF, and payload 13702. This repairs the reference binding's zero-payload serialization and type matching.";
-            }
-
-            return adaptation;
+            return "Compile with -funsigned-char for label 255. TypeCode label: 255 → -1; public 255, wire 0xFF, and payload 13702 unchanged. Fixes zero-payload serialization and type matching.";
         }
     }
 
@@ -822,17 +758,22 @@ string? Adaptation(string id, string fixture, string peer, string peerVersion)
 
     if (id == "09-optional-string-sequences" && fixture is ("optional-wide-only" or "optional-multiple"))
     {
-        return "Custom RTI C++ path: DynamicData C API per-element setters bypass the typed optional wide-string sequence serializer.";
+        return "DynamicData C API element setters bypass the typed optional wide-string sequence serializer.";
+    }
+
+    if (id == "06-aggregates" && peerVersion == "7.3.1")
+    {
+        return "Qualify the generated Recursive TypeCode reference with its IDL module.";
     }
 
     if (id == "07-union-wchar-label")
     {
-        return "Custom RTI DynamicType: manually models the wchar discriminator because rtiddsgen cannot parse wchar union labels.";
+        return "Manual DynamicType reference; rtiddsgen rejects the wchar discriminator.";
     }
 
     if (id == "10-flat-data-binding")
     {
-        return "Custom IDL adaptation: removes @language_binding(FLAT_DATA) before RTI C++ generation.";
+        return "Plain C++ reference: remove @language_binding(FLAT_DATA); canonical extensibility is incompatible with FlatData. FlatData layout is unqualified.";
     }
     return null;
 }
@@ -924,7 +865,74 @@ bool UsesWireloom(PeerPair pairing)
     return pairing.Writer == "Wireloom C#" || pairing.Reader == "Wireloom C#";
 }
 
-void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray unsupported, JsonArray failureRegistry, JsonArray notApplicable, string destination)
+// Peer IDs remain stable in JSON and exclusion registries; labels can be shorter.
+string DisplayPeer(string peer)
+{
+    if (peer == "Wireloom C#")
+    {
+        return "Wireloom";
+    }
+
+    return peer;
+}
+
+string WorkaroundLink(string? caseId = null)
+{
+    var anchor = caseId switch
+    {
+        "09-optional-string-sequences" => "optional-wide-string-sequences",
+        "06-alias-composition" => "shadowed-c-member",
+        "07-union-char-numeric" or "07-union-char-numeric-255" => "numeric-character-unions",
+        "09-optional-recursive-array" => "recursive-metadata-propagation",
+        "06-aggregates" => "recursive-type-generation",
+        "07-union-wchar-label" => "wide-character-union-reference",
+        "10-flat-data-binding" => "flatdata-reference-input",
+        _ => null,
+    };
+    var server = Environment.GetEnvironmentVariable("GITHUB_SERVER_URL") ?? "https://github.com";
+    var repository = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY") ?? "eNeRGy164/wireloom";
+    var revision = Environment.GetEnvironmentVariable("GITHUB_SHA") ?? "main";
+    var url = $"{server}/{repository}/blob/{revision}/tests/Wireloom.Dds.Generator.WireCompatibility/WORKAROUNDS.md";
+    if (anchor is not null)
+    {
+        url += $"#{anchor}";
+    }
+
+    return $"[Workaround guide]({url})";
+}
+
+string FormatExplanation(string text)
+{
+    text = text.Replace("Wireloom C#", "Wireloom", StringComparison.Ordinal);
+    text = text.Replace("value/ranged", "`value`/`ranged`", StringComparison.Ordinal);
+    // Preserve existing Markdown and URLs. Format identifiers and values outside
+    // those spans; version numbers and issue IDs are not numeric code values.
+    const string tokens = """
+        `[^`]*`
+        | https?://[^\s)]+
+        | (?<![\w])(?:
+            dds\.data_writer\.history\.memory_manager\.fast_pool\.pool_buffer_max_size=\d+
+            | Support\.Instance | FromDynamicData\(null\) | @\w+(?:\([^)]*\))? | -funsigned-char
+            | \w*Exception | CS\d{4} | DDSG\d{4}
+            | DynamicData | DynamicType | TypeObject | TypeCode | UnionMember
+            | Setfallback | FromDynamicData | Recursive | Holder | color | Uint8 | sbyte | int8 | char | wchar
+          )(?![\w])
+        | (?<![\w.#-])(?:0x[0-9A-Fa-f]+|-?\d+)(?!\w|\.\d)
+        """;
+    var formatted = Regex.Replace(text, tokens, match =>
+    {
+        if (match.Value.StartsWith('`') || match.Value.StartsWith("http", StringComparison.Ordinal))
+        {
+            return match.Value;
+        }
+
+        return $"`{match.Value}`";
+    }, RegexOptions.IgnorePatternWhitespace);
+
+    return formatted.Replace("|", "\\|", StringComparison.Ordinal);
+}
+
+void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray unsupported, JsonArray notApplicable, string destination)
 {
     PeerPair[] pairings =
     {
@@ -932,7 +940,7 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
         ("RTI C#", "Wireloom C#"), ("RTI C#", "RTI C#"), ("RTI C#", "RTI C++"),
         ("RTI C++", "Wireloom C#"), ("RTI C++", "RTI C#"), ("RTI C++", "RTI C++"),
     };
-    string HeaderPeer(string peer) => peer.Replace("Wireloom", "🧵", StringComparison.Ordinal);
+
     string FormatScenarioCell(string id, string fixture, PeerPair pairing, ReportFields? item)
     {
         if (item is null)
@@ -954,12 +962,6 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
 
         if (state == "FAIL")
         {
-            var expectedFailure = FindExpectedFailure(failureRegistry, id, pairing.Writer, pairing.Reader, fixture);
-            if (expectedFailure is not null)
-            {
-                return $"⚠️{adaptationMarker}";
-            }
-
             return $"⛔{adaptationMarker}";
         }
 
@@ -989,34 +991,33 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
         .Select(item => (string)item["case"]!).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
     var lines = new List<string>
     {
-        "# Wire compatibility results", "",
-        $"RTI Connext **{rtiVersion}** · **{scenarios.Count}** DDS exchanges · **{passed}** passed · **{failed.Length}** failed (**{failed.Count(scenario => scenario.ContainsKey("expectedFailure"))}** expected) · **{notRunCount}** not run · **{unsupported.Count}** case(s) not implemented · **{notApplicable.Count}** case(s) not applicable", "",
-        "Each cell is an independent producer/consumer exchange. A `\"` in the IDL scenario column repeats the case from the row above. Failure details are taken from sanitized endpoint logs.", "",
+        $"# {rtiVersion} Wire compatibility results", "",
+        $"**{scenarios.Count}** DDS exchanges · **{passed}** passed · **{failed.Length}** failed · **{notRunCount}** not run · **{unsupported.Count}** case(s) not implemented · **{notApplicable.Count}** case(s) not applicable", "",
+        "Each cell is a writer → reader exchange. A `\"` repeats the IDL from the previous row. Observed errors are quoted from sanitized logs.", "",
         "| Legend | Meaning |",
         "| :-- | :-- |",
         "| ✅ | Exchange passed |",
-        "| 🟧<sup>†</sup> | Exchange passed using a test-harness workaround or custom IDL/type model |",
-        "| ⚠️ | Expected failure |",
-        "| ⛔ | Unexpected failure |",
+        "| 🟧<sup>†</sup> | Passed with an adaptation |",
+        "| ⛔ | Failed |",
         "| ❔ | Not run |",
         "| ⚫ | Not implemented |",
-        "| <sup>†</sup> | At least one endpoint used an adaptation; details appear in Adaptations. |",
         "",
-        "The problem column separates observed symptoms from registered expected-failure explanations. Symbols remain distinct without relying on color alone.", "",
+        "Failure details show the observed symptom.", "",
+        $"{WorkaroundLink()} explains the default paths and applied code changes.", "",
     };
     if (notApplicable.Count > 0)
     {
         lines.AddRange([
             "## Not applicable",
             "",
-            "Unavailable RTI features are excluded from exchange counts and compatibility failures.",
+            "Unavailable features are N/A and excluded from exchange counts.",
             "",
             "| Case | Reason |",
             "| :-- | :-- |",
         ]);
         foreach (var item in notApplicable)
         {
-            var reason = ((string)item!["reason"]!).Replace("|", "\\|");
+            var reason = FormatExplanation((string)item!["reason"]!);
             lines.Add($"| `{item["id"]}` | {reason} |");
         }
 
@@ -1036,12 +1037,12 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
             var qualification = (string?)configuration["qualification"] ?? "";
             var generation = options.Any() ? $"generation adds {string.Join(", ", options)}" : "uses the default generation flags";
             var adaptation = idlAdaptations.Any() ? $" IDL adaptations: {string.Join(", ", idlAdaptations)}." : "";
-            lines.Add($"- **{id}**: RTI C++ {generation}.{adaptation} {qualification}".TrimEnd());
+            lines.Add($"- **{id}**: RTI C++ {generation}.{adaptation} {qualification} {WorkaroundLink(id)}".TrimEnd());
         }
         lines.Add("");
     }
     lines.AddRange([
-        "| IDL scenario | Variation | " + string.Join(" | ", pairings.Select(p => $"{HeaderPeer(p.Writer)} → {HeaderPeer(p.Reader)}")) + " | Adaptations | Problem / defect |",
+        "| IDL scenario | Variation | " + string.Join(" | ", pairings.Select(p => $"{DisplayPeer(p.Writer)} → {DisplayPeer(p.Reader)}")) + " | Adaptations | Problem / defect |",
         "| :-- | :-- | " + string.Join(" | ", pairings.Select(_ => ":--:")) + " | :-- | :-- |",
     ]);
     var unsupportedById = unsupported.ToDictionary(item => (string)item!["id"]!, StringComparer.Ordinal);
@@ -1080,20 +1081,43 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
             }
         }
 
-        var adaptationNotes = new List<string>();
+        // Render a shared adjustment once, with all affected peers beside it.
+        var adaptationPeers = new Dictionary<string, List<string>>(StringComparer.Ordinal);
         foreach (var scenario in row.Values)
         {
-            if (scenario.TryGetValue("adaptations", out var value))
+            if (!scenario.TryGetValue("adaptations", out var value))
             {
-                foreach (var (peer, description) in (Dictionary<string, string>)value!)
+                continue;
+            }
+
+            foreach (var (peer, description) in (Dictionary<string, string>)value!)
+            {
+                // A newline separates a peer-specific correction from shared setup.
+                foreach (var adjustment in description.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {
-                    adaptationNotes.Add($"<sup>†</sup> **{peer}:** {description}");
+                    if (!adaptationPeers.TryGetValue(adjustment, out var peers))
+                    {
+                        peers = new List<string>();
+                        adaptationPeers.Add(adjustment, peers);
+                    }
+
+                    var label = DisplayPeer(peer);
+                    if (!peers.Contains(label))
+                    {
+                        peers.Add(label);
+                    }
                 }
             }
         }
 
-        var adaptationText = string.Join("<br><br>", adaptationNotes.Distinct()).Replace("|", "\\|");
-        var problems = new List<(string Pairing, string Detail, string? Expected)>();
+        var adaptationNotes = adaptationPeers.Select(entry =>
+            $"<sup>†</sup> **{string.Join(", ", entry.Value)}:** {FormatExplanation(entry.Key)}");
+        var adaptationText = string.Join("<br><br>", adaptationNotes);
+        if (adaptationText.Length > 0)
+        {
+            adaptationText += $"<br><br>{WorkaroundLink(id)}";
+        }
+        var problems = new List<(string Pairing, string Detail)>();
         foreach (var pair in pairings)
         {
             if (unsupportedCase is not null && UsesWireloom(pair))
@@ -1105,18 +1129,13 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
             if (item is null || (string)item["status"]! is "FAIL" or "NOT_RUN")
             {
                 var detail = "scenario did not run";
-                string? expected = null;
                 if (item is not null)
                 {
                     detail = (string?)item.GetValueOrDefault("observedProblem") ?? detail;
-                    if ((string)item["status"]! == "FAIL")
-                    {
-                        expected = FindExpectedFailure(failureRegistry, id, pair.Writer, pair.Reader, fixture);
-                    }
                 }
 
-                var name = $"{pair.Writer} → {pair.Reader}";
-                problems.Add((name, detail, expected));
+                var name = $"{DisplayPeer(pair.Writer)} → {DisplayPeer(pair.Reader)}";
+                problems.Add((name, detail));
             }
         }
         var problemParts = new List<string>();
@@ -1125,19 +1144,11 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
             problemParts.Add($"Not implemented by Wireloom: `{unsupportedCase["diagnostic"]}`. {unsupportedCase["reason"]} [#{unsupportedCase["issue"]!.ToString()!.TrimEnd('/').Split('/').Last()}]({unsupportedCase["issue"]})".Replace("|", "\\|"));
         }
 
-        foreach (var problem in problems.GroupBy(item => (item.Detail, item.Expected)))
+        foreach (var problem in problems.GroupBy(item => item.Detail))
         {
             var names = string.Join(", ", problem.Select(item => item.Pairing));
-            var detail = problem.Key.Detail.Replace("|", "\\|");
-            if (problem.Key.Expected is not null)
-            {
-                var expected = problem.Key.Expected.Replace("Expected: ", "").Replace("|", "\\|");
-                problemParts.Add($"**{names} observed:** {detail}<br>**Expected:** {expected}");
-            }
-            else
-            {
-                problemParts.Add($"**{names}:** {detail}");
-            }
+            var detail = problem.Key.Replace("|", "\\|");
+            problemParts.Add($"**{names}:** “{detail}”");
         }
         var problemText = problemParts.Count == 0 ? "—" : string.Join("<br><br>", problemParts);
         var caseCell = id == previous ? "\"" : $"`{id}.idl`";

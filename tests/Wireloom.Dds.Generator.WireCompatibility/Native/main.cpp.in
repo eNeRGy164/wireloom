@@ -1,8 +1,8 @@
 // This template is the native reference peer for Wireloom's C# generator.
 // run-matrix.sh substitutes the RTI-generated IDL basename and fully qualified
 // C++ type, then builds the result with matching Connext C++ libraries.
-// RTI DynamicData normally keeps one peer reusable across IDL shapes; typed
-// specializations cover cases where DynamicData lacks needed string setters.
+// Existing DynamicData fixtures share a transport peer; case-specific typed
+// fixtures use generated members directly. Both are harness construction paths.
 #include <chrono>
 #include <cstdint>
 #include <iostream>
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
         DynamicData expected(dynamic_type);
         if (case_id == "09-optional-string-sequences"
             && (fixture == "optional-wide-only" || fixture == "optional-multiple")) {
-            // RTI 7.7.0's typed C++ serializer crashes on a present optional
+            // Both LTS typed C++ serializers crash on a present optional
             // sequence<std::wstring>. Populate its DynamicData representation
             // through the C API, whose string setters are available per element.
             // DDS_Wchar is 16-bit even when Linux wchar_t is 32-bit.
