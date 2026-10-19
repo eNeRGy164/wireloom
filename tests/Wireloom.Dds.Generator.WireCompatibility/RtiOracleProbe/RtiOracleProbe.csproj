@@ -19,6 +19,12 @@
     <RestorePackagesWithLockFile Condition="'$(WireCompatibilityRtiVersion)' != '7.7.0'">true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '05-unbounded-sequence-aliases'">
+    <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_UNBOUNDED_SEQUENCE_ALIASES</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '07-union-string-sequence-aliases'">
+    <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_UNION_STRING_SEQUENCE_ALIASES</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '07-union-char-numeric'">
     <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_NUMERIC_CHAR_UNION</DefineConstants>
   </PropertyGroup>

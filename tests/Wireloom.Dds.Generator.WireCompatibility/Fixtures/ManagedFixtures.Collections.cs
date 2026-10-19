@@ -20,8 +20,14 @@ internal static partial class ManagedFixtures
             throw new FixtureException($"Unknown unbounded sequence fixture '{fixture}'.");
         }
 
-        sample.numbers.Value.Value.Add(101);
-        sample.numbers.Value.Value.Add(-102);
+#if RTI_REFERENCE_PEER
+        var numbers = sample.numbers.Value;
+#else
+        var numbers = sample.numbers.Value.Value;
+#endif
+
+        numbers.Add(101);
+        numbers.Add(-102);
         sample.states.Value.Add(CorpusUnboundedSequences.State.Idle);
         sample.states.Value.Add(CorpusUnboundedSequences.State.Ready);
         sample.children.Value.Add(new CorpusUnboundedSequences.Child(301));
