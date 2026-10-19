@@ -27,6 +27,7 @@ no-inline-html:
     - details
     - summary
     - br
+    - a
 
 emphasis-style:
   style: underscore
