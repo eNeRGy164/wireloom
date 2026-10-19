@@ -15,6 +15,7 @@ Qodana
 Roslyn
 RTI
 rtiddsgen
+sarif
 Shouldly
 Testcontainers
 Undefines
