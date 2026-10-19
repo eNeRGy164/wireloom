@@ -50,6 +50,36 @@ public sealed class WireSampleVerifierSpecs
         Should.Throw<InvalidDataException>(verifyIncorrect).Message.ShouldContain("Received sample differs");
     }
 
+    /// <summary>Unwraps generated scalar alias classes before comparing their logical values.</summary>
+    [Fact]
+    public void ScalarAliasWrappersMatchUnderlyingWideStringValues()
+    {
+        // Arrange
+        var factory = DynamicTypeFactory.Instance;
+        var firstLevel = factory.CreateAlias("BoundedWideText", factory.CreateWideString(8), isExternal: false);
+        var secondLevel = factory.CreateAlias("BoundedWideTextAlias", firstLevel, isExternal: false);
+        var type = factory.BuildStruct()
+            .WithName("ScalarAliasVerifier")
+            .AddMembers([
+                new StructMember("firstLevel", firstLevel, id: 0),
+                new StructMember("secondLevel", secondLevel, id: 1)])
+            .Create();
+        using var expected = new DynamicData(type);
+        expected.SetAnyValue("firstLevel", "12345678");
+        expected.SetAnyValue("secondLevel", "ABCDEFGH");
+        var actual = new ScalarAliasSample(new ScalarAlias("12345678"), new ScalarAlias("ABCDEFGH"));
+
+        // Act
+        var verifyIncorrect = () => IndependentSampleVerifier.Verify(
+            expected,
+            new ScalarAliasSample(new ScalarAlias("wrong"), new ScalarAlias("ABCDEFGH")),
+            "wstring alias boundary");
+
+        // Assert
+        Should.NotThrow(() => IndependentSampleVerifier.Verify(expected, actual, "wstring alias boundary"));
+        Should.Throw<InvalidDataException>(verifyIncorrect).Message.ShouldContain("Received sample differs");
+    }
+
     /// <summary>Checks independent character payloads against the printable ASCII wire fixture.</summary>
     [Theory]
     [InlineData("union-minimum", '\0')]
@@ -160,4 +190,10 @@ public sealed class WireSampleVerifierSpecs
         /// <summary>Gets the fallback branch value.</summary>
         public int fallback { get; } = value;
     }
+
+    /// <summary>Represents a generated scalar alias class with its public value property.</summary>
+    private sealed record ScalarAlias(string Value);
+
+    /// <summary>Provides members whose dynamic types contain scalar aliases.</summary>
+    private sealed record ScalarAliasSample(ScalarAlias firstLevel, ScalarAlias secondLevel);
 }

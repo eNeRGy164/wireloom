@@ -38,6 +38,19 @@ internal static partial class FixtureCatalog
             return true;
         }
 
+        if (caseId == "10-resolve-name-wstring-aliases")
+        {
+            var empty = fixture == "string-empty";
+            if (!empty && fixture != "string-boundary")
+            {
+                throw new FixtureException($"Unknown wstring alias fixture '{fixture}'.");
+            }
+
+            SetFixtureValue(sample, "firstLevel", empty ? string.Empty : "12345678");
+            SetFixtureValue(sample, "secondLevel", empty ? string.Empty : "ABCDEFGH");
+            return true;
+        }
+
         if (caseId == "05-unbounded-sequence-aliases")
         {
             var empty = fixture == "sequence-empty";

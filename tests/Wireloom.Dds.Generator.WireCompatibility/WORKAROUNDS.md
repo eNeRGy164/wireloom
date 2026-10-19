@@ -21,6 +21,7 @@ Retained RTI oracle sources are not edited.
 - [12. Recursive type-name qualification](#recursive-aggregate-qualification)
 - [13. Wide-character union reference](#wide-character-union-reference)
 - [14. FlatData reference input](#flatdata-reference-input)
+- [15. Wstring alias peer corrections](#wstring-alias-typecode-tags)
 
 <a id="optional-wide-string-sequences"></a>
 
@@ -450,3 +451,51 @@ This preserves the canonical extensibility and XCDR2 sample shape while selectin
 ordinary C++ mapping. It is a reference-model deviation, not a FlatData fix.
 The canonical IDL and C# inputs are unchanged; FlatData C++ layout is unqualified.
 See [IDL adaptation](scripts/run-matrix.sh).
+
+<a id="wstring-alias-typecode-tags"></a>
+
+## 15. Wstring alias peer corrections
+
+**Scope:** C147 `10-resolve-name-wstring-aliases`<br>
+**Version:** `7.3.1`, `7.7.0`<br>
+**Peer:** RTI C# and RTI C++ references
+
+**Applies when:** Compiling RTI C# plugin code or C++ TypeCode metadata for structure members that use the `@resolve_name(false)` wstring aliases.
+
+RTI C++ generation succeeds, but both releases emit `Sample` TypeCode
+references using the C++ aliases directly:
+
+```cpp
+rti::topic::dynamic_type< BoundedWideText>::get()
+rti::topic::dynamic_type< BoundedWideTextAlias>::get()
+```
+
+Both aliases resolve to `std::wstring`, which has no generated RTI
+`dynamic_type` specialization. The generated header declares a distinct alias
+tag for each IDL typedef. Correct the scratch `idl.cxx` references to use those
+module-qualified tags:
+
+```cpp
+rti::topic::dynamic_type< ::CorpusResolveNameWstringAliases::BoundedWideText_AliasTag_t>::get()
+rti::topic::dynamic_type< ::CorpusResolveNameWstringAliases::BoundedWideTextAlias_AliasTag_t>::get()
+```
+
+The RTI C# generator has a related namespace error in `SampleUnmanaged`:
+
+```csharp
+private global::Implementation.BoundedWideTextUnmanaged firstLevel;
+private global::Implementation.BoundedWideTextAliasUnmanaged secondLevel;
+```
+
+The types are emitted under
+`global::CorpusResolveNameWstringAliases.Implementation`. The wire harness
+checks that each bad reference occurs exactly once, then applies the module
+qualification to its scratch C# source before compiling the reference peer.
+The retained RTI oracle source stays unchanged, so the profile corpus continues
+to record that the unmodified C# output fails compilation with `CS0400` and
+`CS8377`.
+
+With both guarded corrections, the C147 matrix exercises all nine directed
+pairings among Wireloom C#, RTI C#, and RTI C++ for empty and exact-boundary
+values. See [the guarded edits](scripts/run-matrix.sh) and [C147's corpus
+row](../../../docs/corpus/FEATURE-COVERAGE.md).
