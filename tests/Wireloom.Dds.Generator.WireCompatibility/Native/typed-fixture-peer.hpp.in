@@ -17,7 +17,7 @@
 #define WIRELOOM_SET_MEMBER_ON(object, member, value) object.member = value
 #define WIRELOOM_BOUNDED_SEQUENCE ::omg::types::bounded_sequence
 #endif
-#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED)
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED)
 // RTI's generated DynamicData API omits some string template instantiations.
 // Use RTI-generated typed C++ endpoints for these fixtures and compare the
 // complete generated sample value at the reader.
@@ -208,6 +208,16 @@ static int run_typed_fixture_peer(
         WIRELOOM_SET_TYPED_STRING(boundedWide, wide);
         WIRELOOM_SET_TYPED_STRING(boundedWideChain, wide);
         WIRELOOM_SET_TYPED_STRING(boundedWideChain2, wide);
+    }
+#endif
+#ifdef WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES
+    if (case_id == "10-resolve-name-wstring-aliases") {
+        const bool empty = fixture == "string-empty";
+        if (!empty && fixture != "string-boundary") {
+            throw std::runtime_error("Unknown wstring alias fixture: " + fixture);
+        }
+        WIRELOOM_SET_TYPED_STRING(firstLevel, empty ? L"" : L"12345678");
+        WIRELOOM_SET_TYPED_STRING(secondLevel, empty ? L"" : L"ABCDEFGH");
     }
 #endif
 #ifdef WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE

@@ -26,6 +26,12 @@ public static partial class IndependentSampleVerifier
                 return SnapshotManaged(alias.RelatedType, valueProperty.GetValue(value));
             }
 
+            var scalarValueProperty = value.GetType().GetProperty("Value", BindingFlags.Instance | BindingFlags.Public);
+            if (scalarValueProperty is not null)
+            {
+                value = scalarValueProperty.GetValue(value);
+            }
+
             return SnapshotManaged(alias.RelatedType, value);
         }
 

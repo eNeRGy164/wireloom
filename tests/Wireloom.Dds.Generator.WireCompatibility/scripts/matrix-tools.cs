@@ -9,7 +9,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 
-const string usage = "Usage: matrix-tools.cs <list-cases|list-rti-only-cases|case-field|case-info|json-field|discover-cases|discover-rti|includes|includes-recursive|partition-shard|merge-shards|render-report|adapt-rti-characters> ...";
+const string usage = "Usage: matrix-tools.cs <list-cases|list-rti-only-cases|case-field|case-pairings|case-info|json-field|discover-cases|discover-rti|includes|includes-recursive|partition-shard|merge-shards|render-report|adapt-rti-characters> ...";
 var jsonOptions = new JsonSerializerOptions
 {
     WriteIndented = true,
@@ -84,6 +84,21 @@ try
                     break;
                 default:
                     throw new ArgumentException($"Unknown case field: {args[3]}");
+            }
+            break;
+        }
+        case "case-pairings":
+        {
+            RequireArgs(3);
+            _ = FindCase(ReadJson(args[1]), args[2]);
+            var peers = new[] { "Wireloom C#", "RTI C#", "RTI C++" };
+
+            foreach (var writer in peers)
+            {
+                foreach (var reader in peers)
+                {
+                    Console.WriteLine($"{writer}|{reader}");
+                }
             }
             break;
         }
@@ -707,6 +722,16 @@ string EndpointMode(string peer, string? adaptation)
 
 string? Adaptation(string id, string fixture, string peer, string peerVersion)
 {
+    if (id == "10-resolve-name-wstring-aliases" && peer == "RTI C#")
+    {
+        return "Post-generation namespace correction: qualify both unmanaged alias types with the IDL module.";
+    }
+
+    if (id == "10-resolve-name-wstring-aliases" && peer == "RTI C++")
+    {
+        return "Post-generation TypeCode correction: use the generated, module-qualified alias-tag types for both wstring members.";
+    }
+
     if (id == "09-optional-recursive-array")
     {
         var adaptation = "Disable TypeObject/TypeCode propagation.";
@@ -887,6 +912,7 @@ string WorkaroundLink(string? caseId = null)
         "06-aggregates" => "recursive-type-generation",
         "07-union-wchar-label" => "wide-character-union-reference",
         "10-flat-data-binding" => "flatdata-reference-input",
+        "10-resolve-name-wstring-aliases" => "wstring-alias-typecode-tags",
         _ => null,
     };
     var server = Environment.GetEnvironmentVariable("GITHUB_SERVER_URL") ?? "https://github.com";

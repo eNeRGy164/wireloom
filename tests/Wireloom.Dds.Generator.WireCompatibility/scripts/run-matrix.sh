@@ -41,18 +41,6 @@ readonly non_default_fixture_cases=(
     11-preprocessing 11-conditionals 11-macros 11-macro-operators
     11-preprocessor-advanced 11-include-search 11-comments
 )
-readonly peer_pairings=(
-    'Wireloom C#|Wireloom C#'
-    'Wireloom C#|RTI C#'
-    'Wireloom C#|RTI C++'
-    'RTI C#|Wireloom C#'
-    'RTI C#|RTI C#'
-    'RTI C#|RTI C++'
-    'RTI C++|Wireloom C#'
-    'RTI C++|RTI C#'
-    'RTI C++|RTI C++'
-)
-
 expected_scenario_count=0
 completed_scenario_count=0
 passed_scenario_count=0
@@ -173,6 +161,9 @@ fixtures_for_case() {
         07-union-char-numeric-255)
             printf '%s\n' union-255 union-default
             ;;
+        10-resolve-name-wstring-aliases)
+            printf '%s\n' string-empty string-boundary
+            ;;
         07-union-string-sequence-aliases)
             printf '%s\n' union-direct-narrow union-direct-wide union-alias-narrow union-alias-wide union-bounded-narrow union-bounded-wide
             ;;
@@ -234,6 +225,21 @@ matrix_tool() {
     else
         dotnet run --file "$matrix_tools" -- "$@"
     fi | tr -d '\r'
+}
+
+case_pairings() {
+    matrix_tool case-pairings "$manifest" "$1"
+}
+
+case_uses_rti_csharp() {
+    local case_id="$1"
+    local pairing
+    while IFS= read -r pairing; do
+        if [[ "$pairing" == *"RTI C#"* ]]; then
+            return 0
+        fi
+    done < <(case_pairings "$case_id")
+    return 1
 }
 
 finish_run() {
@@ -314,10 +320,19 @@ fi
 if [[ "$cpp_compile_only" != "1" ]]; then
     for case_id in "${case_ids[@]}"; do
         mapfile -t case_fixtures < <(fixtures_for_case "$case_id")
+        mapfile -t case_pairings_for_case < <(case_pairings "$case_id")
         if [[ -n "${rti_only_cases[$case_id]:-}" ]]; then
-            expected_scenario_count=$((expected_scenario_count + ${#case_fixtures[@]} * 4))
+            case_pairing_count=0
+            for pairing in "${case_pairings_for_case[@]}"; do
+                writer_peer="${pairing%%|*}"
+                reader_peer="${pairing#*|}"
+                if [[ "$writer_peer" != "Wireloom C#" && "$reader_peer" != "Wireloom C#" ]]; then
+                    case_pairing_count=$((case_pairing_count + 1))
+                fi
+            done
+            expected_scenario_count=$((expected_scenario_count + ${#case_fixtures[@]} * case_pairing_count))
         else
-            expected_scenario_count=$((expected_scenario_count + ${#case_fixtures[@]} * 9))
+            expected_scenario_count=$((expected_scenario_count + ${#case_fixtures[@]} * ${#case_pairings_for_case[@]}))
         fi
     done
 
@@ -329,8 +344,9 @@ if [[ "$cpp_compile_only" != "1" ]]; then
     # exchange that was selected but did not run.
     for case_id in "${case_ids[@]}"; do
         mapfile -t case_fixtures < <(fixtures_for_case "$case_id")
+        mapfile -t case_pairings_for_case < <(case_pairings "$case_id")
         for fixture in "${case_fixtures[@]}"; do
-            for pairing in "${peer_pairings[@]}"; do
+            for pairing in "${case_pairings_for_case[@]}"; do
                 writer_peer="${pairing%%|*}"
                 reader_peer="${pairing#*|}"
                 if [[ -n "${rti_only_cases[$case_id]:-}" ]] \
@@ -614,6 +630,13 @@ for case_id in "${case_ids[@]}"; do
     mkdir -p "$native_dir"
     wireloom_cs_available=1
     wireloom_cs_failure_reason="Wireloom C# build failed for $case_id"
+    mapfile -t case_pairings_for_case < <(case_pairings "$case_id")
+    rti_csharp_required=0
+    if case_uses_rti_csharp "$case_id"; then
+        rti_csharp_required=1
+    fi
+    rti_cs_available=0
+    rti_type_name=""
 
     # Build Wireloom's C# output against the selected RTI runtime. The resulting
     # generated type name is discovered from Wireloom's emitted TypeSupport.
@@ -673,7 +696,7 @@ for case_id in "${case_ids[@]}"; do
     if [[ -f "$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/$case_id.idl" ]]; then
         idl_path="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/$case_id.idl"
     fi
-    if [[ "$cpp_compile_only" != "1" ]]; then
+    if [[ "$cpp_compile_only" != "1" && "$rti_csharp_required" == "1" ]]; then
         rti_csharp_dir="$case_dir/rti-csharp-generated"
         rti_cs_peer="$case_dir/rti-bin/WireCompatibility.RtiOracleProbe.dll"
         rti_build_log="$case_dir/rti-csharp-build.log"
@@ -717,6 +740,22 @@ for case_id in "${case_ids[@]}"; do
                 fi
                 include_index=$((include_index + 1))
             done
+            if [[ "$rti_csharp_generated" == 1 && "$case_id" == "10-resolve-name-wstring-aliases" ]]; then
+                # RTI emits two global::Implementation references from a
+                # top-level namespace. Qualify them with the IDL module in the
+                # scratch peer so this otherwise-valid C# oracle can be tested.
+                rti_plugin_file="$rti_csharp_dir/${case_id}Plugin.cs"
+                if [[ "$(grep -Fc 'global::Implementation.BoundedWideTextUnmanaged' "$rti_plugin_file" || true)" -ne 1 \
+                    || "$(grep -Fc 'global::Implementation.BoundedWideTextAliasUnmanaged' "$rti_plugin_file" || true)" -ne 1 ]]; then
+                    echo "RTI C# generated member types changed for $case_id; update the guarded namespace workaround." >&2
+                    rti_csharp_generated=0
+                    rti_cs_failure_reason="RTI C# workaround source mismatch for $case_id"
+                else
+                    sed -i \
+                        's/global::Implementation\.BoundedWideTextUnmanaged/global::CorpusResolveNameWstringAliases.Implementation.BoundedWideTextUnmanaged/; s/global::Implementation\.BoundedWideTextAliasUnmanaged/global::CorpusResolveNameWstringAliases.Implementation.BoundedWideTextAliasUnmanaged/' \
+                        "$rti_plugin_file"
+                fi
+            fi
             if [[ "$rti_csharp_generated" == 1 && "$case_id" == "06-alias-composition" ]]; then
                 # RTI 7.7.0 shadows this generated member with a conversion
                 # parameter, which otherwise produces invalid C# calls.
@@ -798,6 +837,19 @@ for case_id in "${case_ids[@]}"; do
             continue
         fi
     fi
+    if [[ "$case_id" == "10-resolve-name-wstring-aliases" ]]; then
+        if [[ "$(grep -Fc 'dynamic_type< BoundedWideText>' "$native_dir/idl.cxx" || true)" -ne 1 \
+            || "$(grep -Fc 'dynamic_type< BoundedWideTextAlias>' "$native_dir/idl.cxx" || true)" -ne 1 ]]; then
+            echo "RTI C++ generated TypeCode references changed for $case_id; update the guarded alias-tag workaround." >&2
+            printf '%s\tworkaround-source-mismatch\tsee %s/rtiddsgen.log\n' "$case_id" "$case_dir" >> "$cpp_compilation_tsv"
+            overall_status=1
+            end_workflow_group
+            continue
+        fi
+        sed -i \
+            's/dynamic_type< BoundedWideText>/dynamic_type< ::CorpusResolveNameWstringAliases::BoundedWideText_AliasTag_t>/g; s/dynamic_type< BoundedWideTextAlias>/dynamic_type< ::CorpusResolveNameWstringAliases::BoundedWideTextAlias_AliasTag_t>/g' \
+            "$native_dir/idl.cxx"
+    fi
 
     declare -A generated_include_sources=()
     while IFS=$'\t' read -r include_path include_source; do
@@ -849,6 +901,7 @@ for case_id in "${case_ids[@]}"; do
     fi
     case "$case_id" in
         04-unbounded-string-aliases) cmake_adaptation_args+=( -DWIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES=ON ) ;;
+        10-resolve-name-wstring-aliases) cmake_adaptation_args+=( -DWIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES=ON ) ;;
         07-union-char-numeric|07-union-char-numeric-255)
             cmake_adaptation_args+=( -DWIRELOOM_TYPED_NUMERIC_CHAR_UNION=ON )
             if [[ "$case_id" == "07-union-char-numeric-255" ]]; then
@@ -927,7 +980,7 @@ for case_id in "${case_ids[@]}"; do
     # failed pairing is recorded but does not stop later cases from running.
     mapfile -t case_fixtures < <(fixtures_for_case "$case_id")
     for fixture in "${case_fixtures[@]}"; do
-        for pairing in "${peer_pairings[@]}"; do
+        for pairing in "${case_pairings_for_case[@]}"; do
             writer_peer="${pairing%%|*}"
             reader_peer="${pairing#*|}"
             if [[ -n "${rti_only_cases[$case_id]:-}" ]] \

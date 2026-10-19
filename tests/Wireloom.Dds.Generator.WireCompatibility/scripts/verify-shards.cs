@@ -35,8 +35,17 @@ try
             var registryPath = Path.Combine(repositoryRoot, "tests", "Wireloom.Dds.Generator.WireCompatibility", $"wire-case-exclusions-{version}.json");
             var selected = Invoke(succeeds: true, "list-cases", manifestPath, registryPath).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-            Check(selected.Length == (version == "7.3.1" ? 77 : 78), "Only applicable positive cases are selected.");
+            Check(selected.Length == (version == "7.3.1" ? 79 : 80), "Only applicable positive cases are selected.");
             Check(selected.Contains("09-autoid-hash"), "Hash-ID coverage applies to both LTS versions.");
+            Check(selected.Contains("10-resolve-name-wstring-aliases"), "C147 is a positive interoperability case for both LTS versions.");
+            Check(Invoke(succeeds: true, "case-pairings", manifestPath, "10-resolve-name-wstring-aliases")
+                    .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .SequenceEqual([
+                        "Wireloom C#|Wireloom C#", "Wireloom C#|RTI C#", "Wireloom C#|RTI C++",
+                        "RTI C#|Wireloom C#", "RTI C#|RTI C#", "RTI C#|RTI C++",
+                        "RTI C++|Wireloom C#", "RTI C++|RTI C#", "RTI C++|RTI C++"
+                    ]),
+                "C147 schedules all directed pairings among the three peers.");
             Check(selected.Contains("09-must-understand") == (version == "7.7.0"), "The must-understand fixture is available only on 7.7.0.");
 
             var generatedRoot = Path.Combine(repositoryRoot, "docs", "corpus", version, "generator");
@@ -53,7 +62,7 @@ try
         Environment.SetEnvironmentVariable("WIRE_COMPATIBILITY_RTI_VERSION", previousVersion);
     }
 
-    // Arrange: unequal case sizes, all nine pairings, and an RTI-only case.
+    // Arrange: unequal case sizes, all peer pairings, and an RTI-only case.
     // TSV columns match ScenarioRow in matrix-tools.cs: case, three types,
     // writer/version, reader/version, status, fixture.
     var peers = new[] { "Wireloom C#", "RTI C#", "RTI C++" };
@@ -81,13 +90,15 @@ try
         ["07-union-char-boundaries"] = ["union-minimum", "union-maximum", "union-default"],
         ["07-union-ulong"] = ["union-minimum", "union-maximum", "union-default"],
         ["09-optional-aggregate-member"] = ["optional-absent", "optional-present"],
-        ["09-optional-recursive-array"] = ["optional-absent", "optional-present", "optional-nested"]
+        ["09-optional-recursive-array"] = ["optional-absent", "optional-present", "optional-nested"],
+        ["10-resolve-name-wstring-aliases"] = ["string-empty", "string-boundary"]
     };
-    var pairings = peers.SelectMany(writer => peers.Select(reader => (Writer: writer, Reader: reader))).ToArray();
     var rows = new List<string[]>();
 
     foreach (var item in cases)
     {
+        var pairings = peers.SelectMany(writer => peers.Select(reader => (Writer: writer, Reader: reader))).ToArray();
+
         foreach (var fixture in item.Value)
         {
             foreach (var (writer, reader) in pairings)
@@ -380,6 +391,15 @@ try
         && arrayRow.Contains("**Wireloom → RTI C++, RTI C++ → Wireloom:**", StringComparison.Ordinal),
         "Pairings with the same observed failure are grouped together.");
     var report = ReadJson(Path.Combine(merged, "results.json"));
+    var aliasScenarios = report["scenarios"]!.AsArray()
+        .Where(item => (string?)item!["case"] == "10-resolve-name-wstring-aliases").ToArray();
+    Check(aliasScenarios.Length == 18 && aliasScenarios.All(item => (string?)item!["status"] == "PASS"),
+        "C147 reports all 18 empty and boundary exchanges passing across its three peers.");
+    var aliasReport = File.ReadAllText(Path.Combine(merged, "results.md"));
+    Check(aliasReport.Contains("wstring-alias-typecode-tags", StringComparison.Ordinal)
+        && aliasReport.Contains("Post-generation namespace correction", StringComparison.Ordinal)
+        && aliasReport.Contains("Post-generation `TypeCode` correction", StringComparison.Ordinal),
+        "C147 report rows link both guarded RTI peer corrections.");
     Check(report!["expectedFailures"] is null && report["expectedFailureCount"] is null
         && report["scenarios"]!.AsArray().All(item => item!["expectedFailure"] is null),
         "JSON reports contain no expected-failure classification.");

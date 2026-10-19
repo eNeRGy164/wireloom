@@ -1,0 +1,11 @@
+module CorpusResolveNameWstringAliases {
+    const long WSTRING_BOUND = 8;
+
+    typedef wstring<WSTRING_BOUND> BoundedWideText;
+    typedef BoundedWideText BoundedWideTextAlias;
+
+    struct Sample {
+        @resolve_name(false) BoundedWideText firstLevel;
+        @resolve_name(false) BoundedWideTextAlias secondLevel;
+    };
+};

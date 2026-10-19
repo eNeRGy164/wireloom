@@ -20,8 +20,9 @@ JSON and Markdown reports retain its case ID and reason separately. For
 example, `09-must-understand` (C142) is not applicable to 7.3.1; explicitly
 requesting it is rejected before peer builds or type-support discovery.
 `09-autoid-hash` (C040) independently checks hash member IDs on both versions.
-Both cases have non-default fixtures. Wire results recorded before the split
-do not qualify these revised inputs; fresh exchanges remain pending.
+The revised C040 and C142 inputs have no retained wire exchanges yet. C040
+requires both profiles; C142 applies only to 7.7.0. Qualification reports
+require fresh exchanges for the applicable fixtures.
 
 ## Run the matrix
 
