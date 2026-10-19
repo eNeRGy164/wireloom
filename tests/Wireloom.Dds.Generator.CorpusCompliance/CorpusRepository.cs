@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Wireloom.Dds.Generator.CorpusCompliance;
 
-public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<string> Defines, string Classification, string OracleDirectory, string Tag = "")
+public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<string> Defines, string Classification, string OracleDirectory, string Tag = "", bool OracleSourcesRetained = true, string? OracleCompileOutcome = null)
 {
     // This is an explicit managed-generator acceptance map, not an inference
     // from the RTI result or the positive/negative manifest bucket. It keeps
@@ -82,6 +82,8 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "10-annotations",
         "10-annotations-extended",
         "10-annotations-rti",
+        "10-resolve-name-wstring-aliases",
+        "10-default-literal-enum-array",
         "10-flat-data-binding",
         "11-preprocessing",
         "11-conditionals",
@@ -110,8 +112,12 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         !(Id == "09-must-understand" && string.Equals(rtiProfile, "7.3.1", StringComparison.Ordinal));
 
     public bool HasOracleOutput =>
+        OracleSourcesRetained &&
         !string.Equals(Classification, "rejected", StringComparison.OrdinalIgnoreCase) &&
         !string.Equals(Classification, "pending", StringComparison.OrdinalIgnoreCase);
+
+    public bool OracleCompilationFailed =>
+        string.Equals(OracleCompileOutcome, "failed", StringComparison.OrdinalIgnoreCase);
 
 }
 
@@ -146,15 +152,24 @@ internal sealed class ManifestEntry
 
     [JsonPropertyName("tag")]
     public string Tag { get; init; } = string.Empty;
+
+    [JsonPropertyName("oracleSourcesRetained")]
+    public bool OracleSourcesRetained { get; init; } = true;
+
+    [JsonPropertyName("oracleDirectory")]
+    public string? OracleDirectory { get; init; }
 }
 
 internal sealed class OracleManifest
 {
     [JsonPropertyName("cases")]
     public List<OracleEntry> Cases { get; init; } = [];
+
+    [JsonPropertyName("characterizationProbes")]
+    public List<OracleEntry> CharacterizationProbes { get; init; } = [];
 }
 
-internal sealed class OracleEntry
+internal sealed record OracleEntry
 {
     [JsonPropertyName("id")]
     public string Id { get; init; } = string.Empty;
@@ -169,6 +184,12 @@ internal sealed class OracleEntry
     /// <summary>Gets the captured oracle directory relative to the LTS profile.</summary>
     [JsonPropertyName("sourceDirectory")]
     public string SourceDirectory { get; init; } = string.Empty;
+
+    [JsonPropertyName("oracleSourcesRetained")]
+    public bool OracleSourcesRetained { get; init; } = true;
+
+    [JsonPropertyName("compileOutcome")]
+    public string? CompileOutcome { get; init; }
 }
 
 internal static class CorpusRepository
@@ -245,26 +266,37 @@ internal static class CorpusRepository
 
         var profileRoot = Path.Combine(corpusRoot, RtiProfile);
         Dictionary<string, OracleEntry>? capturedCases = null;
+        var oracleCompileOutcomes = new Dictionary<string, string>(StringComparer.Ordinal);
         if (RtiProfile == "7.3.1")
         {
-            capturedCases = Read<OracleManifest>(Path.Combine(profileRoot, "manifest.json")).Cases
-                .ToDictionary(entry => entry.Id, StringComparer.Ordinal);
+            var oracleManifest = Read<OracleManifest>(Path.Combine(profileRoot, "manifest.json"));
+            capturedCases = oracleManifest.Cases.ToDictionary(entry => entry.Id, StringComparer.Ordinal);
+            oracleCompileOutcomes = capturedCases.Values
+                .Where(entry => entry.CompileOutcome is not null)
+                .ToDictionary(entry => entry.Id, entry => entry.CompileOutcome!, StringComparer.Ordinal);
             foreach (var id in classifications.Keys.ToArray())
             {
                 classifications[id] = capturedCases[id].Outcome == "generated" ? "accepted" : "rejected";
             }
+        }
+        else
+        {
+            var oracleManifest = Read<OracleManifest>(Path.Combine(profileRoot, "manifest.json"));
+            oracleCompileOutcomes = oracleManifest.CharacterizationProbes
+                .Where(entry => entry.CompileOutcome is not null)
+                .ToDictionary(entry => entry.Id, entry => entry.CompileOutcome!, StringComparer.Ordinal);
         }
 
         var cases = new List<CorpusCase>();
 
         foreach (var entry in manifest.PositiveCases)
         {
-            cases.Add(CreateCase(entry, "features", classifications, profileRoot, capturedCases));
+            cases.Add(CreateCase(entry, "features", classifications, profileRoot, capturedCases, oracleCompileOutcomes));
         }
 
         foreach (var entry in manifest.NegativeCases)
         {
-            cases.Add(CreateCase(entry, "negative", classifications, profileRoot, capturedCases));
+            cases.Add(CreateCase(entry, "negative", classifications, profileRoot, capturedCases, oracleCompileOutcomes));
         }
 
         foreach (var idl in manifest.IntegrationEntryPoints)
@@ -326,7 +358,7 @@ internal static class CorpusRepository
                 .ToList());
     }
 
-    private static CorpusCase CreateCase(ManifestEntry entry, string sourceKind, Dictionary<string, string> classifications, string profileRoot, Dictionary<string, OracleEntry>? capturedCases)
+    private static CorpusCase CreateCase(ManifestEntry entry, string sourceKind, Dictionary<string, string> classifications, string profileRoot, Dictionary<string, OracleEntry>? capturedCases, Dictionary<string, string> oracleCompileOutcomes)
     {
         return new CorpusCase(
             entry.Id,
@@ -335,9 +367,13 @@ internal static class CorpusRepository
             entry.Defines,
             classifications[entry.Id],
             Path.Combine(profileRoot, capturedCases is null
-                ? Path.Combine("rtiddsgen", "csharp", sourceKind, entry.Id)
+                ? entry.OracleDirectory ?? Path.Combine("rtiddsgen", "csharp", sourceKind, entry.Id)
                 : capturedCases[entry.Id].SourceDirectory),
-            entry.Tag);
+            entry.Tag,
+            capturedCases is null
+                ? entry.OracleSourcesRetained
+                : capturedCases[entry.Id].OracleSourcesRetained,
+            oracleCompileOutcomes.GetValueOrDefault(entry.Id));
     }
 
     private static T Read<T>(string path) =>

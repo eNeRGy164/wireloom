@@ -35,7 +35,7 @@ RTI C# and C++ generation outcomes and Wireloom output independently. RTI
 outputs live under `<version>/rtiddsgen/`; Wireloom exports live under
 `<version>/generator/`. The 7.3.1 generated
 contracts compile against the exact NuGet package, and its runtime-contract
-suite passes; exact-version wire qualification remains pending. The 7.7.0 test
+suite passes; full profile wire qualification remains pending. The 7.7.0 test
 loader reads its RTI C# oracle tree from `7.7.0/rtiddsgen/csharp/`.
 C040 (`09-autoid-hash`) checks hash member IDs on both LTS profiles. The
 separate C142 (`09-must-understand`) checks `@must_understand`, which is not
@@ -52,16 +52,20 @@ notices.
 
 ## Case inventory
 
-The manifest currently contains **78 positive cases**, **60 negative probes**,
-and **4 integration entry points** (142 entries total). These counts follow
+The manifest currently contains **80 positive cases**, **64 negative probes**,
+and **4 integration entry points** (148 entries total). These counts follow
 `manifest.json`, the source of truth for the corpus inventory.
 
-| Group                    | Count | Location                             |
-| ------------------------ | ----: | ------------------------------------ |
-| Positive feature cases   |    78 | [`idl/features`](idl/features)       |
-| Negative probes          |    60 | [`idl/negative`](idl/negative)       |
-| Integration entry points |     4 | [`idl/integration`](idl/integration) |
-| Total                    |   142 | —                                    |
+| Group                    | Count | Location                                                   |
+| ------------------------ | ----: | ---------------------------------------------------------- |
+| Positive feature cases   |    80 | [`idl/features`](idl/features)                             |
+| Negative probes          |    64 | [`idl/negative`](idl/negative) and feature-specific probes |
+| Integration entry points |     4 | [`idl/integration`](idl/integration)                       |
+| Total                    |   148 | —                                                          |
+
+Counts follow the manifest classifications. Some negative probes use an IDL
+under `idl/features` because they characterize syntax that a generator accepts
+but Wireloom must reject.
 
 Each case has a manifest ID, such as `01-primitives`, and a stable `C###`
 provenance tag. Tags are used by the feature index and test diagnostics.
@@ -85,8 +89,8 @@ Each LTS directory's `rtiddsgen/csharp/` tree mirrors RTI-generated C# for that
 exact version. RTI acceptance is reference data only; it does not imply that
 the managed generator supports the same feature. The
 [7.7.0 profile](7.7.0/FEATURE-COVERAGE.md) is the current retained comparison
-baseline. The [7.3.1 profile](7.3.1/FEATURE-COVERAGE.md) records the captured
-run and its outstanding qualification evidence.
+baseline. The [7.3.1 profile](7.3.1/FEATURE-COVERAGE.md) records the retained
+oracle results and current qualification status.
 
 Rejected cases may have no managed generated C# source, while remaining in the
 case inventory so accepted, rejected, and observed outcomes stay explicit.

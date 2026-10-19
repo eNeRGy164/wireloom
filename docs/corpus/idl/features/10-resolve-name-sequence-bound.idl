@@ -1,0 +1,5 @@
+module CorpusResolveNameSequenceBound {
+    struct Sample {
+        @resolve_name(false) sequence<long, SEQUENCE_BOUND> values;
+    };
+};
