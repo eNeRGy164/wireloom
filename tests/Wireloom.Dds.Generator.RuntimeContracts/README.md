@@ -74,15 +74,15 @@ tests also read required data after optional-only cleanup and verify absence.
 This summary describes generated API behavior exercised by the suite. It is
 not a generated-code coverage metric or a DDS wire-compatibility claim.
 
-| Behavior area                  | Contracts exercised                                                                                                                 |
-| :----------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
-| Managed values and collections | Defaults, mutation, copies, equality, and hashes across primitives, aggregates, sequences, and arrays.                              |
-| Inheritance                    | Inherited members, optional values, formatting, equality, and native conversion.                                                    |
-| Unions                         | Construction, discriminators, branch access and transitions, copies, equality, and hashes.                                          |
-| Typedefs and aliases           | Constructors, `Value`, copies, formatting, and metadata across scalar, aggregate, collection, and chained aliases.                  |
-| Native APIs                    | Initialization, conversion, key filtering, and cleanup with both allocation modes.                                                  |
-| TypeSupport                    | `Instance`, member metadata, bounds, dimensions, enums, aliases, and metadata visibility.                                           |
-| Recursive startup              | Fresh-process access/discovery, recursive-array serialization, sequence support initialization, and public `DynamicType` rejection. |
+| Behavior area                  | Contracts exercised                                                                                                                                   |
+| :----------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Managed values and collections | Defaults, including enum arrays with `@default_literal`, mutation, copies, equality, and hashes across primitives, aggregates, sequences, and arrays. |
+| Inheritance                    | Inherited members, optional values, formatting, equality, and native conversion.                                                                      |
+| Unions                         | Construction, discriminators, branch access and transitions, copies, equality, and hashes.                                                            |
+| Typedefs and aliases           | Constructors, `Value`, copies, formatting, and metadata across scalar, aggregate, collection, and chained aliases.                                    |
+| Native APIs                    | Initialization, including enum arrays with `@default_literal`, conversion, key filtering, and cleanup with both allocation modes.                     |
+| TypeSupport                    | `Instance`, member metadata, bounds, dimensions, enums, aliases, and metadata visibility.                                                             |
+| Recursive startup              | Fresh-process access/discovery, recursive-array serialization, sequence support initialization, and public `DynamicType` rejection.                   |
 
 Boundaries and interpretation:
 
@@ -94,9 +94,11 @@ Boundaries and interpretation:
 - `allocateMemory=false` requires existing string and array backing storage.
   Array hash checks require valid fixed-size arrays and assert equal-value
   consistency, not particular values or stronger hash distribution.
-- Enums have no generated managed constructors/equality methods or native
-  sample representation; enum-bearing samples, aliases, metadata, and support
-  cover the applicable APIs.
+- Enum values use generated C# enum members and native integer storage; they
+  have no enum-specific managed constructors or equality methods. Enum-bearing
+  samples, aliases, metadata, and support cover the applicable APIs. C148
+  verifies that managed and native enum arrays use the declared
+  `@default_literal`.
 
 <details>
 <summary>Maintainer reference: test classes by behavior area</summary>
@@ -107,6 +109,7 @@ and allocation/key combinations reported by the tests.
 ### Managed values and inheritance
 
 - `ScalarSpecs`, `ScalarEqualitySpecs`, `CollectionSpecs`, `CollectionEqualitySpecs`
+- `EnumArrayDefaultSpecs`
 - `InheritanceSpecs`, `AggregateNativeSpecs`
 
 ### Unions
@@ -126,6 +129,7 @@ and allocation/key combinations reported by the tests.
 - `AggregateNativeSpecs`, `ScalarAliasNativeSpecs`, `StringAliasChainNativeSpecs`
 - `AggregateAliasNativeSpecs`, `CollectionAliasNativeSpecs`, `CollectionAliasMemberSpecs`, `StringArrayAliasNativeSpecs`
 - `UnionNativeSpecs`, `StringSequenceUnionSpecs`, `DiscriminatorSpecs`, `UnionAliasSpecs`
+- `EnumArrayDefaultNativeSpecs`
 - `AggregateNativeSpecs.FiltersKeysInEachDirection`, `NestedKeySpecs`, and alias/union native theories
 
 ### TypeSupport and recursive startup

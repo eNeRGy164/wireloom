@@ -256,6 +256,7 @@ internal static class ManagedDataTypeEmitter
             writer.WriteLine(field.ManagedDefaultInitializationStatement!);
 
             field.EmitAggregateArrayInitialization(writer, ManagedFieldPrefix(field, "dimension") + field.EscapedName, index < arrayFields.Length - 1);
+            field.EmitEnumArrayInitialization(writer, ManagedFieldPrefix(field, "dimension") + field.EscapedName, index < arrayFields.Length - 1);
         }
 
         foreach (var field in fields.Where(field => field.HasExplicitDefault))

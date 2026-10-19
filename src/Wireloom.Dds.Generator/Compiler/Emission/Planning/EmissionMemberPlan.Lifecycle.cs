@@ -1,6 +1,7 @@
 using System.Globalization;
 using Wireloom.Compiler.Emission.Emitters;
 using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.Emission.Writers;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Planning;
@@ -113,6 +114,39 @@ internal sealed partial class MemberEmissionPlan
         return $"{nativeFieldPrefix}{EscapedName} = {NativeDefaultValue(namespaceName)};";
     }
 
+    /// <summary>Emits native initialization, including enum array defaults on older RTI profiles.</summary>
+    public void EmitNativeInitialization(GeneratedSourceWriter writer, string? namespaceOverride = null, string nativeFieldPrefix = "")
+    {
+        var statement = BuildInitializeStatement(namespaceOverride, nativeFieldPrefix);
+        if (statement is null)
+        {
+            return;
+        }
+
+        writer.WriteLines(statement);
+
+        var enumType = ArraySourceEmitter.EnumElementType(ElementType);
+        if (!IsArray || IsOptional || enumType is not { DefaultValue: not 0 } || Profile.SupportsNativeEnumArrayDefaultValueInitialization)
+        {
+            return;
+        }
+
+        var namespaceName = namespaceOverride ?? currentNamespace;
+        var nativeArray = $"{nativeFieldPrefix}{EscapedName}";
+        var localName = $"__wireloom_{IdlNaming.EscapeIdentifier(Name).TrimStart('@')}_defaultValues";
+
+        writer.OpenBlock("if (allocateMemory)");
+        ArraySourceEmitter.EmitNativeEnumDefaultInitialization(
+            writer,
+            nativeArray,
+            ElementCSharpType!,
+            localName,
+            enumType,
+            Dimensions,
+            namespaceName);
+        writer.CloseBlock();
+    }
+
     private string BuildSequenceInitializeStatement(string? namespaceName, string nativeFieldPrefix)
     {
         var element = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
@@ -133,6 +167,12 @@ internal sealed partial class MemberEmissionPlan
     private string BuildArrayInitializeStatement(string? namespaceName, string nativeFieldPrefix)
     {
         var element = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
+
+        var enumType = ArraySourceEmitter.EnumElementType(ElementType);
+        if (enumType is { DefaultValue: not 0 } && Profile.SupportsNativeEnumArrayDefaultValueInitialization)
+        {
+            return $"{nativeFieldPrefix}{EscapedName}.InitializeEnum(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, allocateMemory: allocateMemory, defaultValue: {enumType.DefaultValue});";
+        }
 
         if (HasAggregateElement)
         {

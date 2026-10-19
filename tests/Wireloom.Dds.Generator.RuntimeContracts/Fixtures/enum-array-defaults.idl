@@ -1,0 +1,16 @@
+module RuntimeEnumArrayDefaults {
+    enum Color {
+        GREEN,
+        @default_literal RED,
+        BLUE
+    };
+
+    typedef Color ColorAlias;
+    typedef ColorAlias ColorArray[3];
+
+    struct Shape {
+        Color color;
+        Color inlineColors[2][2];
+        ColorArray colorArray;
+    };
+};

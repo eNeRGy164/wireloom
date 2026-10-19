@@ -1,0 +1,14 @@
+module CorpusDefaultLiteralEnumArray {
+    enum Color {
+        GREEN,
+        @default_literal RED,
+        BLUE
+    };
+
+    typedef Color ColorArray[5];
+
+    struct Shape {
+        Color color;
+        ColorArray colorArray;
+    };
+};
