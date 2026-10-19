@@ -1,0 +1,19 @@
+module RuntimeCollectionAliasMembers {
+    typedef sequence<long, 3> Numbers;
+    typedef Numbers Chain;
+    typedef Chain LongerChain;
+    typedef long Vector[2];
+    typedef Vector VectorChain;
+    typedef sequence<LongerChain, 2> Nested;
+    typedef LongerChain Rows[2];
+    struct Sample {
+        Numbers direct;
+        LongerChain chained;
+        VectorChain arrayAlias;
+        @optional LongerChain optionalChain;
+        Nested nested;
+        Rows rows;
+    };
+    union Choice switch(long) { case 0: LongerChain numbers; case 1: VectorChain vector; };
+    module Inner { struct Holder { LongerChain values; }; };
+};

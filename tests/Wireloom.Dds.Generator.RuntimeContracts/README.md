@@ -124,7 +124,7 @@ and allocation/key combinations reported by the tests.
 ### Native conversion and key filtering
 
 - `AggregateNativeSpecs`, `ScalarAliasNativeSpecs`, `StringAliasChainNativeSpecs`
-- `AggregateAliasNativeSpecs`, `CollectionAliasNativeSpecs`, `StringArrayAliasNativeSpecs`
+- `AggregateAliasNativeSpecs`, `CollectionAliasNativeSpecs`, `CollectionAliasMemberSpecs`, `StringArrayAliasNativeSpecs`
 - `UnionNativeSpecs`, `StringSequenceUnionSpecs`, `DiscriminatorSpecs`, `UnionAliasSpecs`
 - `AggregateNativeSpecs.FiltersKeysInEachDirection`, `NestedKeySpecs`, and alias/union native theories
 

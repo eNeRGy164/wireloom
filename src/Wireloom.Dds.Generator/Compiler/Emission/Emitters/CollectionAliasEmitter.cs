@@ -77,13 +77,13 @@ internal static class CollectionAliasEmitter
         if (resolvedElementType is not null)
         {
             var nativeElementType = resolvedElementType;
-            if (elementPlan is not AliasEmissionType aliasPlan
-                || string.Equals(aliasPlan.CSharpType, aliasPlan.Target.CSharpType, StringComparison.Ordinal))
+            while (nativeElementType is IdlType.Alias nativeAlias
+                && !string.Equals(
+                    IdlNaming.ResolvedTypeReference(nativeAlias.QualifiedName, declaration.Namespace),
+                    elementPlan.CSharpType,
+                    StringComparison.Ordinal))
             {
-                while (nativeElementType is IdlType.Alias nativeAlias)
-                {
-                    nativeElementType = nativeAlias.Target;
-                }
+                nativeElementType = nativeAlias.Target;
             }
 
             if (nativeElementType is not IdlType.StringType)

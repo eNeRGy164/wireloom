@@ -7,6 +7,59 @@ namespace Wireloom.Generation.IdlDeclarations.Tests;
 public sealed class GeneratedNestedAliasSpecs
 {
     [Fact]
+    public void CollectionAliasChainsProjectToTheCollectionDefiningTypeAtUseSites()
+    {
+        // Arrange
+        var input = Input("collection-alias-members.idl",
+            """
+            module AliasMembers {
+                typedef sequence<long, 3> Numbers;
+                typedef Numbers Chain;
+                typedef Chain LongerChain;
+                typedef long Vector[2];
+                typedef Vector VectorChain;
+                typedef sequence<LongerChain, 2> Nested;
+                typedef LongerChain Rows[2];
+                struct Sample {
+                    Numbers direct;
+                    LongerChain chained;
+                    VectorChain arrayAlias;
+                    @optional LongerChain optionalChain;
+                    Nested nested;
+                    Rows rows;
+                };
+                union Choice switch(long) { case 0: LongerChain numbers; case 1: VectorChain vector; };
+                module Inner { struct Holder { LongerChain values; }; };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var sample = documents["AliasMembers.Sample.g.cs"].Source;
+        sample.ShouldContain("public Numbers direct { get; set; } = new Numbers();");
+        sample.ShouldContain("public Numbers chained { get; set; } = new Numbers();");
+        sample.ShouldContain("public Vector arrayAlias { get; set; } = new Vector();");
+        sample.ShouldContain("public Numbers? optionalChain { get; set; }");
+        sample.ShouldContain("chained = new Numbers(other.chained);");
+        sample.ShouldContain("public Nested nested { get; set; } = new Nested();");
+        sample.ShouldContain("public Rows rows { get; set; } = new Rows();");
+        documents["AliasMembers.Nested.g.cs"].Source.ShouldContain("public ISequence<Numbers> Value { get; }");
+        documents["AliasMembers.Rows.g.cs"].Source.ShouldContain("public Numbers[] Value { get; set; }");
+        documents["AliasMembers.Choice.g.cs"].Source.ShouldContain("public Numbers numbers");
+        documents["AliasMembers.Choice.g.cs"].Source.ShouldContain("public Vector vector");
+        documents["AliasMembers.Inner.Holder.g.cs"].Source.ShouldContain("public global::AliasMembers.Numbers values");
+        documents["AliasMembers.Chain.g.cs"].Source.ShouldContain("public Numbers Value { get; set; }");
+        documents["AliasMembers.LongerChain.g.cs"].Source.ShouldContain("public Numbers Value { get; set; }");
+        documents["AliasMembers.Implementation.SamplePlugin.g.cs"].Source.ShouldContain("LongerChainSupport.Instance.GetDynamicTypeInternal(isPublic)");
+
+        var native = documents["AliasMembers.Implementation.NestedUnmanaged.g.cs"].Source;
+        native.ShouldContain("FromNative<Numbers, NumbersUnmanaged>");
+        native.ShouldNotContain("LongerChainUnmanaged");
+    }
+
+    [Fact]
     public void AggregateAliasCopiesCloneTheirMutableValues()
     {
         // Arrange

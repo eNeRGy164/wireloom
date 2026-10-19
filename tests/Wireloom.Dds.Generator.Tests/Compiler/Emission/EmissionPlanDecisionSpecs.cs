@@ -8,6 +8,27 @@ namespace Wireloom.Compiler.Emission.Tests;
 public sealed class EmissionPlanDecisionSpecs
 {
     [Fact]
+    public void ScalarAndAggregateAliasChainsKeepTheirMemberMapping()
+    {
+        // Arrange
+        IdlType[] targets =
+        [
+            new IdlType.Primitive("long"),
+            new IdlType.Struct("Example::Payload"),
+            new IdlType.Union("Example::Choice")
+        ];
+        string[] expectedTypes = ["int", "Payload", "Choice"];
+
+        // Act
+        var projected = targets.Select(target => EmissionTypeProjector.ToCollectionElementType(
+            new IdlType.Alias("Example::Outer", new IdlType.Alias("Example::Inner", target)),
+            currentNamespace: "Example")).ToArray();
+
+        // Assert
+        projected.Select(type => type.CSharpType).ShouldBe(expectedTypes);
+    }
+
+    [Fact]
     public void CollectionAliasPlanRetainsStringAndCollectionShapeFacts()
     {
         // Arrange

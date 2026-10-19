@@ -164,7 +164,7 @@ internal static class EmissionTypeProjector
     private static EmissionTypePlan ProjectMemberType(IdlType type, string? currentNamespace)
     {
         var memberType = ProjectType(type, currentNamespace);
-        while (memberType is AliasEmissionType alias && IsStructOrUnionType(alias.Target))
+        while (memberType is AliasEmissionType alias && RequiresUnderlyingMemberType(alias.Target))
         {
             memberType = alias.Target;
         }
@@ -205,10 +205,10 @@ internal static class EmissionTypeProjector
         _ => false
     };
 
-    private static bool IsStructOrUnionType(EmissionTypePlan type) => type switch
+    private static bool RequiresUnderlyingMemberType(EmissionTypePlan type) => type switch
     {
         StructEmissionType or UnionEmissionType => true,
-        AliasEmissionType alias => IsStructOrUnionType(alias.Target),
+        AliasEmissionType alias => IsAggregateEmissionType(alias),
         _ => false
     };
 
