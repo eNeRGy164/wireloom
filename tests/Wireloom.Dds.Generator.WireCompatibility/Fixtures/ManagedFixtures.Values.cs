@@ -5,6 +5,17 @@ namespace Wireloom.Dds.Generator.WireCompatibility;
 /// <summary>Builds typed scalar fixtures without replacing constructor defaults through DynamicData.</summary>
 internal static partial class ManagedFixtures
 {
+    /// <summary>Preserves the generated constructor defaults for the enum-array wire fixture.</summary>
+    internal static T CreateEnumArrayDefaultFixture<T>(string fixture)
+    {
+        if (fixture != "default")
+        {
+            throw new FixtureException($"Unknown enum array default fixture '{fixture}'.");
+        }
+
+        return Activator.CreateInstance<T>()!;
+    }
+
     /// <summary>Sets only the non-default members, preserving the declared enum constructor default.</summary>
     internal static T CreateDefaultsAndRangesFixture<T>(string fixture)
     {

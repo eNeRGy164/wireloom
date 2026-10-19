@@ -107,9 +107,10 @@ int main(int argc, char **argv)
             }
         }
 #endif
-#if defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED)
+#if defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES) || defined(WIRELOOM_TYPED_DEFAULT_LITERAL_ENUM_ARRAY) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED)
         if (case_id == "04-unbounded-string-aliases" || case_id == "04-string-alias-chains"
             || case_id == "10-resolve-name-wstring-aliases"
+            || case_id == "10-default-literal-enum-array"
             || case_id == "05-unbounded-sequence-aliases" || case_id == "07-union-string-sequence-aliases"
             || case_id == "07-union-string-sequence-bounded-direct") {
             return run_typed_fixture_peer(

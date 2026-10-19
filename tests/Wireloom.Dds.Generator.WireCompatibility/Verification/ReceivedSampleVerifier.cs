@@ -30,6 +30,9 @@ internal static class ReceivedSampleVerifier
             case "09-optional-recursive-array":
                 IndependentSampleVerifier.VerifyOptionalRecursiveArrayFixture(expected!, sample!, context);
                 break;
+            case "10-default-literal-enum-array":
+                VerifyTypedValue(expected, sample, context);
+                break;
             case "09-optional-aggregate-member":
                 IndependentSampleVerifier.VerifyOptionalAggregateMemberFixture(expected!, sample!, context);
                 break;
