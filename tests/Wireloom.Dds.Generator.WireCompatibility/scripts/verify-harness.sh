@@ -6,10 +6,15 @@ runner="$(dirname "$0")/run-matrix.sh"
 scratch="$(mktemp -d)"
 trap 'rm -f "$scratch"/*; rmdir "$scratch"' EXIT
 
+# Load only the production EXIT handler; do not provision RTI or launch peers.
 sed -n '/^finish_run() {/,/^trap finish_run EXIT/p' "$runner" | sed '$d' > "$scratch/finish-run.sh"
 
 check_finalization() {
-    local name="$1" run_status="$2" report_status="$3" expected_status="$4" observed_status=0
+    local name="$1"
+    local run_status="$2"
+    local report_status="$3"
+    local expected_status="$4"
+    local observed_status=0
 
     # Arrange: peer execution has started and a scenario failure is recorded.
     (
@@ -17,7 +22,10 @@ check_finalization() {
         end_workflow_group() { :; }
         start_workflow_group() { :; }
         workflow_annotation() { printf '%s\n' "$*"; }
-        write_report() { touch "$scratch/$name.report"; return "$report_status"; }
+        write_report() {
+            touch "$scratch/$name.report"
+            return "$report_status"
+        }
         cpp_compile_only=0
         output_dir="$scratch"
         overall_status=1
@@ -38,6 +46,7 @@ check_finalization() {
     fi
 }
 
+# Arguments: case name, original exit code, report exit code, expected final exit code.
 check_finalization late-cpp-setup 7 0 7
 check_finalization handled-peer-failure 0 0 0
 check_finalization report-generation-failure 7 1 1
