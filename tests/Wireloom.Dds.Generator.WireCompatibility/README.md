@@ -144,6 +144,17 @@ workflow result even when partial reports are available.
 
 ## Fixtures and peer setup
 
+### Reliable-writer timing
+
+All managed and native writers use explicit 50 ms `heartbeat_period`,
+`fast_heartbeat_period`, and `late_joiner_heartbeat_period` settings with
+`max_heartbeat_retries` set to 600, retaining a 30-second inactivity window.
+RTI 7.3.1 defaults to 3-second heartbeat periods; RTI changed these defaults
+to 200 ms in [7.6.0](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/release_notes/whats_new/whats_new_in_760.html#updated-default-heartbeat-periods-for-faster-repairs-of-lost-samples).
+Explicit settings keep one-sample acknowledgment waits comparable across the
+two LTS profiles. Writers still wait for reliable acknowledgments, and readers
+still verify the complete payload before an exchange can pass.
+
 ### Case-specific fixture construction
 
 Use case-specific typed sample construction and independent value checks for
@@ -286,4 +297,5 @@ reportable outcomes. The GitHub report job runs these checks before merging.
 - `FixtureCatalog.cs` and `Fixtures/` define managed fixture values.
 - `Native/main.cpp.in` implements the DynamicData C++ peer;
   `Native/typed-fixture-peer.hpp.in` supports typed C++ fixtures.
+- `Native/peer-qos.hpp` shares reliable-writer timing across both native paths.
 - `RtiOracleProbe/` contains focused RTI C# API probes outside the wire matrix.

@@ -1,4 +1,5 @@
 #pragma once
+#include "peer-qos.hpp"
 #include <sstream>
 #include <utility>
 #ifdef WIRELOOM_RTI_7_3_1
@@ -283,9 +284,7 @@ static int run_typed_fixture_peer(
     dds::topic::Topic<DdsType> topic(participant, topic_name);
     if (role == "writer") {
         dds::pub::Publisher publisher(participant);
-        auto writer_qos = publisher.default_datawriter_qos();
-        writer_qos << dds::core::policy::Reliability(
-            dds::core::policy::ReliabilityKind::RELIABLE);
+        auto writer_qos = reliable_writer_qos(publisher);
         if (case_id == "09-optional-recursive-array") {
             // Avoid allocating the recursive maximum size for every initial sample.
             // Samples larger than the fast-pool threshold can allocate separately.
