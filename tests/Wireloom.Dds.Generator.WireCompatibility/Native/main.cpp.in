@@ -14,6 +14,7 @@
 #include <dds/dds.hpp>
 #include <ndds/dds_c/dds_c_dynamicdata.h>
 #include <rti/config/Logger.hpp>
+#include "peer-qos.hpp"
 
 #ifndef WIRELOOM_DYNAMIC_WCHAR_UNION
 #include "@IDL_BASE@.hpp"
@@ -462,9 +463,7 @@ int main(int argc, char **argv)
 
         if (role == "writer") {
             dds::pub::Publisher publisher(participant);
-            auto writer_qos = publisher.default_datawriter_qos();
-            writer_qos << dds::core::policy::Reliability(
-                dds::core::policy::ReliabilityKind::RELIABLE);
+            auto writer_qos = reliable_writer_qos(publisher);
             if (case_id == "09-data-representation"
                 || case_id == "09-allowed-data-representation"
                 || case_id == "10-flat-data-binding") {

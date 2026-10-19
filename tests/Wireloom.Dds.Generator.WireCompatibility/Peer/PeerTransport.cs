@@ -19,7 +19,19 @@ internal static class PeerTransport
     internal static void Publish<T>(DomainParticipant participant, Topic<T> topic, T sample, PeerOptions options)
     {
         var writerQos = participant.ImplicitPublisher.DefaultDataWriterQos
-            .WithReliability(policy => policy.Kind = ReliabilityKind.Reliable);
+            .WithReliability(policy => policy.Kind = ReliabilityKind.Reliable)
+            .WithProtocol(policy =>
+            {
+                // Use the same acknowledgment cadence on both RTI LTS versions.
+                // Keep the default 30-second inactive-reader detection window.
+                var protocol = policy.RtpsReliableWriter;
+                var heartbeatPeriod = Omg.Dds.Core.Duration.FromMilliseconds(50);
+                protocol.HeartbeatPeriod = heartbeatPeriod;
+                protocol.FastHeartbeatPeriod = heartbeatPeriod;
+                protocol.LateJoinerHeartbeatPeriod = heartbeatPeriod;
+                protocol.MaxHeartbeatRetries = 600;
+            });
+
         if (PeerQos.UsesXcdr2(options.CaseId))
         {
             writerQos = writerQos.WithRepresentation(PeerQos.Xcdr2Only);

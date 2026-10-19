@@ -36,6 +36,7 @@ dotnet build "$cs_project" --no-restore --configuration Release --verbosity quie
 sed "s|@IDL_BASE@|05-array-of-sequences|g; s|@CPP_TYPE@|$cpp_type|g" \
     "$native_template/main.cpp.in" > "$scratch/native/main.cpp"
 cp "$native_template/typed-fixture-peer.hpp.in" "$scratch/native/typed-fixture-peer.hpp"
+cp "$native_template/peer-qos.hpp" "$scratch/native/peer-qos.hpp"
 cp "$native_template/CMakeLists.txt" "$scratch/native/CMakeLists.txt"
 cmake -S "$scratch/native" -B "$scratch/native/build" \
     -DCMAKE_MODULE_PATH="$NDDSHOME/resource/cmake" \

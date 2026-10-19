@@ -893,6 +893,7 @@ for case_id in "${case_ids[@]}"; do
     sed "s|@IDL_BASE@|idl|g; s|@CPP_TYPE@|$cpp_template_type|g" \
         "$native_template/main.cpp.in" > "$native_dir/main.cpp"
     cp "$native_template/typed-fixture-peer.hpp.in" "$native_dir/typed-fixture-peer.hpp"
+    cp "$native_template/peer-qos.hpp" "$native_dir/peer-qos.hpp"
 
     cp "$native_template/CMakeLists.txt" "$native_dir/CMakeLists.txt"
     if ! run_tool "CMake configure for $case_id" "$case_dir/cmake-configure.log" \
