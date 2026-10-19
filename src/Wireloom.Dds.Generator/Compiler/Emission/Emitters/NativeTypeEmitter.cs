@@ -186,11 +186,7 @@ internal static class NativeTypeEmitter
 
         foreach (var field in fields)
         {
-            var statement = field.BuildInitializeStatement(currentNamespace, NativeFieldPrefix(field, "allocatePointers", "allocateMemory"));
-            if (statement is not null)
-            {
-                writer.WriteLine(statement);
-            }
+            field.EmitNativeInitialization(writer, currentNamespace, NativeFieldPrefix(field, "allocatePointers", "allocateMemory"));
         }
 
         writer.CloseBlock();

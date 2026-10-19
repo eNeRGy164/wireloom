@@ -19,12 +19,20 @@ to default-only unions and aliased enum discriminators. Unions without a default
 branch use the first declared case label. Default-branch setters continue to
 select an unused discriminator.
 
+For enum arrays, a declared `@default_literal` initializes every element in
+Wireloom's managed and native arrays. This includes typedef arrays, enum alias
+chains, and multidimensional member arrays. C148 and
+[`EnumArrayDefaultSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Managed/EnumArrayDefaultSpecs.cs)
+cover these defaults; the native path is checked by
+[`EnumArrayDefaultNativeSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Native/EnumArrayDefaultNativeSpecs.cs).
+
 ## Initialize values
 
 Required sequences start empty, required arrays are allocated, and required
-aggregate members are initialized for generated default constructors. Optional
-members start absent and are represented by nullable C# members where the
-shape supports optionality:
+aggregate members are initialized for generated default constructors. Enum
+arrays use the enum's declared `@default_literal` when present; other new arrays
+use their element type's default value. Optional members start absent and are
+represented by nullable C# members where the shape supports optionality:
 
 ```idl
 module Telemetry {

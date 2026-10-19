@@ -12,6 +12,7 @@ internal sealed class RtiApiProfile(
     bool supportsDynamicTypeAnnotations,
     bool supportsRecursiveTypeFlag,
     bool supportsMustUnderstand,
+    bool supportsNativeEnumArrayDefaultValueInitialization,
     string octetDynamicType,
     string? pluginComplianceMask)
 {
@@ -27,6 +28,9 @@ internal sealed class RtiApiProfile(
 
     internal bool SupportsMustUnderstand { get; } = supportsMustUnderstand;
 
+    /// <summary>Gets whether native enum arrays accept an explicit default value during initialization.</summary>
+    internal bool SupportsNativeEnumArrayDefaultValueInitialization { get; } = supportsNativeEnumArrayDefaultValueInitialization;
+
     internal string OctetDynamicType { get; } = octetDynamicType;
 
     internal string? PluginComplianceMask { get; } = pluginComplianceMask;
@@ -38,6 +42,7 @@ internal sealed class RtiApiProfile(
         supportsDynamicTypeAnnotations: false,
         supportsRecursiveTypeFlag: false,
         supportsMustUnderstand: false,
+        supportsNativeEnumArrayDefaultValueInitialization: false,
         octetDynamicType: "byte",
         pluginComplianceMask: "0x0000068C");
 
@@ -48,6 +53,7 @@ internal sealed class RtiApiProfile(
         supportsDynamicTypeAnnotations: true,
         supportsRecursiveTypeFlag: true,
         supportsMustUnderstand: true,
+        supportsNativeEnumArrayDefaultValueInitialization: true,
         octetDynamicType: "Octet",
         pluginComplianceMask: null);
 

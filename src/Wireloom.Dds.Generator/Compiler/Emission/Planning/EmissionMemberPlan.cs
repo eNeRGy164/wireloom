@@ -266,6 +266,29 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         }
     }
 
+    /// <summary>Emits initialization of enum array elements to their declared default literal.</summary>
+    public void EmitEnumArrayInitialization(GeneratedSourceWriter writer, string target, bool hasFollowingStatements)
+    {
+        if (!IsArray || IsOptional)
+        {
+            return;
+        }
+
+        var enumType = ArraySourceEmitter.EnumElementType(ElementType);
+        if (enumType is not { DefaultValue: not 0 })
+        {
+            return;
+        }
+
+        writer.BlankLine();
+        ArraySourceEmitter.EmitEnumDefaultInitialization(writer, target, enumType, Dimensions, currentNamespace);
+
+        if (hasFollowingStatements)
+        {
+            writer.BlankLine();
+        }
+    }
+
     /// <summary>Emits copy code for an aggregate array member.</summary>
     public void EmitAggregateArrayCopy(GeneratedSourceWriter writer, string target, bool hasFollowingStatements)
     {

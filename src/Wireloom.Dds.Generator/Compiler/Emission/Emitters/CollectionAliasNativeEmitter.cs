@@ -9,12 +9,13 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class CollectionAliasNativeEmitter
 {
     /// <summary>Emits the native typedef document.</summary>
-    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName, RtiApiProfile profile)
     {
         var elementType = plan.ElementType;
         var typeName = names.ManagedTypeName;
         var implementationTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.ImplementationNamespace);
         var elementPlan = EmissionTypeProjector.UnwrapValueEmissionType(plan.ElementPlan);
+        var enumElementType = ArraySourceEmitter.EnumElementType(plan.ElementPlan);
         string implementationElementType;
         if (names.Namespace is null
             && elementPlan is not PrimitiveEmissionType
@@ -245,9 +246,28 @@ internal static class CollectionAliasNativeEmitter
                 {
                     writer.WriteLine($"Value.Initialize(dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, maxStrLen: {plan.StringBound}, allocateMemory: allocateMemory);");
                 }
+                else if (enumElementType is { DefaultValue: not 0 } && profile.SupportsNativeEnumArrayDefaultValueInitialization)
+                {
+                    writer.WriteLine($"Value.InitializeEnum(dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, allocateMemory: allocateMemory, defaultValue: {enumElementType.DefaultValue});");
+                }
                 else
                 {
                     writer.WriteLine($"Value.Initialize<{implementationElementType}>(dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, allocateMemory);");
+
+                    if (enumElementType is { DefaultValue: not 0 })
+                    {
+                        writer.BlankLine();
+                        writer.OpenBlock("if (allocateMemory)");
+                        ArraySourceEmitter.EmitNativeEnumDefaultInitialization(
+                            writer,
+                            "Value",
+                            implementationElementType,
+                            "__wireloom_defaultValues",
+                            enumElementType,
+                            declaration.Dimensions,
+                            names.ImplementationNamespace);
+                        writer.CloseBlock();
+                    }
                 }
             }
             else

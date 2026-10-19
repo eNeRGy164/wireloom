@@ -109,6 +109,8 @@ internal static class CollectionAliasManagedEmitter
         else if (plan.IsArray)
         {
             var arrayElementIsAggregate = plan.CollectionElementIsAggregate;
+            var enumElementType = ArraySourceEmitter.EnumElementType(plan.ElementPlan);
+            var hasNonzeroEnumDefault = enumElementType is { DefaultValue: not 0 };
             var arrayType = $"{elementReference}[{new string(',', declaration.Dimensions.Count - 1)}]";
 
             writer.WriteXmlSummary("Gets or sets the array value represented by this typedef.");
@@ -116,12 +118,19 @@ internal static class CollectionAliasManagedEmitter
             writer.BlankLine();
 
             var arrayElementCount = declaration.Dimensions.Aggregate(BigInt.One, (count, dimension) => count * dimension);
-            writer.WriteXmlSummary($"Initializes a fixed-size array typedef with dimensions {string.Join(" × ", declaration.Dimensions)} ({arrayElementCount} elements); each element starts at its default value.");
+            var arrayDefaultDescription = hasNonzeroEnumDefault
+                ? $"each element starts as {enumElementType!.DefaultMemberName}"
+                : "each element starts at its default value";
+            writer.WriteXmlSummary($"Initializes a fixed-size array typedef with dimensions {string.Join(" × ", declaration.Dimensions)} ({arrayElementCount} elements); {arrayDefaultDescription}.");
             writer.OpenBlock($"public {typeName}()");
 
             if (arrayElementIsAggregate)
             {
                 ArraySourceEmitter.EmitAggregateInitialization(writer, "Value", elementReference, declaration.Dimensions);
+            }
+            else if (hasNonzeroEnumDefault)
+            {
+                ArraySourceEmitter.EmitEnumDefaultInitialization(writer, "Value", enumElementType!, declaration.Dimensions, declaration.Namespace);
             }
 
             writer.CloseBlock();
@@ -140,6 +149,11 @@ internal static class CollectionAliasManagedEmitter
             writer.WriteXmlRemarks($"The constructor creates a new array container{(arrayElementIsAggregate ? " and copies aggregate elements into new instances" : string.Empty)}. When <paramref name=\"other\"/> is null, the initially allocated array remains in place.");
             writer.OpenBlock($"public {typeName}({typeName}? other)");
             writer.OpenBlock("if (other is null)");
+            if (hasNonzeroEnumDefault)
+            {
+                ArraySourceEmitter.EmitEnumDefaultInitialization(writer, "Value", enumElementType!, declaration.Dimensions, declaration.Namespace);
+            }
+
             writer.WriteLine("return;");
             writer.CloseBlock();
             writer.BlankLine();
