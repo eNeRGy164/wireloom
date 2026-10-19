@@ -19,10 +19,10 @@ not applicable: it contributes no exchanges, failures, or implementation gaps.
 JSON and Markdown reports retain its case ID and reason separately. For
 example, `09-must-understand` (C142) is not applicable to 7.3.1; explicitly
 requesting it is rejected before peer builds or type-support discovery.
-`09-autoid-hash` (C040) independently checks hash member IDs on both versions.
-The revised C040 and C142 inputs have no retained wire exchanges yet. C040
-requires both profiles; C142 applies only to 7.7.0. Qualification reports
-require fresh exchanges for the applicable fixtures.
+`09-autoid-hash` (C040) independently checks hash member IDs on both versions;
+C142 is exercised on 7.7.0 only. A green workflow means all planned exchanges
+completed and the reports were combined. Individual pairings can still fail,
+so inspect the combined report before making a profile-qualification claim.
 
 ## Run the matrix
 
