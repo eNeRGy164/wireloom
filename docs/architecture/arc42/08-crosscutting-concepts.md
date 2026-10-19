@@ -21,9 +21,9 @@ compatibility failures, or Wireloom implementation gaps. Requesting such a
 case explicitly fails before peer builds and type-support discovery. New oracle captures and Wireloom exports retain source revision/dirty state, input and output hashes, tool versions, arguments, and outcomes. Legacy missing provenance remains unknown; unattributed local totals cannot establish qualification. The [LTS runbook](../../corpus/LTS-PROFILES.md) owns reproduction commands and attribution requirements.
 Feature cases isolate availability boundaries: C040 (`09-autoid-hash`)
 checks hash member IDs on both LTS versions; C142 (`09-must-understand`) is
-not applicable to 7.3.1. The shared positive inventory contains 78 cases, of
-which 77 apply to 7.3.1 and all 78 apply to 7.7.0. Historical wire evidence
-predating this split does not qualify the revised case inputs.
+not applicable to 7.3.1. The shared positive inventory contains 80 cases, of
+which 79 apply to 7.3.1 and all 80 apply to 7.7.0. Wire evidence is tied to
+the exact case inputs and profile; changed inputs require fresh exchanges.
 
 ## 8.2 Diagnostics and source locations
 
@@ -105,10 +105,12 @@ with separate evidence from serialization and DDS interoperability.
 - Primitive arrays use direct `SequenceEqual`. Arrays containing aggregate
   elements use the casted `Cast<T>().SequenceEqual(...)` path required by the
   runtime collection API.
-- Newly allocated CLR arrays are trusted to be zero-initialized. The generator
-  does not emit redundant per-element initialization, and each default-created
-  sample owns a newly allocated array; caller-supplied arrays remain caller
-  owned by the value constructor.
+- Newly allocated CLR arrays use zero initialization unless the element type
+  is an enum with a declared `@default_literal`. In that case, generated
+  managed and native initialization fills every array element with the declared
+  literal, including typedef arrays, enum alias chains, and multidimensional
+  members. Caller-supplied arrays remain caller owned by the value constructor.
+  C148 and the runtime contract suite verify this behavior.
 - Sequence members with array dimensions retain those dimensions in the
   emission model even though the managed public shape remains the RTI sequence
   shape. Integer sequence arrays use `NativeSeq`; bounded string sequence

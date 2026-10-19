@@ -43,10 +43,10 @@ RTI runtime.
 The manually dispatched matrix compares Wireloom-generated C#, RTI-generated
 C#, and RTI-generated C++ across all nine directed peer pairings for selected
 Wireloom-positive corpus fixtures. A pass requires valid samples and complete
-payload comparison; successful discovery alone is insufficient. Exact 7.7.0
-wire evidence is retained. The 7.3.1 profile passes the package integration
-build and all 527 runtime-contract tests against its exact NuGet package;
-exact-version wire qualification remains pending.
+payload comparison; successful discovery alone is insufficient. C147 passes
+all 18 directed exchanges on each exact profile. The 7.3.1 package integration
+build and runtime-contract suite pass against its exact NuGet package; full
+profile wire qualification remains pending.
 
 The manual wire workflow runs independent peer exchanges for selected corpus
 cases. A combined report is published only when the selected work has complete,

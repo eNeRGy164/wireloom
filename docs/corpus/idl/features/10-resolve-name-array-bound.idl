@@ -1,0 +1,5 @@
+module CorpusResolveNameArrayBound {
+    struct Sample {
+        @resolve_name(false) octet bytes[ARRAY_BOUND];
+    };
+};

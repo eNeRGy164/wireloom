@@ -38,7 +38,7 @@ public sealed class CorpusComplianceSpecs
     public void CorpusManifestAndOracleLibraryHaveTheSameCaseSet()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(142);
+        cases.Length.ShouldBe(148);
         cases.ShouldBeUnique();
         CorpusRepository.OracleCaseIds.ShouldBe(cases.OrderBy(id => id, StringComparer.Ordinal).ToArray());
 
@@ -57,7 +57,20 @@ public sealed class CorpusComplianceSpecs
     }
 
     [Fact]
-    public void NewNegativeCasesDoNotRenumberExistingIntegrationTags()
+    public void FailedRtiCSharpCompilationDoesNotQualifyAsAShapeOracle()
+    {
+        // Arrange
+        var corpusCase = CorpusRepository.Cases.Single(item => item.Id == "10-resolve-name-wstring-aliases");
+
+        // Act
+        var oracleCompilationFailed = corpusCase.OracleCompilationFailed;
+
+        // Assert
+        oracleCompilationFailed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void NewResolveNameCasesDoNotRenumberExistingIntegrationTags()
     {
         // Arrange
         var cases = CorpusRepository.Cases.ToDictionary(corpusCase => corpusCase.Id, StringComparer.Ordinal);
@@ -76,6 +89,20 @@ public sealed class CorpusComplianceSpecs
         cases["12-name-collisions"].Tag.ShouldBe("C112");
         cases["09-autoid-hash"].Tag.ShouldBe("C040");
         cases["09-must-understand"].Tag.ShouldBe("C142");
+        cases["10-resolve-name-array-bound"].Tag.ShouldBe("C143");
+        cases["10-resolve-name-sequence-bound"].Tag.ShouldBe("C144");
+        cases["10-resolve-name-string-bound"].Tag.ShouldBe("C145");
+        cases["10-resolve-name-wstring-bound"].Tag.ShouldBe("C146");
+        cases["10-resolve-name-wstring-aliases"].Tag.ShouldBe("C147");
+        cases["10-default-literal-enum-array"].Tag.ShouldBe("C148");
+        foreach (var probeCase in cases.Values.Where(corpusCase =>
+                     corpusCase.Id.StartsWith("10-resolve-name-", StringComparison.Ordinal) ||
+                     corpusCase.Id == "10-default-literal-enum-array"))
+        {
+            var retained = RequestedRtiProfile == "7.7.0" ||
+                probeCase.Id is "10-resolve-name-wstring-aliases" or "10-default-literal-enum-array";
+            probeCase.OracleSourcesRetained.ShouldBe(retained);
+        }
     }
 
     [Fact]
@@ -329,10 +356,58 @@ public sealed class CorpusComplianceSpecs
     }
 
     [Theory]
+    [InlineData("10-resolve-name-array-bound", "Array dimensions", "ARRAY_BOUND")]
+    [InlineData("10-resolve-name-sequence-bound", "Collection bound", "SEQUENCE_BOUND")]
+    [InlineData("10-resolve-name-string-bound", "String bound", "STRING_BOUND")]
+    [InlineData("10-resolve-name-wstring-bound", "String bound", "WSTRING_BOUND")]
+    public void ResolveNameFalseDoesNotSuppressNamedBoundValidation(string caseId, string diagnosticName, string boundName)
+    {
+        // Arrange
+        var corpusCase = CorpusRepository.Cases.Single(item => item.Id == caseId);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(corpusCase));
+
+        // Assert
+        exception.Message.ShouldContain($"{diagnosticName} must resolve to a positive constant: {boundName}");
+    }
+
+    [Fact]
+    public void DefaultLiteralInitializesEnumArrayElements()
+    {
+        // Arrange
+        var corpusCase = CorpusRepository.Cases.Single(item => item.Id == "10-default-literal-enum-array");
+
+        // Act
+        var generated = Compile(corpusCase);
+        var managedAlias = generated["CorpusDefaultLiteralEnumArray.ColorArray.g.cs"].Source;
+        var nativeAlias = generated["CorpusDefaultLiteralEnumArray.Implementation.ColorArrayUnmanaged.g.cs"].Source;
+        var managedSample = generated["CorpusDefaultLiteralEnumArray.Shape.g.cs"].Source;
+        var nativeSample = generated["CorpusDefaultLiteralEnumArray.Implementation.ShapeUnmanaged.g.cs"].Source;
+
+        // Assert
+        managedSample.ShouldContain("public Color color { get; set; } = global::CorpusDefaultLiteralEnumArray.Color.RED;");
+        managedAlias.ShouldContain("Value[dimension0] = Color.RED;");
+        nativeSample.ShouldContain("color = (Color)(1);");
+
+        if (string.Equals(RequestedRtiProfile, "7.3.1", StringComparison.Ordinal))
+        {
+            nativeAlias.ShouldContain("Value.Initialize<Color>(dimension: 5, allocateMemory);");
+            nativeAlias.ShouldContain("Value.ToNative(__wireloom_defaultValues, dimension: 5);");
+            nativeSample.ShouldContain("colorArray.Initialize(allocatePointers, allocateMemory);");
+        }
+        else
+        {
+            nativeAlias.ShouldContain("Value.InitializeEnum(dimension: 5, allocateMemory: allocateMemory, defaultValue: 1);");
+            nativeSample.ShouldContain("colorArray.Initialize(allocatePointers, allocateMemory);");
+        }
+    }
+
+    [Theory]
     [MemberData(nameof(CorpusCases))]
     public void EveryAcceptedCorpusCasePreservesTheOracleDataContractShape(CorpusCase corpusCase)
     {
-        if (!IsExpectedToCompile(corpusCase))
+        if (!IsExpectedToCompile(corpusCase) || corpusCase.OracleCompilationFailed)
         {
             return;
         }

@@ -7,7 +7,7 @@
   "wireQualification": "not-qualified",
   "generatorSourceRoot": "generator",
   "oracleRoot": "rtiddsgen/csharp",
-  "capturedCaseCount": 143,
+  "capturedCaseCount": 149,
   "cases": [
     {
       "id": "01-boundaries",
@@ -723,6 +723,75 @@
       "id": "13-modules",
       "outcome": "generated",
       "sourceDirectory": "rtiddsgen/csharp/integration/contracts/13-modules"
+    },
+    {
+      "id": "10-resolve-name-array-bound",
+      "outcome": "rejected",
+      "sourceDirectory": "",
+      "oracleSourcesRetained": false,
+      "captureRunId": "rti-capture-7.3.1-20261019T132507Z-c88dc70d",
+      "sourceSha256": "611f5d1a0a2776702b1df9f46edcb11fb9e3eabbe6d703c14e4071516f484b0d",
+      "outputSha256": "a67ff654b837c1efc9978fbb4d18336fb6cfef26b92a5014ac4487aca2d16af4",
+      "compileOutcome": "not-generated",
+      "compileDiagnostics": []
+    },
+    {
+      "id": "10-resolve-name-sequence-bound",
+      "outcome": "rejected",
+      "sourceDirectory": "",
+      "oracleSourcesRetained": false,
+      "captureRunId": "rti-capture-7.3.1-20261019T132507Z-c88dc70d",
+      "sourceSha256": "f5eaa2e0e9864c8093f06ec5b62ea2fac1f2a0a852fba86ddeedbcebf398e4d9",
+      "outputSha256": "a4388580252bfc5472c7c23b760f333660d35b75a2e8c30727b3c484e38ea7f2",
+      "compileOutcome": "not-generated",
+      "compileDiagnostics": []
+    },
+    {
+      "id": "10-resolve-name-string-bound",
+      "outcome": "rejected",
+      "sourceDirectory": "",
+      "oracleSourcesRetained": false,
+      "captureRunId": "rti-capture-7.3.1-20261019T132507Z-c88dc70d",
+      "sourceSha256": "328572e41bf28d92e6a520c21c8e4744566933d43602ddb098d4101c715ded9b",
+      "outputSha256": "cceb25591b382ba47d93d91856ce0dd16c81f931d2d53e9c0d9b1acf164f7d1e",
+      "compileOutcome": "not-generated",
+      "compileDiagnostics": []
+    },
+    {
+      "id": "10-resolve-name-wstring-bound",
+      "outcome": "rejected",
+      "sourceDirectory": "",
+      "oracleSourcesRetained": false,
+      "captureRunId": "rti-capture-7.3.1-20261019T132507Z-c88dc70d",
+      "sourceSha256": "8e64b7ae7bbbf2392cd594059795f83bd2dbee673daf98fd943c0eea8410f784",
+      "outputSha256": "a901175605714596b48c05b0e67cf8491a384b46580f755cdc64bd52cb72df1c",
+      "compileOutcome": "not-generated",
+      "compileDiagnostics": []
+    },
+    {
+      "id": "10-resolve-name-wstring-aliases",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/10-resolve-name-wstring-aliases",
+      "oracleSourcesRetained": true,
+      "captureRunId": "rti-capture-7.3.1-20261019T132507Z-c88dc70d",
+      "sourceSha256": "f9d07a6f9a530ed9b3321258d9bf7286a69153ae58a29dde92ff08da39b8d19d",
+      "outputSha256": "7d596fd4d07327b3468c9ad0e8237a03867bbb36a7fbead1b70f9d6f52dca613",
+      "compileOutcome": "failed",
+      "compileDiagnostics": [
+        "CS0400: The Implementation namespace could not be found.",
+        "CS8377: SampleUnmanaged does not satisfy the generic unmanaged struct constraint."
+      ]
+    },
+    {
+      "id": "10-default-literal-enum-array",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/10-default-literal-enum-array",
+      "oracleSourcesRetained": true,
+      "captureRunId": "rti-capture-7.3.1-20261019T132507Z-c88dc70d",
+      "sourceSha256": "e704952b37223339a2b3f8996ac6ca6f81032f4b30a148f7697536ab51483cce",
+      "outputSha256": "9bc6332bf31f4e8c2686f81462a28e0e8d3442017e25ebfb9215c8f1755f6060",
+      "compileOutcome": "compiled",
+      "compileDiagnostics": []
     }
   ]
 }

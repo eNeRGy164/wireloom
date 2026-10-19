@@ -7,5 +7,84 @@
   "wireQualification": "qualified-evidence-indexed-in-root-feature-coverage",
   "generatorSourceRoot": "generator",
   "oracleRoot": "rtiddsgen/csharp",
-  "oracleCaseCount": 142
+  "oracleCaseCount": 148,
+  "characterizationProbes": [
+    {
+      "id": "10-resolve-name-array-bound",
+      "outcome": "generated",
+      "captureRunId": "rti-capture-7.7.0-20261019T132529Z-487e4588",
+      "sourceSha256": "611f5d1a0a2776702b1df9f46edcb11fb9e3eabbe6d703c14e4071516f484b0d",
+      "outputSha256": "63de133ef63bb838b7135ab34d95c47251f2b251cb6d976db2ec582a6814f033",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/negative/10-resolve-name-array-bound",
+      "compileOutcome": "failed",
+      "compileDiagnostics": [
+        "CS0103: ARRAY_BOUND does not exist in the generated C# output."
+      ]
+    },
+    {
+      "id": "10-resolve-name-sequence-bound",
+      "outcome": "generated",
+      "captureRunId": "rti-capture-7.7.0-20261019T132529Z-487e4588",
+      "sourceSha256": "f5eaa2e0e9864c8093f06ec5b62ea2fac1f2a0a852fba86ddeedbcebf398e4d9",
+      "outputSha256": "258f1ae6d7623db6ec3465853a54a16cc69ab08004cde59ecebe4d19d216113a",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/negative/10-resolve-name-sequence-bound",
+      "compileOutcome": "failed",
+      "compileDiagnostics": [
+        "CS0103: SEQUENCE_BOUND does not exist in the generated C# output."
+      ]
+    },
+    {
+      "id": "10-resolve-name-string-bound",
+      "outcome": "generated",
+      "captureRunId": "rti-capture-7.7.0-20261019T132529Z-487e4588",
+      "sourceSha256": "328572e41bf28d92e6a520c21c8e4744566933d43602ddb098d4101c715ded9b",
+      "outputSha256": "de5f73dfcdf5aa87b7452dc96118214cd0225d09976ea443fab86cc0b5a2dd4d",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/negative/10-resolve-name-string-bound",
+      "compileOutcome": "failed",
+      "compileDiagnostics": [
+        "CS0103: STRING_BOUND does not exist in the generated C# output."
+      ]
+    },
+    {
+      "id": "10-resolve-name-wstring-bound",
+      "outcome": "generated",
+      "captureRunId": "rti-capture-7.7.0-20261019T132529Z-487e4588",
+      "sourceSha256": "8e64b7ae7bbbf2392cd594059795f83bd2dbee673daf98fd943c0eea8410f784",
+      "outputSha256": "af92063c80650ab1ef45b86a7a687f7042c1273717f9354d0e52e03742446451",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/negative/10-resolve-name-wstring-bound",
+      "compileOutcome": "failed",
+      "compileDiagnostics": [
+        "CS0103: WSTRING_BOUND does not exist in the generated C# output."
+      ]
+    },
+    {
+      "id": "10-resolve-name-wstring-aliases",
+      "outcome": "generated",
+      "captureRunId": "rti-capture-7.7.0-20261019T132529Z-487e4588",
+      "sourceSha256": "f9d07a6f9a530ed9b3321258d9bf7286a69153ae58a29dde92ff08da39b8d19d",
+      "outputSha256": "14afd952134b7ac38a2e541d443a9e823f704d03dbf1b310384e7210aa8eb034",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/negative/10-resolve-name-wstring-aliases",
+      "compileOutcome": "failed",
+      "compileDiagnostics": [
+        "CS0400: The Implementation namespace could not be found.",
+        "CS8377: SampleUnmanaged does not satisfy the generic unmanaged struct constraint."
+      ]
+    },
+    {
+      "id": "10-default-literal-enum-array",
+      "outcome": "generated",
+      "captureRunId": "rti-capture-7.7.0-20261019T132529Z-487e4588",
+      "sourceSha256": "e704952b37223339a2b3f8996ac6ca6f81032f4b30a148f7697536ab51483cce",
+      "outputSha256": "fa2f33491b9771613c2abb1b38a6b3e26edf93bdbec599b6e29555704f2df062",
+      "oracleSourcesRetained": true,
+      "compileOutcome": "compiled",
+      "compileDiagnostics": [],
+      "sourceDirectory": "rtiddsgen/csharp/features/10-default-literal-enum-array"
+    }
+  ]
 }

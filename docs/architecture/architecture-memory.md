@@ -5,7 +5,7 @@ authoritative architecture lives in the [arc42 chapters](arc42/index.md),
 contracts, and support policy; edit those sources first, then refresh this file
 and [machine-readable memory](../../.agents/architecture-memory.yaml).
 
-Refreshed from the current arc42 sources on 2026-10-18. Treat the source map
+Refreshed from the current arc42 sources on 2026-10-19. Treat the source map
 below as authoritative; this summary is a retrieval aid, not a replacement.
 
 ## Agent summary
@@ -62,8 +62,8 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   source directories and outcomes. Wire planning reports unavailable RTI
   features separately as `notApplicableCases`; they add no exchanges, failures,
   or Wireloom implementation gaps. C040 isolates hash IDs on both LTS versions;
-  C142 isolates `@must_understand`, which is N/A on 7.3.1. Historical wire
-  results do not qualify these split inputs. New capture/export evidence retains
+  C142 isolates `@must_understand`, which is N/A on 7.3.1. Wire evidence must
+  match the exact case inputs and RTI profile. New capture/export evidence retains
   source identity, input/output hashes, tools, arguments, and outcomes; legacy
   missing provenance stays unknown, and dirty-tree runs identify a base commit
   rather than a clean tested revision. The [LTS runbook](../corpus/LTS-PROFILES.md)
@@ -75,15 +75,19 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   licensed wire evidence checks all nine directed pairings among Wireloom C#,
   RTI C#, and RTI C++. The manual workflow runs both qualified LTS profiles,
   with four isolated shards per version and a separate report, summary, and
-  artifact for each. See the [corpus guide](../corpus/README.md),
+  artifact for each. C147 passes all 18 directed exchanges per profile after
+  guarded RTI reference corrections; the retained RTI C# source records its
+  unmodified compilation failure. See the [corpus guide](../corpus/README.md),
   [feature coverage](../corpus/FEATURE-COVERAGE.md), and [wire runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
 - **API policy:** RTI C# is a baseline, not an API ceiling. Deliberate API
   differences and improvements need explicit evidence; an API-shape match does
   not establish wire compatibility. See [decisions](arc42/09-architectural-decisions.md).
 - **High-risk contracts:** Preserve optional presence, union discriminator
   ranges and RTI metadata representation, bounded collection semantics, and
-  alias behavior across managed/native/metadata emission. Check the detailed
-  source and runtime evidence before modifying these contracts.
+  alias behavior across managed/native/metadata emission. Enum arrays with
+  `@default_literal` initialize from that literal in both managed and native
+  output. Check the detailed source and runtime evidence before modifying
+  these contracts.
 
 ## Repository defaults
 

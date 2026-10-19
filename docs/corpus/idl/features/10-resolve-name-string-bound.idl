@@ -1,0 +1,5 @@
+module CorpusResolveNameStringBound {
+    struct Sample {
+        @resolve_name(false) string<STRING_BOUND> text;
+    };
+};

@@ -1,0 +1,5 @@
+module CorpusResolveNameWstringBound {
+    struct Sample {
+        @resolve_name(false) wstring<WSTRING_BOUND> wideText;
+    };
+};

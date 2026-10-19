@@ -403,6 +403,14 @@ C# member signature.
 | Unknown annotation                                                                                                                           | Emits warning `DDSG0101` and continues while ignoring the annotation. Verify that ignoring it does not change the contract you need.                                                                                                                                                                                         | [`12-unknown-annotation.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/negative/12-unknown-annotation.idl)                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `@position`, `@bit_bound`; invalid `@service` target                                                                                         | Recognized but unsupported uses emit `DDSG0102` and reject generation. A `@service("DDS")` interface is instead ignored with `DDSG0103`; interfaces do not become C# types.                                                                                                                                                  | [`10-unsupported-annotations.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/negative/10-unsupported-annotations.idl), [`10-service-annotation.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/negative/10-service-annotation.idl)                                                                                                                                                                                                                                                                         |
 
+For enum arrays, `@default_literal` initializes generated managed and native
+array elements from the declared enum member. See the
+[`10-default-literal-enum-array` corpus case](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/10-default-literal-enum-array.idl).
+
+Unresolved names used as array, sequence, string, or wstring bounds are
+rejected before C# emission. The [C143–C146 corpus cases](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/FEATURE-COVERAGE.md#negative-cases)
+record the diagnostics and RTI profile outcomes.
+
 An annotation accepted by RTI is not automatically implemented by Wireloom.
 For a declaration not listed here, check the exact corpus case and diagnostic;
 use an unknown-annotation warning as a prompt to verify the generated

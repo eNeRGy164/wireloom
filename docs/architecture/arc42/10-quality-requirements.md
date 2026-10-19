@@ -59,7 +59,7 @@ The C134 recursive fixed-array scenario checks absent/present hashing,
 independent nested copies, equality, and optional annotations. Fresh-process
 runtime and package tests check singleton/discovery startup and complete
 recursive-array serialization, including multidimensional and typedef forms.
-The original RTI C# oracle retains a separately reproducible startup limitation.
+The retained RTI C# oracle has a separately reproducible startup limitation.
 Its wire adaptations and limitations are described in [chapter 6](06-runtime-view.md).
 
 Generated API runtime contracts are verified separately from corpus shape and
