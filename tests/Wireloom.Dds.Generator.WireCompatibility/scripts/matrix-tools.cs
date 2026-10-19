@@ -416,6 +416,7 @@ void DiscoverCases(string[] commandArgs)
             "09-optional-recursive-array" => "Node",
             "09-optional-aggregate-member" => "Holder",
             "07-union-aliases" or "06-valuetypes" => "Holder",
+            "10-default-literal-enum-array" => "Shape",
             "04-unbounded-string-aliases" => "StringAliasesSample",
             "05-unbounded-sequence-aliases" => "SequenceAliasesSample",
             "04-string-alias-chains" => "StringAliasChainsSample",

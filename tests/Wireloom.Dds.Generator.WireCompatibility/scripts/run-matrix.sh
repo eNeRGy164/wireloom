@@ -902,6 +902,7 @@ for case_id in "${case_ids[@]}"; do
     case "$case_id" in
         04-unbounded-string-aliases) cmake_adaptation_args+=( -DWIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES=ON ) ;;
         10-resolve-name-wstring-aliases) cmake_adaptation_args+=( -DWIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES=ON ) ;;
+        10-default-literal-enum-array) cmake_adaptation_args+=( -DWIRELOOM_TYPED_DEFAULT_LITERAL_ENUM_ARRAY=ON ) ;;
         07-union-char-numeric|07-union-char-numeric-255)
             cmake_adaptation_args+=( -DWIRELOOM_TYPED_NUMERIC_CHAR_UNION=ON )
             if [[ "$case_id" == "07-union-char-numeric-255" ]]; then

@@ -16,6 +16,7 @@ internal static partial class ManagedFixtures
             "09-defaults-ranges" => CreateDefaultsAndRangesFixture<T>(options.Fixture),
             "01-boundaries" or "01-full-widths" => CreatePrimitiveBoundaryFixture<T>(options.CaseId, options.Fixture),
             "09-optional-recursive-array" => CreateOptionalRecursiveArrayFixture<T>(options.Fixture),
+            "10-default-literal-enum-array" => CreateEnumArrayDefaultFixture<T>(options.Fixture),
             "09-optional-string-sequences" => CreateOptionalStringSequenceFixture<T>(options.Fixture),
             "09-optional-aggregate-member" => CreateOptionalAggregateMemberFixture<T>(options.Fixture),
             "07-union-char-boundaries" => CreateCharacterUnionFixture<T>(options.Fixture),

@@ -50,6 +50,12 @@ try
 
             var generatedRoot = Path.Combine(repositoryRoot, "docs", "corpus", version, "generator");
             var discovery = Invoke(version == "7.7.0", "discover-cases", manifestPath, generatedRoot, Path.Combine(root, "discovered.json"), "09-must-understand");
+            var enumArrayDiscoveryPath = Path.Combine(root, $"discovered-enum-array-{version}.json");
+            Invoke(succeeds: true, "discover-cases", manifestPath, generatedRoot, enumArrayDiscoveryPath, "10-default-literal-enum-array");
+            var enumArrayCase = ReadJson(enumArrayDiscoveryPath)["cases"]!.AsArray().Single()!;
+            Check((string?)enumArrayCase["csharpType"] == "CorpusDefaultLiteralEnumArray.Shape"
+                && (string?)enumArrayCase["cppType"] == "::CorpusDefaultLiteralEnumArray::Shape",
+                "C148 discovers its aggregate topic type instead of its enum dependency.");
 
             if (version == "7.3.1")
             {
