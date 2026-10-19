@@ -599,11 +599,13 @@ run_scenario() {
 dotnet restore "$project" \
     -p:WireCompatibilityRtiVersion="$rti_version" \
     -p:RtiConnextDdsVersion="$rti_version" \
+    --locked-mode \
     --verbosity quiet
 if [[ "$cpp_compile_only" != "1" ]]; then
     dotnet restore "$rti_csharp_project" \
         -p:WireCompatibilityRtiVersion="$rti_version" \
         -p:RtiConnextDdsVersion="$rti_version" \
+        --locked-mode \
         --verbosity quiet
 fi
 
