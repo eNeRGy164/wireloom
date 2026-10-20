@@ -89,6 +89,9 @@ workflow_annotation() {
 # to identify in the uploaded results.
 fixtures_for_case() {
     case "$1" in
+        05-array-of-sequences-idl)
+            printf '%s\n' sequence-empty sequence-unequal sequence-mixed-empty sequence-boundary
+            ;;
         03-enums-aliases)
             printf '%s\n' default enum-alternate
             ;;
@@ -650,11 +653,17 @@ for case_id in "${case_ids[@]}"; do
     else
         build_args=(
             --no-restore --configuration Release
+            -t:Rebuild
             -p:WireCompatibilityCase="$case_id"
             -p:WireCompatibilityRtiVersion="$rti_version"
             -p:RtiConnextDdsVersion="$rti_version"
             --verbosity quiet
         )
+        case_idl="$(matrix_tool case-field "$manifest" "$case_id" idl)"
+        sequence_array_mapping="$(matrix_tool case-field "$manifest" "$case_id" sequence-array-mapping)"
+        generated_root="$case_dir/wireloom-generated"
+        build_args+=( "-p:WireCompatibilityIdl=$repo_root/docs/corpus/$case_idl" "-p:DdsIdlSequenceArrayMapping=$sequence_array_mapping" )
+        build_args+=( "-p:WireCompatibilityGeneratedOutputPath=$generated_root" )
         if [[ "$case_id" == "05-array-of-sequences" ]]; then
             # Preserve DDSG0105 as a warning in this known-limitation case while
             # keeping the repository's warnings-as-errors policy for all others.
@@ -674,7 +683,10 @@ for case_id in "${case_ids[@]}"; do
             tail -n 8 "$wireloom_build_log"
         fi
 
-        generated_root="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/obj/wireloom-generated"
+        if [[ "$wireloom_cs_available" == "1" ]]; then
+            matrix_tool generation-provenance "$manifest" "$case_id" "$generated_root" "$rti_version" \
+                "$output_dir/logs/$case_id-generation.json"
+        fi
         registry="$case_dir/case.json"
         matrix_tool discover-cases \
             "$manifest" "$generated_root" "$registry" "$case_id" >/dev/null
@@ -913,6 +925,7 @@ for case_id in "${case_ids[@]}"; do
             ;;
         04-string-alias-chains) cmake_adaptation_args+=( -DWIRELOOM_TYPED_STRING_ALIAS_CHAINS=ON ) ;;
         05-unbounded-sequence-aliases) cmake_adaptation_args+=( -DWIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES=ON ) ;;
+        05-array-of-sequences-idl) cmake_adaptation_args+=( -DWIRELOOM_TYPED_SEQUENCE_ARRAYS=ON ) ;;
         07-union-string-sequence-aliases) cmake_adaptation_args+=( -DWIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES=ON ) ;;
         07-union-string-sequence-bounded-direct) cmake_adaptation_args+=( -DWIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED=ON ) ;;
     esac

@@ -8,7 +8,9 @@ compatibility.
 
 The matrix targets the exact RTI Connext LTS releases 7.3.1 and 7.7.0. Each
 fixture is an independent exchange across the nine directed writer/reader
-pairings among the three peers. A reader must receive a valid sample and match
+pairings among the three peers, unless an explicit corpus case records a
+narrower peer scope and its exclusion reasons. A reader must receive
+a valid sample and match
 the full expected fixture; discovery or lifecycle notifications alone do not
 count as a pass. These runs provide evidence for the selected corpus cases,
 not qualification of every feature or RTI release.
@@ -224,11 +226,11 @@ RTI profile. They do not classify exchange failures.
 
 Both managed and C++ peers require the same discriminator and selected payload:
 
-| Case | Fixture | Discriminator | Selected member | Payload |
-| --- | --- | ---: | --- | ---: |
-| `07-union-char-numeric` | `union-127` | 127 | `value` | 13701 |
-| `07-union-char-numeric-255` | `union-255` | 255 | `value` | 13702 |
-| Both cases | `union-default` | 65 (`'A'`) | `fallback` | 13703 |
+| Case                        | Fixture         | Discriminator | Selected member | Payload |
+| --------------------------- | --------------- | ------------: | --------------- | ------: |
+| `07-union-char-numeric`     | `union-127`     | 127           | `value`         | 13701   |
+| `07-union-char-numeric-255` | `union-255`     | 255           | `value`         | 13702   |
+| Both cases                  | `union-default` | 65 (`'A'`)    | `fallback`      | 13703   |
 
 The C++ default fixture explicitly selects 65 after assigning its fallback value;
 its generated constructor otherwise retains 0. Readers check these fixed values
@@ -269,6 +271,44 @@ RTI oracle and Wireloom output.
 
 The observed failures apply only to `union-minimum` and the affected pairings.
 This runtime defect does not make the feature not applicable.
+
+## IDL sequence-array corpus case
+
+`05-array-of-sequences-idl` uses a separately named IDL file with the same
+declarations as C018 and `DdsIdlSequenceArrayMapping=Idl`. It is an ordinary
+corpus case, so default C018 generation and results remain unchanged. Wireloom
+C# and unmodified RTI C++ run all four directed pairings
+for each fixture:
+
+| Fixture                | Values checked                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| `sequence-empty`       | Both array positions hold empty numeric and string sequences.                                          |
+| `sequence-unequal`     | Numeric lengths are two/one; string lengths are one/two, with distinct payloads.                       |
+| `sequence-mixed-empty` | An empty numeric sequence precedes a populated one; a populated string sequence precedes an empty one. |
+| `sequence-boundary`    | Signed numeric limits, a 16-character string, an empty string, and the string sequence bound of three. |
+
+The managed reader checks every position and sequence against literal expected
+values without generated equality. The typed C++ reader compares the complete
+independently populated generated sample. Each profile plans 16 exchanges.
+The direct-form RTI C# peer is explicitly excluded because it flattens the
+array-of-sequences type; its five pairings show N/A with the reason in the
+report. This does not qualify Java, Python, typedef-based C# peers, or all
+possible sequence-array shapes.
+
+The runner rebuilds each case into a separate generated-source directory.
+`logs/<case>-generation.json` records the selected mode, IDL, exact runtime,
+and SHA-256 hashes of the IDL and generated source files. C149 scenarios retain
+this provenance in `results.json`, including after shard merging.
+Missing or mismatched provenance prevents completed exchanges from being
+published as valid evidence.
+
+To run only the dedicated case inside the licensed helper container:
+
+```bash
+export WIRE_COMPATIBILITY_CASE_FILTER=05-array-of-sequences-idl
+export WIRE_COMPATIBILITY_RTI_VERSION=7.7.0 # Repeat with 7.3.1.
+bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.sh
+```
 
 ## Maintainer checks
 

@@ -70,7 +70,6 @@ public partial class Node : global::System.IEquatable<Node>
 
         value = other.value;
         children = other.children is null ? null! : (Node[])other.children.Clone();
-
         if (other.children is not null)
         {
             for (var dimension0 = 0; dimension0 < 2; dimension0++)

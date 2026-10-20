@@ -17,7 +17,7 @@
 #define WIRELOOM_SET_MEMBER_ON(object, member, value) object.member = value
 #define WIRELOOM_BOUNDED_SEQUENCE ::omg::types::bounded_sequence
 #endif
-#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES) || defined(WIRELOOM_TYPED_DEFAULT_LITERAL_ENUM_ARRAY) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED)
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES) || defined(WIRELOOM_TYPED_DEFAULT_LITERAL_ENUM_ARRAY) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS)
 // RTI's generated DynamicData API omits some string template instantiations.
 // Use RTI-generated typed C++ endpoints for these fixtures and compare the
 // complete generated sample value at the reader.
@@ -30,6 +30,33 @@ static int run_typed_fixture_peer(
     const std::string &fixture)
 {
     DdsType expected;
+#ifdef WIRELOOM_TYPED_SEQUENCE_ARRAYS
+    if (case_id == "05-array-of-sequences-idl") {
+        auto &values = WIRELOOM_TYPED_MEMBER(expected, values);
+        auto &names = WIRELOOM_TYPED_MEMBER(expected, names);
+        if (fixture == "sequence-unequal") {
+            values[0].push_back(101);
+            values[0].push_back(-102);
+            values[1].push_back(203);
+            names[0].push_back("first");
+            names[1].push_back("second");
+            names[1].push_back("third");
+        } else if (fixture == "sequence-mixed-empty") {
+            values[1].push_back(-301);
+            values[1].push_back(302);
+            names[0].push_back("only-first");
+        } else if (fixture == "sequence-boundary") {
+            values[0].push_back(INT32_MIN);
+            values[1].push_back(INT32_MAX);
+            names[0].push_back("1234567890123456");
+            names[0].push_back("");
+            names[0].push_back("last");
+            names[1].push_back("other");
+        } else if (fixture != "sequence-empty") {
+            throw std::runtime_error("Unknown sequence-array fixture: " + fixture);
+        }
+    }
+#endif
 #ifdef WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES
     if (case_id == "05-unbounded-sequence-aliases" && fixture == "sequence-multiple") {
         ::CorpusUnboundedSequences::Numbers numbers;

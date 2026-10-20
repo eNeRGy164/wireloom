@@ -46,7 +46,6 @@ public struct ColorArrayUnmanaged : INativeTopicType<ColorArray>
         if (allocateMemory)
         {
             var __wireloom_defaultValues = new Color[5];
-
             for (var dimension0 = 0; dimension0 < 5; dimension0++)
             {
                 __wireloom_defaultValues[dimension0] = Color.RED;

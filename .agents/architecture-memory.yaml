@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-19T19:26:18Z
+  generated_at: 2026-10-20T01:20:00Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -25,10 +25,12 @@ sources:
     - docs/corpus/FEATURE-COVERAGE.md
     - docs/corpus/LTS-PROFILES.md
     - docs/guides/support-and-compatibility.md
+    - docs/guides/configuration.md
     - tests/Wireloom.Dds.Generator.RuntimeContracts/README.md
     - tests/Wireloom.Dds.Generator.WireCompatibility/README.md
   evidence:
     - docs/performance/incremental-generator-baseline.md
+    - docs/testing/sequence-array-mapping.md
   defaults:
     - skill: dotnet-bootstrap
       resource: attachments/dotnet-defaults.yaml
@@ -47,11 +49,11 @@ summary:
     sources:
       - docs/architecture/arc42/03-context-and-scope.md
   strategy:
-    text: Use a managed Roslyn pipeline with explicit roots, project-wide root metadata, independent semantic modeling, and source-located diagnostics. The Roslyn adapter selects one immutable RTI API profile from the resolved assembly version; semantic parsing and validation remain RTI-independent.
+    text: Use a managed Roslyn pipeline with explicit roots, batch-wide preprocessing/strictness metadata, file-owned sequence-array mapping, independent semantic modeling, and source-located diagnostics. The Roslyn adapter selects one immutable RTI API profile from the resolved assembly version; semantic parsing and validation remain RTI-independent.
     sources:
       - docs/architecture/arc42/04-solution-strategy.md
   building_blocks:
-    text: The Roslyn adapter selects an immutable RTI API profile from the resolved assembly version. The input graph and preprocessor feed a target-independent parse-bind-validate front end; compilation orchestration passes validated declarations and the profile to emission planning. Plans own profile- and IDL-shape-specific API, native storage, metadata, and initialization choices. Emitters render plans, and a central result boundary checks duplicate hint names. Generated-value behavior and detailed evidence are maintained in chapter 8.6, the runtime contract matrix, and the corpus feature index.
+    text: The Roslyn adapter selects an immutable RTI API profile from the resolved assembly version. The input graph and preprocessor feed a target-independent parse-bind-validate front end; compilation orchestration passes validated declarations and the profile to emission planning. Plans own profile- and IDL-shape-specific API, native storage, metadata, and initialization choices. SequenceArrayEmissionPlan reserves deterministic wrappers for opt-in Idl direct sequence arrays without mutating the semantic model; inherited fields share the same projection and enclosing metadata contains anonymous sequences. Emitters render plans, and a central result boundary checks duplicate hint names. Generated-value behavior and detailed evidence are maintained in chapter 8.6, the runtime contract matrix, and the corpus feature index.
     sources:
       - docs/architecture/arc42/05-building-block-view.md
   runtime:
@@ -63,15 +65,15 @@ summary:
     sources:
       - docs/architecture/arc42/07-deployment-view.md
   cross_cutting:
-    text: Corpus oracle reads use the selected LTS capture. Wire planning records unavailable RTI features as notApplicableCases, excluded from exchanges, compatibility failures, and Wireloom implementation gaps. C040 isolates hash IDs on both LTS versions; C142 isolates must-understand, which is N/A on 7.3. Wire evidence must match the exact case inputs and RTI profile. New capture/export evidence retains source identity, input/output hashes, tool versions, arguments, and outcomes; legacy missing provenance stays unknown. The LTS runbook owns reproduction. Evidence vocabulary, deterministic inputs and invalidation, explicit compiler stages, diagnostics, test separation, deterministic preprocessing limits, and supply-chain controls apply across the system. Build-time generated runtime fixtures execute typed managed, native, and support APIs on Windows and Linux, including enum-array defaults and direct and typedef-backed string-sequence union branches. Coveralls measures maintained generator source; generated fixtures and test project code are excluded. The behavior matrix keeps unresolved contracts visible. RTI C# is a baseline, not an API ceiling; improvements supported by RTI C++ evidence require separate wire verification.
+    text: Corpus oracle reads use the selected LTS capture. Wire planning records unavailable RTI features as notApplicableCases, excluded from exchanges, compatibility failures, and Wireloom implementation gaps. C040 isolates hash IDs on both LTS versions; C142 isolates must-understand, which is N/A on 7.3. Wire evidence must match the exact case inputs and RTI profile. New capture/export evidence retains source identity, input/output hashes, tool versions, arguments, and outcomes; legacy missing provenance stays unknown. The LTS runbook owns reproduction. Evidence vocabulary, deterministic inputs and invalidation, explicit compiler stages, diagnostics, test separation, deterministic preprocessing limits, and supply-chain controls apply across the system. Build-time generated runtime fixtures execute typed managed, native, and support APIs on Windows and Linux, including enum-array defaults and direct and typedef-backed string-sequence union branches. Coveralls measures maintained generator source; generated fixtures and test project code are excluded. The behavior matrix keeps unresolved contracts visible. RTI C# is a baseline, not an API ceiling; improvements supported by RTI C++ evidence require separate wire verification. Direct sequence arrays default to RtiCSharp flattening; DdsIdlSequenceArrayMapping sets a project default and SequenceArrayMapping overrides it per declaring file, including tracked includes. Idl mode has typed runtime tests on both LTS profiles; invalid modes and recursive direct arrays are rejected before emission, and dedicated C149 passes all 16 focused Wireloom/C++ DDS exchanges per exact profile.
     sources:
       - docs/architecture/arc42/08-crosscutting-concepts.md
   decisions:
-    text: Roslyn hosting, explicit roots, independent semantic modeling, project-wide root metadata, explicit parse-bind-validate phases, explicit runtime ownership, case-level evidence, separated compiler orchestration/resolution/emission, bounded preprocessing work, manually triggered wire evidence targeting exact RTI 7.3.1 or 7.7.0, preservation of declared alias metadata for optional aggregate members to match RTI, inclusion of warning-only Wireloom-positive cases, and union metadata normalization matching RTI C++ while preserving managed discriminator ranges are current decisions. RTI C# is the managed API baseline, with deliberate improvements allowed and separately evidenced. The wire matrix distinguishes Wireloom C#, RTI C#, and RTI C++ endpoints and exercises all directed pairings; RTI-positive cases rejected by Wireloom remain visible as not implemented.
+    text: Roslyn hosting, explicit roots, independent semantic modeling, project-wide root metadata, explicit parse-bind-validate phases, explicit runtime ownership, case-level evidence, separated compiler orchestration/resolution/emission, bounded preprocessing work, manually triggered wire evidence targeting exact RTI 7.3.1 or 7.7.0, preservation of declared alias metadata for optional aggregate members to match RTI, inclusion of warning-only Wireloom-positive cases, and union metadata normalization matching RTI C++ while preserving managed discriminator ranges are current decisions. RTI C# is the managed API baseline, with deliberate improvements allowed and separately evidenced. The wire matrix distinguishes Wireloom C#, RTI C#, and RTI C++ endpoints and exercises all directed pairings for ordinary cases; C149 records an explicit mode, peer scope, exclusion reasons, and matching source provenance as an ordinary corpus case; RTI-positive cases rejected by Wireloom remain visible as not implemented.
     sources:
       - docs/architecture/arc42/09-architectural-decisions.md
   quality:
-    text: Compatibility shape, diagnostics, package integration, maintainability, incremental build evidence, wire compatibility across Wireloom-positive cases and separate exact 7.3.1 and 7.7.0 three-peer fixture matrices, and supply-chain integrity are the primary quality goals. Continuous Quality CI runs matching-profile corpus checks plus Windows/Ubuntu runtime and fresh-package tests for both LTS packages on net8.0 and net10.0. The runtime contract matrix separately records generated API behavior, compile-blocked inputs, and skipped contracts without establishing wire compatibility. Retained RTI C# oracle sources and typed runtime fixtures cover unbounded typedef behavior. Generated wire reports contain per-fixture and per-pairing outcomes.
+    text: Compatibility shape, diagnostics, package integration, maintainability, incremental build evidence, wire compatibility across Wireloom-positive cases and separate exact 7.3.1 and 7.7.0 three-peer fixture matrices, and supply-chain integrity are the primary quality goals. Continuous Quality CI runs matching-profile corpus checks plus Windows/Ubuntu runtime and fresh-package tests for both LTS packages on net8.0 and net10.0. The runtime contract matrix separately records generated API behavior, compile-blocked inputs, and skipped contracts without establishing wire compatibility. Retained RTI C# oracle sources and typed runtime fixtures cover unbounded typedef behavior. Generated wire reports contain per-fixture and per-pairing outcomes. C149 is a dedicated Idl case with retained profile-specific sources and hashes; it passes 16 / 16 focused Wireloom/C++ exchanges on each exact LTS release. RTI C# is explicitly excluded because its direct-form binding flattens this type. Completed evidence without matching mode/runtime/input/generated-source provenance is rejected.
     sources:
       - docs/architecture/arc42/10-quality-requirements.md
   risks:
@@ -115,13 +117,17 @@ defaults:
       source: chapter-7
       status: explicit
     generation_batch_configuration_scope:
-      value: project-wide
+      value: preprocessing-and-strictness-project-wide; mapping-file-owned
       source: chapter-2
       status: explicit
     runtime_identifiers:
       value: []
       source: brownfield-detection
       status: detected
+    sequence_array_mapping:
+      value: RtiCSharp
+      source: chapter-8
+      status: explicit
   dotnet:
     unit_test_framework:
       value: xunit_v3_mtp-v2

@@ -4,12 +4,13 @@
 using ReportFields = System.Collections.Generic.Dictionary<string, object?>;
 using PeerPair = (string Writer, string Reader);
 using FixtureKey = (string CaseId, string Fixture);
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 
-const string usage = "Usage: matrix-tools.cs <list-cases|list-rti-only-cases|case-field|case-pairings|case-info|json-field|discover-cases|discover-rti|includes|includes-recursive|partition-shard|merge-shards|render-report|adapt-rti-characters> ...";
+const string usage = "Usage: matrix-tools.cs <list-cases|list-rti-only-cases|case-field|case-pairings|case-info|json-field|discover-cases|discover-rti|generation-provenance|includes|includes-recursive|partition-shard|merge-shards|render-report|adapt-rti-characters> ...";
 var jsonOptions = new JsonSerializerOptions
 {
     WriteIndented = true,
@@ -61,6 +62,9 @@ try
                 case "idl":
                     Console.WriteLine((string)item["idl"]!);
                     break;
+                case "sequence-array-mapping":
+                    Console.WriteLine((string?)item["sequenceArrayMapping"] ?? "RtiCSharp");
+                    break;
                 case "defines":
                     foreach (var define in item["defines"]?.AsArray() ?? [])
                     {
@@ -90,8 +94,8 @@ try
         case "case-pairings":
         {
             RequireArgs(3);
-            _ = FindCase(ReadJson(args[1]), args[2]);
-            var peers = new[] { "Wireloom C#", "RTI C#", "RTI C++" };
+            var item = FindCase(ReadJson(args[1]), args[2]);
+            var peers = CasePeers(item);
 
             foreach (var writer in peers)
             {
@@ -124,6 +128,9 @@ try
         }
         case "discover-cases":
             DiscoverCases(args);
+            break;
+        case "generation-provenance":
+            WriteGenerationProvenance(args);
             break;
         case "discover-rti":
             DiscoverRti(args);
@@ -167,7 +174,44 @@ void RequireArgs(int count)
 }
 
 // JSON and case selection helpers.
-JsonNode ReadJson(string path) => JsonNode.Parse(File.ReadAllText(path))!;
+JsonNode ReadJson(string path)
+{
+    return JsonNode.Parse(File.ReadAllText(path))!;
+}
+
+/// <summary>Gets the explicitly qualified peers; ordinary cases keep all nine directed pairings.</summary>
+string[] CasePeers(JsonNode item) => item["wireMatrix"]?["peers"] is JsonArray peers
+    ? peers.Select(peer => (string)peer!).ToArray()
+    : ["Wireloom C#", "RTI C#", "RTI C++"];
+
+/// <summary>Captures the selected mode and hashes of the actual IDL and generated sources used by a peer build.</summary>
+void WriteGenerationProvenance(string[] commandArgs)
+{
+    RequireArgs(6);
+    var manifest = ReadJson(commandArgs[1]);
+    var item = FindCase(manifest, commandArgs[2]);
+    var repository = FindRepositoryRoot(commandArgs[1]);
+    var generatedRoot = commandArgs[3];
+    var files = Directory.GetFiles(generatedRoot, "*.g.cs", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToArray();
+    if (files.Length == 0)
+    {
+        throw new InvalidDataException("Generation provenance requires emitted source files.");
+    }
+
+    var provenance = new
+    {
+        sequenceArrayMapping = (string?)item["sequenceArrayMapping"] ?? "RtiCSharp",
+        rtiVersion = commandArgs[4],
+        idl = (string)item["idl"]!,
+        idlSha256 = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(repository, "docs", "corpus", (string)item["idl"]!)))),
+        generatedSources = files.Select(path => new
+        {
+            path = Path.GetRelativePath(generatedRoot, path).Replace('\\', '/'),
+            sha256 = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path)))
+        }).ToArray()
+    };
+    File.WriteAllText(commandArgs[5], JsonSerializer.Serialize(provenance, jsonOptions));
+}
 
 /// <summary>Excludes implementation gaps and unavailable RTI features before planning Wireloom exchanges.</summary>
 HashSet<string> ExcludedWireloomCaseIds(JsonNode exclusions) =>
@@ -298,6 +342,7 @@ void MergeShards(string[] commandArgs)
         if (Directory.Exists(logs))
         {
             logFiles.AddRange(Directory.GetFiles(logs, "*.log"));
+            logFiles.AddRange(Directory.GetFiles(logs, "*-generation.json"));
         }
     }
 
@@ -375,7 +420,8 @@ void DiscoverCases(string[] commandArgs)
         throw new InvalidOperationException($"Case {requestedCase} is not a wire-testable Wireloom positive case.");
     }
 
-    var byIdl = selected.ToDictionary(item => Path.GetFileName((string)item!["idl"]!), item => (string)item!["id"]!, StringComparer.Ordinal);
+    var byIdl = selected.GroupBy(item => Path.GetFileName((string)item!["idl"]!), StringComparer.Ordinal)
+        .ToDictionary(group => group.Key, group => group.Select(item => (string)item!["id"]!).ToArray(), StringComparer.Ordinal);
     var candidates = selected.ToDictionary(item => (string)item!["id"]!, _ => new List<(string Cs, string Cpp)>(), StringComparer.Ordinal);
 
     foreach (var source in Directory.Exists(generatedRoot) ? Directory.EnumerateFiles(generatedRoot, "*.g.cs", SearchOption.AllDirectories) : [])
@@ -383,7 +429,7 @@ void DiscoverCases(string[] commandArgs)
         var text = File.ReadAllText(source);
         var header = Regex.Match(text, "generated by Wireloom from '([^']+)'");
         var support = Regex.Match(text, @"class\s+\w+\s*:\s*TypeSupport<\s*([\w.]+)\s*>");
-        if (!header.Success || !support.Success || !byIdl.TryGetValue(header.Groups[1].Value, out var id))
+        if (!header.Success || !support.Success || !byIdl.TryGetValue(header.Groups[1].Value, out var ids))
         {
             continue;
         }
@@ -395,7 +441,10 @@ void DiscoverCases(string[] commandArgs)
             type = $"{namespaceMatch.Groups[1].Value}.{type}";
         }
 
-        candidates[id].Add((type, "::" + type.Replace(".", "::", StringComparison.Ordinal)));
+        foreach (var id in ids)
+        {
+            candidates[id].Add((type, "::" + type.Replace(".", "::", StringComparison.Ordinal)));
+        }
     }
 
     var results = new List<object>();
@@ -655,6 +704,40 @@ void RenderReport(string[] commandArgs)
         if (wireMatrixConfiguration.TryGetValue(id, out var matrixConfiguration))
         {
             scenario["matrixConfiguration"] = matrixConfiguration;
+        }
+        var corpusCase = FindCase(manifest, id);
+        if (!CasePeers(corpusCase).Contains(writer) || !CasePeers(corpusCase).Contains(reader))
+        {
+            throw new InvalidDataException($"Exchange uses an excluded peer for {id}.");
+        }
+
+        if (corpusCase["sequenceArrayMapping"] is not null)
+        {
+            scenario["generationConfiguration"] = new
+            {
+                idl = (string)corpusCase["idl"]!,
+                sequenceArrayMapping = (string)corpusCase["sequenceArrayMapping"]!
+            };
+            var provenancePath = Path.Combine(logsPath, $"{id}-generation.json");
+            if (File.Exists(provenancePath))
+            {
+                var provenance = ReadJson(provenancePath);
+                if ((string?)provenance["sequenceArrayMapping"] != (string)corpusCase["sequenceArrayMapping"]!
+                    || (string?)provenance["rtiVersion"] != version
+                    || (string?)provenance["idl"] != (string)corpusCase["idl"]!
+                    || (string?)provenance["idlSha256"] != Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(
+                        Path.Combine(FindRepositoryRoot(commandArgs[8]), "docs", "corpus", (string)corpusCase["idl"]!))))
+                    || provenance["generatedSources"] is not JsonArray { Count: > 0 })
+                {
+                    throw new InvalidDataException($"Generation provenance does not match {id} and RTI {version}.");
+                }
+
+                scenario["generationProvenance"] = provenance;
+            }
+            else if (status != "NOT_RUN")
+            {
+                throw new InvalidDataException($"Generation provenance is missing for {id}.");
+            }
         }
         var adaptations = new Dictionary<string, string>();
         foreach (var endpoint in new[] { writerEndpoint, readerEndpoint })
@@ -1027,6 +1110,7 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
         "| 🟧<sup>†</sup> | Passed with an adaptation |",
         "| ⛔ | Failed |",
         "| ❔ | Not run |",
+        "| N/A | Peer excluded by the recorded configuration |",
         "| ⚫ | Not implemented |",
         "",
         "Failure details show the observed symptom.", "",
@@ -1053,7 +1137,7 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
 
     if (configuredCases.Length > 0)
     {
-        lines.AddRange(["## Case-specific RTI C++ generation", ""]);
+        lines.AddRange(["## Case-specific generation and peer scope", ""]);
         foreach (var id in configuredCases)
         {
             var configuration = (JsonObject)scenarios.First(item => (string)item["case"]! == id)["matrixConfiguration"]!;
@@ -1065,6 +1149,15 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
             var generation = options.Any() ? $"generation adds {string.Join(", ", options)}" : "uses the default generation flags";
             var adaptation = idlAdaptations.Any() ? $" IDL adaptations: {string.Join(", ", idlAdaptations)}." : "";
             lines.Add($"- **{id}**: RTI C++ {generation}.{adaptation} {qualification} {WorkaroundLink(id)}".TrimEnd());
+            if (scenarios.First(item => (string)item["case"]! == id).TryGetValue("generationConfiguration", out var generationConfiguration))
+            {
+                lines.Add($"  Wireloom configuration: `{JsonSerializer.Serialize(generationConfiguration, keyJsonOptions)}`. Input and generated-source SHA-256 hashes are in the JSON evidence.");
+            }
+
+            foreach (var exclusion in configuration["excludedPeers"]?.AsObject() ?? [])
+            {
+                lines.Add($"  Excluded peer **{exclusion.Key}**: {(string)exclusion.Value!}");
+            }
         }
         lines.Add("");
     }
@@ -1095,10 +1188,17 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
     string? previous = null;
     foreach (var (id, fixture, row, unsupportedCase) in orderedRows)
     {
+        var excludedPeers = row.Values.Where(item => item.ContainsKey("matrixConfiguration"))
+            .Select(item => ((JsonObject)item["matrixConfiguration"]!)["excludedPeers"]?.AsObject())
+            .FirstOrDefault() ?? new JsonObject();
         var cells = new List<string>();
         foreach (var pairing in pairings)
         {
-            if (unsupportedCase is not null && UsesWireloom(pairing))
+            if (excludedPeers.ContainsKey(pairing.Writer) || excludedPeers.ContainsKey(pairing.Reader))
+            {
+                cells.Add("N/A");
+            }
+            else if (unsupportedCase is not null && UsesWireloom(pairing))
             {
                 cells.Add("⚫ —");
             }
@@ -1147,7 +1247,8 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
         var problems = new List<(string Pairing, string Detail)>();
         foreach (var pair in pairings)
         {
-            if (unsupportedCase is not null && UsesWireloom(pair))
+            if ((unsupportedCase is not null && UsesWireloom(pair))
+                || excludedPeers.ContainsKey(pair.Writer) || excludedPeers.ContainsKey(pair.Reader))
             {
                 continue;
             }

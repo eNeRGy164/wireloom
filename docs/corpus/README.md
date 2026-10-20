@@ -52,16 +52,24 @@ notices.
 
 ## Case inventory
 
-The manifest currently contains **80 positive cases**, **64 negative probes**,
-and **4 integration entry points** (148 entries total). These counts follow
+The manifest currently contains **81 positive cases**, **64 negative probes**,
+and **4 integration entry points** (149 entries total). These counts follow
 `manifest.json`, the source of truth for the corpus inventory.
+
+Dedicated C149, `05-array-of-sequences-idl`, uses a separately named IDL file
+whose contents match C018 (`05-array-of-sequences`). Its
+`sequenceArrayMapping: "Idl"` setting is an ordinary per-case input. Both
+profile exports retain its generated sources under
+`<version>/generator/features/05-array-of-sequences-idl/`; ordinary compliance
+tests compare those sources with fresh generation. The case deliberately has
+no RTI C# oracle because that binding flattens this direct IDL form.
 
 | Group                    | Count | Location                                                   |
 | ------------------------ | ----: | ---------------------------------------------------------- |
-| Positive feature cases   |    80 | [`idl/features`](idl/features)                             |
+| Positive feature cases   |    81 | [`idl/features`](idl/features)                             |
 | Negative probes          |    64 | [`idl/negative`](idl/negative) and feature-specific probes |
 | Integration entry points |     4 | [`idl/integration`](idl/integration)                       |
-| Total                    |   148 | —                                                          |
+| Total                    |   149 | —                                                          |
 
 Counts follow the manifest classifications. Some negative probes use an IDL
 under `idl/features` because they characterize syntax that a generator accepts
@@ -138,10 +146,18 @@ case-specific reference-peer requirements. `rtiCppCodegenOptions` supplies
 additional arguments to RTI C++ `rtiddsgen` for that case only, and
 `qualification` explains constraints on interpreting its result. The wire
 runner copies this configuration into each affected scenario in `results.json`
-and lists it in the generated `results.md` under **Case-specific RTI C++
-generation**. Use this for documented experimental RTI features or required
+and lists it in the generated `results.md` under **Case-specific
+generation and peer scope**. Use this for documented experimental RTI features or required
 code-generator switches; keep ordinary shared IDL and Wireloom generation
 independent of those RTI-specific options.
+
+The C149 `Idl` case selects Wireloom C# and RTI C++, with four fixtures and
+16 exchanges per exact LTS profile. RTI C# is explicitly excluded because its
+direct-form binding describes the flattened type. Reports show those five
+pairings as N/A, rather than missing exchanges. The original C018 case retains
+all nine pairings and its known limitations. C149 results retain the actual
+peer build's mode, runtime, IDL hash, and generated-source hashes through shard
+merging. A completed exchange without matching provenance is rejected.
 
 `rtiCppIdlAdaptations` lists narrowly scoped, version-qualified changes to the
 scratch IDL used only by RTI C++ generation. The `07-union-char-boundaries`
@@ -173,6 +189,12 @@ Run the complete manifest-driven compliance suite with:
 ```text
 dotnet run --project tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --no-restore --configuration Release
 ```
+
+C018 retains its default RTI C# flattened exports and oracle comparisons.
+C149 separately checks the opt-in `Idl` mapping under each selected profile,
+using its duplicate IDL source and normal generated-source folders. Typed
+runtime and package fixtures cover the setting and generated collection
+behavior; corpus generation does not establish DDS wire qualification.
 
 The package preview and release workflows restore and run this suite before
 packing. The Quality workflow also runs both exact LTS corpus profiles and

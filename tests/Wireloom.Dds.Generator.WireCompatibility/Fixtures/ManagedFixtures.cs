@@ -13,6 +13,9 @@ internal static partial class ManagedFixtures
     {
         return options.CaseId switch
         {
+#if WIRE_COMPATIBILITY_SEQUENCE_ARRAYS
+            "05-array-of-sequences-idl" => CreateSequenceArrayFixture<T>(options.Fixture),
+#endif
             "09-defaults-ranges" => CreateDefaultsAndRangesFixture<T>(options.Fixture),
             "01-boundaries" or "01-full-widths" => CreatePrimitiveBoundaryFixture<T>(options.CaseId, options.Fixture),
             "09-optional-recursive-array" => CreateOptionalRecursiveArrayFixture<T>(options.Fixture),

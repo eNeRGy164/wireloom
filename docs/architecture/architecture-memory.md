@@ -5,7 +5,7 @@ authoritative architecture lives in the [arc42 chapters](arc42/index.md),
 contracts, and support policy; edit those sources first, then refresh this file
 and [machine-readable memory](../../.agents/architecture-memory.yaml).
 
-Refreshed from the current arc42 sources on 2026-10-19. Treat the source map
+Refreshed from the current arc42 sources on 2026-10-20. Treat the source map
 below as authoritative; this summary is a retrieval aid, not a replacement.
 
 ## Agent summary
@@ -31,7 +31,10 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   See
   [constraints](arc42/02-architecture-constraints.md) and [support policy](../guides/support-and-compatibility.md).
 - **Compiler flow:** Explicit `DdsIdl` roots and project-wide metadata enter
-  through MSBuild/Roslyn. The managed pipeline resolves includes, preprocesses,
+  through MSBuild/Roslyn. Sequence-array mapping is independently file-owned:
+  the project default `DdsIdlSequenceArrayMapping=RtiCSharp` can be overridden
+  with `SequenceArrayMapping=Idl` on a declaring file, including shared includes.
+  The managed pipeline resolves includes, preprocesses,
   parses, binds, validates, plans emission, and writes generated documents.
   Input that prevents safe managed output fails with source-located diagnostics.
   Deliberately ignored constructs and potentially lossy mappings report
@@ -73,7 +76,10 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   oracles check required types, properties/types, and enum members, rather than
   identical public APIs; runtime contracts execute generated APIs;
   licensed wire evidence checks all nine directed pairings among Wireloom C#,
-  RTI C#, and RTI C++. The manual workflow runs both qualified LTS profiles,
+  RTI C#, and RTI C++ for ordinary cases. C149 records its selected mode, peer
+  scope, exclusion reasons, and source hashes as a dedicated corpus case. Its
+  `Idl` mapping passes 16 / 16 focused Wireloom/C++ exchanges per exact LTS profile;
+  RTI C# is excluded because it describes the flattened type. The manual workflow runs both qualified LTS profiles,
   with four isolated shards per version and a separate report, summary, and
   artifact for each. C147 passes all 18 directed exchanges per profile after
   guarded RTI reference corrections; the retained RTI C# source records its
@@ -91,15 +97,16 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
 
 ## Repository defaults
 
-| Setting               | Current value                             | Qualification                                          |
-| :-------------------- | :---------------------------------------- | :----------------------------------------------------- |
-| Consumer minimum      | `net8.0`, C# 12+                          | Support policy applies                                 |
-| Repository target     | `net10.0`                                 | Pinned SDK in `global.json`                            |
-| Generator target      | `netstandard2.0`                          | Analyzer/source-generator package                      |
-| RTI package floor     | `7.3.1+`                                  | Reference eligibility only, not compatibility evidence |
-| RTI profile range     | `7.3.1+`                                  | Nearest profile selected by assembly identity          |
-| Qualified RTI versions| `7.3.1`, `7.7.0`                          | Exact LTS version evidence only                         |
-| Test platform         | Microsoft.Testing.Platform, xUnit v3      | Runner filters follow `--`                             |
+| Setting                | Current value                              | Qualification                                                                                                          |
+| :--------------------- | :----------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| Consumer minimum       | `net8.0`, C# 12+                           | Support policy applies                                                                                                 |
+| Repository target      | `net10.0`                                  | Pinned SDK in `global.json`                                                                                            |
+| Generator target       | `netstandard2.0`                           | Analyzer/source-generator package                                                                                      |
+| RTI package floor      | `7.3.1+`                                   | Reference eligibility only, not compatibility evidence                                                                 |
+| RTI profile range      | `7.3.1+`                                   | Nearest profile selected by assembly identity                                                                          |
+| Qualified RTI versions | `7.3.1`, `7.7.0`                           | Exact LTS version evidence only                                                                                        |
+| Test platform          | Microsoft.Testing.Platform, xUnit v3       | Runner filters follow `--`                                                                                             |
+| Sequence-array mapping | `RtiCSharp`; opt-in `Idl` per project/file | File ownership; runtime coverage on both LTS profiles; C149 Idl case passes 16 focused DDS exchanges per exact profile |
 
 ## Open risks
 
@@ -108,8 +115,13 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   and later releases remain unqualified.
 - C136 exposes `ISequence<Scalar>` where RTI C# exposes `ISequence<int>`;
   investigation is tracked in [issue #62](https://github.com/eNeRGy164/wireloom/issues/62).
-- `05-array-of-sequences` does not preserve the IDL array shape in managed C#;
-  Wireloom C# wire pairings fail as recorded in the feature index.
+- `05-array-of-sequences` retains the flattened RTI C# shape by default and its
+  recorded wire failures. Opt-in `Idl` mode plans arrays of sequence wrappers
+  with anonymous sequence metadata; it has runtime coverage on both profiles.
+  Recursive direct sequence arrays are rejected in this mode. The dedicated
+  retained C149 corpus case passes its 16 focused Wireloom/C++ DDS
+  exchanges per profile; broader qualification remains open. See chapters 5,
+  8, 9, 10, and 11.
 - Compatibility beyond retained cases, host/IDE combinations, and adapted RTI
   wire fixtures remains unqualified.
 
@@ -118,6 +130,7 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
 - [arc42 index and chapters](arc42/index.md)
 - [Corpus guide](../corpus/README.md) and [feature coverage](../corpus/FEATURE-COVERAGE.md)
 - [Support and compatibility policy](../guides/support-and-compatibility.md)
+- [Configuration reference](../guides/configuration.md)
 - [Runtime contract guide](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
 - [Wire compatibility runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
 - [Corpus inventory and evidence rules](../corpus/README.md)

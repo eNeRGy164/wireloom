@@ -26,10 +26,20 @@ RTI runtime.
    [diagnostic rules](08-crosscutting-concepts.md#82-diagnostics-and-source-locations).
 6. The consumer compiles generated types together with its hand-written code.
 
+The adapter resolves direct sequence-array mapping from file metadata first,
+then the project property, defaulting to `RtiCSharp`. The source file owns the
+choice even when reached through multiple roots. In `Idl` mode, planning
+creates sequence-element wrappers and array metadata without rewriting the
+semantic model. Other collections retain their existing emission paths.
+
 ## 6.2 Failure paths
 
 - Missing or cyclic includes stop compilation with an IDL diagnostic.
 - Unsupported syntax is rejected rather than silently dropped.
+- Invalid sequence-array settings and unsupported recursive direct sequence
+  arrays in `Idl` mode produce `DDSG0001` with no partial source emission;
+  there is no silent fallback to flattening. The default `RtiCSharp` mapping
+  continues to report `DDSG0105` and generate its legacy shape.
 - An older language version produces `DDSG0002`.
 - A missing compatible RTI runtime reference produces `DDSG0003`.
 - Cyclic typedef aliases are rejected during semantic resolution with a source-
@@ -70,3 +80,14 @@ owns fixture setup, peer construction, shard execution, artifacts, and report
 details. The separate [runtime contract suite](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
 covers generated API and serialization behavior without establishing the wire
 matrix results.
+
+The shared corpus declares `05-array-of-sequences-idl` as a dedicated C149
+case. Its separately named IDL has the same declarations as C018 and selects
+the `Idl` mapping. It separately plans four directed pairings between Wireloom C# and RTI C++, with four payload
+fixtures per exact LTS profile. RTI C# is explicitly excluded because its
+direct-form binding describes the flattened type; reports show the exclusion
+reason and N/A cells. The default C018 matrix remains unchanged. Case results
+retain mode, runtime, IDL hash, and actual generated-source hashes;
+missing or mismatched provenance prevents completed exchanges from qualifying.
+The focused live runs passed all 16 exchanges on each exact LTS release;
+these results qualify only the recorded fixtures and peer scope.

@@ -59,6 +59,14 @@ source documents; they do not choose mappings independently. This keeps RTI
 profile differences and IDL-shape policies out of parsing and semantic
 validation.
 
+`SequenceArrayEmissionPlan` selects opt-in direct sequence-array projections
+from each member's source input after binding and validation. It reserves
+deterministic helper identities, reuses collection-wrapper emitters, and
+provides the same projection for inherited members. Managed/native wrappers
+preserve element ownership; enclosing member metadata embeds an anonymous
+sequence inside the array. The semantic model is not rewritten with synthetic
+IDL types. Unsupported recursive element paths fail before source emission.
+
 The generated-value contracts and their evidence are maintained in
 [chapter 8.6](08-crosscutting-concepts.md#86-rti-compatible-generated-value-semantics),
 the [runtime contract matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix),
