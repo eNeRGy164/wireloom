@@ -275,8 +275,10 @@ RTI-generated C#, and RTI C++ peers on exact RTI 7.7.0. Consult its
 for executed outcomes, known failures, and peer adaptations.
 
 Before replacing existing generated code, check your IDL shapes and public API
-usage against that evidence. Direct arrays of sequences retain a known mapping
-limitation; use a sequence typedef before declaring the array. Wireloom is not
+usage against that evidence. Direct arrays of sequences flatten by default;
+use a sequence typedef or explicitly select the
+[IDL sequence-array mapping](docs/guides/configuration.md#choose-the-sequence-array-mapping)
+and validate the application's interoperability requirements. Wireloom is not
 yet a universal drop-in replacement for every `rtiddsgen` option or generated
 API shape.
 
@@ -293,6 +295,7 @@ expectations, and guidance on choosing a generation path.
 | :---------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
 | Build and run your first publisher and subscriber                             | [Hello World tutorial](docs/guides/hello-world.md)                                                                                               |
 | Add IDL generation to a project or configure includes and preprocessing       | [Package usage and configuration](src/Wireloom.Dds.Generator/README.md)                                                                          |
+| Look up every generation setting, its scope, and its effect                   | [Configuration reference](docs/guides/configuration.md)                                                                                          |
 | Check supported IDL shapes and preprocessing behavior                         | [Feature coverage](docs/corpus/FEATURE-COVERAGE.md) · [Preprocessor feature matrix](docs/PREPROCESSOR-FEATURES.md)                               |
 | Understand generated member types, mutation, and value semantics              | [Generated value semantics](docs/guides/generated-value-semantics.md)                                                                            |
 | Migrate from `rtiddsgen` and compare generated APIs                           | [Migration guide](docs/migration/rtiddsgen-to-wireloom.md)                                                                                       |

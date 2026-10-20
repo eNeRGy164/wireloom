@@ -74,15 +74,16 @@ tests also read required data after optional-only cleanup and verify absence.
 This summary describes generated API behavior exercised by the suite. It is
 not a generated-code coverage metric or a DDS wire-compatibility claim.
 
-| Behavior area                  | Contracts exercised                                                                                                                                   |
-| :----------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Managed values and collections | Defaults, including enum arrays with `@default_literal`, mutation, copies, equality, and hashes across primitives, aggregates, sequences, and arrays. |
-| Inheritance                    | Inherited members, optional values, formatting, equality, and native conversion.                                                                      |
-| Unions                         | Construction, discriminators, branch access and transitions, copies, equality, and hashes.                                                            |
-| Typedefs and aliases           | Constructors, `Value`, copies, formatting, and metadata across scalar, aggregate, collection, and chained aliases.                                    |
-| Native APIs                    | Initialization, including enum arrays with `@default_literal`, conversion, key filtering, and cleanup with both allocation modes.                     |
-| TypeSupport                    | `Instance`, member metadata, bounds, dimensions, enums, aliases, and metadata visibility.                                                             |
-| Recursive startup              | Fresh-process access/discovery, recursive-array serialization, sequence support initialization, and public `DynamicType` rejection.                   |
+| Behavior area                  | Contracts exercised                                                                                                                                                                    |
+| :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Managed values and collections | Defaults, including enum arrays with `@default_literal`, mutation, copies, equality, and hashes across primitives, aggregates, sequences, and arrays.                                  |
+| Inheritance                    | Inherited members, optional values, formatting, equality, and native conversion.                                                                                                       |
+| Unions                         | Construction, discriminators, branch access and transitions, copies, equality, and hashes.                                                                                             |
+| Typedefs and aliases           | Constructors, `Value`, copies, formatting, and metadata across scalar, aggregate, collection, and chained aliases.                                                                     |
+| Native APIs                    | Initialization, including enum arrays with `@default_literal`, conversion, key filtering, and cleanup with both allocation modes.                                                      |
+| TypeSupport                    | `Instance`, member metadata, bounds, dimensions, enums, aliases, and metadata visibility.                                                                                              |
+| Opt-in sequence arrays         | File-owned `Idl` mapping, independent sequence lengths, narrow/wide strings, aggregate/enum/scalar-alias elements, multidimensional and optional arrays, deep copies, and inheritance. |
+| Recursive startup              | Fresh-process access/discovery, recursive-array serialization, sequence support initialization, and public `DynamicType` rejection.                                                    |
 
 Boundaries and interpretation:
 

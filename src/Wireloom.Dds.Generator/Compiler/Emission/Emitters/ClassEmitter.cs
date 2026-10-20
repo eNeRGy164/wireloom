@@ -17,12 +17,13 @@ internal static class ClassEmitter
         string? baseType,
         IReadOnlyList<IdlMember> inheritedFields,
         bool isTopic,
-        RtiApiProfile profile)
+        RtiApiProfile profile,
+        SequenceArrayEmissionPlan? sequenceArrays = null)
     {
         var names = IdlNaming.CreateGeneratedTypeNames(currentNamespace, name);
         var escapedName = names.ManagedTypeName;
-        var emissionFields = fields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace)).ToArray();
-        var emissionInheritedFields = inheritedFields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace)).ToArray();
+        var emissionFields = fields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace, sequenceArrays)).ToArray();
+        var emissionInheritedFields = inheritedFields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace, sequenceArrays)).ToArray();
         var initialFieldPlans = emissionFields.Select(field => new MemberEmissionPlan(field, currentNamespace, profile: profile)).ToArray();
         var managedBackingNames = ResolveManagedBackingNames(escapedName: names.ManagedTypeName, initialFieldPlans);
         var fieldPlans = initialFieldPlans

@@ -17,6 +17,11 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, Cancellatio
 
         foreach (var file in inputs)
         {
+            if (file.SequenceArrayMapping is not IdlSequenceArrayMapping.RtiCSharp and not IdlSequenceArrayMapping.Idl)
+            {
+                throw new IdlException(file, 0, "SequenceArrayMapping must be 'RtiCSharp' or 'Idl'.");
+            }
+
             files[Path.GetFullPath(file.Path)] = file;
         }
 
@@ -58,7 +63,8 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, Cancellatio
             }
         }
 
-        return new IdlDeclarationEmitter(compilation, parser.Declarations, result, profile).Emit();
+        var sequenceArrays = new Emission.Planning.SequenceArrayEmissionPlan(compilation, symbols, parser.Declarations, profile);
+        return new IdlDeclarationEmitter(compilation, parser.Declarations, result, profile, sequenceArrays).Emit();
     }
 
     private static IEnumerable<FrontEnd.Semantic.IdlMember> GetMembers(FrontEnd.Semantic.IdlDeclaration declaration) => declaration switch

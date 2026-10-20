@@ -67,6 +67,8 @@ public sealed class GeneratedCollectionSpecs
                 typedef sequence<string<8>, 3> Texts;
                 typedef sequence<Item, 2> Items;
                 typedef long Grid[2][3];
+                struct Bounded { sequence<long, 100> values; };
+                struct Floating { sequence<double, 2> values; };
                 struct Sample {
                     sequence<long> values;
                     long matrix[2][3];
@@ -86,8 +88,11 @@ public sealed class GeneratedCollectionSpecs
         managed.ShouldContain("public Texts texts");
         managed.ShouldContain("public Items items");
         managed.ShouldContain("public Grid grid");
+        managed.ShouldContain("Its maximum number of elements is <c>100</c>. Each element's representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.");
         managed.ShouldContain("Its maximum number of elements is <c>3</c>. Each narrow IDL string element is limited to <c>8</c> UTF-8 bytes.");
-        managed.ShouldContain("For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements.");
+        managed.ShouldContain("For an unbounded IDL sequence, an effective limit of 100 elements is set.");
+        documents["Collections.Bounded.g.cs"].Source.ShouldNotContain("For an unbounded IDL sequence");
+        documents["Collections.Floating.g.cs"].Source.ShouldContain("Each element's finite values are in the inclusive range <c>double.MinValue</c> through <c>double.MaxValue</c>. NaN and positive or negative infinity are also representable.");
 
         var texts = documents["Collections.Implementation.TextsUnmanaged.g.cs"].Source;
         texts.ShouldContain("private NativeStringSeq Value");

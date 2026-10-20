@@ -74,12 +74,14 @@ internal sealed class UnionEmissionType(string cSharpType, string? supportType =
 }
 
 /// <summary>Represents an IDL alias and its projected target type.</summary>
-internal sealed class AliasEmissionType(string qualifiedName, EmissionTypePlan target, string cSharpType, string? supportType = null)
+internal sealed class AliasEmissionType(string qualifiedName, EmissionTypePlan target, string cSharpType, string? supportType = null, bool isAnonymousSequence = false)
     : EmissionTypePlan(cSharpType)
 {
     private string QualifiedName { get; } = qualifiedName;
     private string? ResolvedSupportType { get; } = supportType;
     public EmissionTypePlan Target { get; } = target;
+    /// <summary>Gets whether this wrapper represents an anonymous sequence element on the wire.</summary>
+    internal bool IsAnonymousSequence { get; } = isAnonymousSequence;
     public override EmissionShape Shape { get; } = new(EmissionShapeKind.Alias, target.Shape);
     public override int? Bound => Target.Bound;
     public override string SupportType => ResolvedSupportType ?? IdlNaming.EscapeQualifiedIdentifier(QualifiedName);
@@ -89,11 +91,13 @@ internal sealed class AliasEmissionType(string qualifiedName, EmissionTypePlan t
 }
 
 /// <summary>Represents a bounded IDL sequence projected to a C# type.</summary>
-internal sealed class SequenceEmissionType(EmissionTypePlan element, int bound, string cSharpType, IReadOnlyList<int>? dimensions = null)
+internal sealed class SequenceEmissionType(EmissionTypePlan element, int bound, string cSharpType, IReadOnlyList<int>? dimensions = null, bool isBounded = true)
     : EmissionTypePlan(cSharpType)
 {
     public override EmissionShape Shape { get; } = new(EmissionShapeKind.Sequence, element.Shape);
     public override int? Bound { get; } = bound;
+    /// <summary>Gets whether the IDL declares an explicit sequence bound.</summary>
+    public bool IsBounded { get; } = isBounded;
     public override EmissionTypePlan Element { get; } = element;
     public override IReadOnlyList<int> Dimensions { get; } = dimensions ?? [];
 }

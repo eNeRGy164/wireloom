@@ -1,0 +1,16 @@
+module RuntimeSequenceArrays {
+    struct Item { long value; };
+    enum State { Ready, Done };
+    typedef long Scalar;
+    struct Sample {
+        sequence<long, 4> values[2];
+        sequence<string<16>, 3> names[2];
+        sequence<wstring<16>, 3> wideNames[2];
+        sequence<Item, 3> items[2];
+        sequence<State, 3> states[2];
+        sequence<Scalar, 3> scalars[2];
+        sequence<long, 3> matrix[2][3];
+        @optional sequence<long, 3> optionalValues[2];
+    };
+    struct Derived : Sample { long extra; };
+};

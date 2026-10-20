@@ -4,6 +4,9 @@
     <!-- Override the consumer target without retargeting the analyzer project. -->
     <TargetFramework Condition="'$(WireloomConsumerTargetFramework)' != ''">$(WireloomConsumerTargetFramework)</TargetFramework>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <DdsIdlSequenceArrayMapping>Idl</DdsIdlSequenceArrayMapping>
+    <!-- The explicit legacy fixture intentionally reports the flattening warning. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);DDSG0105</WarningsNotAsErrors>
     <!-- This consumer is restored only after the package-under-test is created. -->
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
@@ -27,6 +30,9 @@
     <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/unbounded-sequence.idl" />
     <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/union-construction.idl" />
     <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/union-string-sequences.idl" />
+    <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/sequence-arrays.idl" />
+    <DdsIdl Include="Fixtures/legacy-sequence-arrays.idl" SequenceArrayMapping="RtiCSharp" />
+    <Compile Include="../Wireloom.Dds.Generator.RuntimeContracts/TypeSupport/SequenceArraySpecs.cs" Link="TypeSupport/SequenceArraySpecs.cs" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-integration.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\features\09-optional-recursive-array.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\features\06-aggregates.idl" />

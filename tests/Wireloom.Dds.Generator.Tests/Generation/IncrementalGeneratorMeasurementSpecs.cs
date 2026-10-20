@@ -38,6 +38,39 @@ public sealed class IncrementalGeneratorMeasurementSpecs(ITestOutputHelper outpu
             .Reasons.ShouldContain(reason => reason.Key == IncrementalStepRunReason.Cached && reason.Value > 0);
     }
 
+    /// <summary>Invalidates both output shape and diagnostics when only mapping metadata changes.</summary>
+    [Fact]
+    public void InvalidatesSequenceArrayMappingChanges()
+    {
+        // Arrange
+        var scenario = CreateScenario();
+        var root = new TestAdditionalText(scenario.Root.Path, "struct Sample { sequence<long> values[2]; };");
+        var driver = scenario.Driver.ReplaceAdditionalText(scenario.Root, root);
+        TestAnalyzerConfigOptionsProvider Options(string mapping) => new(new Dictionary<string, IReadOnlyDictionary<string, string>>
+        {
+            [root.Path] = new Dictionary<string, string> { ["Generate"] = "true", ["SequenceArrayMapping"] = mapping }
+        });
+
+        // Act
+        var legacy = Run("sequence-array-default", driver.WithUpdatedAnalyzerConfigOptions(Options("RtiCSharp")), scenario.Compilation);
+        var structured = Run("sequence-array-idl", legacy.Driver.WithUpdatedAnalyzerConfigOptions(Options("Idl")), scenario.Compilation);
+        var unchanged = Run("sequence-array-unchanged", structured.Driver, scenario.Compilation);
+        var reverted = Run("sequence-array-reverted", unchanged.Driver.WithUpdatedAnalyzerConfigOptions(Options("RtiCSharp")), scenario.Compilation);
+
+        // Assert
+        legacy.Driver.GetRunResult().Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0105");
+        structured.Driver.GetRunResult().Diagnostics.ShouldBeEmpty();
+        structured.Driver.GetRunResult().Results.Single().GeneratedSources
+            .ShouldContain(source => source.SourceText.ToString().Contains("Sample_valuesSequence[] values", StringComparison.Ordinal));
+        unchanged.Measurement.Reasons.ShouldContain(reason => reason.Key == IncrementalStepRunReason.Cached && reason.Value > 0);
+        reverted.Driver.GetRunResult().Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0105");
+        reverted.Measurement.GeneratedSourceCount.ShouldBe(legacy.Measurement.GeneratedSourceCount);
+        foreach (var measurement in new[] { legacy.Measurement, structured.Measurement, unchanged.Measurement, reverted.Measurement })
+        {
+            output.WriteLine(measurement.Format());
+        }
+    }
+
     private static Measurement MeasureColdRun()
     {
         var scenario = CreateScenario();

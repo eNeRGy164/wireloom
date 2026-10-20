@@ -78,6 +78,21 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
             return nestedConstraints is null ? summary : $"{summary} {nestedConstraints}";
         }
 
+        if (type is PrimitiveEmissionType primitive)
+        {
+            var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
+            if (mapping is { MinimumLiteral: { } minimumLiteral, MaximumLiteral: { } maximumLiteral, AnnotationTypeKind: "Float32" or "Float64" })
+            {
+                return $"Each element's finite values are in the inclusive range <c>{minimumLiteral}</c> through <c>{maximumLiteral}</c>. NaN and positive or negative infinity are also representable.";
+            }
+
+            if (mapping is { MinimumLiteral: { } integerMinimum, MaximumLiteral: { } integerMaximum, AnnotationTypeKind: { } typeKind }
+                && IsIntegralAnnotation(typeKind))
+            {
+                return $"Each element's representable values are in the inclusive range <c>{integerMinimum}</c> through <c>{integerMaximum}</c>.";
+            }
+        }
+
         return null;
     }
 

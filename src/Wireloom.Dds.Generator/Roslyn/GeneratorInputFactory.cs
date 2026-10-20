@@ -15,15 +15,38 @@ internal static class GeneratorInputFactory
         options.TryGetValue("build_metadata.AdditionalFiles.Defines", out var defines);
         options.TryGetValue("build_metadata.AdditionalFiles.Undefines", out var undefines);
         options.TryGetValue("build_metadata.AdditionalFiles.IncludeDirectories", out var includeDirectories);
+        options.TryGetValue("build_metadata.AdditionalFiles.SequenceArrayMapping", out var sequenceArrayMapping);
+
+        if (string.IsNullOrWhiteSpace(sequenceArrayMapping))
+        {
+            inputAndOptions.Options.GlobalOptions.TryGetValue("build_property.DdsIdlSequenceArrayMapping", out sequenceArrayMapping);
+        }
 
         return new(
             input.Path,
             input.GetText(cancellationToken)?.ToString() ?? string.Empty,
+            ParseSequenceArrayMapping(sequenceArrayMapping),
             string.Equals(generate, "true", StringComparison.OrdinalIgnoreCase),
             string.Equals(strict, "true", StringComparison.OrdinalIgnoreCase),
             ParseSymbols(defines),
             ParseSymbols(undefines),
             ParseIncludeDirectories(includeDirectories));
+    }
+
+    private static IdlSequenceArrayMapping ParseSequenceArrayMapping(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || string.Equals(value!.Trim(), "RtiCSharp", StringComparison.OrdinalIgnoreCase))
+        {
+            return IdlSequenceArrayMapping.RtiCSharp;
+        }
+
+        if (string.Equals(value.Trim(), "Idl", StringComparison.OrdinalIgnoreCase))
+        {
+            return IdlSequenceArrayMapping.Idl;
+        }
+
+        // Keep invalid configuration inside the compiler's source-located diagnostic boundary.
+        return (IdlSequenceArrayMapping)(-1);
     }
 
     private static List<string> ParseSymbols(string? value) => ParseValues(value, [';']);

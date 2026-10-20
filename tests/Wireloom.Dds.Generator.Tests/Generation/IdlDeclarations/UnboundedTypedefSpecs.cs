@@ -56,6 +56,7 @@ public sealed class UnboundedTypedefSpecs
         var managed = sources["Example.Values.g.cs"].Source;
         managed.ShouldContain("[Bound(100)]");
         managed.ShouldContain("Its maximum number of elements is <c>100</c>.");
+        managed.ShouldContain("For an unbounded IDL sequence");
         sources["Example.Implementation.ValuesUnmanaged.g.cs"].Source.ShouldContain(initialization);
         sources["Example.Implementation.ValuesPlugin.g.cs"].Source.ShouldContain(", 100));");
         sources["Example.ValuesChain.g.cs"].Source.ShouldContain("public Values Value");
@@ -79,6 +80,7 @@ public sealed class UnboundedTypedefSpecs
 
         // Assert
         sources["Example.Values.g.cs"].Source.ShouldContain($"[Bound({bound})]");
+        sources["Example.Values.g.cs"].Source.ShouldNotContain("For an unbounded IDL sequence");
         sources["Example.Implementation.ValuesUnmanaged.g.cs"].Source.ShouldContain($"max: {bound}, absoluteMax: {bound}");
         sources["Example.Implementation.ValuesPlugin.g.cs"].Source.ShouldContain($", {bound}));");
     }

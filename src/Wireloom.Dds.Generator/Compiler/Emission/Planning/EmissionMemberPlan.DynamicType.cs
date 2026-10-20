@@ -71,6 +71,15 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildCollectionElementDynamicType(string implementationNamespace)
     {
+        if (ElementType is AliasEmissionType { IsAnonymousSequence: true } anonymous)
+        {
+            var sequenceField = new IdlEmissionField("Value", anonymous.Target,
+                new EmissionMetadata(isKey: false, memberId: null, isOptional: false, valueMetadata: null,
+                    isExternal: false, isMustUnderstand: false, memberIdHashSource: null, usesAutoIdHash: false));
+            return new MemberEmissionPlan(sequenceField, currentNamespace, profile: Profile)
+                .BuildDynamicTypeExpression(implementationNamespace);
+        }
+
         if (ElementType is StringEmissionType stringType)
         {
             return stringType.IsWide
