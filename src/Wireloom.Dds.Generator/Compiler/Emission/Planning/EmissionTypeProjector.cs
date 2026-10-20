@@ -8,10 +8,11 @@ namespace Wireloom.Compiler.Emission.Planning;
 internal static class EmissionTypeProjector
 {
     /// <summary>Projects a semantic member into an emission field.</summary>
-    internal static IdlEmissionField ToEmissionField(IdlMember member, string? currentNamespace)
+    internal static IdlEmissionField ToEmissionField(IdlMember member, string? currentNamespace, SequenceArrayEmissionPlan? sequenceArrays = null)
     {
-        var declaredType = ProjectType(member.Type, currentNamespace);
-        var type = ProjectMemberType(member.Type, currentNamespace);
+        var mappedType = sequenceArrays?.GetMemberType(member);
+        var declaredType = mappedType ?? ProjectType(member.Type, currentNamespace);
+        var type = mappedType ?? ProjectMemberType(member.Type, currentNamespace);
         var cSharpType = type.CSharpType;
 
         if (member.Metadata.IsOptional && type is StringEmissionType)
@@ -188,7 +189,8 @@ internal static class EmissionTypeProjector
     {
         var element = ProjectMemberType(sequence.Element, currentNamespace);
 
-        return new SequenceEmissionType(element, sequence.Bound ?? 100, $"ISequence<{element.CSharpType}>", sequence.Dimensions);
+        return new SequenceEmissionType(element, sequence.Bound ?? 100, $"ISequence<{element.CSharpType}>", sequence.Dimensions,
+            isBounded: sequence.Bound is not null);
     }
 
     private static ArrayEmissionType ProjectArray(IdlType.Array array, string? currentNamespace)

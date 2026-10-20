@@ -28,6 +28,26 @@ public sealed class IdlInput(
     List<string>? undefines = null,
     List<string>? includeDirectories = null)
 {
+    /// <summary>Initializes an IDL input with an explicit direct sequence-array mapping.</summary>
+    /// <param name="path">The absolute or project-relative input path.</param>
+    /// <param name="text">The complete IDL source text.</param>
+    /// <param name="sequenceArrayMapping">The mapping for declarations physically in this file.</param>
+    /// <param name="generate">Whether this file is a generation root.</param>
+    /// <param name="strict">Whether strict validation is enabled for the generation batch.</param>
+    /// <param name="defines">Initial preprocessor symbols.</param>
+    /// <param name="undefines">Preprocessor symbols to remove.</param>
+    /// <param name="includeDirectories">Directories searched for includes.</param>
+    public IdlInput(string path, string text, IdlSequenceArrayMapping sequenceArrayMapping,
+        bool generate = true, bool strict = false, List<string>? defines = null,
+        List<string>? undefines = null, List<string>? includeDirectories = null)
+        : this(path, text, generate, strict, defines, undefines, includeDirectories)
+    {
+        SequenceArrayMapping = sequenceArrayMapping;
+    }
+
+    /// <summary>Gets the direct sequence-array mapping for declarations physically in this file.</summary>
+    public IdlSequenceArrayMapping SequenceArrayMapping { get; } = IdlSequenceArrayMapping.RtiCSharp;
+
     /// <summary>
     /// Gets the absolute or project-relative path of the input.
     /// </summary>

@@ -26,7 +26,7 @@ validation and rollback procedure.
 - [Install the package](#install) and [declare an IDL root](#declare-an-idl-generation-root).
 - [Share compiled contracts](#share-generated-contracts) between applications.
 - [Understand IDL-to-C# mappings](#common-idl-to-c-mappings).
-- [Configure includes, defines, and multiple roots](#configure-includes-and-preprocessing).
+- [Configure generation settings, defaults, and overrides](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/configuration.md).
 - [Inspect generated source](#inspect-generated-source).
 - Look up [annotations](#annotation-reference), [diagnostics](#diagnostics), and [effective limits](#effective-limits-for-unbounded-values).
 - [Troubleshoot generation](#troubleshooting).
@@ -220,6 +220,10 @@ behavior.
 
 ## Configure includes and preprocessing
 
+The [configuration reference](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/configuration.md)
+covers all generation settings, defaults, scopes, precedence, and examples,
+including sequence-array mapping, diagnostics, and generated-file output.
+
 Use project properties for defaults shared by roots, or root-item metadata for
 the project-wide generation batch:
 
@@ -239,7 +243,7 @@ the project-wide generation batch:
 </ItemGroup>
 ```
 
-Supported metadata:
+Preprocessing and validation settings:
 
 | Setting                    | Scope                                      | Meaning                                                                                       |
 | :------------------------- | :----------------------------------------- | :-------------------------------------------------------------------------------------------- |
@@ -344,6 +348,74 @@ copy with that type's fully qualified name; avoid referencing both copies from
 the same consumer. Macro-selected variants require separate builds because
 root metadata is batch-wide.
 
+## Choose the array-of-sequences mapping
+
+See the [configuration reference](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/configuration.md#choose-the-sequence-array-mapping)
+for the complete setting and precedence rules with before/after examples.
+
+Direct arrays of sequences have two mappings. `RtiCSharp` is the default: it
+matches RTI C# by flattening the outer array and reporting `DDSG0105`. Select
+`Idl` to preserve the fixed array and each independently sized sequence in
+the generated API, native storage, and wire type metadata:
+
+```xml
+<PropertyGroup>
+  <DdsIdlSequenceArrayMapping>Idl</DdsIdlSequenceArrayMapping>
+</PropertyGroup>
+<ItemGroup>
+  <DdsIdl Include="Contracts/Telemetry.idl" />
+  <DdsIdl Include="Contracts/Legacy.idl" SequenceArrayMapping="RtiCSharp" />
+</ItemGroup>
+```
+
+Set `SequenceArrayMapping="Idl"` on a `DdsIdl` item to opt in one file without
+changing the project default. Explicit file metadata takes precedence over
+the project property. Values are case-insensitive; invalid values report
+`DDSG0001` and prevent generation.
+
+The setting belongs to declarations physically in that file. A root's override
+does not flow into included files: they use their own `AdditionalFiles`
+metadata or the project default. For example:
+
+```xml
+<ItemGroup>
+  <AdditionalFiles Include="Contracts/Shared.idl"
+                   Generate="false" SequenceArrayMapping="Idl" />
+</ItemGroup>
+```
+
+For `struct Sample { sequence<long, 4> values[2]; };`, the `Idl` mapping
+generates `Sample_valuesSequence[] values`. Each wrapper exposes its mutable
+sequence through `Value`:
+
+```csharp
+var sample = new Sample();
+sample.values[0].Value.Add(10);
+sample.values[0].Value.Add(20);
+sample.values[1].Value.Add(30);
+```
+
+The array has two elements; each sequence has its own length and maximum of
+four elements. Generated wrapper names gain trailing underscores if they
+conflict with existing declarations or generated companions. The enclosing
+wire metadata describes an array of anonymous sequences, without introducing
+a struct or synthetic alias into the member's wire schema.
+
+Switching modes intentionally changes affected generated properties and wire
+types. `Idl` targets the IDL structure used by RTI C++ and Java; it does not
+interoperate with flattened RTI C#/Python direct-form bindings. Ordinary
+sequences, other arrays, and explicit sequence typedefs retain their mappings.
+Both supported RTI profiles have typed runtime coverage. The retained C149
+`Idl` corpus case also passes all 16 focused Wireloom/C++ live DDS exchanges on
+each exact RTI 7.3.1 and 7.7.0 release; see the
+[verification record](https://github.com/eNeRGy164/wireloom/blob/main/docs/testing/sequence-array-mapping.md#retained-corpus-case-and-live-dds-results).
+These results qualify the recorded fixtures and peer scope. Recursive direct
+sequence arrays are rejected in `Idl` mode with `DDSG0001`. Existing effective
+limits for unbounded sequences and strings still apply.
+
+Programmatic compiler callers can pass `IdlSequenceArrayMapping.Idl` to the
+`IdlInput` overload. The existing constructor keeps `RtiCSharp` behavior.
+
 ## Inspect generated source
 
 Roslyn exposes generated documents through the IDE. To also write physical
@@ -397,7 +469,7 @@ C# member signature.
 | `@final`, `@appendable`, `@mutable`                                                                                                          | Set the corresponding extensibility kind in generated DynamicType metadata for covered declarations.                                                                                                                                                                                                                         | [`09-extensibility.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-extensibility.idl)                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `@default`, `@min`, `@max`, `@range`, `@unit`                                                                                                | Supported on primitive/enum members as applicable. Defaults initialize supported values; ranges and units are represented in generated type support annotations. Ranges require primitive members; defaults also support enums.                                                                                              | [`09-defaults-ranges.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-defaults-ranges.idl), [`10-annotations-rti.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/10-annotations-rti.idl)                                                                                                                                                                                                                                                                                               |
 | `@value`, `@default_literal`                                                                                                                 | Set explicit enum numeric values and the default enum literal for covered enum shapes.                                                                                                                                                                                                                                       | [`03-enum-values-prefix.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/03-enum-values-prefix.idl), [`09-defaults-ranges.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-defaults-ranges.idl)                                                                                                                                                                                                                                                                                         |
-| `@must_understand`                                                                                                                           | Preserved as a member property in generated DynamicType metadata with the 7.7.0 profile. The 7.3.1 profile reports `DDSG0004` and emits no code because that RTI release does not support the annotation.                                                                                                                                                                                                                        | [`09-autoid-hash.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-autoid-hash.idl)                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `@must_understand`                                                                                                                           | Preserved as a member property in generated DynamicType metadata with the 7.7.0 profile. The 7.3.1 profile reports `DDSG0004` and emits no code because that RTI release does not support the annotation.                                                                                                                    | [`09-autoid-hash.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-autoid-hash.idl)                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `@external`                                                                                                                                  | Accepted in the tested annotation case but does not create a distinct managed C# member shape. Check runtime/wire evidence before relying on any external-member serialization effect.                                                                                                                                       | [`10-annotations-rti.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/10-annotations-rti.idl)                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `@language_binding`, `@transfer_mode`, `@data_representation`, `@allowed_data_representation`, `@nested`, `@default_nested`, `@resolve_name` | Recognized/consumed syntax, but not all have an effect in emitted C# or generated DynamicType. The corpus comparisons establish only the listed case outcomes; do not rely on these annotations to configure wire representation or naming without separate runtime/wire evidence. `FLAT_DATA` is ignored for C# generation. | [`10-annotations-rti.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/10-annotations-rti.idl), [`09-data-representation.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-data-representation.idl), [`09-allowed-data-representation.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/09-allowed-data-representation.idl), [`10-flat-data-binding.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/10-flat-data-binding.idl) |
 | Unknown annotation                                                                                                                           | Emits warning `DDSG0101` and continues while ignoring the annotation. Verify that ignoring it does not change the contract you need.                                                                                                                                                                                         | [`12-unknown-annotation.idl`](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/negative/12-unknown-annotation.idl)                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -423,12 +495,12 @@ contract, not as evidence that the annotation is harmless.
 | `DDSG0001` | IDL generation failed                                                | Fix the source-located parse, include, semantic, or unsupported-feature error                              |
 | `DDSG0002` | C# 12 or later is required                                           | Set the consumer's language version to C# 12 or later                                                      |
 | `DDSG0003` | A compatible RTI runtime was not found                               | Add an explicit `Rti.ConnextDds` reference at version 7.3.1 or later                                       |
-| `DDSG0004` | An IDL feature is unavailable in the selected RTI API profile         | Remove the unsupported feature or use a compatible RTI version; `@must_understand` requires 7.7.0 or later |
+| `DDSG0004` | An IDL feature is unavailable in the selected RTI API profile        | Remove the unsupported feature or use a compatible RTI version; `@must_understand` requires 7.7.0 or later |
 | `DDSG0101` | An unknown IDL annotation was ignored                                | Verify the annotation is supported by the managed generator if it affects the generated contract           |
 | `DDSG0102` | A recognized but unsupported annotation use was reported             | Remove the annotation or use a supported declaration context; this warning accompanies rejected generation |
 | `DDSG0103` | An IDL interface was ignored because no C# interface type is emitted | Interfaces are accepted as service declarations, but are not emitted as C# types                           |
 | `DDSG0104` | A function-like macro was invoked with the wrong number of arguments | Correct the macro invocation; RTI-compatible expansion continues after the warning                         |
-| `DDSG0105` | A direct array of sequences may not preserve IDL semantics           | Use a typedef for the sequence before declaring the array                                                  |
+| `DDSG0105` | A direct array of sequences may not preserve IDL semantics           | Use a sequence typedef or opt into `SequenceArrayMapping="Idl"`                                            |
 | `DDSG0106` | An active `#warning` directive was encountered                       | Review the warning in the IDL or included file; preprocessing and generation continue                      |
 | `DDSG0107` | An active `#pragma message` directive was encountered                | Review the informational message in the IDL or included file; generation continues                         |
 

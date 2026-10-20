@@ -92,6 +92,9 @@ internal sealed class IdlSymbolTable
     /// <summary>Gets a class declaration by its canonical qualified name.</summary>
     public bool TryGetClass(string name, out IdlClassDeclaration declaration) => classes.TryGetValue(name, out declaration!);
 
+    /// <summary>Gets a union declaration by its canonical qualified name.</summary>
+    internal bool TryGetUnion(string name, out IdlUnion declaration) => unions.TryGetValue(name, out declaration!);
+
     public bool TryGetTypedef(string name, out IdlTypedef declaration) => typedefs.TryGetValue(name, out declaration!);
 
     /// <summary>Registers an enum while retaining the first declaration for binding.</summary>

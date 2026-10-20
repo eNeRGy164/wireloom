@@ -30,7 +30,14 @@ internal static class CollectionAliasManagedEmitter
             EmissionSupport.GetManagedTypeUsings([plan.ElementPlan], usesOmgTypes: plan.IsSequence || declaration.Bound is not null || plan.IsString, usesSequence: plan.IsSequence),
             sourceIdlFileName);
 
-        writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> IDL typedef declared in <c>{sourceIdlFileName}</c>.");
+        if (plan.IsSequenceArrayElement)
+        {
+            writer.WriteXmlSummary($"Represents one independently sized sequence in an IDL array declared in <c>{sourceIdlFileName}</c>.");
+        }
+        else
+        {
+            writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> IDL typedef declared in <c>{sourceIdlFileName}</c>.");
+        }
         writer.OpenBlock($"public partial class {typeName} : global::System.IEquatable<{typeName}>");
 
         if (plan.IsSequence)
@@ -42,7 +49,13 @@ internal static class CollectionAliasManagedEmitter
                 sequenceSummary += $" {elementConstraints}";
             }
             writer.WriteXmlSummary(sequenceSummary);
-            writer.WriteXmlRemarks("Use the mutable sequence instance to add or remove elements; the property itself is getter-only. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.");
+            var sequenceRemarks = "Use the mutable sequence instance to add or remove elements; the property itself is getter-only.";
+            if (declaration.Bound is null)
+            {
+                sequenceRemarks += " For an unbounded IDL sequence, an effective limit of 100 elements is set. RTI uses the bound from the type metadata when processing DDS data.";
+            }
+
+            writer.WriteXmlRemarks(sequenceRemarks);
             writer.WriteXmlSeeAlso($"https://community.rti.com/static/documentation/connext-dds/{profile.RtiVersion}/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html", $"RTI Connext {profile.RtiVersion} ISequence API");
             writer.WriteLine($"[Bound({plan.SequenceBound})]");
             writer.WriteLine($"public ISequence<{elementReference}> Value {{ get; }} = null!;");

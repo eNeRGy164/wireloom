@@ -254,7 +254,6 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
             return;
         }
 
-        writer.BlankLine();
         var indices = ArraySourceEmitter.OpenLoops(writer, Dimensions);
         writer.WriteLine($"{target}{ArraySourceEmitter.IndexExpression(indices)} = new {TypeReference(ElementCSharpType!, currentNamespace)}();");
 
@@ -280,7 +279,6 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
             return;
         }
 
-        writer.BlankLine();
         ArraySourceEmitter.EmitEnumDefaultInitialization(writer, target, enumType, Dimensions, currentNamespace);
 
         if (hasFollowingStatements)
@@ -296,8 +294,6 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         {
             return;
         }
-
-        writer.BlankLine();
 
         if (IsOptional)
         {

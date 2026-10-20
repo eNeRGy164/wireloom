@@ -1,14 +1,20 @@
 using Wireloom.Compiler.Emission.Emitters;
+using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.FrontEnd.Semantic;
 
 namespace Wireloom.Compiler.Emission;
 
 /// <summary>Dispatches parsed IDL declarations to their specialized source emitters.</summary>
-internal sealed class IdlDeclarationEmitter(CompilationContext compilation, IReadOnlyList<IdlDeclaration> declarations, EmissionResult result, RtiApiProfile profile)
+internal sealed class IdlDeclarationEmitter(CompilationContext compilation, IReadOnlyList<IdlDeclaration> declarations, EmissionResult result, RtiApiProfile profile, SequenceArrayEmissionPlan sequenceArrays)
 {
     /// <summary>Emits source documents for all validated declarations.</summary>
     public IReadOnlyList<GeneratedIdlSource> Emit()
     {
+        foreach (var element in sequenceArrays.Elements)
+        {
+            result.AddRange(CollectionAliasEmitter.Emit(element.Declaration, element.Plan, element.SourceIdlFileName, profile));
+        }
+
         foreach (var declaration in declarations)
         {
             switch (declaration)
@@ -26,7 +32,7 @@ internal sealed class IdlDeclarationEmitter(CompilationContext compilation, IRea
                     break;
 
                 case IdlClassDeclaration @class:
-                    result.AddRange(ClassEmitter.Emit(@class.Name, @class.Namespace, @class.Fields, @class.Extensibility, @class.SourceIdlFileName, @class.BaseType, @class.InheritedFields, @class.IsTopic, profile));
+                    result.AddRange(ClassEmitter.Emit(@class.Name, @class.Namespace, @class.Fields, @class.Extensibility, @class.SourceIdlFileName, @class.BaseType, @class.InheritedFields, @class.IsTopic, profile, sequenceArrays));
                     break;
 
                 case IdlUnionDeclaration union:

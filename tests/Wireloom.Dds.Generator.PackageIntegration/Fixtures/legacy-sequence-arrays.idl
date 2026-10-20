@@ -1,0 +1,3 @@
+module PackageLegacySequenceArrays {
+    struct Sample { sequence<long> values[2]; };
+};

@@ -50,7 +50,6 @@ internal static class ArraySourceEmitter
         var dimensionList = string.Join(", ", dimensions);
         writer.WriteLine($"var {localName} = new {typeReference}[{dimensionList}];");
 
-        writer.BlankLine();
         EmitEnumDefaultInitialization(writer, localName, enumType, dimensions, currentNamespace);
         writer.BlankLine();
 

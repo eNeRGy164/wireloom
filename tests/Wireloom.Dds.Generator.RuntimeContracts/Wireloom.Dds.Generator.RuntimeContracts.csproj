@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <DdsIdl Include="Fixtures/*.idl" />
+    <DdsIdl Update="Fixtures/sequence-arrays.idl" SequenceArrayMapping="Idl" />
   </ItemGroup>
 
   <ItemGroup>

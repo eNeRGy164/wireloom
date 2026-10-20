@@ -12,6 +12,8 @@ enforceable.
 - Prefer clear, vertically readable code over minimizing lines of code.
 - Use four-space indentation for C# and keep the repository line-ending rules.
 - Use blank lines to separate logical groups and the phases of a method.
+- Keep an array allocation or clone assignment next to the loop that
+  initializes or copies its elements, without a blank line between them.
 - Put control-flow bodies on multiple lines. Always use braces for `if`,
   `else`, `for`, `foreach`, `while`, and similar statements, including bodies
   containing one statement.

@@ -12,6 +12,12 @@ internal static class CollectionAliasEmitter
     public static IReadOnlyList<GeneratedIdlSource> Emit(CompilationContext compilation, IdlTypedef declaration, string sourceIdlFileName, RtiApiProfile profile)
     {
         var plan = CreatePlan(compilation, declaration, profile);
+        return Emit(declaration, plan, sourceIdlFileName, profile);
+    }
+
+    /// <summary>Emits a sequence wrapper from a resolved element plan without inventing IDL symbols.</summary>
+    internal static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, CollectionAliasEmissionPlan plan, string sourceIdlFileName, RtiApiProfile profile)
+    {
         var names = IdlNaming.CreateGeneratedTypeNames(declaration.Namespace, declaration.Name);
 
         return [

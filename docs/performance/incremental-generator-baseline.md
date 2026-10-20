@@ -31,14 +31,14 @@ current 10.0.400 policy. This is historical evidence rather than a current
 pinned-SDK baseline. The elapsed values are rounded from the test output and
 should not be treated as performance thresholds.
 
-| Scenario | Generator ms | Generated sources | Tracked-step result |
-| --- | ---: | ---: | --- |
-| Cold run | 319.70 | 8 | 5 New |
-| Unchanged rerun | 7.81 | 8 | 5 Cached |
-| Root IDL change | 3.12 | 8 | SourceOutput Modified; one AdditionalTexts Modified; remaining steps Cached |
-| Included IDL change | 0.34 | 8 | SourceOutput Modified; one AdditionalTexts Modified; remaining steps Cached |
-| Unrelated non-IDL input change | 0.13 | 8 | 5 Cached |
-| Second root changed in a two-root batch | 0.41 | 12 | SourceOutput Modified; one AdditionalTexts Modified; remaining steps Cached |
+| Scenario                                | Generator ms | Generated sources | Tracked-step result                                                         |
+| --------------------------------------- | -----------: | ----------------: | --------------------------------------------------------------------------- |
+| Cold run                                |       319.70 |                 8 | 5 New                                                                       |
+| Unchanged rerun                         |         7.81 |                 8 | 5 Cached                                                                    |
+| Root IDL change                         |         3.12 |                 8 | SourceOutput Modified; one AdditionalTexts Modified; remaining steps Cached |
+| Included IDL change                     |         0.34 |                 8 | SourceOutput Modified; one AdditionalTexts Modified; remaining steps Cached |
+| Unrelated non-IDL input change          |         0.13 |                 8 | 5 Cached                                                                    |
+| Second root changed in a two-root batch |         0.41 |                12 | SourceOutput Modified; one AdditionalTexts Modified; remaining steps Cached |
 
 The Roslyn pipeline therefore reuses unchanged `AdditionalTexts`, compilation,
 and analyzer-options steps. A tracked root or included-file edit reaches the
@@ -51,3 +51,23 @@ though the other root's input step remains cached.
 This confirms the existing architecture risk: the generator has incremental
 input-step reuse, but does not yet provide per-root output caching. No caching
 redesign or generator semantic change is included in this baseline.
+
+## Sequence-array mapping setting
+
+Rechecked on October 20, 2026 with SDK 10.0.402, .NET 10.0.13, and the existing
+Roslyn 4.14.0 harness. Both measurement tests pass. The original scenarios
+retain their source counts and cached/modified behavior. The additional
+`InvalidatesSequenceArrayMappingChanges` scenario keeps the same IDL text and
+changes only file metadata:
+
+| Scenario              | Generator ms | Sources | Tracked-step result                                                             |
+| --------------------- | -----------: | ------: | ------------------------------------------------------------------------------- |
+| Default `RtiCSharp`   |        43.69 |       4 | Five New steps; DDSG0105                                                        |
+| Change to `Idl`       |         6.77 |       8 | AnalyzerConfigOptions and SourceOutput Modified; other three steps Cached       |
+| Unchanged `Idl` rerun |         0.07 |       8 | Five Cached steps                                                               |
+| Revert to `RtiCSharp` |         0.35 |       4 | Options and SourceOutput Modified; helper sources removed and DDSG0105 restored |
+
+These are indicative timings. Output shape, diagnostic transitions, and the
+unchanged-rerun cache assertions are executable regression checks. The mapping
+setting uses the existing analyzer-options invalidation boundary; it adds no
+per-root caching design.

@@ -1,3 +1,4 @@
+using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Emission.Writers;
 using Wireloom.Compiler.Naming;
@@ -121,7 +122,13 @@ internal static class ManagedDataTypeEmitter
 
             if (field.IsSequence)
             {
-                writer.WriteXmlRemarks("The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.");
+                var sequenceRemarks = "The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound.";
+                if (EmissionTypeProjector.UnwrapValueEmissionType(field.Type) is SequenceEmissionType { IsBounded: false })
+                {
+                    sequenceRemarks += " For an unbounded IDL sequence, an effective limit of 100 elements is set. RTI uses the bound from the type metadata when processing DDS data.";
+                }
+
+                writer.WriteXmlRemarks(sequenceRemarks);
                 writer.WriteXmlSeeAlso($"https://community.rti.com/static/documentation/connext-dds/{profile.RtiVersion}/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html", $"RTI Connext {profile.RtiVersion} ISequence API");
                 var sequenceExample = field.IsOptional
                     ? $"var sample = new {typeName}();\nsample.{field.EscapedName} = new Sequence<{IdlNaming.TypeReference(field.ElementCSharpType!, field.CurrentNamespace)}>();\nsample.{field.EscapedName}.Add(default!);\nsample.{field.EscapedName}.RemoveAt(sample.{field.EscapedName}.Count - 1);"

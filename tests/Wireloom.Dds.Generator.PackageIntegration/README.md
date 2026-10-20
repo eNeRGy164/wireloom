@@ -56,6 +56,12 @@ typedef-backed string-sequence branches.
 
 ## .NET 8 consumer check
 
+The consumer sets `DdsIdlSequenceArrayMapping=Idl` and compiles the runtime
+suite's `sequence-arrays.idl` using that project default. Its separate legacy
+fixture overrides the mode with `SequenceArrayMapping=RtiCSharp`, intentionally
+retaining `DDSG0105` as a non-fatal warning. Typed checks exercise both APIs and
+reuse the sequence-array runtime serialization contracts.
+
 Consumer support starts at .NET 8 with C# 12. Repository projects default to
 .NET 10; override the existing integration project's target to check the
 minimum consumer framework without adding a project:

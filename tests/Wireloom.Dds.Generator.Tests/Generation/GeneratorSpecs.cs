@@ -601,6 +601,64 @@ public sealed class GeneratorSpecs
         result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeTrue();
     }
 
+    /// <summary>Applies project defaults and per-file overrides without changing ordinary sequences.</summary>
+    [Theory]
+    [InlineData("Idl", "", true)]
+    [InlineData("Idl", "RtiCSharp", false)]
+    [InlineData("RtiCSharp", "Idl", true)]
+    [InlineData("", " idl ", true)]
+    [InlineData("", "", false)]
+    public void SelectsSequenceArrayMapping(string projectValue, string fileValue, bool preservesArray)
+    {
+        // Arrange
+        const string source = """
+            struct Sample { sequence<long> values[2]; sequence<long> ordinary; };
+            """;
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            ["build_property.DdsIdlSequenceArrayMapping"] = projectValue,
+            ["SequenceArrayMapping"] = fileValue
+        };
+
+        // Act
+        var result = Run(source, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Output.GetDiagnostics(TestContext.Current.CancellationToken).Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+        var generated = string.Join(Environment.NewLine, result.Output.SyntaxTrees.Select(tree => tree.ToString()));
+        generated.ShouldContain("ISequence<int> ordinary");
+        if (preservesArray)
+        {
+            result.Diagnostics.ShouldBeEmpty();
+            generated.ShouldContain("Sample_valuesSequence[] values");
+        }
+        else
+        {
+            result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0105");
+            generated.ShouldContain("ISequence<int> values");
+        }
+    }
+
+    /// <summary>Reports invalid build settings at the input and emits no sources.</summary>
+    [Theory]
+    [InlineData("SequenceArrayMapping")]
+    [InlineData("build_property.DdsIdlSequenceArrayMapping")]
+    public void RejectsInvalidSequenceArrayMapping(string setting)
+    {
+        // Arrange
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true", [setting] = "unknown" };
+
+        // Act
+        var result = Run("struct Sample { long value; };", LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0001"
+            && diagnostic.GetMessage().Contains("SequenceArrayMapping", StringComparison.Ordinal)
+            && diagnostic.Location.GetLineSpan().Path == "sample.idl");
+        result.Output.SyntaxTrees.Count().ShouldBe(1);
+    }
+
     [Fact]
     public void HonorsGenerateFalseAdditionalFileMetadata()
     {

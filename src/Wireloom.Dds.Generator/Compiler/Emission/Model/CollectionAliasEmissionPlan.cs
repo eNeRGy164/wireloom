@@ -11,8 +11,12 @@ internal sealed class CollectionAliasEmissionPlan(
     bool nativeValueRequiresCast,
     string? elementNativeType = null,
     int? sequenceBound = null,
-    RtiApiProfile? profile = null)
+    RtiApiProfile? profile = null,
+    bool isSequenceArrayElement = false)
 {
+    /// <summary>Gets whether the wrapper is generated for an anonymous sequence-array element.</summary>
+    internal bool IsSequenceArrayElement { get; } = isSequenceArrayElement;
+
     private RtiApiProfile Profile { get; } = profile ?? RtiApiProfile.Rtiddsgen470;
     public EmissionTypePlan ElementPlan { get; } = elementPlan;
 

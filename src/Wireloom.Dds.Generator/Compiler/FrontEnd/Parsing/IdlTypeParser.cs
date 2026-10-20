@@ -78,7 +78,7 @@ internal sealed class IdlTypeParser
             parsedType = context.ReferenceType(kind, currentNamespace, input, memberSourceOffset, "Unknown struct type");
         }
 
-        if (parsedType is IdlType.Sequence { Dimensions.Count: > 0 })
+        if (parsedType is IdlType.Sequence { Dimensions.Count: > 0 } && input.SequenceArrayMapping == IdlSequenceArrayMapping.RtiCSharp)
         {
             context.Diagnostics?.Add(new IdlDiagnostic("DDSG0105", input, context.MapOffset(memberSourceOffset), $"The C# binding does not support arrays of sequences without using a typedef; generated code for member '{field}' may not match IDL semantics."));
         }
