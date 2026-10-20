@@ -86,6 +86,8 @@ uses build-time generation and strongly typed calls to managed, native, and
 type-support APIs. Focused IDL fixtures and tests are grouped by responsibility.
 Windows and Linux validation complement maintained generator source coverage;
 generated fixture files and test project code are excluded from Coveralls.
+The packed-package suite links these runtime contracts and runs them against
+the published analyzer assets, including a .NET 8-only compiler-host container.
 Explicit skipped contracts and opt-in compile reproductions retain unresolved
 findings; they do not establish a complete API contract or wire compatibility.
 

@@ -24,7 +24,8 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   Support is best effort, with no official RTI relationship. See [context and
   scope](arc42/03-context-and-scope.md).
 - **Qualified environment:** The generator targets `netstandard2.0`; consumers
-  need C# 12+ and an RTI runtime reference of at least 7.3.1. The resolved
+  need C# 12+ and an RTI runtime reference of at least 7.3.1. It references
+  Roslyn 4.8.0 so it loads in the first .NET 8 C# 12 SDK host. The resolved
   assembly selects the 7.3.1 profile for versions below 7.7.0 and the 7.7.0
   profile for 7.7.0 and later. Only exact 7.3.1 and 7.7.0 are qualification
   targets; profile mapping does not qualify intermediate or later packages.
@@ -57,8 +58,10 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
 - **Continuous LTS verification:** Quality CI runs matching-oracle corpus
   jobs for RTI 7.3.1 and 7.7.0, plus eight Windows/Ubuntu × RTI LTS ×
   `net8.0`/`net10.0` runtime and fresh-package jobs. The repository SDK builds
-  all cells; package consumers use C# 12. Consumer runtimes do not qualify
-  older SDK/Roslyn hosts or replace licensed wire evidence. See
+  the package; package consumers use C# 12. Dedicated SDK 8.0.100 containers
+  restore, build, and run the fresh package consumer with no .NET 10 SDK or
+  runtime for each RTI LTS package. This qualifies the minimum .NET 8 C# 12
+  Roslyn host and does not replace licensed wire evidence. See
   [deployment](arc42/07-deployment-view.md) and
   [verification scope](../guides/support-and-compatibility.md#continuous-lts-verification).
 - **LTS evidence applicability:** Corpus oracle reads use the selected LTS
@@ -100,6 +103,7 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
 | Setting                | Current value                              | Qualification                                                                                                          |
 | :--------------------- | :----------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
 | Consumer minimum       | `net8.0`, C# 12+                           | Support policy applies                                                                                                 |
+| Consumer compiler host | Roslyn 4.8.0 (`SDK 8.0.100`)               | Minimum qualified SDK host                                                                                             |
 | Repository target      | `net10.0`                                  | Pinned SDK in `global.json`                                                                                            |
 | Generator target       | `netstandard2.0`                           | Analyzer/source-generator package                                                                                      |
 | RTI package floor      | `7.3.1+`                                   | Reference eligibility only, not compatibility evidence                                                                 |

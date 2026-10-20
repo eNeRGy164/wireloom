@@ -154,9 +154,108 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  net8-package-consumer:
+    name: .NET 8 package consumer (RTI ${{ matrix.rti_version }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        rti_version: ['7.3.1', '7.7.0']
+    env:
+      RTI_VERSION: ${{ matrix.rti_version }}
+      TEST_PACKAGE_VERSION: 0.4.0-net8-consumer
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up repository SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: '**/packages*.lock.json'
+
+      - name: Restore generator dependencies
+        run: dotnet restore $env:PACKAGE_PROJECT --locked-mode
+        shell: pwsh
+
+      - name: Pack fresh analyzer
+        run: >-
+          dotnet pack $env:PACKAGE_PROJECT --no-restore --configuration Release
+          --output package-test-feed -p:PackageVersion=$env:TEST_PACKAGE_VERSION
+        shell: pwsh
+
+      - name: Test the packed consumer with only .NET 8 installed
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/net8-package-consumer
+          docker run --rm \
+            --mount type=bind,source="$GITHUB_WORKSPACE",target=/source,readonly \
+            --mount type=bind,source="$GITHUB_WORKSPACE/artifacts/net8-package-consumer",target=/artifacts \
+            -e WIRELOOM_DDS_GENERATOR_PACKAGE_VERSION="$TEST_PACKAGE_VERSION" \
+            -e RTI_CONNEXT_DDS_VERSION="$RTI_VERSION" \
+            mcr.microsoft.com/dotnet/sdk:8.0.100@sha256:239eb99884b49bac13f4ff5935e118654f87b67d6e31bc842c7cd5a6c46fcc4f \
+            bash -ceu '
+              mkdir -p /consumer
+              cp /source/Directory.Build.props /consumer/
+              cp -a /source/package-test-feed /consumer/
+              mkdir -p /consumer/docs/corpus/idl
+              (
+                cd /source
+                find tests/Wireloom.Dds.Generator.PackageIntegration \
+                  tests/Wireloom.Dds.Generator.RuntimeContracts \
+                  tests/PackageIntegrationIncludeDirectories \
+                  -type f ! -path "*/bin/*" ! -path "*/obj/*" -print0 |
+                  tar --null --files-from=- -cf -
+              ) | tar -C /consumer -xf -
+              mkdir -p /consumer/tests
+              cp /source/tests/Directory.Build.props /consumer/tests/
+              cp /source/tests/UnmarkedAdditionalFile.idl /consumer/tests/
+              cp -a /source/docs/corpus/idl/integration /consumer/docs/corpus/idl/
+              mkdir -p /consumer/docs/corpus/idl/features
+              cp /source/docs/corpus/idl/features/06-aggregates.idl /consumer/docs/corpus/idl/features/
+              cp /source/docs/corpus/idl/features/09-optional-recursive-array.idl /consumer/docs/corpus/idl/features/
+              cd /consumer
+              dotnet --list-sdks | tee /artifacts/dotnet-sdks.txt
+              dotnet --list-runtimes | tee /artifacts/dotnet-runtimes.txt
+              if dotnet --list-sdks | grep -qv "^8\\."; then
+                echo "The consumer image contains an SDK other than .NET 8." >&2
+                exit 1
+              fi
+              if dotnet --list-runtimes | grep -q "Microsoft.NETCore.App 10\\."; then
+                echo "The consumer image contains a .NET 10 runtime." >&2
+                exit 1
+              fi
+              dotnet restore tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj \
+                --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config \
+                -p:WireloomDdsGeneratorPackageVersion="$WIRELOOM_DDS_GENERATOR_PACKAGE_VERSION" \
+                -p:RtiConnextDdsVersion="$RTI_CONNEXT_DDS_VERSION" \
+                -p:WireloomConsumerTargetFramework=net8.0
+              dotnet build tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj \
+                --no-restore --configuration Release \
+                -p:WireloomDdsGeneratorPackageVersion="$WIRELOOM_DDS_GENERATOR_PACKAGE_VERSION" \
+                -p:RtiConnextDdsVersion="$RTI_CONNEXT_DDS_VERSION" \
+                -p:WireloomConsumerTargetFramework=net8.0 -p:LangVersion=12.0
+              dotnet exec tests/Wireloom.Dds.Generator.PackageIntegration/bin/Release/net8.0/Wireloom.Dds.Generator.PackageIntegration.dll |
+                tee /artifacts/package-integration.txt
+            '
+        shell: bash
+
+      - name: Retain .NET 8 consumer test output
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: net8-package-consumer-rti-${{ matrix.rti_version }}
+          path: artifacts/net8-package-consumer/
+          if-no-files-found: warn
+          retention-days: 14
+
   coverage:
     name: Test and upload coverage
-    needs: [runtime-contracts, corpus-compliance]
+    needs: [runtime-contracts, corpus-compliance, net8-package-consumer]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

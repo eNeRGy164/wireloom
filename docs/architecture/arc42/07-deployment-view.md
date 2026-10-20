@@ -22,9 +22,12 @@ Windows 2025 and Ubuntu 24.04. Its eight runtime/package jobs combine RTI
 analyzer and compiles the package consumer with C# 12. Two separate corpus
 jobs select the matching retained LTS oracles and verify applicability and
 shard reporting. These jobs need no RTI license secret and retain runtime and
-package test logs. The repository SDK remains selected by `global.json`;
-.NET 8 is installed alongside it for consumer execution. This checks target
-frameworks, not older SDK/Roslyn hosts. See
+package test logs. A separate Ubuntu job copies the freshly packed analyzer and
+consumer fixture into an `mcr.microsoft.com/dotnet/sdk:8.0.100` container, which
+contains no .NET 10 SDK or runtime. It restores, compiles, and runs the broad
+package suite with the .NET 8 compiler host for each RTI LTS package. The
+repository SDK remains selected by `global.json` when producing the package.
+See
 [continuous LTS verification](../../guides/support-and-compatibility.md#continuous-lts-verification).
 
 The manually triggered wire-compatibility workflow runs both qualified LTS
