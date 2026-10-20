@@ -22,12 +22,14 @@ dotnet test tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generat
 ```
 
 The Quality workflow tests a fresh package across RTI 7.3.1/7.7.0 and
-`net8.0`/`net10.0` on Windows and Ubuntu. To reproduce a combination, pass
-`-p:WireloomConsumerTargetFramework=net8.0` (or `net10.0`) and the selected
-`RtiConnextDdsVersion` on both restore and run, along with
+`net8.0`/`net10.0` on Windows and Ubuntu. This project also links the complete
+runtime-contract suite, so package consumption exercises managed values,
+aliases, collections, unions, native conversion, type support, and recursive
+startup as well as package-specific MSBuild input handling. To reproduce a
+combination, pass `-p:WireloomConsumerTargetFramework=net8.0` (or `net10.0`)
+and the selected `RtiConnextDdsVersion` on both restore and run, along with
 `WireloomDdsGeneratorPackageVersion`. CI uses `-p:LangVersion=12.0` on run to
-check the minimum emitted C# language baseline. The repository SDK builds the
-analyzer; install the .NET 8 runtime to execute a `net8.0` consumer.
+check the minimum emitted C# language baseline.
 
 The integration project intentionally does not use central package management
 or a lock file: its generator package reference must be resolved from the
@@ -75,6 +77,10 @@ dotnet run --project tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dd
   -p:WireloomDdsGeneratorPackageVersion=0.4.0 -p:WireloomConsumerTargetFramework=net8.0 -p:LangVersion=12.0
 ```
 
-This verifies the consumer framework; it does not establish compatibility
-with every older SDK's Roslyn host. Use the package version from your isolated
-feed when checking a newer package.
+The Quality workflow also copies the package and the consumer fixture into an
+`mcr.microsoft.com/dotnet/sdk:8.0.100` container. The container has only the .NET
+8 SDK and runtime, then restores, builds, and runs this complete suite against
+the freshly packed analyzer for both RTI LTS packages. This verifies the
+supported .NET 8 compiler host rather than only a `net8.0` application running
+alongside the repository's .NET 10 SDK. Use the package version from your
+isolated feed when checking a newer package.

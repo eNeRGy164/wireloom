@@ -24,15 +24,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="../Wireloom.Dds.Generator.RuntimeContracts/TypeSupport/RecursiveStartup*.cs" Link="TypeSupport/%(Filename)%(Extension)" />
-    <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/recursive-startup.idl" />
-    <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/unbounded-strings.idl" />
-    <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/unbounded-sequence.idl" />
-    <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/union-construction.idl" />
-    <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/union-string-sequences.idl" />
-    <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/sequence-arrays.idl" />
+    <!-- Run the runtime-contract suite against the packed analyzer as well. -->
+    <Compile Include="../Wireloom.Dds.Generator.RuntimeContracts/**/*.cs"
+             Exclude="../Wireloom.Dds.Generator.RuntimeContracts/bin/**;../Wireloom.Dds.Generator.RuntimeContracts/obj/**;../Wireloom.Dds.Generator.RuntimeContracts/scripts/**"
+             Link="RuntimeContracts/%(RecursiveDir)%(Filename)%(Extension)" />
+    <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/*.idl" />
     <DdsIdl Include="Fixtures/legacy-sequence-arrays.idl" SequenceArrayMapping="RtiCSharp" />
-    <Compile Include="../Wireloom.Dds.Generator.RuntimeContracts/TypeSupport/SequenceArraySpecs.cs" Link="TypeSupport/SequenceArraySpecs.cs" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-integration.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\features\09-optional-recursive-array.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\features\06-aggregates.idl" />

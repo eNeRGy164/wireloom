@@ -27,10 +27,10 @@ Wireloom quality
 
 ### Build-time developer experience
 
-| ID   | Scenario                                | Acceptance and evidence                                                                                                              |
-| :--- | :-------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
-| Q-03 | Consume the packed `.nupkg`             | Analyzer targets load and generated types compile without a project reference; package integration passes.                           |
-| Q-07 | Change roots, includes, or other inputs | Roslyn reuses unaffected inputs; the baseline records tracked-step reasons and timings. Per-root output caching remains a follow-up. |
+| ID   | Scenario                                | Acceptance and evidence                                                                                                                                                           |
+| :--- | :-------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q-03 | Consume the packed `.nupkg`             | Analyzer targets load and generated types compile without a project reference; the package suite links the runtime contracts and passes in a .NET 8-only compiler-host container. |
+| Q-07 | Change roots, includes, or other inputs | Roslyn reuses unaffected inputs; the baseline records tracked-step reasons and timings. Per-root output caching remains a follow-up.                                              |
 
 ### Build safety
 
@@ -69,8 +69,9 @@ managed value methods, native conversion/lifecycle APIs, and DynamicType/support
 APIs on Windows and Linux. The Quality workflow runs both exact RTI LTS
 packages across `net8.0` and `net10.0` consumer targets on both hosts, with
 fresh packed-analyzer integration and matching-profile corpus runs. The pinned
-repository SDK builds all cells; consumer runtime checks do not qualify older
-SDK/Roslyn hosts. Licensed wire checks remain separate. Its [coverage matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
+repository SDK builds the package. A separate SDK 8 container restores, builds,
+and runs the fresh package consumer with no .NET 10 installation, qualifying
+the supported .NET 8 Roslyn host. Licensed wire checks remain separate. Its [coverage matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
 identifies executable coverage, applicable gaps, and the RTI C# or better
 expectation. Coveralls measures maintained generator source; generated fixture
 and test project code are excluded. Unresolved required contracts remain gaps

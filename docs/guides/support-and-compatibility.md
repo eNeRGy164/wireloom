@@ -57,6 +57,7 @@ LTS versions without requiring a licensed wire environment:
 | Corpus compliance against matching retained oracles  | 7.3.1, 7.7.0 | Repository target (`net10.0`) | Ubuntu 24.04               |
 | Generated runtime contracts                          | 7.3.1, 7.7.0 | `net8.0`, `net10.0`           | Windows 2025, Ubuntu 24.04 |
 | Fresh packed-analyzer integration with C# 12         | 7.3.1, 7.7.0 | `net8.0`, `net10.0`           | Windows 2025, Ubuntu 24.04 |
+| .NET 8-only fresh-package consumer                   | 7.3.1, 7.7.0 | `net8.0`                      | Ubuntu SDK 8 container     |
 | Applicability, shard planning, and report validation | 7.3.1, 7.7.0 | Repository tooling            | Ubuntu 24.04               |
 
 All eight runtime/package combinations fail their jobs on errors, with
@@ -66,10 +67,12 @@ unavailable features remain N/A and contribute no compatibility failures.
 The existing 7.7.0 unbounded-alias oracle probe also runs on both hosts.
 
 Builds use the SDK selected by `global.json`; .NET 8 is installed alongside it
-so `net8.0` consumers execute on the .NET 8 runtime. This matrix verifies
-consumer targets and generated APIs, and does not establish compatibility with
-the .NET 8 SDK's older Roslyn host. Repository defaults remain `net10.0`, and
-the analyzer remains `netstandard2.0`.
+so `net8.0` consumers execute on the .NET 8 runtime. The dedicated consumer
+job independently runs the packed analyzer in an `mcr.microsoft.com/dotnet/sdk:8.0.100`
+container with no .NET 10 SDK or runtime. It restores, builds, and runs the
+complete package-integration suite, including the linked runtime contracts, so
+it verifies the .NET 8 SDK's Roslyn host as well as the application target.
+Repository defaults remain `net10.0`, and the analyzer remains `netstandard2.0`.
 
 These checks do not establish DDS wire compatibility. Licensed, exact-toolchain
 wire exchanges remain in the manually dispatched wire workflow. The local
