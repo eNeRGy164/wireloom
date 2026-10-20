@@ -15,9 +15,9 @@ namespace CorpusCollectionShapes;
 public partial class Rows : global::System.IEquatable<Rows>
 {
     /// <summary>
-    /// Gets the sequence value represented by this typedef. Its maximum number of elements is <c>2</c>. Each array element has dimensions 3.
+    /// Gets the sequence value represented by this typedef. Its maximum number of elements is <c>2</c>. Each array element has dimensions 3. Each element's representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
-    /// <remarks>Use the mutable sequence instance to add or remove elements; the property itself is getter-only. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
+    /// <remarks>Use the mutable sequence instance to add or remove elements; the property itself is getter-only.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
     [Bound(2)]
     public ISequence<Row> Value { get; } = null!;

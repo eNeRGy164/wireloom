@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Wireloom.Dds.Generator.CorpusCompliance;
 
-public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<string> Defines, string Classification, string OracleDirectory, string Tag = "", bool OracleSourcesRetained = true, string? OracleCompileOutcome = null)
+public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<string> Defines, string Classification, string OracleDirectory, IdlSequenceArrayMapping SequenceArrayMapping = IdlSequenceArrayMapping.RtiCSharp, string Tag = "", bool OracleSourcesRetained = true, string? OracleCompileOutcome = null)
 {
     // This is an explicit managed-generator acceptance map, not an inference
     // from the RTI result or the positive/negative manifest bucket. It keeps
@@ -32,6 +32,7 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "05-collections",
         "05-shapes",
         "05-array-of-sequences",
+        "05-array-of-sequences-idl",
         "06-aggregates",
         "06-valuetypes",
         "06-alias-composition",
@@ -158,6 +159,9 @@ internal sealed class ManifestEntry
 
     [JsonPropertyName("oracleDirectory")]
     public string? OracleDirectory { get; init; }
+
+    [JsonPropertyName("sequenceArrayMapping")]
+    public string? SequenceArrayMapping { get; init; }
 }
 
 internal sealed class OracleManifest
@@ -245,7 +249,8 @@ internal static class CorpusRepository
                 generate: string.Equals(path, rootPath, PathComparer),
                 strict: false,
                 defines: string.Equals(path, rootPath, PathComparer) ? corpusCase.Defines : [],
-                includeDirectories: Current.Value.IncludeDirectories))
+                includeDirectories: Current.Value.IncludeDirectories,
+                sequenceArrayMapping: corpusCase.SequenceArrayMapping))
             .ToList();
 
         return files;
@@ -276,7 +281,10 @@ internal static class CorpusRepository
                 .ToDictionary(entry => entry.Id, entry => entry.CompileOutcome!, StringComparer.Ordinal);
             foreach (var id in classifications.Keys.ToArray())
             {
-                classifications[id] = capturedCases[id].Outcome == "generated" ? "accepted" : "rejected";
+                if (capturedCases.TryGetValue(id, out var capturedCase))
+                {
+                    classifications[id] = capturedCase.Outcome == "generated" ? "accepted" : "rejected";
+                }
             }
         }
         else
@@ -312,7 +320,8 @@ internal static class CorpusRepository
                 "accepted",
                 Path.Combine(profileRoot, capturedCases is null
                     ? Path.Combine("rtiddsgen", "csharp", "integration", group, id)
-                    : capturedCases[id].SourceDirectory)));
+                    : capturedCases[id].SourceDirectory),
+                IdlSequenceArrayMapping.RtiCSharp));
         }
 
         var explicitTagNumbers = cases
@@ -352,7 +361,7 @@ internal static class CorpusRepository
             cases,
             manifestRoots,
             [.. Directory.EnumerateFiles(Path.Combine(corpusRoot, "idl"), "*.idl", SearchOption.AllDirectories).OrderBy(p => p, StringComparer.Ordinal)],
-            [.. cases.Select(entry => entry.Id).OrderBy(id => id, StringComparer.Ordinal)],
+            [.. cases.Where(entry => entry.OracleSourcesRetained).Select(entry => entry.Id).OrderBy(id => id, StringComparer.Ordinal)],
             manifest.IncludeDirectories
                 .Select(path => Path.GetFullPath(Path.Combine(corpusRoot, path.Replace('/', Path.DirectorySeparatorChar))))
                 .ToList());
@@ -360,19 +369,26 @@ internal static class CorpusRepository
 
     private static CorpusCase CreateCase(ManifestEntry entry, string sourceKind, Dictionary<string, string> classifications, string profileRoot, Dictionary<string, OracleEntry>? capturedCases, Dictionary<string, string> oracleCompileOutcomes)
     {
+        OracleEntry? capturedCase = null;
+        capturedCases?.TryGetValue(entry.Id, out capturedCase);
+        var mapping = entry.SequenceArrayMapping is null
+            ? IdlSequenceArrayMapping.RtiCSharp
+            : Enum.Parse<IdlSequenceArrayMapping>(entry.SequenceArrayMapping, ignoreCase: true);
+
         return new CorpusCase(
             entry.Id,
             sourceKind,
             entry.Idl,
             entry.Defines,
             classifications[entry.Id],
-            Path.Combine(profileRoot, capturedCases is null
+            Path.Combine(profileRoot, capturedCase is null
                 ? entry.OracleDirectory ?? Path.Combine("rtiddsgen", "csharp", sourceKind, entry.Id)
-                : capturedCases[entry.Id].SourceDirectory),
+                : capturedCase.SourceDirectory),
+            mapping,
             entry.Tag,
-            capturedCases is null
+            capturedCase is null
                 ? entry.OracleSourcesRetained
-                : capturedCases[entry.Id].OracleSourcesRetained,
+                : capturedCase.OracleSourcesRetained,
             oracleCompileOutcomes.GetValueOrDefault(entry.Id));
     }
 

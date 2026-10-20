@@ -18,7 +18,7 @@
 | Retained RTI oracle sources are organized by exact LTS version               | Each profile uses matching `Rti.ConnextDds` and `rtiddsgen` evidence            |
 | C# 12 or later is required by the generator host                             | Current emitted-source baseline                                                 |
 | Generation runs through Roslyn `AdditionalFiles` and MSBuild `DdsIdl` items  | Keeps the package inside the normal .NET build graph                            |
-| Root metadata is combined for one project-wide generation batch              | Current compiler behavior for defines and includes                              |
+| Preprocessing and strictness metadata is combined for one project-wide batch | Mapping overrides are file-owned; defines and includes remain batch-wide        |
 | Package versions, lock files, NuGet audit, and CI action pins are controlled | Reproducible and reviewable supply chain                                        |
 
 Consumer support and repository defaults have separate scopes:

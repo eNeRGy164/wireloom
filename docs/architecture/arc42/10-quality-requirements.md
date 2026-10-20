@@ -19,10 +19,11 @@ Wireloom quality
 
 ### Compatibility evidence
 
-| ID   | Scenario                     | Acceptance and evidence                                                                                                                                           |
-| :--- | :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Q-01 | Run the manifest corpus      | Positive cases compile and preserve required oracle shape and targeted DynamicType metadata; compliance covers every manifest case. Source export remains opt-in. |
-| Q-08 | Dispatch the licensed matrix | Exact LTS package and container versions are paired; reports show all nine directed pairings and expected array-of-sequences failures for the selected target.    |
+| ID   | Scenario                      | Acceptance and evidence                                                                                                                                                                                                    |
+| :--- | :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q-01 | Run the manifest corpus       | Positive cases compile and preserve required oracle shape and targeted DynamicType metadata; compliance covers every manifest case. Source export remains opt-in.                                                          |
+| Q-09 | Select sequence-array mapping | The default output remains RTI C# compatible; opt-in runtime tests preserve both layers on both LTS profiles. Packed consumers verify project defaults and file overrides. Dedicated C149 retains ordinary corpus sources. |
+| Q-08 | Dispatch the licensed matrix  | Exact LTS package and container versions are paired; reports show all nine directed pairings and expected array-of-sequences failures for the selected target.                                                             |
 
 ### Build-time developer experience
 

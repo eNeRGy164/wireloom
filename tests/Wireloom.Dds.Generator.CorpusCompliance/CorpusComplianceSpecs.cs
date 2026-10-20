@@ -34,13 +34,37 @@ public sealed class CorpusComplianceSpecs
         generated["CorpusAutoId.Sample.g.cs"].Source.ShouldNotContain("MustUnderstand");
     }
 
+    /// <summary>Checks the normal corpus case that selects the opt-in IDL mapping.</summary>
     [Fact]
-    public void CorpusManifestAndOracleLibraryHaveTheSameCaseSet()
+    public void IdlSequenceArrayCasePreservesItsDeclaredStructure()
+    {
+        // Arrange
+        var corpusCase = CorpusRepository.Cases.Single(item => item.Id == "05-array-of-sequences-idl");
+        var diagnostics = new List<IdlDiagnostic>();
+
+        // Act
+        var generated = Compile(corpusCase, diagnostics);
+
+        // Assert
+        corpusCase.SequenceArrayMapping.ShouldBe(IdlSequenceArrayMapping.Idl);
+        diagnostics.ShouldBeEmpty();
+        generated["CorpusArrayOfSequences.Sample.g.cs"].Source.ShouldContain("Sample_valuesSequence[] values");
+        generated["CorpusArrayOfSequences.Sample.g.cs"].Source.ShouldContain("Sample_namesSequence[] names");
+        generated["CorpusArrayOfSequences.Implementation.SamplePlugin.g.cs"].Source
+            .ShouldContain("tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), 100), new uint[] { 2 }");
+    }
+
+    [Fact]
+    public void CorpusManifestAndOracleLibraryHaveExpectedCaseCoverage()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(148);
+        cases.Length.ShouldBe(149);
         cases.ShouldBeUnique();
-        CorpusRepository.OracleCaseIds.ShouldBe(cases.OrderBy(id => id, StringComparer.Ordinal).ToArray());
+        CorpusRepository.OracleCaseIds.ShouldBe(CorpusRepository.Cases
+            .Where(corpusCase => corpusCase.OracleSourcesRetained)
+            .Select(corpusCase => corpusCase.Id)
+            .OrderBy(id => id, StringComparer.Ordinal)
+            .ToArray());
 
         foreach (var corpusCase in CorpusRepository.Cases)
         {
@@ -130,6 +154,7 @@ public sealed class CorpusComplianceSpecs
                 File.WriteAllText(Path.Combine(caseRoot, fileName), source.Source);
             }
         }
+
     }
 
     [Fact]
@@ -570,7 +595,8 @@ public sealed class CorpusComplianceSpecs
         support.ShouldContain("internal static NodeSupport GetOrCreateInstanceImpl()");
     }
 
-    private static Dictionary<string, GeneratedIdlSource> Compile(CorpusCase corpusCase, ICollection<IdlDiagnostic>? diagnostics = null)
+    private static Dictionary<string, GeneratedIdlSource> Compile(CorpusCase corpusCase, ICollection<IdlDiagnostic>? diagnostics = null,
+        IdlSequenceArrayMapping? sequenceArrayMapping = null)
     {
         var profile = RequestedRtiProfile switch
         {
@@ -580,7 +606,8 @@ public sealed class CorpusComplianceSpecs
         };
 
         return IdlCompiler.CompileSourcesWithDiagnostics(
-            CorpusRepository.BuildInputs(corpusCase),
+            CorpusRepository.BuildInputs(corpusCase).Select(input => new IdlInput(input.Path, input.Text, sequenceArrayMapping ?? corpusCase.SequenceArrayMapping,
+                input.Generate, input.Strict, input.Defines, input.Undefines, input.IncludeDirectories)).ToList(),
             diagnostics,
             TestContext.Current.CancellationToken,
             profile);

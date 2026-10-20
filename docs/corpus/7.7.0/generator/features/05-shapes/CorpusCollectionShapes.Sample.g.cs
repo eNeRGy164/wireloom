@@ -17,7 +17,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Gets the <c>unboundedItems</c> member. Its maximum number of elements is <c>100</c>.
     /// </summary>
-    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
+    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, an effective limit of 100 elements is set. RTI uses the bound from the type metadata when processing DDS data.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
     /// <example>
     /// <code>
@@ -36,9 +36,9 @@ public partial class Sample : global::System.IEquatable<Sample>
     public Items boundedItems { get; set; } = new Items();
 
     /// <summary>
-    /// Gets the <c>nestedSequences</c> member. Its maximum number of elements is <c>2</c>. Each nested sequence is limited to <c>4</c> elements.
+    /// Gets the <c>nestedSequences</c> member. Its maximum number of elements is <c>2</c>. Each nested sequence is limited to <c>4</c> elements. Each element's representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
-    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
+    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
     /// <example>
     /// <code>
@@ -56,9 +56,9 @@ public partial class Sample : global::System.IEquatable<Sample>
     public Row[] rows { get; set; } = null!;
 
     /// <summary>
-    /// Gets the <c>sequenceOfArrays</c> member. Its maximum number of elements is <c>2</c>. Each array element has dimensions 3.
+    /// Gets the <c>sequenceOfArrays</c> member. Its maximum number of elements is <c>2</c>. Each array element has dimensions 3. Each element's representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
-    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
+    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
     /// <example>
     /// <code>
@@ -71,9 +71,9 @@ public partial class Sample : global::System.IEquatable<Sample>
     public ISequence<Row> sequenceOfArrays { get; } = null!;
 
     /// <summary>
-    /// Gets the <c>sequenceOfArrayAliases</c> member. Its maximum number of elements is <c>2</c>. Each nested sequence is limited to <c>2</c> elements. Each array element has dimensions 3.
+    /// Gets the <c>sequenceOfArrayAliases</c> member. Its maximum number of elements is <c>2</c>. Each nested sequence is limited to <c>2</c> elements. Each array element has dimensions 3. Each element's representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
-    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
+    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
     /// <example>
     /// <code>
@@ -102,7 +102,6 @@ public partial class Sample : global::System.IEquatable<Sample>
         sequenceOfArrays = new Sequence<Row>();
         sequenceOfArrayAliases = new Sequence<Rows>();
         rows = new Row[2];
-
         for (var dimension0 = 0; dimension0 < 2; dimension0++)
         {
             rows[dimension0] = new Row();
@@ -153,7 +152,6 @@ public partial class Sample : global::System.IEquatable<Sample>
         boundedItems = new Items(other.boundedItems);
         nestedSequences = new Sequence<BoundedLongs>(global::System.Linq.Enumerable.Select(other.nestedSequences, element => new BoundedLongs(element)));
         rows = (Row[])other.rows.Clone();
-
         for (var dimension0 = 0; dimension0 < 2; dimension0++)
         {
             rows[dimension0] = new Row(other.rows[dimension0]);

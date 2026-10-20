@@ -10,6 +10,10 @@
 3. **Make roots and include behavior explicit.**  
    `DdsIdl` starts generation; included IDL is tracked for invalidation but
    does not become another root.
+   Direct sequence-array mapping is selected independently: the project
+   `DdsIdlSequenceArrayMapping` default can be overridden by a file's
+   `SequenceArrayMapping` metadata. It belongs to the declaring file rather
+   than an include traversal or the project-wide preprocessor environment.
 4. **Fail visibly at unsupported boundaries.**  
    Invalid input and unsupported contracts that cannot produce safe managed
    output fail with source-located diagnostics. Deliberately ignored constructs

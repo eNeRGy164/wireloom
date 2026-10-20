@@ -51,3 +51,11 @@ check_finalization late-cpp-setup 7 0 7
 check_finalization handled-peer-failure 0 0 0
 check_finalization report-generation-failure 7 1 1
 echo 'Harness finalization passed: 3 checks, no RTI license required.'
+
+# Arrange: load the production fixture selector without provisioning RTI.
+source <(sed -n '/^fixtures_for_case() {/,/^}/p' "$runner")
+
+# Act / Assert: the dedicated IDL case must retain every sequence-shape fixture.
+expected_fixtures=$'sequence-empty\nsequence-unequal\nsequence-mixed-empty\nsequence-boundary'
+[[ "$(fixtures_for_case 05-array-of-sequences-idl)" == "$expected_fixtures" ]]
+echo 'Sequence-array fixture selection passed: 4 fixtures.'

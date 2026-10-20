@@ -14,6 +14,11 @@ internal static class ReceivedSampleVerifier
         var context = $"{options.CaseId} fixture {options.Fixture}";
         switch (options.CaseId)
         {
+#if WIRE_COMPATIBILITY_SEQUENCE_ARRAYS
+            case "05-array-of-sequences-idl":
+                ManagedFixtures.VerifySequenceArrayFixture(sample!, options.Fixture);
+                break;
+#endif
             case "09-defaults-ranges":
                 IndependentSampleVerifier.VerifyDefaultsAndRangesFixture(sample!, context);
                 break;

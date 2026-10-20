@@ -35,7 +35,17 @@ try
             var registryPath = Path.Combine(repositoryRoot, "tests", "Wireloom.Dds.Generator.WireCompatibility", $"wire-case-exclusions-{version}.json");
             var selected = Invoke(succeeds: true, "list-cases", manifestPath, registryPath).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-            Check(selected.Length == (version == "7.3.1" ? 79 : 80), "Only applicable positive cases are selected.");
+            Check(selected.Length == (version == "7.3.1" ? 80 : 81), "Only applicable positive cases are selected.");
+            Check(selected.Contains("05-array-of-sequences-idl"), "The IDL mapping is an independently selected corpus case.");
+            Check(Invoke(succeeds: true, "case-pairings", manifestPath, "05-array-of-sequences-idl")
+                    .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .SequenceEqual(["Wireloom C#|Wireloom C#", "Wireloom C#|RTI C++", "RTI C++|Wireloom C#", "RTI C++|RTI C++"]),
+                "The IDL case schedules four pairings and explicitly excludes flattened RTI C#.");
+            Check(Invoke(succeeds: true, "case-field", manifestPath, "05-array-of-sequences-idl", "idl").Trim()
+                    == "idl/features/05-array-of-sequences-idl.idl"
+                && Invoke(succeeds: true, "case-field", manifestPath, "05-array-of-sequences-idl", "sequence-array-mapping").Trim() == "Idl"
+                && Invoke(succeeds: true, "case-field", manifestPath, "05-array-of-sequences", "sequence-array-mapping").Trim() == "RtiCSharp",
+                "The dedicated IDL case retains C018's declarations without changing the default mode.");
             Check(selected.Contains("09-autoid-hash"), "Hash-ID coverage applies to both LTS versions.");
             Check(selected.Contains("10-resolve-name-wstring-aliases"), "C147 is a positive interoperability case for both LTS versions.");
             Check(Invoke(succeeds: true, "case-pairings", manifestPath, "10-resolve-name-wstring-aliases")
@@ -86,6 +96,7 @@ try
         ["01-full-widths"] = ["non-default"],
         ["09-defaults-ranges"] = ["non-default"],
         ["05-array-of-sequences"] = ["default"],
+        ["05-array-of-sequences-idl"] = ["sequence-empty", "sequence-unequal", "sequence-mixed-empty", "sequence-boundary"],
         ["05-collections"] = ["sequence-empty", "sequence-single", "sequence-multiple"],
         ["05-unbounded-sequence-aliases"] = ["sequence-empty", "sequence-multiple"],
         ["07-union-string-sequence-aliases"] = [
@@ -109,6 +120,10 @@ try
         {
             foreach (var (writer, reader) in pairings)
             {
+                if (item.Key == "05-array-of-sequences-idl" && (writer == peers[1] || reader == peers[1]))
+                {
+                    continue;
+                }
                 if (item.Key == "09-optional-aggregate-member" && (writer == peers[0] || reader == peers[0]))
                 {
                     continue;
@@ -164,6 +179,15 @@ try
         var logs = Path.Combine(directory, "logs");
         Directory.CreateDirectory(logs);
 
+        if (File.ReadAllLines(Path.Combine(directory, "scenarios.tsv")).Any(line => line.StartsWith("05-array-of-sequences-idl\t", StringComparison.Ordinal)))
+        {
+            var generated = Path.Combine(root, "generated");
+            Directory.CreateDirectory(generated);
+            File.WriteAllText(Path.Combine(generated, "Sample.g.cs"), "// Synthetic source for black-box provenance validation.");
+            Invoke(succeeds: true, "generation-provenance", manifestPath, "05-array-of-sequences-idl", generated,
+                rtiVersion, Path.Combine(logs, "05-array-of-sequences-idl-generation.json"));
+        }
+
         foreach (var row in File.ReadAllLines(Path.Combine(directory, "scenarios.tsv")).Select(line => line.Split('\t')))
         {
             var peerIds = new Dictionary<string, string>
@@ -205,6 +229,66 @@ try
 
     // Assert: payload/report evidence survives, including registry entries and failure reasons.
     Check(JsonNode.DeepEquals(ReadJson(baseline), ReadJson(Path.Combine(merged, "results.json"))), "Combined JSON equals the unsharded report.");
+    var idlScenarios = ReadJson(baseline)["scenarios"]!.AsArray()
+        .Where(item => (string?)item!["case"] == "05-array-of-sequences-idl").ToArray();
+    Check(idlScenarios.Length == 16 && idlScenarios.All(item =>
+            (string?)item!["generationProvenance"]!["sequenceArrayMapping"] == "Idl"
+            && (string?)item["generationProvenance"]!["rtiVersion"] == rtiVersion
+            && item["generationProvenance"]!["generatedSources"]!.AsArray().Count > 0),
+        "All variant fixtures preserve mode, runtime, and source provenance through merging.");
+    var idlMarkdown = File.ReadAllLines(Path.Combine(merged, "results.md"))
+        .Single(line => line.StartsWith("| `05-array-of-sequences-idl.idl`", StringComparison.Ordinal));
+    Check(idlMarkdown.Split("N/A", StringSplitOptions.None).Length == 6
+        && !idlMarkdown.Contains("❔", StringComparison.Ordinal),
+        "The five excluded RTI C# pairings are N/A rather than missing exchanges.");
+
+    // Arrange / Act / Assert: missing or different generation provenance must not qualify.
+    var provenanceFile = Path.Combine(merged, "logs", "05-array-of-sequences-idl-generation.json");
+    var originalProvenance = File.ReadAllText(provenanceFile);
+    foreach (var field in new[] { "sequenceArrayMapping", "rtiVersion", "idlSha256", "idl" })
+    {
+        ChangeJson(provenanceFile, node => node[field] = "incorrect");
+        Check(Invoke(succeeds: false, "render-report", rtiVersion, rows.Count.ToString(), seed,
+                Path.Combine(root, "bad-mode.json"), Path.Combine(root, "bad-mode.md"),
+                Path.Combine(merged, "logs"), exclusions, manifestPath).Contains("provenance does not match", StringComparison.Ordinal),
+            "Reports reject mismatched generation provenance.");
+        File.WriteAllText(provenanceFile, originalProvenance);
+    }
+
+    ChangeJson(provenanceFile, node => node["generatedSources"] = new JsonArray());
+    Check(Invoke(succeeds: false, "render-report", rtiVersion, rows.Count.ToString(), seed,
+            Path.Combine(root, "missing-sources.json"), Path.Combine(root, "missing-sources.md"),
+            Path.Combine(merged, "logs"), exclusions, manifestPath).Contains("provenance does not match", StringComparison.Ordinal),
+        "Reports reject provenance without generated sources.");
+    File.WriteAllText(provenanceFile, originalProvenance);
+
+    File.Delete(provenanceFile);
+    Check(Invoke(succeeds: false, "render-report", rtiVersion, rows.Count.ToString(), seed,
+            Path.Combine(root, "missing-mode.json"), Path.Combine(root, "missing-mode.md"),
+            Path.Combine(merged, "logs"), exclusions, manifestPath).Contains("provenance is missing", StringComparison.Ordinal),
+        "Reports reject completed variant exchanges without generation provenance.");
+    File.WriteAllText(provenanceFile, originalProvenance);
+
+    var excludedPeerRow = rows.Single(row => row[0] == "05-array-of-sequences-idl"
+        && row[9] == "sequence-empty" && row[4] == peers[0] && row[6] == peers[0]).ToArray();
+    excludedPeerRow[6] = peers[1];
+    var excludedPeerSeed = Path.Combine(root, "excluded-peer.tsv");
+    File.WriteAllText(excludedPeerSeed, string.Join('\t', excludedPeerRow));
+    Check(Invoke(succeeds: false, "render-report", rtiVersion, "1", excludedPeerSeed,
+            Path.Combine(root, "excluded-peer.json"), Path.Combine(root, "excluded-peer.md"),
+            Path.Combine(merged, "logs"), exclusions, manifestPath).Contains("excluded peer", StringComparison.Ordinal),
+        "Reports reject exchanges outside the variant's declared peer scope.");
+
+    // Arrange / Act / Assert: an early setup failure still produces a truthful NOT_RUN report.
+    excludedPeerRow[6] = peers[0];
+    excludedPeerRow[8] = "NOT_RUN";
+    File.WriteAllText(excludedPeerSeed, string.Join('\t', excludedPeerRow));
+    var emptyLogs = Path.Combine(root, "empty-logs");
+    Directory.CreateDirectory(emptyLogs);
+    Invoke(succeeds: true, "render-report", rtiVersion, "1", excludedPeerSeed,
+        Path.Combine(root, "early-failure.json"), Path.Combine(root, "early-failure.md"), emptyLogs, exclusions, manifestPath);
+    Check((string?)ReadJson(Path.Combine(root, "early-failure.json"))["scenarios"]![0]!["status"] == "NOT_RUN",
+        "Missing build provenance never turns an early setup failure into completed qualification.");
     Check((int)ReadJson(baseline)["notApplicableCount"]! == 1, "Unavailable features are recorded separately from failures.");
     Check(ReadJson(baseline)["scenarios"]!.AsArray().All(item => (string?)item!["case"] != "09-must-understand"), "Unavailable features add no exchanges to the denominator.");
     Check(File.ReadAllText(Path.Combine(merged, "results.md")).Contains("Not applicable", StringComparison.Ordinal), "The Markdown report explains unavailable features.");

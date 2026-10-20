@@ -1,8 +1,24 @@
 # 9. Architectural decisions
 
+Configuration-specific wire evidence uses a dedicated corpus case with its own
+IDL file and records the selected Wireloom mapping. C149 uses declarations
+identical to C018 with `Idl`, explicitly selects Wireloom C# and RTI C++, and
+records why the flattened RTI C# binding is excluded. Ordinary cases retain all
+nine pairings; case results require matching runtime, mode, IDL, and
+generated-source provenance. This preserves default compatibility evidence
+while qualifying only the opt-in peer scope and exercised fixtures.
+
 The following decisions are reflected in the current implementation and its
 tests. A separate ADR should be added when a decision needs a full options and
 trade-offs record.
+
+Direct sequence arrays default to the RTI C# mapping for compatibility.
+Consumers may opt into faithful IDL mapping project-wide or per declaring
+file. This preserves existing generated APIs unless explicitly requested,
+while allowing arrays of independently sized sequences for C++ interoperability.
+The setting is independent of RTI version selection and does not change other
+collection mappings. The trade-off is two intentionally different generated
+APIs and wire types; the file owns the selection, including when shared by roots.
 
 Union metadata adapts to RTI's signed discriminator representation where needed
 to preserve IDL branch values. Signed 8-bit character labels match the RTI C++

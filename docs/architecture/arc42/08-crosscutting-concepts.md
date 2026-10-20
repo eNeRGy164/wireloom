@@ -18,7 +18,12 @@ source directories and generation outcomes. Wire planning separately records
 `notApplicableCases` for features unavailable in the selected RTI version.
 Those cases retain explanatory evidence but contribute no exchanges,
 compatibility failures, or Wireloom implementation gaps. Requesting such a
-case explicitly fails before peer builds and type-support discovery. New oracle captures and Wireloom exports retain source revision/dirty state, input and output hashes, tool versions, arguments, and outcomes. Legacy missing provenance remains unknown; unattributed local totals cannot establish qualification. The [LTS runbook](../../corpus/LTS-PROFILES.md) owns reproduction commands and attribution requirements.
+case explicitly fails before peer builds and type-support discovery. New oracle
+captures and Wireloom exports retain source revision/dirty state, input and
+output hashes, tool versions, arguments, and outcomes. Legacy missing provenance
+remains unknown; unattributed local totals cannot establish qualification. The
+[LTS runbook](../../corpus/LTS-PROFILES.md) owns reproduction commands and
+attribution requirements.
 Feature cases isolate availability boundaries: C040 (`09-autoid-hash`)
 checks hash member IDs on both LTS versions; C142 (`09-must-understand`) is
 not applicable to 7.3.1. The shared positive inventory contains 80 cases, of
@@ -41,7 +46,10 @@ DynamicType metadata.
 Some constructs deliberately continue with a warning or informational
 diagnostic: unknown annotations are ignored with `DDSG0101`, IDL interfaces are accepted without
 emitting C# interface types (`DDSG0103`), and direct arrays of sequences warn
-that the generated mapping may not preserve IDL semantics (`DDSG0105`). Macro
+that the default generated mapping may not preserve IDL semantics (`DDSG0105`).
+The opt-in `Idl` sequence-array mapping preserves both layers and omits that
+warning. Invalid mapping values and unsupported recursive direct sequence arrays
+produce source-located `DDSG0001` before emission. Macro
 argument-count mismatches and active `#warning` directives also report
 warnings while preprocessing continues (`DDSG0104`/`DDSG0106`); active
 `#pragma message` directives are informational (`DDSG0107`). The package guide
@@ -113,9 +121,19 @@ with separate evidence from serialization and DDS interoperability.
   C148 and the runtime contract suite verify this behavior.
 - Sequence members with array dimensions retain those dimensions in the
   emission model even though the managed public shape remains the RTI sequence
-  shape. Integer sequence arrays use `NativeSeq`; bounded string sequence
+  shape by default (`RtiCSharp`). Integer sequence arrays use `NativeSeq`; bounded string sequence
   arrays use `NativeStringSeq` with the string bound passed through
   `FromNative`, `Initialize`, and `ToNative`.
+- `DdsIdlSequenceArrayMapping=Idl` opts into faithful direct sequence arrays;
+  file metadata `SequenceArrayMapping` overrides the project default. Included
+  declarations use the included file's setting, independent of root order.
+  The generated API uses arrays of sequence wrappers with mutable `Value`
+  containers and shared native-array lifecycle paths. The enclosing metadata
+  contains anonymous sequence elements rather than synthetic alias or struct
+  layers. Runtime fixtures verify numeric, string, enum, scalar-alias, aggregate,
+  optional, multidimensional, and inherited cases on both profiles. Recursive
+  direct sequence arrays remain unsupported in this mode; DDS wire qualification
+  is separate.
 - Direct narrow and wide string-sequence union branches use specialized native
   storage and pass element bounds through initialization and conversion.
   Typedef-backed union branches delegate through their generated native alias

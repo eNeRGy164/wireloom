@@ -25,9 +25,9 @@ public partial class Sample : global::System.IEquatable<Sample>
     public State state { get; set; } = global::CorpusAggregateComposition.State.idle;
 
     /// <summary>
-    /// Gets the <c>values</c> member. Its maximum number of elements is <c>4</c>.
+    /// Gets the <c>values</c> member. Its maximum number of elements is <c>4</c>. Each element's finite values are in the inclusive range <c>float.MinValue</c> through <c>float.MaxValue</c>. NaN and positive or negative infinity are also representable.
     /// </summary>
-    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, Wireloom currently generates an effective limit of 100 elements. RTI uses the bound from the type metadata when processing DDS data.</remarks>
+    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
     /// <example>
     /// <code>
