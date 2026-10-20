@@ -160,7 +160,7 @@ public sealed class IncrementalGeneratorMeasurementSpecs(ITestOutputHelper outpu
             additionalTexts,
             parseOptions,
             new TestAnalyzerConfigOptionsProvider(options),
-            new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true, baseDirectory: null));
+            new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true));
 
         return new Scenario(driver, compilation, root, included, unrelated, secondRoot, root.GetText()!.ToString());
     }
