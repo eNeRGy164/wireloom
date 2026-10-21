@@ -1,0 +1,4 @@
+module PackageIdentifierPolicy {
+    @service("DDS") interface Service { void Context(); };
+    struct Struct { long number; };
+};

@@ -56,13 +56,39 @@ The packed analyzer also compiles `union-string-sequences.idl`, covering direct
 narrow/wide sequence branches with nested bounded string syntax and
 typedef-backed string-sequence branches.
 
-## .NET 8 consumer check
+## Generation settings
 
 The consumer sets `DdsIdlSequenceArrayMapping=Idl` and compiles the runtime
 suite's `sequence-arrays.idl` using that project default. Its separate legacy
 fixture overrides the mode with `SequenceArrayMapping=RtiCSharp`, intentionally
 retaining `DDSG0105` as a non-fatal warning. Typed checks exercise both APIs and
 reuse the sequence-array runtime serialization contracts.
+
+The ordinary packed consumer uses `PackageIntegrationStrict=false` and
+explicitly exempts `DDSG0108` from warnings-as-errors. Its retained `Context`
+type and focused `strict-identifiers.idl` fixture deliberately trigger that
+warning; typed tests verify their original names remain usable. The fixture
+also exercises a DDS-service operation named `Context`: its identifiers are
+checked while its bindings remain omitted with `DDSG0103`. The consumer
+exempts that deliberate omission warning and verifies that no service class
+is generated.
+
+`PackageIntegrationStrict` is a test-project switch, not a Wireloom package
+setting. It supplies the existing `Strict` metadata on a generating root.
+Quality CI also checks the negative build across its existing RTI/framework
+matrix after the ordinary consumer test:
+
+```powershell
+./tests/Wireloom.Dds.Generator.PackageIntegration/scripts/Verify-StrictConsumer.ps1 `
+  -PackageVersion $packageVersion -RtiVersion 7.7.0 -Framework net10.0
+```
+
+Use the package version, RTI version, and framework from the preceding restore.
+The helper requires a nonzero build result containing `DDSG0001` for a naming
+violation; an unrelated build error does not pass the check. Roslyn regression tests separately verify
+that strict rejection adds no generated documents.
+
+## .NET 8 consumer check
 
 Consumer support starts at .NET 8 with C# 12. Repository projects default to
 .NET 10; override the existing integration project's target to check the

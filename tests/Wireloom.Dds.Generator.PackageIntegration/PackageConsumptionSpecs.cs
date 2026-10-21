@@ -7,6 +7,21 @@ namespace Wireloom.Dds.Generator.PackageIntegration;
 public sealed class PackageConsumptionSpecs
 {
     [Fact]
+    public void PermissiveIdentifierWarningsPreserveTheGeneratedContract()
+    {
+        // Arrange
+        var sample = new PackageIdentifierPolicy.Struct { number = 17 };
+
+        // Act
+        var copy = new PackageIdentifierPolicy.Struct(sample);
+
+        // Assert
+        copy.number.ShouldBe(17);
+        copy.ShouldBe(sample);
+        typeof(PackageIdentifierPolicy.Struct).Assembly.GetType("PackageIdentifierPolicy.Service").ShouldBeNull();
+    }
+
+    [Fact]
     public void GeneratesTheIntegrationContractAndIncludedSupportType()
     {
         var message = new CorpusIntegrationMessage { text = "Package integration" };

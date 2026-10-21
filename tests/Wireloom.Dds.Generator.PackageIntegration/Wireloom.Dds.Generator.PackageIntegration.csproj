@@ -5,8 +5,10 @@
     <TargetFramework Condition="'$(WireloomConsumerTargetFramework)' != ''">$(WireloomConsumerTargetFramework)</TargetFramework>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <DdsIdlSequenceArrayMapping>Idl</DdsIdlSequenceArrayMapping>
-    <!-- The explicit legacy fixture intentionally reports the flattening warning. -->
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);DDSG0105</WarningsNotAsErrors>
+    <!-- Legacy, non-emitted interface, and permissive naming fixtures intentionally report warnings. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);DDSG0103;DDSG0105;DDSG0108</WarningsNotAsErrors>
+    <!-- Test-only switch: the negative build enables strict validation batch-wide. -->
+    <PackageIntegrationStrict Condition="'$(PackageIntegrationStrict)' == ''">false</PackageIntegrationStrict>
     <!-- This consumer is restored only after the package-under-test is created. -->
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
@@ -30,6 +32,7 @@
              Link="RuntimeContracts/%(RecursiveDir)%(Filename)%(Extension)" />
     <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/*.idl" />
     <DdsIdl Include="Fixtures/legacy-sequence-arrays.idl" SequenceArrayMapping="RtiCSharp" />
+    <DdsIdl Include="Fixtures/strict-identifiers.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-integration.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\features\09-optional-recursive-array.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\features\06-aggregates.idl" />
@@ -40,7 +43,7 @@
       Include="..\PackageIntegrationIncludeDirectories\FirstRoot.idl"
       Defines="PACKAGE_FEATURE"
       Undefines="PACKAGE_DISABLED"
-      Strict="true" />
+      Strict="$(PackageIntegrationStrict)" />
     <DdsIdl Include="..\PackageIntegrationIncludeDirectories\SecondRoot.idl" />
     <DdsIdl
       Include="..\PackageIntegrationIncludeDirectories\LateRoot.idl"
@@ -74,7 +77,7 @@
     </ItemGroup>
 
     <Error
-      Condition="'@(_MetadataRoot)' == '' or '%(_MetadataRoot.Generate)' != 'true' or '%(_MetadataRoot.Strict)' != 'true' or '%(_MetadataRoot.Defines)' != 'PACKAGE_FEATURE' or '%(_MetadataRoot.Undefines)' != 'PACKAGE_DISABLED'"
+      Condition="'@(_MetadataRoot)' == '' or '%(_MetadataRoot.Generate)' != 'true' or '%(_MetadataRoot.Strict)' != '$(PackageIntegrationStrict)' or '%(_MetadataRoot.Defines)' != 'PACKAGE_FEATURE' or '%(_MetadataRoot.Undefines)' != 'PACKAGE_DISABLED'"
       Text="The package target did not preserve DdsIdl generation metadata." />
   </Target>
 </Project>

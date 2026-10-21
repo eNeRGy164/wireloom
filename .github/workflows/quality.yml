@@ -134,6 +134,13 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         shell: pwsh
 
+      - name: Verify strict validation in the packed consumer
+        run: >-
+          ./tests/Wireloom.Dds.Generator.PackageIntegration/scripts/Verify-StrictConsumer.ps1
+          -PackageVersion $env:TEST_PACKAGE_VERSION -RtiVersion $env:RTI_VERSION
+          -Framework $env:CONSUMER_FRAMEWORK -LogPath artifacts/lts/strict-consumer.txt
+        shell: pwsh
+
       - name: Check retained RTI C# 7.7.0 unbounded alias oracle
         if: matrix.rti_version == '7.7.0' && matrix.framework == 'net10.0'
         run: |
@@ -199,6 +206,7 @@ jobs:
             -e RTI_CONNEXT_DDS_VERSION="$RTI_VERSION" \
             mcr.microsoft.com/dotnet/sdk:8.0.100@sha256:239eb99884b49bac13f4ff5935e118654f87b67d6e31bc842c7cd5a6c46fcc4f \
             bash -ceu '
+              set -o pipefail
               mkdir -p /consumer
               cp /source/Directory.Build.props /consumer/
               cp -a /source/package-test-feed /consumer/
@@ -241,6 +249,16 @@ jobs:
                 -p:WireloomConsumerTargetFramework=net8.0 -p:LangVersion=12.0
               dotnet exec tests/Wireloom.Dds.Generator.PackageIntegration/bin/Release/net8.0/Wireloom.Dds.Generator.PackageIntegration.dll |
                 tee /artifacts/package-integration.txt
+              if dotnet build tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj \
+                --no-restore --configuration Release \
+                -p:WireloomDdsGeneratorPackageVersion="$WIRELOOM_DDS_GENERATOR_PACKAGE_VERSION" \
+                -p:RtiConnextDdsVersion="$RTI_CONNEXT_DDS_VERSION" \
+                -p:WireloomConsumerTargetFramework=net8.0 -p:LangVersion=12.0 \
+                -p:PackageIntegrationStrict=true > /artifacts/strict-consumer.txt 2>&1; then
+                echo "Strict validation unexpectedly accepted the naming fixture." >&2
+                exit 1
+              fi
+              grep -q "error DDSG0001:.*ignoring case" /artifacts/strict-consumer.txt
             '
         shell: bash
 
