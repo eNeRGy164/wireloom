@@ -1,6 +1,7 @@
 {
   "stryker-config": {
-    "project": "Wireloom.Dds.Generator.csproj",
+    "project": "src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj",
+    "test-projects": [ "tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj" ],
     "test-runner": "mtp",
     "mutate": [ "**/Compiler/FrontEnd/Preprocessing/PreprocessorSourceOriginTracker.cs" ],
     "mutation-level": "Basic",
