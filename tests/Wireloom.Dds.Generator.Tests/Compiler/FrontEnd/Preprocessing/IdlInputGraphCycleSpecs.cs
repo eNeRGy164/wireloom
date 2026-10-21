@@ -133,7 +133,6 @@ public sealed class IdlInputGraphCycleSpecs
     }
 
     [Fact]
-    [Trait("Preprocessor", "PP034")]
     public void DeduplicatesRootOutputsUsingPlatformPathCasingRules()
     {
         // Arrange
