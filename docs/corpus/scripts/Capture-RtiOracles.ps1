@@ -63,6 +63,7 @@ foreach ($case in $cases) {
         }
         $options = @('-language', $(if ($lang -eq 'cpp') { 'C++11' } else { 'C#' }), '-replace')
         if ($DisablePreprocessor) { $options += '-ppDisable' }
+        if ($case.strict) { $options += '-strict' }
         if ($Version -eq '7.7.0') { $options += '-generateIncludeFiles' }
         if ($lang -eq 'cpp') { $options += @($case.wireMatrix.rtiCppCodegenOptions | Where-Object { $_ }) }
         foreach ($define in $case.defines) { $options += "-D$define" }

@@ -1,0 +1,4 @@
+INFO com.rti.ndds.nddsgen.Arguments Running rtiddsgen version 4.7.0, please wait ...
+ERROR com.rti.ndds.nddsgen.Nddsgen 12-case-collision-strict.idl line 1 duplicate symbol 'CorpusStrictCase::Sample::Number' was previously defined in file 12-case-collision-strict.idl line 0
+ERROR com.rti.ndds.nddsgen.Main Fail:  java.util.concurrent.ExecutionException: java.lang.Exception: The file couldn't be parsed and the rawTree wasn't generated
+INFO com.rti.ndds.nddsgen.Main Done (failures)

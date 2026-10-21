@@ -1,0 +1,4 @@
+module CorpusInterfaceKeyword {
+    @service("DDS") interface Service { void Context(); };
+    struct Sample { long number; };
+};

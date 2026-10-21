@@ -1,0 +1,6 @@
+INFO com.rti.ndds.nddsgen.Main Running rtiddsgen version 4.3.1, please wait ...
+WARN com.rti.ndds.nddsgen.antlr.IdlSymbolTable Context identifier, collide with an idl keyword (Case-Insensitive). This is not compliant with the IDL/XTypes specification. You can make this message an error by using the -strict flag
+WARN com.rti.ndds.nddsgen.antlr.IdlSymbolTable Context identifier, collide with an idl keyword (Case-Insensitive). This is not compliant with the IDL/XTypes specification. You can make this message an error by using the -strict flag
+WARN com.rti.ndds.nddsgen.antlr.IdlSymbolTable Context identifier, collide with an idl keyword (Case-Insensitive). This is not compliant with the IDL/XTypes specification. You can make this message an error by using the -strict flag
+[main] ERROR org.apache.velocity.rendering - reference set is not a valid reference at /opt/rti.com/rti_connext_dds-7.3.1/bin/../resource/app/app_support/rtiddsgen/templates/cpp11stl/utils.vm[line 122, column 12]
+INFO com.rti.ndds.nddsgen.Main Done

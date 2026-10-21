@@ -1,0 +1,3 @@
+INFO com.rti.ndds.nddsgen.Arguments Running rtiddsgen version 4.7.0, please wait ...
+WARN com.rti.ndds.nddsgen.antlr.IdlTreeParser 12-interface-body-control.idl line 2:14 Interface Service ignored because it is not a service("DDS")
+INFO com.rti.ndds.nddsgen.Main Done

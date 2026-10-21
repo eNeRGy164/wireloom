@@ -54,11 +54,37 @@ public sealed class CorpusComplianceSpecs
             .ShouldContain("tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), 100), new uint[] { 2 }");
     }
 
+    [Theory]
+    [InlineData("12-keyword-default", "12-keyword-strict")]
+    [InlineData("12-case-collision-default", "12-case-collision-strict")]
+    [InlineData("12-interface-keyword-default", "12-interface-keyword-strict")]
+    [InlineData("12-interface-case-default", "12-interface-case-strict")]
+    public void PairedStrictCasesUseIdenticalIdlAndDifferentValidationModes(string defaultId, string strictId)
+    {
+        // Arrange
+        var permissive = CorpusRepository.Cases.Single(item => item.Id == defaultId);
+        var strict = CorpusRepository.Cases.Single(item => item.Id == strictId);
+        var diagnostics = new List<IdlDiagnostic>();
+
+        // Act
+        var generated = Compile(permissive, diagnostics);
+        var exception = Should.Throw<IdlException>(() => Compile(strict));
+
+        // Assert
+        File.ReadAllText(CorpusRepository.GetIdlPath(permissive.Idl)).ShouldBe(File.ReadAllText(CorpusRepository.GetIdlPath(strict.Idl)));
+        permissive.Strict.ShouldBeFalse();
+        strict.Strict.ShouldBeTrue();
+        generated.ShouldNotBeEmpty();
+        diagnostics.Where(diagnostic => diagnostic.Id == "DDSG0108").ShouldHaveSingleItem();
+        exception.Message.ShouldContain("ignoring case");
+        exception.Input.Path.ShouldEndWith($"{strictId}.idl");
+    }
+
     [Fact]
     public void CorpusManifestAndOracleLibraryHaveExpectedCaseCoverage()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(149);
+        cases.Length.ShouldBe(162);
         cases.ShouldBeUnique();
         CorpusRepository.OracleCaseIds.ShouldBe(CorpusRepository.Cases
             .Where(corpusCase => corpusCase.OracleSourcesRetained)
