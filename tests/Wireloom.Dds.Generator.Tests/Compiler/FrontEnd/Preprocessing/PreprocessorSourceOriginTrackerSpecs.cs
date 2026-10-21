@@ -183,6 +183,54 @@ public sealed class PreprocessorSourceOriginTrackerSpecs
     }
 
     [Fact]
+    [Trait("Preprocessor", "PP051")]
+    public void AlignsTheUniqueSuffixAtTheExactOriginWorkLimit()
+    {
+        // Arrange
+        const int repeatedSourcePairs = 490;
+        const int repeatedExpandedPairs = 100;
+        var workBeforeSuffix = PreprocessorLimits.MaximumOriginAlignmentWork - 4;
+        // Each repeated A matches every source A and its following whitespace; padding fills the remaining work.
+        var fixedPrefixWork = 2 + (4 * repeatedExpandedPairs) + (2 * repeatedSourcePairs * repeatedExpandedPairs);
+        var unmatchedPaddingTokens = (workBeforeSuffix - fixedPrefixWork) / 2;
+        var sourceTokens = new List<string> { "A" };
+        var expandedTokens = new List<string> { "A", "X" };
+        var tracker = new PreprocessorSourceOriginTracker(offset => offset, CancellationToken.None);
+        var origins = new List<int>();
+
+        for (var index = 0; index < repeatedSourcePairs; index++)
+        {
+            sourceTokens.Add("A");
+            sourceTokens.Add($"B{index}");
+        }
+
+        sourceTokens.Add("Z");
+        sourceTokens.Add("C");
+
+        for (var index = 0; index < repeatedExpandedPairs; index++)
+        {
+            expandedTokens.Add("A");
+            expandedTokens.Add("X");
+        }
+
+        for (var index = 0; index < unmatchedPaddingTokens; index++)
+        {
+            expandedTokens.Add("!");
+        }
+
+        expandedTokens.Add("Z");
+        expandedTokens.Add("C");
+        var source = string.Join(" ", sourceTokens);
+        var expanded = string.Join(" ", expandedTokens);
+
+        // Act
+        tracker.AppendExpandedOrigins(origins, source, expanded, sourceOffset: 0);
+
+        // Assert
+        origins[expanded.IndexOf('Z')].ShouldBe(source.IndexOf('Z'));
+    }
+
+    [Fact]
     public void AlignsTheFirstOriginalTokenAfterInsertedOutput()
     {
         // Arrange
