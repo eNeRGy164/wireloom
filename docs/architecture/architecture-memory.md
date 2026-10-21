@@ -45,6 +45,14 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   no source, while 7.7.0 preserves it in DynamicType metadata. See [building
   blocks](arc42/05-building-block-view.md)
   and [runtime flow](arc42/06-runtime-view.md).
+- **Strict validation:** Defaults to `false`; any generating root enables it
+  for the batch. Pure rules evaluate source-mapped identifier facts, and a
+  separate policy chooses warning or failure. Interface bodies are parsed
+  without emitting types: exact keywords fail in all bodies, while ordinary
+  interfaces retain RTI acceptance for specification-only names and DDS
+  services apply the naming policy. Parameters have independent operation
+  scopes; constructed-type nesting is bounded at 64. See [building blocks](arc42/05-building-block-view.md)
+  and the [configuration reference](../guides/configuration.md#enable-strict-validation).
 - **RTI profile ownership:** `RuntimeReferenceGuard` reads the resolved RTI
   assembly version and reports reference errors. `IdlCompilation` selects and
   carries an immutable profile into emission planning. Semantic types and
@@ -111,6 +119,7 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
 | Qualified RTI versions | `7.3.1`, `7.7.0`                           | Exact LTS version evidence only                                                                                        |
 | Test platform          | Microsoft.Testing.Platform, xUnit v3       | Runner filters follow `--`                                                                                             |
 | Sequence-array mapping | `RtiCSharp`; opt-in `Idl` per project/file | File ownership; runtime coverage on both LTS profiles; C149 Idl case passes 16 focused DDS exchanges per exact profile |
+| Strict validation      | `false`; any root enables the batch        | DDSG0108 by default; strict failure before emission                                                                    |
 
 ## Open risks
 
@@ -126,6 +135,12 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   retained C149 corpus case passes its 16 focused Wireloom/C++ DDS
   exchanges per profile; broader qualification remains open. See chapters 5,
   8, 9, 10, and 11.
+- The new `DDSG0108` warning may fail warnings-as-errors builds; exact reserved
+  keywords now fail in both modes. Enum literals follow the enclosing IDL
+  scope, including the documented stricter behavior than RTI between enums.
+- RTI 7.3.1 C# RPC transport output for C157/C159 fails compilation; preserve
+  the raw failure and track interface/RPC generation separately in
+  [issue #75](https://github.com/eNeRGy164/wireloom/issues/75).
 - Compatibility beyond retained cases, host/IDE combinations, and adapted RTI
   wire fixtures remains unqualified.
 

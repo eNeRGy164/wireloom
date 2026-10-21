@@ -26,8 +26,8 @@ remains unknown; unattributed local totals cannot establish qualification. The
 attribution requirements.
 Feature cases isolate availability boundaries: C040 (`09-autoid-hash`)
 checks hash member IDs on both LTS versions; C142 (`09-must-understand`) is
-not applicable to 7.3.1. The shared positive inventory contains 80 cases, of
-which 79 apply to 7.3.1 and all 80 apply to 7.7.0. Wire evidence is tied to
+not applicable to 7.3.1. The shared positive inventory contains 81 cases, of
+which 80 apply to 7.3.1 and all 81 apply to 7.7.0. Wire evidence is tied to
 the exact case inputs and profile; changed inputs require fresh exchanges.
 
 ## 8.2 Diagnostics and source locations
@@ -54,6 +54,25 @@ argument-count mismatches and active `#warning` directives also report
 warnings while preprocessing continues (`DDSG0104`/`DDSG0106`); active
 `#pragma message` directives are informational (`DDSG0107`). The package guide
 documents the adopter impact and how to promote selected diagnostics to errors.
+
+Naming violations report `DDSG0108` while generation continues by default.
+Setting `Strict="true"` on any generating root instead rejects case-variant
+keywords, same-scope case-only names, and new keys in derived aggregates with
+`DDSG0001` before emission. Exact reserved keywords fail in both modes.
+Strictness applies to the batch; a non-generating input cannot enable it.
+
+Interface bodies are parsed for declared identifiers even when `DDSG0103`
+reports omitted bindings. Exact reserved keywords fail in every body.
+Following RTI, ordinary interface bodies do not apply specification warnings;
+`@service("DDS")` bodies apply keyword-case and scope-collision rules, with
+separate parameter scopes per operation. Body types are not emitted, and full
+interface type resolution and RPC semantics remain outside this validation.
+
+Compiler warning policies affect diagnostic presentation, not semantic
+acceptance. `DDSG0108` can fail a warnings-as-errors build in default mode;
+suppressing it cannot bypass a strict failure. The
+[configuration reference](../../guides/configuration.md#enable-strict-validation)
+describes the rules, warning exemptions, and differences from RTI's mode.
 
 ## 8.3 Determinism and invalidation
 

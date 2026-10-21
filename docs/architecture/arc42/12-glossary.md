@@ -2,6 +2,9 @@
 
 ## 12.1 Definitions
 
+- **Strict validation** — A batch-wide semantic policy that rejects supported
+  IDL specification violations before emission. It is distinct from compiler
+  warnings-as-errors and identifier escaping.
 - **Sequence-array mapping** — The file-owned choice between default
   `RtiCSharp` flattening of direct sequence arrays and opt-in `Idl` preservation
   of the outer array and independently sized sequence elements. It does not

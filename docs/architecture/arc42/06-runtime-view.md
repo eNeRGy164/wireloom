@@ -9,7 +9,7 @@ RTI runtime.
 ![Consumer build sequence from MSBuild IDL inputs through Roslyn generation and compilation to application use of the RTI runtime.](images/06/consumer-build-sequence.png)
 
 1. MSBuild adds explicit `DdsIdl` roots and tracks other `.idl` files as
-   non-generating inputs.
+   non-generating inputs. Root metadata determines strictness for the batch.
 2. Roslyn supplies the files, item metadata, compiler options, and compilation
    references to `Generator`.
 3. The generator requires C# 12 or later and a resolved RTI runtime reference
@@ -17,7 +17,7 @@ RTI runtime.
    and compilation orchestration selects the matching immutable profile.
 4. `IdlCompiler` resolves the include graph and preprocesses input. The front
    end then parses declarations, binds references and deferred bounds against
-   the complete symbol graph, and validates semantics.
+   the complete symbol graph, and validates semantics using the batch policy.
 5. Emission planning applies profile-specific API policies; emitters render the
    resolved plans and return generated C# documents to the central result.
    Input that prevents safe managed output produces `DDSG0001` at its IDL
@@ -36,6 +36,11 @@ semantic model. Other collections retain their existing emission paths.
 
 - Missing or cyclic includes stop compilation with an IDL diagnostic.
 - Unsupported syntax is rejected rather than silently dropped.
+- Case-variant keywords and same-scope case-only names report `DDSG0108` and
+  continue by default. Strict mode rejects them and new keys in derived types
+  with source-located `DDSG0001` before emission.
+- Exact reserved keyword identifiers fail in both modes. Suppressing a
+  diagnostic does not restore output after semantic validation fails.
 - Invalid sequence-array settings and unsupported recursive direct sequence
   arrays in `Idl` mode produce `DDSG0001` with no partial source emission;
   there is no silent fallback to flattening. The default `RtiCSharp` mapping

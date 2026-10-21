@@ -276,18 +276,15 @@ different values to the same define in separate roots; per-root values are not
 isolated. Split variants into separate projects or separate builds when they
 need different IDL macro or strict-validation settings.
 
-`Strict` defaults to `false`. With strict validation off, this inherited-key
-declaration is accepted; setting `Strict="true"` on any generation root makes
-the whole batch reject it with a source-located generation error:
-
-```idl
-struct Base { @key long tenant; };
-struct Derived : Base { @key long localId; };
-```
-
-This is the strict check currently added by Wireloom: a derived struct or
-valuetype may not declare another `@key` member. Strict mode does not turn on a
-general validation suite beyond that check.
+`Strict` defaults to `false`. Case-variant keywords and same-scope case-only
+names report `DDSG0108` and generate code by default. Setting `Strict="true"`
+on any root rejects those names and new keys in derived aggregates before
+emission. Exact reserved keywords fail in declarations, including interface
+bodies. Ordinary interface bodies retain RTI's acceptance of case-only names;
+`@service("DDS")` bodies apply the warning and strict rules. Interface bindings
+remain omitted with `DDSG0103`. See the
+[configuration reference](../../docs/guides/configuration.md#enable-strict-validation)
+for examples, warning exemptions, and differences from RTI's strict mode.
 
 Large inputs may hit deterministic preprocessing safety limits. They are not
 configurable through MSBuild; see [preprocessor limits](#preprocessor-limits).
@@ -498,11 +495,12 @@ contract, not as evidence that the annotation is harmless.
 | `DDSG0004` | An IDL feature is unavailable in the selected RTI API profile        | Remove the unsupported feature or use a compatible RTI version; `@must_understand` requires 7.7.0 or later |
 | `DDSG0101` | An unknown IDL annotation was ignored                                | Verify the annotation is supported by the managed generator if it affects the generated contract           |
 | `DDSG0102` | A recognized but unsupported annotation use was reported             | Remove the annotation or use a supported declaration context; this warning accompanies rejected generation |
-| `DDSG0103` | An IDL interface was ignored because no C# interface type is emitted | Interfaces are accepted as service declarations, but are not emitted as C# types                           |
+| `DDSG0103` | An IDL interface was ignored because no C# interface type is emitted | Names are checked before bindings are omitted; ordinary and DDS-service body rules differ                  |
 | `DDSG0104` | A function-like macro was invoked with the wrong number of arguments | Correct the macro invocation; RTI-compatible expansion continues after the warning                         |
 | `DDSG0105` | A direct array of sequences may not preserve IDL semantics           | Use a sequence typedef or opt into `SequenceArrayMapping="Idl"`                                            |
 | `DDSG0106` | An active `#warning` directive was encountered                       | Review the warning in the IDL or included file; preprocessing and generation continue                      |
 | `DDSG0107` | An active `#pragma message` directive was encountered                | Review the informational message in the IDL or included file; generation continues                         |
+| `DDSG0108` | An IDL name conflicts with a keyword or another name ignoring case   | Rename the identifier or exempt the default warning; strict validation rejects the declaration             |
 
 Diagnostics are owned by the generator and use the original IDL/include
 location where one is available. Review the table's typical actions before
@@ -516,11 +514,13 @@ dotnet_diagnostic.DDSG0101.severity = error
 ```
 
 The default severities are grouped by diagnostic family: `DDSG0001`–`DDSG0004`
-are errors, `DDSG0101`–`DDSG0106` are warnings, and `DDSG0107` is informational.
-Warnings do not all mean generation continues: `DDSG0102` reports an unsupported
-annotation use and is followed by a generation error. `DDSG0101`, `DDSG0103`,
-`DDSG0104`, `DDSG0105`, and `DDSG0106` report cases where generation continues.
-The diagnostics table describes the action for each one.
+are errors, `DDSG0101`–`DDSG0106` and `DDSG0108` are warnings, and `DDSG0107`
+is informational. Warnings do not all mean generation continues: `DDSG0102`
+reports an unsupported annotation use and is followed by a generation error.
+`DDSG0101`, `DDSG0103`,
+`DDSG0104`, `DDSG0105`, `DDSG0106`, and `DDSG0108` report cases where generation
+continues in default mode. The diagnostics table describes the action for each
+one.
 
 Diagnostics point to the originating IDL file, including when the problem is
 inside an included file. For example, if `Contracts/Telemetry.idl` contains:
