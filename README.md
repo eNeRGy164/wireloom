@@ -289,6 +289,24 @@ behavior before switching a consumer project. See the
 for Wireloom's support boundary, exact-version qualification, stability
 expectations, and guidance on choosing a generation path.
 
+## Testing and quality
+
+The [Quality workflow](.github/workflows/quality.yml) checks multiple parts of
+the generator: unit tests and tracked code coverage, bounded FsCheck fuzzing of
+the public compiler and Roslyn adapter, corpus compliance for RTI 7.3.1 and
+7.7.0, runtime contracts, packed-package consumers, and a Qodana static
+analysis scan. The fuzz gate runs 10,000 generated inputs per property in CI;
+see the [fuzzing guide](docs/testing/fuzzing.md) for its scope and limits.
+
+Two deeper checks run separately. The manual
+[mutation-testing workflow](.github/workflows/mutation.yml) uses Stryker to
+change generator code and checks whether the test suite detects those changes;
+it is advisory, not a check on every pull request. Licensed
+[DDS wire-compatibility tests](tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
+exercise live exchanges between Wireloom and RTI C# and C++ peers. See
+[contributor quality evidence](CONTRIBUTING.md#quality-evidence) for the
+verification expectations and reports.
+
 ## Documentation
 
 | If you want to...                                                             | Read...                                                                                                                                          |
