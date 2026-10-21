@@ -248,6 +248,19 @@ public sealed class GeneratedPluginSpecs
     }
 
     [Fact]
+    public void HashIdDocumentationNormalizesEmbeddedLineBreaks()
+    {
+        // Arrange
+        var input = Input("hashid-line-break.idl", "struct Sample { @hashid(\"stable\rid\") long value; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Sample.g.cs"].Source.ShouldContain("<c>stable id</c>");
+    }
+
+    [Fact]
     [Trait("Corpus", "C142")]
     public void MustUnderstandIsRejectedByRtiddsgen431ProfileAndAcceptedByRtiddsgen470Profile()
     {

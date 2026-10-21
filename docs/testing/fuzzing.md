@@ -27,12 +27,15 @@ dotnet test tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.cspr
 
 Set `WIRELOOM_FSCHECK_TESTS` to change the number of generated cases per
 property; the default is 1,000 per property locally, and CI runs 10,000 per
-property (20,000 total). The generator combines 15 seeds with zero, one, or
+property (20,000 total). The generator combines 20 seeds with zero, one, or
 two bounded mutations, selecting mutation positions and characters
 independently, including the end-of-input position for insertion mutations.
-The seeds cover declarations, nesting, aliases,
-collections, enums, unions, preprocessing, annotations, and inheritance. This
-is still a bounded property test rather than a grammar-complete IDL generator.
+The seeds cover modules, structs, value types, interfaces, constants,
+typedefs, all supported primitive types, collections, arrays, enums, unions,
+preprocessing, member and type annotations, and inheritance. This is still a
+bounded property test rather than a grammar-complete IDL generator; corpus
+compliance remains the inventory for supported and explicitly rejected
+feature cases.
 
 ## Defects exposed by the fuzzing gate
 

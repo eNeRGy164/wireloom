@@ -151,17 +151,59 @@ public sealed class FsCheckIdlCompilerFuzzingSpecs
         "module Sample { enum State { Idle, Running, Stopped }; union Choice switch(State) { case Idle: long value; default: string<16> text; }; };",
         "module Sample { union Choice switch(long) { case 0: long value; case 1: string<16> text; default: boolean flag; }; };",
         """
-#define VALUE 7
-#if VALUE
-const long Constant = VALUE;
-#else
-const long Other = 1;
-#endif
-""",
+        module Sample {
+            struct Primitives {
+                short signed16; long signed32; long long signed64;
+                unsigned short unsigned16; unsigned long unsigned32; unsigned long long unsigned64;
+                int8 fixedInt8; int16 fixedInt16; int32 fixedInt32; int64 fixedInt64;
+                uint8 fixedUint8; uint16 fixedUint16; uint32 fixedUint32; uint64 fixedUint64;
+                octet octetValue; boolean flag; char letter; wchar wideLetter;
+                float ratio; double precision; long double extended;
+            };
+        };
+        """,
         """
-#define ADD(a, b) a + b
-const long Constant = ADD(1, 2);
-""",
+        module Sample {
+            const long Base = 2 + 3;
+            const long Bound = (Base << 2) | 1;
+            typedef long Count;
+            typedef Count Matrix[2][3];
+            struct Value { sequence<string<16>, Bound> names; Matrix values; };
+        };
+        """,
+        """
+        module Sample {
+            valuetype BaseValue { public long baseValue; };
+            valuetype DerivedValue : BaseValue { public string<16> name; };
+            struct Holder { DerivedValue value; };
+        };
+        """,
+        """
+        @language_binding(PLAIN)
+        @transfer_mode(INBAND)
+        module Sample {
+            @autoid(HASH) @appendable struct Value {
+                @key @hashid("stable_id") long id;
+                @min(0) @max(100) @default(50) long count;
+                @range(min = -32, max = 31) @unit("meters") long distance;
+                @resolve_name(false) string<16> name;
+                @external string<16> externalName;
+            };
+        };
+        """,
+        "@service(\"DDS\") interface Service { void ping(); };",
+        """
+        #define VALUE 7
+        #if VALUE
+        const long Constant = VALUE;
+        #else
+        const long Other = 1;
+        #endif
+        """,
+        """
+        #define ADD(a, b) a + b
+        const long Constant = ADD(1, 2);
+        """,
         "@appendable struct Value { long value; };",
         "struct Value { @key long id; @optional string<32> name; };",
         "struct Value { @id(3) long value; @hashid long hashed; };",
