@@ -169,6 +169,20 @@ public sealed class PreprocessorSourceOriginTrackerSpecs
     }
 
     [Fact]
+    public void DoesNotAlignToAnAlreadyConsumedRepeatedToken()
+    {
+        // Arrange
+        var tracker = new PreprocessorSourceOriginTracker(offset => offset, CancellationToken.None);
+        var origins = new List<int>();
+
+        // Act
+        tracker.AppendExpandedOrigins(origins, "A+A+B", "A+X+A+A+B", sourceOffset: 0);
+
+        // Assert
+        origins.ShouldBe([0, 1, 2, 2, 2, 2, 2, 3, 4]);
+    }
+
+    [Fact]
     public void AlignsTheFirstOriginalTokenAfterInsertedOutput()
     {
         // Arrange
