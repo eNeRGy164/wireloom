@@ -20,6 +20,7 @@ internal sealed class IdlTypedefParser
         if (sequenceTypedef.Success)
         {
             var sequenceName = sequenceTypedef.Groups[3].Value;
+            context.RecordIdentifier(input, baseOffset + position + sequenceTypedef.Groups[3].Index, sequenceName, currentNamespace);
             var qualified = context.Qualify(sequenceName, currentNamespace);
             var declarationOffset = context.MapOffset(baseOffset + position);
             context.EnsureNewName(input, baseOffset + position, qualified);
@@ -44,6 +45,7 @@ internal sealed class IdlTypedefParser
         if (arrayTypedef.Success)
         {
             var typedefName = arrayTypedef.Groups[2].Value;
+            context.RecordIdentifier(input, baseOffset + position + arrayTypedef.Groups[2].Index, typedefName, currentNamespace);
             var qualified = context.Qualify(typedefName, currentNamespace);
             var declarationOffset = context.MapOffset(baseOffset + position);
             context.EnsureNewName(input, baseOffset + position, qualified);
@@ -72,6 +74,7 @@ internal sealed class IdlTypedefParser
         }
 
         var name = typedefDeclaration.Groups[2].Value;
+        context.RecordIdentifier(input, baseOffset + position + typedefDeclaration.Groups[2].Index, name, currentNamespace);
         var typeName = context.Qualify(name, currentNamespace);
         var typedefOffset = context.MapOffset(baseOffset + position);
         context.EnsureNewName(input, baseOffset + position, typeName);

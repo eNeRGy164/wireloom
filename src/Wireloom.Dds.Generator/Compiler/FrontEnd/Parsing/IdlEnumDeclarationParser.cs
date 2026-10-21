@@ -23,6 +23,7 @@ internal sealed class IdlEnumDeclarationParser
 
         var enumName = enumDeclaration.Groups["name"].Value;
         var qualified = context.Qualify(enumName, currentNamespace);
+        context.RecordIdentifier(input, baseOffset + position + enumDeclaration.Groups["name"].Index, enumName, currentNamespace);
         context.EnsureNewName(input, baseOffset + position, qualified);
         context.EnsureGeneratedCompanionNames(input, baseOffset + position, enumName, currentNamespace, includeUnmanaged: false);
         var enumMembers = new List<IdlEnumMember>();
@@ -50,6 +51,7 @@ internal sealed class IdlEnumDeclarationParser
                 throw new IdlException(input, context.MapOffset(sourceOffset), "Combined @value and explicit enum values are unsupported.");
             }
 
+            context.RecordIdentifier(input, sourceOffset + member.Groups["name"].Index, member.Groups["name"].Value, currentNamespace);
             var value = ParseEnumValue(input, context.MapOffset(sourceOffset), member, nextValue);
             var isDefaultLiteral = member.Groups["defaultLiteral"].Success;
             if (isDefaultLiteral && hasDefaultLiteral)

@@ -160,7 +160,7 @@ public sealed class GeneratedNestedAliasSpecs
 
                     @appendable
                     struct Derived : Base {
-                        Context context;
+                        Context traceContext;
                     };
                 };
             };
@@ -186,9 +186,9 @@ public sealed class GeneratedNestedAliasSpecs
 
         var derived = documents["Envelope.Metadata.Derived.g.cs"].Source;
         derived.ShouldContain("public partial class Derived : Base, global::System.IEquatable<Derived>");
-        derived.ShouldContain("public Context context { get; set; } = new Context();");
-        derived.ShouldNotContain("public Derived()\n    {\n        context = new Context();\n    }");
-        derived.ShouldContain("public Derived(string state, Context context) : base(state)");
+        derived.ShouldContain("public Context traceContext { get; set; } = new Context();");
+        derived.ShouldNotContain("public Derived()\n    {\n        traceContext = new Context();\n    }");
+        derived.ShouldContain("public Derived(string state, Context traceContext) : base(state)");
 
         var producerPlugin = documents["Envelope.Metadata.Implementation.ProducerPlugin.g.cs"].Source;
         producerPlugin.ShouldContain("dtf.CreateString(17)");

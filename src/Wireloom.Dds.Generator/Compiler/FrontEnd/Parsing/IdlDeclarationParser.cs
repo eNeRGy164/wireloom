@@ -89,7 +89,7 @@ internal sealed class IdlDeclarationParser
                 continue;
             }
 
-            if (TryParseServiceInterface(declarations, input, baseOffset, ref position))
+            if (TryParseServiceInterface(declarations, input, baseOffset, ref position, currentNamespace))
             {
                 continue;
             }
@@ -112,7 +112,7 @@ internal sealed class IdlDeclarationParser
                 continue;
             }
 
-            if (TryParseInterface(declarations, input, baseOffset, ref position) ||
+            if (TryParseInterface(declarations, input, baseOffset, ref position, currentNamespace: currentNamespace) ||
                 TryParseModule(declarations, input, baseOffset, currentNamespace, sourceOrigins, ref position) ||
                 constantParser.TryParse(declarations, input, baseOffset, currentNamespace, ref position) ||
                 enumParser.TryParse(declarations, input, baseOffset, currentNamespace, ref position) ||
@@ -147,7 +147,7 @@ internal sealed class IdlDeclarationParser
         "allowed_data_representation", "default_nested"
     ];
 
-    private bool TryParseServiceInterface(string declarations, IdlInput input, int baseOffset, ref int position)
+    private bool TryParseServiceInterface(string declarations, IdlInput input, int baseOffset, ref int position, string? currentNamespace)
     {
         var serviceAnnotation = ServiceAnnotationPattern.Match(declarations[position..]);
         if (!serviceAnnotation.Success || serviceAnnotation.Groups["value"].Value != "DDS")
@@ -199,7 +199,7 @@ internal sealed class IdlDeclarationParser
         }
 
         position = declarationPosition;
-        return TryParseInterface(declarations, input, baseOffset, ref position, isDdsService: true, annotationOffset: annotationOffset);
+        return TryParseInterface(declarations, input, baseOffset, ref position, isDdsService: true, annotationOffset: annotationOffset, currentNamespace: currentNamespace);
     }
 
     private bool TryParseInterface(
@@ -208,7 +208,7 @@ internal sealed class IdlDeclarationParser
         int baseOffset,
         ref int position,
         bool isDdsService = false,
-        int? annotationOffset = null)
+        int? annotationOffset = null, string? currentNamespace = null)
     {
         var @interface = InterfacePattern.Match(declarations[position..]);
         if (!@interface.Success)
@@ -217,6 +217,7 @@ internal sealed class IdlDeclarationParser
         }
 
         var interfaceName = @interface.Groups["name"].Value;
+        context.RecordIdentifier(input, baseOffset + position + @interface.Groups["name"].Index, interfaceName, currentNamespace);
         var message = isDdsService
             ? $"The DDS service interface '{interfaceName}' is ignored because service interfaces are not emitted for C#."
             : $"The interface '{interfaceName}' is ignored because it is not a DDS service.";
@@ -226,7 +227,29 @@ internal sealed class IdlDeclarationParser
             context.MapOffset(baseOffset + (annotationOffset ?? position)),
             message));
 
-        position += @interface.Length;
+        var openBrace = position + @interface.Length - 1;
+        var closeBrace = FindClosingBrace(declarations, openBrace);
+        if (closeBrace < 0)
+        {
+            throw new IdlException(input, context.MapOffset(baseOffset + position), "Unterminated interface declaration.");
+        }
+
+        var identifiers = new IdlInterfaceIdentifierParser(
+            context, input, declarations.Substring(openBrace + 1, closeBrace - openBrace - 1), baseOffset + openBrace + 1, isDdsService: isDdsService);
+        identifiers.Parse(context.Qualify(interfaceName, currentNamespace));
+
+        position = closeBrace + 1;
+        while (position < declarations.Length && char.IsWhiteSpace(declarations[position]))
+        {
+            position++;
+        }
+
+        if (position >= declarations.Length || declarations[position] != ';')
+        {
+            throw new IdlException(input, context.MapOffset(baseOffset + closeBrace), "Interface declaration must end with a semicolon.");
+        }
+
+        position++;
 
         return true;
     }
@@ -253,6 +276,7 @@ internal sealed class IdlDeclarationParser
             throw new IdlException(input, context.MapOffset(baseOffset + position), "Unterminated module declaration.");
         }
 
+        context.RecordIdentifier(input, baseOffset + position + module.Groups[1].Index, module.Groups[1].Value, currentNamespace);
         var moduleName = context.Qualify(module.Groups[1].Value, currentNamespace);
         Parse(
             declarations.Substring(openBrace + 1, closeBrace - openBrace - 1),

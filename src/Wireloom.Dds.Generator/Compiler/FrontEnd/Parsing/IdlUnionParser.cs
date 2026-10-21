@@ -25,6 +25,7 @@ internal sealed class IdlUnionParser
 
         var unionName = unionDeclaration.Groups["name"].Value;
         var qualified = context.Qualify(unionName, currentNamespace);
+        context.RecordIdentifier(input, baseOffset + position + unionDeclaration.Groups["name"].Index, unionName, currentNamespace);
         context.EnsureNewName(input, baseOffset + position, qualified);
         context.EnsureGeneratedCompanionNames(input, baseOffset + position, unionName, currentNamespace, includeUnmanaged: true);
         var discriminator = unionDeclaration.Groups["discriminator"];
@@ -49,7 +50,7 @@ internal sealed class IdlUnionParser
                 unionOffset,
                 baseOffset + position + unionBody.Index,
                 currentNamespace,
-                branchNames);
+                branchNames, qualified);
             branches.Add(Branch);
 
             unionOffset += Length;
@@ -87,7 +88,7 @@ internal sealed class IdlUnionParser
         int offset,
         int sourceOffset,
         string? currentNamespace,
-        HashSet<string> branchNames)
+        HashSet<string> branchNames, string unionScope)
     {
         var branch = UnionBranchPattern.Match(body.Substring(offset));
         if (!branch.Success)
@@ -96,6 +97,7 @@ internal sealed class IdlUnionParser
         }
 
         var branchName = branch.Groups["name"].Value;
+        context.RecordIdentifier(input, sourceOffset + offset + branch.Groups["name"].Index, branchName, unionScope, IdlIdentifierScopeKind.Aggregate);
         if (!branchNames.Add(branchName))
         {
             throw new IdlException(input, context.MapOffset(sourceOffset + offset), $"Duplicate union branch: {branchName}");
