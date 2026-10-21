@@ -10,7 +10,61 @@ Support is feature-specific and evidence-driven;
 successful compilation of one IDL shape is not a blanket claim of RTI or wire
 compatibility.
 
-The example below uses a .NET 8 target and C# 12. Current package integration
+## Quick start
+
+Create a .NET console project and add the generator, the RTI runtime, and an
+IDL root to its project file:
+
+```powershell
+dotnet new console --name WireloomQuickStart --framework net10.0
+cd WireloomQuickStart
+```
+
+Replace `WireloomQuickStart.csproj` with:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
+    <PackageReference Include="Wireloom.Dds.Generator"
+                      Version="0.4.0"
+                      PrivateAssets="all" />
+    <DdsIdl Include="Telemetry.idl" />
+  </ItemGroup>
+</Project>
+```
+
+Create `Telemetry.idl` beside the project file:
+
+```idl
+module Telemetry {
+  struct Sample {
+    long id;
+    string<64> label;
+  };
+};
+```
+
+Build the project to generate and compile `Telemetry.Sample`:
+
+```powershell
+dotnet build
+```
+
+The generator runs during the normal build; there is no separate code
+generation command. To run communicating publisher and subscriber processes,
+follow the [Hello World guide](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/hello-world.md),
+which also covers RTI runtime and license prerequisites.
+
+The example above uses a .NET 10 target and the latest C# version. Current package integration
 evidence builds that target using the repository-pinned .NET 10 SDK; the
 Roslyn hosts in older SDKs are not all qualified. RTI Connext 7.7.0 is the
 tested runtime baseline.
@@ -46,7 +100,7 @@ and the [Hello World prerequisites](https://github.com/eNeRGy164/wireloom/blob/m
 <ItemGroup>
   <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
   <PackageReference Include="Wireloom.Dds.Generator"
-                    Version="0.3.0"
+                    Version="0.4.0"
                     PrivateAssets="all" />
 </ItemGroup>
 ```
@@ -156,7 +210,7 @@ not need the generator package unless they also declare their own IDL roots.
 <ItemGroup>
   <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
   <PackageReference Include="Wireloom.Dds.Generator"
-                    Version="0.3.0"
+                    Version="0.4.0"
                     PrivateAssets="all" />
   <DdsIdl Include="Contracts\Telemetry.idl" />
 </ItemGroup>
