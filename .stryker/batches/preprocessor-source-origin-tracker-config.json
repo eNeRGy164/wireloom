@@ -1,0 +1,10 @@
+{
+  "stryker-config": {
+    "project": "Wireloom.Dds.Generator.csproj",
+    "test-runner": "mtp",
+    "mutate": [ "**/Compiler/FrontEnd/Preprocessing/PreprocessorSourceOriginTracker.cs" ],
+    "mutation-level": "Basic",
+    "reporters": [ "html", "json", "progress" ],
+    "thresholds": { "high": 0, "low": 0, "break": 0 }
+  }
+}
