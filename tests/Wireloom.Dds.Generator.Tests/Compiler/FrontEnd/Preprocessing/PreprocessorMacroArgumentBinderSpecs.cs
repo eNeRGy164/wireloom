@@ -59,4 +59,61 @@ public sealed class PreprocessorMacroArgumentBinderSpecs
         substitutions["rest"].Expanded.ShouldBe("expanded-list");
         substitutions["__VA_ARGS__"].ShouldBe(substitutions["rest"]);
     }
+
+    [Fact]
+    public void PrescansVariadicArgumentsWhenOnlyVaArgsIsExpanded()
+    {
+        // Arrange
+        var macro = new PreprocessorMacro(["head", "rest"], "__VA_ARGS__", variadic: true, variadicParameterName: "rest");
+        var binder = new PreprocessorMacroArgumentBinder(
+            (argument, _, _, _) => $"expanded:{argument}",
+            (_, parameter) => parameter == "__VA_ARGS__");
+
+        // Act
+        var substitutions = binder.Bind("PACK", macro, ["head", "first", "second"], [], depth: 0, offset: 0);
+
+        // Assert
+        substitutions["rest"].Raw.ShouldBe("first, second");
+        substitutions["rest"].Expanded.ShouldBe("expanded:first, second");
+        substitutions["__VA_ARGS__"].ShouldBe(substitutions["rest"]);
+    }
+
+    [Fact]
+    public void LeavesVariadicArgumentsUnexpandedWhenReplacementDoesNotNeedThem()
+    {
+        // Arrange
+        var macro = new PreprocessorMacro(["head", "rest"], "rest", variadic: true, variadicParameterName: "rest");
+        var expansionCount = 0;
+        var binder = new PreprocessorMacroArgumentBinder(
+            (argument, _, _, _) =>
+            {
+                expansionCount++;
+                return $"expanded:{argument}";
+            },
+            (_, _) => false);
+
+        // Act
+        var substitutions = binder.Bind("PACK", macro, ["head", "first", "second"], [], depth: 0, offset: 0);
+
+        // Assert
+        expansionCount.ShouldBe(0);
+        substitutions["rest"].Raw.ShouldBe("first, second");
+        substitutions["rest"].Expanded.ShouldBe("first, second");
+    }
+
+    [Fact]
+    [Trait("Preprocessor", "PP017")]
+    public void UsesAnEmptyValueForMissingFixedArguments()
+    {
+        // Arrange
+        var macro = new PreprocessorMacro(["value"], "value", variadic: false);
+        var binder = new PreprocessorMacroArgumentBinder((argument, _, _, _) => argument, (_, _) => false);
+
+        // Act
+        var substitutions = binder.Bind("VALUE", macro, [], [], depth: 0, offset: 0);
+
+        // Assert
+        substitutions["value"].Raw.ShouldBe(string.Empty);
+        substitutions["value"].Expanded.ShouldBe(string.Empty);
+    }
 }
