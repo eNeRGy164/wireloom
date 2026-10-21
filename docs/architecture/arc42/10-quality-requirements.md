@@ -40,9 +40,10 @@ Wireloom quality
 
 ### Diagnostic clarity
 
-| ID   | Scenario                       | Acceptance and evidence                                                                                                                                                                     |
-| :--- | :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Q-02 | Add invalid or unsupported IDL | Input that prevents safe managed output fails with source-located `DDSG0001`; deliberately ignored constructs and potentially lossy mappings report diagnostics while generation continues. |
+| ID   | Scenario                       | Acceptance and evidence                                                                                                                                                                                                                                                        |
+| :--- | :----------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q-02 | Add invalid or unsupported IDL | Input that prevents safe managed output fails with source-located `DDSG0001`; deliberately ignored constructs and potentially lossy mappings report diagnostics while generation continues.                                                                                    |
+| Q-10 | Choose strict validation       | Naming violations produce `DDSG0108` and sources by default; strict mode produces source-located `DDSG0001` and no sources. Paired C150–C162 cases and packed-consumer checks verify both modes.                                                                               |
 
 ### Compiler maintainability
 

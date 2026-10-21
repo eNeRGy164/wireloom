@@ -183,20 +183,98 @@ These settings configure the IDL preprocessor. They do not set C#
 Strict validation is enabled for **both roots** because at least one root
 requests it. `Strict="false"` cannot opt one root out of a strict batch.
 
-The current additional strict rule rejects a derived struct or valuetype
-that declares another key member:
+Strictness controls a defined set of semantic rules. It does not promote all
+warnings to errors or select the sequence-array mapping. Ordinary syntax,
+reference-resolution, generated-name safety, and other semantic checks run in
+both modes.
+
+Interface names follow the rules below. Body identifiers are also checked,
+even though `DDSG0103` reports that interface bindings are omitted:
+
+- Ordinary interface bodies reject exact reserved keywords in both modes.
+  Case-variant keywords and case-only collisions retain RTI's acceptance.
+- `@service("DDS")` bodies apply the naming rules below to operations,
+  parameters, attributes, and nested declarations. Each operation has its own
+  parameter scope.
+
+For example, `interface I { void context(); };` fails in both modes, while
+`@service("DDS") interface I { void Context(); };` warns by default and fails
+in strict mode. These checks do not generate interface bindings or nested
+body types. Type-reference resolution, interface inheritance, and full RPC
+semantics remain outside the body checks.
+
+| IDL condition                                                                    | Default `Strict="false"`              | `Strict="true"`                       |
+| :------------------------------------------------------------------------------- | :------------------------------------ | :------------------------------------ |
+| Identifier differs in case from an IDL keyword, such as `Struct` or `Context`    | Warn with `DDSG0108`; generate        | Fail with `DDSG0001`; emit no sources |
+| Declarations in one IDL scope differ only in case, such as `number` and `Number` | Warn with `DDSG0108`; generate        | Fail with `DDSG0001`; emit no sources |
+| A derived struct/valuetype declares a new `@key`, even with an unkeyed base      | Accept without an additional notice   | Fail with `DDSG0001`; emit no sources |
+| Exact reserved keyword used as an identifier, such as lowercase `struct`         | Fail with `DDSG0001`                  | Same                                  |
+| An existing exact duplicate or unsafe generated-name collision                   | Keep the existing unconditional error | Same                                  |
+
+For example, this input generates code with naming warnings by default and
+fails before emission when strict validation is enabled:
+
+```idl
+struct Struct { long number; long Number; };
+```
+
+The keyword inventory contains the 83 canonical tokens from IDL 4.2, including
+`Object`, `ValueBase`, `TRUE`, and `FALSE`. Comparisons are ordinal and
+case-insensitive for detecting collisions. Generated names, reference lookup,
+and the case-sensitive symbol table retain their existing spelling and
+behavior. Names in independent scopes do not collide. Reopening a module with
+its original spelling is allowed; enum enumerators occupy their enclosing IDL
+scope. Case-only hiding of inherited fields retains the RTI-accepted behavior.
+
+This declaration is accepted by default and rejected in strict mode because
+it adds a new key to a derived type:
 
 ```idl
 struct Base { @key long tenant; };
 struct Derived : Base { @key long localId; };
 ```
 
-With the default `Strict="false"`, this declaration is accepted. With strict
-validation enabled, generation fails with source-located `DDSG0001`.
-Ordinary syntax and semantic checks run in either mode. `Strict` does not
-enable a general IDL-conformance mode, turn warnings into errors, or change
-sequence-array mapping. It is not established as equivalent to RTI's
-`rtiddsgen -strict` option.
+Inheriting a base's keys without adding another key remains allowed.
+
+### Adopting the naming diagnostic
+
+`DDSG0108` is a new default warning, so consumers with `TreatWarningsAsErrors`
+may need to rename a nonconforming IDL identifier or explicitly exempt it:
+
+```xml
+<WarningsNotAsErrors>$(WarningsNotAsErrors);DDSG0108</WarningsNotAsErrors>
+```
+
+`NoWarn` can suppress the warning. These compiler policies do not disable
+strict semantic validation or restore generation after a strict failure.
+Previously accepted exact reserved keywords, such as a member named `context`,
+now fail in either mode. A type named `Context` instead receives the
+case-variant warning in default mode.
+
+### Comparison with `rtiddsgen -strict`
+
+The derived-key, keyword, and ordinary case-only collision behavior is
+verified against RTI 7.3.1 (`rtiddsgen` 4.3.1) and 7.7.0 (`rtiddsgen` 4.7.0).
+The paired C150–C156 corpus cases retain mode-specific C# and C++ generation
+outcomes for both releases. C157–C162 cover interface-body naming. RTI 7.3.1
+also emits malformed C# RPC transport output for accepted service cases;
+[#75](https://github.com/eNeRGy164/wireloom/issues/75) tracks that separately
+from identifier validation.
+
+The modes are not exhaustive equivalents. RTI emits an informational notice
+for a new derived key by default; Wireloom retains its existing silent
+acceptance. RTI also accepts case-only literal names in separate enums under
+strict mode, whereas Wireloom checks their enclosing IDL scope. RTI's
+`-ignoreSpecWarnings` has no separate Wireloom setting; use normal diagnostic
+suppression for nonfatal naming warnings.
+
+C# keyword escaping is independent: an IDL member named `event` still becomes
+`@event` in C#. A leading underscore such as `_Struct` keeps its existing
+literal spelling. Wireloom does not implement RTI's `-enableEscapeChar`
+normalization, which can remove that underscore and change names/metadata.
+
+See the [corpus feature index](../corpus/FEATURE-COVERAGE.md) for retained
+generation evidence.
 
 ## Choose the sequence-array mapping
 
@@ -331,8 +409,8 @@ configuration; they are not Wireloom generation settings.
 ## Control diagnostics
 
 Generator defaults are errors for `DDSG0001`–`DDSG0004`, warnings for
-`DDSG0101`–`DDSG0106`, and informational messages for `DDSG0107`.
-The [diagnostic reference](../../src/Wireloom.Dds.Generator/README.md#diagnostics)
+`DDSG0101`–`DDSG0106` and `DDSG0108`, and informational messages for
+`DDSG0107`. The [diagnostic reference](../../src/Wireloom.Dds.Generator/README.md#diagnostics)
 explains the individual causes.
 
 For example, reject unknown IDL annotations through `.editorconfig`:
@@ -454,19 +532,23 @@ for changing these defaults.
 
 Preprocessing safety limits are also fixed:
 
-| Limit                        | Maximum                               |
+| Limit                        |                               Maximum |
 | ---------------------------- | ------------------------------------: |
 | Preprocessed output          | 4,194,304 UTF-16 code units per input |
-| Macro expansion work         | 100,000 operations per input          |
-| Macro expansion depth        | 64 nested expansions                  |
-| Conditional expression depth | 256 nested expressions                |
-| Include nesting              | 128 levels                            |
-| Source-origin alignment work | 100,000 work units per expanded line  |
+| Macro expansion work         |          100,000 operations per input |
+| Macro expansion depth        |                  64 nested expansions |
+| Conditional expression depth |                256 nested expressions |
+| Include nesting              |                            128 levels |
+| Source-origin alignment work |  100,000 work units per expanded line |
 
 Exceeding a limit fails generation with a source-located error. Simplify macro
 expansion, reduce nesting, or split inputs while keeping each resulting input
 within the limits. Neither `Strict="false"` nor diagnostic suppression removes
 these limits. See the [preprocessor feature matrix](../PREPROCESSOR-FEATURES.md).
+
+Interface identifier parsing supports at most 64 nested constructed-type
+declarations. Exceeding that depth reports source-located `DDSG0001` before
+emission in either mode.
 
 Repository-only test, corpus-export, and wire-runner properties/environment
 variables are documented with their test projects. They are not consumer

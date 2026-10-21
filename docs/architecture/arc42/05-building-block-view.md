@@ -36,6 +36,8 @@ expanded in the level-2 view.
 | Semantic model            | Assigns stable symbols and target-independent meaning    | [`IdlSymbolTable`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Symbols/IdlSymbolTable.cs)                |
 | Compilation state         | Coordinates parse, bind, and validate                    | [`IdlCompilation`](../../../src/Wireloom.Dds.Generator/Compiler/IdlCompilation.cs)                                 |
 | Resolution and validation | Resolves references and reports semantic errors          | [`CompilationResolver`](../../../src/Wireloom.Dds.Generator/Compiler/CompilationResolver.cs)                       |
+| Specification rules       | Detects keyword, scope, and derived-key violations       | `IdlIdentifierValidator`, `IdlSemanticValidator`                                                                   |
+| Validation policy         | Applies the batch strictness to specification findings   | `IdlValidationPolicy`                                                                                              |
 | Emission planning         | Projects validated declarations into output plans        | [`EmissionTypeProjector`](../../../src/Wireloom.Dds.Generator/Compiler/Emission/Planning/EmissionTypeProjector.cs) |
 
 The front end parses declarations, binds references and deferred bounds against
@@ -45,6 +47,14 @@ adapter selects an immutable `RtiApiProfile`; compilation orchestration passes
 that profile to emission planning. Emitters render plans without comparing
 RTI versions. A central result boundary checks duplicate hint names across
 generated documents.
+
+Parsers capture identifier spellings, lexical scopes, and original source
+locations. `IdlInterfaceIdentifierParser` collects body declarations without
+adding types to emission or binding interface references. Its scope facts
+distinguish ordinary interfaces from DDS services and operation parameters. Specification rules return typed findings; the validation policy
+decides whether to ignore, warn, or fail, and Roslyn presents the resulting
+diagnostics. The validation scope index is private to each compilation;
+collision checks preserve case-sensitive binding and generated names.
 
 This view describes ownership rather than execution order. Build-time flow and
 failure paths are in [chapter 6](06-runtime-view.md). Deterministic

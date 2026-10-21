@@ -110,13 +110,12 @@ add future support.
 | `-create typefiles`, `-update typefiles`, `-replace`                 | Fixed       | Successful roots generate the package's supported C# contract and support sources during compilation. There is no overwrite mode or selectable type-file set.                                                                                                                                    |
 | `-create examplefiles`, `-create makefiles`, `-example`, `-platform` | Ignored     | Wireloom generates neither application examples nor RTI platform project/make files. Keep or replace those application/build steps separately.                                                                                                                                                   |
 | `-sequenceSize`, `-stringSize`, `-unboundedSupport`                  | Fixed       | Effective unbounded limits are 100 sequence elements, 255 narrow-string UTF-8 bytes, and 255 wide-string UTF-16 code units. These limits are not configurable through these RTI flags; see [effective limits](../../src/Wireloom.Dds.Generator/README.md#effective-limits-for-unbounded-values). |
-| `-strict`                                                            | Unverified  | Wireloom exposes a `Strict` root metadata value that enables strict validation for the whole generation batch. Its behavior is not established as equivalent to RTI's `-strict`; compare diagnostics on the project's IDL before migrating this setting.                                         |
+| `-strict`                                                            | Mapped      | Use `Strict="true"` for keyword, same-scope case-only, and derived-key validation. Naming violations warn with `DDSG0108` by default. The [configuration reference](../guides/configuration.md#enable-strict-validation) records the differences from RTI.                                       |
 
 **Status meanings:** _Mapped_ has a Wireloom setting for the same configuration
 intent, though semantics may differ. _Fixed_ is selected by the package or
 build. _Ignored_ has no effect because it concerns output Wireloom does not
-produce. _Unsupported_ has no corresponding behavior. _Unverified_ has a
-similar-looking setting but no established equivalence.
+produce. _Unsupported_ has no corresponding behavior.
 
 This table covers common C# type-generation settings, not every option in the
 RTI command-line reference. For any option not listed, check the exact
