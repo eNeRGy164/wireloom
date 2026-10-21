@@ -8,6 +8,15 @@ Desktop.ini
 *.tmp
 *.temp
 
+# Retain the focused strict-validation oracle diagnostics with their sources.
+!/docs/corpus/*/rtiddsgen/*/negative/12-keyword-*/rtiddsgen.log
+!/docs/corpus/*/rtiddsgen/*/negative/12-case-collision-*/rtiddsgen.log
+!/docs/corpus/*/rtiddsgen/*/negative/12-exact-keyword/rtiddsgen.log
+!/docs/corpus/*/rtiddsgen/*/negative/12-identifier-control/rtiddsgen.log
+!/docs/corpus/*/rtiddsgen/*/negative/12-derived-key-strict/rtiddsgen.log
+
+!/docs/corpus/*/rtiddsgen/*/negative/12-interface-*/rtiddsgen.log
+
 # Secrets and local environment files
 .env
 .env.*

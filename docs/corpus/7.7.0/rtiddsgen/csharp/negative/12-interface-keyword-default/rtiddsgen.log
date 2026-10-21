@@ -1,0 +1,5 @@
+INFO com.rti.ndds.nddsgen.Arguments Running rtiddsgen version 4.7.0, please wait ...
+WARN com.rti.ndds.nddsgen.antlr.IdlSymbolTable Context identifier, collide with an idl keyword (Case-Insensitive). This is not compliant with the IDL/XTypes specification. You can make this message an error by using the -strict flag
+WARN com.rti.ndds.nddsgen.Nddsgen IDLs interfaces are not supported for this language. Ignoring interfaces during code generation
+
+INFO com.rti.ndds.nddsgen.Main Done

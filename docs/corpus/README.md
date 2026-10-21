@@ -52,8 +52,8 @@ notices.
 
 ## Case inventory
 
-The manifest currently contains **81 positive cases**, **64 negative probes**,
-and **4 integration entry points** (149 entries total). These counts follow
+The manifest currently contains **81 positive cases**, **77 negative probes**,
+and **4 integration entry points** (162 entries total). These counts follow
 `manifest.json`, the source of truth for the corpus inventory.
 
 Dedicated C149, `05-array-of-sequences-idl`, uses a separately named IDL file
@@ -67,9 +67,9 @@ no RTI C# oracle because that binding flattens this direct IDL form.
 | Group                    | Count | Location                                                   |
 | ------------------------ | ----: | ---------------------------------------------------------- |
 | Positive feature cases   |    81 | [`idl/features`](idl/features)                             |
-| Negative probes          |    64 | [`idl/negative`](idl/negative) and feature-specific probes |
+| Negative probes          |    77 | [`idl/negative`](idl/negative) and feature-specific probes |
 | Integration entry points |     4 | [`idl/integration`](idl/integration)                       |
-| Total                    |   149 | —                                                          |
+| Total                    |   162 | —                                                          |
 
 Counts follow the manifest classifications. Some negative probes use an IDL
 under `idl/features` because they characterize syntax that a generator accepts
@@ -90,6 +90,16 @@ The compliance loader derives tags from manifest order unless a case has an
 explicit `tag` in `manifest.json`. Give a newly inserted case an explicit next
 tag when existing later cases must retain their `C###` references. The
 authoritative mapping is [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md).
+
+The optional `strict` case setting defaults to `false`. The compliance loader
+and source exporter apply it to the generating root; RTI capture maps `true`
+to `-strict`. C150/C151 and C152/C153 use separately named IDL files with
+identical contents to compare default and strict validation. C154–C156 cover
+exact reserved keywords, legal identifier controls, and strict derived keys.
+C157–C162 extend those checks to ordinary and DDS-service interface bodies,
+including operation/parameter scopes and nested declarations.
+See the [configuration reference](../guides/configuration.md#enable-strict-validation)
+for the validation rules and diagnostic policy.
 
 ## Oracle library
 
@@ -135,9 +145,7 @@ oracles automatically. Compare and review the capture before promoting sources
 or updating version manifests. Generation alone does not establish compilation,
 runtime behavior, or wire interoperability.
 
-Commit reviewed corpus sources and manifests. Keep capture/export reports,
-SDK details, test logs, and toolchain records under `artifacts/` or in CI
-artifacts; they are not part of the retained corpus.
+Commit reviewed corpus sources and manifests.
 
 ## Wire matrix generation profiles
 

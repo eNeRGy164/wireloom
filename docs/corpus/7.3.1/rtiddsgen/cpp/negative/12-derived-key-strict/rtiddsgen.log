@@ -1,0 +1,4 @@
+INFO com.rti.ndds.nddsgen.Main Running rtiddsgen version 4.3.1, please wait ...
+ERROR com.rti.ndds.nddsgen.Main 12-derived-key-strict.idl line 7:8 struct/valuetype derived from a struct/valuetype can not contain @key fields. This check is only enforced when using -strict flag
+ERROR com.rti.ndds.nddsgen.Main Fail:  java.lang.Exception: The file couldn't be parsed and the rawTree wasn't generated
+INFO com.rti.ndds.nddsgen.Main Done (failures)

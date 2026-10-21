@@ -5,21 +5,22 @@ assembly. Versions from 7.3.1 up to, but not including, 7.7.0 use the 7.3.1
 profile; version 7.7.0 and later use the 7.7.0 profile. Only exact 7.3.1 and
 7.7.0 have qualification evidence.
 
-The corpus contains 81 positive feature cases, 64 negative probes, and 4
+The corpus contains 81 positive feature cases, 77 negative probes, and 4
 integration entry points. Wireloom accepts 80 applicable positive cases under
 the 7.3.1 profile; C142 is not applicable. It accepts all 81 positive cases
 under the 7.7.0 profile. “Implemented” describes Wireloom generation support;
 it does not promise RTI acceptance or runtime interoperability. See the
 version pages for profile-specific evidence and restrictions.
 
-| Feature category             | Coverage represented                                                                                        | 7.3.1 profile                                                                         | 7.7.0 profile                                                                      |
-| :--------------------------- | :---------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------- |
-| Primitives and aliases       | Primitive values and boundaries, enums, constants, scopes, aggregate and scalar typedef chains              | Implemented                                                                           | Implemented                                                                        |
-| Collections and aggregates   | Strings, sequences, arrays, nested collections, structs, inheritance, recursion, and valuetypes             | Implemented; configurable `RtiCSharp` and `Idl` mappings                              | Implemented; configurable `RtiCSharp` and `Idl` mappings                           |
-| Unions                       | Primitive and enum discriminators, defaults, aliases, multiple labels, and collection branches              | Implemented; known cross-language interoperability gaps are recorded per case         | Implemented; known cross-language interoperability gaps are recorded per case      |
-| Annotations and evolution    | Topic, key, default, member ID, optional-member, extensibility, and data-representation annotations         | Implemented for applicable features; `@must_understand` is N/A                        | Implemented                                                                        |
-| Preprocessing                | Includes, command-line defines, conditional branches, macros, macro operators, and platform-specific probes | Implemented                                                                           | Implemented                                                                        |
-| Restrictions and workarounds | Negative probes, ignored constructs, and integration cases                                                  | Evaluated per case; rejection may come from Wireloom target checks or RTI limitations | Evaluated per case; rejection may come from Wireloom validation or RTI limitations |
+| Feature category             | Coverage represented                                                                                                           | 7.3.1 profile                                                                         | 7.7.0 profile                                                                      |
+| :--------------------------- | :----------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------- |
+| Primitives and aliases       | Primitive values and boundaries, enums, constants, scopes, aggregate and scalar typedef chains                                 | Implemented                                                                           | Implemented                                                                        |
+| Collections and aggregates   | Strings, sequences, arrays, nested collections, structs, inheritance, recursion, and value types                               | Implemented; configurable `RtiCSharp` and `Idl` mappings                              | Implemented; configurable `RtiCSharp` and `Idl` mappings                           |
+| Unions                       | Primitive and enum discriminators, defaults, aliases, multiple labels, and collection branches                                 | Implemented; known cross-language interoperability gaps are recorded per case         | Implemented; known cross-language interoperability gaps are recorded per case      |
+| Annotations and evolution    | Topic, key, default, member ID, optional-member, extensibility, and data-representation annotations                            | Implemented for applicable features; `@must_understand` is N/A                        | Implemented                                                                        |
+| Preprocessing                | Includes, command-line defines, conditional branches, macros, macro operators, and platform-specific probes                    | Implemented                                                                           | Implemented                                                                        |
+| Specification validation     | Keyword and same-scope case-only names, exact reserved keywords, and derived keys, and interface-body declarations (C150–C162) | Implemented; default naming warnings and opt-in strict rejection                      | Implemented; default naming warnings and opt-in strict rejection                   |
+| Restrictions and workarounds | Negative probes, ignored constructs, and integration cases                                                                     | Evaluated per case; rejection may come from Wireloom target checks or RTI limitations | Evaluated per case; rejection may come from Wireloom validation or RTI limitations |
 
 ## Annotation case applicability
 

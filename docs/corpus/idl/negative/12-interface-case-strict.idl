@@ -1,0 +1,4 @@
+module CorpusInterfaceCase {
+    @service("DDS") interface Service { void ping(); void Ping(); };
+    struct Sample { long number; };
+};

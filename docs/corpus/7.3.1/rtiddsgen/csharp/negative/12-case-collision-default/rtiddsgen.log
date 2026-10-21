@@ -1,0 +1,3 @@
+INFO com.rti.ndds.nddsgen.Main Running rtiddsgen version 4.3.1, please wait ...
+WARN com.rti.ndds.nddsgen.antlr.IdlSymbolTable Duplicate symbol 'CorpusStrictCase::Sample::Number' was previously defined (Case-Insensitive). This is not compliant with the IDL/XTypes specification. You can make this message an error by using the -strict flag
+INFO com.rti.ndds.nddsgen.Main Done

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Wireloom.Dds.Generator.CorpusCompliance;
 
-public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<string> Defines, string Classification, string OracleDirectory, IdlSequenceArrayMapping SequenceArrayMapping = IdlSequenceArrayMapping.RtiCSharp, string Tag = "", bool OracleSourcesRetained = true, string? OracleCompileOutcome = null)
+public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<string> Defines, string Classification, string OracleDirectory, IdlSequenceArrayMapping SequenceArrayMapping = IdlSequenceArrayMapping.RtiCSharp, string Tag = "", bool OracleSourcesRetained = true, string? OracleCompileOutcome = null, bool Strict = false)
 {
     // This is an explicit managed-generator acceptance map, not an inference
     // from the RTI result or the positive/negative manifest bucket. It keeps
@@ -11,6 +11,12 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
     // leaving unrelated positive gaps as expected rejections.
     private static readonly HashSet<string> ManagedAcceptedCaseIds =
     [
+        "12-interface-keyword-default",
+        "12-interface-case-default",
+        "12-interface-body-control",
+        "12-keyword-default",
+        "12-case-collision-default",
+        "12-identifier-control",
         "01-primitives",
         "01-boundaries",
         "01-full-widths",
@@ -160,6 +166,9 @@ internal sealed class ManifestEntry
     [JsonPropertyName("oracleDirectory")]
     public string? OracleDirectory { get; init; }
 
+    [JsonPropertyName("strict")]
+    public bool Strict { get; init; }
+
     [JsonPropertyName("sequenceArrayMapping")]
     public string? SequenceArrayMapping { get; init; }
 }
@@ -247,7 +256,7 @@ internal static class CorpusRepository
                 path,
                 File.ReadAllText(path),
                 generate: string.Equals(path, rootPath, PathComparer),
-                strict: false,
+                strict: string.Equals(path, rootPath, PathComparer) && corpusCase.Strict,
                 defines: string.Equals(path, rootPath, PathComparer) ? corpusCase.Defines : [],
                 includeDirectories: Current.Value.IncludeDirectories,
                 sequenceArrayMapping: corpusCase.SequenceArrayMapping))
@@ -275,7 +284,8 @@ internal static class CorpusRepository
         if (RtiProfile == "7.3.1")
         {
             var oracleManifest = Read<OracleManifest>(Path.Combine(profileRoot, "manifest.json"));
-            capturedCases = oracleManifest.Cases.ToDictionary(entry => entry.Id, StringComparer.Ordinal);
+            capturedCases = oracleManifest.Cases.Concat(oracleManifest.CharacterizationProbes)
+                .ToDictionary(entry => entry.Id, StringComparer.Ordinal);
             oracleCompileOutcomes = capturedCases.Values
                 .Where(entry => entry.CompileOutcome is not null)
                 .ToDictionary(entry => entry.Id, entry => entry.CompileOutcome!, StringComparer.Ordinal);
@@ -389,7 +399,8 @@ internal static class CorpusRepository
             capturedCase is null
                 ? entry.OracleSourcesRetained
                 : capturedCase.OracleSourcesRetained,
-            oracleCompileOutcomes.GetValueOrDefault(entry.Id));
+            oracleCompileOutcomes.GetValueOrDefault(entry.Id),
+            entry.Strict);
     }
 
     private static T Read<T>(string path) =>

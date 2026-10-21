@@ -1,0 +1,12 @@
+module CorpusInterfaceControl {
+    interface Service {
+        enum Choice { First, Second };
+        struct Item { long number; };
+        typedef sequence<string<16>, 2> Names;
+        readonly attribute long count;
+        void Context();
+        void ping(in long number);
+        void Ping(out long Number);
+    };
+    struct Sample { long number; };
+};

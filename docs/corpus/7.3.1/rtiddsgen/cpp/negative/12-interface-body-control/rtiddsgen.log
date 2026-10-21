@@ -1,0 +1,6 @@
+INFO com.rti.ndds.nddsgen.Main Running rtiddsgen version 4.3.1, please wait ...
+WARN com.rti.ndds.nddsgen.antlr.auto.IdlParser 12-interface-body-control.idl line 3 type declaration will be ignored
+WARN com.rti.ndds.nddsgen.antlr.auto.IdlParser 12-interface-body-control.idl line 4 type declaration will be ignored
+WARN com.rti.ndds.nddsgen.antlr.auto.IdlParser 12-interface-body-control.idl line 5 type declaration will be ignored
+WARN com.rti.ndds.nddsgen.antlr.IdlTreeParser 12-interface-body-control.idl line 2:14 Interface Service ignored because is not a DDSService
+INFO com.rti.ndds.nddsgen.Main Done
