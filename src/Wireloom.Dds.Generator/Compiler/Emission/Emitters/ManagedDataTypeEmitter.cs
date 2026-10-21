@@ -68,7 +68,8 @@ internal static class ManagedDataTypeEmitter
 
             if (field.MemberIdHashSource is string memberIdHashSource)
             {
-                var escapedHashSource = System.Security.SecurityElement.Escape(memberIdHashSource);
+                var normalizedHashSource = memberIdHashSource.Replace("\r\n", " ").Replace('\r', ' ').Replace('\n', ' ');
+                var escapedHashSource = System.Security.SecurityElement.Escape(normalizedHashSource);
                 var annotation = field.UsesAutoIdHash ? "<c>@autoid(HASH)</c>" : "<c>@hashid</c>";
                 propertySummary += $" Its DDS member ID is generated from the hash of <c>{escapedHashSource}</c> through {annotation}.";
             }
