@@ -16,7 +16,7 @@ implemented by Microsoft's `cl.exe` preprocessor.
 | Partial         | Partially implemented or intentionally narrowed for IDL |
 | Not implemented | Not implemented                                         |
 
-Current coverage is 40 implemented features, 10 partial features, and 1 feature
+Current coverage is 41 implemented features, 10 partial features, and 1 feature
 not implemented. Partial support currently means:
 
 - PP013 supports common identifier token pasting; complete lexical token-paste
@@ -116,6 +116,7 @@ not implemented. Partial support currently means:
 | PP049 | Include-depth protection                        | Project safety behavior     | Implemented     |
 | PP050 | Preprocessed source-origin diagnostic mapping   | Project diagnostic contract | Implemented     |
 | PP051 | Deterministic preprocessing work limits         | Project safety behavior     | Implemented     |
+| PP052 | Platform-aware root-output path identity        | Project path behavior       | Implemented     |
 
 ## Scope and next work
 
@@ -133,6 +134,6 @@ as evidence of general C-preprocessor compatibility.
 | PP006–PP020              | No-space bodies, duplicate/named parameters, lazy arguments, stringize/paste, recursion        | Macro specs                                           |
 | PP013                    | Punctuation, invalid and chained pastes, placemarkers, literals, comments, long chains         | Macro specs; restricted preprocessing-token scope     |
 | PP021–PP030              | Unsigned shifts/masks, mixed comparisons, literal boundaries, overflow, nesting                | Conditional specs; unsupported arithmetic is rejected |
-| PP031–PP043, PP048–PP049 | Guarded/unguarded cycles, malformed operands/directives, macro-expanded probes, `#line` bounds | Include, directive, and graph specs                   |
+| PP031–PP043, PP048–PP049, PP052 | Guarded/unguarded cycles, malformed operands/directives, macro-expanded probes, `#line` bounds, root-output path identity | Include, directive, and graph specs                   |
 | PP050                    | Longer/shorter expansion, post-expansion, included-file, EOF, and sequential-parse diagnostics | Diagnostic and validation specs                       |
-| PP051                    | Per-input macro-work reset and bounded macro expansion                                         | Limit specs                                           |
+| PP051                    | Per-input macro-work reset; bounded macro expansion and origin alignment                      | Limit and source-origin specs                        |
