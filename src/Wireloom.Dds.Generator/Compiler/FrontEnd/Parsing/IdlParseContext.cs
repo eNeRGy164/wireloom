@@ -34,6 +34,8 @@ internal sealed class IdlParseContext
 
     private List<Action> DeferredValidation { get; } = [];
 
+    private List<IdlIdentifierOccurrence> Identifiers { get; } = [];
+
     internal CancellationToken CancellationToken { get; }
 
     internal ICollection<IdlDiagnostic>? Diagnostics { get; }
@@ -126,10 +128,7 @@ internal sealed class IdlParseContext
             validation();
         }
 
-        foreach (var declaration in Declarations.OfType<IdlClassDeclaration>())
-        {
-            IdlSemanticValidator.ValidateDerivedKeyFields(declaration, strict);
-        }
+        Validator.ValidateSpecificationRules(Identifiers, Declarations, strict, Diagnostics, CancellationToken);
 
         IdlSemanticValidator.ValidateValueTypeCycles(Declarations);
     }
@@ -205,6 +204,12 @@ internal sealed class IdlParseContext
         }
 
         return null;
+    }
+
+    /// <summary>Captures an identifier and its original location without applying validation policy.</summary>
+    internal void RecordIdentifier(IdlInput input, int offset, string name, string? scope, IdlIdentifierScopeKind scopeKind = IdlIdentifierScopeKind.Namespace)
+    {
+        Identifiers.Add(new IdlIdentifierOccurrence(name, scope ?? string.Empty, scopeKind, input, MapOffset(offset)));
     }
 
     /// <summary>Records a declaration name and defers its semantic validation.</summary>

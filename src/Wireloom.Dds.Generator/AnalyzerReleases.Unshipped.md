@@ -15,6 +15,7 @@
 | DDSG0105 | DDS Source Generator | Warning  | Direct arrays of sequences may not preserve IDL semantics                         |
 | DDSG0106 | DDS Source Generator | Warning  | Active `#warning` directives are reported without stopping generation             |
 | DDSG0107 | DDS Source Generator | Info     | Active `#pragma message` directives are reported without stopping generation      |
+| DDSG0108 | DDS Source Generator | Warning  | IDL keyword and case-only scope collisions; rejected in strict mode               |
 
 ### Changed Rules
 

@@ -13,8 +13,9 @@ namespace Wireloom;
 /// resolved through an include directive.
 /// </param>
 /// <param name="strict">
-/// Whether RTI-compatible strict semantic validation is enabled for the
-/// generation batch.
+/// Whether strict semantic validation rejects IDL naming violations and new key
+/// members in derived aggregates for the entire generation batch. Interface-body
+/// naming checks follow whether the declaration is a DDS service.
 /// </param>
 /// <param name="defines">Initial preprocessor symbols supplied by the build.</param>
 /// <param name="undefines">Initial preprocessor symbols removed by the build.</param>
@@ -64,8 +65,11 @@ public sealed class IdlInput(
     public bool Generate { get; } = generate;
 
     /// <summary>
-    /// Gets a value indicating whether strict RTI-compatible validation is
-    /// enabled for this generation root.
+    /// Gets a value indicating whether this generation root enables strict
+    /// identifier and derived-key validation for the entire batch. Interface bodies
+    /// are checked even when their bindings are omitted; ordinary interface bodies
+    /// reject exact keywords without applying DDS-service specification rules.
+    /// Full interface type resolution and other RTI strict checks are not implied.
     /// </summary>
     public bool Strict { get; } = strict;
 

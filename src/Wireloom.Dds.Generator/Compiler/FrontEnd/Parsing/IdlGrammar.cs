@@ -50,7 +50,7 @@ internal static class IdlGrammar
         RegexOptions.Compiled);
 
     internal static readonly Regex InterfacePattern = new(
-        @"^interface\s+(?<name>[A-Za-z_]\w*)\s*\{(?<body>[^{}]*)\}\s*;",
+        @"^interface\s+(?<name>[A-Za-z_]\w*)\s*\{",
         RegexOptions.Compiled);
 
     internal static readonly Regex UnionPattern = new(

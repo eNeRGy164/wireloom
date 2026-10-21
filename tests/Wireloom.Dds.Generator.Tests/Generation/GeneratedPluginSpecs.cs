@@ -320,7 +320,7 @@ public sealed class GeneratedPluginSpecs
                 typedef string<16> Producer;
                 @appendable struct Context { @optional Producer producer; };
                 @appendable struct Base { long baseValue; };
-                @appendable struct Derived : Base { Context context; };
+                @appendable struct Derived : Base { Context traceContext; };
             };
             """);
 

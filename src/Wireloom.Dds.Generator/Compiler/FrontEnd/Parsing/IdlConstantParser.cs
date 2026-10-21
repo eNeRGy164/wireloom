@@ -23,6 +23,7 @@ internal sealed class IdlConstantParser
 
         var name = constant.Groups["name"].Value;
         var qualified = context.Qualify(name, currentNamespace);
+        context.RecordIdentifier(input, baseOffset + position + constant.Groups["name"].Index, name, currentNamespace);
         context.EnsureNewName(input, baseOffset + position, qualified, isType: false);
 
         var type = NormalizeIdlType(constant.Groups["type"].Value);

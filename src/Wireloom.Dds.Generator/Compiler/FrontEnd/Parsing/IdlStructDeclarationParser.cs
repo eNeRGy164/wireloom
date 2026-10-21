@@ -38,6 +38,7 @@ internal sealed class IdlStructDeclarationParser
 
         var name = declaration.Groups["name"].Value;
         var fullyQualifiedName = context.Qualify(name, currentNamespace);
+        context.RecordIdentifier(input, baseOffset + declarationStart + declaration.Groups["name"].Index, name, currentNamespace);
         context.EnsureNewName(input, baseOffset + declarationStart, fullyQualifiedName);
         context.EnsureGeneratedCompanionNames(input, baseOffset + declarationStart, name, currentNamespace, includeUnmanaged: true);
         var body = declaration.Groups["body"];
@@ -48,7 +49,7 @@ internal sealed class IdlStructDeclarationParser
             _ => IdlExtensibilityKind.Extensible
         };
         var useHashIds = autoId.Success && string.Equals(autoId.Groups["value"].Value, "HASH", StringComparison.OrdinalIgnoreCase);
-        var fields = ParseMembers(input, body.Value, baseOffset + declarationStart + body.Index, currentNamespace, useHashIds);
+        var fields = ParseMembers(input, body.Value, baseOffset + declarationStart + body.Index, currentNamespace, fullyQualifiedName, useHashIds);
         var validationOffset = context.MapOffset(baseOffset + declarationStart);
         context.DeferMemberIdValidation(input, validationOffset, fields);
         var baseType = declaration.Groups["base"].Success
@@ -75,7 +76,7 @@ internal sealed class IdlStructDeclarationParser
         return declarationStart - position + declaration.Length;
     }
 
-    private List<IdlMember> ParseMembers(IdlInput input, string body, int sourceOffset, string? currentNamespace, bool useHashIds = false)
+    private List<IdlMember> ParseMembers(IdlInput input, string body, int sourceOffset, string? currentNamespace, string memberScope, bool useHashIds = false)
     {
         var offset = 0;
         var members = new HashSet<string>(StringComparer.Ordinal);
@@ -89,7 +90,7 @@ internal sealed class IdlStructDeclarationParser
                 continue;
             }
 
-            var (Field, Length) = context.TypeParser.ParseMember(input, body, offset, sourceOffset, currentNamespace, members, useHashIds);
+            var (Field, Length) = context.TypeParser.ParseMember(input, body, offset, sourceOffset, currentNamespace, members, useHashIds, memberScope);
             fields.Add(Field);
             offset += Length;
         }

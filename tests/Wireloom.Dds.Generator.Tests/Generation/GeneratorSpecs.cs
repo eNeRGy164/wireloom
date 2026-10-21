@@ -919,6 +919,73 @@ public sealed class GeneratorSpecs
         errors.ShouldBeEmpty();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void IdentifierDiagnosticsRespectStrictModeBeforeAddingSources(bool strict)
+    {
+        // Arrange
+        const string source = "struct Struct { long number; };";
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            ["Strict"] = strict.ToString()
+        };
+
+        // Act
+        var result = Run(source, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        var diagnostic = result.Diagnostics.ShouldHaveSingleItem();
+        diagnostic.Location.SourceSpan.Start.ShouldBe(source.IndexOf("Struct", StringComparison.Ordinal));
+        if (strict)
+        {
+            diagnostic.Id.ShouldBe("DDSG0001");
+            diagnostic.Severity.ShouldBe(DiagnosticSeverity.Error);
+            result.Output.SyntaxTrees.Count().ShouldBe(1);
+        }
+        else
+        {
+            diagnostic.Id.ShouldBe("DDSG0108");
+            diagnostic.Severity.ShouldBe(DiagnosticSeverity.Warning);
+            result.Output.SyntaxTrees.Count().ShouldBeGreaterThan(1);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InterfaceBodyValidationUsesSourceLocationsBeforeEmission(bool strict)
+    {
+        // Arrange
+        const string source = "@service(\"DDS\") interface I { void Context(); }; struct Sample { long number; };";
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            ["Strict"] = strict.ToString()
+        };
+
+        // Act
+        var result = Run(source, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0103");
+        var naming = result.Diagnostics.Single(diagnostic => diagnostic.Id != "DDSG0103");
+        naming.Location.SourceSpan.Start.ShouldBe(source.IndexOf("Context", StringComparison.Ordinal));
+        if (strict)
+        {
+            naming.Id.ShouldBe("DDSG0001");
+            naming.Severity.ShouldBe(DiagnosticSeverity.Error);
+            result.Output.SyntaxTrees.Count().ShouldBe(1);
+        }
+        else
+        {
+            naming.Id.ShouldBe("DDSG0108");
+            naming.Severity.ShouldBe(DiagnosticSeverity.Warning);
+            result.Output.SyntaxTrees.Count().ShouldBeGreaterThan(1);
+        }
+    }
+
     private static GeneratorRunResult Run(
         string input,
         LanguageVersion languageVersion,

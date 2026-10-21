@@ -19,7 +19,7 @@ internal sealed class IdlTypeParser
     internal IdlTypeParser(IdlParseContext context) =>
         this.context = context;
 
-    internal (IdlMember Field, int Length) ParseMember(IdlInput input, string body, int offset, int sourceOffset, string? currentNamespace, HashSet<string> members, bool useHashIds = false)
+    internal (IdlMember Field, int Length) ParseMember(IdlInput input, string body, int offset, int sourceOffset, string? currentNamespace, HashSet<string> members, bool useHashIds = false, string? memberScope = null)
     {
         var (annotations, annotationsLength) = ParseMemberAnnotations(input, body, offset, sourceOffset);
         offset += annotationsLength;
@@ -31,6 +31,7 @@ internal sealed class IdlTypeParser
         }
 
         var field = member.Groups[3].Value;
+        context.RecordIdentifier(input, sourceOffset + offset + member.Groups[3].Index, field, memberScope, IdlIdentifierScopeKind.Aggregate);
         if (!members.Add(field))
         {
             throw new IdlException(input, context.MapOffset(sourceOffset + offset), $"Duplicate member: {field}");

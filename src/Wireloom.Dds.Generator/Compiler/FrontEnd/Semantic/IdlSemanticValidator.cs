@@ -157,24 +157,45 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         _ => null
     };
 
-    /// <summary>Validates keys declared directly on a derived aggregate when strict validation is enabled.</summary>
-    public static void ValidateDerivedKeyFields(IdlClassDeclaration declaration, bool strict)
+    /// <summary>Evaluates specification rules and applies the batch policy before emission.</summary>
+    internal void ValidateSpecificationRules(IReadOnlyList<IdlIdentifierOccurrence> identifiers, IReadOnlyList<IdlDeclaration> declarations, bool strict, ICollection<IdlDiagnostic>? diagnostics, CancellationToken cancellationToken)
     {
-        if (!strict || declaration.BaseType is null)
+        foreach (var violation in IdlIdentifierValidator.FindViolations(identifiers, cancellationToken))
         {
-            return;
+            IdlValidationPolicy.Apply(violation, strict, diagnostics);
+        }
+
+        foreach (var declaration in declarations.OfType<IdlClassDeclaration>())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var violation = FindDerivedKeyViolation(declaration);
+            if (violation is not null)
+            {
+                IdlValidationPolicy.Apply(violation, strict, diagnostics);
+            }
+        }
+    }
+
+    /// <summary>Detects a new key in a derived aggregate without choosing its severity.</summary>
+    private static IdlSpecificationViolation? FindDerivedKeyViolation(IdlClassDeclaration declaration)
+    {
+        if (declaration.BaseType is null)
+        {
+            return null;
         }
 
         var keyField = declaration.Fields.FirstOrDefault(field => field.Metadata.IsKey);
         if (keyField is null)
         {
-            return;
+            return null;
         }
 
-        throw new IdlException(
+        return new IdlSpecificationViolation(
+            IdlSpecificationRule.DerivedKey,
             keyField.SourceInput ?? declaration.SourceInput,
             keyField.SourceOffset,
-            "struct/valuetype derived from a struct/valuetype can not contain @key fields. This check is only enforced when using strict validation.");
+            keyField.Name);
     }
 
     /// <summary>Validates the generated declaration name.</summary>
