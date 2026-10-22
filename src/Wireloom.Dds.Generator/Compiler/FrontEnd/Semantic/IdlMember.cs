@@ -21,6 +21,9 @@ internal sealed class IdlMemberMetadata(bool isKey = false, bool isOptional = fa
     public bool IsOptional { get; } = isOptional;
     public int? MemberId { get; private set; } = memberId;
 
+    /// <summary>Gets the effective identifier assigned during binding, including sequential IDs.</summary>
+    public int? EffectiveMemberId { get; private set; } = memberId;
+
     public IdlMemberValueMetadata? ValueMetadata { get; private set; } = valueMetadata;
     public bool IsExternal { get; } = isExternal;
     public bool IsMustUnderstand { get; } = isMustUnderstand;
@@ -32,6 +35,9 @@ internal sealed class IdlMemberMetadata(bool isKey = false, bool isOptional = fa
 
     /// <summary>Applies an explicit member identifier evaluated after constant binding.</summary>
     internal void SetMemberId(int memberId) => MemberId = memberId;
+
+    /// <summary>Applies the effective member identifier resolved for its aggregate.</summary>
+    internal void SetEffectiveMemberId(int memberId) => EffectiveMemberId = memberId;
 }
 
 /// <summary>Represents an IDL member independently of any target language.</summary>

@@ -75,8 +75,8 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
     public static void ValidateMemberIds(IdlInput input, int offset, IReadOnlyList<IdlMember> fields)
     {
         var duplicateId = fields
-            .Where(field => field.Metadata.MemberId is not null)
-            .GroupBy(field => field.Metadata.MemberId!.Value)
+            .Where(field => field.Metadata.EffectiveMemberId is not null)
+            .GroupBy(field => field.Metadata.EffectiveMemberId!.Value)
             .FirstOrDefault(group => group.Count() > 1);
 
         if (duplicateId is not null)

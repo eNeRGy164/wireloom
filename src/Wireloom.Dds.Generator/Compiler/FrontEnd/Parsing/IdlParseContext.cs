@@ -185,6 +185,7 @@ internal sealed class IdlParseContext
         }
 
         ValueBinder.BindMemberValues();
+        IdlMemberIdBinder.Bind(Declarations.OfType<IdlClassDeclaration>());
     }
 
     private IdlEnum? FindEnum(IdlType type)
@@ -235,8 +236,9 @@ internal sealed class IdlParseContext
     private void DeferValidation(Action validation) => DeferredValidation.Add(validation);
 
     /// <summary>Queues member-identifier validation for the validation phase.</summary>
-    internal void DeferMemberIdValidation(IdlInput input, int offset, IReadOnlyList<IdlMember> fields) =>
-        DeferValidation(() => IdlSemanticValidator.ValidateMemberIds(input, offset, fields));
+    internal void DeferMemberIdValidation(IdlInput input, int offset, IdlClassDeclaration declaration) =>
+        DeferValidation(() => IdlSemanticValidator.ValidateMemberIds(input, offset,
+            [.. declaration.InheritedFields, .. declaration.Fields]));
 
     /// <summary>Queues member-ID collision checks for union branches.</summary>
     internal void DeferUnionMemberIdValidation(IdlInput input, int offset, IReadOnlyList<IdlUnionBranch> branches) =>

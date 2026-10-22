@@ -30,6 +30,9 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public bool IsKey => facts.IsKey;
     public int? MemberId => facts.MemberId;
 
+    /// <summary>Gets the bound identifier used by runtime type metadata.</summary>
+    public int? EffectiveMemberId => Field.EffectiveMemberId;
+
     public bool IsOptional => facts.IsOptional;
     public string CSharpType => facts.CSharpType;
     public int? Bound => facts.Bound;
