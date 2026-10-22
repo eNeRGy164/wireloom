@@ -81,14 +81,17 @@ claiming qualification.
 
 ## Compatibility and stability
 
+The OMG IDL and DDS-XTypes specifications define the meaning of supported
+language constructs. The retained RTI corpus establishes tested compatibility
+for particular inputs and tool versions. It is evidence, rather than a complete
+language definition; valid forms can be supported beyond that corpus, and RTI
+generator limitations are documented separately from Wireloom limitations.
+
 The compatibility goal is for existing application code to compile unchanged
 against Wireloom output for supported IDL shapes. That is a goal verified by
 shape-specific evidence, not a blanket claim for every IDL construct or RTI
 release. Check the [feature coverage index](../corpus/FEATURE-COVERAGE.md) and
 the API comparison in the [migration guide](../migration/rtiddsgen-to-wireloom.md).
-For example, C136 currently exposes `ISequence<Scalar>` in Wireloom where the
-RTI 7.7.0 C# oracle exposes `ISequence<int>`. This is tracked for investigation
-in [issue #62](https://github.com/eNeRGy164/wireloom/issues/62).
 
 The configuration API differs from `rtiddsgen` options. It may change when
 issues are found; consult release notes and the package guide before upgrading.

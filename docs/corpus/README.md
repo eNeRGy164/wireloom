@@ -43,17 +43,16 @@ applicable to 7.3.1 and is accepted under 7.7.0. Explicitly compiling C142
 against 7.3.1 reports `DDSG0004`; this target diagnostic is not a compatibility
 failure for a feature unavailable in that release.
 
-The repository's MIT License does not apply to the checked-in RTI-generated
-oracle sources. They are third-party reference material, provided as-is for
-compatibility testing, and remain subject to any applicable RTI rights and
-terms. Do not redistribute or regenerate them except as permitted by the
-applicable RTI license and repository review rules. Retain all file-level
-notices.
+RTI-generated oracle sources are retained as reference output from the corpus
+IDL, with exact tool versions, input/output hashes, and original file-level
+notices. They are not relicensed under the repository's MIT License. Wireloom
+does not claim ownership of RTI material. The captures contain generated output,
+not the RTI generator, its templates, or its runtime libraries.
 
 ## Case inventory
 
-The manifest currently contains **81 positive cases**, **77 negative probes**,
-and **4 integration entry points** (162 entries total). These counts follow
+The manifest currently contains **91 positive cases**, **77 negative probes**,
+and **4 integration entry points** (172 entries total). These counts follow
 `manifest.json`, the source of truth for the corpus inventory.
 
 Dedicated C149, `05-array-of-sequences-idl`, uses a separately named IDL file
@@ -66,10 +65,16 @@ no RTI C# oracle because that binding flattens this direct IDL form.
 
 | Group                    | Count | Location                                                   |
 | ------------------------ | ----: | ---------------------------------------------------------- |
-| Positive feature cases   |    81 | [`idl/features`](idl/features)                             |
+| Positive feature cases   |    91 | [`idl/features`](idl/features)                             |
 | Negative probes          |    77 | [`idl/negative`](idl/negative) and feature-specific probes |
 | Integration entry points |     4 | [`idl/integration`](idl/integration)                       |
-| Total                    |   162 | —                                                          |
+| Total                    |   172 | —                                                          |
+
+C163–C172 add grouped annotation, constant, declarator, union, string-bound,
+and typed-default cases. Exact RTI C# and C++ generation outcomes are recorded
+in each profile manifest with capture hashes. Their RTI-generated C# and C++
+sources are retained under each profile's `rtiddsgen/` directory. Wireloom C#
+exports are retained and compiled against the matching RTI API profiles.
 
 Counts follow the manifest classifications. Some negative probes use an IDL
 under `idl/features` because they characterize syntax that a generator accepts
@@ -238,7 +243,7 @@ evidence separate from runtime or interoperability claims.
 - Do not make tests depend on external capture history.
 - Keep RTI acceptance separate from managed-generator support status.
 - Keep runtime, serialization, and wire claims out of source-generation status.
-- Review the RTI license status before committing or sharing generated output.
+- Retain generated reference output with its original notices and provenance.
 
 ## Exporting managed-generator sources
 

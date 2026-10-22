@@ -5,7 +5,7 @@
 | Constraint                                             | Rationale                                                                           |
 | :----------------------------------------------------- | :---------------------------------------------------------------------------------- |
 | Feature claims require retained evidence               | The project distinguishes implemented source generation from verified compatibility |
-| RTI-generated reference material is license-controlled | Oracle sources are retained only under the applicable repository review rules       |
+| RTI reference output retains provenance and notices    | Corpus captures identify their inputs and exact generator version                   |
 
 ## 2.2 Technical constraints
 

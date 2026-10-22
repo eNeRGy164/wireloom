@@ -29,3 +29,11 @@
    qualification claims. Profile mapping does not qualify every version in a
    mapped range. A feature becomes a compatibility claim only after relevant
    source-shape, runtime, and interoperability evidence.
+6. **Use IDL and DDS-XTypes to define language meaning.**
+   Interpret supported constructs using the OMG specifications. Retained RTI
+   output tests compatibility with a particular generator and runtime; it does
+   not define the set of valid IDL programs. When old design wording conflicts
+   with a specification, correct the wording and implementation together.
+   Record RTI extensions, implementation limits, and interoperability evidence
+   separately; a language feature does not need to reproduce an RTI generator
+   defect. See [value semantics](08-crosscutting-concepts.md#88-annotation-constant-and-default-semantics).

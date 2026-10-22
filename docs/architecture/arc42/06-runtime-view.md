@@ -26,6 +26,20 @@ RTI runtime.
    [diagnostic rules](08-crosscutting-concepts.md#82-diagnostics-and-source-locations).
 6. The consumer compiles generated types together with its hand-written code.
 
+Binding order is explicit: integral, boolean, character, and enum constants, deferred collection
+bounds, string and floating constants, explicit and inherited typedef defaults,
+inheritance and member types, member annotation values, then effective member
+IDs. Semantic validation and emission planning follow these stages. Original
+source offsets are captured before work is queued; binding does not depend on
+the parser's current input or source mapping.
+
+Macro argument binding, stringification, token pasting, and replacement
+rescanning happen during preprocessing. Adjacent string literals retain their
+token boundaries through that stage. Value binding decodes each literal token,
+concatenates the decoded values, and validates the final encoded length.
+Emission formats the bound value for C# without replaying IDL expressions or
+applying text replacement to literal contents.
+
 The adapter resolves direct sequence-array mapping from file metadata first,
 then the project property, defaulting to `RtiCSharp`. The source file owns the
 choice even when reached through multiple roots. In `Idl` mode, planning

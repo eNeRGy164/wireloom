@@ -26,8 +26,8 @@ remains unknown; unattributed local totals cannot establish qualification. The
 attribution requirements.
 Feature cases isolate availability boundaries: C040 (`09-autoid-hash`)
 checks hash member IDs on both LTS versions; C142 (`09-must-understand`) is
-not applicable to 7.3.1. The shared positive inventory contains 81 cases, of
-which 80 apply to 7.3.1 and all 81 apply to 7.7.0. Wire evidence is tied to
+not applicable to 7.3.1. The shared positive inventory contains 91 cases, of
+which 90 apply to 7.3.1 and all 91 apply to 7.7.0. Wire evidence is tied to
 the exact case inputs and profile; changed inputs require fresh exchanges.
 
 ## 8.2 Diagnostics and source locations
@@ -154,7 +154,12 @@ with separate evidence from serialization and DDS interoperability.
   layers. Runtime fixtures verify numeric, string, enum, scalar-alias, aggregate,
   optional, multidimensional, and inherited cases on both profiles. Recursive
   direct sequence arrays remain unsupported in this mode; DDS wire qualification
-  is separate.
+  is separate. Direct sequence-array union branches use this same configured
+  projection.
+- A default union branch that is a fixed array of aggregate values initializes
+  each element during construction. Copy construction creates an independent
+  array and copies each aggregate element, so the copy does not share those
+  values with the source union.
 - Direct narrow and wide string-sequence union branches use specialized native
   storage and pass element bounds through initialization and conversion.
   Typedef-backed union branches delegate through their generated native alias
@@ -182,3 +187,89 @@ branch: add the first aggregate element when present and add `-1` otherwise.
 An integer/aggregate conditional expression cannot be passed to generic
 `HashCode.Add<T>`. C134 checks this rule alongside nullable presence, deep copy,
 optional metadata, and native fixed-array conversion.
+
+## 8.8 Annotation, constant, and default semantics
+
+Supported language constructs follow OMG IDL and DDS-XTypes semantics.
+Retained RTI output records observed compatibility for specific inputs and
+tool versions; it does not limit valid spellings or override the specifications.
+RTI extensions and remaining Wireloom implementation limits are identified
+separately from those language rules.
+
+The front end captures supported value expressions and source locations until
+symbols are available. Annotation applications are currently interpreted by
+context-specific readers rather than retained as a complete syntax list. It
+distinguishes an absent boolean annotation from an explicit `false`; shorthand
+and full-form extensibility annotations resolve to the same model. A bare
+`@autoid` selects `HASH`. Module auto-ID applies within that module block,
+reopened blocks are resolved independently, and a declaration-local setting
+does not leak to sibling declarations or included top-level declarations.
+Profile-specific annotation availability is checked at the compilation and
+emission boundary.
+
+The retained cases do not cover every annotation application form. Named
+argument permutations, some parenthesized arguments, boolean constant
+arguments, and unknown annotations among type/member annotations expose
+verified parsing gaps; see [#91](https://github.com/eNeRGy164/wireloom/issues/91).
+Unknown declaration annotations following typedef defaults are consumed as
+complete scoped applications, including balanced and quoted arguments, before
+the following declaration is checked.
+
+An enum accepts FINAL or APPENDABLE extensibility in either shorthand or full
+form. MUTABLE is invalid for enumerated types. Applying extensibility more
+than once is an error, including equivalent shorthand and full-form uses.
+These rules follow [DDS-XTypes 1.3 sections 7.2.2.4.1 and 7.3.1.2.1.8](https://www.omg.org/spec/DDS-XTypes/1.3/PDF).
+
+Quoted literal contents do not terminate declaration bodies or annotation
+arguments. Explicit member-ID expressions resolve after constant binding and
+before duplicate-ID validation, and take precedence over automatic hash IDs.
+Sequential IDs continue after the preceding explicit or sequential ID,
+including inherited members. Hash IDs do not advance that counter. The binder
+records effective IDs separately from declared annotations; validation checks
+the complete inherited and local member set, and emission renders those IDs.
+
+Constant expressions, chained enum-valued constants, union labels, string bounds, and
+defaults use the shared binding and evaluation path. Enum values retain their
+declaring enum identity for assignment and label validation. Bound scalar
+values distinguish integers, booleans, characters, floating-point values,
+strings, and enumerators. Only integer values enter integer expressions such
+as bounds and member IDs; boolean and character constants are resolved by
+their own default and discriminator rules. Integral
+evaluation preserves arbitrary precision until the target type is validated;
+union labels are checked for duplicates after evaluation before emission.
+Direct fixed-array union branches remain arrays in the semantic and emission
+models, and use the same initialization, copying, conversion, and destruction
+paths as other arrays.
+
+Defaults resolve after the declared type and alias chain are known. A default
+on the nearest annotated typedef in the chain applies unless the member has an
+explicit default. The resolved typed scalar value feeds
+managed initialization, native initialization, and DynamicType annotations.
+The default is therefore a type-aware semantic value rather than a literal
+string interpreted independently by each emitter. Profile runtime support for
+DynamicType defaults is recorded with the corresponding corpus and runtime
+evidence. The 7.3.1 API has no member annotation support for missing-field
+defaults. On 7.7.0, runtime tests restore integral and string defaults after
+clearing DynamicData members. Floating-point default restoration and DDS
+deserialization with missing fields remain unverified.
+
+Range validation compares integral, boolean, and character defaults with the
+declared limits, including defaults inherited from typedefs. Boolean and
+character values use their ordering representation only for this comparison;
+they remain ineligible for integer expressions such as bounds and member IDs.
+
+Character defaults require the matching `char` or `wchar` literal or constant
+type, including through aliases; an integer expression is not a character
+default. String literals also require matching width: every token assigned to
+a `wstring` requires the `L` prefix, and a narrow string cannot use that prefix.
+Adjacent string literals are decoded independently and then joined,
+so hexadecimal and octal escapes cannot consume characters from the next
+token. Bounds apply to the final value. These rules follow
+[IDL 4.2 sections 7.2.6.2 and 7.2.6.3](https://www.omg.org/spec/IDL/4.2/PDF).
+Focused probes on both RTI LTS generators reject the retained adjacent-string
+typedef-default input rather than applying the standard concatenation rule;
+Wireloom's regression and runtime tests establish its behavior independently.
+
+The existing wchar union-label syntax also accepts unprefixed character
+literals, as recorded by C113/C131. This is a legacy Wireloom extension;
+constant and default assignments still require matching narrow/wide types.
