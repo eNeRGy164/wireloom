@@ -40,7 +40,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void FromNative(Choice sample, bool keysOnly = false)
     {
-        switch ((char)_discriminator)
+        switch (unchecked((char)_discriminator))
         {
             case 'a':
                 sample.letter = letter;
@@ -51,7 +51,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
                 break;
 
             default:
-                sample.Setother(global::System.Convert.ToBoolean(other), (char)_discriminator);
+                sample.Setother(global::System.Convert.ToBoolean(other), unchecked((char)_discriminator));
                 break;
         }
     }
@@ -63,7 +63,7 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        _discriminator = (short)Choice.DefaultDiscriminator;
+        _discriminator = unchecked((short)Choice.DefaultDiscriminator);
 
         letter = 0;
         text.Initialize(size: 255, allocateMemory);
@@ -78,9 +78,9 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void ToNative(Choice sample, bool keysOnly = false)
     {
-        _discriminator = (short)sample.Discriminator;
+        _discriminator = unchecked((short)sample.Discriminator);
 
-        switch ((char)_discriminator)
+        switch (unchecked((char)_discriminator))
         {
             case 'a':
                 letter = sample.letter;

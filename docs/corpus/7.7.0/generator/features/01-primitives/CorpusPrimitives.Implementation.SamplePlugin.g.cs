@@ -205,7 +205,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         {
             var annotations = new Annotations(
                 TypeKind.Float32,
-                defaultValue: new AnnotationParameterValue { Float32Value = 0.0F },
+                defaultValue: new AnnotationParameterValue { Float32Value = 0F },
                 minValue: new AnnotationParameterValue { Float32Value = float.MinValue },
                 maxValue: new AnnotationParameterValue { Float32Value = float.MaxValue },
                 unit: null);
@@ -215,7 +215,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         {
             var annotations = new Annotations(
                 TypeKind.Float64,
-                defaultValue: new AnnotationParameterValue { Float64Value = 0.0D },
+                defaultValue: new AnnotationParameterValue { Float64Value = 0D },
                 minValue: new AnnotationParameterValue { Float64Value = double.MinValue },
                 maxValue: new AnnotationParameterValue { Float64Value = double.MaxValue },
                 unit: null);

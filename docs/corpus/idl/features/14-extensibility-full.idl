@@ -1,0 +1,1 @@
+@extensibility(MUTABLE) struct FullExtensibility { long value; };

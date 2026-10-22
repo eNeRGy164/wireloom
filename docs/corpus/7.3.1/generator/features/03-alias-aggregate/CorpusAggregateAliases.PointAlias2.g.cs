@@ -38,7 +38,7 @@ public partial class PointAlias2 : global::System.IEquatable<PointAlias2>
     /// Initializes a copy of another typedef value.
     /// </summary>
     /// <param name="other">The typedef to copy.</param>
-    /// <remarks>When <paramref name="other"/> is null, the constructor returns without copying and keeps its property initializer. An aggregate value is copied through its generated copy constructor.</remarks>
+    /// <remarks>When <paramref name="other"/> is null, the constructor keeps the declared default and property initializer. An aggregate value is copied through its generated copy constructor.</remarks>
     public PointAlias2(PointAlias2? other)
     {
         if (other is not null)

@@ -62,7 +62,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
         sample.octetValue = octetValue;
         sample.boolValue = global::System.Convert.ToBoolean(boolValue);
         sample.charValue = NativeChar.FromUtf8(charValue);
-        sample.wideCharValue = (char)wideCharValue;
+        sample.wideCharValue = unchecked((char)wideCharValue);
         sample.floatValue = floatValue;
         sample.doubleValue = doubleValue;
         sample.longDoubleValue = longDoubleValue;
@@ -116,7 +116,7 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
         octetValue = sample.octetValue;
         boolValue = global::System.Convert.ToByte(sample.boolValue);
         charValue = NativeChar.ToUtf8(sample.charValue);
-        wideCharValue = (short)sample.wideCharValue;
+        wideCharValue = unchecked((short)sample.wideCharValue);
         floatValue = sample.floatValue;
         doubleValue = sample.doubleValue;
         longDoubleValue = sample.longDoubleValue;

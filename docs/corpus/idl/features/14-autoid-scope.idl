@@ -1,0 +1,5 @@
+@autoid(HASH) module AutoIds { struct Hashed { long first; long second; }; };
+#include "includes/autoid-hash-include.idl"
+module AutoIds { struct Reopened { long first; long second; }; };
+struct Sequential { long first; long second; };
+struct UsesInclude { Included included; };

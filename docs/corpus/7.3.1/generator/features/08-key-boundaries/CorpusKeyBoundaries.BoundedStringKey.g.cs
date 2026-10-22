@@ -49,7 +49,7 @@ public partial class BoundedStringKey : global::System.IEquatable<BoundedStringK
     /// Initializes a copy of the specified <see cref="BoundedStringKey"/> instance.
     /// </summary>
     /// <param name="other">The instance to copy, or <see langword="null"/>.</param>
-    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, the constructor returns without copying; property initializers remain in effect, but values created only by the parameterless constructor are not initialized.</remarks>
+    /// <remarks>Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name="other"/> is null, explicit IDL defaults and property initializers remain in effect; collections and aggregate values created only by the parameterless constructor are not initialized.</remarks>
     /// <example>
     /// <code>
     /// var original = new BoundedStringKey();

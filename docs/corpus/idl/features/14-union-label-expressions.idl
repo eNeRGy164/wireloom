@@ -1,0 +1,1 @@
+const long Selected = 0x2a; union LabelExpressions switch(long) { case Selected: long symbolic; case (3 + 1): long arithmetic; case 0x10: long hexadecimal; };

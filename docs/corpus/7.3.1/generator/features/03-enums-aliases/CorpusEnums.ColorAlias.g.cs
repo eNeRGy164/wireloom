@@ -21,6 +21,7 @@ public partial class ColorAlias : global::System.IEquatable<ColorAlias>
     /// </summary>
     public ColorAlias()
     {
+        Value = 0;
     }
 
     /// <summary>
@@ -36,8 +37,8 @@ public partial class ColorAlias : global::System.IEquatable<ColorAlias>
     /// Initializes a copy of another typedef value.
     /// </summary>
     /// <param name="other">The typedef to copy.</param>
-    /// <remarks>When <paramref name="other"/> is null, the constructor returns without copying and keeps its property initializer. An aggregate value is copied through its generated copy constructor.</remarks>
-    public ColorAlias(ColorAlias? other)
+    /// <remarks>When <paramref name="other"/> is null, the constructor keeps the declared default and property initializer. An aggregate value is copied through its generated copy constructor.</remarks>
+    public ColorAlias(ColorAlias? other) : this()
     {
         if (other is not null)
         {

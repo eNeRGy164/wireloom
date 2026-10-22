@@ -14,5 +14,5 @@ public static class Shifted
     /// <summary>
     /// Gets the integer value of the <c>Shifted</c> IDL constant.
     /// </summary>
-    public const int Value = Add.Value << 2 | 1;
+    public const int Value = 21;
 }

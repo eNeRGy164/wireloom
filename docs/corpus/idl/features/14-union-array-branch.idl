@@ -1,0 +1,1 @@
+union ArrayBranch switch(long) { case 0: long values[2][3]; case 1: long scalar; };

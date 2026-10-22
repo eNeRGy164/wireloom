@@ -4,6 +4,7 @@
 // It requires the RTI Connext DDS .NET runtime.
 #nullable enable
 
+using Omg.Types.Dynamic;
 using Rti.Dds.Core;
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types.Dynamic;
@@ -32,6 +33,18 @@ internal class ColorAliasPlugin : InterpretedTypePlugin<ColorAlias, ColorAliasUn
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<ColorAliasUnmanaged>(dtf, "ColorAlias", ColorSupport.Instance.GetDynamicTypeInternal(isPublic));
+        var aliasType = tsf.CreateAliasWithAccessInfo<ColorAliasUnmanaged>(dtf, "ColorAlias", ColorSupport.Instance.GetDynamicTypeInternal(isPublic));
+
+        {
+            var annotations = new Annotations(
+                TypeKind.Enumeration,
+                defaultValue: new AnnotationParameterValue { EnumValue = 0 },
+                minValue: null,
+                maxValue: null,
+                unit: null);
+            aliasType.SetAnnotations(annotations);
+        }
+
+        return aliasType;
     }
 }
