@@ -37,7 +37,8 @@ once for each version. The workflow requires the `RTI_CONNEXT_LICENSE` secret.
 
 The combined artifacts are named `wire-compatibility-rti-7.3.1` and
 `wire-compatibility-rti-7.7.0`. Shard artifacts use the corresponding
-`-shard-<index>` suffix. Partial evidence is uploaded even when a shard fails;
+`-shard-<index>` suffix and retain raw reference copies and staged IDL hash
+mappings under `raw/`. Partial evidence is uploaded even when a shard fails;
 the report job validates available evidence and retains a failing workflow
 status for setup errors or incomplete exchanges.
 
@@ -178,6 +179,36 @@ Managed case helpers are in `Fixtures/ManagedFixtures.*.cs`; C++ case-specific
 construction is in `Native/typed-fixture-peer.hpp.in`. Typed sample construction
 and topic wrappers are normal test setup and do not produce adaptation markers.
 The [workaround guide](WORKAROUNDS.md) covers changes beyond that baseline.
+
+### Annotation and value-binding cases
+
+C163–C172 use typed fixtures in `ManagedFixtures.IdlGaps.cs` and the C++ peer.
+Their sixteen fixtures produce 144 directed exchanges per exact RTI profile.
+They exercise explicit values, constructor defaults, all declared branches in
+the added unions, every fixed-array element, and exact-boundary strings.
+C164 and C172 use distinctly named topic wrappers that include unchanged
+canonical IDL and combine its declarations into one sample. Generation
+provenance records the canonical inputs and wrapper/dependency hashes.
+
+For C164, the runner reuses RTI C# outputs only when one source and one plugin
+with the exact expected names share a directory and contain the expected IDL
+types. It preserves them with hashes. If RTI emits two copies, it removes a
+nested copy only when both generated files match the expected paths and are
+byte-identical, preserving both raw files first. RTI C++ dependency traversal
+is recursive: the runner reuses the unique RTI 7.7.0 outputs at their exact
+relative paths, or stages the RTI 7.3.1 generated headers at those paths after
+byte comparison. It keeps generated and staged copies with hashes. Scenario
+endpoint metadata reports these harness adaptations.
+
+For RTI 7.3.1 C#, `rtiddsgen` resolves these canonical includes by short
+basename beside the wrapper. The runner supplies byte-identical wrapper,
+canonical, and C164 dependency copies from an isolated scratch tree, then keeps
+the staged inputs and source/staged hashes in the evidence. The canonical IDL
+files in the snapshot remain unchanged.
+
+The C171 default fixture transmits values initialized by generated constructors.
+It does not remove fields from serialized samples or test schema evolution.
+Missing-field DDS deserialization remains a separate, unverified contract.
 
 ### DynamicData fixture API limits
 
@@ -329,7 +360,10 @@ bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-harness.sh
 `verify-shards.cs` compares sharded and unsharded report output and exercises
 invalid or incomplete shard sets. `verify-harness.sh` checks that unexpected
 setup errors keep their exit status while handled peer failures remain
-reportable outcomes. The GitHub report job runs these checks before merging.
+reportable outcomes. It also checks that a wrapper's generated files are not
+mistaken for an included IDL's files when their basenames match, while incomplete
+or duplicated dependency output remains visible to the guards. The GitHub
+report job runs these checks before merging.
 
 ## Code map
 

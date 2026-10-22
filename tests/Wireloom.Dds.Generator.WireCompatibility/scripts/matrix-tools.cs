@@ -10,7 +10,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 
-const string usage = "Usage: matrix-tools.cs <list-cases|list-rti-only-cases|case-field|case-pairings|case-info|json-field|discover-cases|discover-rti|generation-provenance|includes|includes-recursive|partition-shard|merge-shards|render-report|adapt-rti-characters> ...";
+const string usage = "Usage: matrix-tools.cs <repository-root|list-cases|list-rti-only-cases|case-field|case-pairings|case-info|json-field|discover-cases|discover-rti|generation-provenance|includes|includes-recursive|partition-shard|merge-shards|render-report|adapt-rti-characters> ...";
 var jsonOptions = new JsonSerializerOptions
 {
     WriteIndented = true,
@@ -27,6 +27,10 @@ try
 
     switch (args[0])
     {
+        case "repository-root":
+            RequireArgs(2);
+            Console.WriteLine(FindRepositoryRoot(args[1]));
+            break;
         case "list-cases":
         {
             RequireArgs(3);
@@ -192,6 +196,17 @@ void WriteGenerationProvenance(string[] commandArgs)
     var item = FindCase(manifest, commandArgs[2]);
     var repository = FindRepositoryRoot(commandArgs[1]);
     var generatedRoot = commandArgs[3];
+    var canonicalIdl = Path.GetFullPath(Path.Combine(repository, "docs", "corpus", (string)item["idl"]!));
+    var wrapperName = commandArgs[2] switch
+    {
+        "14-autoid-scope" => "14-autoid-scope-topic.idl",
+        "14-enum-constant" => "14-enum-constant-topic.idl",
+        _ => commandArgs[2] + ".idl"
+    };
+    var wrapperCandidate = Path.Combine(repository, "tests", "Wireloom.Dds.Generator.WireCompatibility", "IdlWrappers", wrapperName);
+    var oracleIdl = File.Exists(wrapperCandidate) ? Path.GetFullPath(wrapperCandidate) : canonicalIdl;
+    var oracleDependencies = ResolveIncludedIdlFiles(oracleIdl,
+        [Path.Combine(repository, "docs", "corpus", "idl"), Path.Combine(repository, "docs", "corpus", "idl", "includes")]);
     var files = Directory.GetFiles(generatedRoot, "*.g.cs", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToArray();
     if (files.Length == 0)
     {
@@ -203,7 +218,14 @@ void WriteGenerationProvenance(string[] commandArgs)
         sequenceArrayMapping = (string?)item["sequenceArrayMapping"] ?? "RtiCSharp",
         rtiVersion = commandArgs[4],
         idl = (string)item["idl"]!,
-        idlSha256 = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(repository, "docs", "corpus", (string)item["idl"]!)))),
+        idlSha256 = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(canonicalIdl))),
+        oracleIdl = Path.GetRelativePath(repository, oracleIdl).Replace('\\', '/'),
+        oracleIdlSha256 = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(oracleIdl))),
+        oracleDependencies = oracleDependencies.Select(path => new
+        {
+            path = Path.GetRelativePath(repository, path).Replace('\\', '/'),
+            sha256 = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path)))
+        }).ToArray(),
         generatedSources = files.Select(path => new
         {
             path = Path.GetRelativePath(generatedRoot, path).Replace('\\', '/'),
@@ -211,6 +233,32 @@ void WriteGenerationProvenance(string[] commandArgs)
         }).ToArray()
     };
     File.WriteAllText(commandArgs[5], JsonSerializer.Serialize(provenance, jsonOptions));
+}
+
+string[] ResolveIncludedIdlFiles(string rootIdl, string[] roots)
+{
+    var discovered = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { Path.GetFullPath(rootIdl) };
+    var pending = new Queue<string>();
+    pending.Enqueue(Path.GetFullPath(rootIdl));
+    var includeRegex = new Regex("^\\s*#\\s*include\\s*[<\\\"]([^>\\\"]+)[>\\\"]", RegexOptions.Multiline);
+
+    while (pending.TryDequeue(out var currentIdl))
+    {
+        foreach (Match match in includeRegex.Matches(File.ReadAllText(currentIdl)))
+        {
+            var include = match.Groups[1].Value;
+            var candidates = new[] { Path.Combine(Path.GetDirectoryName(currentIdl)!, include) }
+                .Concat(roots.Select(root => Path.Combine(root, include)));
+            var source = candidates.FirstOrDefault(File.Exists);
+            if (source is not null && discovered.Add(Path.GetFullPath(source)))
+            {
+                pending.Enqueue(Path.GetFullPath(source));
+            }
+        }
+    }
+
+    return discovered.Where(path => !string.Equals(path, Path.GetFullPath(rootIdl), StringComparison.OrdinalIgnoreCase))
+        .Order(StringComparer.Ordinal).ToArray();
 }
 
 /// <summary>Excludes implementation gaps and unavailable RTI features before planning Wireloom exchanges.</summary>
@@ -422,6 +470,15 @@ void DiscoverCases(string[] commandArgs)
 
     var byIdl = selected.GroupBy(item => Path.GetFileName((string)item!["idl"]!), StringComparer.Ordinal)
         .ToDictionary(group => group.Key, group => group.Select(item => (string)item!["id"]!).ToArray(), StringComparer.Ordinal);
+    if (selected.Any(item => (string)item!["id"]! == "14-autoid-scope"))
+    {
+        byIdl["14-autoid-scope-topic.idl"] = ["14-autoid-scope"];
+    }
+    if (selected.Any(item => (string)item!["id"]! == "14-enum-constant"))
+    {
+        byIdl["14-enum-constant-topic.idl"] = ["14-enum-constant"];
+    }
+
     var candidates = selected.ToDictionary(item => (string)item!["id"]!, _ => new List<(string Cs, string Cpp)>(), StringComparer.Ordinal);
 
     foreach (var source in Directory.Exists(generatedRoot) ? Directory.EnumerateFiles(generatedRoot, "*.g.cs", SearchOption.AllDirectories) : [])
@@ -466,6 +523,10 @@ void DiscoverCases(string[] commandArgs)
             "09-optional-aggregate-member" => "Holder",
             "07-union-aliases" or "06-valuetypes" => "Holder",
             "10-default-literal-enum-array" => "Shape",
+            "14-autoid-scope" => "AutoIdScopeSample",
+            "14-union-scoped-enum" => "ScopedEnum",
+            "14-typed-defaults" => "TypedDefaults",
+            "14-enum-constant" => "EnumConstantSample",
             "04-unbounded-string-aliases" => "StringAliasesSample",
             "05-unbounded-sequence-aliases" => "SequenceAliasesSample",
             "04-string-alias-chains" => "StringAliasChainsSample",
@@ -481,6 +542,11 @@ void DiscoverCases(string[] commandArgs)
         if (selectedType is not null)
         {
             preferred[selectedType] = -1;
+            if (!candidates[id].Any(candidate => string.Equals(
+                    candidate.Cs.Split('.').Last(), selectedType, StringComparison.Ordinal)))
+            {
+                throw new InvalidOperationException($"Case {id} requires generated topic root {selectedType}, but that type was not emitted from the selected IDL input.");
+            }
         }
 
         var (Cs, Cpp) = candidates[id]
@@ -622,6 +688,12 @@ void DiscoverIncludesRecursive(string[] commandArgs)
 
 string FindRepositoryRoot(string path)
 {
+    var configuredWorkspace = Environment.GetEnvironmentVariable("GITHUB_WORKSPACE");
+    if (!string.IsNullOrWhiteSpace(configuredWorkspace) && Directory.Exists(configuredWorkspace))
+    {
+        return Path.GetFullPath(configuredWorkspace);
+    }
+
     var directory = new DirectoryInfo(Path.GetDirectoryName(Path.GetFullPath(path))!);
     while (directory is not null)
     {
@@ -658,6 +730,7 @@ void RenderReport(string[] commandArgs)
         .Where(item => item!["wireMatrix"] is not null)
         .ToDictionary(item => (string)item!["id"]!, item => item!["wireMatrix"]!, StringComparer.Ordinal);
     var scenarios = new List<ReportFields>();
+    var repository = FindRepositoryRoot(commandArgs[8]);
     var peerData = new Dictionary<string, (string Implementation, string Language)>
     {
         ["Wireloom C#"] = ("Wireloom", "C#"),
@@ -711,22 +784,50 @@ void RenderReport(string[] commandArgs)
             throw new InvalidDataException($"Exchange uses an excluded peer for {id}.");
         }
 
-        if (corpusCase["sequenceArrayMapping"] is not null)
+        var hasSequenceArrayMapping = corpusCase["sequenceArrayMapping"] is not null;
+        if (hasSequenceArrayMapping)
         {
             scenario["generationConfiguration"] = new
             {
                 idl = (string)corpusCase["idl"]!,
                 sequenceArrayMapping = (string)corpusCase["sequenceArrayMapping"]!
             };
+        }
+
+        var wrapperName = id switch
+        {
+            "14-autoid-scope" => "14-autoid-scope-topic.idl",
+            "14-enum-constant" => "14-enum-constant-topic.idl",
+            _ => id + ".idl"
+        };
+        var wrapperCandidate = Path.Combine(repository, "tests", "Wireloom.Dds.Generator.WireCompatibility", "IdlWrappers", wrapperName);
+        var requiresGenerationProvenance = hasSequenceArrayMapping || File.Exists(wrapperCandidate);
+        if (requiresGenerationProvenance)
+        {
             var provenancePath = Path.Combine(logsPath, $"{id}-generation.json");
             if (File.Exists(provenancePath))
             {
                 var provenance = ReadJson(provenancePath);
-                if ((string?)provenance["sequenceArrayMapping"] != (string)corpusCase["sequenceArrayMapping"]!
+                var canonicalIdl = Path.GetFullPath(Path.Combine(repository, "docs", "corpus", (string)corpusCase["idl"]!));
+                var oracleIdl = File.Exists(wrapperCandidate) ? Path.GetFullPath(wrapperCandidate) : canonicalIdl;
+                var oracleDependencies = ResolveIncludedIdlFiles(oracleIdl,
+                    [Path.Combine(repository, "docs", "corpus", "idl"), Path.Combine(repository, "docs", "corpus", "idl", "includes")]);
+                var expectedSequenceArrayMapping = (string?)corpusCase["sequenceArrayMapping"] ?? "RtiCSharp";
+                var recordedDependencies = provenance["oracleDependencies"] as JsonArray;
+                var dependenciesMatch = recordedDependencies is not null
+                    && recordedDependencies.Count == oracleDependencies.Length
+                    && oracleDependencies.Select((path, index) =>
+                        (string?)recordedDependencies[index]?["path"] == Path.GetRelativePath(repository, path).Replace('\\', '/')
+                        && (string?)recordedDependencies[index]? ["sha256"] == Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))))
+                        .All(matches => matches);
+                if ((string?)provenance["sequenceArrayMapping"] != expectedSequenceArrayMapping
                     || (string?)provenance["rtiVersion"] != version
                     || (string?)provenance["idl"] != (string)corpusCase["idl"]!
                     || (string?)provenance["idlSha256"] != Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(
-                        Path.Combine(FindRepositoryRoot(commandArgs[8]), "docs", "corpus", (string)corpusCase["idl"]!))))
+                        canonicalIdl)))
+                    || (string?)provenance["oracleIdl"] != Path.GetRelativePath(repository, oracleIdl).Replace('\\', '/')
+                    || (string?)provenance["oracleIdlSha256"] != Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(oracleIdl)))
+                    || !dependenciesMatch
                     || provenance["generatedSources"] is not JsonArray { Count: > 0 })
                 {
                     throw new InvalidDataException($"Generation provenance does not match {id} and RTI {version}.");
@@ -806,6 +907,18 @@ string EndpointMode(string peer, string? adaptation)
 
 string? Adaptation(string id, string fixture, string peer, string peerVersion)
 {
+    if ((id is "14-autoid-scope" or "14-enum-constant") && peer == "RTI C#")
+    {
+        return peerVersion == "7.3.1"
+            ? "RTI 7.3.1 C# include staging: pass byte-identical wrapper/canonical/dependency IDL copies through an isolated scratch tree to satisfy its basename include resolution; preserve source and staged hashes."
+            : "RTI C# include staging: reuse generated root and canonical dependency sources after expected names and unique output locations are confirmed; preserve raw copies and hashes.";
+    }
+
+    if (id == "14-autoid-scope" && peer == "RTI C++")
+    {
+        return "RTI C++ include staging: enumerate recursive dependencies; reuse unique generated outputs at their exact relative paths or stage headers at IDL-relative paths after byte comparison, retaining generated copies and hashes.";
+    }
+
     if (id == "10-resolve-name-wstring-aliases" && peer == "RTI C#")
     {
         return "Post-generation namespace correction: qualify both unmanaged alias types with the IDL module.";

@@ -145,6 +145,7 @@ jobs:
             artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/results.json
             artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/results.md
             artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/logs/
+            artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/raw/
             artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/scenarios.tsv
             artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/plan.json
             artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/shard.json

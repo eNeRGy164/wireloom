@@ -31,6 +31,19 @@
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '07-union-char-numeric-255'">
     <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_NUMERIC_CHAR_255_UNION</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-extensibility-full' or '$(WireCompatibilityCase)' == '14-autoid-scope' or '$(WireCompatibilityCase)' == '14-annotation-arguments' or '$(WireCompatibilityCase)' == '14-member-declarators' or '$(WireCompatibilityCase)' == '14-union-label-expressions' or '$(WireCompatibilityCase)' == '14-union-scoped-enum' or '$(WireCompatibilityCase)' == '14-union-array-branch' or '$(WireCompatibilityCase)' == '14-string-expression-bound' or '$(WireCompatibilityCase)' == '14-typed-defaults' or '$(WireCompatibilityCase)' == '14-enum-constant'">
+    <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_IDL_GAPS</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-extensibility-full'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C163</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-autoid-scope'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C164</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-annotation-arguments'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C165</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-member-declarators'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C166</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-union-label-expressions'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C167</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-union-scoped-enum'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C168</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-union-array-branch'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C169</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-string-expression-bound'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C170</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-typed-defaults'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C171</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-enum-constant'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C172</DefineConstants></PropertyGroup>
 
   <ItemGroup>
     <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />

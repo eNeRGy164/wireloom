@@ -35,6 +35,12 @@ internal static partial class ManagedFixtures
 #if WIRE_COMPATIBILITY_NUMERIC_CHAR_255_UNION
             "07-union-char-numeric-255" => CreateHighNumericCharacterUnionFixture<T>(options.Fixture),
 #endif
+#if WIRE_COMPATIBILITY_IDL_GAPS
+            "14-extensibility-full" or "14-autoid-scope" or "14-annotation-arguments"
+                or "14-member-declarators" or "14-union-label-expressions" or "14-union-scoped-enum"
+                or "14-union-array-branch" or "14-string-expression-bound" or "14-typed-defaults"
+                or "14-enum-constant" => CreateIdlGapFixture<T>(options),
+#endif
             _ => serializer.FromDynamicData(expectedDynamic!)
         };
     }
