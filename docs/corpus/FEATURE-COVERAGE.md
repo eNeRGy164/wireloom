@@ -5,19 +5,19 @@ assembly. Versions from 7.3.1 up to, but not including, 7.7.0 use the 7.3.1
 profile; version 7.7.0 and later use the 7.7.0 profile. Only exact 7.3.1 and
 7.7.0 have qualification evidence.
 
-The corpus contains 81 positive feature cases, 77 negative probes, and 4
-integration entry points. Wireloom accepts 80 applicable positive cases under
-the 7.3.1 profile; C142 is not applicable. It accepts all 81 positive cases
+The corpus contains 91 positive feature cases, 77 negative probes, and 4
+integration entry points. Wireloom accepts 90 applicable positive cases under
+the 7.3.1 profile; C142 is not applicable. It accepts all 91 positive cases
 under the 7.7.0 profile. “Implemented” describes Wireloom generation support;
 it does not promise RTI acceptance or runtime interoperability. See the
 version pages for profile-specific evidence and restrictions.
 
 | Feature category             | Coverage represented                                                                                                           | 7.3.1 profile                                                                         | 7.7.0 profile                                                                      |
 | :--------------------------- | :----------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------- |
-| Primitives and aliases       | Primitive values and boundaries, enums, constants, scopes, aggregate and scalar typedef chains                                 | Implemented                                                                           | Implemented                                                                        |
-| Collections and aggregates   | Strings, sequences, arrays, nested collections, structs, inheritance, recursion, and value types                               | Implemented; configurable `RtiCSharp` and `Idl` mappings                              | Implemented; configurable `RtiCSharp` and `Idl` mappings                           |
-| Unions                       | Primitive and enum discriminators, defaults, aliases, multiple labels, and collection branches                                 | Implemented; known cross-language interoperability gaps are recorded per case         | Implemented; known cross-language interoperability gaps are recorded per case      |
-| Annotations and evolution    | Topic, key, default, member ID, optional-member, extensibility, and data-representation annotations                            | Implemented for applicable features; `@must_understand` is N/A                        | Implemented                                                                        |
+| Primitives and aliases       | Primitive values and boundaries, enums, enum-valued constants, scopes, and annotated scalar or aggregate typedef chains        | Implemented                                                                           | Implemented                                                                        |
+| Collections and aggregates   | Strings with expression bounds, sequences, arrays, nested collections, structs, inheritance, recursion, and value types        | Implemented; configurable `RtiCSharp` and `Idl` mappings                              | Implemented; configurable `RtiCSharp` and `Idl` mappings                           |
+| Unions                       | Primitive and enum discriminators, symbolic/scoped/expression labels, defaults, aliases, and fixed-array or collection branches | Implemented; known cross-language interoperability gaps are recorded per case         | Implemented; known cross-language interoperability gaps are recorded per case      |
+| Annotations and evolution    | Topic, boolean/named/constant arguments, member IDs, optional-member, extensibility, auto-ID, and data-representation annotations | Implemented for applicable features; `@must_understand` is N/A                       | Implemented                                                                        |
 | Preprocessing                | Includes, command-line defines, conditional branches, macros, macro operators, and platform-specific probes                    | Implemented                                                                           | Implemented                                                                        |
 | Specification validation     | Keyword and same-scope case-only names, exact reserved keywords, and derived keys, and interface-body declarations (C150–C162) | Implemented; default naming warnings and opt-in strict rejection                      | Implemented; default naming warnings and opt-in strict rejection                   |
 | Restrictions and workarounds | Negative probes, ignored constructs, and integration cases                                                                     | Evaluated per case; rejection may come from Wireloom target checks or RTI limitations | Evaluated per case; rejection may come from Wireloom validation or RTI limitations |
@@ -28,6 +28,30 @@ version pages for profile-specific evidence and restrictions.
 | :-------------------------- | :-------------------------------------------------------------------------- | :----------------------------------------------------- |
 | C040 · `09-autoid-hash`     | Hash IDs supported; RTI C# and C++ generation accepted                      | Hash IDs supported; RTI C# and C++ generation accepted |
 | C142 · `09-must-understand` | N/A: introduced after this release; explicit compilation reports `DDSG0004` | Supported; RTI C# and C++ generation accepted          |
+
+## Current grouped IDL cases
+
+Additional annotation application forms remain unsupported beyond the retained
+cases, including named-argument permutations and some unknown-annotation
+placements. The reproduced gaps are tracked together in
+[#91](https://github.com/eNeRGy164/wireloom/issues/91).
+
+C163–C172 cover full-form extensibility, module and local auto-ID scope,
+annotation arguments, multiple member declarators, symbolic and expression
+union labels, scoped enum labels and constants, direct fixed-array union
+branches, expression string bounds, and typed defaults. Exact RTI 7.3.1 and
+7.7.0 C# and C++ generation succeeded for these cases. Generated reference
+sources are retained under each profile's `rtiddsgen/` directory; profile
+manifests record each outcome and capture hash. Corpus tests compare the C#
+data contracts with these retained oracles. Wireloom exports for both profiles
+are separately compiled against their matching RTI APIs.
+
+On 2026-10-22, C163–C172 passed all 144 directed DDS exchanges on each exact
+RTI version across Wireloom C#, RTI C#, and RTI C++. The sixteen fixtures use
+typed values and independent checks. C164 and C172 use topic wrappers around
+unchanged canonical IDL. C171 verifies transmitted constructor defaults and
+explicit values; missing-field DDS deserialization remains unverified. See the
+[fixture scope](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#annotation-and-value-binding-cases).
 
 ## Recorded wire evidence
 

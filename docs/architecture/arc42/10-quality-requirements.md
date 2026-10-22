@@ -19,11 +19,20 @@ Wireloom quality
 
 ### Compatibility evidence
 
-| ID   | Scenario                      | Acceptance and evidence                                                                                                                                                                                                    |
-| :--- | :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Q-01 | Run the manifest corpus       | Positive cases compile and preserve required oracle shape and targeted DynamicType metadata; compliance covers every manifest case. Source export remains opt-in.                                                          |
-| Q-09 | Select sequence-array mapping | The default output remains RTI C# compatible; opt-in runtime tests preserve both layers on both LTS profiles. Packed consumers verify project defaults and file overrides. Dedicated C149 retains ordinary corpus sources. |
-| Q-08 | Dispatch the licensed matrix  | Exact LTS package and container versions are paired; reports show all nine directed pairings and expected array-of-sequences failures for the selected target.                                                             |
+| ID   | Scenario                      | Acceptance and evidence                                                                                                                                                                                                       |
+| :--- | :---------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q-01 | Run the manifest corpus       | Compliance records every manifest case; retained oracle sources are compared for required API shape. Selected generated outputs compile against exact RTI APIs, while runtime and wire verification remain separate evidence. |
+| Q-09 | Select sequence-array mapping | The default output remains RTI C# compatible; opt-in runtime tests preserve both layers on both LTS profiles. Packed consumers verify project defaults and file overrides. Dedicated C149 retains ordinary corpus sources.    |
+| Q-08 | Dispatch the licensed matrix  | Exact LTS package and container versions are paired; reports show all nine directed pairings and expected array-of-sequences failures for the selected target.                                                                |
+
+The focused C163–C172 wire runs on 2026-10-22 passed all 144 directed
+exchanges on each exact RTI LTS version. Sixteen typed fixtures exercise all
+nine pairings among Wireloom C#, RTI C#, and RTI C++. C164 and C172 use
+wrappers around unchanged canonical IDL; RTI 7.3.1 reference generation uses
+byte-identical staged include files. C171 covers transmitted constructor
+defaults and explicit values; missing-field DDS deserialization remains
+unverified. The [wire guide](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#annotation-and-value-binding-cases)
+defines fixture and adaptation scope.
 
 ### Build-time developer experience
 
@@ -40,10 +49,10 @@ Wireloom quality
 
 ### Diagnostic clarity
 
-| ID   | Scenario                       | Acceptance and evidence                                                                                                                                                                                                                                                        |
-| :--- | :----------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Q-02 | Add invalid or unsupported IDL | Input that prevents safe managed output fails with source-located `DDSG0001`; deliberately ignored constructs and potentially lossy mappings report diagnostics while generation continues.                                                                                    |
-| Q-10 | Choose strict validation       | Naming violations produce `DDSG0108` and sources by default; strict mode produces source-located `DDSG0001` and no sources. Paired C150–C162 cases and packed-consumer checks verify both modes.                                                                               |
+| ID   | Scenario                       | Acceptance and evidence                                                                                                                                                                          |
+| :--- | :----------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q-02 | Add invalid or unsupported IDL | Input that prevents safe managed output fails with source-located `DDSG0001`; deliberately ignored constructs and potentially lossy mappings report diagnostics while generation continues.      |
+| Q-10 | Choose strict validation       | Naming violations produce `DDSG0108` and sources by default; strict mode produces source-located `DDSG0001` and no sources. Paired C150–C162 cases and packed-consumer checks verify both modes. |
 
 ### Compiler maintainability
 

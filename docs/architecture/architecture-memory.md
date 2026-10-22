@@ -5,10 +5,36 @@ authoritative architecture lives in the [arc42 chapters](arc42/index.md),
 contracts, and support policy; edit those sources first, then refresh this file
 and [machine-readable memory](../../.agents/architecture-memory.yaml).
 
-Refreshed from the current arc42 sources on 2026-10-20. Treat the source map
+Refreshed from the current arc42 sources on 2026-10-23. Treat the source map
 below as authoritative; this summary is a retrieval aid, not a replacement.
 
 ## Agent summary
+
+- **Language authority:** OMG IDL and DDS-XTypes define supported construct
+  semantics; RTI captures establish tested compatibility rather than a language
+  ceiling. FINAL and APPENDABLE enum annotations accept both spellings.
+  See [strategy](arc42/04-solution-strategy.md) and
+  [value rules](arc42/08-crosscutting-concepts.md#88-annotation-constant-and-default-semantics).
+
+- **Value pipeline ownership:** Parsing records member annotation syntax and original
+  source offsets. `IdlValueBinder` sequences constants, bounds-dependent values,
+  typedef defaults, and member values; `IdlValueResolver` owns typed rules.
+  Constants and defaults share `IdlScalarValue` variants for integer, boolean,
+  character, floating-point, string, and enum values, retaining width and enum
+  identity. Integer expressions consume only integer values. Structs, unions,
+  and enums share typed prefix parsing with duplicate extensibility checks.
+  String tokens are decoded individually before concatenation and final bound
+  checks. `ScalarValueEmissionPlan` shares managed/native defaults and annotation
+  values across members and typedefs. Union branches share one copy operation.
+  See [building blocks](arc42/05-building-block-view.md) and
+  [binding order](arc42/06-runtime-view.md#61-consumer-build-and-generation).
+
+- **Annotation parsing gap:** Application handling remains split across
+  context-specific readers and does not retain a complete annotation syntax
+  list. Eight of nine focused probes expose order and argument-shape gaps,
+  tracked in [#91](https://github.com/eNeRGy164/wireloom/issues/91).
+  Supported defaults use typed range comparisons; native conversion initializes
+  aggregate elements when activating union array branches.
 
 - **Motivation and goals:** The original RTI generation setup added about 2 GB
   to C# Docker build images, required tools on developer machines, and depended
@@ -35,6 +61,8 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   through MSBuild/Roslyn. Sequence-array mapping is independently file-owned:
   the project default `DdsIdlSequenceArrayMapping=RtiCSharp` can be overridden
   with `SequenceArrayMapping=Idl` on a declaring file, including shared includes.
+  The emission plan applies this mapping to direct sequence-array union branches
+  as well as class members.
   The managed pipeline resolves includes, preprocesses,
   parses, binds, validates, plans emission, and writes generated documents.
   Input that prevents safe managed output fails with source-located diagnostics.
@@ -45,6 +73,26 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   no source, while 7.7.0 preserves it in DynamicType metadata. See [building
   blocks](arc42/05-building-block-view.md)
   and [runtime flow](arc42/06-runtime-view.md).
+- **IDL annotation and value binding:** The parser retains ordered annotation
+  applications, complete type/declarator syntax, unresolved expressions, and
+  source spans until symbol binding. Shared syntax reading preserves quoted
+  delimiters. The binder resolves enum identities, chained constants, member
+  IDs, labels, string bounds, and type-aware defaults before emission. Explicit
+  member IDs override automatic hash IDs and resolve before duplicate checks.
+  Effective IDs continue sequentially after explicit IDs across inheritance;
+  hash IDs leave the sequential counter unchanged. Validation checks inherited
+  and local IDs together, and emission renders the bound IDs.
+  A local default overrides an annotated typedef default; the effective value
+  feeds managed initialization, native initialization, and DynamicType metadata.
+  C163–C172 record exact-profile generation outcomes for these forms. Their RTI
+  C# and C++ reference sources are retained with original notices; Wireloom C# output compiles
+  against both exact RTI API profiles. Focused wire runs pass 144 / 144 exchanges
+  per exact profile across sixteen typed fixtures and all three peers. C164 and
+  C172 use topic wrappers; RTI 7.3.1 reference generation stages byte-identical
+  include files. C171 tests transmitted constructor defaults and explicit values.
+  See
+  [cross-cutting semantics](arc42/08-crosscutting-concepts.md#88-annotation-constant-and-default-semantics)
+  and [corpus coverage](../corpus/FEATURE-COVERAGE.md).
 - **Strict validation:** Defaults to `false`; any generating root enables it
   for the batch. Pure rules evaluate source-mapped identifier facts, and a
   separate policy chooses warning or failure. Interface bodies are parsed
@@ -103,8 +151,15 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   ranges and RTI metadata representation, bounded collection semantics, and
   alias behavior across managed/native/metadata emission. Enum arrays with
   `@default_literal` initialize from that literal in both managed and native
-  output. Check the detailed source and runtime evidence before modifying
-  these contracts.
+  output. Direct fixed-array union branches initialize each aggregate array
+  element, convert each element, and deep-copy aggregate values when copied;
+  direct sequence-array union branches follow the configured mapping. Clearing
+  DynamicData members restores integral and string defaults on 7.7.0. Floating
+  default restoration and DDS
+  deserialization with missing fields remain unverified. On 7.3.1 the member
+  annotation API is absent.
+  Check the detailed source and runtime evidence before modifying these
+  contracts.
 
 ## Repository defaults
 
@@ -126,8 +181,6 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
 - RTI 7.3.1 generated code passes exact NuGet compilation and runtime-contract
   tests; exact-version wire qualification remains outstanding. Intermediate
   and later releases remain unqualified.
-- C136 exposes `ISequence<Scalar>` where RTI C# exposes `ISequence<int>`;
-  investigation is tracked in [issue #62](https://github.com/eNeRGy164/wireloom/issues/62).
 - `05-array-of-sequences` retains the flattened RTI C# shape by default and its
   recorded wire failures. Opt-in `Idl` mode plans arrays of sequence wrappers
   with anonymous sequence metadata; it has runtime coverage on both profiles.
@@ -141,8 +194,8 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
 - RTI 7.3.1 C# RPC transport output for C157/C159 fails compilation; preserve
   the raw failure and track interface/RPC generation separately in
   [issue #75](https://github.com/eNeRGy164/wireloom/issues/75).
-- Compatibility beyond retained cases, host/IDE combinations, and adapted RTI
-  wire fixtures remains unqualified.
+- Compatibility beyond retained cases, interactive IDE behavior, and adapted
+  RTI wire fixtures remains unqualified.
 
 ## Source map
 

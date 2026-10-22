@@ -21,9 +21,6 @@ RTI C++ generation outcomes and source lists are recorded in the [C++ oracle man
 The [LTS runbook](../LTS-PROFILES.md) provides exact-version capture, locked
 restore, export, compilation, runtime, and wire commands. Capture and export
 reports are written under `artifacts/`.
-Case-specific provenance is retained in the
-[strict-validation capture](captures/strict-validation.json) (C150–C156) and
-[interface-validation capture](captures/interface-validation.json) (C157–C162).
 Generated C# compilation is recorded separately from generation acceptance.
 
 ## Reading the comparisons
@@ -62,26 +59,34 @@ corpus case establishes the documented generation or shape result for that
 case; it does not by itself establish runtime or DDS wire compatibility.
 
 - **Primitives and aliases:** primitive values and boundary cases, enums,
-  constants, scoped declarations, and aggregate or scalar typedef chains are
-  represented. The RTI C# oracle comparisons describe generated API shape.
+  enum-valued constants, scoped declarations, and aggregate or scalar typedef
+  chains with resolved defaults are represented. Retained RTI C# oracle
+  comparisons describe generated API shape.
 - **Collections and aggregates:** bounded and unbounded strings and sequences,
-  arrays, nested collection compositions, structs, inheritance, recursion,
-  and value types are represented. C018 direct sequence arrays default to the
+  expression string bounds, arrays, nested collection compositions, structs,
+  inheritance, recursion, and value types are represented. C018 direct sequence arrays default to the
   flattened `RtiCSharp` mapping. Set project property `DdsIdlSequenceArrayMapping`
   or per-file `SequenceArrayMapping` to `Idl` to preserve both IDL layers.
-- **Unions:** primitive and enum discriminators, default branches, aliases,
-  multi-label branches, and collection branches are represented. C137 and C141
+- **Unions:** primitive and enum discriminators, symbolic, scoped, and
+  expression labels, default branches, aliases, multi-label branches, direct
+  fixed arrays, and collection branches are represented. C137 and C141
   require the documented RTI character-binding corrections; unmodified
   RTI C# captures fail compilation. Other reference-peer limitations remain
   recorded per case.
-- **Annotations and evolution:** topic/key/default annotations, member IDs,
-  optional members, extensibility, and data-representation annotations are
+- **Annotations and evolution:** topic, boolean, named, and constant annotation
+  arguments, member IDs, optional members, full and shorthand extensibility,
+  local and module auto-ID policies, and data-representation annotations are
   represented. FlatData-specific C++ layout is outside this matrix.
 - **Preprocessing:** include resolution, command-line defines, conditional
   branches, macros, macro operators, and platform-specific preprocessor probes
   are represented.
 - **Specification validation:** C150–C162 compare default naming warnings
   with strict rejection, plus exact-keyword and legal-name controls.
+- **Grouped IDL coverage:** C163–C172 exercise these annotation, constant,
+  declarator, union, string-bound, and typed-default forms. Exact RTI C# and
+  C++ generation succeeded; reference sources are retained with original notices.
+  Wireloom generated C# compiles against RTI 7.7.0. On 2026-10-22, all
+  144 focused DDS exchanges passed across the three peers for these ten cases.
 - **Restrictions and workarounds:** the negative probes record rejected syntax
   and unsupported constructs. Consult each row for the responsible tool and
   outcome; the detailed index is not a claim that every rejected construct is
@@ -184,6 +189,16 @@ for generated API behavior coverage.
 | **C050** · `11-macros`<br>object and function macros                                                                     | [IDL](../idl/features/11-macros.idl)                               | RTI result: **accepted**<br>C# compile: **compiles**                   | [RTI C# folder](rtiddsgen/csharp/features/11-macros/)                               | —                                                                                                        | [Generated C#](generator/features/11-macros/)                               | —                                                                                                                                                                                                                                                                                                                                                                                  |
 | **C048** · `11-preprocessing`<br>include closure and command-line defines                                                | [IDL](../idl/features/11-preprocessing.idl)                        | RTI result: **accepted**<br>C# compile: **compiles**                   | [RTI C# folder](rtiddsgen/csharp/features/11-preprocessing/)                        | —                                                                                                        | [Generated C#](generator/features/11-preprocessing/)                        | —                                                                                                                                                                                                                                                                                                                                                                                  |
 | **C052** · `11-preprocessor-advanced`<br>`elif`, continuations and advanced macros                                       | [IDL](../idl/features/11-preprocessor-advanced.idl)                | RTI result: **accepted**<br>C# compile: **compiles**                   | [RTI C# folder](rtiddsgen/csharp/features/11-preprocessor-advanced/)                | —                                                                                                        | [Generated C#](generator/features/11-preprocessor-advanced/)                | —                                                                                                                                                                                                                                                                                                                                                                                  |
+| **C163** · `14-extensibility-full`<br>full-form extensibility annotation                                                 | [IDL](../idl/features/14-extensibility-full.idl)                   | RTI result: **accepted**<br>C# compile: **verified**                   | [RTI C#](rtiddsgen/csharp/features/14-extensibility-full/)                          | —                                                                                                        | [Generated C#](generator/features/14-extensibility-full/)                   | 9/9 DDS exchanges pass for full-form extensibility. |
+| **C164** · `14-autoid-scope`<br>module auto-ID scope, reopened modules, and include boundary                             | [IDL](../idl/features/14-autoid-scope.idl)                         | RTI result: **accepted**<br>C# compile: **verified**                   | [RTI C#](rtiddsgen/csharp/features/14-autoid-scope/)                                | —                                                                                                        | [Generated C#](generator/features/14-autoid-scope/)                         | 9/9 DDS exchanges pass using a topic wrapper that combines the canonical declarations. Reference include-file handling is documented in the wire guide. |
+| **C165** · `14-annotation-arguments`<br>boolean, named, and constant annotation arguments                                | [IDL](../idl/features/14-annotation-arguments.idl)                 | RTI result: **accepted**<br>C# compile: **verified**                   | [RTI C#](rtiddsgen/csharp/features/14-annotation-arguments/)                        | —                                                                                                        | [Generated C#](generator/features/14-annotation-arguments/)                 | 18/18 DDS exchanges pass for constructor defaults and explicit values. |
+| **C166** · `14-member-declarators`<br>multiple struct declarators and per-declarator dimensions                          | [IDL](../idl/features/14-member-declarators.idl)                   | RTI result: **accepted**<br>C# compile: **verified**                   | [RTI C#](rtiddsgen/csharp/features/14-member-declarators/)                          | —                                                                                                        | [Generated C#](generator/features/14-member-declarators/)                   | 9/9 DDS exchanges pass, including all array elements. Effective member IDs match RTI: 0, 4, 5, 6. |
+| **C167** · `14-union-label-expressions`<br>symbolic, arithmetic, and hexadecimal union labels                            | [IDL](../idl/features/14-union-label-expressions.idl)              | RTI result: **accepted**<br>C# compile: **verified**                   | [RTI C#](rtiddsgen/csharp/features/14-union-label-expressions/)                     | —                                                                                                        | [Generated C#](generator/features/14-union-label-expressions/)              | 27/27 DDS exchanges pass across symbolic, arithmetic, and hexadecimal branches. |
+| **C168** · `14-union-scoped-enum`<br>scoped enum union labels                                                            | [IDL](../idl/features/14-union-scoped-enum.idl)                    | RTI result: **accepted**<br>C# compile: **verified**                   | [RTI C#](rtiddsgen/csharp/features/14-union-scoped-enum/)                           | —                                                                                                        | [Generated C#](generator/features/14-union-scoped-enum/)                    | 18/18 DDS exchanges pass across both scoped-enum branches. |
+| **C169** · `14-union-array-branch`<br>direct fixed-array union branch                                                    | [IDL](../idl/features/14-union-array-branch.idl)                   | RTI result: **accepted**<br>C# compile: **verified**                   | [RTI C#](rtiddsgen/csharp/features/14-union-array-branch/)                          | —                                                                                                        | [Generated C#](generator/features/14-union-array-branch/)                   | 18/18 DDS exchanges pass across the fixed-array and scalar branches. |
+| **C170** · `14-string-expression-bound`<br>expression-valued string bounds                                               | [IDL](../idl/features/14-string-expression-bound.idl)              | RTI result: **accepted**<br>C# compile: **verified**                   | [RTI C#](rtiddsgen/csharp/features/14-string-expression-bound/)                     | —                                                                                                        | [Generated C#](generator/features/14-string-expression-bound/)              | 9/9 DDS exchanges pass with narrow and wide strings at their declared bounds. |
+| **C171** · `14-typed-defaults`<br>string, floating-point, and typedef defaults                                           | [IDL](../idl/features/14-typed-defaults.idl)                       | RTI result: **accepted**<br>C# compile: **verified**                   | [RTI C#](rtiddsgen/csharp/features/14-typed-defaults/)                              | —                                                                                                        | [Generated C#](generator/features/14-typed-defaults/)                       | 18/18 DDS exchanges pass for constructor-initialized defaults and explicit values. Clearing fields in DynamicData restores the declared whole-number and text defaults. Restoration of floating-point defaults remains unverified. Missing-field DDS deserialization has not been tested. |
+| **C172** · `14-enum-constant`<br>named enum-valued constant                                                              | [IDL](../idl/features/14-enum-constant.idl)                        | RTI result: **accepted**<br>C# compile: **verified**                   | [RTI C#](rtiddsgen/csharp/features/14-enum-constant/)                               | —                                                                                                        | [Generated C#](generator/features/14-enum-constant/)                        | 9/9 DDS exchanges pass using a topic wrapper containing the canonical enum-valued member and union. |
 
 ## Negative cases
 

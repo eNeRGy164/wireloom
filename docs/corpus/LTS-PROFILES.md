@@ -20,7 +20,7 @@ Run commands from the repository root using PowerShell 7.4+, Git, and the SDK
 selected by `global.json`. RTI capture needs WSLC and access to the pinned
 images. Its container uses `cpp` and installs `g++` if needed, requiring package
 access. Use `-DisablePreprocessor` only for IDL without includes or directives.
-Retain RTI-generated notices and review licensing before redistributing oracles.
+Retain generated reference sources with their original notices and provenance.
 
 ## Corpus tests and source exports
 
@@ -64,6 +64,12 @@ including `-unboundedSupport` where specified. It uses `-generateIncludeFiles`
 only on 7.7.0. The C++ FlatData input adaptation is recorded with input hashes.
 Wire-peer workarounds are not applied to oracle captures.
 
+Retain generated dependencies for included IDL as well as root outputs. RTI
+7.3.1 requires generating the included IDL separately; 7.7.0 can place included
+output beside the root output directory. C164 retains its independently
+generated `autoid-hash-include.idl` output in the case's `includes/` directory.
+Its profile manifests record this additional capture and its hashes.
+
 Inspect per-case `outcome`, `exitCode`, and `rtiddsgen.log`: an IDL rejection
 does not fail the capture process. Setup errors do. `capture-request.json`
 records the request; completed evidence consists of `capture.json`,
@@ -72,7 +78,7 @@ records the request; completed evidence consists of `capture.json`,
 Before retaining a capture:
 
 1. Compare output with the matching `<version>/rtiddsgen/` tree and review
-   diagnostics, options, hashes, and licensing.
+   diagnostics, options, hashes, and original notices.
 2. Copy reviewed generated sources into the corpus. Keep capture reports,
    toolchain records, and logs in the artifact bundle.
 3. Update the profile's C# and C++ manifests and feature coverage together.
