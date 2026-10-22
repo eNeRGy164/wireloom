@@ -1,0 +1,8 @@
+#include "features/14-autoid-scope.idl"
+
+struct AutoIdScopeSample {
+    AutoIds::Hashed hashed;
+    AutoIds::Reopened reopened;
+    Sequential sequential;
+    UsesInclude usesInclude;
+};

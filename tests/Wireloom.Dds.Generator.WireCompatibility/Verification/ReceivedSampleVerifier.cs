@@ -12,6 +12,12 @@ internal static class ReceivedSampleVerifier
     internal static void Verify<T>(T expected, T sample, DynamicData? expectedDynamic, PeerOptions options)
     {
         var context = $"{options.CaseId} fixture {options.Fixture}";
+        if (options.CaseId.StartsWith("14-", StringComparison.Ordinal))
+        {
+            ManagedFixtures.VerifyIdlGapFixture(sample!, options);
+            return;
+        }
+
         switch (options.CaseId)
         {
 #if WIRE_COMPATIBILITY_SEQUENCE_ARRAYS

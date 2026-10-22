@@ -32,13 +32,26 @@ internal static class TypedPeer
         if (options.CaseId is not ("09-optional-recursive-array" or "05-unbounded-sequence-aliases"
             or "07-union-char-numeric" or "07-union-char-numeric-255" or "07-union-string-sequence-aliases"
             or "09-defaults-ranges" or "01-boundaries" or "01-full-widths"
-            or "10-default-literal-enum-array" or "05-array-of-sequences-idl"))
+            or "10-default-literal-enum-array" or "05-array-of-sequences-idl"
+            or "14-extensibility-full" or "14-autoid-scope" or "14-annotation-arguments"
+            or "14-member-declarators" or "14-union-label-expressions" or "14-union-scoped-enum"
+            or "14-union-array-branch" or "14-string-expression-bound" or "14-typed-defaults"
+            or "14-enum-constant"))
         {
             fixture = FixtureCatalog.CreateFixture(typeSupport.DynamicType, options.CaseId, options.Fixture);
         }
 
         using var expectedDynamic = fixture;
         var expected = ManagedFixtures.Create(options, serializer, expectedDynamic);
+        if (options.CaseId.StartsWith("14-", StringComparison.Ordinal))
+        {
+            ManagedFixtures.VerifyIdlGapFixture(expected!, options);
+        }
+
+        if (options.FixtureOnly)
+        {
+            return;
+        }
 
         var participantQos = DomainParticipantFactory.Instance.DefaultParticipantQos;
         if (options.CaseId == "09-optional-recursive-array")

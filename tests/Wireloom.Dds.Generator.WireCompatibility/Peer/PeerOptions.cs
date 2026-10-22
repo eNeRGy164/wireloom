@@ -3,7 +3,14 @@
 namespace Wireloom.Dds.Generator.WireCompatibility;
 
 /// <summary>Describes the corpus case, generated type, topic, fixture, and process role.</summary>
-internal sealed record PeerOptions(string CaseId, string TypeName, string TopicName, string RuntimeVersion, string Fixture, PeerRole Role)
+internal sealed record PeerOptions(
+    string CaseId,
+    string TypeName,
+    string TopicName,
+    string RuntimeVersion,
+    string Fixture,
+    PeerRole Role,
+    bool FixtureOnly)
 {
     /// <summary>Reads the option/value pairs supplied by the matrix runner.</summary>
     public static PeerOptions Parse(string[] args)
@@ -33,7 +40,8 @@ internal sealed record PeerOptions(string CaseId, string TypeName, string TopicN
             values["topic"],
             values["runtime-version"],
             values.GetValueOrDefault("fixture", "default"),
-            role);
+            role,
+            bool.Parse(values.GetValueOrDefault("fixture-only", "false")));
     }
 }
 

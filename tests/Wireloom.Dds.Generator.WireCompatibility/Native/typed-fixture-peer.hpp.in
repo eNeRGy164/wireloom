@@ -17,7 +17,7 @@
 #define WIRELOOM_SET_MEMBER_ON(object, member, value) object.member = value
 #define WIRELOOM_BOUNDED_SEQUENCE ::omg::types::bounded_sequence
 #endif
-#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES) || defined(WIRELOOM_TYPED_DEFAULT_LITERAL_ENUM_ARRAY) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS)
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES) || defined(WIRELOOM_TYPED_DEFAULT_LITERAL_ENUM_ARRAY) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS) || defined(WIRELOOM_TYPED_IDL_GAPS_FIXTURE)
 // RTI's generated DynamicData API omits some string template instantiations.
 // Use RTI-generated typed C++ endpoints for these fixtures and compare the
 // complete generated sample value at the reader.
@@ -30,6 +30,174 @@ static int run_typed_fixture_peer(
     const std::string &fixture)
 {
     DdsType expected;
+#ifdef WIRELOOM_TYPED_C163_EXTENSIBILITY
+    if (case_id == "14-extensibility-full") {
+        WIRELOOM_SET_TYPED_MEMBER(value, 16301);
+        if (WIRELOOM_TYPED_MEMBER(expected, value) != 16301) {
+            throw std::runtime_error("C163 fixture value did not retain its explicit expected value");
+        }
+    }
+#endif
+#ifdef WIRELOOM_TYPED_C164_AUTOID_SCOPE
+    if (case_id == "14-autoid-scope") {
+        auto &hashed = WIRELOOM_TYPED_MEMBER(expected, hashed);
+        WIRELOOM_SET_TYPED_MEMBER_ON(hashed, first, 16401);
+        WIRELOOM_SET_TYPED_MEMBER_ON(hashed, second, 16402);
+        auto &reopened = WIRELOOM_TYPED_MEMBER(expected, reopened);
+        WIRELOOM_SET_TYPED_MEMBER_ON(reopened, first, 16411);
+        WIRELOOM_SET_TYPED_MEMBER_ON(reopened, second, 16412);
+        auto &sequential = WIRELOOM_TYPED_MEMBER(expected, sequential);
+        WIRELOOM_SET_TYPED_MEMBER_ON(sequential, first, 16421);
+        WIRELOOM_SET_TYPED_MEMBER_ON(sequential, second, 16422);
+        auto &uses_include = WIRELOOM_TYPED_MEMBER(expected, usesInclude);
+        auto &included = WIRELOOM_TYPED_MEMBER(uses_include, included);
+        WIRELOOM_SET_TYPED_MEMBER_ON(included, first, 16431);
+        WIRELOOM_SET_TYPED_MEMBER_ON(included, second, 16432);
+        if (WIRELOOM_TYPED_MEMBER(hashed, first) != 16401
+            || WIRELOOM_TYPED_MEMBER(reopened, second) != 16412
+            || WIRELOOM_TYPED_MEMBER(sequential, first) != 16421
+            || WIRELOOM_TYPED_MEMBER(included, second) != 16432) {
+            throw std::runtime_error("C164 typed fixture values do not match the independent scope expectations");
+        }
+    }
+#endif
+#ifdef WIRELOOM_TYPED_C165_ANNOTATION_ARGUMENTS
+    if (case_id == "14-annotation-arguments") {
+        if (fixture == "default") {
+            if (WIRELOOM_TYPED_MEMBER(expected, plain) != 0
+                || WIRELOOM_TYPED_MEMBER(expected, selected) != 42) {
+                throw std::runtime_error("C165 constructor values do not match the annotation defaults");
+            }
+        } else if (fixture == "non-default") {
+            WIRELOOM_SET_TYPED_MEMBER(plain, 16501);
+            WIRELOOM_SET_TYPED_MEMBER(selected, 16502);
+        } else {
+            throw std::runtime_error("Unknown C165 annotation fixture: " + fixture);
+        }
+    }
+#endif
+#ifdef WIRELOOM_TYPED_C166_MEMBER_DECLARATORS
+    if (case_id == "14-member-declarators") {
+        WIRELOOM_SET_TYPED_MEMBER(first, 16601);
+        WIRELOOM_SET_TYPED_MEMBER(second, 16602);
+        auto &numbers = WIRELOOM_TYPED_MEMBER(expected, numbers);
+        numbers[0] = 16611;
+        numbers[1] = 16612;
+        auto &matrix = WIRELOOM_TYPED_MEMBER(expected, matrix);
+        matrix[0][0] = 16621;
+        matrix[0][1] = 16622;
+        matrix[0][2] = 16623;
+        matrix[1][0] = 16631;
+        matrix[1][1] = 16632;
+        matrix[1][2] = 16633;
+    }
+#endif
+#ifdef WIRELOOM_TYPED_C167_UNION_LABELS
+    if (case_id == "14-union-label-expressions") {
+        if (fixture == "symbolic") {
+            expected.symbolic(16701);
+            if (expected._d() != 42) {
+                throw std::runtime_error("C167 symbolic label did not select discriminator 42");
+            }
+        } else if (fixture == "arithmetic") {
+            expected.arithmetic(16702);
+            if (expected._d() != 4) {
+                throw std::runtime_error("C167 arithmetic label did not select discriminator 4");
+            }
+        } else if (fixture == "hexadecimal") {
+            expected.hexadecimal(16703);
+            if (expected._d() != 16) {
+                throw std::runtime_error("C167 hexadecimal label did not select discriminator 16");
+            }
+        } else {
+            throw std::runtime_error("Unknown C167 union label fixture: " + fixture);
+        }
+    }
+#endif
+#ifdef WIRELOOM_TYPED_C168_SCOPED_ENUM
+    if (case_id == "14-union-scoped-enum") {
+        if (fixture == "enum-selected") {
+            expected.selected(16801);
+            if (expected._d() != Choice::SECOND) {
+                throw std::runtime_error("C168 enum constant did not select Choice::SECOND");
+            }
+        } else if (fixture == "enum-first") {
+            expected.first(16802);
+            if (expected._d() != Choice::FIRST) {
+                throw std::runtime_error("C168 enum label did not select Choice::FIRST");
+            }
+        } else {
+            throw std::runtime_error("Unknown C168 enum fixture: " + fixture);
+        }
+    }
+#endif
+#ifdef WIRELOOM_TYPED_C169_UNION_ARRAY
+    if (case_id == "14-union-array-branch") {
+        if (fixture == "array-branch") {
+            auto &values = expected.values();
+            values[0][0] = 16901;
+            values[0][1] = 16902;
+            values[0][2] = 16903;
+            values[1][0] = 16911;
+            values[1][1] = 16912;
+            values[1][2] = 16913;
+            if (expected._d() != 0 || values[1][2] != 16913) {
+                throw std::runtime_error("C169 fixed array fixture did not select or populate its array branch");
+            }
+        } else if (fixture == "scalar-branch") {
+            expected.scalar(16921);
+            if (expected._d() != 1 || expected.scalar() != 16921) {
+                throw std::runtime_error("C169 scalar branch fixture selected the wrong union member");
+            }
+        } else {
+            throw std::runtime_error("Unknown C169 union array fixture: " + fixture);
+        }
+    }
+#endif
+#ifdef WIRELOOM_TYPED_C170_STRING_BOUND
+    if (case_id == "14-string-expression-bound") {
+        WIRELOOM_SET_TYPED_STRING(text, "12345");
+        WIRELOOM_SET_TYPED_STRING(wideText, L"ABCDEF");
+        if (WIRELOOM_TYPED_MEMBER(expected, text).size() != 5
+            || WIRELOOM_TYPED_MEMBER(expected, wideText).size() != 6) {
+            throw std::runtime_error("C170 expression-bound string fixtures have incorrect lengths");
+        }
+    }
+#endif
+#ifdef WIRELOOM_TYPED_C171_DEFAULTS
+    if (case_id == "14-typed-defaults") {
+        if (fixture == "default") {
+            if (WIRELOOM_TYPED_MEMBER(expected, inherited) != 7
+                || WIRELOOM_TYPED_MEMBER(expected, overridden) != 9
+                || WIRELOOM_TYPED_MEMBER(expected, text) != "alias"
+                || WIRELOOM_TYPED_MEMBER(expected, ratio) != 1.5
+                || WIRELOOM_TYPED_MEMBER(expected, single) != 0.0f) {
+                throw std::runtime_error("C171 generated constructor defaults differ from the independent IDL values");
+            }
+        } else if (fixture == "non-default") {
+            WIRELOOM_SET_TYPED_MEMBER(inherited, 17101);
+            WIRELOOM_SET_TYPED_MEMBER(overridden, 17102);
+            WIRELOOM_SET_TYPED_STRING(text, "explicit");
+            WIRELOOM_SET_TYPED_MEMBER(ratio, 2.25);
+            WIRELOOM_SET_TYPED_MEMBER(single, -3.5f);
+        } else {
+            throw std::runtime_error("Unknown C171 defaults fixture: " + fixture);
+        }
+    }
+#endif
+#ifdef WIRELOOM_TYPED_C172_ENUM_CONSTANT
+    if (case_id == "14-enum-constant") {
+        auto &value = WIRELOOM_TYPED_MEMBER(expected, value);
+        WIRELOOM_SET_TYPED_MEMBER_ON(value, color, Color::GREEN);
+        auto &choice = WIRELOOM_TYPED_MEMBER(expected, choice);
+        choice.selected(17201);
+        if (WIRELOOM_TYPED_MEMBER(value, color) != Color::GREEN
+            || choice._d() != Color::GREEN
+            || choice.selected() != 17201) {
+            throw std::runtime_error("C172 enum constant did not match the expected enum value and union label");
+        }
+    }
+#endif
 #ifdef WIRELOOM_TYPED_SEQUENCE_ARRAYS
     if (case_id == "05-array-of-sequences-idl") {
         auto &values = WIRELOOM_TYPED_MEMBER(expected, values);

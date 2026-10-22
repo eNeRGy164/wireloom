@@ -1,0 +1,6 @@
+#include "features/14-enum-constant.idl"
+
+struct EnumConstantSample {
+    EnumConstant value;
+    EnumUnion choice;
+};

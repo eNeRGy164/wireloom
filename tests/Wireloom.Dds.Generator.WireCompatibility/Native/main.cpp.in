@@ -123,6 +123,16 @@ int main(int argc, char **argv)
                 participant, role, topic_name, timeout_seconds, case_id, fixture);
         }
 #endif
+#ifdef WIRELOOM_TYPED_IDL_GAPS_FIXTURE
+        if (case_id == "14-extensibility-full" || case_id == "14-autoid-scope"
+            || case_id == "14-annotation-arguments" || case_id == "14-member-declarators"
+            || case_id == "14-union-label-expressions" || case_id == "14-union-scoped-enum"
+            || case_id == "14-union-array-branch" || case_id == "14-string-expression-bound"
+            || case_id == "14-typed-defaults" || case_id == "14-enum-constant") {
+            return run_typed_fixture_peer(
+                participant, role, topic_name, timeout_seconds, case_id, fixture);
+        }
+#endif
         dds::topic::Topic<DynamicData> topic(participant, topic_name, dynamic_type);
         // The fixture is shared conceptually with the C# peer: writers send it,
         // and readers compare the received DynamicData against this same

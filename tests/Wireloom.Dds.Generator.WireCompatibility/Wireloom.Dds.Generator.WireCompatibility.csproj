@@ -40,6 +40,19 @@
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '07-union-string-sequence-aliases'">
     <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_UNION_STRING_SEQUENCE_ALIASES</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-extensibility-full' or '$(WireCompatibilityCase)' == '14-autoid-scope' or '$(WireCompatibilityCase)' == '14-annotation-arguments' or '$(WireCompatibilityCase)' == '14-member-declarators' or '$(WireCompatibilityCase)' == '14-union-label-expressions' or '$(WireCompatibilityCase)' == '14-union-scoped-enum' or '$(WireCompatibilityCase)' == '14-union-array-branch' or '$(WireCompatibilityCase)' == '14-string-expression-bound' or '$(WireCompatibilityCase)' == '14-typed-defaults' or '$(WireCompatibilityCase)' == '14-enum-constant'">
+    <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_IDL_GAPS</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-extensibility-full'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C163</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-autoid-scope'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C164</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-annotation-arguments'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C165</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-member-declarators'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C166</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-union-label-expressions'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C167</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-union-scoped-enum'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C168</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-union-array-branch'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C169</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-string-expression-bound'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C170</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-typed-defaults'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C171</DefineConstants></PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-enum-constant'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C172</DefineConstants></PropertyGroup>
 
   <ItemGroup>
     <!-- The RTI control probe is a nested project. Do not compile its sources or generated obj files here. -->
@@ -63,9 +76,11 @@
 
   <ItemGroup>
     <DdsIdl Include="$(WireCompatibilityIdl)"
-            Condition="'$(WireCompatibilityCase)' != '02-multiple' and '$(WireCompatibilityCase)' != '03-enum-values-prefix' and '$(WireCompatibilityCase)' != '03-enum-values-explicit'" />
+            Condition="'$(WireCompatibilityCase)' != '02-multiple' and '$(WireCompatibilityCase)' != '03-enum-values-prefix' and '$(WireCompatibilityCase)' != '03-enum-values-explicit' and '$(WireCompatibilityCase)' != '14-autoid-scope' and '$(WireCompatibilityCase)' != '14-enum-constant'" />
     <DdsIdl Include="IdlWrappers\$(WireCompatibilityCase).idl"
             Condition="'$(WireCompatibilityCase)' == '02-multiple' or '$(WireCompatibilityCase)' == '03-enum-values-prefix' or '$(WireCompatibilityCase)' == '03-enum-values-explicit' or '$(WireCompatibilityCase)' == '04-unbounded-string-aliases' or '$(WireCompatibilityCase)' == '05-unbounded-sequence-aliases' or '$(WireCompatibilityCase)' == '04-string-alias-chains' or '$(WireCompatibilityCase)' == '07-union-string-sequence-aliases'" />
+    <DdsIdl Include="IdlWrappers\14-autoid-scope-topic.idl" Condition="'$(WireCompatibilityCase)' == '14-autoid-scope'" />
+    <DdsIdl Include="IdlWrappers\14-enum-constant-topic.idl" Condition="'$(WireCompatibilityCase)' == '14-enum-constant'" />
     <DdsIdl Update="..\..\docs\corpus\idl\features\11-preprocessing.idl"
             Condition="'$(WireCompatibilityCase)' == '11-preprocessing'"
             Defines="CORPUS_CAPTURE_DEFINE" />

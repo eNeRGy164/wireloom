@@ -9,11 +9,28 @@ endif()
 if(WIRELOOM_RTI_7_3_1)
     add_compile_definitions(WIRELOOM_RTI_7_3_1)
 endif()
+foreach(fixture_define IN ITEMS
+    WIRELOOM_TYPED_C163_EXTENSIBILITY
+    WIRELOOM_TYPED_C164_AUTOID_SCOPE
+    WIRELOOM_TYPED_C165_ANNOTATION_ARGUMENTS
+    WIRELOOM_TYPED_C166_MEMBER_DECLARATORS
+    WIRELOOM_TYPED_C167_UNION_LABELS
+    WIRELOOM_TYPED_C168_SCOPED_ENUM
+    WIRELOOM_TYPED_C169_UNION_ARRAY
+    WIRELOOM_TYPED_C170_STRING_BOUND
+    WIRELOOM_TYPED_C171_DEFAULTS
+    WIRELOOM_TYPED_C172_ENUM_CONSTANT)
+    if(${fixture_define})
+        add_compile_definitions(${fixture_define})
+        add_compile_definitions(WIRELOOM_TYPED_IDL_GAPS_FIXTURE)
+    endif()
+endforeach()
 
 find_package(RTIConnextDDS REQUIRED)
 
 file(GLOB_RECURSE RTI_GENERATED_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cxx")
 add_executable(wire-peer main.cpp ${RTI_GENERATED_SOURCES})
+target_include_directories(wire-peer PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_features(wire-peer PRIVATE cxx_std_11)
 target_link_libraries(wire-peer PRIVATE RTIConnextDDS::cpp2_api)
 if(WIRELOOM_CHAR8_LITERAL_FIXTURE)
