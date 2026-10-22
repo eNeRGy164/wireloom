@@ -87,8 +87,9 @@ not a generated-code coverage metric or a DDS wire-compatibility claim.
 
 Boundaries and interpretation:
 
-- Null copies retain member initializers; constructor-only IDL defaults do not
-  run. Getter-only sequences are mutated through their containers.
+- Null copies retain explicit and inherited IDL defaults and member initializers.
+  Collection and aggregate allocations made only by a parameterless constructor
+  do not run. Getter-only sequences are mutated through their containers.
 - RTI rejects 64-bit union discriminators before code generation. Unbounded
   typedefs use the effective limits of 100 sequence elements and 255 string
   bytes/code units.
@@ -111,6 +112,7 @@ and allocation/key combinations reported by the tests.
 
 - `ScalarSpecs`, `ScalarEqualitySpecs`, `CollectionSpecs`, `CollectionEqualitySpecs`
 - `EnumArrayDefaultSpecs`
+- `TypedDefaultSpecs` (null-copy defaults, IEEE-754 signed zero, and cleared metadata members)
 - `InheritanceSpecs`, `AggregateNativeSpecs`
 
 ### Unions
@@ -130,7 +132,7 @@ and allocation/key combinations reported by the tests.
 - `AggregateNativeSpecs`, `ScalarAliasNativeSpecs`, `StringAliasChainNativeSpecs`
 - `AggregateAliasNativeSpecs`, `CollectionAliasNativeSpecs`, `CollectionAliasMemberSpecs`, `StringArrayAliasNativeSpecs`
 - `UnionNativeSpecs`, `StringSequenceUnionSpecs`, `DiscriminatorSpecs`, `UnionAliasSpecs`
-- `EnumArrayDefaultNativeSpecs`
+- `EnumArrayDefaultNativeSpecs` (including selected union arrays on both RTI profiles)
 - `AggregateNativeSpecs.FiltersKeysInEachDirection`, `NestedKeySpecs`, and alias/union native theories
 
 ### TypeSupport and recursive startup

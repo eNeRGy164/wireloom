@@ -271,7 +271,7 @@ public sealed class IdlValidationSpecs
     [Theory]
     [InlineData("struct Bad { string<0> value; };", "String bound")]
     [InlineData("#error no\nstruct Bad { int32 value; };", "Preprocessor error")]
-    [InlineData("@mutable enum Kind { A };", "Unsupported IDL syntax near '@mutable'")]
+    [InlineData("@mutable enum Kind { A };", "DDS-XTypes enumeration types support FINAL or APPENDABLE")]
     public void ReportsUnsupportedSyntaxAtItsOriginalSource(string source, string expectedDiagnostic)
     {
         // Arrange
@@ -635,7 +635,7 @@ public sealed class IdlValidationSpecs
     [Theory]
     [InlineData("struct Broken { string<0> value; };", "String bound")]
     [InlineData("struct Broken { wstring<invalid> value; };", "String bound")]
-    [InlineData("struct Broken { wstring<-1> value; };", "Unsupported member")]
+    [InlineData("struct Broken { wstring<-1> value; };", "String bound")]
     public void ReportsInvalidStringBounds(string source, string expectedDiagnostic)
     {
         // Arrange
@@ -650,7 +650,7 @@ public sealed class IdlValidationSpecs
 
     [Theory]
     [InlineData("struct Broken { @key string<0> name; };", "String bound")]
-    [InlineData("struct Broken { @key string<-1> name; };", "Unsupported member")]
+    [InlineData("struct Broken { @key string<-1> name; };", "String bound")]
     public void ReportsInvalidStringKeyBounds(string source, string expectedDiagnostic)
     {
         // Arrange
@@ -877,6 +877,45 @@ public sealed class IdlValidationSpecs
         exception.Message.ShouldContain("Unknown default enum value");
     }
 
+    [Theory]
+    [InlineData("struct Broken { @default(\"long\") long value; };", "Invalid default expression")]
+    [InlineData("struct Broken { @default(\"toolong\") string<3> value; };", "exceeds the effective bound")]
+    [InlineData("struct Broken { @default(1e100) float value; };", "outside the range of float")]
+    [InlineData("struct Broken { @min(0) string<8> value; };", "String members support @default but not @min")]
+    [InlineData("@default(1) @default(2) typedef long Broken;", "Duplicate @default annotation")]
+    [InlineData("@default(1) typedef sequence<long> Broken;", "only supported on scalar and string typedefs")]
+    [InlineData("@default(3) struct Broken { long value; };", "only supported on typedef declarations and members")]
+    public void RejectsInvalidTypedDefaults(string idl, string expectedMessage)
+    {
+        // Arrange
+        var input = Input("invalid-typed-default.idl", idl);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain(expectedMessage);
+    }
+
+    [Theory]
+    [InlineData("union Choice switch(long) { case 0: long value; };", "default-before-union.idl")]
+    [InlineData("const long Selected = 4;", "default-before-const.idl")]
+    [InlineData("enum Kind { Zero };", "default-before-enum.idl")]
+    public void RejectsTypedefDefaultBeforeNonTypedefInsteadOfApplyingItToFollowingTypedef(string declaration, string fileName)
+    {
+        // Arrange
+        var input = Input(
+            fileName,
+            $"@default(3) {declaration} typedef long Later;");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("@default is only supported on typedef declarations and members");
+        exception.Offset.ShouldBe(input.Text.IndexOf("@default", StringComparison.Ordinal));
+    }
+
     [Fact]
     public void RejectsInvalidMemberRangeExpressions()
     {
@@ -929,7 +968,7 @@ public sealed class IdlValidationSpecs
     [InlineData("struct Payload { long value; }; union Choice switch(Payload) { case 0: long value; };", "Unsupported union discriminator type")]
     [InlineData("union Choice switch(float) { case 0: long value; };", "Unsupported union discriminator type")]
     [InlineData("typedef float Kind; union Choice switch(Kind) { case 0: long value; };", "Unsupported union discriminator type")]
-    [InlineData("union Choice switch(char) { case '\\a': long value; };", "Unknown union discriminator label")]
+    [InlineData("union Choice switch(char) { case '\\e': long value; };", "Unknown union discriminator label")]
     [InlineData("union Choice switch(char) { case L'a': long value; };", "Unknown union discriminator label")]
     [InlineData("union Choice switch(long) { case 1: sequence<Missing> values; };", "Unknown union collection element type")]
     [InlineData("union Choice switch(long) { case 1: Missing value; };", "Unknown union branch type")]
@@ -980,8 +1019,8 @@ public sealed class IdlValidationSpecs
     [InlineData("char", "'\\x7e'", 126)]
     [InlineData("char", "'\\xFF'", -1)]
     [InlineData("Kind", "'\\xFF'", -1)]
-    [InlineData("wchar", "L'\\xFFFF'", 65535)]
-    [InlineData("wchar", "'\\x100'", 256)]
+    [InlineData("wchar", "L'\\uFFFF'", 65535)]
+    [InlineData("wchar", "L'\\u0100'", 256)]
     public void ResolvesHexadecimalCharacterUnionLabels(string discriminator, string label, int expectedMetadataLabel)
     {
         // Arrange
@@ -999,7 +1038,7 @@ public sealed class IdlValidationSpecs
 
     /// <summary>Rejects hexadecimal character escapes outside the discriminator's supported range.</summary>
     [Theory]
-    [InlineData("char", "'\\x100'", "outside the range of char")]
+    [InlineData("char", "'\\x100'", "Unknown union discriminator label")]
     [InlineData("wchar", "L'\\x10000'", "Unknown union discriminator label")]
     [InlineData("wchar", "L'\\x100000000'", "Unknown union discriminator label")]
     public void RejectsOutOfRangeHexadecimalCharacterUnionLabels(string discriminator, string label, string expectedMessage)

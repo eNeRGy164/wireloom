@@ -10,6 +10,77 @@ namespace Wireloom.Generation.Tests;
 
 public sealed class GeneratorSpecs
 {
+    [Theory]
+    [InlineData("const long long Wide = 7; typedef long Count; const Count Narrow = Wide;")]
+    [InlineData("const double Wide = 1.5; typedef float Ratio; const Ratio Narrow = Wide;")]
+    [InlineData("const unsigned long Wide = 7; const short Narrow = Wide + 1;")]
+    [InlineData("const long long Wide = 7; const int8 Narrow = Wide;")]
+    [InlineData("const long long Wide = 7; const uint16 Narrow = Wide;")]
+    [InlineData("const unsigned long long Wide = 7; typedef octet Byte; const Byte Narrow = Wide;")]
+    [InlineData("const long long Wide = 2147483647; const long Narrow = Wide + 1 - 1;")]
+    [InlineData("@default(L'\\uFFFF') typedef wchar High; typedef High HighChain; struct Sample { @default(L'\\u8000') wchar value; HighChain inherited; }; ")]
+    public void CompilesBoundConstantConversionsAndFullWidthCharacterDefaults(string input)
+    {
+        // Arrange
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldBeEmpty();
+        result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("\n", false)]
+    [InlineData("\r\n", false)]
+    [InlineData("\r", true)]
+    [InlineData("\u0085", true)]
+    [InlineData("\u2028", true)]
+    [InlineData("\u2029", true)]
+    [InlineData("\t", true)]
+    [InlineData("\\n", true)]
+    public void HandlesUnitControlCharactersWithoutGeneratingInvalidCSharp(string separator, bool generatesSources)
+    {
+        // Arrange
+        var input = $$"""
+            @language_binding(PLAIN)
+            @transfer_mode(INBAND)
+            module Sample {
+                @autoid(HASH) @appendable struct Value {
+                    @key @hashid("stable_id")long id;
+                    @min(0) @max(100) @default(50) long count;
+                    @range(min = -32, max = 31) @unit("mete{{separator}}s") long distance;
+                    @resolve_name(false) string<16> name;
+                    @external string<16> externalName;
+                };
+            };
+            """;
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ShouldBeEmpty();
+
+        if (!generatesSources)
+        {
+            result.Diagnostics.ShouldHaveSingleItem().Id.ShouldBe("DDSG0001");
+            result.Output.SyntaxTrees.Count().ShouldBe(1);
+            return;
+        }
+
+        result.Diagnostics.ShouldBeEmpty();
+        result.Output.SyntaxTrees.SelectMany(tree => tree.GetRoot().DescendantTokens())
+            .ShouldContain(token => token.IsKind(SyntaxKind.StringLiteralToken) && token.ValueText == $"mete{separator}s");
+    }
+
     [Fact]
     public void GeneratesSourcesWhenRuntimeAndMetadataAreAvailable()
     {
@@ -31,6 +102,60 @@ public sealed class GeneratorSpecs
         result.Diagnostics.ShouldBeEmpty();
         result.Output.SyntaxTrees.Any(t => t.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeTrue();
         result.Output.SyntaxTrees.Count().ShouldBeGreaterThan(1);
+    }
+
+    [Fact]
+    public void CompilesTypedDefaultsAfterBindingForwardAliasesAndConstants()
+    {
+        // Arrange
+        const string input =
+            """
+            module TypedDefaults {
+                const long Selected = 7;
+                enum Kind { First, Second };
+                const Kind Chosen = Second;
+                @default(Selected) typedef Later Base;
+                typedef long Later;
+                @default(Chosen) typedef Kind EnumValue;
+                @default(TRUE) typedef boolean Enabled;
+                @default(FALSE) typedef boolean Disabled;
+                @default('\n') typedef char LineFeed;
+                @default(L'\u03a9') typedef wchar Omega;
+                @default(L"wide") typedef wstring<8> WideText;
+                struct Sample {
+                    Base number;
+                    EnumValue kind;
+                    Enabled enabled;
+                    Disabled disabled;
+                    LineFeed lineFeed;
+                    Omega omega;
+                    WideText text;
+                };
+            };
+            """;
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+
+        // Act
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+        var generatedSources = string.Concat(result.Output.SyntaxTrees.Select(tree => tree.GetText().ToString()));
+
+        // Assert
+        result.Diagnostics.ShouldBeEmpty();
+        result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ShouldBeEmpty();
+        generatedSources.ShouldContain("Value = 7;");
+        generatedSources.ShouldContain("Value = (Kind)(1);");
+        generatedSources.ShouldContain("Value = true;");
+        generatedSources.ShouldContain("Value = false;");
+        generatedSources.ShouldContain("Value = '\\n';");
+        generatedSources.ShouldContain("Value = 'Ω';");
+        generatedSources.ShouldContain("Value = \"wide\";");
+        generatedSources.ShouldContain("enabled = true;");
+        generatedSources.ShouldContain("disabled = false;");
+        generatedSources.ShouldContain("lineFeed = '\\n';");
+        generatedSources.ShouldContain("omega = 'Ω';");
+        generatedSources.ShouldContain("text = \"wide\";");
     }
 
     [Fact]
@@ -984,6 +1109,61 @@ public sealed class GeneratorSpecs
             naming.Severity.ShouldBe(DiagnosticSeverity.Warning);
             result.Output.SyntaxTrees.Count().ShouldBeGreaterThan(1);
         }
+    }
+
+    [Fact]
+    public void DefaultAggregateArrayUnionBranchInitializesAndCopiesElementsIndependently()
+    {
+        // Arrange
+        const string input =
+            """
+            module DefaultAggregateArray {
+                struct Item { long value; };
+                union Choice switch(long) {
+                    case 1: long number;
+                    default: Item items[2];
+                };
+            };
+            """;
+        var result = Run(
+            input,
+            LanguageVersion.CSharp12,
+            new Dictionary<string, string> { ["Generate"] = "true" },
+            includeRuntime: true,
+            assemblyName: "DefaultAggregateArrayUnionBranch");
+        var errors = result.Output.GetDiagnostics(TestContext.Current.CancellationToken)
+            .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        errors.ShouldBeEmpty();
+
+        // Act
+        using var generatedAssemblyStream = new MemoryStream();
+        var emitResult = result.Output.Emit(generatedAssemblyStream, cancellationToken: TestContext.Current.CancellationToken);
+        emitResult.Success.ShouldBeTrue(string.Join(Environment.NewLine, emitResult.Diagnostics));
+        generatedAssemblyStream.Position = 0;
+        var generatedAssembly = System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromStream(generatedAssemblyStream, null);
+        var choiceType = generatedAssembly.GetType("DefaultAggregateArray.Choice", throwOnError: true)!;
+        var itemType = generatedAssembly.GetType("DefaultAggregateArray.Item", throwOnError: true)!;
+        var valueProperty = itemType.GetProperty("value")!;
+        var itemsProperty = choiceType.GetProperty("items")!;
+        var choice = Activator.CreateInstance(choiceType)!;
+        var items = (Array)itemsProperty.GetValue(choice)!;
+        items.Length.ShouldBe(2);
+        var originalItem = items.GetValue(0)!;
+        originalItem.ShouldNotBeNull();
+        valueProperty.SetValue(originalItem, 17);
+
+        var copy = Activator.CreateInstance(choiceType, [choice])!;
+        var copiedItems = (Array)itemsProperty.GetValue(copy)!;
+        var copiedItem = copiedItems.GetValue(0)!;
+
+        // Assert
+        copiedItems.ShouldNotBeSameAs(items);
+        copiedItem.ShouldNotBeSameAs(originalItem);
+        valueProperty.GetValue(copiedItem).ShouldBe(17);
+
+        valueProperty.SetValue(originalItem, 23);
+        valueProperty.GetValue(copiedItem).ShouldBe(17);
     }
 
     private static GeneratorRunResult Run(

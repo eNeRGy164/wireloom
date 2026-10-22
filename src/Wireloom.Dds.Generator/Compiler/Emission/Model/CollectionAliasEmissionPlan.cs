@@ -1,4 +1,5 @@
 using Wireloom.Compiler.Emission.Planning;
+using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Model;
@@ -12,13 +13,22 @@ internal sealed class CollectionAliasEmissionPlan(
     string? elementNativeType = null,
     int? sequenceBound = null,
     RtiApiProfile? profile = null,
-    bool isSequenceArrayElement = false)
+    bool isSequenceArrayElement = false,
+    IdlMemberValueMetadata? valueMetadata = null)
 {
     /// <summary>Gets whether the wrapper is generated for an anonymous sequence-array element.</summary>
     internal bool IsSequenceArrayElement { get; } = isSequenceArrayElement;
 
     private RtiApiProfile Profile { get; } = profile ?? RtiApiProfile.Rtiddsgen470;
     public EmissionTypePlan ElementPlan { get; } = elementPlan;
+    /// <summary>Gets the effective typed default resolved for this alias.</summary>
+    public IdlMemberValueMetadata? ValueMetadata { get; } = valueMetadata;
+
+    /// <summary>Gets the C# literal used to initialize an alias value, or null when no default is declared.</summary>
+    public string? ManagedDefaultLiteral => IsCollection ? null : ScalarValue.ManagedDefaultLiteral;
+
+    /// <summary>Gets the shared scalar initialization and annotation decisions.</summary>
+    internal ScalarValueEmissionPlan ScalarValue { get; } = new(elementPlan, valueMetadata);
 
     public string ElementType => ElementPlan.CSharpType;
 

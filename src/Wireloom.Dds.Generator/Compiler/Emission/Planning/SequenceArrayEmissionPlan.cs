@@ -19,9 +19,34 @@ internal sealed class SequenceArrayEmissionPlan
     {
         var elements = new List<SequenceArrayElementPlan>();
 
-        foreach (var declaration in declarations.OfType<IdlClassDeclaration>())
+        foreach (var declaration in declarations)
         {
-            foreach (var member in declaration.Fields)
+            string declarationName;
+            string? declarationNamespace;
+            IEnumerable<IdlMember> members;
+            string sourceIdlFileName;
+
+            switch (declaration)
+            {
+                case IdlClassDeclaration classDeclaration:
+                    declarationName = classDeclaration.Name;
+                    declarationNamespace = classDeclaration.Namespace;
+                    members = classDeclaration.Fields;
+                    sourceIdlFileName = classDeclaration.SourceIdlFileName;
+                    break;
+
+                case IdlUnionDeclaration unionDeclaration:
+                    declarationName = unionDeclaration.Declaration.Name;
+                    declarationNamespace = unionDeclaration.Declaration.Namespace;
+                    members = unionDeclaration.Declaration.Branches.Select(branch => branch.Field);
+                    sourceIdlFileName = unionDeclaration.SourceIdlFileName;
+                    break;
+
+                default:
+                    continue;
+            }
+
+            foreach (var member in members)
             {
                 if (member.SourceInput?.SequenceArrayMapping != IdlSequenceArrayMapping.Idl
                     || member.Type is not IdlType.Sequence { Dimensions.Count: > 0 } sequence)
@@ -29,20 +54,15 @@ internal sealed class SequenceArrayEmissionPlan
                     continue;
                 }
 
-                var owner = declaration.Name;
-                if (declaration.Namespace is not null)
-                {
-                    owner = $"{declaration.Namespace}.{owner}";
-                }
-
+                var owner = declarationNamespace is null ? declarationName : $"{declarationNamespace}.{declarationName}";
                 if (ReferencesOwner(sequence.Element, owner, symbols, new HashSet<string>(StringComparer.Ordinal)))
                 {
                     throw new IdlException(member.SourceInput, member.SourceOffset,
                         "The Idl sequence-array mapping does not yet support recursive array elements. Select RtiCSharp for this file to retain the existing mapping.");
                 }
 
-                var names = ReserveNames(symbols, declaration.Namespace, $"{declaration.Name}_{member.Name}Sequence");
-                var element = EmissionTypeProjector.ToCollectionElementType(sequence.Element, declaration.Namespace);
+                var names = ReserveNames(symbols, declarationNamespace, $"{declarationName}_{member.Name}Sequence");
+                var element = EmissionTypeProjector.ToCollectionElementType(sequence.Element, declarationNamespace);
                 var sequenceType = new SequenceEmissionType(element, sequence.Bound ?? 100, $"ISequence<{element.CSharpType}>",
                     isBounded: sequence.Bound is not null);
                 var wrapper = new AliasEmissionType(names.RuntimeTypeName, sequenceType, names.RuntimeTypeName,
@@ -52,7 +72,7 @@ internal sealed class SequenceArrayEmissionPlan
 
                 var nativeElement = sequence.Element;
                 while (nativeElement is IdlType.Alias alias
-                    && !string.Equals(IdlNaming.ResolvedTypeReference(alias.QualifiedName, declaration.Namespace), element.CSharpType, StringComparison.Ordinal))
+                    && !string.Equals(IdlNaming.ResolvedTypeReference(alias.QualifiedName, declarationNamespace), element.CSharpType, StringComparison.Ordinal))
                 {
                     nativeElement = alias.Target;
                 }
@@ -60,7 +80,7 @@ internal sealed class SequenceArrayEmissionPlan
                 string? nativeType = null;
                 if (nativeElement is not IdlType.StringType)
                 {
-                    nativeType = compilation.ResolveNativeType(nativeElement, declaration.Namespace);
+                    nativeType = compilation.ResolveNativeType(nativeElement, declarationNamespace);
                 }
 
                 var requiresCast = true;
@@ -72,8 +92,8 @@ internal sealed class SequenceArrayEmissionPlan
                 var aliasPlan = new CollectionAliasEmissionPlan(element, isSequence: true, isArray: false,
                     nativeValueRequiresCast: requiresCast, elementNativeType: nativeType,
                     sequenceBound: sequence.Bound, profile: profile, isSequenceArrayElement: true);
-                var helper = new IdlTypedef(names.ManagedTypeName, declaration.Namespace, "sequence", elementType: null, bound: sequence.Bound);
-                elements.Add(new SequenceArrayElementPlan(helper, aliasPlan, declaration.SourceIdlFileName));
+                var helper = new IdlTypedef(names.ManagedTypeName, declarationNamespace, "sequence", elementType: null, bound: sequence.Bound);
+                elements.Add(new SequenceArrayElementPlan(helper, aliasPlan, sourceIdlFileName));
             }
         }
 

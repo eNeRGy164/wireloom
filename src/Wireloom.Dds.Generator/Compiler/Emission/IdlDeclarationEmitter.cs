@@ -36,7 +36,7 @@ internal sealed class IdlDeclarationEmitter(CompilationContext compilation, IRea
                     break;
 
                 case IdlUnionDeclaration union:
-                    result.AddRange(UnionEmitter.Emit(union.Declaration, union.SourceIdlFileName, profile));
+                    result.AddRange(UnionEmitter.Emit(union.Declaration, union.SourceIdlFileName, profile, sequenceArrays));
                     break;
             }
         }

@@ -1,6 +1,6 @@
+using Wireloom.Compiler.Emission;
+
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
-using Wireloom;
-using Wireloom.Dds.Generator.Tests;
 
 namespace Wireloom.Generation.Tests;
 
@@ -130,6 +130,189 @@ public sealed class UnionSpecs
         var native = documents["Example.Implementation.ChoiceUnmanaged.g.cs"].Source;
         native.ShouldContain("sample.Setnumber(number, _discriminator);");
         native.ShouldNotContain("sample.Setnumber(sample.number = number, _discriminator);");
+    }
+
+    [Fact]
+    public void ResolvesSymbolicHexadecimalAndExpressionUnionLabels()
+    {
+        // Arrange
+        var input = Input("union-expression-labels.idl",
+            """
+            module Example {
+                const long Base = 1;
+                const long High = 0xFF;
+                union Choice switch(long) {
+                    case Base + 1: long next;
+                    case High: long high;
+                    default: long other;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Example.Choice.g.cs"].Source;
+        managed.ShouldContain("case 2:");
+        managed.ShouldContain("case 255:");
+    }
+
+    [Fact]
+    public void ProjectsBooleanConstantUnionLabelsAsTheirBooleanValues()
+    {
+        // Arrange
+        var input = Input("union-boolean-constant-labels.idl",
+            "const boolean Enabled = TRUE; const boolean Selected = Enabled; const boolean Disabled = FALSE; " +
+            "union EnabledChoice switch(boolean) { case Enabled: long yes; default: long no; }; " +
+            "union ChainedChoice switch(boolean) { case Selected: long yes; default: long no; }; " +
+            "union DisabledChoice switch(boolean) { case Disabled: long no; default: long yes; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["EnabledChoice.g.cs"].Source.ShouldContain("case true:");
+        documents["ChainedChoice.g.cs"].Source.ShouldContain("case true:");
+        documents["DisabledChoice.g.cs"].Source.ShouldContain("case false:");
+    }
+
+    [Fact]
+    public void ResolvesScopedEnumUnionLabels()
+    {
+        // Arrange
+        var input = Input("union-scoped-enum-labels.idl",
+            """
+            module Example {
+                enum Kind { FIRST, SECOND };
+                union Choice switch(Kind) {
+                    case Kind::FIRST: long first;
+                    case SECOND: long second;
+                };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Example.Choice.g.cs"].Source.ShouldContain("Kind.FIRST");
+        documents["Example.Choice.g.cs"].Source.ShouldContain("Kind.SECOND");
+    }
+
+    [Fact]
+    public void RejectsUnionEnumLabelsFromAnotherEnumType()
+    {
+        // Arrange
+        var input = Input("union-foreign-enum-label.idl",
+            """
+            enum First { ONE };
+            enum Second { TWO };
+            union Choice switch(First) { case Second::TWO: long value; };
+            """);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Unknown union discriminator label");
+    }
+
+    [Fact]
+    public void PlansDirectFixedArrayUnionBranchesWithNativeLifecycleSupport()
+    {
+        // Arrange
+        var input = Input("union-array-branch.idl",
+            "union Sample switch(long) { case 0: long numbers[2]; default: long other; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Sample.g.cs"].Source.ShouldContain("public int[] numbers");
+        documents["Sample.g.cs"].Source.ShouldContain("other.numbers.Clone()");
+        var native = documents["Implementation.SampleUnmanaged.g.cs"].Source;
+        native.ShouldContain("numbers.Initialize<int>(dimension: 2, allocateMemory);");
+        native.ShouldContain("numbers.Destroy");
+        native.ShouldContain("FromNative");
+        native.ShouldContain("ToNative");
+        documents["Implementation.SamplePlugin.g.cs"].Source.ShouldContain("new[] { 0 }");
+    }
+
+    [Fact]
+    public void CopiesExplicitAggregateArrayUnionBranchesElementByElement()
+    {
+        // Arrange
+        var input = Input("union-explicit-aggregate-array.idl",
+            "struct Item { long value; }; union Choice switch(long) { case 1: Item items[2]; default: long number; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Choice.g.cs"].Source;
+        managed.ShouldContain("other.items.Clone()");
+        managed.ShouldContain("new Item(other.items[dimension0])");
+    }
+
+    [Fact]
+    public void InitializesDefaultEnumArrayUnionBranchesToDeclaredDefaultLiteral()
+    {
+        // Arrange
+        var input = Input("union-default-enum-array.idl",
+            "enum Shade { BLACK, @default_literal WHITE }; union Choice switch(long) { default: Shade values[2]; };");
+
+        // Act
+        var managed = CompileSources(input)["Choice.g.cs"].Source;
+
+        // Assert
+        managed.ShouldContain("new Shade[2]");
+        managed.ShouldContain("values[dimension0] = Shade.WHITE;");
+    }
+
+    [Fact]
+    public void MapsDirectSequenceUnionArrayBranchesWithIdlConfiguration()
+    {
+        // Arrange
+        const string source = "union Choice switch(long) { case 1: long number; default: sequence<long, 4> values[2]; };";
+        var input = new IdlInput("union-sequence-array-branch.idl", source, IdlSequenceArrayMapping.Idl);
+
+        // Act
+        var documents = IdlCompiler.CompileSources([input], TestContext.Current.CancellationToken);
+
+        // Assert
+        var managed = documents["Choice.g.cs"].Source;
+        managed.ShouldContain("public Choice_valuesSequence[] values");
+        managed.ShouldContain("_values = new Choice_valuesSequence[2];");
+        managed.ShouldContain("_values[dimension0] = new Choice_valuesSequence();");
+        managed.ShouldContain("new Choice_valuesSequence(other.values[dimension0])");
+
+        var native = documents["Implementation.ChoiceUnmanaged.g.cs"].Source;
+        native.ShouldContain("values.Initialize");
+        native.ShouldContain("dimension: 2");
+
+        var plugin = documents["Implementation.ChoicePlugin.g.cs"].Source;
+        plugin.ShouldContain("CreateArrayWithAccessInfo<global::Implementation.Choice_valuesSequenceUnmanaged>");
+        plugin.ShouldContain("new uint[] { 2 }");
+        documents.ContainsKey("Choice_valuesSequence.g.cs").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void DirectSequenceUnionArrayWithLegacyMappingReportsTheExistingWarning()
+    {
+        // Arrange
+        const string source = "union Choice switch(long) { case 1: long number; default: sequence<long, 4> values[2]; };";
+        var input = new IdlInput("union-sequence-array-branch.idl", source);
+        var diagnostics = new List<IdlDiagnostic>();
+
+        // Act
+        var documents = IdlCompiler.CompileSourcesWithDiagnostics(
+            [input], diagnostics, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen470);
+
+        // Assert
+        diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0105"
+            && diagnostic.Message.Contains("arrays of sequences", StringComparison.Ordinal));
+        documents["Choice.g.cs"].Source.ShouldContain("public ISequence<int> values");
     }
 
     [Fact]
@@ -728,6 +911,33 @@ public sealed class UnionSpecs
 
         var choicePlugin = documents["Example.Implementation.ChoicePlugin.g.cs"].Source;
         choicePlugin.ShouldContain("WithExtensibility(ExtensibilityKind.Extensible)");
+    }
+
+    [Theory]
+    [InlineData("@final", "Final")]
+    [InlineData("@mutable", "Mutable")]
+    public void UnionShorthandExtensibilityAnnotationsMatchFullAnnotations(string annotation, string expectedKind)
+    {
+        // Arrange
+        var input = Input("union-extensibility.idl",
+            $$"""
+            union Choice switch(long) {
+                case 0: long value;
+            };
+            {{annotation}} union AnnotatedChoice switch(long) {
+                case 0: long value;
+            };
+            @extensibility({{expectedKind.ToUpperInvariant()}}) union FullyAnnotatedChoice switch(long) {
+                case 0: long value;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Implementation.AnnotatedChoicePlugin.g.cs"].Source.ShouldContain($"WithExtensibility(ExtensibilityKind.{expectedKind})");
+        documents["Implementation.FullyAnnotatedChoicePlugin.g.cs"].Source.ShouldContain($"WithExtensibility(ExtensibilityKind.{expectedKind})");
     }
 
     [Fact]

@@ -88,12 +88,12 @@ public sealed class GeneratedPrimitiveAnnotationCoverageSpecs
         var plugin = documents["PrimitiveLiterals.Implementation.ValuesPlugin.g.cs"].Source;
         plugin.ShouldContainInOrder(
             "TypeKind.Float32,",
-            "defaultValue: new AnnotationParameterValue { Float32Value = 0.0F },",
+            "defaultValue: new AnnotationParameterValue { Float32Value = 0F },",
             "minValue: new AnnotationParameterValue { Float32Value = float.MinValue },",
             "maxValue: new AnnotationParameterValue { Float32Value = float.MaxValue },");
         plugin.ShouldContainInOrder(
             "TypeKind.Float64,",
-            "defaultValue: new AnnotationParameterValue { Float64Value = 0.0D },",
+            "defaultValue: new AnnotationParameterValue { Float64Value = 0D },",
             "minValue: new AnnotationParameterValue { Float64Value = double.MinValue },",
             "maxValue: new AnnotationParameterValue { Float64Value = double.MaxValue },");
         plugin.ShouldContain("TypeKind.Boolean,");

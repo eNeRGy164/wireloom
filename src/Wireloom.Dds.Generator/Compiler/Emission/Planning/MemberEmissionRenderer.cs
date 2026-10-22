@@ -1,5 +1,5 @@
-using System.Globalization;
 using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Naming;
 
 using static Wireloom.Compiler.Naming.IdlNaming;
@@ -13,7 +13,7 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
     private string EscapedName => EscapeIdentifier(facts.Name);
 
     /// <summary>Gets whether the member has an explicit default value.</summary>
-    private bool HasExplicitDefault => facts.ValueMetadata?.DefaultValue is not null;
+    private bool HasExplicitDefault => facts.ValueMetadata?.HasDefault == true;
 
     /// <summary>Builds the documentation summary for a resolved bound.</summary>
     public string? BoundSummary
@@ -139,9 +139,9 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
                 }
             }
 
-            if (metadata?.DefaultValue is { } defaultValue)
+            if (metadata?.HasDefault == true)
             {
-                var defaultText = metadata.DefaultExpression ?? FormatCSharpValue(facts.CSharpType.TrimEnd('?'), defaultValue);
+                var defaultText = metadata.DefaultExpression ?? ManagedDefaultValue;
                 constraints.Add($"Its default value is <c>{System.Security.SecurityElement.Escape(defaultText)}</c>.");
             }
 
@@ -156,7 +156,9 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
         {
             if (HasExplicitDefault)
             {
-                return null;
+                return facts is { CSharpType: "string", ValueMetadata.DefaultValue: IdlScalarValue.Text }
+                    ? $" = {ManagedDefaultValue};"
+                    : null;
             }
 
             if (facts.CSharpType == "string")
@@ -213,102 +215,17 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
     }
 
     /// <summary>Builds the managed default value expression.</summary>
-    public string ManagedDefaultValue => facts.ValueType switch
-    {
-        EnumEmissionType when facts.ValueMetadata!.DefaultValue!.Value.IsZero => "0",
-        EnumEmissionType => $"({TypeReference(facts.CSharpType, currentNamespace)})({facts.ValueMetadata!.DefaultValue!.Value.ToString(CultureInfo.InvariantCulture)})",
-        _ => FormatCSharpValue(facts.CSharpType.TrimEnd('?'), facts.ValueMetadata!.DefaultValue!.Value)
-    };
+    public string ManagedDefaultValue => ScalarValue.ManagedDefaultLiteral!;
+
+    private ScalarValueEmissionPlan ScalarValue { get; } = new(facts.ValueType, facts.ValueMetadata);
 
     /// <summary>Formats an IDL constant as a C# literal.</summary>
-    public string FormatCSharpValue(string typeName, BigInteger value) => typeName switch
-    {
-        "long" when value == long.MinValue => "long.MinValue",
-        "long" => $"{value.ToString(CultureInfo.InvariantCulture)}L",
-        "ulong" when value == ulong.MaxValue => "ulong.MaxValue",
-        "ulong" => $"{value.ToString(CultureInfo.InvariantCulture)}UL",
-        "uint" => $"{value.ToString(CultureInfo.InvariantCulture)}U",
-        _ => value.ToString(CultureInfo.InvariantCulture)
-    };
+    public string FormatCSharpValue(string typeName, BigInteger value) => CSharpScalarValueFormatter.Format(typeName, value);
 
     /// <summary>Builds the annotation metadata for a supported primitive member.</summary>
-    public (string TypeKind, string ValueProperty, string DefaultValue, string? Minimum, string? Maximum, string? Unit)? PrimitiveAnnotation()
-    {
-        switch (facts.ValueType)
-        {
-            case StringEmissionType { IsWide: true }:
-                return ("WideString", "WideStringValue", "\"\"", null, null, null);
-            case StringEmissionType:
-                return ("String", "StringValue", "\"\"", null, null, null);
-            case EnumEmissionType enumType:
-                var enumDefault = enumType.DefaultValue.ToString(CultureInfo.InvariantCulture);
-                if (HasExplicitDefault)
-                {
-                    enumDefault = facts.ValueMetadata!.DefaultValue!.Value.ToString(CultureInfo.InvariantCulture);
-                }
+    public (string TypeKind, string ValueProperty, string DefaultValue, string? Minimum, string? Maximum, string? Unit)? PrimitiveAnnotation() =>
+        ScalarValue.Annotation;
 
-                return ("Enumeration", "EnumValue", enumDefault, null, null, UnitLiteral);
-            case PrimitiveEmissionType primitive:
-                return PrimitiveAnnotation(primitive);
-            default:
-                return null;
-        }
-    }
-
-    private (string TypeKind, string ValueProperty, string DefaultValue, string? Minimum, string? Maximum, string? Unit)? PrimitiveAnnotation(PrimitiveEmissionType primitive)
-    {
-        var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
-        if (mapping.AnnotationTypeKind is null || mapping.AnnotationValueProperty is null)
-        {
-            return null;
-        }
-
-        var defaultValue = mapping.NativeDefaultLiteral;
-        if (mapping.ManagedType != mapping.NativeStorageType)
-        {
-            defaultValue = mapping.AnnotationDefaultLiteral;
-        }
-
-        if (HasExplicitDefault && IsIntegralAnnotation(mapping.AnnotationTypeKind))
-        {
-            defaultValue = FormatCSharpValue(mapping.ManagedType, facts.ValueMetadata!.DefaultValue!.Value);
-        }
-
-        var minimum = mapping.MinimumLiteral;
-        if (facts.ValueMetadata?.Minimum is { } minimumValue)
-        {
-            minimum = FormatCSharpValue(mapping.ManagedType, minimumValue);
-        }
-
-        var maximum = mapping.MaximumLiteral;
-        if (facts.ValueMetadata?.Maximum is { } maximumValue)
-        {
-            maximum = FormatCSharpValue(mapping.ManagedType, maximumValue);
-        }
-
-        return (mapping.AnnotationTypeKind, mapping.AnnotationValueProperty, defaultValue, minimum, maximum, UnitLiteral);
-    }
-
-    private string? UnitLiteral => facts.ValueMetadata?.Unit is null
-        ? null
-        : $"\"{facts.ValueMetadata.Unit.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
-
-    private static bool IsIntegralAnnotation(string typeKind)
-    {
-        switch (typeKind)
-        {
-            case "Int16":
-            case "Int32":
-            case "Int64":
-            case "Uint16":
-            case "UInt32":
-            case "UInt64":
-            case "Int8":
-            case "Uint8":
-            case "Octet":
-                return true;
-            default:
-                return false;
-        }
-    }
+    private static bool IsIntegralAnnotation(string typeKind) => typeKind is
+        "Int16" or "Int32" or "Int64" or "Uint16" or "UInt32" or "UInt64" or "Int8" or "Uint8" or "Octet";
 }

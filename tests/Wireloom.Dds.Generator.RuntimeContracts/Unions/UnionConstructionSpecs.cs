@@ -13,7 +13,7 @@ public sealed class UnionConstructionSpecs
         // Arrange/Act/Assert
         if (RtiRuntimeProfile.Uses731Profile)
         {
-            AssertDefault(() => new Choice(), () => new Choice(null), value => value.Discriminator, value => value.Get(), 6, false);
+            AssertDefault(() => new Choice(), () => new Choice(null), value => value.Discriminator, value => value.Get(), 7, false);
             AssertDefault(() => new NegativeAndZero(), () => new NegativeAndZero(null), value => value.Discriminator, value => value.Get(), 1, false);
         }
         else

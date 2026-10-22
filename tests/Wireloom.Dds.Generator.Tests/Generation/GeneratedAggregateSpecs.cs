@@ -25,6 +25,41 @@ public sealed class GeneratedAggregateSpecs
         documents["ExtensibilitySummary.MutableSample.g.cs"].Source.ShouldContain("Members may be identified and reordered by DDS member IDs during compatible type evolution.");
     }
 
+    [Theory]
+    [InlineData("@extensibility(FINAL) struct Sample { long value; };", "ExtensibilityKind.Final")]
+    [InlineData("@extensibility(MUTABLE) struct Sample { long value; };", "ExtensibilityKind.Mutable")]
+    [InlineData("@extensibility(APPENDABLE) struct Sample { long value; };", "ExtensibilityKind.Extensible")]
+    public void SupportsTheFullExtensibilityAnnotationSpelling(string declaration, string expectedKind)
+    {
+        // Arrange
+        var input = Input("full-extensibility.idl", declaration);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents.Values.Select(document => document.Source).ShouldContain(source => source.Contains(expectedKind, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ExpandsMultipleAndMixedArrayDeclaratorsInSourceOrder()
+    {
+        // Arrange
+        var input = Input("multiple-member-declarators.idl",
+            "struct Sample { long first, second[2], third; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Sample.g.cs"].Source;
+        managed.ShouldContain("public int first");
+        managed.ShouldContain("public int[] second");
+        managed.ShouldContain("public int third");
+        managed.IndexOf("public int first", StringComparison.Ordinal).ShouldBeLessThan(managed.IndexOf("public int[] second", StringComparison.Ordinal));
+        managed.IndexOf("public int[] second", StringComparison.Ordinal).ShouldBeLessThan(managed.IndexOf("public int third", StringComparison.Ordinal));
+    }
+
     [Fact]
     public void NativeMemberAccessQualifiesOnlyParametersThatShadowFields()
     {

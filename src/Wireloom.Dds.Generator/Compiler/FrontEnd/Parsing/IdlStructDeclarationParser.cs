@@ -13,19 +13,12 @@ internal sealed class IdlStructDeclarationParser
     internal IdlStructDeclarationParser(IdlParseContext context) =>
         this.context = context;
 
-    internal int Parse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, int position)
+    internal int Parse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, int position, bool inheritedHashIds = false, bool hasLocalAutoId = false)
     {
-        var isTopic = TopicAnnotationPattern.IsMatch(declarations[position..]);
-        var topicLength = isTopic ? TopicAnnotationPattern.Match(declarations[position..]).Length : 0;
-        var autoId = AutoIdAnnotationPattern.Match(declarations[(position + topicLength)..]);
-        var declarationStart = isTopic
-            ? position + TopicAnnotationPattern.Match(declarations[position..]).Length
-            : position;
-
-        if (autoId.Success)
-        {
-            declarationStart += autoId.Length;
-        }
+        var prefix = IdlTypeAnnotationPrefix.Read(declarations, position, input, context, baseOffset, inheritedHashIds, hasLocalAutoId);
+        var isTopic = prefix.IsTopic;
+        var declarationStart = prefix.DeclarationStart;
+        var useHashIds = prefix.UseHashIds;
 
         var declaration = StructPattern.Match(declarations.Substring(declarationStart));
         if (!declaration.Success)
@@ -41,15 +34,27 @@ internal sealed class IdlStructDeclarationParser
         context.RecordIdentifier(input, baseOffset + declarationStart + declaration.Groups["name"].Index, name, currentNamespace);
         context.EnsureNewName(input, baseOffset + declarationStart, fullyQualifiedName);
         context.EnsureGeneratedCompanionNames(input, baseOffset + declarationStart, name, currentNamespace, includeUnmanaged: true);
-        var body = declaration.Groups["body"];
-        var extensibility = declaration.Groups["extensibility"].Value.Trim() switch
+        var openingBrace = declarationStart + declaration.Length - 1;
+        var closingBrace = IdlSyntaxReader.FindClosingDelimiter(declarations, openingBrace, '{', '}');
+        if (closingBrace < 0)
         {
-            "@final" => IdlExtensibilityKind.Final,
-            "@mutable" => IdlExtensibilityKind.Mutable,
-            _ => IdlExtensibilityKind.Extensible
-        };
-        var useHashIds = autoId.Success && string.Equals(autoId.Groups["value"].Value, "HASH", StringComparison.OrdinalIgnoreCase);
-        var fields = ParseMembers(input, body.Value, baseOffset + declarationStart + body.Index, currentNamespace, fullyQualifiedName, useHashIds);
+            throw new IdlException(input, context.MapOffset(baseOffset + declarationStart), "Unterminated struct declaration.");
+        }
+
+        var end = closingBrace + 1;
+        while (end < declarations.Length && char.IsWhiteSpace(declarations[end]))
+        {
+            end++;
+        }
+
+        if (end >= declarations.Length || declarations[end] != ';')
+        {
+            throw new IdlException(input, context.MapOffset(baseOffset + closingBrace), "Struct declaration must end with a semicolon.");
+        }
+
+        var body = declarations.Substring(openingBrace + 1, closingBrace - openingBrace - 1);
+        var extensibility = prefix.Extensibility ?? IdlExtensibilityKind.Extensible;
+        var fields = ParseMembers(input, body, baseOffset + openingBrace + 1, currentNamespace, fullyQualifiedName, useHashIds);
         var validationOffset = context.MapOffset(baseOffset + declarationStart);
         context.DeferMemberIdValidation(input, validationOffset, fields);
         var baseType = declaration.Groups["base"].Success
@@ -73,7 +78,7 @@ internal sealed class IdlStructDeclarationParser
 
         context.AddClass(fullyQualifiedName, parsedDeclaration);
 
-        return declarationStart - position + declaration.Length;
+        return end + 1 - position;
     }
 
     private List<IdlMember> ParseMembers(IdlInput input, string body, int sourceOffset, string? currentNamespace, string memberScope, bool useHashIds = false)
@@ -90,8 +95,8 @@ internal sealed class IdlStructDeclarationParser
                 continue;
             }
 
-            var (Field, Length) = context.TypeParser.ParseMember(input, body, offset, sourceOffset, currentNamespace, members, useHashIds, memberScope);
-            fields.Add(Field);
+            var (Fields, Length) = context.TypeParser.ParseMember(input, body, offset, sourceOffset, currentNamespace, members, useHashIds, memberScope);
+            fields.AddRange(Fields);
             offset += Length;
         }
 

@@ -1,13 +1,17 @@
 namespace Wireloom.Compiler.FrontEnd.Semantic;
 
 /// <summary>Metadata attached to an IDL member independently of its type.</summary>
-internal sealed class IdlMemberValueMetadata(BigInteger? defaultValue = null, BigInteger? minimum = null, BigInteger? maximum = null, string? defaultExpression = null, string? unit = null)
+internal sealed class IdlMemberValueMetadata(IdlScalarValue? defaultValue = null, BigInteger? minimum = null, BigInteger? maximum = null, string? defaultExpression = null, string? unit = null)
 {
-    public BigInteger? DefaultValue { get; } = defaultValue;
+    /// <summary>Gets the effective typed default or null when no default applies.</summary>
+    public IdlScalarValue? DefaultValue { get; } = defaultValue;
     public BigInteger? Minimum { get; } = minimum;
     public BigInteger? Maximum { get; } = maximum;
     public string? DefaultExpression { get; } = defaultExpression;
     public string? Unit { get; } = unit;
+
+    /// <summary>Gets whether a typed default applies.</summary>
+    public bool HasDefault => DefaultValue is not null;
 }
 
 /// <summary>Stores annotations and identity metadata associated with an IDL member.</summary>
@@ -15,7 +19,8 @@ internal sealed class IdlMemberMetadata(bool isKey = false, bool isOptional = fa
 {
     public bool IsKey { get; } = isKey;
     public bool IsOptional { get; } = isOptional;
-    public int? MemberId { get; } = memberId;
+    public int? MemberId { get; private set; } = memberId;
+
     public IdlMemberValueMetadata? ValueMetadata { get; private set; } = valueMetadata;
     public bool IsExternal { get; } = isExternal;
     public bool IsMustUnderstand { get; } = isMustUnderstand;
@@ -24,6 +29,9 @@ internal sealed class IdlMemberMetadata(bool isKey = false, bool isOptional = fa
 
     /// <summary>Applies value metadata resolved after type binding.</summary>
     internal void SetValueMetadata(IdlMemberValueMetadata? valueMetadata) => ValueMetadata = valueMetadata;
+
+    /// <summary>Applies an explicit member identifier evaluated after constant binding.</summary>
+    internal void SetMemberId(int memberId) => MemberId = memberId;
 }
 
 /// <summary>Represents an IDL member independently of any target language.</summary>

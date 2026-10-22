@@ -1,6 +1,6 @@
+using Wireloom.Compiler.FrontEnd.Preprocessing;
 using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.FrontEnd.Symbols;
-using Wireloom.Compiler.FrontEnd.Preprocessing;
 
 using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
 
@@ -36,13 +36,18 @@ internal sealed class IdlDeclarationParser
         IdlInput input,
         int baseOffset,
         string? currentNamespace,
-        IReadOnlyList<SourceOriginSpan>? sourceOrigins = null)
+        IReadOnlyList<SourceOriginSpan>? sourceOrigins = null,
+        bool inheritedHashIds = false)
     {
         // Always replace the mapping: sequential files must never inherit the
         // previous parse's origin table.
         context.SetSourceOrigins(sourceOrigins);
 
         var position = 0;
+        bool? pendingHashIdPolicy = null;
+        var pendingHashIdOffset = baseOffset;
+        string? pendingTypedefDefault = null;
+        int? pendingTypedefDefaultOffset = null;
 
         while (position < declarations.Length)
         {
@@ -51,6 +56,34 @@ internal sealed class IdlDeclarationParser
             if (char.IsWhiteSpace(declarations[position]))
             {
                 position++;
+                continue;
+            }
+
+            var autoIdAnnotation = AutoIdAnnotationPattern.Match(declarations[position..]);
+            if (autoIdAnnotation.Success)
+            {
+                if (pendingHashIdPolicy is not null)
+                {
+                    throw new IdlException(input, context.MapOffset(baseOffset + position), "Duplicate @autoid annotation.");
+                }
+
+                pendingHashIdPolicy = !autoIdAnnotation.Groups["value"].Success
+                    || string.Equals(autoIdAnnotation.Groups["value"].Value, "HASH", StringComparison.OrdinalIgnoreCase);
+                pendingHashIdOffset = context.MapOffset(baseOffset + position);
+                position += autoIdAnnotation.Length;
+                continue;
+            }
+
+            if (IdlSyntaxReader.TryReadAnnotationValue(declarations[position..], "default", out var typedefDefault, out var typedefDefaultLength))
+            {
+                if (pendingTypedefDefault is not null)
+                {
+                    throw new IdlException(input, context.MapOffset(baseOffset + position), "Duplicate @default annotation.");
+                }
+
+                pendingTypedefDefault = typedefDefault;
+                pendingTypedefDefaultOffset = context.MapOffset(baseOffset + position);
+                position += typedefDefaultLength;
                 continue;
             }
 
@@ -89,15 +122,15 @@ internal sealed class IdlDeclarationParser
                 continue;
             }
 
-            if (TryParseServiceInterface(declarations, input, baseOffset, ref position, currentNamespace))
+            if (pendingTypedefDefault is null && TryParseServiceInterface(declarations, input, baseOffset, ref position, currentNamespace))
             {
+                RejectPendingAutoId();
                 continue;
             }
 
-            var unknownAnnotation = UnknownAnnotationPattern.Match(declarations[position..]);
-            if (unknownAnnotation.Success && !KnownDeclarationAnnotationNames.Contains(unknownAnnotation.Groups["name"].Value))
+            if (IdlSyntaxReader.TryReadAnnotationApplication(declarations[position..], out var name, out var annotationLength)
+                && !KnownDeclarationAnnotationNames.Contains(name))
             {
-                var name = unknownAnnotation.Groups["name"].Value;
                 if (UnsupportedAnnotationNames.Contains(name))
                 {
                     context.Diagnostics?.Add(new IdlDiagnostic("DDSG0102", input, context.MapOffset(baseOffset + position), $"Annotation '{name}' is recognized but unsupported and will be ignored."));
@@ -108,27 +141,61 @@ internal sealed class IdlDeclarationParser
                 }
 
                 context.Diagnostics?.Add(new IdlDiagnostic("DDSG0101", input, context.MapOffset(baseOffset + position), $"Annotation '@{name}' is not recognized and will be ignored."));
-                position += unknownAnnotation.Length;
+                position += annotationLength;
+                continue;
+            }
+
+            if (pendingTypedefDefault is not null && !TypedefPattern.IsMatch(declarations[position..]))
+            {
+                throw new IdlException(
+                    input,
+                    pendingTypedefDefaultOffset ?? context.MapOffset(baseOffset + position),
+                    "@default is only supported on typedef declarations and members.");
+            }
+
+            var effectiveHashIds = pendingHashIdPolicy ?? inheritedHashIds;
+            if (TryParseModule(declarations, input, baseOffset, currentNamespace, sourceOrigins, effectiveHashIds, ref position))
+            {
+                pendingHashIdPolicy = null;
                 continue;
             }
 
             if (TryParseInterface(declarations, input, baseOffset, ref position, currentNamespace: currentNamespace) ||
-                TryParseModule(declarations, input, baseOffset, currentNamespace, sourceOrigins, ref position) ||
                 constantParser.TryParse(declarations, input, baseOffset, currentNamespace, ref position) ||
                 enumParser.TryParse(declarations, input, baseOffset, currentNamespace, ref position) ||
-                typedefParser.TryParse(declarations, input, baseOffset, currentNamespace, ref position))
+                typedefParser.TryParse(declarations, input, baseOffset, currentNamespace, pendingTypedefDefault, ref position))
             {
+                RejectPendingAutoId();
+                pendingHashIdPolicy = null;
+                pendingTypedefDefault = null;
+                pendingTypedefDefaultOffset = null;
                 continue;
             }
 
-            if (unionParser.TryParse(declarations, input, baseOffset, currentNamespace, ref position))
+            if (unionParser.TryParse(declarations, input, baseOffset, currentNamespace, effectiveHashIds, ref position, hasLocalAutoId: pendingHashIdPolicy is not null))
             {
+                pendingHashIdPolicy = null;
                 continue;
             }
 
-            position += structParser.Parse(declarations, input, baseOffset, currentNamespace, position);
+            position += structParser.Parse(declarations, input, baseOffset, currentNamespace, position, effectiveHashIds, hasLocalAutoId: pendingHashIdPolicy is not null);
+            pendingHashIdPolicy = null;
+
         }
 
+        RejectPendingAutoId();
+        if (pendingTypedefDefault is not null)
+        {
+            throw new IdlException(input, pendingTypedefDefaultOffset ?? context.MapOffset(baseOffset), "@default requires a following typedef declaration.");
+        }
+
+        void RejectPendingAutoId()
+        {
+            if (pendingHashIdPolicy is not null)
+            {
+                throw new IdlException(input, pendingHashIdOffset, "@autoid requires a module, struct, valuetype, or union declaration.");
+            }
+        }
     }
 
     /// <summary>Binds all parsed declarations.</summary>
@@ -142,7 +209,7 @@ internal sealed class IdlDeclarationParser
 
     private static readonly HashSet<string> KnownDeclarationAnnotationNames =
     [
-        "topic", "autoid", "nested", "final", "appendable", "mutable",
+        "topic", "autoid", "nested", "final", "appendable", "mutable", "extensibility",
         "language_binding", "transfer_mode", "data_representation",
         "allowed_data_representation", "default_nested"
     ];
@@ -160,13 +227,11 @@ internal sealed class IdlDeclarationParser
         List<IdlDiagnostic>? annotationWarnings = null;
         while (declarationPosition < declarations.Length)
         {
-            var interveningAnnotation = UnknownAnnotationPattern.Match(declarations[declarationPosition..]);
-            if (!interveningAnnotation.Success)
+            if (!IdlSyntaxReader.TryReadAnnotationApplication(declarations[declarationPosition..], out var name, out var annotationLength))
             {
                 break;
             }
 
-            var name = interveningAnnotation.Groups["name"].Value;
             if (KnownDeclarationAnnotationNames.Contains(name) || UnsupportedAnnotationNames.Contains(name))
             {
                 break;
@@ -178,7 +243,7 @@ internal sealed class IdlDeclarationParser
                 input,
                 context.MapOffset(baseOffset + declarationPosition),
                 $"Annotation '@{name}' is not recognized and will be ignored."));
-            declarationPosition += interveningAnnotation.Length;
+            declarationPosition += annotationLength;
         }
 
         if (!InterfacePattern.IsMatch(declarations[declarationPosition..]))
@@ -221,14 +286,10 @@ internal sealed class IdlDeclarationParser
         var message = isDdsService
             ? $"The DDS service interface '{interfaceName}' is ignored because service interfaces are not emitted for C#."
             : $"The interface '{interfaceName}' is ignored because it is not a DDS service.";
-        context.Diagnostics?.Add(new IdlDiagnostic(
-            "DDSG0103",
-            input,
-            context.MapOffset(baseOffset + (annotationOffset ?? position)),
-            message));
+        context.Diagnostics?.Add(new IdlDiagnostic("DDSG0103", input, context.MapOffset(baseOffset + (annotationOffset ?? position)), message));
 
         var openBrace = position + @interface.Length - 1;
-        var closeBrace = FindClosingBrace(declarations, openBrace);
+        var closeBrace = IdlSyntaxReader.FindClosingDelimiter(declarations, openBrace, '{', '}');
         if (closeBrace < 0)
         {
             throw new IdlException(input, context.MapOffset(baseOffset + position), "Unterminated interface declaration.");
@@ -261,6 +322,7 @@ internal sealed class IdlDeclarationParser
         int baseOffset,
         string? currentNamespace,
         IReadOnlyList<SourceOriginSpan>? sourceOrigins,
+        bool inheritedHashIds,
         ref int position)
     {
         var module = ModulePattern.Match(declarations.Substring(position));
@@ -270,7 +332,7 @@ internal sealed class IdlDeclarationParser
         }
 
         var openBrace = position + module.Length - 1;
-        var closeBrace = FindClosingBrace(declarations, openBrace);
+        var closeBrace = IdlSyntaxReader.FindClosingDelimiter(declarations, openBrace, '{', '}');
         if (closeBrace < 0)
         {
             throw new IdlException(input, context.MapOffset(baseOffset + position), "Unterminated module declaration.");
@@ -283,7 +345,8 @@ internal sealed class IdlDeclarationParser
             input,
             baseOffset + openBrace + 1,
             moduleName,
-            sourceOrigins);
+            sourceOrigins,
+            inheritedHashIds);
 
         position = closeBrace + 1;
         while (position < declarations.Length && char.IsWhiteSpace(declarations[position]))
@@ -299,86 +362,5 @@ internal sealed class IdlDeclarationParser
         position++;
 
         return true;
-    }
-
-
-
-
-    /// <summary>Finds the closing brace matching an opening brace.</summary>
-    private static int FindClosingBrace(string text, int openingBrace)
-    {
-        var depth = 0;
-        for (var index = openingBrace; index < text.Length; index++)
-        {
-            if (IsLiteralStart(text, index))
-            {
-                var quote = text[index++];
-                while (index < text.Length)
-                {
-                    var character = text[index++];
-                    if (character == '\\' && index < text.Length)
-                    {
-                        index++;
-                    }
-                    else if (character == quote)
-                    {
-                        break;
-                    }
-                }
-
-                // Let the for-loop advance from the closing quote to the next character.
-                index--;
-            }
-            else if (text[index] == '{')
-            {
-                depth++;
-            }
-            else if (text[index] == '}' && --depth == 0)
-            {
-                return index;
-            }
-        }
-
-        return -1;
-    }
-
-    private static bool IsLiteralStart(string text, int index)
-    {
-        if (text[index] == '"')
-        {
-            return true;
-        }
-
-        if (text[index] != '\'')
-        {
-            return false;
-        }
-
-        return HasCharacterLiteralPrefix(text, index)
-            || !LooksLikeIdentifierApostrophe(text, index);
-    }
-
-    private static bool HasCharacterLiteralPrefix(string text, int quoteIndex)
-    {
-        // The caller scans from a module's opening brace, so a quote is never at index zero.
-        var prefixCharacter = text[quoteIndex - 1];
-        if (prefixCharacter is 'L' or 'u' or 'U')
-        {
-            return true;
-        }
-
-        return prefixCharacter == '8'
-            && quoteIndex > 1
-            && text[quoteIndex - 2] == 'u';
-    }
-
-    private static bool LooksLikeIdentifierApostrophe(string text, int apostropheIndex)
-    {
-        var hasIdentifierCharacterBefore = apostropheIndex > 0
-            && char.IsLetterOrDigit(text[apostropheIndex - 1]);
-        var hasIdentifierCharacterAfter = apostropheIndex + 1 < text.Length
-            && char.IsLetterOrDigit(text[apostropheIndex + 1]);
-
-        return hasIdentifierCharacterBefore && hasIdentifierCharacterAfter;
     }
 }

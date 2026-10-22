@@ -1,3 +1,4 @@
+using Wireloom.Compiler.FrontEnd.Semantic;
 using System.Numerics;
 
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
@@ -93,13 +94,13 @@ public sealed class IdlConstantRangeCoverageSpecs
     public void RejectsUnsupportedTypesWhenRangeValidationIsCalledDirectly()
     {
         // Arrange
-        var input = Input("unsupported-integral-range.idl", "const boolean Flag = TRUE;");
+        var input = Input("unsupported-integral-range.idl", "const float Ratio = 1.5;");
 
         // Act
         var exception = Should.Throw<InvalidOperationException>(() =>
-            IdlConstantParser.ValidateConstantRange(input, 0, "boolean", BigInteger.Zero));
+            IdlScalarTypeRules.ValidateConstantRange(input, 0, "float", BigInteger.Zero));
 
         // Assert
-        exception.Message.ShouldBe("Unsupported integral constant type: boolean");
+        exception.Message.ShouldBe("Unsupported integral constant type: float");
     }
 }

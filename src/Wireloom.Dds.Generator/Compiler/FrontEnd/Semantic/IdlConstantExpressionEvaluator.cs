@@ -193,7 +193,15 @@ internal sealed class IdlConstantExpressionEvaluator
         var token = text[start..position];
         if (token.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
         {
-            return BigInteger.Parse(token[2..], NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+            if (token.Length == 2)
+            {
+                throw new FormatException("Hexadecimal literal must contain at least one digit.");
+            }
+
+            // BigInteger interprets a high leading bit as a sign when parsing
+            // hexadecimal digits. Prefix a zero nibble so IDL hex literals stay
+            // non-negative (unary minus is handled by ParseUnary).
+            return BigInteger.Parse($"0{token[2..]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
         }
 
         if (BigInteger.TryParse(token, NumberStyles.Integer, CultureInfo.InvariantCulture, out var literal))
@@ -201,8 +209,14 @@ internal sealed class IdlConstantExpressionEvaluator
             return literal;
         }
 
+        if (!IdlScopedName.IsValid(token))
+        {
+            throw new FormatException($"Invalid constant name: {token}");
+        }
+
         var qualified = ResolveConstantName(token);
-        if (symbols.TryGetConstant(qualified, out var constant) && constant.IntegerValue is { } constantValue)
+        if (symbols.TryGetConstant(qualified, out var constant)
+            && constant.Value is IdlScalarValue.Integral { Value: var constantValue })
         {
             return constantValue;
         }

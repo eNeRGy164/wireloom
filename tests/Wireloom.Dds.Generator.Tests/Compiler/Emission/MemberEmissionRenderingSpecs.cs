@@ -18,7 +18,7 @@ public sealed class MemberEmissionRenderingSpecs
                 memberId: null,
                 isOptional: false,
                 valueMetadata: new IdlMemberValueMetadata(
-                    defaultValue: 3,
+                    defaultValue: new IdlScalarValue.Integral(3),
                     minimum: 1,
                     maximum: 5,
                     defaultExpression: "3",

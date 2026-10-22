@@ -10,8 +10,8 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class UnionEmitter
 {
     /// <summary>Emits the managed, native, plugin, and type-support documents for an IDL union.</summary>
-    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlUnion declaration, string sourceIdlFileName, RtiApiProfile profile) =>
-        EmitUnionCore(EmissionTypeProjector.ToEmissionUnion(declaration, profile), sourceIdlFileName, profile);
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlUnion declaration, string sourceIdlFileName, RtiApiProfile profile, SequenceArrayEmissionPlan? sequenceArrays = null) =>
+        EmitUnionCore(EmissionTypeProjector.ToEmissionUnion(declaration, profile, sequenceArrays), sourceIdlFileName, profile);
 
     private static IReadOnlyList<GeneratedIdlSource> EmitUnionCore(IdlEmissionUnion declaration, string sourceIdlFileName, RtiApiProfile profile)
     {
@@ -193,6 +193,13 @@ internal static class UnionEmitter
         {
             writer.BlankLine();
             writer.WriteLine(initialization);
+
+            if (branch.Plan is { IsArray: true, HasAggregateElement: true })
+            {
+                branch.Plan.EmitAggregateArrayInitialization(writer, ManagedBackingFieldName(declaration, branch), hasFollowingStatements: false);
+            }
+
+            branch.Plan.EmitEnumArrayInitialization(writer, ManagedBackingFieldName(declaration, branch), hasFollowingStatements: false);
         }
     }
 
@@ -312,9 +319,7 @@ internal static class UnionEmitter
             }
 
             writer.Indent();
-            var copiedValue = branch.Plan.BuildUnionCopyExpression(source);
-            writer.WriteLine($"{destination}.{ManagedBackingFieldName(declaration, branch)}{assignment}{copiedValue};");
-            writer.WriteLine("break;");
+            EmitBranchCopy(writer, declaration, branch, source, destination, assignment);
             writer.Unindent();
         }
 
@@ -327,11 +332,21 @@ internal static class UnionEmitter
 
         writer.WriteLine("default:");
         writer.Indent();
-        var defaultCopiedValue = defaultBranch.Plan.BuildUnionCopyExpression(source);
-        writer.WriteLine($"{destination}.{ManagedBackingFieldName(declaration, defaultBranch)}{assignment}{defaultCopiedValue};");
-        writer.WriteLine("break;");
+        EmitBranchCopy(writer, declaration, defaultBranch, source, destination, assignment);
         writer.Unindent();
         writer.CloseBlock();
+    }
+
+    private static void EmitBranchCopy(GeneratedSourceWriter writer, IdlEmissionUnion declaration, UnionBranchEmissionPlan branch, string source, string destination, string assignment)
+    {
+        var backingField = $"{destination}.{ManagedBackingFieldName(declaration, branch)}";
+        writer.WriteLine($"{backingField}{assignment}{branch.Plan.BuildUnionCopyExpression(source)};");
+        if (branch.Plan is { IsArray: true, HasAggregateElement: true })
+        {
+            branch.Plan.EmitAggregateArrayCopy(writer, backingField, hasFollowingStatements: true);
+        }
+
+        writer.WriteLine("break;");
     }
 
     /// <summary>Emits a switch that returns the active public union branch.</summary>
@@ -372,7 +387,7 @@ internal static class UnionEmitter
         string fallback;
         if (defaultBranch is not null)
         {
-            fallback = $"global::System.HashCode.Combine(Discriminator, {IdlNaming.EscapeIdentifier(defaultBranch.Field.Name)})";
+            fallback = $"global::System.HashCode.Combine(Discriminator, {defaultBranch.Plan.HashValue()})";
         }
         else
         {

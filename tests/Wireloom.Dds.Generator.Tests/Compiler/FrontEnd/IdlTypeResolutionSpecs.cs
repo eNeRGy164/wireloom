@@ -29,14 +29,14 @@ public sealed class IdlTypeResolutionSpecs
             sourceOffset: 0,
             currentNamespace: null,
             members: new HashSet<string>(StringComparer.Ordinal),
-            useHashIds).Field;
+            useHashIds).Fields.Single();
 
         // Assert
         member.Metadata.UsesAutoIdHash.ShouldBe(expectedAutomaticHash);
     }
 
     [Fact]
-    public void ResolvesValueMetadataImmediatelyForBoundMemberTypes()
+    public void ResolvesMemberValuesOnlyDuringBinding()
     {
         // Arrange
         const string definition = "@max(10) long value;";
@@ -51,7 +51,10 @@ public sealed class IdlTypeResolutionSpecs
             sourceOffset: 0,
             currentNamespace: null,
             members: new HashSet<string>(StringComparer.Ordinal),
-            useHashIds: false).Field;
+            useHashIds: false).Fields.Single();
+
+        member.Metadata.ValueMetadata.ShouldBeNull();
+        context.ValueBinder.BindMemberValues();
 
         // Assert
         member.Metadata.ValueMetadata.ShouldNotBeNull();
@@ -129,13 +132,16 @@ public sealed class IdlTypeResolutionSpecs
     {
         // Arrange
         IReadOnlyList<SourceOriginSpan> origins = [new SourceOriginSpan(2, 3, 100, 3)];
+        var context = new IdlParseContext(new IdlSymbolTable(), CancellationToken.None, diagnostics: null);
+        context.SetSourceOrigins(origins);
 
         // Act
-        var before = IdlParseContext.MapOffset(1, origins);
-        var inside = IdlParseContext.MapOffset(3, origins);
-        var after = IdlParseContext.MapOffset(5, origins);
-        var negative = IdlParseContext.MapOffset(-1, origins);
-        var empty = IdlParseContext.MapOffset(0, []);
+        var before = context.MapOffset(1);
+        var inside = context.MapOffset(3);
+        var after = context.MapOffset(5);
+        var negative = context.MapOffset(-1);
+        context.SetSourceOrigins([]);
+        var empty = context.MapOffset(0);
 
         // Assert
         before.ShouldBe(100);

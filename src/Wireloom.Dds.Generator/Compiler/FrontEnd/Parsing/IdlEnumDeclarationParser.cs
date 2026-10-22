@@ -15,11 +15,24 @@ internal sealed class IdlEnumDeclarationParser
 
     internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, ref int position)
     {
-        var enumDeclaration = EnumPattern.Match(declarations.Substring(position));
+        var prefix = IdlTypeAnnotationPrefix.Read(declarations, position, input, context, baseOffset, useHashIds: false, hasLocalAutoId: false);
+        var enumDeclaration = EnumPattern.Match(declarations[prefix.DeclarationStart..]);
         if (!enumDeclaration.Success)
         {
             return false;
         }
+
+        if (prefix.IsTopic || prefix.HasLocalAutoId)
+        {
+            throw new IdlException(input, context.MapOffset(baseOffset + position), "@topic and @autoid are not applicable to enum declarations.");
+        }
+
+        if (prefix.Extensibility == IdlExtensibilityKind.Mutable)
+        {
+            throw new IdlException(input, context.MapOffset(baseOffset + position), "DDS-XTypes enumeration types support FINAL or APPENDABLE extensibility.");
+        }
+
+        position = prefix.DeclarationStart;
 
         var enumName = enumDeclaration.Groups["name"].Value;
         var qualified = context.Qualify(enumName, currentNamespace);
@@ -66,7 +79,7 @@ internal sealed class IdlEnumDeclarationParser
             nextValue = value + 1;
         }
 
-        var parsedEnum = new IdlEnum(enumName, currentNamespace, enumMembers, IdlParseContext.ParseExtensibility(enumDeclaration.Groups["extensibility"].Value));
+        var parsedEnum = new IdlEnum(enumName, currentNamespace, enumMembers, prefix.Extensibility ?? IdlExtensibilityKind.Extensible);
         context.Symbols.AddEnum(qualified, parsedEnum);
         context.Declarations.Add(new IdlEnumDeclaration(parsedEnum, Path.GetFileName(input.Path)));
 

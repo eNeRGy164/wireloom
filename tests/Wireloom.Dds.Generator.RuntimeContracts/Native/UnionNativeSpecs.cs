@@ -12,7 +12,7 @@ public sealed class UnionNativeSpecs
         get
         {
             var cases = new TheoryData<int, bool, bool, bool>();
-            for (var branch = 0; branch <= 6; branch++)
+            for (var branch = 0; branch <= 7; branch++)
             {
                 foreach (var keysOnly in new[] { false, true })
                 {
@@ -61,6 +61,9 @@ public sealed class UnionNativeSpecs
                 break;
             case 5:
                 result.vector.Value.ShouldBe([5, 6]);
+                break;
+            case 6:
+                result.values.ShouldBe([7, 8]);
                 break;
             default:
                 result.flag.ShouldBeTrue();

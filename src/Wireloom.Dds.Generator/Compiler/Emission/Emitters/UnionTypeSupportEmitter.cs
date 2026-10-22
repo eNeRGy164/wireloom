@@ -107,7 +107,7 @@ internal static class UnionTypeSupportEmitter
                 ? "new[] { UnionMember.DefaultLabel }"
                 : $"new[] {{ {string.Join(", ", branch.LabelValues.Select(l => FormatRtiLabel(declaration, l)))} }}";
 
-            writer.WriteLine($"new UnionMember(\"{branch.Field.Name}\", {dynamicType}, {labels}, id: {index + 1}){(index == declaration.Branches.Count - 1 ? string.Empty : ",")}");
+            writer.WriteLine($"new UnionMember(\"{branch.Field.Name}\", {dynamicType}, {labels}, id: {branch.Plan.MemberId ?? index + 1}){(index == declaration.Branches.Count - 1 ? string.Empty : ",")}");
         }
 
         writer.CloseBlock(";");
@@ -302,6 +302,7 @@ internal static class UnionTypeSupportEmitter
         var discriminator = declaration.NativeDiscriminatorReadExpression("_discriminator");
         writer.OpenBlock($"if (sample.Discriminator != {discriminator})");
         writer.WriteLine($"sample.{initialization}");
+        branch.Plan.EmitAggregateArrayInitialization(writer, $"sample.{branch.Plan.EscapedName}", hasFollowingStatements: false);
         writer.CloseBlock();
         writer.BlankLine();
     }
@@ -319,22 +320,19 @@ internal static class UnionTypeSupportEmitter
         writer.OpenBlock("public void Initialize(bool allocatePointers = true, bool allocateMemory = true)");
         writer.WriteLine($"_discriminator = {declaration.NativeDiscriminatorWriteExpression(defaultDiscriminator)};");
 
-        var initializationStatements = declaration.Branches
-            .Select(branch => branch.Plan.UnionDefaultInitializationStatement(implementationNamespace, NativeFieldPrefix(branch.Plan, "allocatePointers", "allocateMemory")))
-            .ToArray();
-
-        if (initializationStatements.Length > 0)
+        if (declaration.Branches.Count > 0)
         {
             writer.BlankLine();
 
-            for (var index = 0; index < initializationStatements.Length; index++)
+            for (var index = 0; index < declaration.Branches.Count; index++)
             {
-                if (index == initializationStatements.Length - 1 && index > 0)
+                if (index == declaration.Branches.Count - 1 && index > 0)
                 {
                     writer.BlankLine();
                 }
 
-                writer.WriteLine(initializationStatements[index]);
+                var branch = declaration.Branches[index];
+                branch.Plan.EmitUnionNativeInitialization(writer, implementationNamespace, NativeFieldPrefix(branch.Plan, "allocatePointers", "allocateMemory"));
             }
         }
 

@@ -80,7 +80,7 @@ public sealed class PrimitiveTypeMappingSpecs
         // Assert
         booleanFromNative.ShouldBe("global::System.Convert.ToBoolean(value)");
         characterToNative.ShouldBe("NativeChar.ToUtf8(value)");
-        wideCharacterToNative.ShouldBe("(short)value");
+        wideCharacterToNative.ShouldBe("unchecked((short)value)");
     }
 
     /// <summary>Checks annotation defaults remain expressed in managed primitive types.</summary>

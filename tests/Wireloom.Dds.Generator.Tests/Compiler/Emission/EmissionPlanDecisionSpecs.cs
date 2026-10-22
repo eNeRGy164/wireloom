@@ -182,7 +182,7 @@ public sealed class EmissionPlanDecisionSpecs
         // Arrange
         var enumType = new EnumEmissionType("Example.State", 0, "Zero");
         var implicitDefaultPlan = CreateEnumMemberPlan(enumType, valueMetadata: null);
-        var explicitDefaultPlan = CreateEnumMemberPlan(enumType, new IdlMemberValueMetadata(defaultValue: BigInteger.Zero));
+        var explicitDefaultPlan = CreateEnumMemberPlan(enumType, new IdlMemberValueMetadata(defaultValue: new IdlScalarValue.Enumeration("Example.State", "Zero", 0)));
 
         // Act
         var implicitInitialization = implicitDefaultPlan.BuildInitializeStatement();

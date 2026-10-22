@@ -30,7 +30,7 @@ internal sealed class IdlConstantParser
         var expression = constant.Groups["expression"].Value.Trim();
         var declarationOffset = context.MapOffset(baseOffset + position);
         context.DeferGeneratedDeclarationNameValidation(input, declarationOffset, name, ["Value"]);
-        var declaration = new IdlConstantDeclaration(name, type, expression, currentNamespace, Path.GetFileName(input.Path), integerValue: null, input, declarationOffset);
+        var declaration = new IdlConstantDeclaration(name, type, expression, currentNamespace, Path.GetFileName(input.Path), value: null, input, declarationOffset);
 
         context.Symbols.AddConstant(qualified, declaration);
         context.Declarations.Add(declaration);
@@ -40,24 +40,4 @@ internal sealed class IdlConstantParser
         return true;
     }
 
-    internal static void ValidateConstantRange(IdlInput input, int offset, string type, BigInteger value)
-    {
-        var (minimum, maximum) = type switch
-        {
-            "int8" => (BigInteger.Parse("-128"), BigInteger.Parse("127")),
-            "uint8" or "octet" => (BigInteger.Zero, BigInteger.Parse("255")),
-            "short" or "int16" => (BigInteger.Parse("-32768"), BigInteger.Parse("32767")),
-            "unsigned short" or "uint16" => (BigInteger.Zero, BigInteger.Parse("65535")),
-            "long" or "int32" => (BigInteger.Parse(int.MinValue.ToString()), BigInteger.Parse(int.MaxValue.ToString())),
-            "unsigned long" or "uint32" => (BigInteger.Zero, BigInteger.Parse(uint.MaxValue.ToString())),
-            "long long" or "int64" => (BigInteger.Parse(long.MinValue.ToString()), BigInteger.Parse(long.MaxValue.ToString())),
-            "unsigned long long" or "uint64" => (BigInteger.Zero, BigInteger.Parse(ulong.MaxValue.ToString())),
-            _ => throw new InvalidOperationException($"Unsupported integral constant type: {type}")
-        };
-
-        if (value < minimum || value > maximum)
-        {
-            throw new IdlException(input, offset, $"{type} constant value is outside its representable range.");
-        }
-    }
 }

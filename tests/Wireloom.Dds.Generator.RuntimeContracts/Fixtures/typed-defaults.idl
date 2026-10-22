@@ -1,0 +1,35 @@
+module TypedDefaults {
+    @final enum FixedKind { FixedFirst, FixedSecond };
+    @extensibility(APPENDABLE) enum GrowingKind { GrowingFirst, GrowingSecond };
+    @default(7) typedef long Seven;
+    @default(9) typedef Seven Nine;
+    @default("alias") typedef string<16> Text;
+    @default(1.5) typedef double Ratio;
+    @default(-0.0) typedef double NegativeZero;
+    @default(-0.0) typedef float NegativeFloatZero;
+    @default(L'\uFFFF') typedef wchar HighCharacter;
+    typedef HighCharacter InheritedCharacter;
+    const string Joined = "A" "B";
+    @default(Joined) typedef string<2> JoinedText;
+
+    @topic
+    struct Sample {
+        Seven inherited;
+        @default(10) Seven overridden;
+        Nine nested;
+        Text text;
+        Ratio ratio;
+        @default("local") string<12> localText;
+        @default(2.5) double localRatio;
+        NegativeZero negativeZero;
+        NegativeFloatZero negativeFloatZero;
+        @default(L'\u8000') wchar highCharacter;
+        InheritedCharacter inheritedCharacter;
+        JoinedText joinedText;
+        @default("\x4" "1") string<2> tokenBoundary;
+    };
+
+    struct Derived : Sample {
+        @default(11) long localValue;
+    };
+};

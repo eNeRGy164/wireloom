@@ -1,7 +1,7 @@
 namespace Wireloom.Compiler.FrontEnd.Semantic;
 
 /// <summary>Represents raw typedef facts retained until semantic type resolution.</summary>
-internal sealed class IdlTypedef(string name, string? @namespace, string target, string? elementType, int? bound, IReadOnlyList<int>? dimensions = null, int? stringBound = null, bool isWideString = false)
+internal sealed class IdlTypedef(string name, string? @namespace, string target, string? elementType, int? bound, IReadOnlyList<int>? dimensions = null, int? stringBound = null, bool isWideString = false, string? defaultExpression = null)
 {
     public string Name { get; } = name;
     public string? Namespace { get; } = @namespace;
@@ -16,6 +16,11 @@ internal sealed class IdlTypedef(string name, string? @namespace, string target,
     public bool IsWideString { get; } = isWideString;
     public int StringBound { get; private set; } = stringBound ?? 255;
     public bool IsStringBounded { get; private set; } = stringBound is not null;
+    /// <summary>Gets the declared default expression retained until the alias type is bound.</summary>
+    public string? DefaultExpression { get; } = defaultExpression;
+
+    /// <summary>Gets the typed default resolved for this alias.</summary>
+    public IdlMemberValueMetadata? ValueMetadata { get; private set; }
 
     /// <summary>Applies a sequence bound resolved after parsing.</summary>
     internal void SetBound(int value) => Bound = value;
@@ -27,4 +32,6 @@ internal sealed class IdlTypedef(string name, string? @namespace, string target,
         IsStringBounded = true;
     }
 
+    /// <summary>Applies the typed default after binding the alias target.</summary>
+    internal void SetValueMetadata(IdlMemberValueMetadata? valueMetadata) => ValueMetadata = valueMetadata;
 }
