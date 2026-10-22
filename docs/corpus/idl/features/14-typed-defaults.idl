@@ -1,0 +1,1 @@
+@default(value=7) typedef long Seven; @default(value="alias") typedef string<8> TextAlias; @default(value=1.5) typedef double Ratio; struct TypedDefaults { Seven inherited; @default(value=9) Seven overridden; TextAlias text; Ratio ratio; float single; };

@@ -11,8 +11,8 @@
     "correctionCaptureRunId": "",
     "correctionCaptureRunIds": [],
     "captureRuns": [],
-    "state": "captured-pending-review",
-    "licenseStatus": "licensee-generated; do not redistribute without review"
+    "state": "captured",
+    "licenseStatus": "generated reference output; original notices retained; not relicensed under the repository MIT License"
   },
   "positiveCases": [
     { "id": "01-primitives", "theme": "primitive values", "idl": "idl/features/01-primitives.idl", "defines": [] },
@@ -96,6 +96,16 @@
     { "id": "07-union-char-numeric-255", "theme": "numeric label 255 for a character union discriminator", "idl": "idl/features/07-union-char-numeric-255.idl", "defines": [], "observedOutcome": "accepted", "observedDiagnostics": ["RTI Connext DDS 7.7.0.1 / rtiddsgen 4.7.0 accepts numeric label 255; generated C# assigns the integer label to char without a cast and fails consumer compilation with CS0266."], "runtimeSupport": "verified", "runtimeSupportNote": "All 18 exchanges pass on both profiles with the documented RTI C# and C++ character-binding corrections.", "tag": "C141" },
     {"id": "10-resolve-name-wstring-aliases","theme": "first-level and chained wstring aliases with @resolve_name(false)","idl": "idl/features/10-resolve-name-wstring-aliases.idl","defines": [],"observedOutcome": "accepted","observedDiagnostics": ["RTI-generated C# source fails unmodified compilation with CS0400 and CS8377; the wire harness qualifies two generated unmanaged alias types with the IDL module. RTI C++ requires correcting both generated wstring TypeCode references to their alias-tag types."],"managedOutcome": "accepted","managedDiagnostics": [],"oracleSourcesRetained": true,"oracleDirectory": "rtiddsgen/csharp/negative/10-resolve-name-wstring-aliases","runtimeSupport": "verified","runtimeSupportNote": "All 18 exchanges pass on both profiles for empty and boundary wstring alias values after the RTI C# namespace and C++ alias-tag corrections. Retained RTI C# source fails compilation with CS0400 and CS8377.","tag": "C147"}
     ,{"id": "10-default-literal-enum-array","theme": "enum array initialization using @default_literal","idl": "idl/features/10-default-literal-enum-array.idl","defines": [],"observedOutcome": "accepted","observedDiagnostics": ["RTI 7.3.1 / rtiddsgen 4.3.1 and RTI 7.7.0 / rtiddsgen 4.7.0: generated and compiled C#. RTI 7.3.1 initializes ColorArray elements to zero (GREEN); RTI 7.7.0 initializes them to Color.RED. Wireloom initializes managed and native enum arrays to Color.RED under both profiles; runtime contracts cover typedef arrays, enum alias chains, direct multidimensional member arrays, and native initialization."],"managedOutcome": "accepted","managedDiagnostics": [],"oracleSourcesRetained": true,"runtimeSupport": "partial", "runtimeSupportNote": "Fixtures are default-constructed. On 7.3.1, Wireloom sends RED while RTI C# and C++ send GREEN, so four of nine cross-implementation exchanges fail. On 7.7.0, all peers send RED and all nine exchanges pass.", "tag": "C148"}
+    , {"id":"14-extensibility-full","theme":"full-form mutable extensibility annotation","idl":"idl/features/14-extensibility-full.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C163"}
+    , {"id":"14-autoid-scope","theme":"bare hash autoid and module scope","idl":"idl/features/14-autoid-scope.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C164"}
+    , {"id":"14-annotation-arguments","theme":"boolean, named, and constant annotation arguments","idl":"idl/features/14-annotation-arguments.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C165"}
+    , {"id":"14-member-declarators","theme":"multiple struct declarators and per-declarator dimensions","idl":"idl/features/14-member-declarators.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C166"}
+    , {"id":"14-union-label-expressions","theme":"symbolic, arithmetic, and hexadecimal union labels","idl":"idl/features/14-union-label-expressions.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C167"}
+    , {"id":"14-union-scoped-enum","theme":"scoped enum union labels and enum constants","idl":"idl/features/14-union-scoped-enum.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C168"}
+    , {"id":"14-union-array-branch","theme":"direct fixed-array union branch","idl":"idl/features/14-union-array-branch.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C169"}
+    , {"id":"14-string-expression-bound","theme":"expression-valued bounded string types","idl":"idl/features/14-string-expression-bound.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C170"}
+    , {"id":"14-typed-defaults","theme":"string, floating-point, and typedef defaults","idl":"idl/features/14-typed-defaults.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C171"}
+    , {"id":"14-enum-constant","theme":"named enum-valued constant","idl":"idl/features/14-enum-constant.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C172"}
   ],
   "negativeCases": [
     {"id":"12-lexical","theme":"unterminated lexical input","idl":"idl/negative/12-lexical.idl","observedOutcome":"rejected","observedDiagnostics":["RTI 7.7.0.1: ERROR com.rti.ndds.nddsgen.antlr.auto.IdlParser 12-lexical.idl line 2:0 mismatched input '<EOF>' expecting '}' in structure"]},

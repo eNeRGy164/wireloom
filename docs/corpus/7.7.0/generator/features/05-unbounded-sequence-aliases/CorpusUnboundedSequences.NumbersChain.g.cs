@@ -38,7 +38,7 @@ public partial class NumbersChain : global::System.IEquatable<NumbersChain>
     /// Initializes a copy of another typedef value.
     /// </summary>
     /// <param name="other">The typedef to copy.</param>
-    /// <remarks>When <paramref name="other"/> is null, the constructor returns without copying and keeps its property initializer. An aggregate value is copied through its generated copy constructor.</remarks>
+    /// <remarks>When <paramref name="other"/> is null, the constructor keeps the declared default and property initializer. An aggregate value is copied through its generated copy constructor.</remarks>
     public NumbersChain(NumbersChain? other)
     {
         if (other is not null)

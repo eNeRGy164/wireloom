@@ -33,6 +33,8 @@ internal class ColorAliasPlugin : InterpretedTypePlugin<ColorAlias, ColorAliasUn
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<ColorAliasUnmanaged>(dtf, "ColorAlias", ColorSupport.Instance.GetDynamicTypeInternal(isPublic));
+        var aliasType = tsf.CreateAliasWithAccessInfo<ColorAliasUnmanaged>(dtf, "ColorAlias", ColorSupport.Instance.GetDynamicTypeInternal(isPublic));
+
+        return aliasType;
     }
 }

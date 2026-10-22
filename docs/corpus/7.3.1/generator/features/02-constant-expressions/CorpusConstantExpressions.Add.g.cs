@@ -14,5 +14,5 @@ public static class Add
     /// <summary>
     /// Gets the integer value of the <c>Add</c> IDL constant.
     /// </summary>
-    public const int Value = 2 + 3;
+    public const int Value = 5;
 }

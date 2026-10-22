@@ -1,0 +1,1 @@
+struct Declarators { @key @id(4) long first, second; long numbers[2], matrix[2][3]; };

@@ -84,7 +84,7 @@ public sealed class CorpusComplianceSpecs
     public void CorpusManifestAndOracleLibraryHaveExpectedCaseCoverage()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(162);
+        cases.Length.ShouldBe(172);
         cases.ShouldBeUnique();
         CorpusRepository.OracleCaseIds.ShouldBe(CorpusRepository.Cases
             .Where(corpusCase => corpusCase.OracleSourcesRetained)

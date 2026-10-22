@@ -12,5 +12,5 @@ public static class BranchValue
     /// <summary>
     /// Gets the integer value of the <c>BranchValue</c> IDL constant.
     /// </summary>
-    public const int Value = IncludedConstant.Value + 1;
+    public const int Value = 8;
 }

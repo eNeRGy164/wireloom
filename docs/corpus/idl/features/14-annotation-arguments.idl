@@ -1,0 +1,1 @@
+const long Selected = 0x2a; struct AnnotationArguments { @key(false) @optional(false) long plain; @id(value=0x10) @default(value=Selected) long selected; };

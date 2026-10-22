@@ -109,7 +109,17 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "12-macro-recursion",
         "12-macro-arity-windows",
         "12-macro-arity-linux",
-        "13-compositions"
+        "13-compositions",
+        "14-extensibility-full",
+        "14-autoid-scope",
+        "14-annotation-arguments",
+        "14-member-declarators",
+        "14-union-label-expressions",
+        "14-union-scoped-enum",
+        "14-union-array-branch",
+        "14-string-expression-bound",
+        "14-typed-defaults",
+        "14-enum-constant"
     ];
 
     public bool ExpectedToCompile => ExpectedToCompileForProfile(CorpusRepository.RtiProfile);

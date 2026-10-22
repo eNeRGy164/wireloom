@@ -1,0 +1,1 @@
+enum Choice { FIRST, SECOND }; const Choice Selected = Choice::SECOND; union ScopedEnum switch(Choice) { case Selected: long selected; case Choice::FIRST: long first; };

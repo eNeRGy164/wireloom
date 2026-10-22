@@ -14,5 +14,5 @@ public static class Masked
     /// <summary>
     /// Gets the integer value of the <c>Masked</c> IDL constant.
     /// </summary>
-    public const int Value = Shifted.Value & 15 ^ 3;
+    public const int Value = 6;
 }

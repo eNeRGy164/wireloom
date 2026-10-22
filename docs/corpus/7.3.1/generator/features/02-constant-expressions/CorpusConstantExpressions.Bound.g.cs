@@ -14,5 +14,5 @@ public static class Bound
     /// <summary>
     /// Gets the integer value of the <c>Bound</c> IDL constant.
     /// </summary>
-    public const int Value = Masked.Value - 1;
+    public const int Value = 5;
 }

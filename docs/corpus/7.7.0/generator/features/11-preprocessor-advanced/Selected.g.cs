@@ -12,5 +12,5 @@ public static class Selected
     /// <summary>
     /// Gets the integer value of the <c>Selected</c> IDL constant.
     /// </summary>
-    public const int Value = 4 + 3 + 2;
+    public const int Value = 9;
 }

@@ -1,0 +1,1 @@
+enum Color { RED, GREEN }; const Color Selected = Color::GREEN; struct EnumConstant { Color color; }; union EnumUnion switch(Color) { case Selected: long selected; case Color::RED: long red; };
