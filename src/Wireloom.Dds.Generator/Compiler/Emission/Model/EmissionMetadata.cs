@@ -10,6 +10,10 @@ internal sealed class IdlEmissionField(string name, EmissionTypePlan type, Emiss
     public EmissionTypePlan DeclaredType { get; } = declaredType ?? type;
     public bool IsKey => Metadata.IsKey;
     public int? MemberId => Metadata.MemberId;
+
+    /// <summary>Gets the bound identifier used by runtime type metadata.</summary>
+    public int? EffectiveMemberId => Metadata.EffectiveMemberId;
+
     public bool IsOptional => Metadata.IsOptional;
     public IdlMemberValueMetadata? ValueMetadata => Metadata.ValueMetadata;
     public bool IsExternal => Metadata.IsExternal;
@@ -27,10 +31,14 @@ internal sealed class IdlEmissionField(string name, EmissionTypePlan type, Emiss
 }
 
 /// <summary>Preserves member metadata needed by target-specific emission.</summary>
-internal sealed class EmissionMetadata(bool isKey, int? memberId, bool isOptional, IdlMemberValueMetadata? valueMetadata, bool isExternal, bool isMustUnderstand, string? memberIdHashSource, bool usesAutoIdHash)
+internal sealed class EmissionMetadata(bool isKey, int? memberId, bool isOptional, IdlMemberValueMetadata? valueMetadata, bool isExternal, bool isMustUnderstand, string? memberIdHashSource, bool usesAutoIdHash, int? effectiveMemberId = null)
 {
     public bool IsKey { get; } = isKey;
     public int? MemberId { get; } = memberId;
+
+    /// <summary>Gets the bound identifier used by runtime type metadata.</summary>
+    public int? EffectiveMemberId { get; } = effectiveMemberId;
+
     public bool IsOptional { get; } = isOptional;
     public IdlMemberValueMetadata? ValueMetadata { get; } = valueMetadata;
     public bool IsExternal { get; } = isExternal;

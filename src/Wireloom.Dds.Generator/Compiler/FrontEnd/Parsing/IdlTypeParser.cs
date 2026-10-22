@@ -104,7 +104,7 @@ internal sealed class IdlTypeParser
             var memberId = fieldAnnotations.MemberId;
             var memberIdHashSource = fieldAnnotations.HashIdExpression is not null
                 ? string.IsNullOrEmpty(fieldAnnotations.HashIdExpression) ? field : fieldAnnotations.HashIdExpression
-                : useHashIds && fieldAnnotations.MemberIdExpression is null ? field : null;
+                : useHashIds && fieldAnnotations.MemberId is null && fieldAnnotations.MemberIdExpression is null ? field : null;
             if (memberId is null && memberIdHashSource is not null)
             {
                 memberId = IdlMemberIdHash.Compute(memberIdHashSource);

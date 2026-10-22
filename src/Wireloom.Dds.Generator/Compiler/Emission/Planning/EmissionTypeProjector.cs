@@ -44,7 +44,8 @@ internal static class EmissionTypeProjector
                 member.Metadata.IsExternal,
                 member.Metadata.IsMustUnderstand,
                 member.Metadata.MemberIdHashSource,
-                member.Metadata.UsesAutoIdHash),
+                member.Metadata.UsesAutoIdHash,
+                member.Metadata.EffectiveMemberId),
             declaredType);
     }
 

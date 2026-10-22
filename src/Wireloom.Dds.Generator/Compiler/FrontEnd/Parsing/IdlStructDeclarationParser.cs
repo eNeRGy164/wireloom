@@ -56,7 +56,6 @@ internal sealed class IdlStructDeclarationParser
         var extensibility = prefix.Extensibility ?? IdlExtensibilityKind.Extensible;
         var fields = ParseMembers(input, body, baseOffset + openingBrace + 1, currentNamespace, fullyQualifiedName, useHashIds);
         var validationOffset = context.MapOffset(baseOffset + declarationStart);
-        context.DeferMemberIdValidation(input, validationOffset, fields);
         var baseType = declaration.Groups["base"].Success
             ? NormalizeIdlType(declaration.Groups["base"].Value)
             : null;
@@ -74,6 +73,7 @@ internal sealed class IdlStructDeclarationParser
             baseType,
             baseTypeOffset,
             isTopic);
+        context.DeferMemberIdValidation(input, validationOffset, parsedDeclaration);
         context.Declarations.Add(parsedDeclaration);
 
         context.AddClass(fullyQualifiedName, parsedDeclaration);
