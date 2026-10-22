@@ -1,0 +1,9 @@
+module RuntimeUnionArrays {
+    struct Item { long value; };
+    union Choice switch(long) {
+        case 0: long scalar;
+        case 1: Item items[2];
+        case 2: Item matrix[2][2];
+        default: Item fallback[2];
+    };
+};

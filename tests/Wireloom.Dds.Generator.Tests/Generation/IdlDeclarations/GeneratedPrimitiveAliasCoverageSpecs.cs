@@ -60,8 +60,8 @@ public sealed class GeneratedPrimitiveAliasCoverageSpecs
 
         var wcharNative = documents["PrimitiveAliases.Implementation.WcharAliasUnmanaged.g.cs"].Source;
         wcharNative.ShouldContain("private short Value;");
-        wcharNative.ShouldContain("sample.Value = (char)Value;");
-        wcharNative.ShouldContain("Value = (short)sample.Value;");
+        wcharNative.ShouldContain("sample.Value = unchecked((char)Value);");
+        wcharNative.ShouldContain("Value = unchecked((short)sample.Value);");
 
         var octetPlugin = documents["PrimitiveAliases.Implementation.OctetAliasPlugin.g.cs"].Source;
         octetPlugin.ShouldContain("dtf.GetPrimitiveType<Octet>()");

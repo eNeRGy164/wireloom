@@ -73,7 +73,7 @@ internal sealed class PrimitiveTypeMapping(
             case "char":
                 return $"NativeChar.FromUtf8({source})";
             case "wchar":
-                return $"(char){source}";
+                return $"unchecked((char){source})";
             default:
                 return source;
         }
@@ -89,7 +89,7 @@ internal sealed class PrimitiveTypeMapping(
             case "char":
                 return $"NativeChar.ToUtf8({source})";
             case "wchar":
-                return $"(short){source}";
+                return $"unchecked((short){source})";
             default:
                 return source;
         }

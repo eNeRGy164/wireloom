@@ -1,0 +1,12 @@
+@autoid(HASH)
+module RuntimeUnionIds {
+    union HashChoice switch(long) {
+        case 0: long hashed;
+        default: long other;
+    };
+    @autoid(SEQUENTIAL)
+    union SequentialChoice switch(long) {
+        case 0: long hashed;
+        default: long other;
+    };
+};

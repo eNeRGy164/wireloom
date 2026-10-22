@@ -30,6 +30,9 @@ internal static class UnionSamples
             case 5:
                 sample.vector = new Vector([5, 6]);
                 break;
+            case 6:
+                sample.values = [7, 8];
+                break;
             default:
                 sample.Setflag(true, branch);
                 break;

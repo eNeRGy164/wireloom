@@ -14,8 +14,13 @@ internal sealed class IdlTypedefParser
         this.context = context;
 
     /// <summary>Parses a typedef declaration when one begins at the current position.</summary>
-    internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, ref int position)
+    internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, string? defaultExpression, ref int position)
     {
+        if (defaultExpression is not null && (SequenceTypedefPattern.IsMatch(declarations.Substring(position)) || ArrayTypedefPattern.IsMatch(declarations.Substring(position))))
+        {
+            throw new IdlException(input, context.MapOffset(baseOffset + position), "@default is only supported on scalar and string typedefs.");
+        }
+
         var sequenceTypedef = SequenceTypedefPattern.Match(declarations.Substring(position));
         if (sequenceTypedef.Success)
         {
@@ -96,9 +101,11 @@ internal sealed class IdlTypedefParser
                 null,
                 null,
                 stringBound: bound?.Value,
-                isWideString: isWideString);
+                isWideString: isWideString,
+                defaultExpression: defaultExpression);
             bound?.AddConsumer(parsedStringTypedef.SetStringBound);
             context.AddTypedef(typeName, parsedStringTypedef, input, baseOffset + position);
+            DeferTypedefDefault(parsedStringTypedef, input, baseOffset + position, currentNamespace, typedefTarget, defaultExpression);
             context.Declarations.Add(new IdlTypedefDeclaration(parsedStringTypedef, Path.GetFileName(input.Path)));
 
             position += typedefDeclaration.Length;
@@ -111,8 +118,10 @@ internal sealed class IdlTypedefParser
             currentNamespace,
             typedefTarget,
             null,
-            null);
+            null,
+            defaultExpression: defaultExpression);
         context.AddTypedef(typeName, parsedTypedef, input, baseOffset + position);
+        DeferTypedefDefault(parsedTypedef, input, baseOffset + position, currentNamespace, typedefTarget, defaultExpression);
         context.Declarations.Add(new IdlTypedefDeclaration(parsedTypedef, Path.GetFileName(input.Path)));
 
         position += typedefDeclaration.Length;
@@ -127,4 +136,14 @@ internal sealed class IdlTypedefParser
         "GetHashCode",
         "ToString"
     ];
+
+    private void DeferTypedefDefault(IdlTypedef typedef, IdlInput input, int offset, string? currentNamespace, string target, string? defaultExpression)
+    {
+        if (defaultExpression is null)
+        {
+            return;
+        }
+
+        context.ValueBinder.DeferTypedefDefault(typedef, input, context.MapOffset(offset), currentNamespace, target, defaultExpression);
+    }
 }

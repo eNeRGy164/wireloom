@@ -22,7 +22,7 @@ public sealed class UnionSpecs
         choice.Discriminator.ShouldBe(Choice.DefaultDiscriminator);
         if (RtiRuntimeProfile.Uses731Profile)
         {
-            choice.Discriminator.ShouldBe(6);
+            choice.Discriminator.ShouldBe(7);
             choice.flag.ShouldBeFalse();
             choice.Get().ShouldBe(false);
         }
@@ -88,6 +88,7 @@ public sealed class UnionSpecs
     [InlineData(4)]
     [InlineData(5)]
     [InlineData(6)]
+    [InlineData(7)]
     public void CopiesAndFormatsEveryBranch(int branch)
     {
         // Arrange
@@ -125,6 +126,8 @@ public sealed class UnionSpecs
         var childCopy = new Choice(source);
         var sequenceCopy = new Choice(sequence);
         var arrayCopy = new Choice(array);
+        var directArray = new Choice { values = [5, 6] };
+        var directArrayCopy = new Choice(directArray);
 
         // Assert
         childCopy.child.ShouldNotBeSameAs(source.child);
@@ -135,5 +138,8 @@ public sealed class UnionSpecs
         sequence.numbers.Value[0].ShouldBe(1);
         arrayCopy.vector.Value[0] = 99;
         array.vector.Value[0].ShouldBe(3);
+        directArrayCopy.values[0] = 99;
+        directArray.values.ShouldBe([5, 6]);
+        directArrayCopy.Discriminator.ShouldBe(6);
     }
 }

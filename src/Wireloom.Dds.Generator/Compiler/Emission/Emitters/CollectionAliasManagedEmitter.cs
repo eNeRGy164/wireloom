@@ -263,6 +263,10 @@ internal static class CollectionAliasManagedEmitter
             {
                 writer.WriteLine($"Value = new {elementReference}();");
             }
+            else if (plan.ManagedDefaultLiteral is { } defaultLiteral)
+            {
+                writer.WriteLine($"Value = {defaultLiteral};");
+            }
 
             writer.CloseBlock();
             writer.BlankLine();
@@ -280,8 +284,8 @@ internal static class CollectionAliasManagedEmitter
 
             writer.WriteXmlSummary("Initializes a copy of another typedef value.");
             writer.WriteXmlParam("other", "The typedef to copy.");
-            writer.WriteXmlRemarks("When <paramref name=\"other\"/> is null, the constructor returns without copying and keeps its property initializer. An aggregate value is copied through its generated copy constructor.");
-            writer.OpenBlock($"public {typeName}({typeName}? other)");
+            writer.WriteXmlRemarks("When <paramref name=\"other\"/> is null, the constructor keeps the declared default and property initializer. An aggregate value is copied through its generated copy constructor.");
+            writer.OpenBlock($"public {typeName}({typeName}? other){(plan.ManagedDefaultLiteral is not null ? " : this()" : string.Empty)}");
             writer.OpenBlock("if (other is not null)");
             if (plan.IsAggregate)
             {

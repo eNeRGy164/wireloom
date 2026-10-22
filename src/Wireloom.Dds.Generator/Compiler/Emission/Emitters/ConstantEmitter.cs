@@ -1,9 +1,7 @@
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Globalization;
-using System.Text.RegularExpressions;
+using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.FrontEnd.Symbols;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -16,12 +14,28 @@ internal static class ConstantEmitter
     {
         var name = declaration.Name;
         var currentNamespace = declaration.Namespace;
-        var type = MapConstantType(declaration.Type);
-        var expression = ShouldEmitEvaluatedLiteral(declaration)
-            ? FormatIntegerLiteral(declaration.Type, declaration.IntegerValue!.Value)
-            : FormatExpression(
-                NormalizeRepeatedAdditiveOperators(ReplaceConstantReferences(declaration.Expression, currentNamespace, compilation)),
-                declaration.Type);
+
+        var effectiveIdlType = ResolveEffectiveConstantType(compilation, declaration);
+        string type;
+        if (declaration.Value is IdlScalarValue.Enumeration { TypeQualifiedName: var enumTypeQualifiedName })
+        {
+            type = IdlNaming.ResolvedTypeReference(enumTypeQualifiedName, currentNamespace);
+        }
+        else
+        {
+            type = MapConstantType(effectiveIdlType);
+        }
+
+        var expression = declaration.Value switch
+        {
+            IdlScalarValue.Enumeration enumeration => $"{IdlNaming.ResolvedTypeReference(enumeration.TypeQualifiedName, currentNamespace)}.{IdlNaming.EscapeIdentifier(enumeration.MemberName)}",
+            IdlScalarValue.Text text when !IsSimpleConstantReference(declaration.Expression) => SymbolDisplay.FormatLiteral(text.Value, quote: true),
+            IdlScalarValue.Floating floating => CSharpScalarValueFormatter.FormatFloating(type, floating.Value),
+            IdlScalarValue.Integral integer => CSharpScalarValueFormatter.Format(type, integer.Value),
+            IdlScalarValue.Boolean boolean => boolean.Value ? "true" : "false",
+            IdlScalarValue.Character character when !IsSimpleConstantReference(declaration.Expression) => CSharpScalarValueFormatter.Format("char", character.Value),
+            _ => FormatConstantReference(compilation, declaration)
+        };
 
         var writer = EmissionSupport.CreateSource(currentNamespace, [], sourceIdlFileName);
 
@@ -47,273 +61,39 @@ internal static class ConstantEmitter
         _ => IdlNaming.MapPrimitive(type)
     };
 
-    private static string FormatIntegerLiteral(string type, BigInteger value) => type switch
+    private static string ResolveEffectiveConstantType(CompilationContext compilation, IdlConstantDeclaration declaration)
     {
-        "long long" or "int64" when value == long.MinValue => "long.MinValue",
-        "long long" or "int64" => $"{value}L",
-        "unsigned long long" or "uint64" when value == ulong.MaxValue => "ulong.MaxValue",
-        "unsigned long long" or "uint64" => $"{value}UL",
-        "unsigned long" or "uint32" => $"{value}U",
-        _ => value.ToString(CultureInfo.InvariantCulture)
-    };
-
-    private static bool ShouldEmitEvaluatedLiteral(IdlConstantDeclaration declaration)
-    {
-        return declaration.IntegerValue is not null &&
-            (declaration.Type is "long long" or "int64" or "unsigned long" or "uint32" or "unsigned long long" or "uint64"
-                || ContainsRepeatedAdditiveOperator(declaration.Expression))
-            || declaration.IntegerValue is { } value && value == long.MinValue;
-    }
-
-    private static bool ContainsRepeatedAdditiveOperator(string expression)
-    {
-        for (var index = 0; index < expression.Length; index++)
+        var resolvedType = compilation.ResolveType(declaration.Type, declaration.Namespace);
+        while (resolvedType is IdlType.Alias alias)
         {
-            if (expression[index] is not ('+' or '-'))
-            {
-                continue;
-            }
-
-            var next = index + 1;
-            while (next < expression.Length && char.IsWhiteSpace(expression[next]))
-            {
-                next++;
-            }
-
-            if (next < expression.Length && expression[next] == expression[index])
-            {
-                return true;
-            }
+            resolvedType = alias.Target;
         }
 
-        return false;
-    }
-
-    private static string NormalizeRepeatedAdditiveOperators(string expression)
-    {
-        var result = new System.Text.StringBuilder(expression.Length);
-        var codeStart = 0;
-
-        for (var index = 0; index < expression.Length; index++)
+        return resolvedType switch
         {
-            if (expression[index] is not ('\'' or '"'))
-            {
-                continue;
-            }
-
-            result.Append(NormalizeRepeatedAdditiveOperatorsInCode(expression[codeStart..index]));
-            var literalEnd = FindLiteralEnd(expression, index);
-            result.Append(expression[index..literalEnd]);
-            index = literalEnd - 1;
-            codeStart = literalEnd;
-        }
-
-        result.Append(NormalizeRepeatedAdditiveOperatorsInCode(expression[codeStart..]));
-        return result.ToString();
-    }
-
-    private static string NormalizeRepeatedAdditiveOperatorsInCode(string expression)
-    {
-        var result = new System.Text.StringBuilder(expression.Length);
-        char? previous = null;
-        foreach (var character in expression)
-        {
-            if (character is ('+' or '-')
-                && previous == character)
-            {
-                result.Append(' ');
-            }
-
-            result.Append(character);
-            previous = character;
-        }
-
-        return result.ToString();
-    }
-
-    private static string ReplaceConstantReferences(string expression, string? currentNamespace, CompilationContext compilation)
-    {
-        const string tokenPattern = "(?<![A-Za-z0-9_])(?<name>(?:::)?[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*)(?![A-Za-z0-9_])";
-        var result = new System.Text.StringBuilder(expression.Length);
-        var codeStart = 0;
-
-        for (var index = 0; index < expression.Length; index++)
-        {
-            if (expression[index] is not ('\'' or '"'))
-            {
-                continue;
-            }
-
-            result.Append(ReplaceConstantReferencesInCode(expression[codeStart..index], currentNamespace, compilation, tokenPattern));
-
-            var literalEnd = FindLiteralEnd(expression, index);
-            result.Append(expression[index..literalEnd]);
-            index = literalEnd - 1;
-            codeStart = literalEnd;
-        }
-
-        result.Append(ReplaceConstantReferencesInCode(expression[codeStart..], currentNamespace, compilation, tokenPattern));
-
-        return result.ToString();
-    }
-
-    private static string FormatExpression(string expression, string type)
-    {
-        var syntax = SyntaxFactory.ParseExpression(expression);
-        if (syntax.ContainsDiagnostics)
-        {
-            return expression;
-        }
-
-        var simplified = new ConstantLiteralRewriter(type)
-            .Visit(new RedundantParenthesesRewriter().Visit(syntax));
-        return simplified.NormalizeWhitespace().ToFullString();
-    }
-
-    private sealed class ConstantLiteralRewriter(string type) : CSharpSyntaxRewriter
-    {
-        public override SyntaxNode VisitIdentifierName(IdentifierNameSyntax node)
-        {
-            if (type == "boolean" && node.Identifier.ValueText is "TRUE" or "FALSE")
-            {
-                var value = node.Identifier.ValueText == "TRUE" ? "true" : "false";
-                return node.WithIdentifier(SyntaxFactory.Identifier(node.Identifier.LeadingTrivia, value, node.Identifier.TrailingTrivia));
-            }
-
-            return base.VisitIdentifierName(node)!;
-        }
-
-        public override SyntaxNode VisitLiteralExpression(LiteralExpressionSyntax node)
-        {
-            if ((type is "float" or "double") && node.IsKind(SyntaxKind.NumericLiteralExpression))
-            {
-                var text = node.Token.Text;
-                if ((text.IndexOf('.') >= 0 || text.IndexOf('e') >= 0 || text.IndexOf('E') >= 0)
-                    && !text.EndsWith("f", StringComparison.Ordinal)
-                    && !text.EndsWith("F", StringComparison.Ordinal)
-                    && !text.EndsWith("d", StringComparison.Ordinal)
-                    && !text.EndsWith("D", StringComparison.Ordinal))
-                {
-                    var suffix = type == "float" ? "F" : "D";
-                    var token = SyntaxFactory.ParseToken(text + suffix)
-                        .WithLeadingTrivia(node.Token.LeadingTrivia)
-                        .WithTrailingTrivia(node.Token.TrailingTrivia);
-                    return node.WithToken(token);
-                }
-            }
-
-            return base.VisitLiteralExpression(node)!;
-        }
-
-        public override SyntaxNode VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax node)
-        {
-            var visited = (PrefixUnaryExpressionSyntax)base.VisitPrefixUnaryExpression(node)!;
-            if (visited.Operand is PrefixUnaryExpressionSyntax nested
-                && visited.Kind() == nested.Kind())
-            {
-                return visited.WithOperand(SyntaxFactory.ParenthesizedExpression(nested));
-            }
-
-            return visited;
-        }
-    }
-
-    private sealed class RedundantParenthesesRewriter : CSharpSyntaxRewriter
-    {
-        public override SyntaxNode VisitParenthesizedExpression(ParenthesizedExpressionSyntax node)
-        {
-            var visited = (ParenthesizedExpressionSyntax)base.VisitParenthesizedExpression(node)!;
-            if (CanRemoveParentheses(node, visited.Expression))
-            {
-                return visited.Expression.WithTriviaFrom(visited);
-            }
-
-            return visited;
-        }
-
-        private static bool CanRemoveParentheses(ParenthesizedExpressionSyntax original, ExpressionSyntax expression)
-        {
-            if (original.Parent is null or ParenthesizedExpressionSyntax)
-            {
-                return true;
-            }
-
-            if (expression is not BinaryExpressionSyntax child)
-            {
-                return true;
-            }
-
-            if (original.Parent is not BinaryExpressionSyntax parent)
-            {
-                return false;
-            }
-
-            var childPrecedence = GetPrecedence(child.Kind());
-            var parentPrecedence = GetPrecedence(parent.Kind());
-            if (childPrecedence > parentPrecedence)
-            {
-                return true;
-            }
-
-            return childPrecedence == parentPrecedence && parent.Left == original;
-        }
-
-        private static int GetPrecedence(SyntaxKind kind) => kind switch
-        {
-            SyntaxKind.LogicalOrExpression => 1,
-            SyntaxKind.LogicalAndExpression => 2,
-            SyntaxKind.BitwiseOrExpression => 3,
-            SyntaxKind.ExclusiveOrExpression => 4,
-            SyntaxKind.BitwiseAndExpression => 5,
-            SyntaxKind.EqualsExpression or SyntaxKind.NotEqualsExpression => 6,
-            SyntaxKind.LessThanExpression or SyntaxKind.LessThanOrEqualExpression
-                or SyntaxKind.GreaterThanExpression or SyntaxKind.GreaterThanOrEqualExpression => 7,
-            SyntaxKind.LeftShiftExpression or SyntaxKind.RightShiftExpression => 8,
-            SyntaxKind.AddExpression or SyntaxKind.SubtractExpression => 9,
-            SyntaxKind.MultiplyExpression or SyntaxKind.DivideExpression or SyntaxKind.ModuloExpression => 10,
-            _ => 0
+            IdlType.Primitive primitive => primitive.Name,
+            IdlType.StringType { IsWide: true } => "wstring",
+            IdlType.StringType => "string",
+            _ => declaration.Type
         };
     }
 
-    private static string ReplaceConstantReferencesInCode(
-        string expression,
-        string? currentNamespace,
-        CompilationContext compilation,
-        string pattern) =>
-        Regex.Replace(expression, pattern, match =>
-        {
-            var reference = match.Groups["name"].Value;
-            if (!compilation.TryResolveConstant(reference, currentNamespace, out var qualifiedName))
-            {
-                return reference;
-            }
+    private static bool IsSimpleConstantReference(string expression) =>
+        IdlScopedName.IsValid(expression.Trim());
 
-            var isAbsolute = reference.StartsWith("::", StringComparison.Ordinal);
-            if (isAbsolute)
-            {
-                return $"global::{IdlNaming.EscapeQualifiedIdentifier(qualifiedName)}.Value";
-            }
-
-            return $"{IdlNaming.ResolvedTypeReference(qualifiedName, currentNamespace)}.Value";
-        });
-
-    private static int FindLiteralEnd(string expression, int literalStart)
+    private static string FormatConstantReference(CompilationContext compilation, IdlConstantDeclaration declaration)
     {
-        var quote = expression[literalStart];
-        for (var index = literalStart + 1; index < expression.Length; index++)
+        var reference = declaration.Expression.Trim();
+        if (!compilation.TryResolveConstant(reference, declaration.Namespace, out var qualifiedName))
         {
-            if (expression[index] == '\\')
-            {
-                index++;
-                continue;
-            }
-
-            if (expression[index] == quote)
-            {
-                return index + 1;
-            }
+            throw new InvalidOperationException($"Constant '{declaration.Name}' has no bound value or reference.");
         }
 
-        return expression.Length;
+        if (reference.StartsWith("::", StringComparison.Ordinal))
+        {
+            return $"global::{IdlNaming.EscapeQualifiedIdentifier(qualifiedName)}.Value";
+        }
+
+        return $"{IdlNaming.ResolvedTypeReference(qualifiedName, declaration.Namespace)}.Value";
     }
 }

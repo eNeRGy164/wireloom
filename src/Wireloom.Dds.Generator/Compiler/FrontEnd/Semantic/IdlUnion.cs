@@ -1,4 +1,5 @@
 using System.Globalization;
+using Wireloom.Compiler.FrontEnd.Symbols;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.FrontEnd.Semantic;
@@ -37,7 +38,7 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
     private IReadOnlyList<string> RawLabels { get; } = rawLabels ?? [];
 
     /// <summary>Resolves raw discriminator labels after all declarations are known.</summary>
-    internal void BindLabels(string? discriminatorIdlType, IdlEnum? discriminatorEnum)
+    internal void BindLabels(string? discriminatorIdlType, IdlEnum? discriminatorEnum, IdlSymbolTable symbols, string? currentNamespace)
     {
         var labels = new List<string>();
         var labelValues = new List<long>();
@@ -45,7 +46,7 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
         foreach (var label in RawLabels)
         {
             if ((discriminatorIdlType is "char" or "wchar")
-                && TryParseCharacterLabel(label, discriminatorIdlType == "wchar", out var characterLabel))
+                && IdlCharacterLiteralParser.TryParse(label, discriminatorIdlType == "wchar", out var characterLabel))
             {
                 ValidateLabelRange(discriminatorIdlType, label, characterLabel);
                 labels.Add(label);
@@ -61,40 +62,77 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
                 labels.Add(label);
                 labelValues.Add(0);
             }
-            else if (BigInteger.TryParse(label, NumberStyles.Integer, CultureInfo.InvariantCulture, out var numericLabel))
+            else if (discriminatorEnum is not null
+                && TryResolveEnumMember(label, discriminatorEnum, symbols, currentNamespace, out var enumMember)
+                && enumMember is not null)
             {
-                if (discriminatorIdlType is null)
-                {
-                    throw new IdlException(
-                        Field.SourceInput!,
-                        Field.SourceOffset,
-                        $"Unknown union discriminator label: {label}");
-                }
-
+                labels.Add(enumMember.Name);
+                labelValues.Add(enumMember.Value);
+            }
+            else if (symbols.TryResolveConstant(label.Trim(), currentNamespace, out var constant)
+                && constant.Value is IdlScalarValue.Boolean boolean && discriminatorIdlType == "boolean")
+            {
+                labels.Add(boolean.Value ? "TRUE" : "FALSE");
+                labelValues.Add(boolean.Value ? 1 : 0);
+            }
+            else if (symbols.TryResolveConstant(label.Trim(), currentNamespace, out constant)
+                && constant.Value is IdlScalarValue.Character character
+                && (discriminatorIdlType == "wchar" && character.IsWide || discriminatorIdlType == "char" && !character.IsWide))
+            {
+                labels.Add(((int)character.Value).ToString(CultureInfo.InvariantCulture));
+                labelValues.Add(character.Value);
+            }
+            else if (discriminatorIdlType is not null && TryEvaluateLabel(label, symbols, currentNamespace, out var numericLabel))
+            {
                 ValidateNumericLabel(discriminatorIdlType, label, numericLabel);
 
                 var labelValue = (long)numericLabel;
-                labels.Add(labelValue.ToString(CultureInfo.InvariantCulture));
+                string normalizedLabel;
+                if (discriminatorIdlType == "boolean")
+                {
+                    normalizedLabel = labelValue == 0 ? "FALSE" : "TRUE";
+                }
+                else
+                {
+                    normalizedLabel = labelValue.ToString(CultureInfo.InvariantCulture);
+                }
+
+                labels.Add(normalizedLabel);
                 labelValues.Add(labelValue);
             }
             else
             {
-                var enumMember = discriminatorEnum?.Members.SingleOrDefault(member => member.Name == label);
-                if (enumMember is null)
-                {
-                    throw new IdlException(
-                        Field.SourceInput!,
-                        Field.SourceOffset,
-                        $"Unknown union discriminator label: {label}");
-                }
-
-                labels.Add(label);
-                labelValues.Add(enumMember.Value);
+                throw new IdlException(Field.SourceInput!, Field.SourceOffset, $"Unknown union discriminator label: {label}");
             }
         }
 
         Labels = labels;
         LabelValues = labelValues;
+    }
+
+    private static bool TryEvaluateLabel(string label, IdlSymbolTable symbols, string? currentNamespace, out BigInteger value)
+    {
+        try
+        {
+            value = IdlConstantExpressionEvaluator.Evaluate(label, symbols, currentNamespace);
+            return true;
+        }
+        catch (FormatException)
+        {
+            value = BigInteger.Zero;
+            return false;
+        }
+    }
+
+    private bool TryResolveEnumMember(
+        string label,
+        IdlEnum discriminatorEnum,
+        IdlSymbolTable symbols,
+        string? currentNamespace,
+        out IdlEnumMember? enumMember)
+    {
+        enumMember = IdlEnumValueResolver.Resolve(label, discriminatorEnum, symbols, currentNamespace, Field.SourceInput!, Field.SourceOffset);
+        return enumMember is not null;
     }
 
     private void ValidateNumericLabel(string discriminatorIdlType, string label, BigInteger value)
@@ -128,50 +166,6 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
         }
     }
 
-    private static bool TryParseCharacterLabel(string label, bool allowWideLiteral, out int value)
-    {
-        value = 0;
-        var isWideLiteral = label.StartsWith("L'", StringComparison.Ordinal);
-        if (isWideLiteral && !allowWideLiteral)
-        {
-            return false;
-        }
-
-        var contentStart = isWideLiteral ? 2 : 1;
-        if (label.Length < contentStart + 2 || label[contentStart - 1] != '\'' || label[^1] != '\'')
-        {
-            return false;
-        }
-
-        var content = label[contentStart..^1];
-        var character = content switch
-        {
-            "\\0" => '\0',
-            "\\n" => '\n',
-            "\\r" => '\r',
-            "\\t" => '\t',
-            "\\\\" => '\\',
-            "\\'" => '\'',
-            _ when content.Length == 1 => content[0],
-            _ => '\0'
-        };
-
-        if (content.StartsWith("\\x", StringComparison.Ordinal)
-            && int.TryParse(content[2..], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var hexadecimalValue)
-            && hexadecimalValue <= char.MaxValue)
-        {
-            character = (char)hexadecimalValue;
-        }
-
-        if (content.Length != 1 && character == '\0' && content != "\\0")
-        {
-            return false;
-        }
-
-        value = character;
-
-        return true;
-    }
 }
 
 /// <summary>Represents the target-independent semantic form of an IDL union.</summary>

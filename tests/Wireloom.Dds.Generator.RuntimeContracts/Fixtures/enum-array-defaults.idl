@@ -8,6 +8,11 @@ module RuntimeEnumArrayDefaults {
     typedef Color ColorAlias;
     typedef ColorAlias ColorArray[3];
 
+    union Palette switch(long) {
+        case 1: long other;
+        default: ColorAlias colors[2];
+    };
+
     struct Shape {
         Color color;
         Color inlineColors[2][2];

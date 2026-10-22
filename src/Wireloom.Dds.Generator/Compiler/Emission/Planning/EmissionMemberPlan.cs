@@ -29,6 +29,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public EmissionTypePlan Type => facts.Type;
     public bool IsKey => facts.IsKey;
     public int? MemberId => facts.MemberId;
+
     public bool IsOptional => facts.IsOptional;
     public string CSharpType => facts.CSharpType;
     public int? Bound => facts.Bound;
@@ -37,7 +38,6 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public string? ElementCSharpType => facts.ElementCSharpType;
     public string? ElementSupportType => facts.ElementSupportType;
     public IReadOnlyList<int> Dimensions => facts.Dimensions;
-    public BigInteger? DefaultValue => facts.ValueMetadata?.DefaultValue;
     public BigInteger? MinimumValue => facts.ValueMetadata?.Minimum;
     public BigInteger? MaximumValue => facts.ValueMetadata?.Maximum;
     public string? DefaultExpression => facts.ValueMetadata?.DefaultExpression;
@@ -46,7 +46,7 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public bool IsMustUnderstand => facts.IsMustUnderstand;
     public string? MemberIdHashSource => facts.MemberIdHashSource;
     public bool UsesAutoIdHash => facts.UsesAutoIdHash;
-    public bool HasExplicitDefault => DefaultValue is not null;
+    public bool HasExplicitDefault => facts.ValueMetadata?.HasDefault == true;
     public bool HasManagedRange => MinimumValue is not null || MaximumValue is not null;
     public string ManagedBackingFieldName => managedBackingFieldName ?? EscapeIdentifier("_" + Name);
     public bool IsString => facts.IsString;
@@ -241,6 +241,12 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
         {
             var copy = $"new {TypeReference(CSharpType.TrimEnd('?'), currentNamespace)}({source})";
             return IsOptional ? $"{source} is null ? null : {copy}" : copy;
+        }
+
+        if (IsArray)
+        {
+            var copy = $"({TypeReference(CSharpType.TrimEnd('?'), currentNamespace)}){source}.Clone()";
+            return IsOptional ? $"{source} is null ? null! : {copy}" : copy;
         }
 
         return source;

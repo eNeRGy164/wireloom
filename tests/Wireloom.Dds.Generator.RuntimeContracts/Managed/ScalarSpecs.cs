@@ -36,9 +36,7 @@ public sealed class ScalarSpecs
         sample.state.ShouldBe(State.Idle);
         sample.text.ShouldBeEmpty();
         sample.wideText.ShouldBeEmpty();
-        // Explicit IDL defaults run in the parameterless constructor, not the null-copy path.
-        copy.defaultNumber.ShouldBe(0);
-        sample.defaultNumber = 0;
+        copy.defaultNumber.ShouldBe(42);
         copy.Equals(sample).ShouldBeTrue();
     }
 

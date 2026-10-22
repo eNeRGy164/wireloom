@@ -87,6 +87,41 @@ internal sealed class IdlSymbolTable
     public bool TryGetConstant(string name, out IdlConstantDeclaration declaration) =>
         constants.TryGetValue(name, out declaration!);
 
+    /// <summary>Resolves a constant name through its enclosing module scopes.</summary>
+    internal bool TryResolveConstant(string name, string? currentNamespace, out IdlConstantDeclaration declaration)
+    {
+        if (!IdlScopedName.IsValid(name))
+        {
+            declaration = null!;
+            return false;
+        }
+
+        var normalized = name.TrimStart(':').Replace("::", ".");
+        if (name.StartsWith("::", StringComparison.Ordinal))
+        {
+            return constants.TryGetValue(normalized, out declaration!);
+        }
+
+        var scope = currentNamespace;
+        while (true)
+        {
+            var candidate = scope is null ? normalized : $"{scope}.{normalized}";
+            if (constants.TryGetValue(candidate, out declaration!))
+            {
+                return true;
+            }
+
+            if (scope is null)
+            {
+                declaration = null!;
+                return false;
+            }
+
+            var separator = scope.LastIndexOf('.');
+            scope = separator < 0 ? null : scope[..separator];
+        }
+    }
+
     public bool TryGetEnum(string name, out IdlEnum declaration) => enums.TryGetValue(name, out declaration!);
 
     /// <summary>Gets a class declaration by its canonical qualified name.</summary>

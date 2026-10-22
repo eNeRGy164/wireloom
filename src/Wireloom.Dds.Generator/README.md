@@ -435,15 +435,25 @@ metadata or the project default. For example:
 </ItemGroup>
 ```
 
-For `struct Sample { sequence<long, 4> values[2]; };`, the `Idl` mapping
-generates `Sample_valuesSequence[] values`. Each wrapper exposes its mutable
-sequence through `Value`:
+For `struct Sample { sequence<long, 4> values[2]; };` and a union branch such
+as `default: sequence<long, 4> values[2];`, the `Idl` mapping generates a fixed
+array of sequence wrappers (`Sample_valuesSequence[]` or
+`Choice_valuesSequence[]`). Each wrapper exposes its mutable sequence through
+`Value`:
 
 ```csharp
 var sample = new Sample();
 sample.values[0].Value.Add(10);
 sample.values[0].Value.Add(20);
 sample.values[1].Value.Add(30);
+```
+
+The same access pattern applies to a selected union branch:
+
+```csharp
+var choice = new Choice();
+choice.values[0].Value.Add(10);
+choice.values[1].Value.Add(20);
 ```
 
 The array has two elements; each sequence has its own length and maximum of

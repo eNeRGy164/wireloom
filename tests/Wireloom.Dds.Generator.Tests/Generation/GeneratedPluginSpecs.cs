@@ -142,6 +142,107 @@ public sealed class GeneratedPluginSpecs
     }
 
     [Fact]
+    public void TypedDefaultsFlowThroughAliasesManagedNativeAndDynamicTypeMetadata()
+    {
+        // Arrange
+        var input = Input("typed-defaults.idl",
+            """
+            @default(7) typedef long Seven;
+            @default(9) typedef Seven Nine;
+            @default("alias") typedef string<16> Text;
+            @default(1.5) typedef double Ratio;
+            @default(0.5) typedef float Factor;
+            struct Sample {
+                Seven inherited;
+                @default(10) Seven overridden;
+                Nine nested;
+                Text text;
+                Ratio ratio;
+                Factor factor;
+                @default("local") string<12> localText;
+                @default(2.5) double localRatio;
+                @default(0.25) float localFactor;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Sample.g.cs"].Source;
+        managed.ShouldContain("inherited = 7;");
+        managed.ShouldContain("overridden = 10;");
+        managed.ShouldContain("nested = 9;");
+        managed.ShouldContain("text = \"alias\";");
+        managed.ShouldContain("ratio = 1.5;");
+        managed.ShouldContain("factor = 0.5F;");
+        managed.ShouldContain("localText = \"local\";");
+        managed.ShouldContain("localRatio = 2.5;");
+        managed.ShouldContain("localFactor = 0.25F;");
+
+        var native = documents["Implementation.SampleUnmanaged.g.cs"].Source;
+        native.ShouldContain("inherited = 7;");
+        native.ShouldContain("overridden = 10;");
+        native.ShouldContain("nested = 9;");
+        native.ShouldContain("text.ToNative(\"alias\"");
+        native.ShouldContain("localText.ToNative(\"local\"");
+        native.ShouldContain("ratio = 1.5;");
+        native.ShouldContain("factor = 0.5F;");
+        native.ShouldContain("localRatio = 2.5;");
+        native.ShouldContain("localFactor = 0.25F;");
+
+        var plugin = documents["Implementation.SamplePlugin.g.cs"].Source;
+        plugin.ShouldContain("Int32Value = 7");
+        plugin.ShouldContain("Int32Value = 10");
+        plugin.ShouldContain("Int32Value = 9");
+        plugin.ShouldContain("StringValue = \"alias\"");
+        plugin.ShouldContain("Float64Value = 1.5");
+        plugin.ShouldContain("Float32Value = 0.5F");
+        plugin.ShouldContain("StringValue = \"local\"");
+        plugin.ShouldContain("Float64Value = 2.5");
+        plugin.ShouldContain("Float32Value = 0.25F");
+
+        documents["Seven.g.cs"].Source.ShouldContain("Value = 7;");
+        documents["Nine.g.cs"].Source.ShouldContain("Value = 9;");
+        documents["Text.g.cs"].Source.ShouldContain("Value = \"alias\";");
+        documents["Ratio.g.cs"].Source.ShouldContain("Value = 1.5;");
+        documents["Factor.g.cs"].Source.ShouldContain("Value = 0.5F;");
+    }
+
+    [Fact]
+    public void EnumTypedefDefaultsAreIncludedInDynamicTypeMetadata()
+    {
+        // Arrange
+        var input = Input("enum-alias-default.idl",
+            "enum Kind { First, Second }; @default(Second) typedef Kind Selected;");
+
+        // Act
+        var documents = IdlCompiler.CompileSourcesWithDiagnostics(
+            [input], null, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen470);
+
+        // Assert
+        documents["Implementation.SelectedPlugin.g.cs"].Source.ShouldContain("TypeKind.Enumeration");
+        documents["Implementation.SelectedPlugin.g.cs"].Source.ShouldContain("EnumValue = 1");
+    }
+
+    [Fact]
+    public void MemberAnnotationsOnDeclaratorListsApplyToTheFinalDeclarator()
+    {
+        // Arrange
+        var input = Input("declarator-annotations.idl",
+            """
+            struct Sample { @key @id(4) long first, second; };
+            """);
+
+        // Act
+        var plugin = CompileSources(input)["Implementation.SamplePlugin.g.cs"].Source;
+
+        // Assert
+        plugin.ShouldContain("new StructMember(\"first\", dtf.GetPrimitiveType<int>(), id: 0)");
+        plugin.ShouldContain("new StructMember(\"second\", dtf.GetPrimitiveType<int>(), isKey: true, id: 4)");
+    }
+
+    [Fact]
     [Trait("Corpus", "C044")]
     public void PluginAnnotationsPreserveMemberIndexesAndPrimitiveMetadataOrder()
     {
@@ -293,6 +394,95 @@ public sealed class GeneratedPluginSpecs
         // Assert
         documents["Sample.g.cs"].Source.ShouldContain("Its DDS member ID is generated from the hash of <c>value</c> through <c>@autoid(HASH)</c>.");
         documents["Implementation.SamplePlugin.g.cs"].Source.ShouldContain("new StructMember(\"value\", dtf.GetPrimitiveType<int>(), id:");
+    }
+
+    [Fact]
+    public void BareAutoIdMeansHashAndModulePolicyFlowsToDeclarations()
+    {
+        // Arrange
+        var input = Input("autoid-module-policy.idl",
+            """
+            @autoid module Example {
+                struct Inherited { long value; };
+                @autoid(SEQUENTIAL) struct Overridden { long value; };
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Example.Inherited.g.cs"].Source.ShouldContain("@autoid(HASH)");
+        documents["Example.Implementation.InheritedPlugin.g.cs"].Source.ShouldContain("new StructMember(\"value\", dtf.GetPrimitiveType<int>(), id:");
+        documents["Example.Overridden.g.cs"].Source.ShouldNotContain("@autoid(HASH)");
+    }
+
+    [Fact]
+    public void AutoIdDeclarationPolicyDoesNotLeakToLaterSiblings()
+    {
+        // Arrange
+        var input = Input("autoid-local-policy.idl",
+            "@autoid(HASH) struct Hashed { long value; }; struct Sequential { long value; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Hashed.g.cs"].Source.ShouldContain("@autoid(HASH)");
+        documents["Sequential.g.cs"].Source.ShouldNotContain("@autoid(HASH)");
+        documents["Implementation.SequentialPlugin.g.cs"].Source.ShouldContain("id: 0");
+    }
+
+    [Fact]
+    public void ParsesExplicitBooleanAndNamedIdAnnotationArguments()
+    {
+        // Arrange
+        var input = Input("explicit-annotation-arguments.idl",
+            """
+            struct Sample {
+                @optional(true) long present;
+                @optional(false) long required;
+                @key(false) long notKey;
+                @external(false) long owned;
+                @must_understand(false) long ordinary;
+                @id(value = 0x10) long identified;
+                @id(value = 7) long named;
+            };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var managed = documents["Sample.g.cs"].Source;
+        managed.ShouldContain("int? present");
+        managed.ShouldContain("int required");
+        managed.ShouldContain("int notKey");
+        var plugin = documents["Implementation.SamplePlugin.g.cs"].Source;
+        plugin.ShouldContain("new StructMember(\"identified\", dtf.GetPrimitiveType<int>(), id: 16)");
+        plugin.ShouldContain("new StructMember(\"named\", dtf.GetPrimitiveType<int>(), id: 7)");
+        plugin.ShouldNotContain("isKey: true");
+        plugin.ShouldNotContain("isExternal: true");
+        plugin.ShouldNotContain("isMustUnderstand: true");
+    }
+
+    [Fact]
+    public void AcceptsAnnotationOrderAndFalseNestedArguments()
+    {
+        // Arrange
+        var input = Input("annotation-order.idl",
+            """
+            @mutable @autoid(HASH) @nested(false) struct Sample { long value; };
+            @default_nested(false) module Example { struct Item { long value; }; };
+            """);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Sample.g.cs"].Source.ShouldContain("@autoid(HASH)");
+        documents["Implementation.SamplePlugin.g.cs"].Source.ShouldContain("ExtensibilityKind.Mutable");
+        documents["Example.Item.g.cs"].Source.ShouldNotContain("@autoid(HASH)");
     }
 
     [Fact]

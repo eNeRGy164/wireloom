@@ -43,6 +43,34 @@ public sealed class FsCheckIdlCompilerFuzzingSpecs
         // Check.One throws when FsCheck finds a counterexample.
     }
 
+    [Fact]
+    [Trait("Category", "Fuzzing")]
+    public void MalformedScopedConstantNameDoesNotEmitInvalidCSharp()
+    {
+        // Arrange
+        var input = new RoslynInput(
+            """
+            module Sample {
+                const long Base = 2 + 3;
+                const long Bound = (:Base << 2) | 1;
+            };
+            """,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Generate"] = "true",
+                ["Strict"] = "false",
+                ["Defines"] = string.Empty,
+                ["Undefines"] = string.Empty,
+                ["IncludeDirectories"] = string.Empty
+            });
+
+        // Act
+        var completed = DoesNotEscapeRoslynGeneratorBoundary(input);
+
+        // Assert
+        completed.ShouldBeTrue();
+    }
+
     private static bool DoesNotEscapePublicCompilerErrorBoundary(string source)
     {
         try
@@ -75,8 +103,12 @@ public sealed class FsCheckIdlCompilerFuzzingSpecs
 
         var runDriver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out _);
         var runResult = runDriver.GetRunResult();
-        return runResult.Results.All(result => result.Exception is null)
-            && output.GetDiagnostics().All(diagnostic => diagnostic.Severity != DiagnosticSeverity.Error);
+        runResult.Results.ShouldAllBe(result => result.Exception == null);
+        output.GetDiagnostics()
+            .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ShouldBeEmpty();
+
+        return true;
     }
 
     private static Gen<string> BuildMutationGenerator(Gen<string> source) =>

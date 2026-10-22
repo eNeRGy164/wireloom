@@ -1,6 +1,6 @@
+using Wireloom.Compiler.FrontEnd.Preprocessing;
 using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.FrontEnd.Symbols;
-using Wireloom.Compiler.FrontEnd.Preprocessing;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing;
 
@@ -16,6 +16,7 @@ internal sealed class IdlParseContext
         CancellationToken = cancellationToken;
         Diagnostics = diagnostics;
         TypeParser = new IdlTypeParser(this);
+        ValueBinder = new IdlValueBinder(symbols, cancellationToken);
     }
 
     internal IdlSymbolTable Symbols { get; }
@@ -32,6 +33,7 @@ internal sealed class IdlParseContext
 
     private List<IdlDeferredBound> DeferredBounds { get; } = [];
 
+
     private List<Action> DeferredValidation { get; } = [];
 
     private List<IdlIdentifierOccurrence> Identifiers { get; } = [];
@@ -42,10 +44,10 @@ internal sealed class IdlParseContext
 
     internal IdlTypeParser TypeParser { get; }
 
-    private IReadOnlyList<SourceOriginSpan>? SourceOrigins { get; set; }
+    /// <summary>Gets the semantic value binder for this compilation.</summary>
+    internal IdlValueBinder ValueBinder { get; }
 
-    /// <summary>Gets source-origin mappings for the input currently being parsed.</summary>
-    internal IReadOnlyList<SourceOriginSpan>? CurrentSourceOrigins => SourceOrigins;
+    private IReadOnlyList<SourceOriginSpan>? SourceOrigins { get; set; }
 
     /// <summary>Sets source-origin mappings for the current parsed input.</summary>
     internal void SetSourceOrigins(IReadOnlyList<SourceOriginSpan>? sourceOrigins) =>
@@ -56,7 +58,7 @@ internal sealed class IdlParseContext
         => MapOffset(offset, SourceOrigins);
 
     /// <summary>Maps a preprocessed offset using an explicitly captured origin table.</summary>
-    internal static int MapOffset(int offset, IReadOnlyList<SourceOriginSpan>? sourceOrigins)
+    private static int MapOffset(int offset, IReadOnlyList<SourceOriginSpan>? sourceOrigins)
     {
         if (sourceOrigins is null || sourceOrigins.Count == 0 || offset < 0)
         {
@@ -101,20 +103,6 @@ internal sealed class IdlParseContext
         TypedefLocations.TryAdd(qualifiedName, (input, MapOffset(offset)));
     }
 
-    /// <summary>Resolves constants and bounds after parsing has completed.</summary>
-    private void BindDeferredValues()
-    {
-        foreach (var declaration in Declarations.OfType<IdlConstantDeclaration>())
-        {
-            declaration.SetIntegerValue(EvaluateConstant(declaration));
-        }
-
-        foreach (var bound in DeferredBounds)
-        {
-            bound.Resolve(Validator);
-        }
-    }
-
     /// <summary>Validates all deferred semantic rules against the complete symbol graph with the requested strictness.</summary>
     internal void Validate(bool strict)
     {
@@ -133,11 +121,17 @@ internal sealed class IdlParseContext
         IdlSemanticValidator.ValidateValueTypeCycles(Declarations);
     }
 
-    /// <summary>Binds all deferred type references after parsing completes.</summary>
     /// <summary>Binds all parsed declarations against the complete symbol graph.</summary>
     internal void BindDeclarations()
     {
-        BindDeferredValues();
+        ValueBinder.BindDiscreteConstants(Declarations);
+        foreach (var bound in DeferredBounds)
+        {
+            bound.Resolve(Validator);
+        }
+
+        ValueBinder.BindTextAndFloatingConstants(Declarations);
+        ValueBinder.BindTypedefDefaults(Declarations, TypedefLocations);
         InheritanceBinder.Bind(Declarations.OfType<IdlClassDeclaration>().ToArray());
 
         foreach (var declaration in Declarations)
@@ -170,7 +164,9 @@ internal sealed class IdlParseContext
                     {
                         branch.BindLabels(
                             union.Declaration.DiscriminatorPrimitiveIdlType,
-                            discriminatorEnum);
+                            discriminatorEnum,
+                            Symbols,
+                            union.Declaration.Namespace);
                         branch.Field.Bind(TypeBinder.Bind(branch.Field.Type));
                     }
 
@@ -188,7 +184,7 @@ internal sealed class IdlParseContext
             }
         }
 
-        TypeParser.ResolveDeferredMemberMetadata();
+        ValueBinder.BindMemberValues();
     }
 
     private IdlEnum? FindEnum(IdlType type)
@@ -242,6 +238,10 @@ internal sealed class IdlParseContext
     internal void DeferMemberIdValidation(IdlInput input, int offset, IReadOnlyList<IdlMember> fields) =>
         DeferValidation(() => IdlSemanticValidator.ValidateMemberIds(input, offset, fields));
 
+    /// <summary>Queues member-ID collision checks for union branches.</summary>
+    internal void DeferUnionMemberIdValidation(IdlInput input, int offset, IReadOnlyList<IdlUnionBranch> branches) =>
+        DeferValidation(() => IdlSemanticValidator.ValidateMemberIds(input, offset, branches.Select(branch => branch.Field).ToArray()));
+
     /// <summary>Queues generated declaration-name validation for the validation phase.</summary>
     internal void DeferGeneratedDeclarationNameValidation(IdlInput input, int offset, string name, IReadOnlyCollection<string> generatedNames) =>
         DeferValidation(() => IdlSemanticValidator.ValidateGeneratedDeclarationName(input, offset, name, generatedNames));
@@ -262,35 +262,26 @@ internal sealed class IdlParseContext
     private void DeferUnionDiscriminatorLabelValidation(IdlInput input, IReadOnlyList<IdlUnionBranch> branches) =>
         DeferValidation(() => IdlSemanticValidator.ValidateUnionDiscriminatorLabels(input, branches));
 
-    /// <summary>Creates a bound type or a deferred reference with source context.</summary>
     /// <summary>Records an IDL type reference for resolution during binding.</summary>
     internal IdlType ReferenceType(string idlType, string? currentNamespace, IdlInput input, int offset, string errorPrefix) =>
         new IdlType.Reference(new IdlTypeReference(idlType, currentNamespace, input, MapOffset(offset)), errorPrefix);
 
-    private BigInteger? EvaluateConstant(IdlConstantDeclaration declaration)
-    {
-        if (declaration.Type is "string" or "wstring" or "float" or "double" or "long double" or "boolean" or "char" or "wchar")
-        {
-            return null;
-        }
-
-        try
-        {
-            var value = IdlConstantExpressionEvaluator.Evaluate(declaration.Expression, Symbols, declaration.Namespace);
-            IdlConstantParser.ValidateConstantRange(declaration.SourceInput, declaration.SourceOffset, declaration.Type, value);
-            return value;
-        }
-        catch (FormatException exception)
-        {
-            throw new IdlException(declaration.SourceInput, declaration.SourceOffset, $"Invalid {declaration.Type} constant expression: {exception.Message}");
-        }
-    }
-
     /// <summary>Parses an extensibility annotation into its semantic kind.</summary>
-    internal static IdlExtensibilityKind ParseExtensibility(string annotation) => annotation.Trim() switch
+    internal static IdlExtensibilityKind ParseExtensibility(string annotation)
     {
-        "@final" => IdlExtensibilityKind.Final,
-        "@mutable" => IdlExtensibilityKind.Mutable,
-        _ => IdlExtensibilityKind.Extensible
-    };
+        var normalized = string.Concat(annotation.Where(character => !char.IsWhiteSpace(character)));
+        if (normalized.Equals("@final", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("@extensibility(FINAL)", StringComparison.OrdinalIgnoreCase))
+        {
+            return IdlExtensibilityKind.Final;
+        }
+
+        if (normalized.Equals("@mutable", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("@extensibility(MUTABLE)", StringComparison.OrdinalIgnoreCase))
+        {
+            return IdlExtensibilityKind.Mutable;
+        }
+
+        return IdlExtensibilityKind.Extensible;
+    }
 }

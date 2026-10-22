@@ -12,6 +12,7 @@ public sealed class EnumArrayDefaultSpecs
         var array = new ColorArray();
         var nullCopy = new ColorArray((ColorArray?)null);
         var sample = new Shape();
+        var scalarAlias = new ColorAlias((ColorAlias?)null);
 
         // Act
         var typedefValues = array.Value;
@@ -23,6 +24,7 @@ public sealed class EnumArrayDefaultSpecs
         typedefValues.ShouldBe([Color.RED, Color.RED, Color.RED]);
         nullCopyValues.ShouldBe([Color.RED, Color.RED, Color.RED]);
         sample.color.ShouldBe(Color.RED);
+        scalarAlias.Value.ShouldBe(Color.RED);
         inlineValues.ShouldBe([Color.RED, Color.RED, Color.RED, Color.RED]);
         memberAliasValues.ShouldBe([Color.RED, Color.RED, Color.RED]);
     }

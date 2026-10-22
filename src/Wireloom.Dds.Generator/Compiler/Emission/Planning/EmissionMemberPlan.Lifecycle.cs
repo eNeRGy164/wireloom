@@ -1,6 +1,4 @@
-using System.Globalization;
 using Wireloom.Compiler.Emission.Emitters;
-using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Writers;
 using Wireloom.Compiler.Naming;
 
@@ -19,6 +17,11 @@ internal sealed partial class MemberEmissionPlan
             return BuildSequenceInitializeStatement(namespaceName, nativeFieldPrefix);
         }
 
+        if (IsArray)
+        {
+            return BuildInitializeStatement(namespaceName, nativeFieldPrefix)!;
+        }
+
         if (IsAggregate)
         {
             return $"{nativeFieldPrefix}{EscapedName}.Initialize(allocatePointers, allocateMemory);";
@@ -26,7 +29,10 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsString)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {Bound}, allocateMemory);";
+            var initialize = $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {Bound}, allocateMemory);";
+            return HasExplicitDefault
+                ? $"{initialize}\n{nativeFieldPrefix}{EscapedName}.ToNative({ManagedDefaultValue}, {Bound});"
+                : initialize;
         }
 
         if (IsOptionalScalar)
@@ -34,42 +40,11 @@ internal sealed partial class MemberEmissionPlan
             return $"{nativeFieldPrefix}{EscapedName} = default;";
         }
 
-        return $"{nativeFieldPrefix}{EscapedName} = {NativeDefaultValue(namespaceName)};";
+        return $"{nativeFieldPrefix}{EscapedName} = {NativeDefaultValue()};";
     }
 
-    private string NativeDefaultValue(string? namespaceName)
-    {
-        if (HasExplicitDefault)
-        {
-            var value = ValueType is EnumEmissionType
-                ? DefaultValue!.Value.ToString(CultureInfo.InvariantCulture)
-                : FormatCSharpValue(CSharpType.TrimEnd('?'), DefaultValue!.Value);
-
-            if (ValueType is EnumEmissionType)
-            {
-                if (DefaultValue!.Value.IsZero)
-                {
-                    return "0";
-                }
-
-                return $"({IdlNaming.TypeReference(CSharpType, namespaceName)})({value})";
-            }
-
-            return value;
-        }
-
-        if (ValueType is PrimitiveEmissionType primitive)
-        {
-            return PrimitiveTypeMapping.Resolve(primitive.IdlName).NativeDefaultLiteral;
-        }
-
-        return ValueType switch
-        {
-            EnumEmissionType { DefaultValue: 0 } => "0",
-            EnumEmissionType enumType => $"({IdlNaming.TypeReference(CSharpType, namespaceName)})({enumType.DefaultValue})",
-            _ => throw new InvalidOperationException("Expected a scalar native value.")
-        };
-    }
+    private string NativeDefaultValue() =>
+        new ScalarValueEmissionPlan(ValueType, facts.ValueMetadata).NativeDefaultLiteral;
 
     /// <summary>Builds native initialization code for this member.</summary>
     public string? BuildInitializeStatement(string? namespaceOverride = null, string nativeFieldPrefix = "")
@@ -108,10 +83,13 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsString)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {Bound}, allocateMemory);";
+            var initialize = $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {Bound}, allocateMemory);";
+            return HasExplicitDefault
+                ? $"{initialize}\n{nativeFieldPrefix}{EscapedName}.ToNative({ManagedDefaultValue}, {Bound});"
+                : initialize;
         }
 
-        return $"{nativeFieldPrefix}{EscapedName} = {NativeDefaultValue(namespaceName)};";
+        return $"{nativeFieldPrefix}{EscapedName} = {NativeDefaultValue()};";
     }
 
     /// <summary>Emits native initialization, including enum array defaults on older RTI profiles.</summary>
@@ -124,7 +102,18 @@ internal sealed partial class MemberEmissionPlan
         }
 
         writer.WriteLines(statement);
+        EmitNativeEnumArrayDefaultInitialization(writer, namespaceOverride, nativeFieldPrefix);
+    }
 
+    /// <summary>Emits a native union branch's initialization using the same enum-array fallback as aggregate members.</summary>
+    public void EmitUnionNativeInitialization(GeneratedSourceWriter writer, string? namespaceOverride, string nativeFieldPrefix = "")
+    {
+        writer.WriteLines(UnionDefaultInitializationStatement(namespaceOverride, nativeFieldPrefix));
+        EmitNativeEnumArrayDefaultInitialization(writer, namespaceOverride, nativeFieldPrefix);
+    }
+
+    private void EmitNativeEnumArrayDefaultInitialization(GeneratedSourceWriter writer, string? namespaceOverride, string nativeFieldPrefix)
+    {
         var enumType = ArraySourceEmitter.EnumElementType(ElementType);
         if (!IsArray || IsOptional || enumType is not { DefaultValue: not 0 } || Profile.SupportsNativeEnumArrayDefaultValueInitialization)
         {

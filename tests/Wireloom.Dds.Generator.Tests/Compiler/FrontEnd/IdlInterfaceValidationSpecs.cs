@@ -178,6 +178,19 @@ public sealed class IdlInterfaceValidationSpecs
         exception.Message.ShouldContain(message);
     }
 
+    [Fact]
+    public void AcceptsWhitespaceBetweenAnInterfaceBodyAndItsTerminatingSemicolon()
+    {
+        // Arrange
+        var input = new IdlInput("interface-whitespace.idl", "interface I { void ping(); }   ;");
+
+        // Act
+        var exception = Record.Exception(() => IdlCompiler.CompileSources([input], TestContext.Current.CancellationToken));
+
+        // Assert
+        exception.ShouldBeNull();
+    }
+
     [Theory]
     [InlineData("void Context();")]
     [InlineData("void ping(); void Ping();")]

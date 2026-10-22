@@ -279,6 +279,11 @@ internal static class CollectionAliasNativeEmitter
                 else if (isString)
                 {
                     writer.WriteLine($"Value.Initialize(size: {plan.StringBound}, allocateMemory);");
+
+                    if (plan.ValueMetadata?.DefaultValue is IdlScalarValue.Text && plan.ManagedDefaultLiteral is { } stringDefault)
+                    {
+                        writer.WriteLine($"Value.ToNative({stringDefault}, {plan.StringBound});");
+                    }
                 }
                 else
                 {
@@ -351,6 +356,11 @@ internal static class CollectionAliasNativeEmitter
 
     private static string NativeDefaultValue(string implementationElementType, CollectionAliasEmissionPlan plan)
     {
+        if (plan.ManagedDefaultLiteral is not null)
+        {
+            return plan.ScalarValue.NativeDefaultLiteral;
+        }
+
         var elementPlan = EmissionTypeProjector.UnwrapValueEmissionType(plan.ElementPlan);
         if (elementPlan is EnumEmissionType)
         {

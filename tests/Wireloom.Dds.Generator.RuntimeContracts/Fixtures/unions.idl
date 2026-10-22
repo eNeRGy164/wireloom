@@ -9,6 +9,7 @@ module RuntimeUnions {
         case 3: Child child;
         case 4: Numbers numbers;
         case 5: Vector vector;
+        case 6: long values[2];
         default: boolean flag;
     };
     union Sparse switch(long) { case 1: long number; };

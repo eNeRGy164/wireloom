@@ -1,7 +1,7 @@
-using Wireloom.Compiler.Emission.Writers;
-using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Planning;
+using Wireloom.Compiler.Emission.Writers;
+using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -28,7 +28,7 @@ internal static class CollectionAliasPluginEmitter
             EmissionSupport.GetPluginUsings(
                 [plan.ElementPlan],
                 usesExtensibility: false,
-                usesAnnotations: profile.SupportsDynamicTypeAnnotations && !plan.IsCollection && (plan.IsString || plan.IsPrimitive)),
+                usesAnnotations: profile.SupportsDynamicTypeAnnotations && !plan.IsCollection && (plan.IsString || plan.IsPrimitive || plan.IsEnum)),
             sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI runtime plugin for the {typeName} typedef. This implementation detail is not intended for application code.");
@@ -87,7 +87,7 @@ internal static class CollectionAliasPluginEmitter
                 dynamicType = GetDynamicElementType(plan, names.ImplementationNamespace);
             }
 
-            if (plan.IsString || plan.IsPrimitive)
+            if (plan.IsString || plan.IsPrimitive || plan.IsEnum)
             {
                 writer.WriteLine($"var aliasType = tsf.CreateAliasWithAccessInfo<{names.UnmanagedTypeName}>(dtf, \"{typeName}\", {dynamicType});");
             }
@@ -97,7 +97,7 @@ internal static class CollectionAliasPluginEmitter
             }
         }
 
-        if (!plan.IsCollection && (plan.IsString || plan.IsPrimitive))
+        if (!plan.IsCollection && (plan.IsString || plan.IsPrimitive || plan.IsEnum))
         {
             if (profile.SupportsDynamicTypeAnnotations)
             {
@@ -115,45 +115,21 @@ internal static class CollectionAliasPluginEmitter
 
     private static void EmitAliasAnnotations(GeneratedSourceWriter writer, CollectionAliasEmissionPlan plan)
     {
-        if (plan.IsString)
-        {
-            writer.BlankLine();
-            writer.OpenBrace();
-            writer.WriteLine("var annotations = new Annotations(");
-            writer.Indent();
-            var stringKind = plan.IsWideString ? "WideString" : "String";
-            writer.WriteLine($"TypeKind.{stringKind},");
-            writer.WriteLine($"defaultValue: new AnnotationParameterValue {{ {stringKind}Value = \"\" }},");
-            writer.WriteLine("minValue: null,");
-            writer.WriteLine("maxValue: null,");
-            writer.WriteLine("unit: null);");
-            writer.Unindent();
-            writer.WriteLine("aliasType.SetAnnotations(annotations);");
-            writer.CloseBlock();
-            return;
-        }
-
-        var primitive = EmissionTypeProjector.UnwrapValueEmissionType(plan.ElementPlan) as PrimitiveEmissionType;
-        if (primitive is null)
+        if (plan.ScalarValue.Annotation is not { } annotation)
         {
             return;
         }
 
-        var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
-        if (mapping.AnnotationTypeKind is null || mapping.AnnotationValueProperty is null)
-        {
-            return;
-        }
-
+        var (kind, property, value, minimum, maximum, unit) = annotation;
         writer.BlankLine();
         writer.OpenBrace();
         writer.WriteLine("var annotations = new Annotations(");
         writer.Indent();
-        writer.WriteLine($"TypeKind.{mapping.AnnotationTypeKind},");
-        writer.WriteLine($"defaultValue: new AnnotationParameterValue {{ {mapping.AnnotationValueProperty} = {mapping.AnnotationDefaultLiteral} }},");
-        writer.WriteLine($"minValue: {BuildAnnotationValue(mapping.AnnotationValueProperty, mapping.MinimumLiteral)},");
-        writer.WriteLine($"maxValue: {BuildAnnotationValue(mapping.AnnotationValueProperty, mapping.MaximumLiteral)},");
-        writer.WriteLine("unit: null);");
+        writer.WriteLine($"TypeKind.{kind},");
+        writer.WriteLine($"defaultValue: new AnnotationParameterValue {{ {property} = {value} }},");
+        writer.WriteLine($"minValue: {BuildAnnotationValue(property, minimum)},");
+        writer.WriteLine($"maxValue: {BuildAnnotationValue(property, maximum)},");
+        writer.WriteLine($"unit: {unit ?? "null"});");
         writer.Unindent();
         writer.WriteLine("aliasType.SetAnnotations(annotations);");
         writer.CloseBlock();

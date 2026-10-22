@@ -235,8 +235,8 @@ public sealed class EmissionUnionPlanSpecs
 
         // Assert
         plan.NativeDiscriminatorType.ShouldBe("short");
-        plan.NativeDiscriminatorReadExpression("_discriminator").ShouldBe("(char)_discriminator");
-        plan.NativeDiscriminatorWriteExpression("sample.Discriminator").ShouldBe("(short)sample.Discriminator");
+        plan.NativeDiscriminatorReadExpression("_discriminator").ShouldBe("unchecked((char)_discriminator)");
+        plan.NativeDiscriminatorWriteExpression("sample.Discriminator").ShouldBe("unchecked((short)sample.Discriminator)");
     }
 
     [Theory]

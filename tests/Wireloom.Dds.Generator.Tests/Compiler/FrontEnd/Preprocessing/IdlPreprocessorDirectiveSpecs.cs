@@ -191,7 +191,7 @@ public sealed class IdlPreprocessorDirectiveSpecs : IdlPreprocessorTestBase
         output.ShouldContain("BranchValue");
         output.ShouldContain("IncludedConstant");
         output.ShouldContain("public const int Value");
-        output.ShouldContain("+ 1");
+        output.ShouldContain("public const int Value = 8;");
         output.ShouldContain("public class Preprocessed");
         output.ShouldContain("public class IncludedType");
         output.ShouldNotContain("public const int Value = 0;");

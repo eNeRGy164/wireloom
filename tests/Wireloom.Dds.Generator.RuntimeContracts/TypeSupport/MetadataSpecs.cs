@@ -8,6 +8,24 @@ namespace Wireloom.Dds.Generator.RuntimeContracts.TypeSupport;
 /// <summary>Checks generated metadata through RTI's observable dynamic type APIs.</summary>
 public sealed class MetadataSpecs
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PreservesScopedUnionMemberIdPolicies(bool isPublic)
+    {
+        // Arrange
+        var hashed = RuntimeUnionIds.Implementation.HashChoicePlugin.CreateDynamicType(isPublic).ShouldBeOfType<UnionType>();
+
+        // Act
+        var sequential = RuntimeUnionIds.Implementation.SequentialChoicePlugin.CreateDynamicType(isPublic).ShouldBeOfType<UnionType>();
+
+        // Assert
+        hashed.Members.Single(member => member.Name == "hashed").Id.ShouldBe(24944607);
+        hashed.Members.Single(member => member.Name == "other").Id.ShouldBe(36855673);
+        sequential.Members.Single(member => member.Name == "hashed").Id.ShouldBe(1);
+        sequential.Members.Single(member => member.Name == "other").Id.ShouldBe(2);
+    }
+
     /// <summary>Checks member identities, key flags, and optional flags for both visibility modes.</summary>
     [Theory]
     [InlineData(false)]

@@ -105,7 +105,8 @@ internal static class CollectionAliasEmitter
             RequiresNativeValueCast(elementPlan),
             elementNativeType,
             sequenceBound: declaration.Bound,
-            profile: profile);
+            profile: profile,
+            valueMetadata: declaration.ValueMetadata);
     }
 
     private static bool RequiresNativeValueCast(EmissionTypePlan elementPlan)
