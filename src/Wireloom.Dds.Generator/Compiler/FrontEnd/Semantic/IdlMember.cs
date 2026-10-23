@@ -17,21 +17,30 @@ internal sealed class IdlMemberValueMetadata(IdlScalarValue? defaultValue = null
 /// <summary>Stores annotations and identity metadata associated with an IDL member.</summary>
 internal sealed class IdlMemberMetadata(bool isKey = false, bool isOptional = false, int? memberId = null, IdlMemberValueMetadata? valueMetadata = null, bool isExternal = false, bool isMustUnderstand = false, string? memberIdHashSource = null, bool usesAutoIdHash = false)
 {
-    public bool IsKey { get; } = isKey;
-    public bool IsOptional { get; } = isOptional;
+    public bool IsKey { get; private set; } = isKey;
+    public bool IsOptional { get; private set; } = isOptional;
     public int? MemberId { get; private set; } = memberId;
 
     /// <summary>Gets the effective identifier assigned during binding, including sequential IDs.</summary>
     public int? EffectiveMemberId { get; private set; } = memberId;
 
     public IdlMemberValueMetadata? ValueMetadata { get; private set; } = valueMetadata;
-    public bool IsExternal { get; } = isExternal;
-    public bool IsMustUnderstand { get; } = isMustUnderstand;
+    public bool IsExternal { get; private set; } = isExternal;
+    public bool IsMustUnderstand { get; private set; } = isMustUnderstand;
     public string? MemberIdHashSource { get; } = memberIdHashSource;
     public bool UsesAutoIdHash { get; } = usesAutoIdHash;
 
     /// <summary>Applies value metadata resolved after type binding.</summary>
     internal void SetValueMetadata(IdlMemberValueMetadata? valueMetadata) => ValueMetadata = valueMetadata;
+
+    /// <summary>Applies member flags whose boolean annotation expressions bind after constants.</summary>
+    internal void SetAnnotationFlags(bool isKey, bool isOptional, bool isExternal, bool isMustUnderstand)
+    {
+        IsKey = isKey;
+        IsOptional = isOptional;
+        IsExternal = isExternal;
+        IsMustUnderstand = isMustUnderstand;
+    }
 
     /// <summary>Applies an explicit member identifier evaluated after constant binding.</summary>
     internal void SetMemberId(int memberId) => MemberId = memberId;
@@ -54,4 +63,9 @@ internal sealed class IdlMember(string name, IdlType type, IdlMemberMetadata? me
 
     /// <summary>Applies value metadata resolved after type binding.</summary>
     internal void SetValueMetadata(IdlMemberValueMetadata? valueMetadata) => Metadata.SetValueMetadata(valueMetadata);
+
+    /// <summary>Applies member flags whose boolean annotation expressions bind after constants.</summary>
+    internal void SetAnnotationFlags(bool isKey, bool isOptional, bool isExternal, bool isMustUnderstand) =>
+        Metadata.SetAnnotationFlags(isKey, isOptional, isExternal, isMustUnderstand);
+
 }

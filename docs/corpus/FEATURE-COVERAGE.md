@@ -12,15 +12,15 @@ under the 7.7.0 profile. “Implemented” describes Wireloom generation support
 it does not promise RTI acceptance or runtime interoperability. See the
 version pages for profile-specific evidence and restrictions.
 
-| Feature category             | Coverage represented                                                                                                           | 7.3.1 profile                                                                         | 7.7.0 profile                                                                      |
-| :--------------------------- | :----------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------- |
-| Primitives and aliases       | Primitive values and boundaries, enums, enum-valued constants, scopes, and annotated scalar or aggregate typedef chains        | Implemented                                                                           | Implemented                                                                        |
-| Collections and aggregates   | Strings with expression bounds, sequences, arrays, nested collections, structs, inheritance, recursion, and value types        | Implemented; configurable `RtiCSharp` and `Idl` mappings                              | Implemented; configurable `RtiCSharp` and `Idl` mappings                           |
-| Unions                       | Primitive and enum discriminators, symbolic/scoped/expression labels, defaults, aliases, and fixed-array or collection branches | Implemented; known cross-language interoperability gaps are recorded per case         | Implemented; known cross-language interoperability gaps are recorded per case      |
-| Annotations and evolution    | Topic, boolean/named/constant arguments, member IDs, optional-member, extensibility, auto-ID, and data-representation annotations | Implemented for applicable features; `@must_understand` is N/A                       | Implemented                                                                        |
-| Preprocessing                | Includes, command-line defines, conditional branches, macros, macro operators, and platform-specific probes                    | Implemented                                                                           | Implemented                                                                        |
-| Specification validation     | Keyword and same-scope case-only names, exact reserved keywords, and derived keys, and interface-body declarations (C150–C162) | Implemented; default naming warnings and opt-in strict rejection                      | Implemented; default naming warnings and opt-in strict rejection                   |
-| Restrictions and workarounds | Negative probes, ignored constructs, and integration cases                                                                     | Evaluated per case; rejection may come from Wireloom target checks or RTI limitations | Evaluated per case; rejection may come from Wireloom validation or RTI limitations |
+| Feature category             | Coverage represented                                                                                                              | 7.3.1 profile                                                                         | 7.7.0 profile                                                                      |
+| :--------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------- |
+| Primitives and aliases       | Primitive values and boundaries, enums, enum-valued constants, scopes, and annotated scalar or aggregate typedef chains           | Implemented                                                                           | Implemented                                                                        |
+| Collections and aggregates   | Strings with expression bounds, sequences, arrays, nested collections, structs, inheritance, recursion, and value types           | Implemented; configurable `RtiCSharp` and `Idl` mappings                              | Implemented; configurable `RtiCSharp` and `Idl` mappings                           |
+| Unions                       | Primitive and enum discriminators, symbolic/scoped/expression labels, defaults, aliases, and fixed-array or collection branches   | Implemented; known cross-language interoperability gaps are recorded per case         | Implemented; known cross-language interoperability gaps are recorded per case      |
+| Annotations and evolution    | Topic, boolean/named/constant arguments, member IDs, optional-member, extensibility, auto-ID, and data-representation annotations | Implemented for applicable features; `@must_understand` is N/A                        | Implemented                                                                        |
+| Preprocessing                | Includes, command-line defines, conditional branches, macros, macro operators, and platform-specific probes                       | Implemented                                                                           | Implemented                                                                        |
+| Specification validation     | Keyword and same-scope case-only names, exact reserved keywords, and derived keys, and interface-body declarations (C150–C162)    | Implemented; default naming warnings and opt-in strict rejection                      | Implemented; default naming warnings and opt-in strict rejection                   |
+| Restrictions and workarounds | Negative probes, ignored constructs, and integration cases                                                                        | Evaluated per case; rejection may come from Wireloom target checks or RTI limitations | Evaluated per case; rejection may come from Wireloom validation or RTI limitations |
 
 ## Annotation case applicability
 
@@ -31,10 +31,10 @@ version pages for profile-specific evidence and restrictions.
 
 ## Current grouped IDL cases
 
-Additional annotation application forms remain unsupported beyond the retained
-cases, including named-argument permutations and some unknown-annotation
-placements. The reproduced gaps are tracked together in
-[#91](https://github.com/eNeRGy164/wireloom/issues/91).
+The parser captures ordered balanced applications and ignores unknown member
+applications without interpreting their arguments. A full catalog-wide
+mixed-order generated-output case and shared OMG-typed constant-expression
+coverage remain tracked in [#91](https://github.com/eNeRGy164/wireloom/issues/91).
 
 C163–C172 cover full-form extensibility, module and local auto-ID scope,
 annotation arguments, multiple member declarators, symbolic and expression

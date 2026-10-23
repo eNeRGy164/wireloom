@@ -13,9 +13,9 @@ internal sealed class IdlStructDeclarationParser
     internal IdlStructDeclarationParser(IdlParseContext context) =>
         this.context = context;
 
-    internal int Parse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, int position, bool inheritedHashIds = false, bool hasLocalAutoId = false)
+    internal int Parse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, int position, bool inheritedHashIds = false, IdlAnnotationApplicationSyntax? localAutoId = null)
     {
-        var prefix = IdlTypeAnnotationPrefix.Read(declarations, position, input, context, baseOffset, inheritedHashIds, hasLocalAutoId);
+        var prefix = IdlTypeAnnotationPrefix.Read(declarations, position, input, context, baseOffset, inheritedHashIds, localAutoId is not null);
         var isTopic = prefix.IsTopic;
         var declarationStart = prefix.DeclarationStart;
         var useHashIds = prefix.UseHashIds;
@@ -28,6 +28,8 @@ internal sealed class IdlStructDeclarationParser
             var token = tokenEnd < 0 ? remaining : remaining[..tokenEnd];
             throw new IdlException(input, context.MapOffset(baseOffset + declarationStart), $"Unsupported IDL syntax near '{token}'. This generator does not support that declaration or annotation.");
         }
+
+        context.ReportUnknownTypePrefixApplications(input, prefix.UnknownApplications);
 
         var name = declaration.Groups["name"].Value;
         var fullyQualifiedName = context.Qualify(name, currentNamespace);
@@ -73,6 +75,12 @@ internal sealed class IdlStructDeclarationParser
             baseType,
             baseTypeOffset,
             isTopic);
+
+        if (localAutoId is not null)
+        {
+            parsedDeclaration.SetAnnotationApplications([localAutoId]);
+        }
+
         context.DeferMemberIdValidation(input, validationOffset, parsedDeclaration);
         context.Declarations.Add(parsedDeclaration);
 

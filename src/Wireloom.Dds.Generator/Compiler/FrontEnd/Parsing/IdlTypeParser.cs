@@ -136,202 +136,124 @@ internal sealed class IdlTypeParser
     {
         var annotations = new IdlMemberAnnotationSyntax();
         var length = 0;
+        var applications = IdlSyntaxReader.ReadAnnotationApplications(
+            body[offset..],
+            context.MapOffset(sourceOffset + offset));
+        var compositionViolation = IdlAnnotationCatalog.FindCompositionViolation(applications, IdlAnnotationTarget.Member);
+        if (compositionViolation is { } violation)
+        {
+            throw new IdlException(input, violation.Application.Offset, violation.Message);
+        }
 
         while (true)
         {
             var remaining = body[offset..];
-            var keyAnnotation = KeyAnnotationPattern.Match(remaining);
-            if (keyAnnotation.Success)
+            if (!IdlSyntaxReader.TryReadAnnotationApplication(remaining, out var capturedName, out var capturedLength))
             {
-                if (annotations.HasKey)
-                {
-                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @key annotation.");
-                }
-
-                annotations.HasKey = true;
-                annotations.IsKey = !keyAnnotation.Groups["value"].Success
-                    || !string.Equals(keyAnnotation.Groups["value"].Value, "false", StringComparison.OrdinalIgnoreCase);
-                offset += keyAnnotation.Length;
-                length += keyAnnotation.Length;
-
+                return (annotations, length);
+            }
+            var captured = new IdlAnnotationApplicationSyntax(
+                capturedName,
+                remaining[..capturedLength],
+                context.MapOffset(sourceOffset + offset),
+                capturedLength);
+            if (IdlAnnotationCatalog.IsRecognizedUnsupported(capturedName))
+            {
+                context.Diagnostics?.Add(new IdlDiagnostic("DDSG0102", input, captured.Offset, $"Annotation '@{capturedName}' is recognized but unsupported and will be ignored."));
+                throw new IdlException(input, captured.Offset, $"Annotation '@{capturedName}' is not supported in this context.");
+            }
+            if (!IdlAnnotationCatalog.IsKnown(capturedName))
+            {
+                context.Diagnostics?.Add(new IdlDiagnostic("DDSG0101", input, captured.Offset, $"Annotation '@{capturedName}' is not recognized and will be ignored."));
+                offset += capturedLength;
+                length += capturedLength;
                 continue;
             }
 
-            var optionalAnnotation = OptionalAnnotationPattern.Match(remaining);
-            if (optionalAnnotation.Success)
+            IReadOnlyList<IdlAnnotationArgumentSyntax> arguments;
+            try
             {
-                if (annotations.HasOptional)
-                {
-                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @optional annotation.");
-                }
-
-                annotations.HasOptional = true;
-                annotations.IsOptional = !optionalAnnotation.Groups["value"].Success
-                    || !string.Equals(optionalAnnotation.Groups["value"].Value, "false", StringComparison.OrdinalIgnoreCase);
-                offset += optionalAnnotation.Length;
-                length += optionalAnnotation.Length;
-
-                continue;
+                IdlAnnotationCatalog.ValidateTarget(captured, IdlAnnotationTarget.Member);
+                IdlAnnotationCatalog.ValidateUniqueNamedArguments(captured);
+                arguments = captured.ParseArguments();
+            }
+            catch (FormatException exception)
+            {
+                throw new IdlException(input, captured.Offset, exception.Message);
             }
 
-            if (IdlSyntaxReader.TryReadAnnotationValue(remaining, "id", out var memberIdExpression, out var idAnnotationLength))
+            var value = arguments.Count == 0 ? null : arguments[0].Expression;
+            switch (capturedName.ToLowerInvariant())
             {
-                if (annotations.MemberId is not null || annotations.MemberIdExpression is not null || annotations.HashIdExpression is not null)
-                {
-                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate or invalid @id annotation.");
-                }
+                case "range":
+                    if (annotations.MinimumExpression is not null || annotations.MaximumExpression is not null)
+                    {
+                        throw new IdlException(input, captured.Offset, "Duplicate @min, @max, or @range annotation.");
+                    }
 
-                if (TryParseIdArgument(memberIdExpression, out var parsedId))
-                {
-                    annotations.MemberId = parsedId;
-                }
-                else
-                {
-                    annotations.MemberIdExpression = memberIdExpression;
-                }
-
-                offset += idAnnotationLength;
-                length += idAnnotationLength;
-
-                continue;
+                    var range = arguments.ToDictionary(argument => argument.Name!, argument => argument.Expression, StringComparer.Ordinal);
+                    annotations.MinimumExpression = range["min"];
+                    annotations.MaximumExpression = range["max"];
+                    break;
+                case "key":
+                    if (annotations.HasKey) throw new IdlException(input, captured.Offset, "Duplicate @key annotation.");
+                    annotations.HasKey = true;
+                    annotations.IsKey = ParseBooleanAnnotationArgument(value, true, out var keyExpression);
+                    annotations.KeyExpression = keyExpression;
+                    break;
+                case "optional":
+                    if (annotations.HasOptional) throw new IdlException(input, captured.Offset, "Duplicate @optional annotation.");
+                    annotations.HasOptional = true;
+                    annotations.IsOptional = ParseBooleanAnnotationArgument(value, true, out var optionalExpression);
+                    annotations.OptionalExpression = optionalExpression;
+                    break;
+                case "id":
+                    if (annotations.MemberId is not null || annotations.MemberIdExpression is not null || annotations.HashIdExpression is not null)
+                        throw new IdlException(input, captured.Offset, "Duplicate or invalid @id annotation.");
+                    if (TryParseIdArgument(value!, out var parsedId)) annotations.MemberId = parsedId;
+                    else annotations.MemberIdExpression = value;
+                    break;
+                case "hashid":
+                    if (annotations.MemberId is not null || annotations.MemberIdExpression is not null || annotations.HashIdExpression is not null)
+                        throw new IdlException(input, captured.Offset, "Duplicate or conflicting @id/@hashid annotation.");
+                    annotations.HashIdExpression = value?.Trim('"') ?? string.Empty;
+                    break;
+                case "min":
+                    if (annotations.MinimumExpression is not null) throw new IdlException(input, captured.Offset, "Duplicate @min or @range annotation.");
+                    annotations.MinimumExpression = value!.Trim();
+                    break;
+                case "max":
+                    if (annotations.MaximumExpression is not null) throw new IdlException(input, captured.Offset, "Duplicate @max or @range annotation.");
+                    annotations.MaximumExpression = value!.Trim();
+                    break;
+                case "default":
+                    if (annotations.DefaultExpression is not null) throw new IdlException(input, captured.Offset, "Duplicate @default annotation.");
+                    annotations.DefaultExpression = value;
+                    break;
+                case "unit":
+                    if (annotations.UnitExpression is not null) throw new IdlException(input, captured.Offset, "Duplicate @unit annotation.");
+                    annotations.UnitExpression = value?.Trim('"');
+                    break;
+                case "resolve_name":
+                    break;
+                case "external":
+                    if (annotations.HasExternal) throw new IdlException(input, captured.Offset, "Duplicate @external annotation.");
+                    annotations.HasExternal = true;
+                    annotations.IsExternal = ParseBooleanAnnotationArgument(value, true, out var externalExpression);
+                    annotations.ExternalExpression = externalExpression;
+                    break;
+                case "must_understand":
+                    if (annotations.HasMustUnderstand) throw new IdlException(input, captured.Offset, "Duplicate @must_understand annotation.");
+                    annotations.HasMustUnderstand = true;
+                    annotations.IsMustUnderstand = ParseBooleanAnnotationArgument(value, true, out var mustUnderstandExpression);
+                    annotations.MustUnderstandExpression = mustUnderstandExpression;
+                    break;
+                default:
+                    throw new IdlException(input, captured.Offset, $"Annotation '@{capturedName}' is not supported on members.");
             }
 
-            var hashIdAnnotation = HashIdAnnotationPattern.Match(remaining);
-            if (hashIdAnnotation.Success)
-            {
-                if (annotations.MemberId is not null || annotations.MemberIdExpression is not null || annotations.HashIdExpression is not null)
-                {
-                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate or conflicting @id/@hashid annotation.");
-                }
-
-                annotations.HashIdExpression = hashIdAnnotation.Groups["value"].Success
-                    ? hashIdAnnotation.Groups["value"].Value
-                    : string.Empty;
-                offset += hashIdAnnotation.Length;
-                length += hashIdAnnotation.Length;
-
-                continue;
-            }
-
-            var minimumAnnotation = MinimumAnnotationPattern.Match(remaining);
-            if (minimumAnnotation.Success)
-            {
-                if (annotations.MinimumExpression is not null)
-                {
-                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @min or @range annotation.");
-                }
-
-                annotations.MinimumExpression = minimumAnnotation.Groups["value"].Value.Trim();
-                offset += minimumAnnotation.Length;
-                length += minimumAnnotation.Length;
-
-                continue;
-            }
-
-            var maximumAnnotation = MaximumAnnotationPattern.Match(remaining);
-            if (maximumAnnotation.Success)
-            {
-                if (annotations.MaximumExpression is not null)
-                {
-                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @max or @range annotation.");
-                }
-
-                annotations.MaximumExpression = maximumAnnotation.Groups["value"].Value.Trim();
-                offset += maximumAnnotation.Length;
-                length += maximumAnnotation.Length;
-
-                continue;
-            }
-
-            var rangeAnnotation = RangeAnnotationPattern.Match(remaining);
-            if (rangeAnnotation.Success)
-            {
-                if (annotations.MinimumExpression is not null || annotations.MaximumExpression is not null)
-                {
-                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @min, @max, or @range annotation.");
-                }
-
-                annotations.MinimumExpression = rangeAnnotation.Groups["min"].Value.Trim();
-                annotations.MaximumExpression = rangeAnnotation.Groups["max"].Value.Trim();
-                offset += rangeAnnotation.Length;
-                length += rangeAnnotation.Length;
-
-                continue;
-            }
-
-            if (IdlSyntaxReader.TryReadAnnotationValue(remaining, "default", out var defaultExpression, out var defaultAnnotationLength))
-            {
-                if (annotations.DefaultExpression is not null)
-                {
-                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @default annotation.");
-                }
-
-                annotations.DefaultExpression = defaultExpression;
-                offset += defaultAnnotationLength;
-                length += defaultAnnotationLength;
-
-                continue;
-            }
-
-            var unitAnnotation = UnitAnnotationPattern.Match(remaining);
-            if (unitAnnotation.Success)
-            {
-                if (annotations.UnitExpression is not null)
-                {
-                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @unit annotation.");
-                }
-
-                annotations.UnitExpression = unitAnnotation.Groups["value"].Value;
-                offset += unitAnnotation.Length;
-                length += unitAnnotation.Length;
-
-                continue;
-            }
-
-            var resolveNameAnnotation = ResolveNameAnnotationPattern.Match(remaining);
-            if (resolveNameAnnotation.Success)
-            {
-                offset += resolveNameAnnotation.Length;
-                length += resolveNameAnnotation.Length;
-
-                continue;
-            }
-
-            var externalAnnotation = ExternalAnnotationPattern.Match(remaining);
-            if (externalAnnotation.Success)
-            {
-                if (annotations.HasExternal)
-                {
-                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @external annotation.");
-                }
-
-                annotations.HasExternal = true;
-                annotations.IsExternal = !externalAnnotation.Groups["value"].Success
-                    || !string.Equals(externalAnnotation.Groups["value"].Value, "false", StringComparison.OrdinalIgnoreCase);
-                offset += externalAnnotation.Length;
-                length += externalAnnotation.Length;
-
-                continue;
-            }
-
-            var mustUnderstandAnnotation = MustUnderstandAnnotationPattern.Match(remaining);
-            if (mustUnderstandAnnotation.Success)
-            {
-                if (annotations.HasMustUnderstand)
-                {
-                    throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Duplicate @must_understand annotation.");
-                }
-
-                annotations.HasMustUnderstand = true;
-                annotations.IsMustUnderstand = !mustUnderstandAnnotation.Groups["value"].Success
-                    || !string.Equals(mustUnderstandAnnotation.Groups["value"].Value, "false", StringComparison.OrdinalIgnoreCase);
-                offset += mustUnderstandAnnotation.Length;
-                length += mustUnderstandAnnotation.Length;
-
-                continue;
-            }
-
-            return (annotations, length);
+            offset += capturedLength;
+            length += capturedLength;
         }
     }
 
@@ -347,6 +269,28 @@ internal sealed class IdlTypeParser
         }
 
         return int.TryParse(value, out parsedId);
+    }
+
+    private static bool ParseBooleanAnnotationArgument(string? value, bool defaultValue, out string? unresolvedExpression)
+    {
+        unresolvedExpression = null;
+        if (value is null)
+        {
+            return defaultValue;
+        }
+
+        if (string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (string.Equals(value, "false", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        unresolvedExpression = value;
+        return false;
     }
 
     /// <summary>Resolves and validates a collection bound.</summary>

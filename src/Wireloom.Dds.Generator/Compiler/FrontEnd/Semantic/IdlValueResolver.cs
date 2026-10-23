@@ -59,10 +59,10 @@ internal sealed class IdlValueResolver(IdlSymbolTable symbols)
 
             minimum = annotations.MinimumExpression is null
                 ? null
-                : EvaluateMemberInteger(input, offset, currentNamespace, annotations.MinimumExpression, "minimum");
+                : EvaluateMemberInteger(input, offset, currentNamespace, annotations.MinimumExpression, "minimum", primitive.Name);
             maximum = annotations.MaximumExpression is null
                 ? null
-                : EvaluateMemberInteger(input, offset, currentNamespace, annotations.MaximumExpression, "maximum");
+                : EvaluateMemberInteger(input, offset, currentNamespace, annotations.MaximumExpression, "maximum", primitive.Name);
 
             if (minimum is { } minimumValue)
             {
@@ -133,7 +133,7 @@ internal sealed class IdlValueResolver(IdlSymbolTable symbols)
             }
             else if (valueType is IdlType.Primitive primitive)
             {
-                var integer = EvaluateMemberInteger(input, offset, currentNamespace, defaultExpression, "default");
+                var integer = EvaluateMemberInteger(input, offset, currentNamespace, defaultExpression, "default", primitive.Name);
                 IdlScalarTypeRules.ValidateConstantRange(input, offset, primitive.Name, integer);
                 defaultValue = new IdlScalarValue.Integral(integer);
             }
@@ -215,7 +215,7 @@ internal sealed class IdlValueResolver(IdlSymbolTable symbols)
         double value;
         try
         {
-            value = FloatingConstantExpressionEvaluator.Evaluate(expression, symbols, currentNamespace);
+            value = ((IdlScalarValue.Floating)IdlTypedExpressionEvaluator.Evaluate(expression, typeName, symbols, currentNamespace)).Value;
         }
         catch (FormatException)
         {
@@ -249,6 +249,28 @@ internal sealed class IdlValueResolver(IdlSymbolTable symbols)
         }
 
         throw new IdlException(input, offset, $"Invalid boolean default expression: {expression}");
+    }
+
+    /// <summary>Resolves a boolean annotation argument after the constant symbol graph is bound.</summary>
+    internal bool ResolveBooleanAnnotation(IdlInput input, int offset, string? currentNamespace, string expression, string annotationName)
+    {
+        if (string.Equals(expression, "TRUE", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (string.Equals(expression, "FALSE", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (symbols.TryResolveConstant(expression, currentNamespace, out var constant)
+            && constant.Value is IdlScalarValue.Boolean { Value: var value })
+        {
+            return value;
+        }
+
+        throw new IdlException(input, offset, $"Invalid boolean argument for @{annotationName}: {expression}");
     }
 
     private BigInt ParseCharacterDefault(
@@ -357,11 +379,14 @@ internal sealed class IdlValueResolver(IdlSymbolTable symbols)
         int offset,
         string? currentNamespace,
         string expression,
-        string valueName)
+        string valueName,
+        string? expectedType = null)
     {
         try
         {
-            return IdlConstantExpressionEvaluator.Evaluate(expression, symbols, currentNamespace);
+            var expressionType = expectedType is "boolean" or "char" or "wchar" ? "long" : expectedType ?? "long long";
+            var scalar = IdlTypedExpressionEvaluator.Evaluate(expression, expressionType, symbols, currentNamespace);
+            return ((IdlScalarValue.Integral)scalar).Value;
         }
         catch (FormatException exception)
         {

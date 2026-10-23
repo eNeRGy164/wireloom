@@ -196,9 +196,13 @@ tool versions; it does not limit valid spellings or override the specifications.
 RTI extensions and remaining Wireloom implementation limits are identified
 separately from those language rules.
 
-The front end captures supported value expressions and source locations until
-symbols are available. Annotation applications are currently interpreted by
-context-specific readers rather than retained as a complete syntax list. It
+The front end captures ordered annotation applications with balanced raw text
+and source offsets before known-name argument validation. Unknown applications
+remain opaque and are ignored with diagnostics. The built-in catalog defines
+parameter kinds, defaults, legal targets, positional rules, repeat/conflict
+metadata, and supported versus recognized-unsupported names. Context-specific
+readers apply those definitions while retaining target-specific semantic and
+compatibility behavior. It
 distinguishes an absent boolean annotation from an explicit `false`; shorthand
 and full-form extensibility annotations resolve to the same model. A bare
 `@autoid` selects `HASH`. Module auto-ID applies within that module block,
@@ -207,13 +211,32 @@ does not leak to sibling declarations or included top-level declarations.
 Profile-specific annotation availability is checked at the compilation and
 emission boundary.
 
-The retained cases do not cover every annotation application form. Named
-argument permutations, some parenthesized arguments, boolean constant
-arguments, and unknown annotations among type/member annotations expose
-verified parsing gaps; see [#91](https://github.com/eNeRGy164/wireloom/issues/91).
-Unknown declaration annotations following typedef defaults are consumed as
-complete scoped applications, including balanced and quoted arguments, before
-the following declaration is checked.
+Known applications reject repeated named argument keys and invalid argument
+shapes. Type prefixes, members, enum literals, and union branches consume
+ordered applications; unknown arguments stay opaque. The typed expression
+dispatcher reuses integral and floating evaluators with OMG numeric expression
+semantics, while boolean member flags bind constants after the complete symbol
+graph is available. Boolean, character, string, and enum values remain typed
+literals or names resolved by their dedicated value rules; `long double` and
+fixed-point remain unsupported. The catalog validates repeat/conflict rules
+across captured target lists, preserving context-specific diagnostics.
+Local struct/union `@autoid` and typedef `@default` applications are retained
+on their semantic targets, and typedef default expressions are read during
+binding after target resolution. Module scope records retain module-level
+annotations and resolve the member-ID policy inherited by nested declarations,
+because member IDs are assigned during declaration parsing.
+Unknown applications, including those interleaved with member annotations,
+are consumed as complete scoped applications, including balanced and quoted
+arguments, before the following declaration is checked.
+
+Balanced application records are transient parser inputs; the semantic model
+stores effective values and unresolved expressions needed for binding rather
+than duplicating source text. For an annotated comma-separated member
+declaration, the parser consumes the list once and applies effective metadata
+to the final declarator, matching the retained RTI case. The OMG question
+about annotation application to multiple declarators, IDL43-37, remains open;
+Wireloom's current behavior is a compatibility policy, not a claimed normative resolution
+([OMG open IDL issues](https://issues.omg.org/issues/spec/IDL?view=OPEN)).
 
 An enum accepts FINAL or APPENDABLE extensibility in either shorthand or full
 form. MUTABLE is invalid for enumerated types. Applying extensibility more
@@ -270,6 +293,6 @@ Focused probes on both RTI LTS generators reject the retained adjacent-string
 typedef-default input rather than applying the standard concatenation rule;
 Wireloom's regression and runtime tests establish its behavior independently.
 
-The existing wchar union-label syntax also accepts unprefixed character
+The existing `wchar` union-label syntax also accepts unprefixed character
 literals, as recorded by C113/C131. This is a legacy Wireloom extension;
 constant and default assignments still require matching narrow/wide types.

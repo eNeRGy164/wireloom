@@ -27,24 +27,27 @@ expanded in the level-2 view.
 
 ![Compiler and preprocessing flow from build metadata and IDL inputs through parsing, semantic validation, and emission planning.](images/05/level-2-compiler-and-preprocessing.png)
 
-| Stage                     | Responsibility                                           | Main implementation                                                                                                |
-| :------------------------ | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
-| Root intake               | Builds the graph from `DdsIdl` roots and project options | [`IdlInputGraph`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlInputGraph.cs)            |
-| Include resolution        | Resolves paths while preserving root/include identity    | [`IdlIncludeResolver`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlIncludeResolver.cs)  |
-| Preprocessing             | Applies directives and macros with source mapping        | [`IdlPreprocessor`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlPreprocessor.cs)        |
-| Parsing                   | Reads ordered annotations, type/declarator syntax, and unresolved value expressions while preserving source locations | [`IdlDeclarationParser`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs), `IdlTypeParser` |
-| Semantic model            | Assigns stable symbols and target-independent meaning, including enum identity and typedef annotations              | [`IdlSymbolTable`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Symbols/IdlSymbolTable.cs)                |
-| Compilation state         | Coordinates parse, bind, and validate                    | [`IdlCompilation`](../../../src/Wireloom.Dds.Generator/Compiler/IdlCompilation.cs)                                 |
-| Resolution and validation | Binds constants, enum identities, effective member IDs, deferred bounds, union labels, and typed defaults; reports source-located semantic errors | `IdlTypeBinder`, `IdlValueBinder`, `IdlValueResolver`, `IdlMemberIdBinder` |
-| Specification rules       | Detects keyword, scope, and derived-key violations       | `IdlIdentifierValidator`, `IdlSemanticValidator`                                                                   |
-| Validation policy         | Applies the batch strictness to specification findings   | `IdlValidationPolicy`                                                                                              |
-| Emission planning         | Projects validated declarations, typed defaults, and union array lifecycle into output plans                      | [`EmissionTypeProjector`](../../../src/Wireloom.Dds.Generator/Compiler/Emission/Planning/EmissionTypeProjector.cs) |
+| Stage                     | Responsibility                                                                                                                                    | Main implementation                                                                                                              |
+| :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------- |
+| Root intake               | Builds the graph from `DdsIdl` roots and project options                                                                                          | [`IdlInputGraph`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlInputGraph.cs)                          |
+| Include resolution        | Resolves paths while preserving root/include identity                                                                                             | [`IdlIncludeResolver`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlIncludeResolver.cs)                |
+| Preprocessing             | Applies directives and macros with source mapping                                                                                                 | [`IdlPreprocessor`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlPreprocessor.cs)                      |
+| Parsing                   | Reads ordered annotations, type/declarator syntax, and unresolved value expressions while preserving source locations                             | [`IdlDeclarationParser`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs), `IdlTypeParser` |
+| Semantic model            | Assigns stable symbols and target-independent meaning, including enum identity and typedef annotations                                            | [`IdlSymbolTable`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Symbols/IdlSymbolTable.cs)                              |
+| Compilation state         | Coordinates parse, bind, and validate                                                                                                             | [`IdlCompilation`](../../../src/Wireloom.Dds.Generator/Compiler/IdlCompilation.cs)                                               |
+| Resolution and validation | Binds constants, enum identities, effective member IDs, deferred bounds, union labels, and typed defaults; reports source-located semantic errors | `IdlTypeBinder`, `IdlValueBinder`, `IdlValueResolver`, `IdlMemberIdBinder`                                                       |
+| Specification rules       | Detects keyword, scope, and derived-key violations                                                                                                | `IdlIdentifierValidator`, `IdlSemanticValidator`                                                                                 |
+| Validation policy         | Applies the batch strictness to specification findings                                                                                            | `IdlValidationPolicy`                                                                                                            |
+| Emission planning         | Projects validated declarations, typed defaults, and union array lifecycle into output plans                                                      | [`EmissionTypeProjector`](../../../src/Wireloom.Dds.Generator/Compiler/Emission/Planning/EmissionTypeProjector.cs)               |
 
 The front end reads supported annotations through declaration, type-prefix,
-member, enum-literal, and union-branch readers. It retains unresolved value
-expressions and source locations, but does not retain a complete ordered list
-of annotation applications attached to each target. `IdlSyntaxReader` reads
-balanced delimiters and quoted literals without rewriting source offsets.
+member, enum-literal, and union-branch readers. `IdlSyntaxReader` captures
+applications in source order with source offsets and balanced raw text.
+`IdlAnnotationCatalog` defines built-in parameter kinds, defaults, targets,
+positional-argument rules, repeat/conflict metadata, and recognized unsupported
+names. It validates known argument shapes while unknown applications remain
+opaque. Readers still own context-specific application and compatibility
+behavior; the catalog is the shared schema, not a replacement semantic model.
 The binder resolves references, constants, member IDs, bounds, union labels, and defaults against the complete symbol graph,
 then validates semantics before planning emission.
 `IdlParseContext` coordinates these stages; `IdlValueBinder` owns queued
@@ -54,9 +57,24 @@ tokens before concatenating their values. Parsers retain annotation syntax and
 original locations without speculative value evaluation or exception-based
 deferral. Structs, unions, and enums share ordered prefix annotation parsing;
 extensibility is captured once as a typed kind rather than overwritten text.
-Annotation argument and usage rules remain distributed across these readers.
-Verified order and argument-shape gaps are tracked in
-[#91](https://github.com/eNeRGy164/wireloom/issues/91).
+Duplicate named argument keys are rejected for known applications during
+binding. Catalogued target checks apply to declaration prefixes, typedefs,
+members, enum literals, and union branches. The catalog validates repeated
+applications and conflicts for each captured target list. Local struct and
+union `@autoid` applications and typedef `@default`
+applications are retained on their semantic targets; the value binder reads a
+typedef default expression only after the target type is resolved. Module
+scope records retain module-level `@autoid` and resolve the policy inherited
+by nested declarations because member IDs are assigned during declaration
+parsing. Public compiler tests exercise mixed built-in order
+with interleaved opaque applications across those targets and inspect emitted
+API/metadata and diagnostics. The numeric expression dispatcher applies OMG
+constant-expression semantics for supported integral, `float`, and `double`
+contexts through the existing integral and floating evaluators. Boolean,
+character, string, and enum values use their typed literal/name binding rules
+rather than a general-purpose expression tree. `long double` and fixed-point
+remain unsupported, while new scalar variants can be added to the internal
+model without changing the capture/catalog/binding boundaries.
 `IdlScalarValue` represents mutually exclusive integer, boolean, character,
 floating-point, string, and enumeration values. Character and string values
 retain their narrow/wide identity, and enumeration values retain their
@@ -82,7 +100,54 @@ failure paths are in [chapter 6](06-runtime-view.md). Deterministic
 preprocessing limits are in
 [chapter 8.7](08-crosscutting-concepts.md#87-deterministic-preprocessing-safety).
 
-## 5.3 Emission boundary
+## 5.3 Level 3: Annotation syntax and value binding
+
+This level describes the source-facing building blocks maintainers change
+when adding or correcting built-in annotation behavior.
+
+![Annotation capture, catalog classification, context binding, and typed value resolution.](images/05/level-3-annotation-binding.png)
+
+| Building block        | Responsibility                                                                                                                                                                       | Source                                                                                                                                                                                                                                                                                                                                                                                                               |
+| :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Syntax reader         | Reads a complete balanced application and preserves ordered raw syntax and offsets                                                                                                   | [`IdlSyntaxReader`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlSyntaxReader.cs)                                                                                                                                                                                                                                                                                                                |
+| Built-in catalog      | Defines parameter kinds/defaults, targets, positional rules, repeat/conflict metadata, and support status; validates known argument shapes while leaving unknown arguments opaque    | [`IdlAnnotationCatalog`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlAnnotationCatalog.cs)                                                                                                                                                                                                                                                                                                      |
+| Type-prefix reader    | Captures declaration annotations in order and delays unknown warnings until a declaration parser accepts the target                                                                  | [`IdlTypeAnnotationPrefix`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlTypeAnnotationPrefix.cs)                                                                                                                                                                                                                                                                                                |
+| Declaration parser    | Coordinates declaration-level annotation handling and top-level parse order                                                                                                          | [`IdlDeclarationParser`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs)                                                                                                                                                                                                                                                                                                      |
+| Module scope model    | Retains module identity and captured scope annotations while the derived member-ID policy is passed to nested declarations                                                           | [`IdlModuleDeclaration`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Semantic/IdlDeclaration.cs), [`IdlDeclarationParser`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs)                                                                                                                                                                                          |
+| Member parser         | Applies known annotations in source order, keeps unknown syntax opaque, binds metadata, and defers symbol-dependent values                                                           | [`IdlTypeParser`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlTypeParser.cs), [`IdlMemberAnnotationSyntax`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Semantic/IdlMemberAnnotationSyntax.cs)                                                                                                                                                                                        |
+| Enum-literal parser   | Reads ordered `@value` and `@default_literal` uses while leaving unknown arguments opaque                                                                                            | [`IdlEnumDeclarationParser`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlEnumDeclarationParser.cs)                                                                                                                                                                                                                                                                                              |
+| Union-branch parser   | Reads branch labels, optional annotations, and unknown applications before parsing the branch type                                                                                   | [`IdlUnionParser`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlUnionParser.cs)                                                                                                                                                                                                                                                                                                                  |
+| Binding coordinator   | Resolves values in dependency order after the symbol graph is available                                                                                                              | [`IdlParseContext`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlParseContext.cs), [`IdlValueBinder`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Semantic/IdlValueBinder.cs)                                                                                                                                                                                                          |
+| Expression dispatcher | Applies declared scalar context and OMG numeric constant-expression rules through the existing integral/floating evaluators; other scalar forms use their typed literal/name binders | [`IdlTypedExpressionEvaluator`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Semantic/IdlTypedExpressionEvaluator.cs), [`IdlConstantExpressionEvaluator`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Semantic/IdlConstantExpressionEvaluator.cs), [`FloatingConstantExpressionEvaluator`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Semantic/FloatingConstantExpressionEvaluator.cs) |
+| Typed value resolver  | Evaluates defaults, boolean annotation arguments, and range constraints into explicit scalar variants                                                                                | [`IdlValueResolver`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Semantic/IdlValueResolver.cs), [`IdlScalarValue`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Semantic/IdlScalarValue.cs)                                                                                                                                                                                                       |
+
+The syntax reader owns balanced delimiter and literal handling. The catalog
+owns the boundary between known and unknown names. Context parsers own legal
+targets and annotation-specific duplicate/conflict policy. The binder owns
+symbol-dependent evaluation and source-located failures. This separation
+keeps unknown vendor syntax from being interpreted as a Wireloom expression
+and lets future scalar variants extend the internal typed value model. Boolean
+member flags that accept constants remain unresolved until the binder has
+processed the complete constant graph. Enum-literal and union-branch readers
+consume unknown applications without parsing their arguments. Numeric
+expression dispatch reuses the integral and floating evaluators. The floating
+evaluator rejects integer literal operands and integral constant references;
+integer expressions support IDL operator precedence and the specified shift
+range. Referenced integral constants preserve their declared integer rank when
+promoting an expression, including aliases. The supported numeric contexts
+use declared-type dispatch with the existing evaluators; this does not add a
+general-purpose expression tree. Annotation parameter kinds and targets are
+catalogued. Captured declaration applications remain on their semantic
+targets; bindings that need the complete symbol graph run in the value-binder
+phase.
+
+Balanced application records are transient parser inputs. The semantic model
+stores effective values and unresolved expressions needed for binding rather
+than retaining duplicate source text. For comma-separated member declarations,
+the parser consumes the annotations once and applies effective member metadata
+to the final declarator, matching the current RTI compatibility behavior.
+
+## 5.4 Emission boundary
 
 Emission planning owns decisions that affect generated APIs, native storage,
 DynamicType metadata, and initialization. Emitters write those decisions to

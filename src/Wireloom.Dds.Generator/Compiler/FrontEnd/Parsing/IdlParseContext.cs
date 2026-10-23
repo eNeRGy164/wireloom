@@ -57,6 +57,19 @@ internal sealed class IdlParseContext
     internal int MapOffset(int offset)
         => MapOffset(offset, SourceOrigins);
 
+    /// <summary>Reports unknown applications captured between declaration-prefix annotations.</summary>
+    internal void ReportUnknownTypePrefixApplications(IdlInput input, IEnumerable<IdlAnnotationApplicationSyntax> applications)
+    {
+        foreach (var application in applications)
+        {
+            Diagnostics?.Add(new IdlDiagnostic(
+                "DDSG0101",
+                input,
+                application.Offset,
+                $"Annotation '@{application.Name}' is not recognized and will be ignored."));
+        }
+    }
+
     /// <summary>Maps a preprocessed offset using an explicitly captured origin table.</summary>
     private static int MapOffset(int offset, IReadOnlyList<SourceOriginSpan>? sourceOrigins)
     {
@@ -272,13 +285,15 @@ internal sealed class IdlParseContext
     internal static IdlExtensibilityKind ParseExtensibility(string annotation)
     {
         var normalized = string.Concat(annotation.Where(character => !char.IsWhiteSpace(character)));
-        if (normalized.Equals("@final", StringComparison.OrdinalIgnoreCase)
+        if (normalized.Equals("FINAL", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("@final", StringComparison.OrdinalIgnoreCase)
             || normalized.Equals("@extensibility(FINAL)", StringComparison.OrdinalIgnoreCase))
         {
             return IdlExtensibilityKind.Final;
         }
 
-        if (normalized.Equals("@mutable", StringComparison.OrdinalIgnoreCase)
+        if (normalized.Equals("MUTABLE", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("@mutable", StringComparison.OrdinalIgnoreCase)
             || normalized.Equals("@extensibility(MUTABLE)", StringComparison.OrdinalIgnoreCase))
         {
             return IdlExtensibilityKind.Mutable;
