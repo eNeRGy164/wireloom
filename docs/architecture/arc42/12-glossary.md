@@ -5,6 +5,12 @@
 - **Strict validation** — A batch-wide semantic policy that rejects supported
   IDL specification violations before emission. It is distinct from compiler
   warnings-as-errors and identifier escaping.
+- **Annotation application** — One `@name` with an optional balanced argument
+  list. The parser captures its source order, raw text, and location before
+  known built-ins are interpreted; unknown applications stay opaque.
+- **Constant expression** — An IDL `const_expr` evaluated after referenced
+  symbols are available. Supported operators and type rules follow OMG IDL;
+  RTI output serves as compatibility evidence.
 - **Sequence-array mapping** — The file-owned choice between default
   `RtiCSharp` flattening of direct sequence arrays and opt-in `Idl` preservation
   of the outer array and independently sized sequence elements. It does not

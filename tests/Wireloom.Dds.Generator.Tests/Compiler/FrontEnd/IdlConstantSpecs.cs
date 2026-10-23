@@ -1,9 +1,9 @@
 using System.Globalization;
 using Microsoft.CodeAnalysis.CSharp;
-using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
-using Wireloom;
 using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.FrontEnd.Symbols;
+
+using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing.Tests;
 
@@ -304,7 +304,7 @@ public sealed class IdlConstantSpecs
     {
         // Arrange
         var input = Input("floating-default-expression.idl",
-            "typedef double Ratio; struct Sample { @default(1.5 + 2 * (Scale) - -0.5 / 2 + +1e+1) double value; }; const Ratio Scale = 1.25;");
+            "typedef double Ratio; struct Sample { @default(1.5 + 2.0 * (Scale) - -0.5 / 2.0 + +1e+1) double value; }; const Ratio Scale = 1.25;");
 
         // Act
         var documents = CompileSources(input);
@@ -315,10 +315,12 @@ public sealed class IdlConstantSpecs
     }
 
     [Theory]
-    [InlineData("1.0 / 0", "Invalid double default expression")]
+    [InlineData("1.0 / 0.0", "Invalid double default expression")]
     [InlineData("1e308 * 1e308", "Invalid double default expression")]
     [InlineData("1.0 +", "Invalid double default expression")]
     [InlineData("1.0 2.0", "Invalid double default expression")]
+    [InlineData("2", "Invalid double default expression")]
+    [InlineData("1.0 + 2", "Invalid double default expression")]
     public void RejectsInvalidFloatingDefaultExpressions(string expression, string expectedMessage)
     {
         // Arrange
@@ -638,6 +640,19 @@ public sealed class IdlConstantSpecs
     }
 
     [Fact]
+    public void RejectsIntegerConstantReferencesInFloatingPointExpressions()
+    {
+        // Arrange
+        var input = Input("mixed-numeric-constant-expression.idl", "const long Integer = 2; const double Value = Integer + 1.0;");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Invalid double constant expression");
+    }
+
+    [Fact]
     public void RejectsArrayDeclarationsWithoutDimensionsInTheTypeParser()
     {
         // Arrange
@@ -739,6 +754,78 @@ public sealed class IdlConstantSpecs
         // Assert
         positive.ShouldBe(new System.Numerics.BigInteger(255));
         negative.ShouldBe(new System.Numerics.BigInteger(-255));
+    }
+
+    [Fact]
+    public void EvaluatesLeadingZeroIntegerLiteralsAsOctal()
+    {
+        // Arrange
+        var input = Input("octal-constant.idl", "const long Octal = 014; const long Decimal = 12;");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Octal.g.cs"].Source.ShouldContain("public const int Value = 12;");
+        documents["Decimal.g.cs"].Source.ShouldContain("public const int Value = 12;");
+    }
+
+    [Fact]
+    public void RejectsNonOctalDigitsInLeadingZeroIntegerLiterals()
+    {
+        // Arrange
+        var input = Input("invalid-octal-constant.idl", "const long Invalid = 019;");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Octal integer literals may contain only digits 0 through 7");
+    }
+
+    [Fact]
+    public void PreservesWideOperandTypeWhenEvaluatingNarrowIntegerConstants()
+    {
+        // Arrange
+        var input = Input(
+            "wide-operand-in-narrow-expression.idl",
+            "const unsigned long long Wide = 4294967296; const long Narrow = Wide | 0;");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("outside its representable range");
+    }
+
+    [Fact]
+    public void SignedLongLongOutranksUnsignedLongInIntegerExpressionPromotion()
+    {
+        // Arrange
+        var input = Input(
+            "signed-long-long-promotion.idl",
+            "const long long Signed = -1; const unsigned long Unsigned = 1; const long long Result = Signed | Unsigned;");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Result.g.cs"].Source.ShouldContain("public const long Value = -1L;");
+    }
+
+    [Fact]
+    public void UnsignedLongLongOutranksSignedLongLongInIntegerExpressionPromotion()
+    {
+        // Arrange
+        var input = Input(
+            "unsigned-long-long-promotion.idl",
+            "const long long Signed = -1; const unsigned long long Unsigned = 0; const long long Result = Signed | Unsigned;");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("outside its representable range");
     }
 
     [Theory]
@@ -1099,18 +1186,31 @@ public sealed class IdlConstantSpecs
     }
 
     [Fact]
-    public void AcceptsMaximumSupportedShiftCountForZeroValue()
+    public void RejectsShiftCountsOutsideTheOMGConstantExpressionRange()
     {
         // Arrange
         var input = Input(
             "constant-maximum-shift.idl",
-            "const long Constant = 0 << 2147483647;");
+            "const long Constant = 0 << 64;");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Shift count is outside");
+    }
+
+    [Fact]
+    public void UsesZeroFillForRightShiftsInIntegerConstantExpressions()
+    {
+        // Arrange
+        var input = Input("constant-zero-fill-shift.idl", "const long Constant = -2 >> 1;");
 
         // Act
         var documents = CompileSources(input);
 
         // Assert
-        documents["Constant.g.cs"].Source.ShouldContain("public const int Value = 0;");
+        documents["Constant.g.cs"].Source.ShouldContain("public const int Value = 2147483647;");
     }
 
     [Fact]
@@ -1197,7 +1297,7 @@ public sealed class IdlConstantSpecs
 
     [Theory]
     [InlineData("double", "++2.0")]
-    [InlineData("double", "1--2.0")]
+    [InlineData("double", "1.0--2.0")]
     [InlineData("float", "- -2.0")]
     public void NormalizesRepeatedUnaryOperatorsForFloatingPointConstants(string type, string expression)
     {

@@ -117,9 +117,20 @@ internal sealed class FloatingConstantExpressionEvaluator(string text, IdlSymbol
             position++;
         }
 
-        if (start != position && double.TryParse(text[start..position], NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+        if (start != position)
         {
-            return value;
+            var literal = text[start..position];
+            if (!literal.Contains('.') && !literal.Contains('e') && !literal.Contains('E'))
+            {
+                throw new FormatException("Integer literals cannot be used in floating-point constant expressions.");
+            }
+
+            if (double.TryParse(literal, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+            {
+                return value;
+            }
+
+            throw new FormatException("Invalid floating-point literal.");
         }
 
         position = start;

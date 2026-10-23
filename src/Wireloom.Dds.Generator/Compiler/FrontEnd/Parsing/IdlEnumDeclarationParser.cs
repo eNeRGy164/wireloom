@@ -22,6 +22,8 @@ internal sealed class IdlEnumDeclarationParser
             return false;
         }
 
+        context.ReportUnknownTypePrefixApplications(input, prefix.UnknownApplications);
+
         if (prefix.IsTopic || prefix.HasLocalAutoId)
         {
             throw new IdlException(input, context.MapOffset(baseOffset + position), "@topic and @autoid are not applicable to enum declarations.");
@@ -40,40 +42,130 @@ internal sealed class IdlEnumDeclarationParser
         context.EnsureNewName(input, baseOffset + position, qualified);
         context.EnsureGeneratedCompanionNames(input, baseOffset + position, enumName, currentNamespace, includeUnmanaged: false);
         var enumMembers = new List<IdlEnumMember>();
-        var hasDefaultLiteral = false;
+        var enumHasDefaultLiteral = false;
         var nextValue = 0L;
         var enumBody = enumDeclaration.Groups["body"];
-        var rawMembers = enumBody.Value.Split(',');
-        var memberOffset = 0;
-
-        foreach (var rawMember in rawMembers)
+        foreach (var (memberOffset, memberLength) in IdlSyntaxReader.SplitTopLevel(enumBody.Value, ','))
         {
+            var rawMember = enumBody.Value.Substring(memberOffset, memberLength);
             var trimmedMember = rawMember.Trim();
             var leadingWhitespace = rawMember.Length - rawMember.TrimStart().Length;
             var sourceOffset = baseOffset + position + enumBody.Index + memberOffset + leadingWhitespace;
-            memberOffset += rawMember.Length + 1;
 
-            var member = EnumMemberPattern.Match(trimmedMember);
-            if (!member.Success)
+            var annotationOffset = 0;
+            var hasDefaultLiteralApplication = false;
+            string? annotatedValue = null;
+
+            var applications = IdlSyntaxReader.ReadAnnotationApplications(trimmedMember, context.MapOffset(sourceOffset));
+            var compositionViolation = IdlAnnotationCatalog.FindCompositionViolation(applications, IdlAnnotationTarget.EnumLiteral);
+            if (compositionViolation is { } violation)
             {
-                throw new IdlException(input, context.MapOffset(sourceOffset), "Malformed enum member; expected an identifier, an optional prefix @value(<signed decimal>), or an explicit signed decimal value.");
+                throw new IdlException(input, violation.Application.Offset, violation.Message);
             }
 
-            if (member.Groups["value"].Success && member.Groups["explicit"].Success)
+            while (IdlSyntaxReader.TryReadAnnotationApplication(trimmedMember[annotationOffset..], out var annotationName, out var annotationLength))
+            {
+                var applicationText = trimmedMember.Substring(annotationOffset, annotationLength);
+                var application = new IdlAnnotationApplicationSyntax(
+                    annotationName,
+                    applicationText,
+                    context.MapOffset(sourceOffset + annotationOffset),
+                    annotationLength);
+
+                if (IdlAnnotationCatalog.IsKnown(annotationName)
+                    && !IdlAnnotationCatalog.IsRecognizedUnsupported(annotationName))
+                {
+                    try
+                    {
+                        IdlAnnotationCatalog.ValidateTarget(application, IdlAnnotationTarget.EnumLiteral);
+                        IdlAnnotationCatalog.ValidateUniqueNamedArguments(application);
+                    }
+                    catch (FormatException exception)
+                    {
+                        throw new IdlException(input, application.Offset, exception.Message);
+                    }
+                }
+
+                if (annotationName.Equals("default_literal", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (hasDefaultLiteralApplication || applicationText.Contains('('))
+                    {
+                        throw new IdlException(input, application.Offset, "Malformed or duplicate @default_literal annotation.");
+                    }
+
+                    hasDefaultLiteralApplication = true;
+                }
+                else if (annotationName.Equals("value", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (annotatedValue is not null)
+                    {
+                        throw new IdlException(input, application.Offset, "Duplicate @value annotation.");
+                    }
+
+                    try
+                    {
+                        var arguments = application.ParseArguments();
+                        if (arguments.Count != 1 || arguments[0].Name is not null and not "value"
+                            || !Regex.IsMatch(arguments[0].Expression, "^-?[0-9]+$"))
+                        {
+                            var argumentOffset = arguments.Count == 1
+                                ? context.MapOffset(sourceOffset + annotationOffset + arguments[0].RelativeOffset)
+                                : application.Offset;
+                            throw new IdlException(input, argumentOffset, "Malformed enum member: @value requires one signed decimal value.");
+                        }
+
+                        annotatedValue = arguments[0].Expression;
+                    }
+                    catch (FormatException exception)
+                    {
+                        throw new IdlException(input, application.Offset, exception.Message);
+                    }
+                }
+                else if (IdlAnnotationCatalog.IsRecognizedUnsupported(annotationName))
+                {
+                    throw new IdlException(input, application.Offset, $"Annotation '@{annotationName}' is not supported on enum literals.");
+                }
+                else if (!IdlAnnotationCatalog.IsKnown(annotationName))
+                {
+                    context.Diagnostics?.Add(new IdlDiagnostic(
+                        "DDSG0101",
+                        input,
+                        application.Offset,
+                        $"Annotation '@{annotationName}' is not recognized and will be ignored."));
+                }
+                else
+                {
+                    throw new IdlException(input, application.Offset, $"Annotation '@{annotationName}' is not supported on enum literals.");
+                }
+
+                annotationOffset += annotationLength;
+            }
+
+            var memberSyntax = trimmedMember[annotationOffset..].TrimStart();
+            var member = EnumMemberPattern.Match(memberSyntax);
+            if (!member.Success)
+            {
+                throw new IdlException(input, context.MapOffset(sourceOffset), $"Malformed enum member '{memberSyntax}'; expected an identifier, an optional prefix @value(<signed decimal>), or an explicit signed decimal value.");
+            }
+
+            if ((annotatedValue is not null || member.Groups["value"].Success) && member.Groups["explicit"].Success)
             {
                 throw new IdlException(input, context.MapOffset(sourceOffset), "Combined @value and explicit enum values are unsupported.");
             }
 
-            context.RecordIdentifier(input, sourceOffset + member.Groups["name"].Index, member.Groups["name"].Value, currentNamespace);
-            var value = ParseEnumValue(input, context.MapOffset(sourceOffset), member, nextValue);
-            var isDefaultLiteral = member.Groups["defaultLiteral"].Success;
-            if (isDefaultLiteral && hasDefaultLiteral)
+            var memberNameOffset = sourceOffset + annotationOffset + memberSyntax.IndexOf(member.Groups["name"].Value, StringComparison.Ordinal);
+            context.RecordIdentifier(input, memberNameOffset, member.Groups["name"].Value, currentNamespace);
+            var value = annotatedValue is null
+                ? ParseEnumValue(input, context.MapOffset(sourceOffset), member, nextValue)
+                : ParseAnnotatedEnumValue(input, context.MapOffset(sourceOffset), annotatedValue);
+            var isDefaultLiteral = hasDefaultLiteralApplication || member.Groups["defaultLiteral"].Success;
+            if (isDefaultLiteral && enumHasDefaultLiteral)
             {
                 throw new IdlException(input, context.MapOffset(sourceOffset), "An enum may contain at most one @default_literal.");
             }
 
-            hasDefaultLiteral |= isDefaultLiteral;
-            var hasExplicitValue = member.Groups["value"].Success || member.Groups["explicit"].Success;
+            enumHasDefaultLiteral |= isDefaultLiteral;
+            var hasExplicitValue = annotatedValue is not null || member.Groups["value"].Success || member.Groups["explicit"].Success;
             enumMembers.Add(new IdlEnumMember(member.Groups["name"].Value, value, hasExplicitValue, isDefaultLiteral));
 
             nextValue = value + 1;
@@ -107,5 +199,15 @@ internal sealed class IdlEnumDeclarationParser
         }
 
         return (int)nextValue;
+    }
+
+    private static int ParseAnnotatedEnumValue(IdlInput input, int sourceOffset, string valueText)
+    {
+        if (!int.TryParse(valueText, out var value))
+        {
+            throw new IdlException(input, sourceOffset, "Enum value must be a signed Int32 decimal.");
+        }
+
+        return value;
     }
 }

@@ -14,9 +14,9 @@ internal sealed class IdlTypedefParser
         this.context = context;
 
     /// <summary>Parses a typedef declaration when one begins at the current position.</summary>
-    internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, string? defaultExpression, ref int position)
+    internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, IdlAnnotationApplicationSyntax? defaultApplication, ref int position)
     {
-        if (defaultExpression is not null && (SequenceTypedefPattern.IsMatch(declarations.Substring(position)) || ArrayTypedefPattern.IsMatch(declarations.Substring(position))))
+        if (defaultApplication is not null && (SequenceTypedefPattern.IsMatch(declarations.Substring(position)) || ArrayTypedefPattern.IsMatch(declarations.Substring(position))))
         {
             throw new IdlException(input, context.MapOffset(baseOffset + position), "@default is only supported on scalar and string typedefs.");
         }
@@ -101,12 +101,17 @@ internal sealed class IdlTypedefParser
                 null,
                 null,
                 stringBound: bound?.Value,
-                isWideString: isWideString,
-                defaultExpression: defaultExpression);
+                isWideString: isWideString);
             bound?.AddConsumer(parsedStringTypedef.SetStringBound);
             context.AddTypedef(typeName, parsedStringTypedef, input, baseOffset + position);
-            DeferTypedefDefault(parsedStringTypedef, input, baseOffset + position, currentNamespace, typedefTarget, defaultExpression);
-            context.Declarations.Add(new IdlTypedefDeclaration(parsedStringTypedef, Path.GetFileName(input.Path)));
+            var typedefDeclarationModel = new IdlTypedefDeclaration(parsedStringTypedef, Path.GetFileName(input.Path));
+
+            if (defaultApplication is not null)
+            {
+                typedefDeclarationModel.SetAnnotationApplications([defaultApplication]);
+            }
+
+            context.Declarations.Add(typedefDeclarationModel);
 
             position += typedefDeclaration.Length;
 
@@ -118,11 +123,16 @@ internal sealed class IdlTypedefParser
             currentNamespace,
             typedefTarget,
             null,
-            null,
-            defaultExpression: defaultExpression);
+            null);
         context.AddTypedef(typeName, parsedTypedef, input, baseOffset + position);
-        DeferTypedefDefault(parsedTypedef, input, baseOffset + position, currentNamespace, typedefTarget, defaultExpression);
-        context.Declarations.Add(new IdlTypedefDeclaration(parsedTypedef, Path.GetFileName(input.Path)));
+        var typedefModel = new IdlTypedefDeclaration(parsedTypedef, Path.GetFileName(input.Path));
+
+        if (defaultApplication is not null)
+        {
+            typedefModel.SetAnnotationApplications([defaultApplication]);
+        }
+
+        context.Declarations.Add(typedefModel);
 
         position += typedefDeclaration.Length;
 
@@ -137,13 +147,4 @@ internal sealed class IdlTypedefParser
         "ToString"
     ];
 
-    private void DeferTypedefDefault(IdlTypedef typedef, IdlInput input, int offset, string? currentNamespace, string target, string? defaultExpression)
-    {
-        if (defaultExpression is null)
-        {
-            return;
-        }
-
-        context.ValueBinder.DeferTypedefDefault(typedef, input, context.MapOffset(offset), currentNamespace, target, defaultExpression);
-    }
 }

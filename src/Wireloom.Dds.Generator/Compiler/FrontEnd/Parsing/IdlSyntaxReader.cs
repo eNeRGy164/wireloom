@@ -2,9 +2,61 @@ using Wireloom.Compiler.FrontEnd.Symbols;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing;
 
+/// <summary>Captures an annotation application without interpreting its arguments.</summary>
+internal sealed class IdlAnnotationApplicationSyntax(string name, string text, int offset, int length)
+{
+    internal string Name { get; } = name;
+
+    internal string Text { get; } = text;
+
+    internal int Offset { get; } = offset;
+
+    internal int Length { get; } = length;
+
+    /// <summary>Parses argument nodes on demand after the catalog identifies this application as built in.</summary>
+    internal IReadOnlyList<IdlAnnotationArgumentSyntax> ParseArguments() => IdlAnnotationCatalog.ParseArguments(this);
+}
+
+/// <summary>Retains one positional or named annotation argument and its span within the application.</summary>
+internal sealed class IdlAnnotationArgumentSyntax(string? name, string expression, int relativeOffset)
+{
+    internal string? Name { get; } = name;
+
+    internal string Expression { get; } = expression;
+
+    internal int RelativeOffset { get; } = relativeOffset;
+
+}
+
 /// <summary>Reads delimited IDL syntax without treating quoted literal contents as syntax.</summary>
 internal static class IdlSyntaxReader
 {
+    /// <summary>Reads consecutive annotation applications, retaining their source order and offsets.</summary>
+    internal static IReadOnlyList<IdlAnnotationApplicationSyntax> ReadAnnotationApplications(string text, int offset = 0)
+    {
+        var applications = new List<IdlAnnotationApplicationSyntax>();
+        var position = 0;
+        while (position < text.Length)
+        {
+            while (position < text.Length && char.IsWhiteSpace(text[position]))
+            {
+                position++;
+            }
+
+            var start = position;
+
+            if (!TryReadAnnotationApplication(text[position..], out var name, out var length))
+            {
+                break;
+            }
+
+            position += length;
+            applications.Add(new IdlAnnotationApplicationSyntax(name, text[start..position], offset + start, position - start));
+        }
+
+        return applications;
+    }
+
     /// <summary>Reads a complete annotation name and optional balanced argument list without interpreting its meaning.</summary>
     internal static bool TryReadAnnotationApplication(string text, out string name, out int length)
     {
@@ -88,56 +140,51 @@ internal static class IdlSyntaxReader
         return -1;
     }
 
-    /// <summary>Reads a positional or named value argument and the complete annotation length.</summary>
-    internal static bool TryReadAnnotationValue(string text, string name, out string value, out int length)
+    /// <summary>Splits text at separators outside nested delimiters and quoted literals.</summary>
+    internal static IReadOnlyList<(int Start, int Length)> SplitTopLevel(string text, char separator)
     {
-        value = string.Empty;
-        length = 0;
-        var prefix = $"@{name}";
-        if (!text.StartsWith(prefix, StringComparison.Ordinal))
+        var slices = new List<(int Start, int Length)>();
+        var expectedClosings = new Stack<char>();
+        var start = 0;
+        for (var index = 0; index < text.Length; index++)
         {
-            return false;
-        }
-
-        var opening = prefix.Length;
-        while (opening < text.Length && char.IsWhiteSpace(text[opening]))
-        {
-            opening++;
-        }
-
-        if (opening >= text.Length || text[opening] != '(')
-        {
-            return false;
-        }
-
-        var closing = FindClosingDelimiter(text, opening, '(', ')');
-        if (closing < 0)
-        {
-            return false;
-        }
-
-        value = text[(opening + 1)..closing].Trim();
-        if (value.StartsWith("value", StringComparison.Ordinal))
-        {
-            var equals = 5;
-            while (equals < value.Length && char.IsWhiteSpace(value[equals]))
+            if (IsLiteralStart(text, index))
             {
-                equals++;
+                var quote = text[index++];
+                while (index < text.Length)
+                {
+                    if (text[index] == '\\')
+                    {
+                        index++;
+                    }
+                    else if (text[index] == quote)
+                    {
+                        break;
+                    }
+
+                    index++;
+                }
+
+                continue;
             }
 
-            if (equals < value.Length && value[equals] == '=')
+            if (text[index] is '(' or '[' or '{')
             {
-                value = value[(equals + 1)..].Trim();
+                expectedClosings.Push(text[index] switch { '(' => ')', '[' => ']', _ => '}' });
+            }
+            else if (expectedClosings.Count > 0 && text[index] == expectedClosings.Peek())
+            {
+                expectedClosings.Pop();
+            }
+            else if (text[index] == separator && expectedClosings.Count == 0)
+            {
+                slices.Add((start, index - start));
+                start = index + 1;
             }
         }
 
-        length = closing + 1;
-        while (length < text.Length && char.IsWhiteSpace(text[length]))
-        {
-            length++;
-        }
-
-        return true;
+        slices.Add((start, text.Length - start));
+        return slices;
     }
 
     private static bool IsLiteralStart(string text, int index)

@@ -5,7 +5,7 @@ authoritative architecture lives in the [arc42 chapters](arc42/index.md),
 contracts, and support policy; edit those sources first, then refresh this file
 and [machine-readable memory](../../.agents/architecture-memory.yaml).
 
-Refreshed from the current arc42 sources on 2026-10-23. Treat the source map
+Refreshed from the current arc42 sources on 2026-10-24. Treat the source map
 below as authoritative; this summary is a retrieval aid, not a replacement.
 
 ## Agent summary
@@ -21,7 +21,10 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   typedef defaults, and member values; `IdlValueResolver` owns typed rules.
   Constants and defaults share `IdlScalarValue` variants for integer, boolean,
   character, floating-point, string, and enum values, retaining width and enum
-  identity. Integer expressions consume only integer values. Structs, unions,
+  identity. Numeric expression dispatch applies OMG semantics for supported
+  integral, `float`, and `double` contexts by reusing the existing integral and
+  floating evaluators; boolean, character, string, and enum values use dedicated
+  literal/name binders rather than a general-purpose expression tree. Structs, unions,
   and enums share typed prefix parsing with duplicate extensibility checks.
   String tokens are decoded individually before concatenation and final bound
   checks. `ScalarValueEmissionPlan` shares managed/native defaults and annotation
@@ -29,10 +32,30 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   See [building blocks](arc42/05-building-block-view.md) and
   [binding order](arc42/06-runtime-view.md#61-consumer-build-and-generation).
 
-- **Annotation parsing gap:** Application handling remains split across
-  context-specific readers and does not retain a complete annotation syntax
-  list. Eight of nine focused probes expose order and argument-shape gaps,
-  tracked in [#91](https://github.com/eNeRGy164/wireloom/issues/91).
+- **Annotation parsing status:** `IdlSyntaxReader` captures ordered balanced applications and source offsets;
+  `IdlAnnotationCatalog` defines known parameter kinds/defaults, legal targets,
+  positional rules, repeat/conflict metadata, and support status. It validates
+  argument shapes while unknown applications remain opaque. Target readers
+  apply catalog definitions and preserve context-specific behavior. Public
+  compiler tests assert generated output and diagnostics for mixed known and
+  unknown applications across declaration, member, enum-literal, and union
+  targets. Catalog repeat/conflict validation covers declaration prefixes,
+  members, enum literals, and union branches. Local struct/union `@autoid` and
+  typedef `@default` applications are retained on semantic targets; typedef
+  expressions are evaluated during binding after target type resolution.
+  Module scope records retain module-level annotations and resolve the
+  member-ID policy inherited by nested declarations because member IDs are
+  assigned during declaration parsing.
+  `IdlTypeAnnotationPrefix` buffers unknown warnings until a matching type parser accepts the declaration.
+  Member boolean flags bind constant references after the symbol graph is available. Numeric expression dispatch
+  reuses integral and floating evaluators with OMG constant-expression semantics
+  in supported integral, `float`, and `double` contexts; floating expressions reject integer literal operands and integral
+  constant references. OMG integer literals and numeric operators are covered,
+  including octal literals and shift limits. Referenced integral constants
+  retain declared rank during expression promotion, including aliases. Boolean,
+  character, string, and enum values bind through their typed literal/name
+  rules. `long double` and fixed-point remain unsupported, with an extensible
+  internal scalar model.
   Supported defaults use typed range comparisons; native conversion initializes
   aggregate elements when activating union array branches.
 
@@ -73,9 +96,12 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   no source, while 7.7.0 preserves it in DynamicType metadata. See [building
   blocks](arc42/05-building-block-view.md)
   and [runtime flow](arc42/06-runtime-view.md).
-- **IDL annotation and value binding:** The parser retains ordered annotation
-  applications, complete type/declarator syntax, unresolved expressions, and
-  source spans until symbol binding. Shared syntax reading preserves quoted
+- **IDL annotation and value binding:** The shared reader captures ordered balanced annotation applications and source spans;
+  context parsers retain unresolved values until symbol binding.
+  The catalog validates duplicate named keys for known applications and leaves unknown arguments opaque.
+  Type-prefix parsing accepts unknown applications between supported annotations and reports each once after target selection.
+  Member boolean annotation constants bind after discrete constants, including forward and scoped references.
+  Shared syntax reading preserves quoted
   delimiters. The binder resolves enum identities, chained constants, member
   IDs, labels, string bounds, and type-aware defaults before emission. Explicit
   member IDs override automatic hash IDs and resolve before duplicate checks.

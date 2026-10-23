@@ -1,3 +1,6 @@
+using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.FrontEnd.Symbols;
+
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing.Tests;
@@ -58,5 +61,61 @@ public sealed class ReviewAnnotationCompositionSpecs
 
         // Assert
         actual.ShouldBe(expected);
+    }
+
+    [Fact]
+    public void BindsNamedCatalogArgumentsForDeclarationAnnotations()
+    {
+        // Arrange
+        const string source = "@autoid(value=SEQUENTIAL) struct Sample { long first; long second; }; @default(value=7) typedef long Count; struct Holder { Count value; };";
+        var input = Input("named-declaration-annotation-arguments.idl", source);
+
+        // Act
+        var documents = CompileSources(input);
+        var generated = string.Join("\n", documents.Values.Select(document => document.Source));
+
+        // Assert
+        documents.ShouldContainKey("Sample.g.cs");
+        documents.ShouldContainKey("Holder.g.cs");
+        generated.ShouldContain("first");
+        generated.ShouldContain("second");
+        generated.ShouldContain("7");
+    }
+
+    [Fact]
+    public void RetainsDeclarationApplicationsOnTheirSemanticTargets()
+    {
+        // Arrange
+        const string source = "@autoid(value=SEQUENTIAL) struct Sample { long value; }; @default(value=7) typedef long Count; @autoid(HASH) union Choice switch(long) { case 0: long value; }; @autoid(SEQUENTIAL) module Scope { struct Nested { long value; }; };";
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken);
+
+        // Act
+        parser.Parse(source, Input("targeted-annotations.idl", source), 0, null);
+
+        // Assert
+        var structure = parser.Declarations.OfType<IdlClassDeclaration>().Single(declaration => declaration.Name == "Sample");
+        var typedef = parser.Declarations.OfType<IdlTypedefDeclaration>().Single();
+        structure.AnnotationApplications.Select(application => application.Name).ShouldBe(["autoid"]);
+        typedef.AnnotationApplications.Select(application => application.Name).ShouldBe(["default"]);
+        typedef.AnnotationApplications.Single().ParseArguments().Single().Expression.ShouldBe("7");
+        parser.Declarations.OfType<IdlUnionDeclaration>().Single().AnnotationApplications.Select(application => application.Name).ShouldBe(["autoid"]);
+        parser.Declarations.OfType<IdlModuleDeclaration>().Single().AnnotationApplications.Select(application => application.Name).ShouldBe(["autoid"]);
+    }
+
+    [Fact]
+    public void BindsTypedefDefaultFromItsTargetOwnedApplication()
+    {
+        // Arrange
+        const string source = "const string Text = \"long\"; @default(Text) typedef string<3> Alias;";
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken);
+        var input = Input("typedef-default-binding.idl", source);
+        parser.Parse(source, input, 0, null);
+
+        // Act
+        parser.Declarations.OfType<IdlTypedefDeclaration>().Single().AnnotationApplications.Count.ShouldBe(1);
+        var exception = Should.Throw<IdlException>(() => parser.Bind());
+
+        // Assert
+        exception.Message.ShouldContain("String default exceeds the effective bound of 3");
     }
 }

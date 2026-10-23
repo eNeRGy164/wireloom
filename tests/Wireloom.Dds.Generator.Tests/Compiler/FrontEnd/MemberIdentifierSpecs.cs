@@ -1,4 +1,3 @@
-using Wireloom;
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
 
 namespace Wireloom.Compiler.FrontEnd.Semantic.Tests;
@@ -130,6 +129,19 @@ public sealed class MemberIdentifierSpecs
         plugin.ShouldContain("new StructMember(\"hashed\", dtf.GetPrimitiveType<int>(), id: 61804532)");
         plugin.ShouldContain("new StructMember(\"first\", dtf.GetPrimitiveType<int>(), id: 0)");
         plugin.ShouldContain("new StructMember(\"next\", dtf.GetPrimitiveType<int>(), id: 8)");
+    }
+
+    [Fact]
+    public void NamedHashIdArgumentMatchesItsPositionalForm()
+    {
+        // Arrange
+        var input = Input("named-hashid.idl", "struct Sample { @hashid(value=\"stable\") long hashed; };");
+
+        // Act
+        var plugin = CompileSources(input)["Implementation.SamplePlugin.g.cs"].Source;
+
+        // Assert
+        plugin.ShouldContain("new StructMember(\"hashed\", dtf.GetPrimitiveType<int>(), id: 61804532)");
     }
 
     [Fact]

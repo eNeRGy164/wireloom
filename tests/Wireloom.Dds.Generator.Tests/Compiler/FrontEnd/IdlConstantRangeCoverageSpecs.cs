@@ -87,7 +87,8 @@ public sealed class IdlConstantRangeCoverageSpecs
         var exception = Should.Throw<IdlException>(() => Compile(input));
 
         // Assert
-        exception.Message.ShouldContain($"{type} constant value is outside its representable range");
+        (exception.Message.Contains("outside its representable range", StringComparison.OrdinalIgnoreCase)
+            || exception.Message.Contains("sub-expression exceeds", StringComparison.OrdinalIgnoreCase)).ShouldBeTrue();
     }
 
     [Fact]

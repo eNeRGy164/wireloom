@@ -82,7 +82,7 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
                 labels.Add(((int)character.Value).ToString(CultureInfo.InvariantCulture));
                 labelValues.Add(character.Value);
             }
-            else if (discriminatorIdlType is not null && TryEvaluateLabel(label, symbols, currentNamespace, out var numericLabel))
+            else if (discriminatorIdlType is not null && TryEvaluateLabel(label, symbols, currentNamespace, discriminatorIdlType, out var numericLabel))
             {
                 ValidateNumericLabel(discriminatorIdlType, label, numericLabel);
 
@@ -110,11 +110,12 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
         LabelValues = labelValues;
     }
 
-    private static bool TryEvaluateLabel(string label, IdlSymbolTable symbols, string? currentNamespace, out BigInteger value)
+    private static bool TryEvaluateLabel(string label, IdlSymbolTable symbols, string? currentNamespace, string expectedType, out BigInteger value)
     {
         try
         {
-            value = IdlConstantExpressionEvaluator.Evaluate(label, symbols, currentNamespace);
+            var expressionType = expectedType is "char" or "wchar" or "boolean" ? "long" : expectedType;
+            value = ((IdlScalarValue.Integral)IdlTypedExpressionEvaluator.Evaluate(label, expressionType, symbols, currentNamespace)).Value;
             return true;
         }
         catch (FormatException)
@@ -211,7 +212,6 @@ internal sealed class IdlUnion(
     public string? DiscriminatorPrimitiveIdlType { get; private set; }
     public IReadOnlyList<IdlUnionBranch> Branches { get; } = branches;
     public IdlExtensibilityKind Extensibility { get; } = extensibility;
-
     /// <summary>Applies discriminator information resolved during binding.</summary>
     internal void BindDiscriminator(IdlType resolvedType, IdlEnum? discriminatorEnum)
     {

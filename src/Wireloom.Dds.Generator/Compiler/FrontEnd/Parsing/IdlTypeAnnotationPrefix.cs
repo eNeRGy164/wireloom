@@ -17,6 +17,9 @@ internal sealed class IdlTypeAnnotationPrefix
     /// <summary>Gets whether a member-ID policy was explicitly supplied.</summary>
     internal bool HasLocalAutoId { get; private set; }
 
+    /// <summary>Gets unknown applications interleaved with type annotations.</summary>
+    internal List<IdlAnnotationApplicationSyntax> UnknownApplications { get; } = [];
+
     /// <summary>Gets the explicit extensibility kind, when present.</summary>
     internal IdlExtensibilityKind? Extensibility { get; private set; }
 
@@ -24,12 +27,54 @@ internal sealed class IdlTypeAnnotationPrefix
     internal static IdlTypeAnnotationPrefix Read(string text, int position, IdlInput input, IdlParseContext context, int baseOffset, bool useHashIds, bool hasLocalAutoId)
     {
         var result = new IdlTypeAnnotationPrefix { DeclarationStart = position, UseHashIds = useHashIds, HasLocalAutoId = hasLocalAutoId };
+        var applications = IdlSyntaxReader.ReadAnnotationApplications(
+            text[position..],
+            context.MapOffset(baseOffset + position));
+        var compositionViolation = IdlAnnotationCatalog.FindCompositionViolation(applications, IdlAnnotationTarget.Declaration);
+        if (compositionViolation is { } violation)
+        {
+            throw new IdlException(input, violation.Application.Offset, violation.Message);
+        }
+
         while (true)
         {
-            var annotation = IdlGrammar.TypePrefixAnnotationPattern.Match(text[result.DeclarationStart..]);
-            if (!annotation.Success)
+            var remaining = text[result.DeclarationStart..];
+            var mappedOffset = context.MapOffset(baseOffset + result.DeclarationStart);
+            var application = IdlSyntaxReader.ReadAnnotationApplications(remaining, mappedOffset).FirstOrDefault();
+            if (application is null)
             {
                 return result;
+            }
+
+            var name = application.Name;
+            var applicationText = application.Text;
+            var applicationLength = application.Length;
+
+            if (IdlAnnotationCatalog.IsKnown(name)
+                && !IdlAnnotationCatalog.IsRecognizedUnsupported(name))
+            {
+                try
+                {
+                    IdlAnnotationCatalog.ValidateTarget(application, IdlAnnotationTarget.Declaration);
+                    IdlAnnotationCatalog.ValidateUniqueNamedArguments(application);
+                }
+                catch (FormatException exception)
+                {
+                    throw new IdlException(input, application.Offset, exception.Message);
+                }
+            }
+
+            var annotation = IdlGrammar.TypePrefixAnnotationPattern.Match(applicationText);
+            if (!annotation.Success)
+            {
+                if (IdlAnnotationCatalog.IsKnown(name) || IdlAnnotationCatalog.IsRecognizedUnsupported(name))
+                {
+                    return result;
+                }
+
+                result.UnknownApplications.Add(application);
+                result.DeclarationStart += applicationLength;
+                continue;
             }
 
             if (annotation.Groups["topic"].Success)
@@ -54,7 +99,10 @@ internal sealed class IdlTypeAnnotationPrefix
                     throw new IdlException(input, context.MapOffset(baseOffset + result.DeclarationStart), "Duplicate extensibility annotation.");
                 }
 
-                result.Extensibility = IdlParseContext.ParseExtensibility(annotation.Value.Trim());
+                var value = annotation.Groups["fullExtensibilityValue"].Success
+                    ? annotation.Groups["fullExtensibilityValue"].Value
+                    : annotation.Groups["extensibility"].Value;
+                result.Extensibility = IdlParseContext.ParseExtensibility(value);
             }
 
             result.DeclarationStart += annotation.Length;

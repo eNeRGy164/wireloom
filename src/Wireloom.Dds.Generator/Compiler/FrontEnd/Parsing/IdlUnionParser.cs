@@ -15,15 +15,17 @@ internal sealed class IdlUnionParser
         this.context = context;
 
     /// <summary>Parses a union declaration when one begins at the current position.</summary>
-    internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, bool useHashIds, ref int position, bool hasLocalAutoId = false)
+    internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, bool useHashIds, ref int position, IdlAnnotationApplicationSyntax? localAutoId = null)
     {
-        var prefix = IdlTypeAnnotationPrefix.Read(declarations, position, input, context, baseOffset, useHashIds, hasLocalAutoId);
+        var prefix = IdlTypeAnnotationPrefix.Read(declarations, position, input, context, baseOffset, useHashIds, localAutoId is not null);
         var declarationStart = prefix.DeclarationStart;
         var unionDeclaration = UnionPattern.Match(declarations.Substring(declarationStart));
         if (!unionDeclaration.Success || prefix.IsTopic)
         {
             return false;
         }
+
+        context.ReportUnknownTypePrefixApplications(input, prefix.UnknownApplications);
 
         var unionName = unionDeclaration.Groups["name"].Value;
         var qualified = context.Qualify(unionName, currentNamespace);
@@ -78,7 +80,14 @@ internal sealed class IdlUnionParser
             branches,
             prefix.Extensibility ?? IdlExtensibilityKind.Extensible);
         context.Symbols.AddUnion(qualified, parsedUnion);
-        context.Declarations.Add(new IdlUnionDeclaration(parsedUnion, Path.GetFileName(input.Path)));
+        var unionDeclarationModel = new IdlUnionDeclaration(parsedUnion, Path.GetFileName(input.Path));
+
+        if (localAutoId is not null)
+        {
+            unionDeclarationModel.SetAnnotationApplications([localAutoId]);
+        }
+
+        context.Declarations.Add(unionDeclarationModel);
 
         position = declarationStart + unionDeclaration.Length;
 
@@ -93,14 +102,85 @@ internal sealed class IdlUnionParser
         string? currentNamespace,
         HashSet<string> branchNames, string unionScope, bool useHashIds)
     {
-        var branch = UnionBranchPattern.Match(body.Substring(offset));
-        if (!branch.Success)
+        var branchText = body[offset..];
+        var labelsSyntax = UnionBranchLabelsPattern.Match(branchText);
+        if (!labelsSyntax.Success)
         {
             throw new IdlException(input, context.MapOffset(sourceOffset + offset), "Unsupported union branch declaration.");
         }
 
+        var annotationOffset = labelsSyntax.Length;
+        var hasOptional = false;
+        var annotationSyntax = new IdlMemberAnnotationSyntax();
+
+        var applications = IdlSyntaxReader.ReadAnnotationApplications(branchText[annotationOffset..], context.MapOffset(sourceOffset + offset + annotationOffset));
+        var compositionViolation = IdlAnnotationCatalog.FindCompositionViolation(applications, IdlAnnotationTarget.UnionBranch);
+        if (compositionViolation is { } violation)
+        {
+            throw new IdlException(input, violation.Application.Offset, violation.Message);
+        }
+
+        while (IdlSyntaxReader.TryReadAnnotationApplication(branchText[annotationOffset..], out var annotationName, out var annotationLength))
+        {
+            var application = new IdlAnnotationApplicationSyntax(
+                annotationName,
+                branchText.Substring(annotationOffset, annotationLength),
+                context.MapOffset(sourceOffset + offset + annotationOffset),
+                annotationLength);
+            if (annotationName.Equals("optional", StringComparison.OrdinalIgnoreCase))
+            {
+                if (hasOptional)
+                {
+                    throw new IdlException(input, application.Offset, "Duplicate @optional annotation on union branch.");
+                }
+
+                hasOptional = true;
+                try
+                {
+                    IdlAnnotationCatalog.ValidateUniqueNamedArguments(application);
+                }
+                catch (FormatException exception)
+                {
+                    throw new IdlException(input, application.Offset, exception.Message);
+                }
+            }
+            else if (IdlAnnotationCatalog.IsRecognizedUnsupported(annotationName))
+            {
+                throw new IdlException(input, application.Offset, $"Annotation '@{annotationName}' is not supported on union branches.");
+            }
+            else if (!IdlAnnotationCatalog.IsKnown(annotationName))
+            {
+                context.Diagnostics?.Add(new IdlDiagnostic(
+                    "DDSG0101",
+                    input,
+                    application.Offset,
+                    $"Annotation '@{annotationName}' is not recognized and will be ignored."));
+            }
+            else
+            {
+                try
+                {
+                    IdlAnnotationCatalog.ValidateTarget(application, IdlAnnotationTarget.UnionBranch);
+                }
+                catch (FormatException exception)
+                {
+                    throw new IdlException(input, application.Offset, exception.Message);
+                }
+
+                throw new IdlException(input, application.Offset, $"Annotation '@{annotationName}' is not supported on union branches.");
+            }
+
+            annotationOffset += annotationLength;
+        }
+
+        var branch = UnionBranchTailPattern.Match(branchText[annotationOffset..]);
+        if (!branch.Success)
+        {
+            throw new IdlException(input, context.MapOffset(sourceOffset + offset + annotationOffset), "Unsupported union branch declaration.");
+        }
+
         var branchName = branch.Groups["name"].Value;
-        context.RecordIdentifier(input, sourceOffset + offset + branch.Groups["name"].Index, branchName, unionScope, IdlIdentifierScopeKind.Aggregate);
+        context.RecordIdentifier(input, sourceOffset + offset + annotationOffset + branch.Groups["name"].Index, branchName, unionScope, IdlIdentifierScopeKind.Aggregate);
         if (!branchNames.Add(branchName))
         {
             throw new IdlException(input, context.MapOffset(sourceOffset + offset), $"Duplicate union branch: {branchName}");
@@ -132,19 +212,19 @@ internal sealed class IdlUnionParser
             input,
             field.SourceOffset,
             currentNamespace,
-            new IdlMemberAnnotationSyntax());
+            annotationSyntax);
 
         var labels = new List<string>();
 
-        if (branch.Groups[1].Success)
+        if (labelsSyntax.Groups["labels"].Success)
         {
-            foreach (Match match in UnionCaseLabelPattern.Matches(branch.Groups[1].Value))
+            foreach (Match match in UnionCaseLabelPattern.Matches(labelsSyntax.Groups["labels"].Value))
             {
                 labels.Add(match.Groups["label"].Value.Trim());
             }
         }
 
-        return (new IdlUnionBranch(field, labels, branch.Groups[2].Success), branch.Length);
+        return (new IdlUnionBranch(field, labels, labelsSyntax.Groups["default"].Success), annotationOffset + branch.Length);
     }
 
     private IdlMember ParseUnionBranchField(IdlInput input, string branchName, string branchType, string dimensionsText, int sourceOffset, string? currentNamespace)

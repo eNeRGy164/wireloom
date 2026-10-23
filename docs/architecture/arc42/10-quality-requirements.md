@@ -56,9 +56,9 @@ defines fixture and adaptation scope.
 
 ### Compiler maintainability
 
-| ID   | Scenario                  | Acceptance and evidence                                                      |
-| :--- | :------------------------ | :--------------------------------------------------------------------------- |
-| Q-04 | Change one compiler stage | Focused in-memory tests exercise that stage without running the full corpus. |
+| ID   | Scenario                  | Acceptance and evidence                                                                                                                                                                                        |
+| :--- | :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q-04 | Change one compiler stage | Focused in-memory tests exercise that stage without running the full corpus; annotation syntax capture, known-name validation, binding, generated outputs, and diagnostics have separately traceable evidence. |
 
 ### Supply-chain integrity
 

@@ -6,7 +6,6 @@ namespace Wireloom.Compiler.FrontEnd.Semantic;
 internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken cancellationToken)
 {
     private readonly IdlValueResolver resolver = new(symbols);
-    private readonly List<DeferredTypedefDefault> deferredTypedefDefaults = [];
     private readonly List<(IdlMember Member, IdlInput Input, int Offset, string? Namespace, IdlMemberAnnotationSyntax Annotations)> deferredMembers = [];
 
     /// <summary>Queues member annotation values until types and constants are bound.</summary>
@@ -19,12 +18,26 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
         foreach (var deferred in deferredMembers)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            deferred.Member.SetAnnotationFlags(
+                deferred.Annotations.KeyExpression is { } keyExpression
+                    ? resolver.ResolveBooleanAnnotation(deferred.Input, deferred.Offset, deferred.Namespace, keyExpression, "key")
+                    : deferred.Annotations.IsKey,
+                deferred.Annotations.OptionalExpression is { } optionalExpression
+                    ? resolver.ResolveBooleanAnnotation(deferred.Input, deferred.Offset, deferred.Namespace, optionalExpression, "optional")
+                    : deferred.Annotations.IsOptional,
+                deferred.Annotations.ExternalExpression is { } externalExpression
+                    ? resolver.ResolveBooleanAnnotation(deferred.Input, deferred.Offset, deferred.Namespace, externalExpression, "external")
+                    : deferred.Annotations.IsExternal,
+                deferred.Annotations.MustUnderstandExpression is { } mustUnderstandExpression
+                    ? resolver.ResolveBooleanAnnotation(deferred.Input, deferred.Offset, deferred.Namespace, mustUnderstandExpression, "must_understand")
+                    : deferred.Annotations.IsMustUnderstand);
+
             if (deferred.Annotations.MemberIdExpression is { } expression)
             {
                 BigInteger value;
                 try
                 {
-                    value = IdlConstantExpressionEvaluator.Evaluate(expression, symbols, deferred.Namespace);
+                    value = ((IdlScalarValue.Integral)IdlTypedExpressionEvaluator.Evaluate(expression, "long", symbols, deferred.Namespace)).Value;
                 }
                 catch (FormatException exception)
                 {
@@ -44,22 +57,6 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
 
         deferredMembers.Clear();
     }
-
-    /// <summary>Queues a typedef default until constants, bounds, and forward aliases are bound.</summary>
-    internal void DeferTypedefDefault(
-        IdlTypedef typedef,
-        IdlInput input,
-        int offset,
-        string? currentNamespace,
-        string target,
-        string expression) =>
-        deferredTypedefDefaults.Add(new DeferredTypedefDefault(
-            typedef,
-            input,
-            offset,
-            currentNamespace,
-            target,
-            expression));
 
     /// <summary>Binds integer, boolean, character, and enum constants before resolving bounds.</summary>
     internal void BindDiscreteConstants(IEnumerable<IdlDeclaration> declarations)
@@ -103,29 +100,46 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
     internal void BindTypedefDefaults(IEnumerable<IdlDeclaration> declarations, IReadOnlyDictionary<string, (IdlInput Input, int Offset)> typedefLocations)
     {
         var typeResolver = new IdlTypeResolver(symbols);
-        foreach (var deferred in deferredTypedefDefaults)
+        var typedefDeclarations = declarations.OfType<IdlTypedefDeclaration>().ToArray();
+        foreach (var typedefDeclaration in typedefDeclarations)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var sourceOffset = deferred.Offset;
-            var resolvedType = typeResolver.Resolve(deferred.Target, deferred.Namespace, deferred.Input, sourceOffset);
+            var application = typedefDeclaration.AnnotationApplications
+                .SingleOrDefault(candidate => candidate.Name.Equals("default", StringComparison.OrdinalIgnoreCase));
+            if (application is null)
+            {
+                continue;
+            }
+
+            var typedef = typedefDeclaration.Declaration;
+            var qualifiedName = typedef.Namespace is null ? typedef.Name : $"{typedef.Namespace}.{typedef.Name}";
+            if (!typedefLocations.TryGetValue(qualifiedName, out var location))
+            {
+                continue;
+            }
+
+            var resolvedType = typedef.IsString
+                ? new IdlType.StringType(typedef.IsWideString, typedef.StringBound, typedef.IsStringBounded)
+                : typeResolver.Resolve(typedef.Target, typedef.Namespace, location.Input, application.Offset);
             if (resolvedType is null)
             {
                 continue;
             }
 
-            deferred.Typedef.SetValueMetadata(resolver.ResolveTypedefDefaultMetadata(
-                deferred.Input,
-                deferred.Offset,
-                deferred.Namespace,
+            typedef.SetValueMetadata(resolver.ResolveTypedefDefaultMetadata(
+                location.Input,
+                application.Offset,
+                typedef.Namespace,
                 resolvedType,
-                deferred.Expression));
+                application.ParseArguments().Single().Expression));
         }
 
-        var typedefDeclarations = declarations.OfType<IdlTypedefDeclaration>().ToArray();
         foreach (var typedefDeclaration in typedefDeclarations)
         {
             var typedef = typedefDeclaration.Declaration;
-            if (typedef.ValueMetadata?.HasDefault == true || typedef.DefaultExpression is not null || typedef.IsCollection)
+            var hasExplicitDefault = typedefDeclaration.AnnotationApplications
+                .Any(application => application.Name.Equals("default", StringComparison.OrdinalIgnoreCase));
+            if (typedef.ValueMetadata?.HasDefault == true || hasExplicitDefault || typedef.IsCollection)
             {
                 continue;
             }
@@ -263,7 +277,8 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
 
             try
             {
-                var value = IdlConstantExpressionEvaluator.Evaluate(declaration.Expression, symbols, declaration.Namespace);
+                var scalar = IdlTypedExpressionEvaluator.Evaluate(declaration.Expression, primitive.Name, symbols, declaration.Namespace);
+                var value = ((IdlScalarValue.Integral)scalar).Value;
                 IdlScalarTypeRules.ValidateConstantRange(declaration.SourceInput, declaration.SourceOffset, primitive.Name, value);
                 return new IdlScalarValue.Integral(value);
             }
@@ -317,21 +332,5 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
     private static bool IsIntegralConstantType(string type) => type is
         "short" or "int16" or "unsigned short" or "uint16" or "long" or "int32" or "unsigned long" or "uint32"
         or "long long" or "int64" or "unsigned long long" or "uint64" or "int8" or "uint8" or "octet";
-
-    private sealed class DeferredTypedefDefault(
-        IdlTypedef typedef,
-        IdlInput input,
-        int offset,
-        string? currentNamespace,
-        string target,
-        string expression)
-    {
-        public IdlTypedef Typedef { get; } = typedef;
-        public IdlInput Input { get; } = input;
-        public int Offset { get; } = offset;
-        public string? Namespace { get; } = currentNamespace;
-        public string Target { get; } = target;
-        public string Expression { get; } = expression;
-    }
 
 }

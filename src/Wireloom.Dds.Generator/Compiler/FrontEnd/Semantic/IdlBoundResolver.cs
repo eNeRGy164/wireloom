@@ -18,7 +18,7 @@ internal static class IdlBoundResolver
 
         try
         {
-            value = IdlConstantExpressionEvaluator.Evaluate(expression, symbols, currentNamespace);
+            value = ((IdlScalarValue.Integral)IdlTypedExpressionEvaluator.Evaluate(expression, "long", symbols, currentNamespace)).Value;
         }
         catch (FormatException)
         {
