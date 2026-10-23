@@ -57,7 +57,9 @@ $previousProfile = [Environment]::GetEnvironmentVariable('CORPUS_RTI_PROFILE', '
 $previousExportRoot = [Environment]::GetEnvironmentVariable('CORPUS_GENERATOR_EXPORT_ROOT', 'Process')
 Push-Location $PSScriptRoot
 try {
-    dotnet --info | Out-File "$evidence/dotnet-info.txt" -Encoding utf8
+    $sdkVersion = dotnet --version
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot identify the .NET SDK version.' }
+    $sdkVersion | Out-File "$evidence/dotnet-version.txt" -Encoding utf8
     dotnet restore $project --locked-mode
     if ($LASTEXITCODE -ne 0) { throw 'Corpus locked restore failed.' }
     foreach ($version in $Profile | Select-Object -Unique) {
@@ -65,7 +67,7 @@ try {
         $env:CORPUS_GENERATOR_EXPORT_ROOT = Join-Path $output "$version/generator"
         $startedAt = [DateTime]::UtcNow.ToString('o')
         Write-Host "Exporting corpus sources for RTI profile $version..."
-        dotnet test $project --no-restore --configuration Release | Tee-Object "$evidence/$version-tests.txt"
+        dotnet run --project $project --no-restore --configuration Release | Tee-Object "$evidence/$version-tests.txt"
         if ($LASTEXITCODE -ne 0) { throw "Corpus source export failed for RTI profile $version (exit code $LASTEXITCODE)." }
         $after = Get-EvidenceSnapshot $PSScriptRoot $inputs
         if ($after.sha256 -ne $before.sha256) { throw 'Export inputs changed during execution; do not promote this run.' }
@@ -73,7 +75,7 @@ try {
             schemaVersion = 1; kind = 'wireloom-corpus-export'; profile = $version
             startedAtUtc = $startedAt; completedAtUtc = [DateTime]::UtcNow.ToString('o')
             source = $revision; inputs = $before; configuration = 'Release'
-            sdk = (dotnet --version); testExitCode = 0
+            sdk = $sdkVersion; testExitCode = 0
             outputDirectory = [IO.Path]::GetRelativePath($PSScriptRoot, $env:CORPUS_GENERATOR_EXPORT_ROOT).Replace('\', '/')
             output = Get-EvidenceSnapshot $env:CORPUS_GENERATOR_EXPORT_ROOT @(
                 Get-ChildItem -LiteralPath $env:CORPUS_GENERATOR_EXPORT_ROOT -Recurse -File -Filter '*.g.cs' |
