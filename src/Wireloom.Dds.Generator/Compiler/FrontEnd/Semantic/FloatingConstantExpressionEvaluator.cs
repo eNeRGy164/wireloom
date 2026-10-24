@@ -184,7 +184,8 @@ internal sealed class FloatingConstantExpressionEvaluator(string text, IdlSymbol
             declaration.Type,
             declaration.Namespace,
             declaration.SourceInput,
-            declaration.SourceOffset);
+            declaration.SourceOffset,
+            declaration.TypeWasEscaped);
         while (resolved is IdlType.Alias alias)
         {
             resolved = alias.Target;
@@ -199,7 +200,8 @@ internal sealed class FloatingConstantExpressionEvaluator(string text, IdlSymbol
             declaration.Type,
             declaration.Namespace,
             declaration.SourceInput,
-            declaration.SourceOffset);
+            declaration.SourceOffset,
+            declaration.TypeWasEscaped);
         while (resolved is IdlType.Alias alias)
         {
             resolved = alias.Target;

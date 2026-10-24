@@ -34,6 +34,7 @@ internal sealed class IdlUnionParser
         context.EnsureGeneratedCompanionNames(input, baseOffset + declarationStart, unionName, currentNamespace, includeUnmanaged: true);
         var discriminator = unionDeclaration.Groups["discriminator"];
         var discriminatorIdlType = NormalizeIdlType(discriminator.Value);
+        var discriminatorSourceOffset = baseOffset + declarationStart + discriminator.Index;
         var discriminatorOffset = context.MapOffset(baseOffset + declarationStart + discriminator.Index);
         var unionBody = unionDeclaration.Groups["body"];
         var branches = new List<IdlUnionBranch>();
@@ -78,7 +79,8 @@ internal sealed class IdlUnionParser
             discriminatorIsEnum: false,
             discriminatorDefaultValue: null,
             branches,
-            prefix.Extensibility ?? IdlExtensibilityKind.Extensible);
+            prefix.Extensibility ?? IdlExtensibilityKind.Extensible,
+            context.IsEscapedIdentifier(discriminatorSourceOffset));
         context.Symbols.AddUnion(qualified, parsedUnion);
         var unionDeclarationModel = new IdlUnionDeclaration(parsedUnion, Path.GetFileName(input.Path));
 
@@ -182,7 +184,8 @@ internal sealed class IdlUnionParser
         // RTI accepts @optional on a union branch but omits it from the generated
         // C# contract and DynamicType. A union always selects one branch, so the
         // annotation does not make the selected branch independently absent.
-        var field = ParseUnionBranchField(input, branchName, branchType, branch.Groups["dimensions"].Value, sourceOffset + offset, currentNamespace);
+        var branchTypeOffset = sourceOffset + offset + annotationOffset + branch.Groups["type"].Index;
+        var field = ParseUnionBranchField(input, branchName, branchType, branch.Groups["dimensions"].Value, branchTypeOffset, currentNamespace);
         if (useHashIds)
         {
             var metadata = new IdlMemberMetadata(
@@ -219,41 +222,42 @@ internal sealed class IdlUnionParser
         return (new IdlUnionBranch(field, labels, labelsSyntax.Groups["default"].Success), annotationOffset + branch.Length);
     }
 
-    private IdlMember ParseUnionBranchField(IdlInput input, string branchName, string branchType, string dimensionsText, int sourceOffset, string? currentNamespace)
+    private IdlMember ParseUnionBranchField(IdlInput input, string branchName, string branchType, string dimensionsText, int typeOffset, string? currentNamespace)
     {
+        var typeWasEscaped = context.IsEscapedIdentifier(typeOffset);
         var dimensions = dimensionsText.Length > 0
-            ? context.TypeParser.ParseDimensions(input, sourceOffset, dimensionsText, currentNamespace)
+            ? context.TypeParser.ParseDimensions(input, typeOffset + branchType.Length, dimensionsText, currentNamespace)
             : [];
 
-        if (IdlBuiltinTypeSyntax.IsSequenceType(branchType))
+        if (!typeWasEscaped && IdlBuiltinTypeSyntax.IsSequenceType(branchType))
         {
-            var (ElementType, Bound) = context.TypeParser.ParseSequenceType(input, sourceOffset, branchType, currentNamespace);
-            var element = context.TypeParser.ParseCollectionElementType(input, sourceOffset, ElementType, currentNamespace, "Unknown union collection element type");
+            var (ElementType, ElementOffset, Bound) = context.TypeParser.ParseSequenceType(input, typeOffset, branchType, currentNamespace);
+            var element = context.TypeParser.ParseCollectionElementType(input, ElementOffset, ElementType, currentNamespace, "Unknown union collection element type");
             var sequence = new IdlType.Sequence(element, Bound?.Value, dimensions, input.SequenceSize);
             Bound?.AddConsumer(sequence.SetBound);
-            return new IdlMember(branchName, sequence, sourceInput: input, sourceOffset: context.MapOffset(sourceOffset));
+            return new IdlMember(branchName, sequence, sourceInput: input, sourceOffset: context.MapOffset(typeOffset));
         }
 
         if (dimensionsText.Length > 0)
         {
-            var element = context.TypeParser.ParseCollectionElementType(input, sourceOffset, branchType, currentNamespace, "Unknown union array element type");
-            return new IdlMember(branchName, new IdlType.Array(element, dimensions), sourceInput: input, sourceOffset: context.MapOffset(sourceOffset));
+            var element = context.TypeParser.ParseCollectionElementType(input, typeOffset, branchType, currentNamespace, "Unknown union array element type");
+            return new IdlMember(branchName, new IdlType.Array(element, dimensions), sourceInput: input, sourceOffset: context.MapOffset(typeOffset));
         }
 
-        if (IdlBuiltinTypeSyntax.TryParseStringType(branchType, out var isWideString, out var boundExpression))
+        if (!typeWasEscaped && IdlBuiltinTypeSyntax.TryParseStringType(branchType, out var isWideString, out var boundExpression))
         {
-            var bound = context.TypeParser.ParseStringBound(input, sourceOffset, branchType, currentNamespace, "Union string bound must be a positive Int32.");
+            var bound = context.TypeParser.ParseStringBound(input, typeOffset, branchType, currentNamespace, "Union string bound must be a positive Int32.");
 
             var stringType = new IdlType.StringType(isWideString, bound?.Value ?? input.StringSize, isBounded: boundExpression is not null);
             bound?.AddConsumer(stringType.SetBound);
-            return new IdlMember(branchName, stringType, sourceInput: input, sourceOffset: context.MapOffset(sourceOffset));
+            return new IdlMember(branchName, stringType, sourceInput: input, sourceOffset: context.MapOffset(typeOffset));
         }
 
-        if (IsPrimitive(branchType))
+        if (!typeWasEscaped && IsPrimitive(branchType))
         {
-            return new IdlMember(branchName, new IdlType.Primitive(NormalizeIdlType(branchType)), sourceInput: input, sourceOffset: context.MapOffset(sourceOffset));
+            return new IdlMember(branchName, new IdlType.Primitive(NormalizeIdlType(branchType)), sourceInput: input, sourceOffset: context.MapOffset(typeOffset));
         }
 
-        return new IdlMember(branchName, context.ReferenceType(branchType, currentNamespace, input, sourceOffset, "Unknown union branch type"), sourceInput: input, sourceOffset: context.MapOffset(sourceOffset));
+        return new IdlMember(branchName, context.ReferenceType(branchType, currentNamespace, input, typeOffset, "Unknown union branch type"), sourceInput: input, sourceOffset: context.MapOffset(typeOffset));
     }
 }

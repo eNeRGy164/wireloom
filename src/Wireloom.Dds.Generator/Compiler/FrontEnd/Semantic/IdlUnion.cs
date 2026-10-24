@@ -179,7 +179,8 @@ internal sealed class IdlUnion(
     bool discriminatorIsEnum,
     int? discriminatorDefaultValue,
     IReadOnlyList<IdlUnionBranch> branches,
-    IdlExtensibilityKind extensibility)
+    IdlExtensibilityKind extensibility,
+    bool discriminatorWasEscaped = false)
 {
     private static readonly HashSet<string> SupportedDiscriminatorPrimitives =
     [
@@ -204,6 +205,7 @@ internal sealed class IdlUnion(
     public string DiscriminatorIdlType { get; } = discriminatorIdlType;
     internal IdlInput DiscriminatorInput { get; } = discriminatorInput;
     internal int DiscriminatorOffset { get; } = discriminatorOffset;
+    internal bool DiscriminatorWasEscaped { get; } = discriminatorWasEscaped;
     public bool DiscriminatorIsEnum { get; private set; } = discriminatorIsEnum;
     public int? DiscriminatorDefaultValue { get; private set; } = discriminatorDefaultValue;
     /// <summary>Gets the first declared enum value independently of an explicit default literal.</summary>

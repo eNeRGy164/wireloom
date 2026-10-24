@@ -61,11 +61,12 @@ internal sealed class IdlTypeParser
                 ? ParseDimensions(input, fieldOffset + field.Length, Dimensions, currentNamespace)
                 : [];
             IdlType parsedType;
+            var typeWasEscaped = context.IsEscapedIdentifier(typeOffset);
 
-            if (IdlBuiltinTypeSyntax.IsSequenceType(kind))
+            if (!typeWasEscaped && IdlBuiltinTypeSyntax.IsSequenceType(kind))
             {
-                var (ElementType, Bound) = ParseSequenceType(input, typeOffset, kind, currentNamespace);
-                var element = ParseCollectionElementType(input, typeOffset, ElementType, currentNamespace, "Unknown collection element type");
+                var (ElementType, ElementOffset, Bound) = ParseSequenceType(input, typeOffset, kind, currentNamespace);
+                var element = ParseCollectionElementType(input, ElementOffset, ElementType, currentNamespace, "Unknown collection element type");
                 var sequence = new IdlType.Sequence(element, Bound?.Value, dimensions, input.SequenceSize);
                 Bound?.AddConsumer(sequence.SetBound);
                 parsedType = sequence;
@@ -75,7 +76,7 @@ internal sealed class IdlTypeParser
                 var element = ParseCollectionElementType(input, typeOffset, kind, currentNamespace, "Unknown collection element type");
                 parsedType = new IdlType.Array(element, dimensions);
             }
-            else if (IdlBuiltinTypeSyntax.TryParseStringType(kind, out var isWideString, out var stringBoundExpression))
+            else if (!typeWasEscaped && IdlBuiltinTypeSyntax.TryParseStringType(kind, out var isWideString, out var stringBoundExpression))
             {
                 var stringType = new IdlType.StringType(isWideString, input.StringSize, isBounded: stringBoundExpression is not null);
                 if (member.Groups[2].Success)
@@ -86,7 +87,7 @@ internal sealed class IdlTypeParser
 
                 parsedType = stringType;
             }
-            else if (IsPrimitive(kind))
+            else if (!typeWasEscaped && IsPrimitive(kind))
             {
                 parsedType = new IdlType.Primitive(NormalizeIdlType(kind));
             }
@@ -320,8 +321,13 @@ internal sealed class IdlTypeParser
     }
 
     /// <summary>Parses and validates a bounded string type.</summary>
-    internal IdlDeferredBound? ParseStringBound(IdlInput input, int offset, string type, string? currentNamespace, string errorMessage)
+    internal IdlDeferredBound? ParseStringBound(IdlInput input, int offset, string type, string? currentNamespace, string errorMessage, bool isEscapedIdentifier = false)
     {
+        if (isEscapedIdentifier)
+        {
+            return null;
+        }
+
         if (IdlBuiltinTypeSyntax.TryParseStringType(type, out _, out var boundExpression)
             && boundExpression is not null)
         {
@@ -339,7 +345,9 @@ internal sealed class IdlTypeParser
         string? currentNamespace,
         string errorPrefix)
     {
-        if (!IdlBuiltinTypeSyntax.TryParseStringType(elementType, out var isWideString, out var boundExpression))
+        var isEscapedIdentifier = context.IsEscapedIdentifier(offset);
+        if (isEscapedIdentifier
+            || !IdlBuiltinTypeSyntax.TryParseStringType(elementType, out var isWideString, out var boundExpression))
         {
             return context.ReferenceType(elementType, currentNamespace, input, offset, errorPrefix);
         }
@@ -350,16 +358,19 @@ internal sealed class IdlTypeParser
         return stringType;
     }
 
-    internal (string ElementType, IdlDeferredBound? Bound) ParseSequenceType(IdlInput input, int offset, string type, string? currentNamespace)
+    internal (string ElementType, int ElementOffset, IdlDeferredBound? Bound) ParseSequenceType(IdlInput input, int offset, string type, string? currentNamespace)
     {
-        var inner = type.Substring(type.IndexOf('<') + 1, type.LastIndexOf('>') - type.IndexOf('<') - 1);
+        var openingAngle = type.IndexOf('<');
+        var inner = type.Substring(openingAngle + 1, type.LastIndexOf('>') - openingAngle - 1);
         var parts = inner.Split(',');
         if (parts.Length > 2 || parts.Length == 0 || string.IsNullOrWhiteSpace(parts[0]))
         {
             throw new IdlException(input, context.MapOffset(offset), "Malformed sequence declaration.");
         }
 
-        return (NormalizeIdlType(parts[0].Trim()), parts.Length == 2 ? ResolveBound(input, offset, parts[1], currentNamespace) : null);
+        var leadingWhitespace = parts[0].Length - parts[0].TrimStart().Length;
+        var elementOffset = offset + openingAngle + 1 + leadingWhitespace;
+        return (NormalizeIdlType(parts[0].Trim()), elementOffset, parts.Length == 2 ? ResolveBound(input, offset, parts[1], currentNamespace) : null);
     }
 
 }

@@ -59,6 +59,8 @@ internal sealed class IdlParseContext
     internal void SetEscapedIdentifierOffsets(HashSet<int>? escapedIdentifierOffsets) =>
         EscapedIdentifierOffsets = escapedIdentifierOffsets ?? [];
 
+    internal bool IsEscapedIdentifier(int offset) => EscapedIdentifierOffsets.Contains(offset);
+
     /// <summary>Maps a preprocessed offset to its original source offset.</summary>
     internal int MapOffset(int offset)
         => MapOffset(offset, SourceOrigins);
@@ -173,7 +175,8 @@ internal sealed class IdlParseContext
                             union.Declaration.DiscriminatorIdlType,
                             union.Declaration.Namespace,
                             union.Declaration.DiscriminatorInput,
-                            union.Declaration.DiscriminatorOffset),
+                            union.Declaration.DiscriminatorOffset,
+                            union.Declaration.DiscriminatorWasEscaped),
                         "Unknown union discriminator type");
                     var resolvedDiscriminator = TypeBinder.Bind(discriminatorReference);
                     var discriminatorEnum = FindEnum(resolvedDiscriminator);
@@ -311,7 +314,7 @@ internal sealed class IdlParseContext
 
     /// <summary>Records an IDL type reference for resolution during binding.</summary>
     internal IdlType ReferenceType(string idlType, string? currentNamespace, IdlInput input, int offset, string errorPrefix) =>
-        new IdlType.Reference(new IdlTypeReference(idlType, currentNamespace, input, MapOffset(offset)), errorPrefix);
+        new IdlType.Reference(new IdlTypeReference(idlType, currentNamespace, input, MapOffset(offset), IsEscapedIdentifier(offset)), errorPrefix);
 
     /// <summary>Checks whether a field refers by value to a still-incomplete forward-declared struct.</summary>
     internal bool IsIncompleteForwardValueType(IdlType type)
