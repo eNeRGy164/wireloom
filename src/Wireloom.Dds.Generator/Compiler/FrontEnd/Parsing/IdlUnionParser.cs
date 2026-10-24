@@ -229,7 +229,7 @@ internal sealed class IdlUnionParser
         {
             var (ElementType, Bound) = context.TypeParser.ParseSequenceType(input, sourceOffset, branchType, currentNamespace);
             var element = context.TypeParser.ParseCollectionElementType(input, sourceOffset, ElementType, currentNamespace, "Unknown union collection element type");
-            var sequence = new IdlType.Sequence(element, Bound?.Value ?? 100, dimensions);
+            var sequence = new IdlType.Sequence(element, Bound?.Value, dimensions, input.SequenceSize);
             Bound?.AddConsumer(sequence.SetBound);
             return new IdlMember(branchName, sequence, sourceInput: input, sourceOffset: context.MapOffset(sourceOffset));
         }
@@ -244,7 +244,7 @@ internal sealed class IdlUnionParser
         {
             var bound = context.TypeParser.ParseStringBound(input, sourceOffset, branchType, currentNamespace, "Union string bound must be a positive Int32.");
 
-            var stringType = new IdlType.StringType(isWideString, bound?.Value ?? 255, isBounded: boundExpression is not null);
+            var stringType = new IdlType.StringType(isWideString, bound?.Value ?? input.StringSize, isBounded: boundExpression is not null);
             bound?.AddConsumer(stringType.SetBound);
             return new IdlMember(branchName, stringType, sourceInput: input, sourceOffset: context.MapOffset(sourceOffset));
         }

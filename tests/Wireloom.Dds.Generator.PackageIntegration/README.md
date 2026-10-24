@@ -64,6 +64,12 @@ fixture overrides the mode with `SequenceArrayMapping=RtiCSharp`, intentionally
 retaining `DDSG0105` as a non-fatal warning. Typed checks exercise both APIs and
 reuse the sequence-array runtime serialization contracts.
 
+The package consumer sets project defaults of 11 and 21, then verifies them
+through `project-limits.idl`. `configured-limits.idl` overrides those values
+with `SequenceSize=7` and `StringSize=19`; its runtime contract checks direct
+members, typedefs, string sequences, and union branches. The linked runtime
+fixtures explicitly retain their established 100/255 defaults.
+
 The ordinary packed consumer uses `PackageIntegrationStrict=false` and
 explicitly exempts `DDSG0108` from warnings-as-errors. Its retained `Context`
 type and focused `strict-identifiers.idl` fixture deliberately trigger that

@@ -84,7 +84,9 @@ authoritative; this summary is a retrieval aid, not a replacement.
   See
   [constraints](arc42/02-architecture-constraints.md) and [support policy](../guides/support-and-compatibility.md).
 - **Compiler flow:** Explicit `DdsIdl` roots and project-wide metadata enter
-  through MSBuild/Roslyn. Sequence-array mapping is independently file-owned:
+  through MSBuild/Roslyn. Finite unbounded-value limits default to 100 sequence
+  elements and 255 string bytes/code units; project properties set defaults and
+  file metadata can override them. Explicit IDL bounds win. Sequence-array mapping is independently file-owned:
   the project default `DdsIdlSequenceArrayMapping=RtiCSharp` can be overridden
   with `SequenceArrayMapping=Idl` on a declaring file, including shared includes.
   The emission plan applies this mapping to direct sequence-array union branches
@@ -223,6 +225,7 @@ authoritative; this summary is a retrieval aid, not a replacement.
 | Qualified RTI versions | `7.3.1`, `7.7.0`                           | Exact LTS version evidence only                                                                                        |
 | Test platform          | Microsoft.Testing.Platform, xUnit v3       | Runner filters follow `--`                                                                                             |
 | Sequence-array mapping | `RtiCSharp`; opt-in `Idl` per project/file | File ownership; runtime coverage on both LTS profiles; C149 Idl case passes 16 focused DDS exchanges per exact profile |
+| Unbounded finite limits | 100 sequence elements; 255 string bytes/code units | Project defaults with file-level overrides; explicit IDL bounds win; positive Int32 only |
 | Strict validation      | `false`; any root enables the batch        | DDSG0108 by default; strict failure before emission                                                                    |
 
 ## Open risks

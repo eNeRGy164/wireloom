@@ -190,7 +190,7 @@ internal static class EmissionTypeProjector
     {
         var element = ProjectMemberType(sequence.Element, currentNamespace);
 
-        return new SequenceEmissionType(element, sequence.Bound ?? 100, $"ISequence<{element.CSharpType}>", sequence.Dimensions,
+        return new SequenceEmissionType(element, sequence.EffectiveBound, $"ISequence<{element.CSharpType}>", sequence.Dimensions,
             isBounded: sequence.Bound is not null);
     }
 

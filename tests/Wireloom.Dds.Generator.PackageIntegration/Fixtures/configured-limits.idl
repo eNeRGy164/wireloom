@@ -1,0 +1,20 @@
+module ConfiguredLimits {
+    typedef sequence<long> Numbers;
+    typedef sequence<string> Labels;
+    typedef string Label;
+
+    struct Sample {
+        sequence<long> directNumbers;
+        sequence<string> directLabels;
+        string directLabel;
+        wstring directWideLabel;
+        Numbers aliasedNumbers;
+        Labels aliasedLabels;
+        Label aliasedLabel;
+    };
+
+    union Choice switch(long) {
+        case 0: sequence<long> numbers;
+        default: string label;
+    };
+};

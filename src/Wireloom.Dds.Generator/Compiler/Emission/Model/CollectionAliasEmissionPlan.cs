@@ -15,7 +15,8 @@ internal sealed class CollectionAliasEmissionPlan(
     RtiApiProfile? profile = null,
     bool isSequenceArrayElement = false,
     IdlMemberValueMetadata? valueMetadata = null,
-    bool isRecursiveUnboundedSequenceElement = false)
+    bool isRecursiveUnboundedSequenceElement = false,
+    int effectiveSequenceBound = 100)
 {
     /// <summary>Gets whether the wrapper is generated for an anonymous sequence-array element.</summary>
     internal bool IsSequenceArrayElement { get; } = isSequenceArrayElement;
@@ -41,7 +42,7 @@ internal sealed class CollectionAliasEmissionPlan(
     public bool IsSequence { get; } = isSequence;
 
     /// <summary>Gets the effective sequence limit shared by managed, native, and metadata emission.</summary>
-    public int SequenceBound { get; } = sequenceBound ?? 100;
+    public int SequenceBound { get; } = sequenceBound ?? effectiveSequenceBound;
 
     public bool IsArray { get; } = isArray;
 

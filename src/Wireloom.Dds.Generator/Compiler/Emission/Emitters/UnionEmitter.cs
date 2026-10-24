@@ -219,7 +219,7 @@ internal static class UnionEmitter
             var unit = MemberEmissionRenderer.StringBoundUnit(branch.Plan.IsWideString);
             branchRemarks += branch.Plan.IsBoundedString
                 ? $" The bound on this {stringKind} IDL string is measured in {unit}. The generated C# property does not check the bound when assigned."
-                : $" This unbounded {stringKind} IDL string has an effective limit of 255 {unit}. The generated C# property does not enforce the effective limit when assigned.";
+                : $" This unbounded {stringKind} IDL string has an effective limit of {branch.Plan.Bound} {unit}. The generated C# property does not enforce the effective limit when assigned.";
         }
 
         writer.WriteXmlRemarks(branchRemarks);

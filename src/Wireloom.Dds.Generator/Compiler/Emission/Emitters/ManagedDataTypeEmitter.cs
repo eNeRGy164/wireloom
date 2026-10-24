@@ -124,9 +124,9 @@ internal static class ManagedDataTypeEmitter
             if (field.IsSequence)
             {
                 var sequenceRemarks = "The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound.";
-                if (EmissionTypeProjector.UnwrapValueEmissionType(field.Type) is SequenceEmissionType { IsBounded: false })
+                if (EmissionTypeProjector.UnwrapValueEmissionType(field.Type) is SequenceEmissionType { IsBounded: false } sequenceType)
                 {
-                    sequenceRemarks += " For an unbounded IDL sequence, an effective limit of 100 elements is set. RTI uses the bound from the type metadata when processing DDS data.";
+                    sequenceRemarks += $" For an unbounded IDL sequence, an effective limit of {sequenceType.Bound} elements is set. RTI uses the bound from the type metadata when processing DDS data.";
                 }
 
                 writer.WriteXmlRemarks(sequenceRemarks);
@@ -142,7 +142,7 @@ internal static class ManagedDataTypeEmitter
                 var stringKind = field.IsWideString ? "wide" : "narrow";
                 var unit = MemberEmissionRenderer.StringBoundUnit(field.IsWideString);
                 var remark = !field.IsBoundedString
-                    ? $"This unbounded {stringKind} IDL string has an effective limit of 255 {unit}. The generated C# property does not enforce the effective limit when assigned."
+                    ? $"This unbounded {stringKind} IDL string has an effective limit of {field.Bound} {unit}. The generated C# property does not enforce the effective limit when assigned."
                     : $"The bound on this {stringKind} IDL string is measured in {unit}. The generated C# property does not check the bound when assigned.";
                 writer.WriteXmlRemarks(remark);
             }

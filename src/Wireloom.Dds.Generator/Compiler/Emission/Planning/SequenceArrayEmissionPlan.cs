@@ -63,7 +63,7 @@ internal sealed class SequenceArrayEmissionPlan
 
                 var names = ReserveNames(symbols, declarationNamespace, $"{declarationName}_{member.Name}Sequence");
                 var element = EmissionTypeProjector.ToCollectionElementType(sequence.Element, declarationNamespace);
-                var sequenceType = new SequenceEmissionType(element, sequence.Bound ?? 100, $"ISequence<{element.CSharpType}>",
+                var sequenceType = new SequenceEmissionType(element, sequence.EffectiveBound, $"ISequence<{element.CSharpType}>",
                     isBounded: sequence.Bound is not null);
                 var wrapper = new AliasEmissionType(names.RuntimeTypeName, sequenceType, names.RuntimeTypeName,
                     names.RuntimeTypeName, isAnonymousSequence: true);
@@ -91,8 +91,10 @@ internal sealed class SequenceArrayEmissionPlan
 
                 var aliasPlan = new CollectionAliasEmissionPlan(element, isSequence: true, isArray: false,
                     nativeValueRequiresCast: requiresCast, elementNativeType: nativeType,
-                    sequenceBound: sequence.Bound, profile: profile, isSequenceArrayElement: true);
-                var helper = new IdlTypedef(names.ManagedTypeName, declarationNamespace, "sequence", elementType: null, bound: sequence.Bound);
+                    sequenceBound: sequence.Bound, profile: profile, isSequenceArrayElement: true,
+                    effectiveSequenceBound: sequence.EffectiveBound);
+                var helper = new IdlTypedef(names.ManagedTypeName, declarationNamespace, "sequence", elementType: null,
+                    bound: sequence.Bound, effectiveSequenceBound: sequence.EffectiveBound);
                 elements.Add(new SequenceArrayElementPlan(helper, aliasPlan, sourceIdlFileName));
             }
         }

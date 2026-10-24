@@ -84,6 +84,13 @@ unchanged and unrelated non-IDL inputs remain cached, while tracked IDL edits
 invalidate the shared source-output batch. Per-root incremental caching is not
 yet implemented.
 
+Finite limits for unbounded IDL values default to 100 sequence elements and
+255 UTF-8 bytes for narrow strings or UTF-16 code units for wide strings.
+Project properties set the defaults; `SequenceSize` and `StringSize` metadata
+override them for declarations physically in one IDL file. Explicit IDL bounds
+take precedence. Values must be positive `Int32` numbers. This configuration
+does not enable RTI's true-unbounded allocation and deserialization behavior.
+
 ## 8.4 Dependency and supply-chain boundaries
 
 The consumer owns the RTI runtime reference. Roslyn compiler packages remain

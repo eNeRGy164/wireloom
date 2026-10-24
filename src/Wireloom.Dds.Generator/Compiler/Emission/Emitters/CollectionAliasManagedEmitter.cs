@@ -52,7 +52,7 @@ internal static class CollectionAliasManagedEmitter
             var sequenceRemarks = "Use the mutable sequence instance to add or remove elements; the property itself is getter-only.";
             if (declaration.Bound is null)
             {
-                sequenceRemarks += " For an unbounded IDL sequence, an effective limit of 100 elements is set. RTI uses the bound from the type metadata when processing DDS data.";
+                sequenceRemarks += $" For an unbounded IDL sequence, an effective limit of {plan.SequenceBound} elements is set. RTI uses the bound from the type metadata when processing DDS data.";
             }
 
             writer.WriteXmlRemarks(sequenceRemarks);
@@ -244,7 +244,7 @@ internal static class CollectionAliasManagedEmitter
                 var unit = MemberEmissionRenderer.StringBoundUnit(plan.IsWideString);
                 var stringRemarks = plan.IsStringBounded
                     ? $"The bound on this {stringKind} IDL string is measured in {unit}. The generated C# property does not check the bound when assigned."
-                    : $"This unbounded {stringKind} IDL string has an effective limit of 255 {unit}. The generated C# property does not enforce the effective limit when assigned.";
+                    : $"This unbounded {stringKind} IDL string has an effective limit of {plan.StringBound} {unit}. The generated C# property does not enforce the effective limit when assigned.";
                 writer.WriteXmlRemarks(stringRemarks);
                 writer.WriteXmlSeeAlso($"https://community.rti.com/static/documentation/connext-dds/{profile.RtiVersion}/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", $"RTI Connext {profile.RtiVersion} string and wide-string bounds");
             }

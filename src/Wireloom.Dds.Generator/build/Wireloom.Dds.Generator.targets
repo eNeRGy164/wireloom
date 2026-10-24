@@ -15,7 +15,11 @@
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Undefines" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Strict" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SequenceArrayMapping" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SequenceSize" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="StringSize" />
     <CompilerVisibleProperty Include="DdsIdlSequenceArrayMapping" />
+    <CompilerVisibleProperty Include="DdsIdlSequenceSize" />
+    <CompilerVisibleProperty Include="DdsIdlStringSize" />
     <AvailableItemName Include="DdsIdl" />
   </ItemGroup>
 
@@ -33,6 +37,8 @@
         <Undefines>%(DdsIdl.Undefines)</Undefines>
         <Strict>%(DdsIdl.Strict)</Strict>
         <SequenceArrayMapping>%(DdsIdl.SequenceArrayMapping)</SequenceArrayMapping>
+        <SequenceSize>%(DdsIdl.SequenceSize)</SequenceSize>
+        <StringSize>%(DdsIdl.StringSize)</StringSize>
       </AdditionalFiles>
 
       <AdditionalFiles
