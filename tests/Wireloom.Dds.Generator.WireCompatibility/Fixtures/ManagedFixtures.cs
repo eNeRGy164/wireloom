@@ -11,6 +11,11 @@ internal static partial class ManagedFixtures
     /// <summary>Creates the expected managed sample using the selected corpus fixture.</summary>
     internal static T Create<T>(PeerOptions options, ISerializer<T> serializer, DynamicData? expectedDynamic)
     {
+        if (options.CaseId == "06-aggregates" && options.Fixture == "direct-recursive-sequence")
+        {
+            return CreateDirectRecursiveSequenceFixture<T>();
+        }
+
         return options.CaseId switch
         {
 #if WIRE_COMPATIBILITY_SEQUENCE_ARRAYS
