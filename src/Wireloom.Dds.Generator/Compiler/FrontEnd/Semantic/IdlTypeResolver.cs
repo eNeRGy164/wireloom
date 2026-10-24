@@ -7,13 +7,16 @@ namespace Wireloom.Compiler.FrontEnd.Semantic;
 internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
 {
     public IdlType? Resolve(string idlType, string? currentNamespace, IdlInput input, int offset) =>
-        Resolve(idlType, currentNamespace, input, offset, new(StringComparer.Ordinal));
+        Resolve(idlType, currentNamespace, input, offset, wasEscaped: false);
 
-    private IdlType? Resolve(string idlType, string? currentNamespace, IdlInput input, int offset, HashSet<string> activeAliases)
+    public IdlType? Resolve(string idlType, string? currentNamespace, IdlInput input, int offset, bool wasEscaped) =>
+        Resolve(idlType, currentNamespace, input, offset, new(StringComparer.Ordinal), wasEscaped);
+
+    private IdlType? Resolve(string idlType, string? currentNamespace, IdlInput input, int offset, HashSet<string> activeAliases, bool wasEscaped = false)
     {
         var normalized = IdlNaming.NormalizeIdlType(idlType);
 
-        if (IdlBuiltinTypeSyntax.TryParseStringType(normalized, out var isWide, out var boundExpression))
+        if (!wasEscaped && IdlBuiltinTypeSyntax.TryParseStringType(normalized, out var isWide, out var boundExpression))
         {
             if (boundExpression is null)
             {
@@ -30,7 +33,7 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
             return new IdlType.StringType(isWide, bound, isBounded: true);
         }
 
-        if (IdlNaming.IsPrimitive(idlType))
+        if (!wasEscaped && IdlNaming.IsPrimitive(idlType))
         {
             return new IdlType.Primitive(normalized);
         }
@@ -65,8 +68,8 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
             try
             {
                 var target = alias.IsCollection
-                    ? ResolveCollectionElement(alias, input, offset, activeAliases)
-                    : Resolve(alias.Target, alias.Namespace, input, offset, activeAliases);
+                    ? Resolve(alias.ElementType!, alias.Namespace, input, offset, activeAliases, alias.ElementTypeWasEscaped)
+                    : Resolve(alias.Target, alias.Namespace, input, offset, activeAliases, alias.TargetWasEscaped);
                 if (target is null)
                 {
                     return null;
@@ -74,7 +77,7 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
 
                 if (alias.IsSequence)
                 {
-                    var element = ResolveCollectionElement(alias, input, offset, activeAliases);
+                    var element = Resolve(alias.ElementType!, alias.Namespace, input, offset, activeAliases, alias.ElementTypeWasEscaped);
                     return element is null ? null : new IdlType.Alias(qualified,
                         new IdlType.Sequence(element, alias.Bound, effectiveBound: alias.EffectiveSequenceBound));
                 }
@@ -83,7 +86,7 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
                 {
                     // Preserve collection typedef identity for nested and composed
                     // collection shapes instead of flattening the alias.
-                    var element = ResolveCollectionElement(alias, input, offset, activeAliases);
+                    var element = Resolve(alias.ElementType!, alias.Namespace, input, offset, activeAliases, alias.ElementTypeWasEscaped);
                     return element is null ? null : new IdlType.Alias(qualified, new IdlType.Array(element, alias.Dimensions));
                 }
 
@@ -98,13 +101,4 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
         return symbols.ContainsTypeName(qualified) ? new IdlType.Struct(qualified) : null;
     }
 
-    private IdlType? ResolveCollectionElement(IdlTypedef alias, IdlInput input, int offset, HashSet<string> activeAliases)
-    {
-        if (IdlBuiltinTypeSyntax.TryParseStringType(alias.ElementType!, out var isWide, out _))
-        {
-            return new IdlType.StringType(isWide, alias.StringBound, alias.IsStringBounded);
-        }
-
-        return Resolve(alias.ElementType!, alias.Namespace, input, offset, activeAliases);
-    }
 }

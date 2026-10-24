@@ -1,4 +1,5 @@
 using Wireloom;
+using Wireloom.Compiler.FrontEnd.Preprocessing;
 using Wireloom.Compiler.FrontEnd.Semantic;
 
 namespace Wireloom.Generation.Tests;
@@ -64,6 +65,47 @@ public sealed class EnableEscapeCharSpecs
             $"new StructMember(\"event\", dtf.GetPrimitiveType<int>(), id: {IdlMemberIdHash.Compute("event")})");
         generated["Escaped.Implementation.RecordPlugin.g.cs"].Source.ShouldContain("new StructMember(\"value\"");
         generated["Escaped.Implementation.ChoicePlugin.g.cs"].Source.ShouldContain("new UnionMember(\"number\"");
+    }
+
+    [Fact]
+    public void ResolvesEscapedNamesThatMatchBuiltinTypesAsDeclaredTypes()
+    {
+        // Arrange
+        const string source = """
+            struct _long { long value; };
+            struct _string { long value; };
+            typedef _long _LongAlias;
+            typedef sequence<_long> _LongSequence;
+            typedef _long _LongArray[2];
+            struct Sample {
+                _long nested;
+                _string textType;
+                _LongAlias aliasedValue;
+                _LongSequence items;
+                sequence<_long> directItems;
+                _LongArray array;
+                _long values[2];
+            };
+            union Choice switch(long) {
+                case 0: _long nested;
+                default: _string textType;
+            };
+            """;
+        var input = new IdlInput("escaped-builtin-types.idl", source, enableEscapeChar: true);
+
+        // Act
+        var generated = IdlCompiler.CompileSources([input], TestContext.Current.CancellationToken);
+        var sampleSource = generated["Sample.g.cs"].Source;
+        var unionSource = generated["Choice.g.cs"].Source;
+
+        // Assert
+        sampleSource.ShouldContain("public @long nested");
+        sampleSource.ShouldContain("public @string textType");
+        sampleSource.ShouldContain("public @long aliasedValue");
+        sampleSource.ShouldContain("public LongSequence items");
+        sampleSource.ShouldContain("public @long[] values");
+        unionSource.ShouldContain("@long");
+        unionSource.ShouldContain("@string");
     }
 
     [Fact]
@@ -180,5 +222,34 @@ public sealed class EnableEscapeCharSpecs
 
         // Assert
         exception.Message.ShouldContain("same value for every generation root");
+    }
+
+    [Fact]
+    public void NormalizesTextWithoutSourceOriginSpans()
+    {
+        // Arrange
+        var input = new IdlInput("originless.idl", "x", enableEscapeChar: true);
+        var preprocessed = new PreprocessedIdl("x", hasPragmaOnce: false, sourceOrigins: []);
+
+        // Act
+        var normalized = IdlEscapeCharNormalizer.Normalize(preprocessed, input, TestContext.Current.CancellationToken);
+
+        // Assert
+        normalized.Text.ShouldBe("x");
+        normalized.SourceOrigins.ShouldContain(origin => origin.SourceStart == 0);
+    }
+
+    [Fact]
+    public void MapsOffsetsOutsideSourceOriginSpansToTheLastOrigin()
+    {
+        // Arrange
+        var input = new IdlInput("gapped-origins.idl", "x", enableEscapeChar: true);
+        var preprocessed = new PreprocessedIdl("x", hasPragmaOnce: false, sourceOrigins: [new SourceOriginSpan(2, 1, 10, 1)]);
+
+        // Act
+        var normalized = IdlEscapeCharNormalizer.Normalize(preprocessed, input, TestContext.Current.CancellationToken);
+
+        // Assert
+        normalized.SourceOrigins.ShouldContain(origin => origin.SourceStart == 10);
     }
 }

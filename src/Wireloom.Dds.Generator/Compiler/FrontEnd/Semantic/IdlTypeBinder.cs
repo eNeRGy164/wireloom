@@ -10,7 +10,7 @@ internal sealed class IdlTypeBinder(IdlSymbolTable symbols)
     /// <summary>Binds one named type reference against the symbol table.</summary>
     /// <summary>Binds a type reference to its semantic declaration.</summary>
     private IdlType? Bind(IdlTypeReference reference) =>
-        resolver.Resolve(reference.Text, reference.CurrentNamespace, reference.Input, reference.Offset);
+        resolver.Resolve(reference.Text, reference.CurrentNamespace, reference.Input, reference.Offset, reference.WasEscaped);
 
     /// <summary>Recursively binds references within a resolved type graph.</summary>
     /// <summary>Binds nested references within a semantic type.</summary>

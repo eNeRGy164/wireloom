@@ -338,7 +338,8 @@ internal sealed class IdlValueResolver(IdlSymbolTable symbols)
                 constant.Type,
                 constant.Namespace,
                 constant.SourceInput,
-                constant.SourceOffset);
+                constant.SourceOffset,
+                constant.TypeWasEscaped);
             if (resolvedConstantType is not null
                 && UnwrapAliases(resolvedConstantType) is IdlType.StringType stringConstantType)
             {

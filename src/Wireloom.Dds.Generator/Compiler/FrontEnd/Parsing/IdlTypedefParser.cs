@@ -32,14 +32,17 @@ internal sealed class IdlTypedefParser
             context.EnsureGeneratedCompanionNames(input, baseOffset + position, sequenceName, currentNamespace, includeUnmanaged: true);
             context.DeferGeneratedDeclarationNameValidation(input, declarationOffset, sequenceName, GeneratedTypedefMemberNames);
             var target = NormalizeIdlType(sequenceTypedef.Groups[1].Value);
-            var stringBound = context.TypeParser.ParseStringBound(input, baseOffset + position, target, currentNamespace, "String sequence element bound must be a positive Int32.");
+            var elementTypeOffset = baseOffset + position + sequenceTypedef.Groups[1].Index;
+            var elementTypeWasEscaped = context.IsEscapedIdentifier(elementTypeOffset);
+            var stringBound = context.TypeParser.ParseStringBound(input, elementTypeOffset, target, currentNamespace, "String sequence element bound must be a positive Int32.", elementTypeWasEscaped);
             var bound = sequenceTypedef.Groups[2].Success
                 ? context.TypeParser.ResolveBound(input, baseOffset + position, sequenceTypedef.Groups[2].Value, currentNamespace)
                 : null;
             var parsedSequence = new IdlTypedef(sequenceName, currentNamespace, "sequence", target, bound?.Value,
                 stringBound: stringBound?.Value,
                 effectiveSequenceBound: input.SequenceSize,
-                effectiveStringBound: input.StringSize);
+                effectiveStringBound: input.StringSize,
+                elementTypeWasEscaped: elementTypeWasEscaped);
             bound?.AddConsumer(parsedSequence.SetBound);
             stringBound?.AddConsumer(parsedSequence.SetStringBound);
             context.AddTypedef(qualified, parsedSequence, input, baseOffset + position);
@@ -62,8 +65,10 @@ internal sealed class IdlTypedefParser
             var dimensions = context.TypeParser.ParseDimensions(input, baseOffset + position, arrayTypedef.Groups[3].Value, currentNamespace);
             context.DeferGeneratedDeclarationNameValidation(input, declarationOffset, typedefName, GeneratedTypedefMemberNames);
             var arrayElementType = NormalizeIdlType(arrayTypedef.Groups[1].Value);
-            var stringBound = context.TypeParser.ParseStringBound(input, baseOffset + position, arrayElementType, currentNamespace,
-                "String array element bound must be a positive Int32.");
+            var arrayElementTypeOffset = baseOffset + position + arrayTypedef.Groups[1].Index;
+            var arrayElementTypeWasEscaped = context.IsEscapedIdentifier(arrayElementTypeOffset);
+            var stringBound = context.TypeParser.ParseStringBound(input, arrayElementTypeOffset, arrayElementType, currentNamespace,
+                "String array element bound must be a positive Int32.", arrayElementTypeWasEscaped);
             var parsedArray = new IdlTypedef(
                 typedefName,
                 currentNamespace,
@@ -73,7 +78,8 @@ internal sealed class IdlTypedefParser
                 dimensions,
                 stringBound: stringBound?.Value,
                 effectiveSequenceBound: input.SequenceSize,
-                effectiveStringBound: input.StringSize);
+                effectiveStringBound: input.StringSize,
+                elementTypeWasEscaped: arrayElementTypeWasEscaped);
             stringBound?.AddConsumer(parsedArray.SetStringBound);
             context.AddTypedef(qualified, parsedArray, input, baseOffset + position);
             context.Declarations.Add(new IdlTypedefDeclaration(parsedArray, Path.GetFileName(input.Path)));
@@ -97,7 +103,9 @@ internal sealed class IdlTypedefParser
         context.EnsureGeneratedCompanionNames(input, baseOffset + position, name, currentNamespace, includeUnmanaged: true);
         context.DeferGeneratedDeclarationNameValidation(input, typedefOffset, name, GeneratedTypedefMemberNames);
         var typedefTarget = NormalizeIdlType(typedefDeclaration.Groups[1].Value);
-        if (IdlBuiltinTypeSyntax.TryParseStringType(typedefTarget, out var isWideString, out _))
+        var typedefTargetOffset = baseOffset + position + typedefDeclaration.Groups[1].Index;
+        var targetWasEscaped = context.IsEscapedIdentifier(typedefTargetOffset);
+        if (!targetWasEscaped && IdlBuiltinTypeSyntax.TryParseStringType(typedefTarget, out var isWideString, out _))
         {
             var bound = context.TypeParser.ParseStringBound(
                 input,
@@ -137,7 +145,8 @@ internal sealed class IdlTypedefParser
             null,
             null,
             effectiveSequenceBound: input.SequenceSize,
-            effectiveStringBound: input.StringSize);
+            effectiveStringBound: input.StringSize,
+            targetWasEscaped: targetWasEscaped);
         context.AddTypedef(typeName, parsedTypedef, input, baseOffset + position);
         var typedefModel = new IdlTypedefDeclaration(parsedTypedef, Path.GetFileName(input.Path));
 

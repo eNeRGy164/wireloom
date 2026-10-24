@@ -357,7 +357,7 @@ internal sealed class IdlConstantExpressionEvaluator
 
     private IntegerType ConstantType(IdlConstantDeclaration constant)
     {
-        var type = new IdlTypeResolver(symbols).Resolve(constant.Type, constant.Namespace, constant.SourceInput, constant.SourceOffset);
+        var type = new IdlTypeResolver(symbols).Resolve(constant.Type, constant.Namespace, constant.SourceInput, constant.SourceOffset, constant.TypeWasEscaped);
         while (type is IdlType.Alias alias)
         {
             type = alias.Target;

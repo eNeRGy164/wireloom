@@ -75,7 +75,7 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
         foreach (var declaration in declarations.OfType<IdlConstantDeclaration>())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var constantType = typeResolver.Resolve(declaration.Type, declaration.Namespace, declaration.SourceInput, declaration.SourceOffset);
+            var constantType = typeResolver.Resolve(declaration.Type, declaration.Namespace, declaration.SourceInput, declaration.SourceOffset, declaration.TypeWasEscaped);
             while (constantType is IdlType.Alias alias)
             {
                 constantType = alias.Target;
@@ -120,7 +120,7 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
 
             var resolvedType = typedef.IsString
                 ? new IdlType.StringType(typedef.IsWideString, typedef.StringBound, typedef.IsStringBounded)
-                : typeResolver.Resolve(typedef.Target, typedef.Namespace, location.Input, application.Offset);
+                : typeResolver.Resolve(typedef.Target, typedef.Namespace, location.Input, application.Offset, typedef.TargetWasEscaped);
             if (resolvedType is null)
             {
                 continue;
@@ -154,7 +154,8 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
                 typedef.Target,
                 typedef.Namespace,
                 location.Input,
-                location.Offset);
+                location.Offset,
+                typedef.TargetWasEscaped);
             var inheritedDefault = resolvedTarget is null
                 ? null
                 : resolver.ResolveInheritedTypedefDefaultMetadata(resolvedTarget);
@@ -185,7 +186,8 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
                 declaration.Type,
                 declaration.Namespace,
                 declaration.SourceInput,
-                declaration.SourceOffset);
+                declaration.SourceOffset,
+                declaration.TypeWasEscaped);
             while (resolvedType is IdlType.Alias alias)
             {
                 resolvedType = alias.Target;
@@ -215,7 +217,8 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
                         referencedConstant.Type,
                         referencedConstant.Namespace,
                         referencedConstant.SourceInput,
-                        referencedConstant.SourceOffset);
+                        referencedConstant.SourceOffset,
+                        referencedConstant.TypeWasEscaped);
                     while (referencedType is IdlType.Alias referencedAlias)
                     {
                         referencedType = referencedAlias.Target;
@@ -244,7 +247,8 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
                             referencedConstant.Type,
                             referencedConstant.Namespace,
                             referencedConstant.SourceInput,
-                            referencedConstant.SourceOffset);
+                            referencedConstant.SourceOffset,
+                            referencedConstant.TypeWasEscaped);
                         while (referencedType is IdlType.Alias referencedAlias)
                         {
                             referencedType = referencedAlias.Target;
