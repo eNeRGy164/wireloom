@@ -243,6 +243,18 @@ authoritative; this summary is a retrieval aid, not a replacement.
 - RTI 7.3.1 C# RPC transport output for C157/C159 fails compilation; preserve
   the raw failure and track interface/RPC generation separately in
   [issue #75](https://github.com/eNeRGy164/wireloom/issues/75).
+- Recursive sequence typedefs are unsupported by Wireloom and are rejected
+  before emission. Standard RTI C++11 `rtiddsgen -unboundedSupport` output for
+  self- and mutually recursive typedefs does not compile on RTI 7.3.1 / code
+  generator 4.3.1 or RTI 7.7.0 / code generator 4.7.0, so a C#-only metadata
+  workaround would not meet the interoperability requirement. The directly
+  self-recursive sequence member is supported across Wireloom C# and typed RTI
+  C++ on both LTS versions when participants use TypeObject v1
+  (`type_object_max_serialized_length=8192`, `SERVICE_REQUEST_CHANNEL` only).
+  RTI 7.7.0 default TypeObject v2 rejects the recursive SCC at registration.
+  RTI 7.3.1 C++ generation requires the documented module-qualification
+  correction. The bidirectional matrix fixture checks literal root/child/leaf
+  values. Mutual recursive struct graphs remain unqualified. See [chapter 11](arc42/11-risks-and-technical-debt.md).
 - Compatibility beyond retained cases, interactive IDE behavior, and adapted
   RTI wire fixtures remains unqualified.
 
