@@ -37,6 +37,15 @@ outputs live under `<version>/rtiddsgen/`; Wireloom exports live under
 contracts compile against the exact NuGet package, and its runtime-contract
 suite passes; full profile wire qualification remains pending. The 7.7.0 test
 loader reads its RTI C# oracle tree from `7.7.0/rtiddsgen/csharp/`.
+Wire-matrix-specific RTI source lives in each profile's `wire-adjusted/` and
+`wire-wrapped/` trees. Adjusted sources document each correction; wrapped
+sources record the wrapper IDL, included inputs, generator version, and hashes.
+The raw capture remains unchanged, and the profile map identifies each source.
+The runner reports when it uses an adjusted or wrapped oracle. Known RTI peer generation or
+compile failures are listed as `wireMatrix.excludedPeersByRtiVersion`; those
+peers are skipped before generation or compilation, while their affected
+pairings remain visible as known exceptions with the manifest reason. N/A is
+reserved for pairings outside a case's configured scope.
 C040 (`09-autoid-hash`) checks hash member IDs on both LTS profiles. The
 separate C142 (`09-must-understand`) checks `@must_understand`, which is not
 applicable to 7.3.1 and is accepted under 7.7.0. Explicitly compiling C142
@@ -178,6 +187,16 @@ case covers NUL and printable ASCII tilde (U+007E, 126). Both exact LTS
 profiles pass all 27 exchanges with the shared IDL and no case-specific C++
 IDL adaptation. These focused results apply to this case and do not qualify an
 entire RTI profile.
+
+The wire runner also reads the profile-specific `rtiddsgen/wire-oracles.json` map.
+It selects retained RTI sources instead of invoking `rtiddsgen`. When a peer has
+no explicit map entry, the runner uses its captured `features/<case>/` source
+directory if present. Explicit entries identify adjusted or wrapper-specific
+sources, manual peers, and known exceptions; exception entries suppress the
+default source fallback. Wire-specific copies record input and generated-source
+hashes beside their `manifest.json`. Update the profile map when promoting or
+changing these sources so local and CI matrix runs use the same peer
+implementation.
 
 The recursive aggregate and optional recursive array cases request
 `-unboundedSupport`. RTI describes recursive-structure support as experimental;

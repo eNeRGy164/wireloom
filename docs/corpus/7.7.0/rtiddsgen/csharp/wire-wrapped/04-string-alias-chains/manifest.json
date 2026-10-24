@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "caseId": "04-string-alias-chains",
+  "language": "csharp",
+  "rtiddsgenVersion": "4.7.0",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-string-alias-chains.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-string-alias-chains.idl",
+      "sha256": "3f2be75ab14b0e35dbd840594368ece3f05f0b921c6570bf81c6d28946904e6f"
+    },
+    {
+      "path": "docs/corpus/idl/features/04-string-alias-chains.idl",
+      "sha256": "7f9e546341897dd601e70652a5edcf9de8a30f4a5f771a9eb33759a7d2c8c175"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "04-string-alias-chains.cs",
+      "sha256": "51996f749b4591f0d2f870b32d734c0993131a69000aed7312eff8c11977ab1e"
+    },
+    {
+      "path": "04-string-alias-chainsPlugin.cs",
+      "sha256": "0968be7b2bf98dcf2095b6395b8ff63895ec4f7c4fa323225591742bf7b3595c"
+    },
+    {
+      "path": "includes/0/04-string-alias-chains.cs",
+      "sha256": "b8c12cedfaec33a3138326a65a08ae7d6b842320c81ea11bfcc830f760c84cba"
+    },
+    {
+      "path": "includes/0/04-string-alias-chainsPlugin.cs",
+      "sha256": "aaf822ef884935b9d9e94addbdff2f1dd6e1660f94cfa7ff4ae6a05ef6d3086f"
+    }
+  ]
+}

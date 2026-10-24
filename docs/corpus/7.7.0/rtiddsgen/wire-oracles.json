@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 1,
+  "rtiVersion": "7.7.0",
+  "cases": {
+    "02-constant-expressions": {
+      "tag": "C006",
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/features/02-constant-expressions"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/features/02-constant-expressions"
+      }
+    },
+    "06-alias-composition": {
+      "tag": "C021",
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/06-alias-composition"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/features/06-alias-composition"
+      }
+    },
+    "06-aggregates": {
+      "tag": "C019",
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/features/06-aggregates"
+      },
+      "rtiCpp": {
+        "mode": "adjusted",
+        "sourceDirectory": "cpp/wire-adjusted/06-aggregates"
+      }
+    },
+    "07-union-wchar-label": {
+      "tag": "C113",
+      "rtiCSharp": {
+        "mode": "known-exception",
+        "sourceDirectory": ""
+      },
+      "rtiCpp": {
+        "mode": "manual",
+        "sourceDirectory": ""
+      }
+    },
+    "07-union-octet": {
+      "tag": "C117",
+      "rtiCSharp": {
+        "mode": "known-exception",
+        "sourceDirectory": ""
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/features/07-union-octet"
+      }
+    },
+    "07-union-ulong": {
+      "tag": "C119",
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/07-union-ulong"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/features/07-union-ulong"
+      }
+    },
+    "07-union-uint32": {
+      "tag": "C125",
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/07-union-uint32"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/features/07-union-uint32"
+      }
+    },
+    "09-must-understand": {
+      "tag": "C142",
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/features/09-must-understand"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/features/09-must-understand"
+      }
+    },
+    "09-optional-recursive-array": {
+      "tag": "C134",
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/features/09-optional-recursive-array"
+      },
+      "rtiCpp": {
+        "mode": "adjusted",
+        "sourceDirectory": "cpp/wire-adjusted/09-optional-recursive-array"
+      }
+    },
+    "07-union-char-numeric": {
+      "tag": "C137",
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/07-union-char-numeric"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/features/07-union-char-numeric"
+      }
+    },
+    "07-union-char-numeric-255": {
+      "tag": "C141",
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/07-union-char-numeric-255"
+      },
+      "rtiCpp": {
+        "mode": "adjusted",
+        "sourceDirectory": "cpp/wire-adjusted/07-union-char-numeric-255"
+      }
+    },
+    "10-resolve-name-wstring-aliases": {
+      "tag": "C147",
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/10-resolve-name-wstring-aliases"
+      },
+      "rtiCpp": {
+        "mode": "adjusted",
+        "sourceDirectory": "cpp/wire-adjusted/10-resolve-name-wstring-aliases"
+      }
+    },
+    "10-default-literal-enum-array": {
+      "tag": "C148",
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/features/10-default-literal-enum-array"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/features/10-default-literal-enum-array"
+      }
+    },
+    "05-array-of-sequences-idl": {
+      "tag": "C149",
+      "rtiCSharp": {
+        "mode": "known-exception",
+        "sourceDirectory": ""
+      },
+      "rtiCpp": {
+        "mode": "adjusted",
+        "sourceDirectory": "cpp/wire-adjusted/05-array-of-sequences-idl"
+      }
+    },
+    "02-multiple": {
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/02-multiple"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/02-multiple"
+      }
+    },
+    "03-enum-values-explicit": {
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/03-enum-values-explicit"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/03-enum-values-explicit"
+      }
+    },
+    "03-enum-values-prefix": {
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/03-enum-values-prefix"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/03-enum-values-prefix"
+      }
+    },
+    "04-string-alias-chains": {
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/04-string-alias-chains"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/04-string-alias-chains"
+      }
+    },
+    "04-unbounded-string-aliases": {
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/04-unbounded-string-aliases"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/04-unbounded-string-aliases"
+      }
+    },
+    "05-unbounded-sequence-aliases": {
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/05-unbounded-sequence-aliases"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/05-unbounded-sequence-aliases"
+      }
+    },
+    "07-union-string-sequence-aliases": {
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/07-union-string-sequence-aliases"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/07-union-string-sequence-aliases"
+      }
+    },
+    "14-autoid-scope": {
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/14-autoid-scope"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/14-autoid-scope"
+      }
+    },
+    "14-enum-constant": {
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/14-enum-constant"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/14-enum-constant"
+      }
+    },
+    "07-union-char-boundaries": {
+      "tag": "C130",
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/07-union-char-boundaries"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/features/07-union-char-boundaries"
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "caseId": "10-resolve-name-wstring-aliases",
+  "sourceDirectory": "../negative/10-resolve-name-wstring-aliases",
+  "adjustment": "Qualify two Implementation unmanaged alias references with CorpusResolveNameWstringAliases.",
+  "files": [
+    {
+      "path": "10-resolve-name-wstring-aliases.cs",
+      "rawSha256": "116a18ca3dc6800550f0f83b36d2563b5efdde99a8be0752ac1b51586083f251",
+      "adjustedSha256": "116a18ca3dc6800550f0f83b36d2563b5efdde99a8be0752ac1b51586083f251"
+    },
+    {
+      "path": "10-resolve-name-wstring-aliasesPlugin.cs",
+      "rawSha256": "77ecfc68b98d37e5eaa03cdcabcf480acbb45f71c71b10af2002f58f390fcd0d",
+      "adjustedSha256": "ae06cba19598da6ffd969aa2f9653aec36b9f6bb69eb03db25e48572eb994bb0"
+    }
+  ]
+}

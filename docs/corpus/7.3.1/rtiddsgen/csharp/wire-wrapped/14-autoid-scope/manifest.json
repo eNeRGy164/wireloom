@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "14-autoid-scope",
+  "language": "csharp",
+  "rtiddsgenVersion": "4.3.1",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-autoid-scope-topic.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-autoid-scope-topic.idl",
+      "sha256": "9f05c4d932617cc906e80e2967742689428b67e3f0e09f49788c455452e28b37"
+    },
+    {
+      "path": "docs/corpus/idl/features/14-autoid-scope.idl",
+      "sha256": "b9bf886cd3c64e85d108fc2063f6ca0b1f921283de769364c9bf7744f3d00e5b"
+    },
+    {
+      "path": "docs/corpus/idl/includes/autoid-hash-include.idl",
+      "sha256": "6a4ba5a745de20fcb401350796eda734a611f144d90dcd09cd784c6de1af01d7"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "14-autoid-scope-topic.cs",
+      "sha256": "164316516fe539eaf079829834f804009ea5ff07c20d23f78a736bc894504863"
+    },
+    {
+      "path": "14-autoid-scope-topicPlugin.cs",
+      "sha256": "841cfe494b5a8cdd40c86ee87fb6c46c4990215450537af25d347fa1b947bfc7"
+    },
+    {
+      "path": "14-autoid-scope.cs",
+      "sha256": "edbcd458ba9f125e0dd303f82aba7141d742d0f14e95aebc9f6556a1d648a0df"
+    },
+    {
+      "path": "14-autoid-scopePlugin.cs",
+      "sha256": "9848b720f6fc157313e08beab5b3806ab5928e841e3a00aee1f3eb875e0359e2"
+    },
+    {
+      "path": "includes/0/14-autoid-scope.cs",
+      "sha256": "edbcd458ba9f125e0dd303f82aba7141d742d0f14e95aebc9f6556a1d648a0df"
+    },
+    {
+      "path": "includes/0/14-autoid-scopePlugin.cs",
+      "sha256": "9848b720f6fc157313e08beab5b3806ab5928e841e3a00aee1f3eb875e0359e2"
+    },
+    {
+      "path": "includes/1/autoid-hash-include.cs",
+      "sha256": "3bd88a3f769d79c05d5b83e3ea52da19d756b3b1755c98776ba7136717721406"
+    },
+    {
+      "path": "includes/1/autoid-hash-includePlugin.cs",
+      "sha256": "705f72fb086d56a2b1ab3040f68afebea32fe3762406e98d6d6d56296eac6a36"
+    }
+  ],
+  "adjustment": "Removed byte-identical nested outputs produced again while recursively generating the included IDL; retained one canonical include peer."
+}

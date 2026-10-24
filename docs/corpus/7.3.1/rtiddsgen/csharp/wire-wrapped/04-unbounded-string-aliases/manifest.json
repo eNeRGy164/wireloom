@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "04-unbounded-string-aliases",
+  "language": "csharp",
+  "rtiddsgenVersion": "4.3.1",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-unbounded-string-aliases.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-unbounded-string-aliases.idl",
+      "sha256": "397751b79bf34239c43fb27750a9ab935cb1c00ec7f4a55085900b830d8075cb"
+    },
+    {
+      "path": "docs/corpus/idl/features/04-unbounded-string-aliases.idl",
+      "sha256": "8df9c44c3d410d92eeefec78b74282229dcab5bad06ef685284250e7301e359e"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "04-unbounded-string-aliases.cs",
+      "sha256": "6e7ccf097618161a098f1aca5835212023af29fc5f7a4ea30e97c61de3a5963e"
+    },
+    {
+      "path": "04-unbounded-string-aliasesPlugin.cs",
+      "sha256": "a7aebae7e8f6048f2f91ae3fd19b27545a76ece40509ba2a52fe719afa383b0d"
+    },
+    {
+      "path": "includes/0/04-unbounded-string-aliases.cs",
+      "sha256": "a1f03ee1a61adbae33c90d384d636ad4b716a4368d7352e71de85c79dec9ac87"
+    },
+    {
+      "path": "includes/0/04-unbounded-string-aliasesPlugin.cs",
+      "sha256": "92a38583871092b92baf0b88dbc2c7b12cb6ce806e09c1088c89da2f88293838"
+    }
+  ]
+}

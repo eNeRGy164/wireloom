@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "caseId": "06-alias-composition",
+  "sourceDirectory": "../features/06-alias-composition",
+  "adjustment": "Qualify two shadowed sample conversion calls with this.sample.",
+  "files": [
+    {
+      "path": "06-alias-composition.cs",
+      "rawSha256": "44a4fcc0af5eaa53a4dcb41603bf40a74a3c277e25dbc9e831c6df9d909c952a",
+      "adjustedSha256": "44a4fcc0af5eaa53a4dcb41603bf40a74a3c277e25dbc9e831c6df9d909c952a"
+    },
+    {
+      "path": "06-alias-compositionPlugin.cs",
+      "rawSha256": "dab251c086294c78d79c1d8d12c7036de04d25fad4a13804e19d3d9e0b942a4a",
+      "adjustedSha256": "f70470be1c393dcc198bbaac2b58cdc1de57393be0eac99c390282e5284fb272"
+    }
+  ]
+}

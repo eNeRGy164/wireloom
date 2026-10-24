@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "07-union-string-sequence-aliases",
+  "language": "csharp",
+  "rtiddsgenVersion": "4.3.1",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/07-union-string-sequence-aliases.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/07-union-string-sequence-aliases.idl",
+      "sha256": "c87a0d898d0bd4432b9194ae7482c8c7bc714adbd69509c8fca6e11fd64246ef"
+    },
+    {
+      "path": "docs/corpus/idl/features/07-union-string-sequence-aliases.idl",
+      "sha256": "83e177230435753e93f34b3370809681663878620b3c1b34cd34cc087a68263e"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "07-union-string-sequence-aliases.cs",
+      "sha256": "c3b89ab044f5cdb139e2b4113f6d35ab9a2c5468c0ac97a55a2502d11a664818"
+    },
+    {
+      "path": "07-union-string-sequence-aliasesPlugin.cs",
+      "sha256": "dcfe438c544b313ddd3283d127fbdc13d36c2b687228bd4984bda9144ffe56aa"
+    },
+    {
+      "path": "includes/0/07-union-string-sequence-aliases.cs",
+      "sha256": "5474a2c714d5cf9a372a4c12f5b37055488d1f3d32cc858d3b8fcde26f9c872a"
+    },
+    {
+      "path": "includes/0/07-union-string-sequence-aliasesPlugin.cs",
+      "sha256": "28d16d7a284ff68182c053901af1d7056bcc058e4f2702e06fe6b5d8996ec55d"
+    }
+  ]
+}

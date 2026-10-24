@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "caseId": "09-optional-recursive-array",
+  "sourceDirectory": "features/09-optional-recursive-array",
+  "adjustment": "Pass the containing node to the recursive array DynamicType lookup; profile-qualified type names are retained.",
+  "files": [
+    {
+      "path": "09-optional-recursive-array.cxx",
+      "rawSha256": "28ab817b8d3a7585ee0ce016bcec75381f822a2f167653cc059a03c2048becd9",
+      "adjustedSha256": "7cc63e13d872bb9ec5ed3b059185e37db7a8cb75c22c3804d80781cd9d4adfda"
+    },
+    {
+      "path": "09-optional-recursive-array.hpp",
+      "rawSha256": "5977153d43113c3f783504685b22d5655d30ceda5df517d8fb9377ccd1d2aa9a",
+      "adjustedSha256": "5977153d43113c3f783504685b22d5655d30ceda5df517d8fb9377ccd1d2aa9a"
+    },
+    {
+      "path": "09-optional-recursive-arrayPlugin.cxx",
+      "rawSha256": "a283fc602132d24c8aecbe7d62c0faf48e9a0b3001f1d87a9f6b09fc1637c6ab",
+      "adjustedSha256": "a283fc602132d24c8aecbe7d62c0faf48e9a0b3001f1d87a9f6b09fc1637c6ab"
+    },
+    {
+      "path": "09-optional-recursive-arrayPlugin.hpp",
+      "rawSha256": "fb1bd13c2e699e9667f73aef908f3459efb7c27425f14bad7265a56275da4d0d",
+      "adjustedSha256": "fb1bd13c2e699e9667f73aef908f3459efb7c27425f14bad7265a56275da4d0d"
+    }
+  ]
+}

@@ -1,0 +1,330 @@
+
+
+/*
+WARNING: THIS FILE IS AUTO-GENERATED. DO NOT MODIFY.
+
+This file was generated from idl.idl
+using RTI Code Generator (rtiddsgen) version 4.7.0.
+The rtiddsgen tool is part of the RTI Connext DDS distribution.
+For more information, type 'rtiddsgen -help' at a command shell
+or consult the Code Generator User's Manual.
+*/
+
+#include <iosfwd>
+#include <iomanip>
+#include <atomic>
+
+#ifndef NDDS_STANDALONE_TYPE
+#include "rti/topic/cdr/Serialization.hpp"
+#include "idlPlugin.hpp"
+#else
+#include "rti/topic/cdr/SerializationHelpers.hpp"
+#endif
+
+#include "idl.hpp"
+
+#include <rti/util/ostream_operators.hpp>
+
+// ---- EnumConstantSample:
+
+EnumConstantSample::EnumConstantSample()  {
+
+}
+
+EnumConstantSample::EnumConstantSample (const ::EnumConstant& value_,const ::EnumUnion& choice_) {
+    value = value_;
+    choice = choice_;
+}
+
+bool operator == (const EnumConstantSample& a, const EnumConstantSample& b) {
+
+    if (a.value != b.value) {
+        return false;
+    }
+    if (a.choice != b.choice) {
+        return false;
+    }
+
+    return true;
+}
+
+bool operator != (const EnumConstantSample& a, const EnumConstantSample& b) {
+    return !operator ==(a, b);
+}
+
+void swap(EnumConstantSample& a, EnumConstantSample& b) noexcept
+{
+    using std::swap;
+
+    swap(a.value, b.value);
+    swap(a.choice, b.choice);
+
+}  
+std::ostream& operator << (std::ostream& o,const EnumConstantSample& sample)
+{
+    ::rti::util::StreamFlagSaver flag_saver (o);
+    o <<"[";
+    o << "value: " << sample.value<<", ";
+    o << "choice: " << sample.choice;
+    o <<"]";
+    return o;
+}
+
+#ifdef NDDS_STANDALONE_TYPE
+namespace rti {
+    namespace topic {
+    }
+}
+
+#else
+// --- Type traits: -------------------------------------------------
+
+namespace rti { 
+    namespace topic {
+
+        template<>
+        struct native_type_code< ::EnumConstantSample > {
+
+            static DDS_TypeCode * get()
+            {
+                using namespace ::rti::topic::interpreter;
+
+                static std::atomic_bool is_initialized {false};
+
+                static DDS_TypeCode_Member EnumConstantSample_g_tc_members[2]=
+                {
+
+                    {
+                        (char *)"value",/* Member name */
+                        {
+                            0,/* Representation ID */
+                            DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                            -1, /* Bitfield bits */
+                            NULL/* Member type code is assigned later */
+                        },
+                        0, /* Ignored */
+                        0, /* Ignored */
+                        0, /* Ignored */
+                        NULL, /* Ignored */
+                        RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+                        DDS_PUBLIC_MEMBER,/* Member visibility */
+                        RTICdrTypeCodeAnnotations_INITIALIZER
+                    }, 
+                    {
+                        (char *)"choice",/* Member name */
+                        {
+                            1,/* Representation ID */
+                            DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                            -1, /* Bitfield bits */
+                            NULL/* Member type code is assigned later */
+                        },
+                        0, /* Ignored */
+                        0, /* Ignored */
+                        0, /* Ignored */
+                        NULL, /* Ignored */
+                        RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+                        DDS_PUBLIC_MEMBER,/* Member visibility */
+                        RTICdrTypeCodeAnnotations_INITIALIZER
+                    }
+                };
+
+                static DDS_TypeCode EnumConstantSample_g_tc =
+                {{
+                        DDS_TK_STRUCT, /* Kind */
+                        DDS_BOOLEAN_FALSE, /* Ignored */
+                        -1, /*Ignored*/
+                        (char *)"EnumConstantSample", /* Name */
+                        NULL, /* Ignored */ 
+                        0, /* Ignored */
+                        0, /* Ignored */
+                        NULL, /* Ignored */
+                        2, /* Number of members */
+                        EnumConstantSample_g_tc_members, /* Members */
+                        DDS_VM_NONE, /* Ignored */
+                        RTICdrTypeCodeAnnotations_INITIALIZER,
+                        DDS_BOOLEAN_TRUE, /* _isCopyable */
+                        NULL, /* _sampleAccessInfo: assigned later */
+                        NULL /* _typePlugin: assigned later */
+                    }}; /* Type code for EnumConstantSample*/
+
+                if (is_initialized.load(std::memory_order_acquire)) {
+                    return &EnumConstantSample_g_tc;
+                }
+
+                EnumConstantSample_g_tc._data._annotations._allowedDataRepresentationMask = 5;
+
+                EnumConstantSample_g_tc_members[0]._representation._typeCode =  (RTICdrTypeCode *)&::rti::topic::dynamic_type< ::EnumConstant>::get().native();
+                EnumConstantSample_g_tc_members[1]._representation._typeCode =  (RTICdrTypeCode *)&::rti::topic::dynamic_type< ::EnumUnion>::get().native();
+
+                /* Initialize the values for member annotations. */
+
+                EnumConstantSample_g_tc._data._sampleAccessInfo = sample_access_info();
+                EnumConstantSample_g_tc._data._typePlugin = type_plugin_info();
+
+                is_initialized.store(true, std::memory_order_release);
+
+                return &EnumConstantSample_g_tc;
+            }
+
+            static RTIXCdrSampleAccessInfo * sample_access_info()
+            {
+                static std::atomic_bool is_initialized {false};
+
+                ::EnumConstantSample *sample;
+
+                static RTIXCdrMemberAccessInfo EnumConstantSample_g_memberAccessInfos[2] =
+                {RTIXCdrMemberAccessInfo_INITIALIZER};
+
+                static RTIXCdrSampleAccessInfo EnumConstantSample_g_sampleAccessInfo =
+                RTIXCdrSampleAccessInfo_INITIALIZER;
+
+                if (is_initialized.load(std::memory_order_acquire)) {
+                    return (RTIXCdrSampleAccessInfo*) &EnumConstantSample_g_sampleAccessInfo;
+                }
+
+                RTIXCdrHeap_allocateStruct(
+                    &sample,
+                    ::EnumConstantSample);
+                if (sample == NULL) {
+                    return NULL;
+                }
+
+                EnumConstantSample_g_memberAccessInfos[0].bindingMemberValueOffset[0] =
+                (RTIXCdrUnsignedLong) ((char *)&sample->value - (char *)sample);
+
+                EnumConstantSample_g_memberAccessInfos[1].bindingMemberValueOffset[0] =
+                (RTIXCdrUnsignedLong) ((char *)&sample->choice - (char *)sample);
+
+                EnumConstantSample_g_sampleAccessInfo.memberAccessInfos =
+                EnumConstantSample_g_memberAccessInfos;
+
+                {
+                    size_t candidateTypeSize = sizeof(::EnumConstantSample);
+
+                    if (candidateTypeSize > RTIXCdrLong_MAX) {
+                        EnumConstantSample_g_sampleAccessInfo.typeSize[0] =
+                        RTIXCdrLong_MAX;
+                    } else {
+                        EnumConstantSample_g_sampleAccessInfo.typeSize[0] =
+                        (RTIXCdrUnsignedLong) candidateTypeSize;
+                    }
+                }
+
+                EnumConstantSample_g_sampleAccessInfo.useGetMemberValueOnlyWithRef =
+                RTI_XCDR_TRUE;
+
+                EnumConstantSample_g_sampleAccessInfo.getMemberValuePointerFcn =
+                interpreter::get_aggregation_value_pointer< ::EnumConstantSample >;
+
+                EnumConstantSample_g_sampleAccessInfo.languageBinding =
+                RTI_XCDR_TYPE_BINDING_CPP_11_STL ;
+
+                RTIXCdrHeap_freeStruct(sample);
+                is_initialized.store(true, std::memory_order_release);
+                return (RTIXCdrSampleAccessInfo*) &EnumConstantSample_g_sampleAccessInfo;
+            }
+            static RTIXCdrTypePlugin * type_plugin_info()
+            {
+                static RTIXCdrTypePlugin EnumConstantSample_g_typePlugin =
+                {
+                    NULL, /* serialize */
+                    NULL, /* serialize_key */
+                    NULL, /* deserialize_sample */
+                    NULL, /* deserialize_key_sample */
+                    NULL, /* skip */
+                    NULL, /* get_serialized_sample_size */
+                    NULL, /* get_serialized_sample_max_size_ex */
+                    NULL, /* get_serialized_key_max_size_ex */
+                    NULL, /* get_serialized_sample_min_size */
+                    NULL, /* serialized_sample_to_key */
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL
+                };
+
+                return &EnumConstantSample_g_typePlugin;
+            }
+        }; // native_type_code
+
+        const ::dds::core::xtypes::StructType& dynamic_type< ::EnumConstantSample >::get()
+        {
+            return static_cast<const ::dds::core::xtypes::StructType&>(
+                ::rti::core::native_conversions::cast_from_native< ::dds::core::xtypes::DynamicType >(
+                    *(native_type_code< ::EnumConstantSample >::get())));
+        }
+    }
+}
+
+namespace dds { 
+    namespace topic {
+        void topic_type_support< ::EnumConstantSample >:: register_type(
+            ::dds::domain::DomainParticipant& participant,
+            const std::string& type_name) 
+        {
+
+            ::rti::domain::register_type_plugin(
+                participant,
+                type_name,
+                ::EnumConstantSamplePlugin_new,
+                ::EnumConstantSamplePlugin_delete);
+        }
+
+        std::vector<char>& topic_type_support< ::EnumConstantSample >::to_cdr_buffer(
+            std::vector<char>& buffer, 
+            const ::EnumConstantSample& sample,
+            ::dds::core::policy::DataRepresentationId representation)
+        {
+            // First get the length of the buffer
+            unsigned int length = 0;
+            RTIBool ok = EnumConstantSamplePlugin_serialize_to_cdr_buffer(
+                NULL, 
+                &length,
+                &sample,
+                representation);
+            ::rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to calculate cdr buffer size");
+
+            // Create a vector with that size and copy the cdr buffer into it
+            buffer.resize(length);
+            ok = EnumConstantSamplePlugin_serialize_to_cdr_buffer(
+                &buffer[0], 
+                &length, 
+                &sample,
+                representation);
+            ::rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to copy cdr buffer");
+
+            return buffer;
+        }
+
+        void topic_type_support< ::EnumConstantSample >::from_cdr_buffer(::EnumConstantSample& sample, 
+        const std::vector<char>& buffer)
+        {
+
+            RTIBool ok  = EnumConstantSamplePlugin_deserialize_from_cdr_buffer(
+                &sample, 
+                &buffer[0], 
+                static_cast<unsigned int>(buffer.size()));
+            ::rti::core::check_return_code(ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+            "Failed to create ::EnumConstantSample from cdr buffer");
+        }
+
+        void topic_type_support< ::EnumConstantSample >::reset_sample(::EnumConstantSample& sample) 
+        {
+            ::rti::topic::reset_sample(sample.value);
+            ::rti::topic::reset_sample(sample.choice);
+        }
+
+        void topic_type_support< ::EnumConstantSample >::allocate_sample(::EnumConstantSample& sample, int, int) 
+        {
+            ::rti::topic::allocate_sample(sample.value,  -1, -1);
+            ::rti::topic::allocate_sample(sample.choice,  -1, -1);
+        }
+    }
+}  
+
+#endif // NDDS_STANDALONE_TYPE

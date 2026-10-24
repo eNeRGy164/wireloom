@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "caseId": "06-aggregates",
+  "sourceDirectory": "features/06-aggregates",
+  "adjustment": "No source correction is required for this profile.",
+  "files": [
+    {
+      "path": "06-aggregates.cxx",
+      "rawSha256": "80ee3727079e5ff58da2a8b12b406a6dd255575287ab39268248ce50b414e5a1",
+      "adjustedSha256": "80ee3727079e5ff58da2a8b12b406a6dd255575287ab39268248ce50b414e5a1"
+    },
+    {
+      "path": "06-aggregates.hpp",
+      "rawSha256": "56e572ebbe1b08684e7e7e2696beeb76b292ec55535855d11df420e8bf398d8b",
+      "adjustedSha256": "56e572ebbe1b08684e7e7e2696beeb76b292ec55535855d11df420e8bf398d8b"
+    },
+    {
+      "path": "06-aggregatesPlugin.cxx",
+      "rawSha256": "6bd18c50619cbb067825b407cf46c27addcacd32992acb116335d6041882e9ec",
+      "adjustedSha256": "6bd18c50619cbb067825b407cf46c27addcacd32992acb116335d6041882e9ec"
+    },
+    {
+      "path": "06-aggregatesPlugin.hpp",
+      "rawSha256": "d568525bfc42d72a593b483a63f5ce449c71d7d120ef2692162df39850fcae74",
+      "adjustedSha256": "d568525bfc42d72a593b483a63f5ce449c71d7d120ef2692162df39850fcae74"
+    }
+  ]
+}
