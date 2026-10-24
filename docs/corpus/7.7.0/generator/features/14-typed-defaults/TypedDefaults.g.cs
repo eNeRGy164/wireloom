@@ -35,7 +35,7 @@ public partial class TypedDefaults : global::System.IEquatable<TypedDefaults>
     public double ratio { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>single</c> member. Finite values are in the inclusive range <c>float.MinValue</c> through <c>float.MaxValue</c>. NaN and positive or negative infinity are also representable.
+    /// Gets or sets the <c>single</c> member. Finite values are in the inclusive range <c>float.MinValue</c> through <c>float.MaxValue</c>. NaN and positive or negative infinity are also representable. Its default value is <c>1.25</c>.
     /// </summary>
     public float single { get; set; }
 
@@ -49,6 +49,7 @@ public partial class TypedDefaults : global::System.IEquatable<TypedDefaults>
         overridden = 9;
         text = "alias";
         ratio = 1.5;
+        single = 1.25F;
     }
 
     /// <summary>
@@ -87,6 +88,7 @@ public partial class TypedDefaults : global::System.IEquatable<TypedDefaults>
             overridden = 9;
             text = "alias";
             ratio = 1.5;
+            single = 1.25F;
             return;
         }
 

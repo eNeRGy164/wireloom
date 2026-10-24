@@ -62,7 +62,7 @@ public struct TypedDefaultsUnmanaged : INativeTopicType<global::TypedDefaults>
         text.Initialize(size: 8, allocateMemory);
         text.ToNative("alias", 8);
         ratio = 1.5;
-        single = 0.0F;
+        single = 1.25F;
     }
 
     /// <summary>

@@ -6,11 +6,10 @@ profile; version 7.7.0 and later use the 7.7.0 profile. Only exact 7.3.1 and
 7.7.0 have qualification evidence.
 
 The corpus contains 91 positive feature cases, 77 negative probes, and 4
-integration entry points. Wireloom accepts 90 applicable positive cases under
-the 7.3.1 profile; C142 is not applicable. It accepts all 91 positive cases
-under the 7.7.0 profile. “Implemented” describes Wireloom generation support;
-it does not promise RTI acceptance or runtime interoperability. See the
-version pages for profile-specific evidence and restrictions.
+integration entry points. “Implemented” describes Wireloom generation support;
+it does not promise RTI acceptance or runtime interoperability. C142 is not
+applicable to RTI 7.3.1. See the version pages for profile-specific behavior
+and restrictions.
 
 | Feature category             | Coverage represented                                                                                                              | 7.3.1 profile                                                                         | 7.7.0 profile                                                                      |
 | :--------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------- |
@@ -24,10 +23,10 @@ version pages for profile-specific evidence and restrictions.
 
 ## Annotation case applicability
 
-| Case                        | 7.3.1                                                                       | 7.7.0                                                  |
-| :-------------------------- | :-------------------------------------------------------------------------- | :----------------------------------------------------- |
-| C040 · `09-autoid-hash`     | Hash IDs supported; RTI C# and C++ generation accepted                      | Hash IDs supported; RTI C# and C++ generation accepted |
-| C142 · `09-must-understand` | N/A: introduced after this release; explicit compilation reports `DDSG0004` | Supported; RTI C# and C++ generation accepted          |
+| Case                        | 7.3.1                                                               | 7.7.0              |
+| :-------------------------- | :------------------------------------------------------------------ | :----------------- |
+| C040 · `09-autoid-hash`     | Hash IDs supported                                                  | Hash IDs supported |
+| C142 · `09-must-understand` | N/A: introduced after this release; explicit use reports `DDSG0004` | Supported          |
 
 ## Current grouped IDL cases
 
@@ -39,26 +38,20 @@ coverage remain tracked in [#91](https://github.com/eNeRGy164/wireloom/issues/91
 C163–C172 cover full-form extensibility, module and local auto-ID scope,
 annotation arguments, multiple member declarators, symbolic and expression
 union labels, scoped enum labels and constants, direct fixed-array union
-branches, expression string bounds, and typed defaults. Exact RTI 7.3.1 and
-7.7.0 C# and C++ generation succeeded for these cases. Generated reference
-sources are retained under each profile's `rtiddsgen/` directory; profile
-manifests record each outcome and capture hash. Corpus tests compare the C#
-data contracts with these retained oracles. Wireloom exports for both profiles
-are separately compiled against their matching RTI APIs.
+branches, expression string bounds, and typed defaults. Profile-specific
+RTI behavior and restrictions are recorded in the corresponding feature pages.
 
-On 2026-10-22, C163–C172 passed all 144 directed DDS exchanges on each exact
-RTI version across Wireloom C#, RTI C#, and RTI C++. The sixteen fixtures use
-typed values and independent checks. C164 and C172 use topic wrappers around
-unchanged canonical IDL. C171 verifies transmitted constructor defaults and
-explicit values; missing-field DDS deserialization remains unverified. See the
+Typed defaults declared by C171 initialize generated values, and RTI 7.7.0
+readers apply those defaults to trailing fields omitted by a compatible
+appendable writer. RTI 7.3.1 does not expose the member-annotation API used by
+the metadata-restoration path. See the
 [fixture scope](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#annotation-and-value-binding-cases).
 
 ## Recorded wire evidence
 
-The manifest contains dedicated C149, `05-array-of-sequences-idl`, with a
-separately named IDL file that has the same declarations as C018 and selects
-the `Idl` mapping. Both exact profiles retain its ordinary generated sources
-and mode/hash records. See the
+Dedicated case C149, `05-array-of-sequences-idl`, selects the `Idl` mapping for
+the declarations also covered by C018. This isolates the mapping choice from
+the declaration shape. See the
 [configuration reference](../guides/configuration.md) and [verification
 record](../testing/sequence-array-mapping.md#retained-corpus-case-and-live-dds-results).
 
@@ -70,17 +63,17 @@ pairing, and adaptation results belong in wire reports; see the
 [wire-matrix guide](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#read-the-results)
 and [reproduction runbook](LTS-PROFILES.md).
 
-| Limitation or required setup                         | RTI 7.3.1                                                                                                                                                                                                                   | RTI 7.7.0                                                                |
-| :--------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
-| Direct arrays of sequences (C018, C149)              | Set `Idl` to preserve both layers; default `RtiCSharp` flattens them. C149 is the dedicated IDL-preserving corpus case.                                                                                                     | Same configuration and qualification evidence.                           |
-| Numeric `char` union labels (C137, C141)             | RTI generated bindings require the [character-binding corrections](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#reproducible-rti-character-binding-workarounds).                                          | Same corrections.                                                        |
-| Negative `int8` union discriminator (C120)           | RTI CORE-14660 affects the `-128` fixture and its wire pairings.                                                                                                                                                            | —                                                                        |
-| `uint32` / `unsigned long` union labels (C125, C119) | RTI C# generated metadata fails compilation with `CS0221`.                                                                                                                                                                  | Same limitation.                                                         |
-| `octet` union discriminator (C117)                   | —                                                                                                                                                                                                                           | RTI C# generates an unresolved `octet` type (`CS0246`).                  |
-| `wchar` union discriminator (C113)                   | RTI C# generation is unavailable; the C++ reference uses a manually constructed `DynamicType`.                                                                                                                              | Same limitation and setup.                                               |
-| Optional recursive fixed arrays (C134)               | Requires the [recursive peer setup and writer memory configuration](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#recursive-array-writer-memory). Default `TypeObject` v2 interoperability is unqualified. | Same setup and qualification limit.                                      |
-| Enum-array defaults (C148)                           | Default-constructed Wireloom samples send `Color.RED`; RTI C# and C++ peers send `Color.GREEN`, so four of nine cross-implementation exchanges fail.                                                                        | All default-constructed peers send `Color.RED`; all nine exchanges pass. |
+| Limitation or required setup                         | RTI 7.3.1                                                                                                                                                                                                                   | RTI 7.7.0                                                             |
+| :--------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
+| Direct arrays of sequences (C018, C149)              | Set `Idl` to preserve both layers; default `RtiCSharp` flattens them. C149 is the dedicated IDL-preserving corpus case.                                                                                                     | Same mapping behavior.                                                |
+| Numeric `char` union labels (C137, C141)             | RTI generated bindings require the [character-binding corrections](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#reproducible-rti-character-binding-workarounds).                                          | Same corrections.                                                     |
+| Negative `int8` union discriminator (C120)           | RTI CORE-14660 affects the `-128` fixture and its wire pairings.                                                                                                                                                            | —                                                                     |
+| `uint32` / `unsigned long` union labels (C125, C119) | RTI C# generated metadata fails compilation with `CS0221`.                                                                                                                                                                  | Same limitation.                                                      |
+| `octet` union discriminator (C117)                   | —                                                                                                                                                                                                                           | RTI C# generates an unresolved `octet` type (`CS0246`).               |
+| `wchar` union discriminator (C113)                   | RTI C# generation is unavailable; the C++ reference uses a manually constructed `DynamicType`.                                                                                                                              | Same limitation and setup.                                            |
+| Optional recursive fixed arrays (C134)               | Requires the [recursive peer setup and writer memory configuration](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#recursive-array-writer-memory). Default `TypeObject` v2 interoperability is unqualified. | Same setup and qualification limit.                                   |
+| Enum-array defaults (C148)                           | Default-constructed Wireloom samples send `Color.RED`; RTI C# and C++ peers send `Color.GREEN`, producing asymmetric cross-implementation values.                                                                           | Default-constructed peers use `Color.RED`, matching Wireloom's value. |
 
 See the [7.3.1 feature details](7.3.1/FEATURE-COVERAGE.md) and
-[7.7.0 feature details](7.7.0/FEATURE-COVERAGE.md) for per-case artifacts,
-RTI generator outcomes, restrictions, and workarounds.
+[7.7.0 feature details](7.7.0/FEATURE-COVERAGE.md) for per-case behavior,
+profile limitations, and workarounds.

@@ -10,8 +10,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the Code Generator User's Manual.
 */
 
-#ifndef _14_typed_defaultsPlugin_188548989_h
-#define _14_typed_defaultsPlugin_188548989_h
+#ifndef _14_typed_defaultsPlugin_188549010_h
+#define _14_typed_defaultsPlugin_188549010_h
 
 #include "14-typed-defaults.hpp"
 
@@ -450,4 +450,4 @@ TypedDefaultsPlugin_delete(struct PRESTypePlugin *);
 #define NDDSUSERDllExport
 #endif
 
-#endif /* _14_typed_defaultsPlugin_188548989_h */
+#endif /* _14_typed_defaultsPlugin_188549010_h */

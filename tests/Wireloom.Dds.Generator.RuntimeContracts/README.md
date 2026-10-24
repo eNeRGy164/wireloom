@@ -101,6 +101,13 @@ Boundaries and interpretation:
   samples, aliases, metadata, and support cover the applicable APIs. C148
   verifies that managed and native enum arrays use the declared
   `@default_literal`.
+- Typed-default initialization covers fractional floating-point and
+  non-ASCII wide-string defaults on both RTI profiles. RTI 7.7.0 metadata
+  exposes the exact fractional and wide-string annotations. RTI 7.7.0 restores
+  integral, narrow-string, and signed-zero defaults after `ClearMember`, but
+  truncates fractional metadata defaults and returns `??` for a cleared
+  non-ASCII wide-string default. RTI 7.3.1 has no member-default annotation
+  API, so cleared-member restoration is not claimed for that profile.
 
 <details>
 <summary>Maintainer reference: test classes by behavior area</summary>
@@ -112,7 +119,7 @@ and allocation/key combinations reported by the tests.
 
 - `ScalarSpecs`, `ScalarEqualitySpecs`, `CollectionSpecs`, `CollectionEqualitySpecs`
 - `EnumArrayDefaultSpecs`
-- `TypedDefaultSpecs` (null-copy defaults, IEEE-754 signed zero, cleared metadata members, and FINAL/APPENDABLE enum metadata)
+- `TypedDefaultSpecs` (null-copy defaults, managed/native fractional and wide-string initialization, IEEE-754 signed zero, clearable metadata members, and FINAL/APPENDABLE enum metadata)
 - `AggregateArrayConversionSpecs` (native conversion into previously inactive explicit, multidimensional, and default union array branches)
 - `InheritanceSpecs`, `AggregateNativeSpecs`
 

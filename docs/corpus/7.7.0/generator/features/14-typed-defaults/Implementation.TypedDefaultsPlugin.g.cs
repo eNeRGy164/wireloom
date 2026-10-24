@@ -92,7 +92,7 @@ internal class TypedDefaultsPlugin : InterpretedTypePlugin<global::TypedDefaults
         {
             var annotations = new Annotations(
                 TypeKind.Float32,
-                defaultValue: new AnnotationParameterValue { Float32Value = 0F },
+                defaultValue: new AnnotationParameterValue { Float32Value = 1.25F },
                 minValue: new AnnotationParameterValue { Float32Value = float.MinValue },
                 maxValue: new AnnotationParameterValue { Float32Value = float.MaxValue },
                 unit: null);

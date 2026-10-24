@@ -247,7 +247,7 @@ namespace Implementation
             text.Initialize(size: ((int) 8), allocateMemory: allocateMemory);
             text.ToNative("alias", ((int) 8));
             ratio = (double) (1.5);
-            single = (float) (0.0f);
+            single = (float) (1.25f);
         }
 
         public void ToNative(global::TypedDefaults sample, bool keysOnly = false)

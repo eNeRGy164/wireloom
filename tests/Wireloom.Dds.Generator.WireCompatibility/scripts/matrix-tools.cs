@@ -97,16 +97,15 @@ try
         }
         case "case-pairings":
         {
-            RequireArgs(3);
-            var item = FindCase(ReadJson(args[1]), args[2]);
-            var peers = CasePeers(item);
-
-            foreach (var writer in peers)
+            if (args.Length is not (3 or 4))
             {
-                foreach (var reader in peers)
-                {
-                    Console.WriteLine($"{writer}|{reader}");
-                }
+                throw new ArgumentException(usage);
+            }
+
+            var item = FindCase(ReadJson(args[1]), args[2]);
+            foreach (var (writer, reader) in CasePairings(item, args.Length == 4 ? args[3] : null))
+            {
+                Console.WriteLine($"{writer}|{reader}");
             }
             break;
         }
@@ -187,6 +186,32 @@ JsonNode ReadJson(string path)
 string[] CasePeers(JsonNode item) => item["wireMatrix"]?["peers"] is JsonArray peers
     ? peers.Select(peer => (string)peer!).ToArray()
     : ["Wireloom C#", "RTI C#", "RTI C++"];
+
+PeerPair[] CasePairings(JsonNode item, string? fixture = null)
+{
+    var peers = CasePeers(item);
+    if (fixture is not null && item["wireMatrix"]?["fixturePairings"]?[fixture] is JsonArray fixturePairings)
+    {
+        var pairings = fixturePairings.Select(value =>
+        {
+            var endpoints = ((string)value!).Split('|');
+            if (endpoints.Length != 2 || !peers.Contains(endpoints[0]) || !peers.Contains(endpoints[1]))
+            {
+                throw new InvalidDataException($"Invalid fixture pairing for {fixture}.");
+            }
+
+            return (Writer: endpoints[0], Reader: endpoints[1]);
+        }).ToArray();
+        if (pairings.Length == 0 || pairings.Distinct().Count() != pairings.Length)
+        {
+            throw new InvalidDataException($"Fixture pairings for {fixture} must be non-empty and unique.");
+        }
+
+        return pairings;
+    }
+
+    return peers.SelectMany(writer => peers.Select(reader => (Writer: writer, Reader: reader))).ToArray();
+}
 
 /// <summary>Captures the selected mode and hashes of the actual IDL and generated sources used by a peer build.</summary>
 void WriteGenerationProvenance(string[] commandArgs)
@@ -783,6 +808,10 @@ void RenderReport(string[] commandArgs)
         {
             throw new InvalidDataException($"Exchange uses an excluded peer for {id}.");
         }
+        if (!CasePairings(corpusCase, fixture).Contains((writer, reader)))
+        {
+            throw new InvalidDataException($"Exchange uses an excluded pairing for {id} [{fixture}].");
+        }
 
         var hasSequenceArrayMapping = corpusCase["sequenceArrayMapping"] is not null;
         if (hasSequenceArrayMapping)
@@ -886,7 +915,7 @@ void RenderReport(string[] commandArgs)
         ["scenarios"] = scenarios,
     };
     File.WriteAllText(outputPath, JsonSerializer.Serialize(report, jsonOptions) + "\n");
-    WriteMarkdown(version, scenarios, notImplemented, notApplicable, markdownPath);
+    WriteMarkdown(version, scenarios, notImplemented, notApplicable, manifest, markdownPath);
 }
 
 // Report modes describe the actual endpoint setup, independently of PASS/FAIL.
@@ -1155,7 +1184,7 @@ string FormatExplanation(string text)
     return formatted.Replace("|", "\\|", StringComparison.Ordinal);
 }
 
-void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray unsupported, JsonArray notApplicable, string destination)
+void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray unsupported, JsonArray notApplicable, JsonNode manifest, string destination)
 {
     PeerPair[] pairings =
     {
@@ -1223,7 +1252,7 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
         "| 🟧<sup>†</sup> | Passed with an adaptation |",
         "| ⛔ | Failed |",
         "| ❔ | Not run |",
-        "| N/A | Peer excluded by the recorded configuration |",
+        "| N/A | Peer or pairing excluded by the recorded configuration |",
         "| ⚫ | Not implemented |",
         "",
         "Failure details show the observed symptom.", "",
@@ -1301,13 +1330,17 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
     string? previous = null;
     foreach (var (id, fixture, row, unsupportedCase) in orderedRows)
     {
+        var plannedPairings = unsupportedCase is null
+            ? CasePairings(FindCase(manifest, id), fixture).ToHashSet()
+            : pairings.ToHashSet();
         var excludedPeers = row.Values.Where(item => item.ContainsKey("matrixConfiguration"))
             .Select(item => ((JsonObject)item["matrixConfiguration"]!)["excludedPeers"]?.AsObject())
             .FirstOrDefault() ?? new JsonObject();
         var cells = new List<string>();
         foreach (var pairing in pairings)
         {
-            if (excludedPeers.ContainsKey(pairing.Writer) || excludedPeers.ContainsKey(pairing.Reader))
+            if (!plannedPairings.Contains(pairing)
+                || excludedPeers.ContainsKey(pairing.Writer) || excludedPeers.ContainsKey(pairing.Reader))
             {
                 cells.Add("N/A");
             }
@@ -1360,7 +1393,8 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
         var problems = new List<(string Pairing, string Detail)>();
         foreach (var pair in pairings)
         {
-            if ((unsupportedCase is not null && UsesWireloom(pair))
+            if (!plannedPairings.Contains(pair)
+                || (unsupportedCase is not null && UsesWireloom(pair))
                 || excludedPeers.ContainsKey(pair.Writer) || excludedPeers.ContainsKey(pair.Reader))
             {
                 continue;
