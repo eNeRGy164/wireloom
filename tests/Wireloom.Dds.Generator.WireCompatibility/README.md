@@ -43,6 +43,18 @@ mappings under `raw/`. Partial evidence is uploaded even when a shard fails;
 the report job validates available evidence and retains a failing workflow
 status for setup errors or incomplete exchanges.
 
+The workflow shares version-scoped Docker build layers and restores C++
+compiler outputs from GitHub Actions cache. The ccache key includes the runner
+OS, RTI profile, actual `g++` version, shard index, and a hash of the wire
+container definition, native runner sources, runner scripts, corpus manifest,
+oracle manifests, and retained C++ oracle sources. The key stays stable across
+workflow runs while those inputs are unchanged; restore prefixes allow
+compatible prior caches to seed a changed key and retain compatibility with
+the earlier key format during migration. NuGet packages use a separate cache
+key based on the .NET SDK and package/project manifests. GitHub applies its
+usual branch scope to these caches, so stable keys improve reuse within the
+available scope but do not make caches globally shared.
+
 ### Container variants and local wire run
 
 `Containerfile.dev` keeps the full RTI base, .NET SDK, and native build tools

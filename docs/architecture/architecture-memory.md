@@ -181,8 +181,15 @@ authoritative; this summary is a retrieval aid, not a replacement.
   scope, exclusion reasons, and source hashes as a dedicated corpus case. Its
   `Idl` mapping passes 16 / 16 focused Wireloom/C++ exchanges per exact LTS profile;
   RTI C# is excluded because it describes the flattened type. The manual workflow runs both qualified LTS profiles,
-  with four isolated shards per version and a separate report, summary, and
-  artifact for each. C147 passes all 18 directed exchanges per profile after
+  with eight isolated shards per version and a separate report, summary, and
+  artifact for each. It runs in the trimmed .NET/RTI native image using
+  checked-in C++ peers without Java or `rtiddsgen`. Docker layers are cached
+  per RTI version; stable ccache keys include OS, RTI and compiler versions,
+  shard, and source-input hash, with compatible restore prefixes. GitHub's
+  branch cache scope still applies. See the
+  [deployment view](arc42/07-deployment-view.md) and
+  [wire runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
+  C147 passes all 18 directed exchanges per profile after
   guarded RTI reference corrections; the retained RTI C# source records its
   unmodified compilation failure. See the [corpus guide](../corpus/README.md),
   [feature coverage](../corpus/FEATURE-COVERAGE.md), and [wire runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
