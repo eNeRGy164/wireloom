@@ -171,9 +171,10 @@ internal sealed class IdlConstantExpressionEvaluator
 
         if (TryConsume('~'))
         {
+            var operand = ParseUnary();
             var modulus = BigInteger.One << expressionWidth;
             var mask = modulus - BigInteger.One;
-            var complemented = (~ToBits(ParseUnary(), mask, modulus)) & mask;
+            var complemented = (~ToBits(operand, mask, modulus)) & mask;
             return expressionIsUnsigned ? complemented : ToSigned(complemented, expressionWidth);
         }
 

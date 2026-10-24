@@ -94,11 +94,6 @@ internal sealed class IdlTypeAnnotationPrefix
             }
             else if (annotation.Groups["extensibility"].Success || annotation.Groups["fullExtensibility"].Success)
             {
-                if (result.Extensibility is not null)
-                {
-                    throw new IdlException(input, context.MapOffset(baseOffset + result.DeclarationStart), "Duplicate extensibility annotation.");
-                }
-
                 var value = annotation.Groups["fullExtensibilityValue"].Success
                     ? annotation.Groups["fullExtensibilityValue"].Value
                     : annotation.Groups["extensibility"].Value;

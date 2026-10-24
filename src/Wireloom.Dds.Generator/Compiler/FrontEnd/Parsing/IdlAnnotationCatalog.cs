@@ -473,11 +473,40 @@ internal static class IdlAnnotationCatalog
     private static int FindTopLevelEquals(string argument)
     {
         var nesting = 0;
+        var quote = '\0';
         for (var index = 0; index < argument.Length; index++)
         {
-            if (argument[index] is '(' or '[' or '{') nesting++;
-            else if (argument[index] is ')' or ']' or '}') nesting--;
-            else if (argument[index] == '=' && nesting == 0) return index;
+            var character = argument[index];
+            if (quote != '\0')
+            {
+                if (character == '\\')
+                {
+                    index++;
+                }
+                else if (character == quote)
+                {
+                    quote = '\0';
+                }
+
+                continue;
+            }
+
+            if (character is '\'' or '"')
+            {
+                quote = character;
+            }
+            else if (character is '(' or '[' or '{')
+            {
+                nesting++;
+            }
+            else if (character is ')' or ']' or '}')
+            {
+                nesting--;
+            }
+            else if (character == '=' && nesting == 0)
+            {
+                return index;
+            }
         }
 
         return -1;
