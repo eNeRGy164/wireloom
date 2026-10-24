@@ -1,5 +1,3 @@
-using Wireloom;
-
 using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
 
 namespace Wireloom.Compiler.FrontEnd.Parsing.Tests;
@@ -169,12 +167,12 @@ public sealed class AnnotationBindingEdgeCaseSpecs
         // Arrange
         const string source = "struct Sample { @hashid(\"abcd\") long direct; @hashid(\"ab\" \"cd\") long adjacent; };";
         var input = Input("adjacent-hashid-strings.idl", source);
-        var parser = new IdlDeclarationParser(new Wireloom.Compiler.FrontEnd.Symbols.IdlSymbolTable(), TestContext.Current.CancellationToken);
+        var parser = new IdlDeclarationParser(new FrontEnd.Symbols.IdlSymbolTable(), TestContext.Current.CancellationToken);
 
         // Act
         parser.Parse(source, input, 0, currentNamespace: null);
         var members = parser.Declarations
-            .OfType<Wireloom.Compiler.FrontEnd.Semantic.IdlClassDeclaration>()
+            .OfType<FrontEnd.Semantic.IdlClassDeclaration>()
             .Single()
             .Fields
             .ToDictionary(field => field.Name, StringComparer.Ordinal);
@@ -199,5 +197,162 @@ public sealed class AnnotationBindingEdgeCaseSpecs
         documents["Result.g.cs"].Source.ShouldContain("public const double Value = 0.1;");
         documents["Example.ResultScoped.g.cs"].Source.ShouldContain("public const double Value = 0.2;");
         documents["Sample.g.cs"].Source.ShouldContain("value = 0.1;");
+    }
+
+    [Fact]
+    public void EvaluatesIntegerOperandTypesLocallyForEachSubexpression()
+    {
+        // Arrange
+        const string source = "const unsigned long Mask = 0; const long A = (~0 / 2) + Mask; const long B = Mask + (~0 / 2);";
+        var input = Input("integer-subexpression-promotion.idl", source);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["A.g.cs"].Source.ShouldContain("Value = 0;");
+        documents["B.g.cs"].Source.ShouldContain("Value = 0;");
+    }
+
+    [Fact]
+    public void PreservesWideLiteralPrecisionUntilTheFinalDeclaredRangeCheck()
+    {
+        // Arrange
+        var shifted = Input("wide-literal-shift.idl", "const long Result = 0x100000000 >> 32;");
+        var outOfRange = Input("wide-literal-overflow.idl", "const long Result = 4294967296 | 0;");
+
+        // Act
+        var documents = CompileSources(shifted);
+        var exception = Should.Throw<IdlException>(() => CompileSources(outOfRange));
+
+        // Assert
+        documents["Result.g.cs"].Source.ShouldContain("Value = 1;");
+        exception.Input.ShouldBe(outOfRange);
+        exception.Message.ShouldContain("outside its representable range");
+    }
+
+    [Fact]
+    public void PromotesEqualRankOperandsBySignednessInEitherOrder()
+    {
+        // Arrange
+        const string source = "const long long Signed = 1; const unsigned long long Unsigned = 2; const long long Left = Signed + Unsigned; const long long Right = Unsigned + Signed;";
+        var input = Input("equal-rank-signedness-promotion.idl", source);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Left.g.cs"].Source.ShouldContain("Value = 3L;");
+        documents["Right.g.cs"].Source.ShouldContain("Value = 3L;");
+    }
+
+    [Fact]
+    public void PromotesAliasedIntegralConstantsUsingTheirResolvedDeclaredTypes()
+    {
+        // Arrange
+        const string source = "typedef unsigned long long Wide; const Wide Unsigned = 2; const long long Signed = 1; const long long Result = Signed + Unsigned;";
+        var input = Input("aliased-integer-expression-type.idl", source);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Result.g.cs"].Source.ShouldContain("Value = 3L;");
+    }
+
+    [Theory]
+    [InlineData("@min(1.0) float value;")]
+    [InlineData("@max(1.0) double value;")]
+    [InlineData("@range(min=0.0,max=1.0) float value;")]
+    public void ReportsFloatingPointRangesThroughTheIdlDiagnosticBoundary(string member)
+    {
+        // Arrange
+        const string sourcePrefix = "struct Sample { ";
+        var source = $"{sourcePrefix}{member} }};";
+        var input = Input("floating-point-range.idl", source);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => CompileSources(input));
+
+        // Assert
+        exception.Input.ShouldBe(input);
+        exception.Offset.ShouldBeGreaterThanOrEqualTo(sourcePrefix.Length);
+        exception.Message.ShouldContain("not supported for floating-point members");
+    }
+
+    [Fact]
+    public void EvaluatesLiteralMemberIdsWithTheSharedIntegerGrammar()
+    {
+        // Arrange
+        const string source = "struct Sample { @id(010) long octal; @id(10) long decimal; @id(0xA) long hexadecimal; };";
+        var parser = new IdlDeclarationParser(new FrontEnd.Symbols.IdlSymbolTable(), TestContext.Current.CancellationToken);
+
+        // Act
+        parser.Parse(source, Input("member-id-integer-literals.idl", source), 0, currentNamespace: null);
+        parser.Bind();
+        var members = parser.Declarations
+            .OfType<FrontEnd.Semantic.IdlClassDeclaration>()
+            .Single()
+            .Fields
+            .ToDictionary(member => member.Name, StringComparer.Ordinal);
+
+        // Assert
+        members["octal"].Metadata.MemberId.ShouldBe(8);
+        members["decimal"].Metadata.MemberId.ShouldBe(10);
+        members["hexadecimal"].Metadata.MemberId.ShouldBe(10);
+    }
+
+    [Theory]
+    [InlineData("@unit(\"me\" \"ters\")", "meters")]
+    [InlineData("@unit(L\"meters\")", "meters")]
+    [InlineData("@unit(\"line\\nfeed\")", "line\nfeed")]
+    [InlineData("@unit(\"line\\rfeed\")", "line\rfeed")]
+    public void DecodesUnitLiteralSequencesBeforeStoringMetadata(string annotation, string expectedUnit)
+    {
+        // Arrange
+        var source = $"struct Sample {{ {annotation} long value; }};";
+        var parser = new IdlDeclarationParser(new FrontEnd.Symbols.IdlSymbolTable(), TestContext.Current.CancellationToken);
+
+        // Act
+        parser.Parse(source, Input("decoded-unit-annotation.idl", source), 0, currentNamespace: null);
+        parser.Bind();
+        var member = parser.Declarations
+            .OfType<FrontEnd.Semantic.IdlClassDeclaration>()
+            .Single()
+            .Fields
+            .Single();
+
+        // Assert
+        member.Metadata.ValueMetadata!.Unit.ShouldBe(expectedUnit);
+    }
+
+    [Fact]
+    public void RejectsNumericExpressionDispatchForUnsupportedScalarTypes()
+    {
+        // Arrange
+        var symbols = new FrontEnd.Symbols.IdlSymbolTable();
+
+        // Act
+        var exception = Should.Throw<FormatException>(() =>
+            FrontEnd.Semantic.IdlTypedExpressionEvaluator.Evaluate("1", "boolean", symbols, currentNamespace: null));
+
+        // Assert
+        exception.Message.ShouldContain("expressions of type 'boolean' are not supported");
+    }
+
+    [Theory]
+    [InlineData("TRUE", true)]
+    [InlineData("FALSE", false)]
+    public void ResolvesBooleanAnnotationLiteralsDirectly(string expression, bool expected)
+    {
+        // Arrange
+        var resolver = new FrontEnd.Semantic.IdlValueResolver(
+            new FrontEnd.Symbols.IdlSymbolTable());
+
+        // Act
+        var actual = resolver.ResolveBooleanAnnotation(Input("boolean-literal.idl", ""), 0, null, expression, "key");
+
+        // Assert
+        actual.ShouldBe(expected);
     }
 }

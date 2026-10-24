@@ -133,13 +133,17 @@ consume unknown applications without parsing their arguments. Numeric
 expression dispatch reuses the integral and floating evaluators. The floating
 evaluator rejects integer literal operands and integral constant references;
 integer expressions support IDL operator precedence and the specified shift
-range. Referenced integral constants preserve their declared integer rank when
-promoting an expression, including aliases. The supported numeric contexts
-use declared-type dispatch with the existing evaluators; this does not add a
-general-purpose expression tree. Annotation parameter kinds and targets are
-catalogued. Captured declaration applications remain on their semantic
-targets; bindings that need the complete symbol graph run in the value-binder
-phase.
+range. `IdlConstantExpressionEvaluator` carries rank and signedness with each
+integer operand, including constants reached through aliases, and promotes
+types pairwise at each operator. Literal parsing recognizes decimal, octal,
+and hexadecimal forms and retains values through promotion and operator
+evaluation; out-of-range intermediate values fail during binding. `@id`
+integer arguments use the same evaluator as constants and bounds. The
+supported numeric contexts use declared-type dispatch with the existing
+evaluators; this does not add a general-purpose expression tree. Annotation
+parameter kinds and targets are catalogued. Captured declaration applications
+remain on their semantic targets; bindings that need the complete symbol
+graph run in the value-binder phase.
 
 Balanced application records are transient parser inputs. The semantic model
 stores effective values and unresolved expressions needed for binding rather

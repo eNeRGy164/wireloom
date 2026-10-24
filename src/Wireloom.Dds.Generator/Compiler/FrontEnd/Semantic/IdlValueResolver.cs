@@ -57,6 +57,11 @@ internal sealed class IdlValueResolver(IdlSymbolTable symbols)
                 throw new IdlException(input, offset, "@min, @max, and @range require a primitive member.");
             }
 
+            if (primitive.Name is "float" or "double")
+            {
+                throw new IdlException(input, offset, "@min, @max, and @range are not supported for floating-point members.");
+            }
+
             minimum = annotations.MinimumExpression is null
                 ? null
                 : EvaluateMemberInteger(input, offset, currentNamespace, annotations.MinimumExpression, "minimum", primitive.Name);
