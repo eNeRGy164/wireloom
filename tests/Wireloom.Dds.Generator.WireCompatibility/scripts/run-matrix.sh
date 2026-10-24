@@ -196,6 +196,9 @@ fixtures_for_case() {
             ;;
         14-typed-defaults)
             printf '%s\n' default non-default
+            if [[ "${rti_version:-}" == "7.7.0" ]]; then
+                printf '%s\n' sparse-omitted
+            fi
             ;;
         14-enum-constant)
             printf '%s\n' constant-and-label
@@ -258,7 +261,13 @@ matrix_tool() {
 }
 
 case_pairings() {
-    matrix_tool case-pairings "$manifest" "$1"
+    local case_id="$1"
+    local fixture="${2:-}"
+    if [[ -n "$fixture" ]]; then
+        matrix_tool case-pairings "$manifest" "$case_id" "$fixture"
+    else
+        matrix_tool case-pairings "$manifest" "$case_id"
+    fi
 }
 
 case_uses_rti_csharp() {
@@ -350,19 +359,26 @@ fi
 if [[ "$cpp_compile_only" != "1" ]]; then
     for case_id in "${case_ids[@]}"; do
         mapfile -t case_fixtures < <(fixtures_for_case "$case_id")
-        mapfile -t case_pairings_for_case < <(case_pairings "$case_id")
         if [[ -n "${rti_only_cases[$case_id]:-}" ]]; then
-            case_pairing_count=0
-            for pairing in "${case_pairings_for_case[@]}"; do
-                writer_peer="${pairing%%|*}"
-                reader_peer="${pairing#*|}"
-                if [[ "$writer_peer" != "Wireloom C#" && "$reader_peer" != "Wireloom C#" ]]; then
-                    case_pairing_count=$((case_pairing_count + 1))
-                fi
+            case_scenario_count=0
+            for fixture in "${case_fixtures[@]}"; do
+                mapfile -t case_pairings_for_fixture < <(case_pairings "$case_id" "$fixture")
+                for pairing in "${case_pairings_for_fixture[@]}"; do
+                    writer_peer="${pairing%%|*}"
+                    reader_peer="${pairing#*|}"
+                    if [[ "$writer_peer" != "Wireloom C#" && "$reader_peer" != "Wireloom C#" ]]; then
+                        case_scenario_count=$((case_scenario_count + 1))
+                    fi
+                done
             done
-            expected_scenario_count=$((expected_scenario_count + ${#case_fixtures[@]} * case_pairing_count))
+            expected_scenario_count=$((expected_scenario_count + case_scenario_count))
         else
-            expected_scenario_count=$((expected_scenario_count + ${#case_fixtures[@]} * ${#case_pairings_for_case[@]}))
+            case_scenario_count=0
+            for fixture in "${case_fixtures[@]}"; do
+                mapfile -t case_pairings_for_fixture < <(case_pairings "$case_id" "$fixture")
+                case_scenario_count=$((case_scenario_count + ${#case_pairings_for_fixture[@]}))
+            done
+            expected_scenario_count=$((expected_scenario_count + case_scenario_count))
         fi
     done
 
@@ -374,9 +390,9 @@ if [[ "$cpp_compile_only" != "1" ]]; then
     # exchange that was selected but did not run.
     for case_id in "${case_ids[@]}"; do
         mapfile -t case_fixtures < <(fixtures_for_case "$case_id")
-        mapfile -t case_pairings_for_case < <(case_pairings "$case_id")
         for fixture in "${case_fixtures[@]}"; do
-            for pairing in "${case_pairings_for_case[@]}"; do
+            mapfile -t case_pairings_for_fixture < <(case_pairings "$case_id" "$fixture")
+            for pairing in "${case_pairings_for_fixture[@]}"; do
                 writer_peer="${pairing%%|*}"
                 reader_peer="${pairing#*|}"
                 if [[ -n "${rti_only_cases[$case_id]:-}" ]] \
@@ -1310,7 +1326,8 @@ for case_id in "${case_ids[@]}"; do
     # failed pairing is recorded but does not stop later cases from running.
     mapfile -t case_fixtures < <(fixtures_for_case "$case_id")
     for fixture in "${case_fixtures[@]}"; do
-        for pairing in "${case_pairings_for_case[@]}"; do
+        mapfile -t case_pairings_for_fixture < <(case_pairings "$case_id" "$fixture")
+        for pairing in "${case_pairings_for_fixture[@]}"; do
             writer_peer="${pairing%%|*}"
             reader_peer="${pairing#*|}"
             if [[ -n "${rti_only_cases[$case_id]:-}" ]] \

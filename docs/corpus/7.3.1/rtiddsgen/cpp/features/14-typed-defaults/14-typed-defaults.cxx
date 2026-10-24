@@ -34,7 +34,7 @@ TypedDefaults::TypedDefaults() :
     m_overridden_ (9L) ,
     m_text_ ("alias") ,
     m_ratio_ (1.5) ,
-    m_single_ (0.0f)  {
+    m_single_ (1.25f)  {
 
 }   
 
@@ -644,7 +644,7 @@ namespace rti {
                 TypedDefaults_g_tc_members[3]._annotations._maxValue._d = RTI_XCDR_TK_DOUBLE;
                 TypedDefaults_g_tc_members[3]._annotations._maxValue._u.double_value = RTIXCdrDouble_MAX;
                 TypedDefaults_g_tc_members[4]._annotations._defaultValue._d = RTI_XCDR_TK_FLOAT;
-                TypedDefaults_g_tc_members[4]._annotations._defaultValue._u.float_value = 0.0f;
+                TypedDefaults_g_tc_members[4]._annotations._defaultValue._u.float_value = 1.25f;
                 TypedDefaults_g_tc_members[4]._annotations._minValue._d = RTI_XCDR_TK_FLOAT;
                 TypedDefaults_g_tc_members[4]._annotations._minValue._u.float_value = RTIXCdrFloat_MIN;
                 TypedDefaults_g_tc_members[4]._annotations._maxValue._d = RTI_XCDR_TK_FLOAT;
@@ -820,7 +820,7 @@ namespace dds {
             sample.overridden(9L);
             sample.text("alias");
             sample.ratio(1.5);
-            sample.single(0.0f);
+            sample.single(1.25f);
         }
 
         void topic_type_support< ::TypedDefaults >::allocate_sample(::TypedDefaults& sample, int, int) 

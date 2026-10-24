@@ -1,4 +1,5 @@
 using TypedDefaults;
+using System.Reflection;
 using Omg.Types;
 using Omg.Types.Dynamic;
 using Rti.Types.Dynamic;
@@ -45,6 +46,30 @@ public sealed class TypedDefaultSpecs
             alias.Value.ShouldBe("AB");
             sample.joinedText.ShouldBe("AB");
             sample.tokenBoundary.ShouldBe("\u00041");
+        }
+        finally
+        {
+            native.Destroy(optionalsOnly: false);
+        }
+    }
+
+    [Fact]
+    public void WideStringTypedefDefaultsUseWideTextForManagedAndNativeInitialization()
+    {
+        // Arrange
+        var sample = new Sample();
+        var alias = new WideText((WideText?)null);
+        var native = new TypedDefaults.Implementation.SampleUnmanaged();
+
+        try
+        {
+            // Act
+            native.Initialize();
+            native.FromNative(sample);
+
+            // Assert
+            alias.Value.ShouldBe("世界");
+            sample.wideText.ShouldBe("世界");
         }
         finally
         {
@@ -106,11 +131,15 @@ public sealed class TypedDefaultSpecs
         nine.Value.ShouldBe(9);
         text.Value.ShouldBe("alias");
         ratio.Value.ShouldBe(1.5);
+
         sample.inherited.ShouldBe(7);
         sample.overridden.ShouldBe(10);
         sample.nested.ShouldBe(9);
         sample.text.ShouldBe("alias");
         sample.localRatio.ShouldBe(2.5);
+        sample.localSingle.ShouldBe(1.25F);
+        sample.wideText.ShouldBe("世界");
+
         derived.inherited.ShouldBe(7);
         derived.localValue.ShouldBe(11);
     }
@@ -148,6 +177,7 @@ public sealed class TypedDefaultSpecs
             // Assert
             BitConverter.DoubleToInt64Bits(sample.negativeZero).ShouldBe(long.MinValue);
             BitConverter.SingleToInt32Bits(sample.negativeFloatZero).ShouldBe(int.MinValue);
+            sample.localSingle.ShouldBe(1.25f);
         }
         finally
         {
@@ -156,17 +186,47 @@ public sealed class TypedDefaultSpecs
     }
 
     [Fact]
+    public void DynamicTypeMetadataCarriesFractionalAndWideStringDefaultsWhenSupported()
+    {
+        // Arrange
+        var type = TypedDefaults.Implementation.SamplePlugin.CreateDynamicType().ShouldBeOfType<StructType>();
+        var single = type.Members.Single(member => member.Name == "localSingle");
+        var ratio = type.Members.Single(member => member.Name == "ratio");
+        var wideText = type.Members.Single(member => member.Name == "wideText");
+
+        // Act
+        var singleDefault = GetMemberAnnotationValue(single, "Float32Value");
+        var ratioDefault = GetMemberAnnotationValue(ratio, "Float64Value");
+        var wideTextDefault = GetMemberAnnotationValue(wideText, "WideStringValue");
+
+        // Assert
+        if (typeof(Rti.Dds.Topics.TypeSupport<>).Assembly.GetName().Version < new Version(7, 7))
+        {
+            singleDefault.ShouldBeNull();
+            ratioDefault.ShouldBeNull();
+            wideTextDefault.ShouldBeNull();
+            return;
+        }
+
+        singleDefault.ShouldBeOfType<float>().ShouldBe(1.25f);
+        ratioDefault.ShouldBeOfType<double>().ShouldBe(1.5);
+        wideTextDefault.ShouldBeOfType<string>().ShouldBe("世界");
+    }
+
+    [Fact]
     public void AppliesMemberAndTypedefDefaultsWhenDynamicDataMembersAreCleared()
     {
         // Arrange
         using var serializer = SampleSupport.Instance.CreateSerializer();
-        var source = new Sample { ratio = 0, localRatio = 0 };
+        var source = new Sample { ratio = 0, localRatio = 0, localSingle = 0 };
         using var data = serializer.ToDynamicData(source);
         data.ClearMember("inherited");
         data.ClearMember("overridden");
         data.ClearMember("nested");
         data.ClearMember("text");
         data.ClearMember("localText");
+        data.ClearMember("negativeZero");
+        data.ClearMember("negativeFloatZero");
 
         // Act
         var result = serializer.FromDynamicData(data);
@@ -183,8 +243,18 @@ public sealed class TypedDefaultSpecs
         result.overridden.ShouldBe(10);
         result.nested.ShouldBe(9);
         result.text.ShouldBe("alias");
-        result.ratio.ShouldBe(0);
         result.localText.ShouldBe("local");
-        result.localRatio.ShouldBe(0);
+        BitConverter.DoubleToInt64Bits(result.negativeZero).ShouldBe(long.MinValue);
+        BitConverter.SingleToInt32Bits(result.negativeFloatZero).ShouldBe(int.MinValue);
+    }
+
+    private static object? GetMemberAnnotationValue(StructMember member, string valueProperty)
+    {
+        var annotations = member.GetType().GetProperty("Annotations", BindingFlags.Instance | BindingFlags.Public)
+            ?.GetValue(member);
+        var defaultValue = annotations?.GetType().GetProperty("Default", BindingFlags.Instance | BindingFlags.Public)
+            ?.GetValue(annotations);
+        return defaultValue?.GetType().GetProperty(valueProperty, BindingFlags.Instance | BindingFlags.Public)
+            ?.GetValue(defaultValue);
     }
 }

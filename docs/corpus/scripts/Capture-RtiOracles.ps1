@@ -5,7 +5,8 @@ Captures exact-LTS RTI C# and C++ oracles with source and toolchain identity.
 .DESCRIPTION
 Runs one disposable pinned RTI container. Outputs go to a new directory under
 artifacts, never directly over retained oracles. Requires PowerShell 7, Git,
-and WSLC. Preprocessing captures require cpp in the image or package access.
+and Docker with access to the pinned images. Preprocessing captures require
+cpp in the image or package access.
 .EXAMPLE
 ./docs/corpus/scripts/Capture-RtiOracles.ps1 -Version 7.3.1 -CaseId 09-autoid-hash,09-must-understand
 #>
@@ -90,7 +91,7 @@ $request = [ordered]@{
 }
 Write-EvidenceJson "$output/capture-request.json" $request
 $preprocess = if ($DisablePreprocessor) { 'disabled' } else { 'enabled' }
-& wslc run --rm --user 0:0 --volume "${repo}:/work" --entrypoint bash $images[$Version] `
+& docker run --rm --user 0:0 --volume "${repo}:/work" --entrypoint bash $images[$Version] `
     /work/docs/corpus/scripts/capture-rti-oracles.sh "/work/$relative" $Version $generator $preprocess
 if ($LASTEXITCODE -ne 0) { throw "Capture setup/toolchain failed; partial evidence remains in $output" }
 foreach ($case in $jobs) {

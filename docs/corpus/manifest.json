@@ -104,7 +104,7 @@
     , {"id":"14-union-scoped-enum","theme":"scoped enum union labels and enum constants","idl":"idl/features/14-union-scoped-enum.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C168"}
     , {"id":"14-union-array-branch","theme":"direct fixed-array union branch","idl":"idl/features/14-union-array-branch.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C169"}
     , {"id":"14-string-expression-bound","theme":"expression-valued bounded string types","idl":"idl/features/14-string-expression-bound.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C170"}
-    , {"id":"14-typed-defaults","theme":"string, floating-point, and typedef defaults","idl":"idl/features/14-typed-defaults.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C171"}
+    , {"id":"14-typed-defaults","theme":"string, floating-point, and typedef defaults","idl":"idl/features/14-typed-defaults.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C171","wireMatrix":{"fixturePairings":{"sparse-omitted":["RTI C++|Wireloom C#"]}}}
     , {"id":"14-enum-constant","theme":"named enum-valued constant","idl":"idl/features/14-enum-constant.idl","defines":[],"observedOutcome":"accepted","oracleSourcesRetained":true,"tag":"C172"}
   ],
   "negativeCases": [

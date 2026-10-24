@@ -5,8 +5,8 @@ authoritative architecture lives in the [arc42 chapters](arc42/index.md),
 contracts, and support policy; edit those sources first, then refresh this file
 and [machine-readable memory](../../.agents/architecture-memory.yaml).
 
-Refreshed from the current arc42 sources on 2026-10-24. Treat the source map
-below as authoritative; this summary is a retrieval aid, not a replacement.
+This summary reflects the current arc42 sources. Treat the source map below as
+authoritative; this summary is a retrieval aid, not a replacement.
 
 ## Agent summary
 
@@ -115,10 +115,19 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   feeds managed initialization, native initialization, and DynamicType metadata.
   C163–C172 record exact-profile generation outcomes for these forms. Their RTI
   C# and C++ reference sources are retained with original notices; Wireloom C# output compiles
-  against both exact RTI API profiles. Focused wire runs pass 144 / 144 exchanges
-  per exact profile across sixteen typed fixtures and all three peers. C164 and
+  against both exact RTI API profiles. Sixteen typed fixtures cover directed
+  exchanges among all three peers on both profiles. C164 and
   C172 use topic wrappers; RTI 7.3.1 reference generation stages byte-identical
-  include files. C171 tests transmitted constructor defaults and explicit values.
+  include files. C171 defaults are `inherited=7`, `overridden=9`,
+  `text="alias"`, `ratio=1.5`, and `single=1.25`. When a compatible older
+  appendable writer omits the trailing members, the reader applies those
+  declared defaults; RTI 7.3.1 lacks the member-annotation API for this path.
+  Runtime
+  contracts check fractional and non-ASCII wide-string initialization on both
+  LTS profiles and exact annotation metadata on 7.7.0. RTI 7.7.0 DynamicData
+  clear restoration truncates fractional defaults and returns `??` for a
+  non-ASCII wide-string default; cleared integral, narrow-string, and
+  signed-zero defaults are covered separately.
   See
   [cross-cutting semantics](arc42/08-crosscutting-concepts.md#88-annotation-constant-and-default-semantics)
   and [corpus coverage](../corpus/FEATURE-COVERAGE.md).
@@ -149,6 +158,10 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   Roslyn host and does not replace licensed wire evidence. See
   [deployment](arc42/07-deployment-view.md) and
   [verification scope](../guides/support-and-compatibility.md#continuous-lts-verification).
+- **Local container tooling:** Docker Desktop runs pinned RTI oracle captures
+  and Community Qodana; keep licenses outside the repository and mount them
+  read-only for licensed wire runs. See the [LTS runbook](../corpus/LTS-PROFILES.md)
+  and [quality procedure](../CONTRIBUTING.md#quality-evidence).
 - **LTS evidence applicability:** Corpus oracle reads use the selected LTS
   source directories and outcomes. Wire planning reports unavailable RTI
   features separately as `notApplicableCases`; they add no exchanges, failures,

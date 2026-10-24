@@ -12,6 +12,11 @@
 #include <vector>
 
 #include <dds/dds.hpp>
+#include <dds/core/xtypes/DynamicType.hpp>
+#include <dds/core/xtypes/MemberType.hpp>
+#include <dds/core/xtypes/PrimitiveTypes.hpp>
+#include <dds/core/xtypes/StructType.hpp>
+#include <ndds/ndds_version.h>
 #include <ndds/dds_c/dds_c_dynamicdata.h>
 #include <rti/config/Logger.hpp>
 #include "peer-qos.hpp"
@@ -90,7 +95,30 @@ int main(int argc, char **argv)
         // Normal cases use metadata emitted by rtiddsgen. Character-union
         // probes that expose RTI code-generation issues use an equivalent
         // hand-built DynamicType instead.
-        const auto &dynamic_type = rti::topic::dynamic_type<DdsType>::get();
+        dds::core::xtypes::DynamicType dynamic_type = rti::topic::dynamic_type<DdsType>::get();
+#ifdef WIRELOOM_TYPED_IDL_GAPS_FIXTURE
+        if (case_id == "14-typed-defaults" && fixture == "sparse-omitted"
+            && role == "writer") {
+            using namespace dds::core::xtypes;
+            StructType sparse_dynamic_type("TypedDefaults");
+            sparse_dynamic_type.add_member(
+                Member("inherited", primitive_type<int32_t>()).id(0));
+            sparse_dynamic_type.extensibility_kind(ExtensibilityKind::EXTENSIBLE);
+            const auto &reader_type = rti::topic::dynamic_type<DdsType>::get();
+#if RTI_DDS_VERSION_MAJOR > 7 \
+    || (RTI_DDS_VERSION_MAJOR == 7 && RTI_DDS_VERSION_MINOR >= 7)
+            if (!reader_type.is_assignable_from(sparse_dynamic_type)) {
+                throw std::runtime_error(
+                    "The full C171 reader type is not assignable from the sparse writer type");
+            }
+#else
+            // RTI 7.3's Modern C++ DynamicType API has no application-level
+            // assignability method. The writer/reader match below performs
+            // the profile's authoritative compatibility check.
+#endif
+            dynamic_type = sparse_dynamic_type;
+        }
+#endif
 #endif
         dds::domain::DomainParticipant participant(0);
 #if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS)
@@ -128,7 +156,8 @@ int main(int argc, char **argv)
             || case_id == "14-annotation-arguments" || case_id == "14-member-declarators"
             || case_id == "14-union-label-expressions" || case_id == "14-union-scoped-enum"
             || case_id == "14-union-array-branch" || case_id == "14-string-expression-bound"
-            || case_id == "14-typed-defaults" || case_id == "14-enum-constant") {
+            || (case_id == "14-typed-defaults" && fixture != "sparse-omitted")
+            || case_id == "14-enum-constant") {
             return run_typed_fixture_peer(
                 participant, role, topic_name, timeout_seconds, case_id, fixture);
         }
@@ -138,6 +167,12 @@ int main(int argc, char **argv)
         // and readers compare the received DynamicData against this same
         // expected value rather than treating discovery alone as a pass.
         DynamicData expected(dynamic_type);
+#ifdef WIRELOOM_TYPED_IDL_GAPS_FIXTURE
+        if (case_id == "14-typed-defaults" && fixture == "sparse-omitted"
+            && role == "writer") {
+            expected.value("inherited", int32_t{17101});
+        }
+#endif
         if (case_id == "09-optional-string-sequences"
             && (fixture == "optional-wide-only" || fixture == "optional-multiple")) {
             // Both LTS typed C++ serializers crash on a present optional

@@ -99,4 +99,4 @@ conventions still require code review because they depend on intent:
 
 For generator changes, run the repository quality gates described in
 [`CONTRIBUTING.md`](../CONTRIBUTING.md), including build, tests, coverage,
-Community Qodana through `wslc`, and the CI Coveralls check.
+Community Qodana through Docker, and the CI Coveralls check.

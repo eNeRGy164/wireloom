@@ -171,7 +171,7 @@ static int run_typed_fixture_peer(
                 || WIRELOOM_TYPED_MEMBER(expected, overridden) != 9
                 || WIRELOOM_TYPED_MEMBER(expected, text) != "alias"
                 || WIRELOOM_TYPED_MEMBER(expected, ratio) != 1.5
-                || WIRELOOM_TYPED_MEMBER(expected, single) != 0.0f) {
+                || WIRELOOM_TYPED_MEMBER(expected, single) != 1.25f) {
                 throw std::runtime_error("C171 generated constructor defaults differ from the independent IDL values");
             }
         } else if (fixture == "non-default") {

@@ -197,6 +197,7 @@ public class TypedDefaults :  IEquatable<TypedDefaults>
         overridden = (int) (9);
         text = (string) ("alias");
         ratio = (double) (1.5);
+        single = (float) (1.25f);
     }
 
     public TypedDefaults(int  inherited, int  overridden, string  text, double  ratio, float  single)

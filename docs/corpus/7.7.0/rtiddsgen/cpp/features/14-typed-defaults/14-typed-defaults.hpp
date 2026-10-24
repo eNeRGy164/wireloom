@@ -10,8 +10,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the Code Generator User's Manual.
 */
 
-#ifndef _14_typed_defaults_188548989_hpp
-#define _14_typed_defaults_188548989_hpp
+#ifndef _14_typed_defaults_188549010_hpp
+#define _14_typed_defaults_188549010_hpp
 
 #include <iosfwd>
 
@@ -191,4 +191,4 @@ namespace rti {
 #define NDDSUSERDllExport
 #endif
 
-#endif // _14_typed_defaults_188548989_hpp
+#endif // _14_typed_defaults_188549010_hpp
