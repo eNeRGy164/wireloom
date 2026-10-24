@@ -17,9 +17,10 @@ capture, not the selected profile.
 ## Prerequisites
 
 Run commands from the repository root using PowerShell 7.4+, Git, and the SDK
-selected by `global.json`. RTI capture needs WSLC and access to the pinned
-images. Its container uses `cpp` and installs `g++` if needed, requiring package
-access. Use `-DisablePreprocessor` only for IDL without includes or directives.
+selected by `global.json`. RTI capture needs Docker and access to the pinned
+images. Its container uses `cpp` and installs `g++` if needed, requiring
+package access. Use `-DisablePreprocessor` only for IDL without includes or
+directives.
 Retain generated reference sources with their original notices and provenance.
 
 ## Corpus tests and source exports

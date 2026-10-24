@@ -78,8 +78,6 @@
   repository to inspect code and report maintainability issues. See the
   [Qodana documentation](https://www.jetbrains.com/help/qodana/about-qodana.html)
   and the local [quality procedure](../../../CONTRIBUTING.md#quality-evidence).
-- **WSL Containers (`wslc`)** — Microsoft's command-line interface for
-  building and running Linux containers on Windows with Windows Subsystem for
-  Linux. This repository uses it to run the Linux-based Qodana container. See
-  [Microsoft Learn](https://learn.microsoft.com/en-us/windows/nodejs/containers)
-  and the local [quality procedure](../../../CONTRIBUTING.md#quality-evidence).
+- **Docker Desktop** — the local container runtime used to run pinned RTI
+  capture images and the Linux-based Qodana image. See the local
+  [quality procedure](../../../CONTRIBUTING.md#quality-evidence).

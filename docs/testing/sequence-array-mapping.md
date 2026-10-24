@@ -48,7 +48,7 @@ The fresh-package tests use an isolated `0.4.0-issue58.1` package. They select
 that fixture intentionally produces one non-fatal `DDSG0105` warning. Default
 C018 source exports and oracle comparisons remain flattened and unchanged.
 
-Qodana used the documented `WSLC` image with `global.json` visible and isolated
+Qodana used the documented Docker image with `global.json` visible and isolated
 Linux intermediates. The final verified report is under local ignored
 `.qodana/results-issue58-verified/`; analysis ends with `Done` and zero
 findings. A preceding cache run produced stale-symbol findings despite a
@@ -56,7 +56,7 @@ successful compiler build; a fresh-cache scan and the final scan both passed.
 
 ## Reproduction
 
-Use the locked restore, coverage, and `WSLC` Qodana commands in
+Use the locked restore, coverage, and Docker Qodana commands in
 [CONTRIBUTING](../../CONTRIBUTING.md#quality-evidence). Run the runtime suite
 with `-p:RtiConnextDdsVersion=7.3.1` and `7.7.0`; select corpus profiles with
 `CORPUS_RTI_PROFILE`. For a fresh package use the
