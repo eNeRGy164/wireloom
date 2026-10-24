@@ -243,6 +243,13 @@ serialization of absent, present, and nested arrays; see the
 Public recursive DynamicType and default recursive TypeObject discovery remain
 RTI limitations.
 
+### Compilable generated C#
+
+The retained corpus also includes cases where RTI accepts an IDL input but its
+generated C# does not compile, while Wireloom generates compilable C# for the
+same data-type cases. The [catalog](docs/corpus/RTI-CODEGEN-DEFECTS.md)
+lists findings by RTI release and case, with evidence and scope limits.
+
 ## Support and compatibility
 
 Compatibility is tracked per IDL feature. Wireloom supports modules, structs,
@@ -318,7 +325,7 @@ verification expectations and reports.
 | Understand generated member types, mutation, and value semantics              | [Generated value semantics](docs/guides/generated-value-semantics.md)                                                                            |
 | Migrate from `rtiddsgen` and compare generated APIs                           | [Migration guide](docs/migration/rtiddsgen-to-wireloom.md)                                                                                       |
 | Check runtime and DDS wire compatibility evidence                             | [Wire compatibility matrix](tests/Wireloom.Dds.Generator.WireCompatibility/README.md)                                                            |
-| Compare generated C# quality findings                                         | [Generated C# quality comparison](docs/corpus/csharp-quality.md)                                                                                 |
+| Compare generated C# quality and observed RTI code-generation defects         | [Generated C# quality comparison](docs/corpus/csharp-quality.md) · [RTI code-generation defect catalog](docs/corpus/RTI-CODEGEN-DEFECTS.md)       |
 | Understand version qualification, support boundaries, and generation-path fit | [Support and compatibility policy](docs/guides/support-and-compatibility.md)                                                                     |
 | Learn the architecture or incremental-generation baseline                     | [Architecture overview](docs/architecture/arc42/index.md) · [Incremental generator baseline](docs/performance/incremental-generator-baseline.md) |
 | Contribute code or documentation                                              | [Code style](docs/CODE-STYLE.md) · [Contributing and maintainer guide](CONTRIBUTING.md)                                                          |
