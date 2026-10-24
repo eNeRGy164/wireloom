@@ -21,9 +21,6 @@ internal sealed class IdlMemberAnnotationSyntax
     /// <summary>Gets or sets the unresolved boolean optional argument.</summary>
     public string? OptionalExpression { get; set; }
 
-    /// <summary>Gets or sets the literal member ID, when immediately readable.</summary>
-    public int? MemberId { get; set; }
-
     /// <summary>Gets or sets the unresolved member-ID expression.</summary>
     public string? MemberIdExpression { get; set; }
 

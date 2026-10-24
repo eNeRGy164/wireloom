@@ -87,6 +87,64 @@ public sealed class AnnotationOrderingReviewSpecs
     }
 
     [Fact]
+    public void LeavesUnknownArgumentExpressionsOpaqueAcrossQuotedDelimiters()
+    {
+        // Arrange
+        const string source = """
+            @Vendor::custom(text="escaped quote: \"), comma: , and close: )")
+            @final
+            struct Sample {
+                @Vendor::member(value=???)
+                @default(5)
+                long value;
+            };
+            """;
+        var input = Input("opaque-unknown-annotation-expressions.idl", source);
+        var diagnostics = new List<IdlDiagnostic>();
+
+        // Act
+        var documents = IdlCompiler.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
+
+        // Assert
+        documents.ShouldContainKey("Sample.g.cs");
+        documents["Sample.g.cs"].Source.ShouldContain("value = 5;");
+        diagnostics.Select(diagnostic => diagnostic.Id).ShouldBe(["DDSG0101", "DDSG0101"]);
+        diagnostics[0].Offset.ShouldBe(source.IndexOf("@Vendor::custom", StringComparison.Ordinal));
+        diagnostics[1].Offset.ShouldBe(source.IndexOf("@Vendor::member", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ParsesKnownAnnotationArgumentsAfterCatalogClassification()
+    {
+        // Arrange
+        const string source = "struct Sample { @Vendor::custom(value=???) @default(1 +) long value; };";
+        var input = Input("known-annotation-expression-validation.idl", source);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => CompileSources(input));
+
+        // Assert
+        exception.Input.ShouldBe(input);
+        exception.Message.ShouldContain("Invalid default expression");
+        exception.Offset.ShouldBeGreaterThan(source.IndexOf("@default", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("@min((1 + 2)) @default(4)")]
+    [InlineData("@default(4) @min((1 + 2))")]
+    public void ComposesNestedMinimumExpressionsAndDefaultsInEitherOrder(string annotations)
+    {
+        // Arrange
+        var input = Input("nested-minimum-annotation-expression.idl", $"struct Sample {{ {annotations} long value; }};");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Sample.g.cs"].Source.ShouldContain("value = 4;");
+    }
+
+    [Fact]
     public void CapturesApplicationsInSourceOrderWithOffsetsAndBalancedText()
     {
         // Arrange
@@ -287,6 +345,67 @@ public sealed class AnnotationOrderingReviewSpecs
         // Assert
         generated.ShouldContain("isKey: true");
         generated.ShouldNotContain("isOptional: true");
+    }
+
+    [Fact]
+    public void SplitsEnumLiteralsAroundCommasAfterEscapedQuotes()
+    {
+        // Arrange
+        const string source = "enum Status { @Vendor::custom(text=\"quote: \\\" comma, close )\") @value(1) Ready, @value(2) Next };";
+        var input = Input("escaped-enum-annotation.idl", source);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents.ShouldContainKey("Status.g.cs");
+        documents["Status.g.cs"].Source.ShouldContain("Ready");
+        documents["Status.g.cs"].Source.ShouldContain("Next");
+    }
+
+    [Fact]
+    public void TypePrefixWrapsKnownAnnotationTargetErrorsAndDefersOtherKnownAnnotations()
+    {
+        // Arrange
+        var input = Input("type-prefix-known-annotation.idl", "");
+        var symbols = new FrontEnd.Symbols.IdlSymbolTable();
+        var context = new IdlParseContext(symbols, TestContext.Current.CancellationToken, diagnostics: null);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => IdlTypeAnnotationPrefix.Read(
+            "@id(1) struct Sample",
+            0,
+            input,
+            context,
+            baseOffset: 0,
+            useHashIds: false,
+            hasLocalAutoId: false));
+        var deferred = IdlTypeAnnotationPrefix.Read(
+            "@language_binding(CSharp) struct Sample",
+            0,
+            input,
+            context,
+            baseOffset: 0,
+            useHashIds: false,
+            hasLocalAutoId: false);
+
+        // Assert
+        exception.Message.ShouldContain("not supported on this target");
+        deferred.DeclarationStart.ShouldBe(0);
+    }
+
+    [Fact]
+    public void SplitsTopLevelSeparatorsAfterSkippingEscapedQuotedDelimiters()
+    {
+        // Arrange
+        const string text = "first, @Vendor::custom(text=\"escaped \\\" quote, and )\"), last";
+
+        // Act
+        var slices = IdlSyntaxReader.SplitTopLevel(text, ',');
+        var parts = slices.Select(slice => text.Substring(slice.Start, slice.Length).Trim()).ToArray();
+
+        // Assert
+        parts.ShouldBe(["first", "@Vendor::custom(text=\"escaped \\\" quote, and )\")", "last"]);
     }
 
     [Theory]

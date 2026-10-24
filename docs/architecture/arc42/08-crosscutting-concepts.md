@@ -257,9 +257,16 @@ declaring enum identity for assignment and label validation. Bound scalar
 values distinguish integers, booleans, characters, floating-point values,
 strings, and enumerators. Only integer values enter integer expressions such
 as bounds and member IDs; boolean and character constants are resolved by
-their own default and discriminator rules. Integral
-evaluation preserves arbitrary precision until the target type is validated;
-union labels are checked for duplicates after evaluation before emission.
+their own default and discriminator rules. Integral evaluation retains literal
+values until their expression type is determined, then promotes operands
+using their individual rank and signedness and checks each intermediate
+result. The declared target type is validated after expression evaluation;
+`@id` literals share this integer-expression path, including octal and
+hexadecimal forms. `@unit` and `@hashid` string arguments use the shared
+literal decoder, which combines adjacent tokens and supports wide literals
+before storing the resulting value. Floating-point range annotations fail
+during binding with a source-located IDL diagnostic. Union labels are checked
+for duplicates after evaluation before emission.
 Direct fixed-array union branches remain arrays in the semantic and emission
 models, and use the same initialization, copying, conversion, and destruction
 paths as other arrays.

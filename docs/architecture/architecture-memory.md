@@ -23,7 +23,9 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   character, floating-point, string, and enum values, retaining width and enum
   identity. Numeric expression dispatch applies OMG semantics for supported
   integral, `float`, and `double` contexts by reusing the existing integral and
-  floating evaluators; boolean, character, string, and enum values use dedicated
+  floating evaluators. `IdlConstantExpressionEvaluator` retains each integer
+  operand's rank and signedness, promotes pairwise, and checks intermediate
+  results; `@id` uses this same path. Boolean, character, string, and enum values use dedicated
   literal/name binders rather than a general-purpose expression tree. Structs, unions,
   and enums share typed prefix parsing with duplicate extensibility checks.
   String tokens are decoded individually before concatenation and final bound
@@ -52,7 +54,8 @@ below as authoritative; this summary is a retrieval aid, not a replacement.
   in supported integral, `float`, and `double` contexts; floating expressions reject integer literal operands and integral
   constant references. OMG integer literals and numeric operators are covered,
   including octal literals and shift limits. Referenced integral constants
-  retain declared rank during expression promotion, including aliases. Boolean,
+  retain declared rank during expression promotion, including aliases; wide
+  literals do not truncate before operator evaluation. Boolean,
   character, string, and enum values bind through their typed literal/name
   rules. `long double` and fixed-point remain unsupported, with an extensible
   internal scalar model.

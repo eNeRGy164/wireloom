@@ -110,7 +110,6 @@ internal sealed class IdlUnionParser
         }
 
         var annotationOffset = labelsSyntax.Length;
-        var hasOptional = false;
         var annotationSyntax = new IdlMemberAnnotationSyntax();
 
         var applications = IdlSyntaxReader.ReadAnnotationApplications(branchText[annotationOffset..], context.MapOffset(sourceOffset + offset + annotationOffset));
@@ -129,12 +128,6 @@ internal sealed class IdlUnionParser
                 annotationLength);
             if (annotationName.Equals("optional", StringComparison.OrdinalIgnoreCase))
             {
-                if (hasOptional)
-                {
-                    throw new IdlException(input, application.Offset, "Duplicate @optional annotation on union branch.");
-                }
-
-                hasOptional = true;
                 try
                 {
                     IdlAnnotationCatalog.ValidateUniqueNamedArguments(application);
@@ -169,7 +162,6 @@ internal sealed class IdlUnionParser
 
                 throw new IdlException(input, application.Offset, $"Annotation '@{annotationName}' is not supported on union branches.");
             }
-
             annotationOffset += annotationLength;
         }
 

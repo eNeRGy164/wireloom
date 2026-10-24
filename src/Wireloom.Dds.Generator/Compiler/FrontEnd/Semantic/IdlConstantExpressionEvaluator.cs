@@ -9,9 +9,7 @@ internal sealed class IdlConstantExpressionEvaluator
     private readonly string text;
     private readonly IdlSymbolTable symbols;
     private readonly string? currentNamespace;
-    private int expressionWidth;
-    private bool expressionIsUnsigned;
-    private int expressionRank;
+    private readonly IntegerType defaultType;
     private int position;
 
     private IdlConstantExpressionEvaluator(string text, IdlSymbolTable symbols, string? currentNamespace, string? expectedType)
@@ -19,12 +17,7 @@ internal sealed class IdlConstantExpressionEvaluator
         this.text = text;
         this.symbols = symbols;
         this.currentNamespace = currentNamespace;
-        expressionWidth = expectedType is null or "long long" or "int64" or "unsigned long long" or "uint64" ? 64 : 32;
-        expressionIsUnsigned = expectedType is "unsigned short" or "uint16" or "unsigned long" or "uint32" or "unsigned long long" or "uint64" or "uint8" or "octet";
-        expressionRank = expectedType is "unsigned long long" or "uint64" ? 4
-            : expectedType is "long long" or "int64" ? 3
-            : expectedType is "unsigned long" or "uint32" ? 2
-            : 1;
+        defaultType = TypeFromName(expectedType) ?? new IntegerType(3, isUnsigned: false);
     }
 
     /// <summary>Evaluates an integral expression against the known constant declarations.</summary>
@@ -39,10 +32,10 @@ internal sealed class IdlConstantExpressionEvaluator
             throw new FormatException($"Unexpected token in constant expression: {text[evaluator.position..]}");
         }
 
-        return value;
+        return value.Value;
     }
 
-    private BigInteger ParseBitwiseOr()
+    private IntegerValue ParseBitwiseOr()
     {
         var value = ParseBitwiseXor();
 
@@ -54,7 +47,7 @@ internal sealed class IdlConstantExpressionEvaluator
         return value;
     }
 
-    private BigInteger ParseBitwiseXor()
+    private IntegerValue ParseBitwiseXor()
     {
         var value = ParseBitwiseAnd();
 
@@ -66,7 +59,7 @@ internal sealed class IdlConstantExpressionEvaluator
         return value;
     }
 
-    private BigInteger ParseBitwiseAnd()
+    private IntegerValue ParseBitwiseAnd()
     {
         var value = ParseShift();
 
@@ -78,7 +71,7 @@ internal sealed class IdlConstantExpressionEvaluator
         return value;
     }
 
-    private BigInteger ParseShift()
+    private IntegerValue ParseShift()
     {
         var value = ParseAdditive();
 
@@ -86,11 +79,11 @@ internal sealed class IdlConstantExpressionEvaluator
         {
             if (TryConsume("<<"))
             {
-                value = Shift(value, CheckedShift(ParseAdditive()), isLeft: true);
+                value = Shift(value, CheckedShift(ParseAdditive().Value), isLeft: true);
             }
             else if (TryConsume(">>"))
             {
-                value = Shift(value, CheckedShift(ParseAdditive()), isLeft: false);
+                value = Shift(value, CheckedShift(ParseAdditive().Value), isLeft: false);
             }
             else
             {
@@ -99,7 +92,7 @@ internal sealed class IdlConstantExpressionEvaluator
         }
     }
 
-    private BigInteger ParseAdditive()
+    private IntegerValue ParseAdditive()
     {
         var value = ParseMultiplicative();
 
@@ -107,11 +100,11 @@ internal sealed class IdlConstantExpressionEvaluator
         {
             if (TryConsume('+'))
             {
-                value = CheckIntermediate(value + ParseMultiplicative());
+                value = ApplyArithmetic(value, ParseMultiplicative(), static (left, right) => left + right);
             }
             else if (TryConsume('-'))
             {
-                value = CheckIntermediate(value - ParseMultiplicative());
+                value = ApplyArithmetic(value, ParseMultiplicative(), static (left, right) => left - right);
             }
             else
             {
@@ -120,7 +113,7 @@ internal sealed class IdlConstantExpressionEvaluator
         }
     }
 
-    private BigInteger ParseMultiplicative()
+    private IntegerValue ParseMultiplicative()
     {
         var value = ParseUnary();
 
@@ -128,27 +121,27 @@ internal sealed class IdlConstantExpressionEvaluator
         {
             if (TryConsume('*'))
             {
-                value = CheckIntermediate(value * ParseUnary());
+                value = ApplyArithmetic(value, ParseUnary(), static (left, right) => left * right);
             }
             else if (TryConsume('/'))
             {
                 var divisor = ParseUnary();
-                if (divisor.IsZero)
+                if (divisor.Value.IsZero)
                 {
                     throw new FormatException("Division by zero in constant expression.");
                 }
 
-                value = CheckIntermediate(value / divisor);
+                value = ApplyArithmetic(value, divisor, static (left, right) => left / right);
             }
             else if (TryConsume('%'))
             {
                 var divisor = ParseUnary();
-                if (divisor.IsZero)
+                if (divisor.Value.IsZero)
                 {
                     throw new FormatException("Division by zero in constant expression.");
                 }
 
-                value = CheckIntermediate(value % divisor);
+                value = ApplyArithmetic(value, divisor, static (left, right) => left % right);
             }
             else
             {
@@ -157,7 +150,7 @@ internal sealed class IdlConstantExpressionEvaluator
         }
     }
 
-    private BigInteger ParseUnary()
+    private IntegerValue ParseUnary()
     {
         if (TryConsume('+'))
         {
@@ -166,22 +159,25 @@ internal sealed class IdlConstantExpressionEvaluator
 
         if (TryConsume('-'))
         {
-            return CheckIntermediate(-ParseUnary());
+            var operand = ParseUnary();
+            var type = operand.Type.IsUnsigned ? SignedType(operand.Type) : operand.Type;
+            return CheckIntermediate(new IntegerValue(-operand.Value, type));
         }
 
         if (TryConsume('~'))
         {
             var operand = ParseUnary();
-            var modulus = BigInteger.One << expressionWidth;
+            var modulus = BigInteger.One << operand.Type.Width;
             var mask = modulus - BigInteger.One;
-            var complemented = (~ToBits(operand, mask, modulus)) & mask;
-            return expressionIsUnsigned ? complemented : ToSigned(complemented, expressionWidth);
+            var complement = (~ToBits(operand.Value, mask, modulus)) & mask;
+            var result = operand.Type.IsUnsigned ? complement : ToSigned(complement, operand.Type.Width);
+            return new IntegerValue(result, operand.Type);
         }
 
         return ParsePrimary();
     }
 
-    private BigInteger ParsePrimary()
+    private IntegerValue ParsePrimary()
     {
         if (TryConsume('('))
         {
@@ -214,7 +210,8 @@ internal sealed class IdlConstantExpressionEvaluator
             // BigInteger interprets a high leading bit as a sign when parsing
             // hexadecimal digits. Prefix a zero nibble so IDL hex literals stay
             // non-negative (unary minus is handled by ParseUnary).
-            return BigInteger.Parse($"0{token[2..]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+            var hexadecimal = BigInteger.Parse($"0{token[2..]}", NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
+            return Literal(hexadecimal);
         }
 
         if (token.Length > 1 && token[0] == '0' && token.All(char.IsDigit))
@@ -230,12 +227,12 @@ internal sealed class IdlConstantExpressionEvaluator
                 octal = (octal * 8) + (digit - '0');
             }
 
-            return octal;
+            return Literal(octal);
         }
 
         if (BigInteger.TryParse(token, NumberStyles.Integer, CultureInfo.InvariantCulture, out var literal))
         {
-            return literal;
+            return Literal(literal);
         }
 
         if (!IdlScopedName.IsValid(token))
@@ -247,41 +244,155 @@ internal sealed class IdlConstantExpressionEvaluator
         if (symbols.TryGetConstant(qualified, out var constant)
             && constant.Value is IdlScalarValue.Integral { Value: var constantValue })
         {
-            PromoteForConstant(constant);
-            return constantValue;
+            return new IntegerValue(constantValue, ConstantType(constant));
         }
 
         throw new FormatException($"Unknown integral constant: {token}");
     }
 
-    // IDL 4.2 §7.4.1.4.3 promotes an integer binary expression according to
-    // its operand types. A referenced constant therefore cannot be truncated
-    // to the destination constant's width before the expression is evaluated.
-    private void PromoteForConstant(IdlConstantDeclaration constant)
+    private IntegerValue Literal(BigInteger value)
     {
-        var type = new IdlTypeResolver(symbols).Resolve(
-            constant.Type,
-            constant.Namespace,
-            constant.SourceInput,
-            constant.SourceOffset);
+        var type = defaultType;
+        if (type.IsUnsigned)
+        {
+            if (value > Maximum(type.Width))
+            {
+                type = new IntegerType(4, isUnsigned: true);
+            }
+        }
+        else if (value > Maximum(type.Width - 1))
+        {
+            type = type.Width == 64 || value > Maximum(63)
+                ? new IntegerType(4, isUnsigned: true)
+                : new IntegerType(3, isUnsigned: false);
+        }
+
+        if (value > Maximum(type.Width))
+        {
+            throw new FormatException("Constant expression sub-expression exceeds the supported integer precision.");
+        }
+
+        return new IntegerValue(value, type);
+    }
+
+    private static IntegerValue ApplyArithmetic(IntegerValue left, IntegerValue right, Func<BigInteger, BigInteger, BigInteger> operation)
+    {
+        var type = Promote(left.Type, right.Type);
+        return CheckIntermediate(new IntegerValue(operation(left.Value, right.Value), type));
+    }
+
+    private static IntegerValue ApplyBitwise(IntegerValue left, IntegerValue right, char operation)
+    {
+        var type = Promote(left.Type, right.Type);
+        var modulus = BigInteger.One << type.Width;
+        var mask = modulus - BigInteger.One;
+        var leftBits = ToBits(left.Value, mask, modulus);
+        var rightBits = ToBits(right.Value, mask, modulus);
+
+        BigInteger result;
+        if (operation == '&')
+        {
+            result = leftBits & rightBits;
+        }
+        else if (operation == '^')
+        {
+            result = leftBits ^ rightBits;
+        }
+        else
+        {
+            result = leftBits | rightBits;
+        }
+
+        var value = type.IsUnsigned ? result : ToSigned(result, type.Width);
+        return new IntegerValue(value, type);
+    }
+
+    private static IntegerValue Shift(IntegerValue value, int count, bool isLeft)
+    {
+        var modulus = BigInteger.One << value.Type.Width;
+        var mask = modulus - BigInteger.One;
+        BigInteger result;
+        if (isLeft)
+        {
+            result = CheckIntermediate(new IntegerValue(value.Value << count, value.Type)).Value;
+        }
+        else
+        {
+            result = ToBits(value.Value, mask, modulus) >> count;
+            if (!value.Type.IsUnsigned)
+            {
+                result = ToSigned(result, value.Type.Width);
+            }
+        }
+
+        return new IntegerValue(result, value.Type);
+    }
+
+    private static IntegerValue CheckIntermediate(IntegerValue value)
+    {
+        var minimum = value.Type.IsUnsigned ? BigInteger.Zero : -(BigInteger.One << (value.Type.Width - 1));
+        var maximum = value.Type.IsUnsigned ? Maximum(value.Type.Width) : Maximum(value.Type.Width - 1);
+        if (value.Value < minimum || value.Value > maximum)
+        {
+            throw new FormatException("Constant expression sub-expression exceeds the supported integer precision.");
+        }
+
+        return value;
+    }
+
+    private static IntegerType Promote(IntegerType left, IntegerType right)
+    {
+        if (left.Rank > right.Rank)
+        {
+            return left;
+        }
+
+        if (right.Rank > left.Rank)
+        {
+            return right;
+        }
+
+        return new IntegerType(left.Rank, left.IsUnsigned || right.IsUnsigned);
+    }
+
+    private IntegerType ConstantType(IdlConstantDeclaration constant)
+    {
+        var type = new IdlTypeResolver(symbols).Resolve(constant.Type, constant.Namespace, constant.SourceInput, constant.SourceOffset);
         while (type is IdlType.Alias alias)
         {
             type = alias.Target;
         }
 
-        var typeName = type is IdlType.Primitive primitive ? primitive.Name : constant.Type;
-        var rank = typeName is "unsigned long long" or "uint64" ? 4
-            : typeName is "long long" or "int64" ? 3
-            : typeName is "unsigned long" or "uint32" ? 2
-            : 1;
-        var width = rank > 2 ? 64 : 32;
+        return TypeFromName(type is IdlType.Primitive primitive ? primitive.Name : constant.Type)
+            ?? throw new FormatException($"Constant '{constant.Name}' is not an integer constant.");
+    }
 
-        if (rank > expressionRank)
+    private static IntegerType? TypeFromName(string? typeName) => typeName switch
+    {
+        "unsigned long long" or "uint64" => new IntegerType(4, true),
+        "long long" or "int64" => new IntegerType(3, false),
+        "unsigned long" or "uint32" => new IntegerType(2, true),
+        "long" or "int32" => new IntegerType(1, false),
+        "unsigned short" or "uint16" or "uint8" or "octet" => new IntegerType(1, true),
+        "short" or "int16" or "int8" => new IntegerType(1, false),
+        _ => null
+    };
+
+    private static IntegerType SignedType(IntegerType type) => type.Rank switch
+    {
+        4 => new IntegerType(3, false),
+        2 => new IntegerType(1, false),
+        _ => type
+    };
+
+    private static int CheckedShift(BigInteger value)
+    {
+        if (value < 0 || value >= 64)
         {
-            expressionRank = rank;
-            expressionWidth = width;
-            expressionIsUnsigned = rank is 2 or 4;
+            throw new FormatException("Shift count is outside the supported range.");
         }
+
+        return (int)value;
     }
 
     private string ResolveConstantName(string name)
@@ -313,59 +424,7 @@ internal sealed class IdlConstantExpressionEvaluator
         }
     }
 
-    private int CheckedShift(BigInteger value)
-    {
-        if (value < 0 || value >= 64)
-        {
-            throw new FormatException("Shift count is outside the supported range.");
-        }
-
-        return (int)value;
-    }
-
-    private BigInteger Shift(BigInteger value, int count, bool isLeft)
-    {
-        if (isLeft)
-        {
-            return CheckIntermediate(value << count);
-        }
-
-        var modulus = BigInteger.One << expressionWidth;
-        var bits = ToBits(value, modulus - BigInteger.One, modulus);
-        var shifted = bits >> count;
-
-        return expressionIsUnsigned ? shifted : ToSigned(shifted, expressionWidth);
-    }
-
-    private BigInteger CheckIntermediate(BigInteger value)
-    {
-        var minimum = -(BigInteger.One << (expressionWidth - 1));
-        var maximum = (BigInteger.One << expressionWidth) - BigInteger.One;
-        if (value < minimum || value > maximum)
-        {
-            throw new FormatException("Constant expression sub-expression exceeds the supported integer precision.");
-        }
-
-        return value;
-    }
-
-    private BigInteger ApplyBitwise(BigInteger left, BigInteger right, char operation)
-    {
-        var modulus = BigInteger.One << expressionWidth;
-        var mask = modulus - BigInteger.One;
-        var leftBits = ToBits(left, mask, modulus);
-        var rightBits = ToBits(right, mask, modulus);
-        var result = operation switch
-        {
-            '&' => leftBits & rightBits,
-            '^' => leftBits ^ rightBits,
-            '|' => leftBits | rightBits,
-            _ => throw new InvalidOperationException("Unsupported bitwise operator.")
-        };
-
-        return expressionIsUnsigned ? result : ToSigned(result, expressionWidth);
-    }
-
+    private static BigInteger Maximum(int bits) => (BigInteger.One << bits) - BigInteger.One;
     private static BigInteger ToBits(BigInteger value, BigInteger mask, BigInteger modulus)
     {
         var bits = value % modulus;
@@ -420,5 +479,18 @@ internal sealed class IdlConstantExpressionEvaluator
         {
             position++;
         }
+    }
+
+    private readonly struct IntegerValue(BigInteger value, IntegerType type)
+    {
+        internal BigInteger Value { get; } = value;
+        internal IntegerType Type { get; } = type;
+    }
+
+    private readonly struct IntegerType(int rank, bool isUnsigned)
+    {
+        internal int Rank { get; } = rank;
+        internal bool IsUnsigned { get; } = isUnsigned;
+        internal int Width => Rank >= 3 ? 64 : 32;
     }
 }

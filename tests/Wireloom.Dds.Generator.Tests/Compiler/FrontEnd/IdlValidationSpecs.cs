@@ -618,6 +618,12 @@ public sealed class IdlValidationSpecs
     [InlineData("enum Broken { @value(7) FIRST = 8, SECOND };", "Combined @value")]
     [InlineData("enum Broken { @value(0x10) FIRST, SECOND };", "Malformed enum member")]
     [InlineData("enum Broken { FIRST = 2147483648, SECOND };", "signed Int32")]
+    [InlineData("enum Broken { @value(2147483648) FIRST };", "signed Int32")]
+    [InlineData("enum Broken { FIRST = 2147483647, SECOND };", "Implicit enum value exceeds")]
+    [InlineData("enum Broken { @value(1 + 2) FIRST };", "@value requires one signed decimal value")]
+    [InlineData("enum Broken { @value(=1) FIRST };", "empty argument name")]
+    [InlineData("enum Broken { @default_literal(1) FIRST };", "requires named arguments")]
+    [InlineData("enum Broken { @value(1) @value(2) FIRST };", "Duplicate @value")]
     public void ReportsUnsupportedEnumValueFormsWithOriginalSource(string source, string expectedDiagnostic)
     {
         // Arrange
@@ -630,6 +636,26 @@ public sealed class IdlValidationSpecs
         exception.Message.ShouldContain(expectedDiagnostic);
         exception.Input.Path.ShouldEndWith("enum-values-invalid.idl");
         exception.Offset.ShouldBeGreaterThan(0);
+    }
+
+    [Theory]
+    [InlineData("enum Broken { @key FIRST };", "not supported on this target")]
+    [InlineData("enum Broken { @position(1) FIRST };", "not supported on enum literals")]
+    [InlineData("@id(1) struct Broken { long value; };", "not supported on this target")]
+    [InlineData("union Broken switch(long) { case 0: @optional(enabled=true) long value; };", "Unknown argument 'enabled'")]
+    [InlineData("union Broken switch(long) { case 0: @position(1) long value; };", "not supported on union branches")]
+    [InlineData("union Broken switch(long) { case 0: @key long value; };", "not supported on this target")]
+    [InlineData("union Broken switch(long) { case 0: @optional @optional long value; };", "Duplicate @optional")]
+    public void ReportsKnownAnnotationsThatAreInvalidForTheirTarget(string source, string expectedDiagnostic)
+    {
+        // Arrange
+        var input = Input("invalid-annotation-target.idl", source);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain(expectedDiagnostic);
     }
 
     [Theory]

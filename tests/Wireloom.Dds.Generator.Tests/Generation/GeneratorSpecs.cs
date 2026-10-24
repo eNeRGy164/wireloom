@@ -77,8 +77,17 @@ public sealed class GeneratorSpecs
         }
 
         result.Diagnostics.ShouldBeEmpty();
-        result.Output.SyntaxTrees.SelectMany(tree => tree.GetRoot().DescendantTokens())
-            .ShouldContain(token => token.IsKind(SyntaxKind.StringLiteralToken) && token.ValueText == $"mete{separator}s");
+        var annotationTokens = result.Output.SyntaxTrees
+            .SelectMany(tree => tree.GetRoot().DescendantTokens())
+            .Where(token => token.IsKind(SyntaxKind.StringLiteralToken))
+            .ToArray();
+        var expectedUnit = separator switch
+        {
+            "\\n" => "mete\ns",
+            "\\r" => "mete\rs",
+            _ => $"mete{separator}s"
+        };
+        annotationTokens.ShouldContain(token => token.ValueText == expectedUnit);
     }
 
     [Fact]

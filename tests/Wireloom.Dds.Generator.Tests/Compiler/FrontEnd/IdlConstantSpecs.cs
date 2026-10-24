@@ -321,6 +321,8 @@ public sealed class IdlConstantSpecs
     [InlineData("1.0 2.0", "Invalid double default expression")]
     [InlineData("2", "Invalid double default expression")]
     [InlineData("1.0 + 2", "Invalid double default expression")]
+    [InlineData("1e9999", "Invalid double default expression")]
+    [InlineData("1.2.3", "Invalid double default expression")]
     public void RejectsInvalidFloatingDefaultExpressions(string expression, string expectedMessage)
     {
         // Arrange
@@ -331,6 +333,19 @@ public sealed class IdlConstantSpecs
 
         // Assert
         exception.Message.ShouldContain(expectedMessage);
+    }
+
+    [Fact]
+    public void ResolvesFloatingConstantsThroughAliasesDuringExpressionEvaluation()
+    {
+        // Arrange
+        var input = Input("floating-constant-alias.idl", "typedef float Ratio; const Ratio Scale = 1.5; const double Result = Scale + 0.5;");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        documents["Result.g.cs"].Source.ShouldContain("public const double Value = 2;");
     }
 
     [Fact]

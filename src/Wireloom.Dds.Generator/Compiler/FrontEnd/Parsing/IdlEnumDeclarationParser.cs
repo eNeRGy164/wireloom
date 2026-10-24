@@ -88,38 +88,21 @@ internal sealed class IdlEnumDeclarationParser
 
                 if (annotationName.Equals("default_literal", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (hasDefaultLiteralApplication || applicationText.Contains('('))
-                    {
-                        throw new IdlException(input, application.Offset, "Malformed or duplicate @default_literal annotation.");
-                    }
-
                     hasDefaultLiteralApplication = true;
                 }
                 else if (annotationName.Equals("value", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (annotatedValue is not null)
+                    var arguments = application.ParseArguments();
+                    if (arguments.Count != 1 || arguments[0].Name is not null and not "value"
+                        || !Regex.IsMatch(arguments[0].Expression, "^-?[0-9]+$"))
                     {
-                        throw new IdlException(input, application.Offset, "Duplicate @value annotation.");
+                        var argumentOffset = arguments.Count == 1
+                            ? context.MapOffset(sourceOffset + annotationOffset + arguments[0].RelativeOffset)
+                            : application.Offset;
+                        throw new IdlException(input, argumentOffset, "Malformed enum member: @value requires one signed decimal value.");
                     }
 
-                    try
-                    {
-                        var arguments = application.ParseArguments();
-                        if (arguments.Count != 1 || arguments[0].Name is not null and not "value"
-                            || !Regex.IsMatch(arguments[0].Expression, "^-?[0-9]+$"))
-                        {
-                            var argumentOffset = arguments.Count == 1
-                                ? context.MapOffset(sourceOffset + annotationOffset + arguments[0].RelativeOffset)
-                                : application.Offset;
-                            throw new IdlException(input, argumentOffset, "Malformed enum member: @value requires one signed decimal value.");
-                        }
-
-                        annotatedValue = arguments[0].Expression;
-                    }
-                    catch (FormatException exception)
-                    {
-                        throw new IdlException(input, application.Offset, exception.Message);
-                    }
+                    annotatedValue = arguments[0].Expression;
                 }
                 else if (IdlAnnotationCatalog.IsRecognizedUnsupported(annotationName))
                 {
@@ -133,11 +116,6 @@ internal sealed class IdlEnumDeclarationParser
                         application.Offset,
                         $"Annotation '@{annotationName}' is not recognized and will be ignored."));
                 }
-                else
-                {
-                    throw new IdlException(input, application.Offset, $"Annotation '@{annotationName}' is not supported on enum literals.");
-                }
-
                 annotationOffset += annotationLength;
             }
 
@@ -168,7 +146,7 @@ internal sealed class IdlEnumDeclarationParser
             var hasExplicitValue = annotatedValue is not null || member.Groups["value"].Success || member.Groups["explicit"].Success;
             enumMembers.Add(new IdlEnumMember(member.Groups["name"].Value, value, hasExplicitValue, isDefaultLiteral));
 
-            nextValue = value + 1;
+            nextValue = (long)value + 1;
         }
 
         var parsedEnum = new IdlEnum(enumName, currentNamespace, enumMembers, prefix.Extensibility ?? IdlExtensibilityKind.Extensible);

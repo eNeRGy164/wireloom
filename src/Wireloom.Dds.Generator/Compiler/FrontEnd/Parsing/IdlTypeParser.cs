@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.RegularExpressions;
 using Wireloom.Compiler.FrontEnd.Semantic;
 using BigInt = System.Numerics.BigInteger;
@@ -101,17 +100,17 @@ internal sealed class IdlTypeParser
                 context.Diagnostics?.Add(new IdlDiagnostic("DDSG0105", input, context.MapOffset(fieldOffset), $"The C# binding does not support arrays of sequences without using a typedef; generated code for member '{field}' may not match IDL semantics."));
             }
 
-            var memberId = fieldAnnotations.MemberId;
+            int? memberId = null;
             var memberIdHashSource = fieldAnnotations.HashIdExpression is not null
                 ? string.IsNullOrEmpty(fieldAnnotations.HashIdExpression) ? field : fieldAnnotations.HashIdExpression
-                : useHashIds && fieldAnnotations.MemberId is null && fieldAnnotations.MemberIdExpression is null ? field : null;
+                : useHashIds && fieldAnnotations.MemberIdExpression is null ? field : null;
             if (memberId is null && memberIdHashSource is not null)
             {
                 memberId = IdlMemberIdHash.Compute(memberIdHashSource);
             }
 
-            var usesAutoIdHash = useHashIds && fieldAnnotations.MemberId is null
-                && fieldAnnotations.MemberIdExpression is null && fieldAnnotations.HashIdExpression is null;
+            var usesAutoIdHash = useHashIds && fieldAnnotations.MemberIdExpression is null
+                && fieldAnnotations.HashIdExpression is null;
             var metadata = new IdlMemberMetadata(
                 fieldAnnotations.IsKey,
                 fieldAnnotations.IsOptional,
@@ -186,11 +185,6 @@ internal sealed class IdlTypeParser
             switch (capturedName.ToLowerInvariant())
             {
                 case "range":
-                    if (annotations.MinimumExpression is not null || annotations.MaximumExpression is not null)
-                    {
-                        throw new IdlException(input, captured.Offset, "Duplicate @min, @max, or @range annotation.");
-                    }
-
                     var range = arguments.ToDictionary(argument => argument.Name!, argument => argument.Expression, StringComparer.Ordinal);
                     annotations.MinimumExpression = range["min"];
                     annotations.MaximumExpression = range["max"];
@@ -208,23 +202,10 @@ internal sealed class IdlTypeParser
                     annotations.OptionalExpression = optionalExpression;
                     break;
                 case "id":
-                    if (annotations.MemberId is not null || annotations.MemberIdExpression is not null || annotations.HashIdExpression is not null)
-                        throw new IdlException(input, captured.Offset, "Duplicate or invalid @id annotation.");
-                    if (TryParseIdArgument(value!, out var parsedId)) annotations.MemberId = parsedId;
-                    else annotations.MemberIdExpression = value;
+                    annotations.MemberIdExpression = value;
                     break;
                 case "hashid":
-                    if (annotations.MemberId is not null || annotations.MemberIdExpression is not null || annotations.HashIdExpression is not null)
-                        throw new IdlException(input, captured.Offset, "Duplicate or conflicting @id/@hashid annotation.");
-                    if (value is null)
-                    {
-                        annotations.HashIdExpression = string.Empty;
-                    }
-                    else
-                    {
-                        var isWide = value.TrimStart().StartsWith("L\"", StringComparison.Ordinal);
-                        annotations.HashIdExpression = IdlStringLiteralDecoder.Decode(value, isWide, input, captured.Offset);
-                    }
+                    annotations.HashIdExpression = DecodeStringLiteralArgument(value, input, captured.Offset);
                     break;
                 case "min":
                     if (annotations.MinimumExpression is not null) throw new IdlException(input, captured.Offset, "Duplicate @min or @range annotation.");
@@ -240,7 +221,9 @@ internal sealed class IdlTypeParser
                     break;
                 case "unit":
                     if (annotations.UnitExpression is not null) throw new IdlException(input, captured.Offset, "Duplicate @unit annotation.");
-                    annotations.UnitExpression = value?.Trim('"');
+                    annotations.UnitExpression = value is null
+                        ? null
+                        : DecodeStringLiteralArgument(value, input, captured.Offset);
                     break;
                 case "resolve_name":
                     break;
@@ -265,18 +248,15 @@ internal sealed class IdlTypeParser
         }
     }
 
-    private static bool TryParseIdArgument(string value, out int parsedId)
+    private static string DecodeStringLiteralArgument(string? value, IdlInput input, int offset)
     {
-        if (value.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
-            && BigInt.TryParse("0" + value[2..], NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var hexadecimal)
-            && hexadecimal >= int.MinValue
-            && hexadecimal <= int.MaxValue)
+        if (value is null)
         {
-            parsedId = (int)hexadecimal;
-            return true;
+            return string.Empty;
         }
 
-        return int.TryParse(value, out parsedId);
+        var isWide = value.TrimStart().StartsWith("L\"", StringComparison.Ordinal);
+        return IdlStringLiteralDecoder.Decode(value, isWide, input, offset);
     }
 
     private static bool ParseBooleanAnnotationArgument(string? value, bool defaultValue, out string? unresolvedExpression)
