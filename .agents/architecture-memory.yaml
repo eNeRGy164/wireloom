@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-24T09:25:30Z
+  generated_at: 2026-10-24T23:14:53Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -77,7 +77,7 @@ summary:
     sources:
       - docs/architecture/arc42/10-quality-requirements.md
   risks:
-    text: Coverage outside the retained corpus remains unverified, alongside coverage outside the retained corpus, coarse per-root output invalidation, fixed-limit compatibility, licensed exact-version wire environments, RTI C# binding shape limitation for direct arrays of sequences, RTI typed C++ serialization of present optional wide-string sequences (bypassed by a DynamicData C API test-peer workaround), manually maintained C++ DynamicType metadata for the wchar union, RTI 7.3.1 wire qualification, default TypeObject v2 recursive registration, unadapted RTI C# recursive-array singleton and RTI C++ array TypeCode initialization, general mutual recursion and recursive collection typedef runtime behavior, and interactive IDE qualification remain open risks. DDSG0108 may become an error under consumer warnings-as-errors policies. Previously tolerated exact reserved keywords now fail in both modes. Strict validation does not claim complete rtiddsgen parity; separate-enum literals use the stricter enclosing IDL scope. RTI 7.3.1 emits invalid C# RPC transport output for service cases C157/C159; the raw sources and failed compilation outcomes are retained, with follow-up in issue 75.
+    text: 'Recursive sequence typedefs are unsupported and rejected before emission because standard RTI C++11 rtiddsgen 4.3.1 (7.3.1) and 4.7.0 (7.7.0) output does not compile. Direct self-recursive sequence wire exchanges pass bidirectionally between Wireloom C# and typed RTI C++ on both LTS versions with TypeObject v1 (8192-byte type-object limit, SERVICE_REQUEST_CHANNEL only); RTI 7.3.1 generated C++ needs the documented module-qualification correction. RTI 7.7.0 default TypeObject v2 rejects recursive SCC registration. Mutual recursive struct graphs and recursive array TypeCode initialization remain unqualified. Other known risks: coarse per-root invalidation, fixed-limit compatibility, coverage outside retained cases, licensed exact-version wire environments, sequence-array C# shape mismatch, present optional wide-string typed C++ serialization, manual wchar-union DynamicType, C# recursive-array singleton, DDSG0108 warnings-as-errors, and RTI 7.3.1 invalid C# RPC output for C157/C159 tracked in issue 75.'
     sources:
       - docs/architecture/arc42/11-risks-and-technical-debt.md
   glossary:
