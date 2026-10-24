@@ -20,6 +20,8 @@ namespace Wireloom;
 /// <param name="defines">Initial preprocessor symbols supplied by the build.</param>
 /// <param name="undefines">Initial preprocessor symbols removed by the build.</param>
 /// <param name="includeDirectories">Directories searched for non-relative includes.</param>
+/// <param name="sequenceSize">Effective size for unbounded sequences in this file.</param>
+/// <param name="stringSize">Effective size for unbounded strings in this file.</param>
 public sealed class IdlInput(
     string path,
     string text,
@@ -27,7 +29,9 @@ public sealed class IdlInput(
     bool strict = false,
     List<string>? defines = null,
     List<string>? undefines = null,
-    List<string>? includeDirectories = null)
+    List<string>? includeDirectories = null,
+    int sequenceSize = 100,
+    int stringSize = 255)
 {
     /// <summary>Initializes an IDL input with an explicit direct sequence-array mapping.</summary>
     /// <param name="path">The absolute or project-relative input path.</param>
@@ -38,10 +42,14 @@ public sealed class IdlInput(
     /// <param name="defines">Initial preprocessor symbols.</param>
     /// <param name="undefines">Preprocessor symbols to remove.</param>
     /// <param name="includeDirectories">Directories searched for includes.</param>
+    /// <param name="sequenceSize">Effective size for unbounded sequences in this file.</param>
+    /// <param name="stringSize">Effective size for unbounded strings in this file.</param>
+    [JetBrains.Annotations.PublicAPI]
     public IdlInput(string path, string text, IdlSequenceArrayMapping sequenceArrayMapping,
         bool generate = true, bool strict = false, List<string>? defines = null,
-        List<string>? undefines = null, List<string>? includeDirectories = null)
-        : this(path, text, generate, strict, defines, undefines, includeDirectories)
+        List<string>? undefines = null, List<string>? includeDirectories = null,
+        int sequenceSize = 100, int stringSize = 255)
+        : this(path, text, generate, strict, defines, undefines, includeDirectories, sequenceSize, stringSize)
     {
         SequenceArrayMapping = sequenceArrayMapping;
     }
@@ -88,4 +96,10 @@ public sealed class IdlInput(
     /// resolving an IDL include.
     /// </summary>
     public List<string> IncludeDirectories { get; } = includeDirectories ?? [];
+
+    /// <summary>Gets the effective size assigned to unbounded sequences in this file.</summary>
+    public int SequenceSize { get; } = sequenceSize;
+
+    /// <summary>Gets the effective size assigned to unbounded strings in this file.</summary>
+    public int StringSize { get; } = stringSize;
 }

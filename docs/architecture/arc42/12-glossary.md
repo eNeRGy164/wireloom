@@ -15,6 +15,9 @@
   `RtiCSharp` flattening of direct sequence arrays and opt-in `Idl` preservation
   of the outer array and independently sized sequence elements. It does not
   select an RTI runtime version or a general IDL compliance profile.
+- **Effective limit** — The finite sequence or string bound used for an IDL
+  value with no explicit bound. Project settings provide the default and IDL
+  file metadata can override it.
 - **Connext IDL** — The RTI Connext-supported subset of OMG Interface Definition
   Language used to declare DDS user data types.
 - **DdsIdl root** — An explicit MSBuild item that starts generation and owns a

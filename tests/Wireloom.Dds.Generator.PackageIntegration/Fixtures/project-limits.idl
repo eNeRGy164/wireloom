@@ -1,0 +1,7 @@
+module ProjectLimits {
+    struct Sample {
+        sequence<long> numbers;
+        string label;
+        wstring wideLabel;
+    };
+};

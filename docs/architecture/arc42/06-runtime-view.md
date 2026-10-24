@@ -9,7 +9,9 @@ RTI runtime.
 ![Consumer build sequence from MSBuild IDL inputs through Roslyn generation and compilation to application use of the RTI runtime.](images/06/consumer-build-sequence.png)
 
 1. MSBuild adds explicit `DdsIdl` roots and tracks other `.idl` files as
-   non-generating inputs. Root metadata determines strictness for the batch.
+   non-generating inputs. Root metadata determines strictness for the batch;
+   project properties provide default effective limits for unbounded sequences
+   and strings, and file metadata can override those defaults.
 2. Roslyn supplies the files, item metadata, compiler options, and compilation
    references to `Generator`.
 3. The generator requires C# 12 or later and a resolved RTI runtime reference
@@ -42,7 +44,10 @@ applying text replacement to literal contents.
 
 The adapter resolves direct sequence-array mapping from file metadata first,
 then the project property, defaulting to `RtiCSharp`. The source file owns the
-choice even when reached through multiple roots. In `Idl` mode, planning
+choice even when reached through multiple roots. Effective sequence and string
+limits use file metadata first, then project properties, then defaults of 100
+elements and 255 UTF-8 bytes or UTF-16 code units. Explicit IDL bounds override
+these effective limits. In `Idl` mode, planning
 creates sequence-element wrappers and array metadata without rewriting the
 semantic model. Other collections retain their existing emission paths.
 
@@ -59,6 +64,8 @@ semantic model. Other collections retain their existing emission paths.
   arrays in `Idl` mode produce `DDSG0001` with no partial source emission;
   there is no silent fallback to flattening. The default `RtiCSharp` mapping
   continues to report `DDSG0105` and generate its legacy shape.
+- Non-positive or non-Int32 sequence/string size settings produce source-
+  located `DDSG0001` before output for the affected input.
 - An older language version produces `DDSG0002`.
 - A missing compatible RTI runtime reference produces `DDSG0003`.
 - Cyclic typedef aliases are rejected during semantic resolution with a source-

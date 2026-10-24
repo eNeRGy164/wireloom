@@ -774,6 +774,112 @@ public sealed class GeneratorSpecs
         }
     }
 
+    /// <summary>Uses project effective limits unless the declaring file overrides them.</summary>
+    [Fact]
+    public void AppliesProjectAndFileUnboundedSizeSettings()
+    {
+        // Arrange
+        const string source =
+            """
+            module Sizes {
+                typedef sequence<long> Numbers;
+                typedef string Text;
+                struct Sample {
+                    sequence<long> values;
+                    string narrow;
+                    wstring wide;
+                    sequence<string> names;
+                    sequence<long, 2> explicitlyBounded;
+                    string<4> explicitlyBoundedText;
+                };
+            };
+            """;
+        var projectSettings = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            ["build_property.DdsIdlSequenceSize"] = "7",
+            ["build_property.DdsIdlStringSize"] = "19"
+        };
+        var fileSettings = new Dictionary<string, string>(projectSettings)
+        {
+            ["SequenceSize"] = "3",
+            ["StringSize"] = "5"
+        };
+
+        // Act
+        var projectResult = Run(source, LanguageVersion.CSharp12, projectSettings, includeRuntime: true);
+        var fileResult = Run(source, LanguageVersion.CSharp12, fileSettings, includeRuntime: true);
+
+        // Assert
+        projectResult.Diagnostics.ShouldBeEmpty();
+        fileResult.Diagnostics.ShouldBeEmpty();
+
+        var projectGenerated = string.Join(Environment.NewLine, projectResult.Output.SyntaxTrees.Select(tree => tree.ToString()));
+        projectGenerated.ShouldContain("effective limit of 7 elements");
+        projectGenerated.ShouldContain("effective limit of 19 UTF-8 bytes");
+        projectGenerated.ShouldContain("effective limit of 19 UTF-16 code units");
+        projectGenerated.ShouldContain("CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), 7)");
+        projectGenerated.ShouldContain("CreateString(19)");
+        projectGenerated.ShouldContain("CreateWideString(19)");
+        projectGenerated.ShouldContain("[Bound(2)]");
+        projectGenerated.ShouldContain("[Bound(4)]");
+
+        var fileGenerated = string.Join(Environment.NewLine, fileResult.Output.SyntaxTrees.Select(tree => tree.ToString()));
+        fileGenerated.ShouldContain("effective limit of 3 elements");
+        fileGenerated.ShouldContain("effective limit of 5 UTF-8 bytes");
+        fileGenerated.ShouldContain("effective limit of 5 UTF-16 code units");
+        fileGenerated.ShouldContain("CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), 3)");
+        fileGenerated.ShouldContain("CreateString(5)");
+        fileGenerated.ShouldContain("CreateWideString(5)");
+    }
+
+    /// <summary>Accepts the largest positive Int32 size representable by the generated APIs.</summary>
+    [Fact]
+    public void AcceptsInt32MaximumAsFiniteSize()
+    {
+        // Arrange
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            ["build_property.DdsIdlSequenceSize"] = int.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["build_property.DdsIdlStringSize"] = int.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture)
+        };
+
+        // Act
+        var result = Run("struct Sample { sequence<long> values; string text; };", LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldBeEmpty();
+
+        var generated = string.Join(Environment.NewLine, result.Output.SyntaxTrees.Select(tree => tree.ToString()));
+        generated.ShouldContain($"effective limit of {int.MaxValue} elements");
+        generated.ShouldContain($"effective limit of {int.MaxValue} UTF-8 bytes");
+    }
+
+    /// <summary>Rejects invalid project and file-level effective size settings.</summary>
+    [Theory]
+    [InlineData("build_property.DdsIdlSequenceSize", "0", "SequenceSize")]
+    [InlineData("build_property.DdsIdlStringSize", "2147483648", "StringSize")]
+    [InlineData("SequenceSize", "not-a-number", "SequenceSize")]
+    [InlineData("StringSize", "-1", "StringSize")]
+    public void RejectsInvalidUnboundedSizeSettings(string setting, string value, string expectedName)
+    {
+        // Arrange
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            [setting] = value
+        };
+
+        // Act
+        var result = Run("struct Sample { sequence<long> values; };", LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0001"
+            && diagnostic.GetMessage().Contains(expectedName, StringComparison.Ordinal)
+            && diagnostic.Location.GetLineSpan().Path == "sample.idl");
+    }
+
     /// <summary>Reports invalid build settings at the input and emits no sources.</summary>
     [Theory]
     [InlineData("SequenceArrayMapping")]

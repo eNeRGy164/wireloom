@@ -492,7 +492,9 @@ are rejected with `DDSG0001`. RTI's standard C++11 `rtiddsgen
 supporting them; this rejection does not claim that the IDL forms are illegal.
 
 Programmatic compiler callers can pass `IdlSequenceArrayMapping.Idl` to the
-`IdlInput` overload. The existing constructor keeps `RtiCSharp` behavior.
+`IdlInput` overload. `sequenceSize` and `stringSize` constructor arguments set
+effective limits for unbounded types in that input. The defaults remain 100 and
+255, respectively.
 
 ## Inspect generated source
 
@@ -638,10 +640,16 @@ and [corpus rules](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/R
 
 ### Effective limits for unbounded values
 
-Wireloom currently assigns effective limits to unbounded IDL values: **255
-UTF-8 bytes** for narrow strings, **255 UTF-16 code units** for wide strings,
-and **100 elements** for sequences. For example, 128 copies of `é` use 256
-UTF-8 bytes, so they exceed the narrow-string limit even though the C# string
+Wireloom assigns effective limits to unbounded IDL values: **255 UTF-8 bytes**
+for narrow strings, **255 UTF-16 code units** for wide strings, and **100
+elements** for sequences by default. Set project properties
+`DdsIdlSequenceSize` and `DdsIdlStringSize` to change those defaults.
+`SequenceSize` and `StringSize` metadata on a `DdsIdl` or `AdditionalFiles`
+item override the project values for declarations in that file. All settings
+must be positive Int32 values; explicit IDL bounds take precedence. See the
+[configuration reference](../../docs/guides/configuration.md#fixed-behavior-and-configurable-limits)
+for examples and scope details. For example, 128 copies of `é` use 256 UTF-8
+bytes, so they exceed the narrow-string limit even though the C# string
 contains only 128 characters.
 
 Generated string properties do not enforce their bounds when assigned, and

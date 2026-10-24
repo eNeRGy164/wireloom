@@ -1,4 +1,5 @@
 using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.FrontEnd;
 using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Naming;
@@ -74,8 +75,16 @@ internal static class CollectionAliasEmitter
             }
             else
             {
-                resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
-                elementPlan = EmissionTypeProjector.ToCollectionElementType(resolvedElementType, declaration.Namespace);
+                if (IdlBuiltinTypeSyntax.TryParseStringType(element, out var isWideString, out _))
+                {
+                    resolvedElementType = new IdlType.StringType(isWideString, declaration.StringBound, declaration.IsStringBounded);
+                    elementPlan = new StringEmissionType(isWideString, declaration.StringBound, declaration.IsStringBounded);
+                }
+                else
+                {
+                    resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
+                    elementPlan = EmissionTypeProjector.ToCollectionElementType(resolvedElementType, declaration.Namespace);
+                }
             }
         }
 
@@ -112,7 +121,8 @@ internal static class CollectionAliasEmitter
             sequenceBound: declaration.Bound,
             profile: profile,
             valueMetadata: declaration.ValueMetadata,
-            isRecursiveUnboundedSequenceElement: isRecursiveUnboundedSequenceElement);
+            isRecursiveUnboundedSequenceElement: isRecursiveUnboundedSequenceElement,
+            effectiveSequenceBound: declaration.EffectiveSequenceBound);
     }
 
     private static bool RequiresNativeValueCast(EmissionTypePlan elementPlan)

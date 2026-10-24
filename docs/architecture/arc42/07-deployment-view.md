@@ -4,6 +4,10 @@ Wireloom is deployed as a NuGet analyzer/source-generator package rather than
 as a service. The generated application still deploys with the consumer's
 selected RTI Connext DDS runtime.
 
+Effective finite limits for unbounded IDL values are build-time MSBuild
+properties with per-file item metadata overrides. They are compiled into the
+generated type metadata and do not add consumer runtime configuration.
+
 ## 7.1 Infrastructure level 1
 
 ![Deployment view showing the developer or CI build host, NuGet feeds, generated application, RTI runtime, and compatibility evidence.](images/07/deployment-overview.png)

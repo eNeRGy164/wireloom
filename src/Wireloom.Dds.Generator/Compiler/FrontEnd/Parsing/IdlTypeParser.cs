@@ -66,7 +66,7 @@ internal sealed class IdlTypeParser
             {
                 var (ElementType, Bound) = ParseSequenceType(input, typeOffset, kind, currentNamespace);
                 var element = ParseCollectionElementType(input, typeOffset, ElementType, currentNamespace, "Unknown collection element type");
-                var sequence = new IdlType.Sequence(element, Bound?.Value, dimensions);
+                var sequence = new IdlType.Sequence(element, Bound?.Value, dimensions, input.SequenceSize);
                 Bound?.AddConsumer(sequence.SetBound);
                 parsedType = sequence;
             }
@@ -77,7 +77,7 @@ internal sealed class IdlTypeParser
             }
             else if (IdlBuiltinTypeSyntax.TryParseStringType(kind, out var isWideString, out var stringBoundExpression))
             {
-                var stringType = new IdlType.StringType(isWideString, 255, isBounded: stringBoundExpression is not null);
+                var stringType = new IdlType.StringType(isWideString, input.StringSize, isBounded: stringBoundExpression is not null);
                 if (member.Groups[2].Success)
                 {
                     var deferredBound = ResolveBound(input, typeOffset, member.Groups[2].Value, currentNamespace, "String bound");
@@ -344,7 +344,7 @@ internal sealed class IdlTypeParser
             return context.ReferenceType(elementType, currentNamespace, input, offset, errorPrefix);
         }
 
-        var stringType = new IdlType.StringType(isWideString, 255, isBounded: boundExpression is not null);
+        var stringType = new IdlType.StringType(isWideString, input.StringSize, isBounded: boundExpression is not null);
         var bound = ParseStringBound(input, offset, elementType, currentNamespace, "String bound must be a positive Int32.");
         bound?.AddConsumer(stringType.SetBound);
         return stringType;

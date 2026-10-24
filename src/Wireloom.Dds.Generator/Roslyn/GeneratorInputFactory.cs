@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -16,21 +17,28 @@ internal static class GeneratorInputFactory
         options.TryGetValue("build_metadata.AdditionalFiles.Undefines", out var undefines);
         options.TryGetValue("build_metadata.AdditionalFiles.IncludeDirectories", out var includeDirectories);
         options.TryGetValue("build_metadata.AdditionalFiles.SequenceArrayMapping", out var sequenceArrayMapping);
+        options.TryGetValue("build_metadata.AdditionalFiles.SequenceSize", out var sequenceSize);
+        options.TryGetValue("build_metadata.AdditionalFiles.StringSize", out var stringSize);
 
         if (string.IsNullOrWhiteSpace(sequenceArrayMapping))
         {
             inputAndOptions.Options.GlobalOptions.TryGetValue("build_property.DdsIdlSequenceArrayMapping", out sequenceArrayMapping);
         }
 
+        inputAndOptions.Options.GlobalOptions.TryGetValue("build_property.DdsIdlSequenceSize", out var projectSequenceSize);
+        inputAndOptions.Options.GlobalOptions.TryGetValue("build_property.DdsIdlStringSize", out var projectStringSize);
+
         return new(
             input.Path,
             input.GetText(cancellationToken)?.ToString() ?? string.Empty,
             ParseSequenceArrayMapping(sequenceArrayMapping),
-            string.Equals(generate, "true", StringComparison.OrdinalIgnoreCase),
-            string.Equals(strict, "true", StringComparison.OrdinalIgnoreCase),
-            ParseSymbols(defines),
-            ParseSymbols(undefines),
-            ParseIncludeDirectories(includeDirectories));
+            generate: string.Equals(generate, "true", StringComparison.OrdinalIgnoreCase),
+            strict: string.Equals(strict, "true", StringComparison.OrdinalIgnoreCase),
+            defines: ParseSymbols(defines),
+            undefines: ParseSymbols(undefines),
+            includeDirectories: ParseIncludeDirectories(includeDirectories),
+            sequenceSize: ParsePositiveSize(sequenceSize, projectSequenceSize, 100),
+            stringSize: ParsePositiveSize(stringSize, projectStringSize, 255));
     }
 
     private static IdlSequenceArrayMapping ParseSequenceArrayMapping(string? value)
@@ -52,6 +60,19 @@ internal static class GeneratorInputFactory
     private static List<string> ParseSymbols(string? value) => ParseValues(value, [';']);
 
     private static List<string> ParseIncludeDirectories(string? value) => ParseValues(value, [';', '|']);
+
+    private static int ParsePositiveSize(string? fileValue, string? projectValue, int defaultValue)
+    {
+        var value = string.IsNullOrWhiteSpace(fileValue) ? projectValue : fileValue;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return defaultValue;
+        }
+
+        return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) && parsed > 0
+            ? parsed
+            : 0;
+    }
 
     private static List<string> ParseValues(string? value, char[] separators)
     {

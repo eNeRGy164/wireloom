@@ -39,6 +39,16 @@ internal sealed class IdlDeclarationParser
         IReadOnlyList<SourceOriginSpan>? sourceOrigins = null,
         bool inheritedHashIds = false)
     {
+        if (input.SequenceSize <= 0)
+        {
+            throw new IdlException(input, 0, "SequenceSize must be a positive Int32 value.");
+        }
+
+        if (input.StringSize <= 0)
+        {
+            throw new IdlException(input, 0, "StringSize must be a positive Int32 value.");
+        }
+
         // Always replace the mapping: sequential files must never inherit the
         // previous parse's origin table.
         context.SetSourceOrigins(sourceOrigins);
