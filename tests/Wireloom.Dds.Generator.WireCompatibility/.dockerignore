@@ -1,0 +1,2 @@
+# The image build uses only the Containerfile; the repository is mounted at runtime.
+**

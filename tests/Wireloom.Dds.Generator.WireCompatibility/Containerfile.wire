@@ -1,0 +1,38 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0.400-noble@sha256:4beef5b8919dcaa2dc924233bd069257e883cc7a061e09088a97d152d6a48510
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+USER 0:0
+
+ARG RTI_VERSION
+ARG RTI_PACKAGE_VERSION
+
+ENV DOTNET_NOLOGO=1 \
+    DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+    RTI_LICENSE_FILE=/run/secrets/rti_license.dat
+
+RUN apt-get update -qq \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends --no-install-suggests \
+        ca-certificates ccache cmake curl g++ make \
+    && test -n "${RTI_VERSION}" \
+    && test -n "${RTI_PACKAGE_VERSION}" \
+    && curl -fsSL https://packages.rti.com/deb/official/repo.key \
+        -o /usr/share/keyrings/rti-official-archive.gpg \
+    && printf 'deb [arch=amd64 signed-by=/usr/share/keyrings/rti-official-archive.gpg] https://packages.rti.com/deb/official noble main\n' \
+        > /etc/apt/sources.list.d/rti.list \
+    && apt-get update -qq \
+    && printf 'rti-connext-dds-%s-common rti-connext-dds-%s/license/accepted select true\n' \
+        "${RTI_VERSION}" "${RTI_VERSION}" | debconf-set-selections \
+    && package_components=(common env env-amd64 lib-amd64 lib-dev-amd64) \
+    && package_args=() \
+    && for component in "${package_components[@]}"; do \
+        package_args+=("rti-connext-dds-${RTI_VERSION}-${component}=${RTI_PACKAGE_VERSION}"); \
+    done \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${package_args[@]}" \
+    && (cd /tmp && apt-get download "rti-connext-dds-${RTI_VERSION}-lib-dev=${RTI_PACKAGE_VERSION}") \
+    && dpkg-deb -x "/tmp/rti-connext-dds-${RTI_VERSION}-lib-dev_${RTI_PACKAGE_VERSION}_amd64.deb" / \
+    && rm -f "/tmp/rti-connext-dds-${RTI_VERSION}-lib-dev_${RTI_PACKAGE_VERSION}_amd64.deb" \
+    && apt-get purge -y --auto-remove curl \
+    && rm -rf /usr/share/keyrings/rti-official-archive.gpg /var/lib/apt/lists/* /var/log/*
+
+# The repository is mounted at runtime; keep the Docker build context empty.

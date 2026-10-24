@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Drives the wire-compatibility matrix from inside the pinned RTI toolchain.
-# Wireloom-generated C# is compared with RTI-generated C# and C++ reference
+# Wireloom-generated C# is compared with checked-in RTI C# and C++ reference
 # peers. Each eligible fixture is exercised across every directed peer pairing.
-# Keep this orchestration here rather than in C# so it can provision RTI's
-# native generator/compiler and launch isolated producer/consumer processes.
+# Oracle generation happens during local corpus maintenance; this runner only
+# compiles the checked-in peers and launches isolated producer/consumer processes.
 set -euo pipefail
 
 readonly repo_root="${GITHUB_WORKSPACE:-$(git rev-parse --show-toplevel)}"
@@ -13,6 +13,7 @@ readonly rti_csharp_project="$repo_root/tests/Wireloom.Dds.Generator.WireCompati
 readonly matrix_tools="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/scripts/matrix-tools.cs"
 readonly manifest="$repo_root/docs/corpus/manifest.json"
 readonly rti_version="${WIRE_COMPATIBILITY_RTI_VERSION:-7.7.0}"
+readonly wire_oracle_manifest="$repo_root/docs/corpus/$rti_version/rtiddsgen/wire-oracles.json"
 readonly exclusions="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/wire-case-exclusions-$rti_version.json"
 readonly timeout_seconds=20
 readonly cpp_compile_only="${WIRE_COMPATIBILITY_CPP_COMPILE_ONLY:-0}"
@@ -226,8 +227,8 @@ if [[ -z "${RTI_LICENSE_FILE:-}" || ! -r "$RTI_LICENSE_FILE" ]]; then
     echo "RTI_LICENSE_FILE must name a readable RTI license file." >&2
     exit 2
 fi
-if [[ -z "${NDDSHOME:-}" || ! -x "$NDDSHOME/bin/rtiddsgen" ]]; then
-    echo "NDDSHOME must point to the selected RTI toolchain." >&2
+if [[ -z "${NDDSHOME:-}" || ! -d "$NDDSHOME/include" || ! -d "$NDDSHOME/resource/cmake" ]]; then
+    echo "NDDSHOME must point to the selected RTI development libraries and CMake modules." >&2
     exit 2
 fi
 
@@ -264,9 +265,64 @@ case_pairings() {
     local case_id="$1"
     local fixture="${2:-}"
     if [[ -n "$fixture" ]]; then
-        matrix_tool case-pairings "$manifest" "$case_id" "$fixture"
+        matrix_tool case-profile-pairings "$manifest" "$case_id" "$rti_version" "$fixture"
     else
-        matrix_tool case-pairings "$manifest" "$case_id"
+        matrix_tool case-profile-pairings "$manifest" "$case_id" "$rti_version"
+    fi
+}
+
+wire_oracle_source() {
+    matrix_tool case-wire-oracle-source "$wire_oracle_manifest" "$1" "$2"
+}
+
+stage_rti_cpp_oracle() {
+    local case_id="$1"
+    local source_dir="$2"
+    local source_file relative_file file_name staged_name staged_path
+    while IFS= read -r -d '' source_file; do
+        relative_file="${source_file#"$source_dir"/}"
+        file_name="$(basename "$relative_file")"
+        if [[ "$source_dir" != */wire-wrapped/* && "$(dirname "$relative_file")" == "." ]]; then
+            case "$file_name" in
+                "$case_id.cxx") staged_name=idl.cxx ;;
+                "$case_id.hpp") staged_name=idl.hpp ;;
+                "$case_id"Plugin.cxx) staged_name=idlPlugin.cxx ;;
+                "$case_id"Plugin.hpp) staged_name=idlPlugin.hpp ;;
+                *) staged_name="$file_name" ;;
+            esac
+            staged_path="$staged_name"
+        elif [[ "$relative_file" == idl.cxx || "$relative_file" == idl.hpp \
+            || "$relative_file" == idlPlugin.cxx || "$relative_file" == idlPlugin.hpp ]]; then
+            case "$file_name" in
+                "$case_id.cxx") staged_name=idl.cxx ;;
+                "$case_id.hpp") staged_name=idl.hpp ;;
+                "$case_id"Plugin.cxx) staged_name=idlPlugin.cxx ;;
+                "$case_id"Plugin.hpp) staged_name=idlPlugin.hpp ;;
+                *) staged_name="$file_name" ;;
+            esac
+            staged_path="$staged_name"
+        elif [[ "$(dirname "$relative_file")" == "." ]]; then
+            source_stem="${file_name%.*}"
+            source_idl_stem="${source_stem%Plugin}"
+            if [[ -f "$repo_root/docs/corpus/idl/features/$source_idl_stem.idl" ]]; then
+                staged_path="features/$file_name"
+            elif [[ -f "$repo_root/docs/corpus/idl/includes/$source_idl_stem.idl" ]]; then
+                staged_path="includes/$file_name"
+            else
+                staged_path="$file_name"
+            fi
+        else
+            staged_path="$relative_file"
+        fi
+        mkdir -p "$native_dir/$(dirname "$staged_path")"
+        cp "$source_file" "$native_dir/$staged_path"
+    done < <(find "$source_dir" -type f \( -name '*.cxx' -o -name '*.hpp' \) -print0)
+
+    if [[ "$source_dir" != */wire-wrapped/* && "$case_id" != "05-array-of-sequences-idl" ]]; then
+        find "$native_dir" -maxdepth 1 -type f \( -name '*.cxx' -o -name '*.hpp' \) -print0 \
+            | xargs -0 -r sed -i \
+                -e "s/\"${case_id}Plugin\.hpp\"/\"idlPlugin.hpp\"/g" \
+                -e "s/\"${case_id}\.hpp\"/\"idl.hpp\"/g"
     fi
 }
 
@@ -797,215 +853,21 @@ for case_id in "${case_ids[@]}"; do
         rti_cs_failure_reason="RTI C# generation failed for $case_id"
         rti_type_name=""
         mkdir -p "$rti_csharp_dir" "$case_dir/rti-bin" "$case_dir/rti-obj"
-        rti_csharp_codegen_input="$idl_path"
-        if [[ "$rti_version" == "7.3.1" \
-            && ( "$case_id" == "14-autoid-scope" || "$case_id" == "14-enum-constant" ) ]]; then
-            # RTI 4.3.1 resolves the canonical include by basename beside the
-            # wrapper, even when the include retains its features/ path. Feed
-            # exact copies through an isolated scratch tree to satisfy that
-            # resolution while leaving the canonical corpus untouched.
-            rti_csharp_input_dir="$case_dir/rti-csharp-input"
-            rti_csharp_input_evidence="$output_dir/raw/$case_id/rti-csharp-input"
-            mkdir -p "$rti_csharp_input_dir" "$rti_csharp_input_evidence"
-            cp "$idl_path" "$rti_csharp_input_dir/$(basename "$idl_path")"
-            cp "$idl_path" "$rti_csharp_input_evidence/$(basename "$idl_path")"
-            case "$case_id" in
-                14-autoid-scope)
-                    canonical_source="$repo_root/docs/corpus/idl/features/14-autoid-scope.idl"
-                    dependency_source="$repo_root/docs/corpus/idl/includes/autoid-hash-include.idl"
-                    ;;
-                14-enum-constant)
-                    canonical_source="$repo_root/docs/corpus/idl/features/14-enum-constant.idl"
-                    dependency_source=""
-                    ;;
-            esac
-            cp "$canonical_source" "$rti_csharp_input_dir/$case_id.idl"
-            cp "$canonical_source" "$rti_csharp_input_evidence/$case_id.idl"
-            if [[ -n "$dependency_source" ]]; then
-                cp "$dependency_source" "$rti_csharp_input_dir/$(basename "$dependency_source")"
-                cp "$dependency_source" "$rti_csharp_input_evidence/$(basename "$dependency_source")"
-            fi
-            {
-                printf 'source\tstaged\tsource_sha256\tstaged_sha256\n'
-                for staged_source in "$idl_path" "$canonical_source"; do
-                    staged_name="$(basename "$staged_source")"
-                    if [[ "$staged_source" == "$idl_path" ]]; then
-                        staged_name="$(basename "$idl_path")"
-                    else
-                        staged_name="$case_id.idl"
-                    fi
-                    printf '%s\t%s\t%s\t%s\n' \
-                        "${staged_source#"$repo_root"/}" "$staged_name" \
-                        "$(sha256sum "$staged_source" | cut -d' ' -f1)" \
-                        "$(sha256sum "$rti_csharp_input_dir/$staged_name" | cut -d' ' -f1)"
-                done
-                if [[ -n "$dependency_source" ]]; then
-                    staged_name="$(basename "$dependency_source")"
-                    printf '%s\t%s\t%s\t%s\n' \
-                        "${dependency_source#"$repo_root"/}" "$staged_name" \
-                        "$(sha256sum "$dependency_source" | cut -d' ' -f1)" \
-                        "$(sha256sum "$rti_csharp_input_dir/$staged_name" | cut -d' ' -f1)"
-                fi
-            } > "$rti_csharp_input_evidence/source-hashes.tsv"
-            printf 'RTI 7.3.1 C# include staging: preserved original wrapper/canonical/dependency bytes and staged copies under %s; SHA-256 mappings are in %s/source-hashes.tsv.\n' \
-                "$rti_csharp_input_dir" "$rti_csharp_input_evidence" \
-                >> "$output_dir/logs/$case_id-rti-csharp-include-adaptation.log"
-            rti_csharp_codegen_input="$rti_csharp_input_dir/$(basename "$idl_path")"
-        fi
-        rti_csharp_codegen_args=(
-            -language "C#" -replace -generateIncludeFiles -d "$rti_csharp_dir"
-            "${define_args[@]}"
-            -I "$repo_root/docs/corpus/idl"
-            -I "$repo_root/docs/corpus/idl/includes"
-            "$rti_csharp_codegen_input"
-        )
-        if run_tool "RTI C# generation for $case_id" "$case_dir/rtiddsgen-csharp.log" \
-            "$NDDSHOME/bin/rtiddsgen" "${rti_csharp_codegen_args[@]}"; then
+        rti_csharp_oracle_source="$(wire_oracle_source "$case_id" rtiCSharp)"
+        if [[ -n "$rti_csharp_oracle_source" ]]; then
+            rti_csharp_oracle_dir="$repo_root/docs/corpus/$rti_version/rtiddsgen/$rti_csharp_oracle_source"
+            cp -R "$rti_csharp_oracle_dir/." "$rti_csharp_dir/"
+            printf 'Using checked-in RTI C# oracle (%s; selection and adjustments are recorded in %s).\n' \
+                "$rti_csharp_oracle_source" "${wire_oracle_manifest#"$repo_root"/}" \
+                > "$output_dir/logs/$case_id-rti-csharp-oracle.log"
             rti_csharp_generated=1
-            mapfile -t rti_includes < <(matrix_tool includes-recursive \
-                "$idl_path" \
-                "$repo_root/docs/corpus/idl" \
-                "$repo_root/docs/corpus/idl/includes")
-            include_index=0
-            for include_entry in "${rti_includes[@]}"; do
-                IFS=$'\t' read -r include_path include_source <<< "$include_entry"
-                [[ -z "$include_source" ]] && continue
-                include_base="$(basename "${include_path%.*}")"
-                main_include_source="$rti_csharp_dir/includes/$include_base.cs"
-                main_include_plugin="$rti_csharp_dir/includes/${include_base}Plugin.cs"
-                include_adaptation_log="$output_dir/logs/$case_id-rti-csharp-include-adaptation.log"
-                mapfile -t include_sources < <(find_rti_csharp_include_files "$rti_csharp_dir" "$idl_path" "$include_base.cs")
-                mapfile -t include_plugins < <(find_rti_csharp_include_files "$rti_csharp_dir" "$idl_path" "${include_base}Plugin.cs")
-                source_count="${#include_sources[@]}"
-                plugin_count="${#include_plugins[@]}"
-                if [[ ( "$case_id" == "14-autoid-scope" || "$case_id" == "14-enum-constant" ) \
-                    && "$source_count" == "1" && "$plugin_count" == "1" \
-                    && -s "${include_sources[0]}" && -s "${include_plugins[0]}" \
-                    && "$(dirname "${include_sources[0]}")" == "$(dirname "${include_plugins[0]}")" ]]; then
-                    expected_content_valid=1
-                    case "$include_path" in
-                        features/14-autoid-scope.idl)
-                            for expected_type in Hashed Reopened Sequential UsesInclude; do
-                                if ! grep -Fq "$expected_type" "${include_sources[0]}" \
-                                    && ! grep -Fq "$expected_type" "${include_plugins[0]}"; then
-                                    expected_content_valid=0
-                                fi
-                            done
-                            ;;
-                        includes/autoid-hash-include.idl)
-                            if ! grep -Fq "Included" "${include_sources[0]}" \
-                                && ! grep -Fq "Included" "${include_plugins[0]}"; then
-                                expected_content_valid=0
-                            fi
-                            ;;
-                        features/14-enum-constant.idl)
-                            for expected_type in EnumConstant EnumUnion; do
-                                if ! grep -Fq "$expected_type" "${include_sources[0]}" \
-                                    && ! grep -Fq "$expected_type" "${include_plugins[0]}"; then
-                                    expected_content_valid=0
-                                fi
-                            done
-                            ;;
-                    esac
-                    if [[ "$expected_content_valid" == "1" ]]; then
-                        raw_include_dir="$output_dir/raw/$case_id/rti-csharp-include-raw"
-                        mkdir -p "$raw_include_dir"
-                        cp "${include_sources[0]}" "$raw_include_dir/$include_base-$include_index.cs"
-                        cp "${include_plugins[0]}" "$raw_include_dir/${include_base}Plugin-$include_index.cs"
-                        printf 'Reused the unique RTI C# root-generated outputs for %s from %s; SHA-256 %s / %s.\n' \
-                            "$include_path" "$(dirname "${include_sources[0]}")" \
-                            "$(sha256sum "$raw_include_dir/$include_base-$include_index.cs" | cut -d' ' -f1)" \
-                            "$(sha256sum "$raw_include_dir/${include_base}Plugin-$include_index.cs" | cut -d' ' -f1)" \
-                            >> "$include_adaptation_log"
-                        continue
-                    fi
-                    echo "RTI C# output for $include_path is missing expected canonical types." >&2
-                    rti_csharp_generated=0
-                    rti_cs_failure_reason="RTI C# include content mismatch for $case_id"
-                    break
-                fi
-                if [[ "$case_id" != "14-autoid-scope" && "$case_id" != "14-enum-constant" && "$source_count" == "1" \
-                    && "$plugin_count" == "1" && -f "$main_include_source" \
-                    && -f "$main_include_plugin" ]]; then
-                    printf 'Reused RTI C# include outputs from root generation: %s (%s, %s).\n' \
-                        "$include_path" "$main_include_source" "$main_include_plugin" \
-                        >> "$case_dir/rti-csharp-include-adaptation.log"
-                    continue
-                fi
-                nested_include_source="$rti_csharp_dir/includes/includes/$include_base.cs"
-                nested_include_plugin="$rti_csharp_dir/includes/includes/${include_base}Plugin.cs"
-                if [[ ( "$case_id" == "14-autoid-scope" || "$case_id" == "14-enum-constant" ) && "$source_count" == "2" \
-                    && "$plugin_count" == "2" && -f "$main_include_source" \
-                    && -f "$main_include_plugin" && -f "$nested_include_source" \
-                    && -f "$nested_include_plugin" ]] \
-                    && cmp -s "$main_include_source" "$nested_include_source" \
-                    && cmp -s "$main_include_plugin" "$nested_include_plugin"; then
-                    raw_include_dir="$output_dir/raw/$case_id/rti-csharp-include-raw"
-                    mkdir -p "$raw_include_dir"
-                    cp "$main_include_source" "$raw_include_dir/$include_base-main.cs"
-                    cp "$nested_include_source" "$raw_include_dir/$include_base-nested.cs"
-                    cp "$main_include_plugin" "$raw_include_dir/${include_base}Plugin-main.cs"
-                    cp "$nested_include_plugin" "$raw_include_dir/${include_base}Plugin-nested.cs"
-                    printf 'RTI %s C# root generation emitted duplicate identical include files; retained raw copies under %s, SHA-256: %s / %s / %s / %s; removed only nested copies %s and %s.\n' \
-                        "$rti_version" \
-                        "$raw_include_dir" \
-                        "$(sha256sum "$raw_include_dir/$include_base-main.cs" | cut -d' ' -f1)" \
-                        "$(sha256sum "$raw_include_dir/$include_base-nested.cs" | cut -d' ' -f1)" \
-                        "$(sha256sum "$raw_include_dir/${include_base}Plugin-main.cs" | cut -d' ' -f1)" \
-                        "$(sha256sum "$raw_include_dir/${include_base}Plugin-nested.cs" | cut -d' ' -f1)" \
-                        "$nested_include_source" "$nested_include_plugin" \
-                        >> "$include_adaptation_log"
-                    rm -f -- "$nested_include_source" "$nested_include_plugin"
-                    continue
-                fi
-                if [[ "$source_count" != "0" || "$plugin_count" != "0" ]]; then
-                    echo "RTI C# include output set is incomplete or duplicated for $include_path ($source_count source, $plugin_count plugin files)." >&2
-                    rti_csharp_generated=0
-                    rti_cs_failure_reason="RTI C# include output mismatch for $case_id"
-                    break
-                fi
-                include_dir="$rti_csharp_dir/includes/$include_index"
-                mkdir -p "$include_dir"
-                include_codegen_args=(
-                    -language "C#" -replace -generateIncludeFiles -d "$include_dir"
-                    "${define_args[@]}"
-                    -I "$repo_root/docs/corpus/idl"
-                    -I "$repo_root/docs/corpus/idl/includes"
-                    "$include_source"
-                )
-                if ! run_tool "RTI C# generation for included IDL $include_path" \
-                    "$case_dir/rtiddsgen-csharp-include-$include_index.log" \
-                    "$NDDSHOME/bin/rtiddsgen" "${include_codegen_args[@]}"; then
-                    rti_csharp_generated=0
-                    break
-                fi
-                include_index=$((include_index + 1))
-            done
-            if [[ "$rti_csharp_generated" == 1 && "$case_id" == "10-resolve-name-wstring-aliases" ]]; then
-                # RTI emits two global::Implementation references from a
-                # top-level namespace. Qualify them with the IDL module in the
-                # scratch peer so this otherwise-valid C# oracle can be tested.
-                rti_plugin_file="$rti_csharp_dir/${case_id}Plugin.cs"
-                if [[ "$(grep -Fc 'global::Implementation.BoundedWideTextUnmanaged' "$rti_plugin_file" || true)" -ne 1 \
-                    || "$(grep -Fc 'global::Implementation.BoundedWideTextAliasUnmanaged' "$rti_plugin_file" || true)" -ne 1 ]]; then
-                    echo "RTI C# generated member types changed for $case_id; update the guarded namespace workaround." >&2
-                    rti_csharp_generated=0
-                    rti_cs_failure_reason="RTI C# workaround source mismatch for $case_id"
-                else
-                    sed -i \
-                        's/global::Implementation\.BoundedWideTextUnmanaged/global::CorpusResolveNameWstringAliases.Implementation.BoundedWideTextUnmanaged/; s/global::Implementation\.BoundedWideTextAliasUnmanaged/global::CorpusResolveNameWstringAliases.Implementation.BoundedWideTextAliasUnmanaged/' \
-                        "$rti_plugin_file"
-                fi
+        else
+            rti_csharp_generated=0
+            rti_cs_failure_reason="No checked-in RTI C# wire oracle is available for $case_id"
+            echo "$rti_cs_failure_reason; refusing to generate a peer during wire execution." >&2
             fi
-            if [[ "$rti_csharp_generated" == 1 && "$case_id" == "06-alias-composition" ]]; then
-                # RTI 7.7.0 shadows this generated member with a conversion
-                # parameter, which otherwise produces invalid C# calls.
-                sed -i -E \
-                    's/^([[:space:]]*)sample\.(FromNative|ToNative)\(sample\.sample/\1this.sample.\2(sample.sample/' \
-                    "$rti_csharp_dir/${case_id}Plugin.cs"
-            fi
-        fi
-        if [[ "$rti_csharp_generated" == 1 && "$case_id" == 07-union-char-numeric* ]]; then
+        if [[ "$rti_csharp_generated" == 1 && -z "$rti_csharp_oracle_source" \
+            && "$case_id" == 07-union-char-numeric* ]]; then
             # Apply the documented post-generation binding corrections, preserving
             # declared character values and the incoming fallback discriminator.
             matrix_tool adapt-rti-characters csharp "$case_id" "$rti_csharp_dir"
@@ -1058,27 +920,21 @@ for case_id in "${case_ids[@]}"; do
     else
         cp "$idl_path" "$native_dir/idl.idl"
     fi
-    rtiddsgen_args=(
-        -language C++11 -replace
-        "${rti_cpp_codegen_options[@]}"
-        "${define_args[@]}"
-        -I "$repo_root/docs/corpus/idl"
-        -I "$repo_root/docs/corpus/idl/includes"
-    )
-    if [[ "$rti_version" == "7.7.0" ]]; then
-        rtiddsgen_args+=( -generateIncludeFiles )
+    rti_cpp_oracle_source="$(wire_oracle_source "$case_id" rtiCpp)"
+    if [[ -n "$rti_cpp_oracle_source" ]]; then
+        rti_cpp_oracle_dir="$repo_root/docs/corpus/$rti_version/rtiddsgen/$rti_cpp_oracle_source"
+        stage_rti_cpp_oracle "$case_id" "$rti_cpp_oracle_dir"
+        printf 'Using checked-in RTI C++ oracle (%s; selection and adjustments are recorded in %s).\n' \
+            "$rti_cpp_oracle_source" "${wire_oracle_manifest#"$repo_root"/}" \
+            > "$output_dir/logs/$case_id-rti-cpp-oracle.log"
+    elif [[ "$case_id" != "07-union-wchar-label" ]]; then
+        printf "%s\\tmissing-captured-oracle\\t%s\\n" "$case_id" "$wire_oracle_manifest" >> "$cpp_compilation_tsv"
+        overall_status=1
+        echo "No checked-in RTI C++ wire oracle is available for $case_id; refusing to generate a peer during wire execution." >&2
+        end_workflow_group
+        continue
     fi
-    rtiddsgen_args+=( -d "$native_dir" "$native_dir/idl.idl" )
-    if [[ "$case_id" != "07-union-wchar-label" ]]; then
-        if ! run_tool "rtiddsgen for $case_id" "$case_dir/rtiddsgen.log" \
-            "$NDDSHOME/bin/rtiddsgen" "${rtiddsgen_args[@]}"; then
-            printf '%s\trtiddsgen-failed\tsee %s\n' "$case_id" "$case_dir/rtiddsgen.log" >> "$cpp_compilation_tsv"
-            overall_status=1
-            end_workflow_group
-            continue
-        fi
-    fi
-    if [[ "$case_id" == "10-resolve-name-wstring-aliases" ]]; then
+    if [[ "$case_id" == "10-resolve-name-wstring-aliases" && -z "$rti_cpp_oracle_source" ]]; then
         if [[ "$(grep -Fc 'dynamic_type< BoundedWideText>' "$native_dir/idl.cxx" || true)" -ne 1 \
             || "$(grep -Fc 'dynamic_type< BoundedWideTextAlias>' "$native_dir/idl.cxx" || true)" -ne 1 ]]; then
             echo "RTI C++ generated TypeCode references changed for $case_id; update the guarded alias-tag workaround." >&2
@@ -1092,119 +948,7 @@ for case_id in "${case_ids[@]}"; do
             "$native_dir/idl.cxx"
     fi
 
-    declare -A generated_include_sources=()
-    while IFS=$'\t' read -r include_path include_source; do
-        [[ -z "$include_path" ]] && continue
-        include_base="$(basename "${include_path%.*}")"
-        include_directory="$(dirname "$include_path")"
-        reuse_generated_include=0
-        if [[ ( "$case_id" == "14-autoid-scope" || "$case_id" == "14-enum-constant" ) \
-            && "$include_directory" != "." \
-            && "$rti_version" == "7.7.0" ]]; then
-            expected_include_dir="$native_dir/$include_directory"
-            expected_include_files=(
-                "$expected_include_dir/$include_base.cxx"
-                "$expected_include_dir/$include_base.hpp"
-                "$expected_include_dir/${include_base}Plugin.cxx"
-                "$expected_include_dir/${include_base}Plugin.hpp"
-            )
-            present_count=0
-            for expected_file in "${expected_include_files[@]}"; do
-                if [[ -s "$expected_file" ]]; then
-                    present_count=$((present_count + 1))
-                fi
-            done
-            if [[ "$present_count" == "4" ]]; then
-                for expected_file in "${expected_include_files[@]}"; do
-                    file_count="$(find "$native_dir" -type f -name "$(basename "$expected_file")" | wc -l)"
-                    if [[ "$file_count" != "1" ]]; then
-                        echo "RTI C++ generated include count is $file_count for $expected_file (expected one)." >&2
-                        overall_status=1
-                        end_workflow_group
-                        continue 2
-                    fi
-                done
-                reuse_generated_include=1
-            elif [[ "$present_count" != "0" ]]; then
-                echo "RTI C++ generated include set is incomplete for $include_path ($present_count of 4 files)." >&2
-                overall_status=1
-                end_workflow_group
-                continue 2
-            fi
-        fi
-        if [[ "$reuse_generated_include" == "0" \
-            && -z "${generated_include_sources[$include_source]:-}" ]]; then
-            dependency_args=(
-                -language C++11 -replace -d "$native_dir"
-                "${define_args[@]}"
-                -I "$repo_root/docs/corpus/idl"
-                -I "$repo_root/docs/corpus/idl/includes"
-                "$include_source"
-            )
-            if ! run_tool "rtiddsgen include for $case_id" "$case_dir/rtiddsgen-include.log" \
-                "$NDDSHOME/bin/rtiddsgen" "${dependency_args[@]}"; then
-                printf '%s\trtiddsgen-include-failed\tsee %s\n' "$case_id" "$case_dir/rtiddsgen-include.log" >> "$cpp_compilation_tsv"
-                overall_status=1
-                end_workflow_group
-                continue 2
-            fi
-            generated_include_sources[$include_source]=1
-        fi
-
-        if [[ "$reuse_generated_include" == "1" ]]; then
-            raw_include_dir="$output_dir/raw/$case_id/rti-cpp-include-raw"
-            mkdir -p "$raw_include_dir"
-            for expected_file in "${expected_include_files[@]}"; do
-                cp "$expected_file" "$raw_include_dir/$include_base-$(basename "$expected_file")"
-            done
-            {
-                printf 'Reused RTI C++ recursively generated outputs for %s from %s; hashes follow.\n' \
-                    "$include_path" "$expected_include_dir"
-                sha256sum "${expected_include_files[@]}"
-            } >> "$output_dir/logs/$case_id-rti-cpp-include-adaptation.log"
-            continue
-        fi
-
-        if [[ "$include_directory" != "." ]]; then
-            mkdir -p "$native_dir/$include_directory"
-            cp "$native_dir/$include_base.hpp" "$native_dir/$include_directory/$include_base.hpp"
-            cp "$native_dir/${include_base}Plugin.hpp" \
-                "$native_dir/$include_directory/${include_base}Plugin.hpp"
-            cmp -s "$native_dir/$include_base.hpp" "$native_dir/$include_directory/$include_base.hpp"
-            cmp -s "$native_dir/${include_base}Plugin.hpp" \
-                "$native_dir/$include_directory/${include_base}Plugin.hpp"
-        fi
-        if [[ "$case_id" == "14-autoid-scope" ]]; then
-            raw_include_dir="$output_dir/raw/$case_id/rti-cpp-include-raw"
-            mkdir -p "$raw_include_dir"
-            cp "$native_dir/$include_base.cxx" "$raw_include_dir/$include_base-generated.cxx"
-            cp "$native_dir/${include_base}Plugin.cxx" "$raw_include_dir/${include_base}Plugin-generated.cxx"
-            cp "$native_dir/$include_base.hpp" "$raw_include_dir/$include_base-generated.hpp"
-            cp "$native_dir/${include_base}Plugin.hpp" "$raw_include_dir/${include_base}Plugin-generated.hpp"
-            if [[ "$include_directory" != "." ]]; then
-                cp "$native_dir/$include_directory/$include_base.hpp" "$raw_include_dir/$include_base-staged.hpp"
-                cp "$native_dir/$include_directory/${include_base}Plugin.hpp" "$raw_include_dir/${include_base}Plugin-staged.hpp"
-                {
-                    printf 'RTI C++ include output %s staged under %s and compared byte-for-byte.\n' \
-                        "$include_path" "$include_directory"
-                    sha256sum "$raw_include_dir/$include_base-generated.cxx" \
-                        "$raw_include_dir/${include_base}Plugin-generated.cxx" \
-                        "$raw_include_dir/$include_base-generated.hpp" \
-                        "$raw_include_dir/${include_base}Plugin-generated.hpp" \
-                        "$raw_include_dir/$include_base-staged.hpp" \
-                        "$raw_include_dir/${include_base}Plugin-staged.hpp"
-                } >> "$output_dir/logs/$case_id-rti-cpp-include-adaptation.log"
-            fi
-        fi
-    done < <(
-        if [[ "$case_id" == "14-autoid-scope" ]]; then
-            matrix_tool includes-recursive "$native_dir/idl.idl" \
-                "$repo_root/docs/corpus/idl" "$repo_root/docs/corpus/idl/includes"
-        else
-            matrix_tool includes "$native_dir/idl.idl" \
-                "$repo_root/docs/corpus/idl" "$repo_root/docs/corpus/idl/includes"
-        fi
-    )
+    # Checked-in C++ oracle directories include all source dependencies.
     cpp_template_type="$cpp_type"
     cmake_adaptation_args=()
     if [[ "$rti_version" == "7.3.1" ]]; then
@@ -1256,6 +1000,9 @@ for case_id in "${case_ids[@]}"; do
         cmake_adaptation_args+=( -DWIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE=ON )
     fi
     if [[ "$case_id" == "09-optional-recursive-array" ]]; then
+        cmake_adaptation_args+=( -DWIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE=ON )
+    fi
+    if [[ "$case_id" == "09-optional-recursive-array" && -z "$rti_cpp_oracle_source" ]]; then
         # RTI 4.7.0 omits the visited-node chain when initializing the recursive
         # array element TypeCode, causing unbounded metadata recursion.
         # Adjust scratch reference code only; the declared IDL shape is intact.
@@ -1267,15 +1014,14 @@ for case_id in "${case_ids[@]}"; do
             sed -i 's/dynamic_type< Node>/dynamic_type< ::CorpusOptionalRecursiveArray::Node>/g' \
                 "$native_dir/idl.cxx"
         fi
-        cmake_adaptation_args+=( -DWIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE=ON )
     fi
-    if [[ "$case_id" == "06-aggregates" && "$rti_version" == "7.3.1" ]]; then
+    if [[ "$case_id" == "06-aggregates" && "$rti_version" == "7.3.1" && -z "$rti_cpp_oracle_source" ]]; then
         # Code Generator 4.3.1 has the same missing qualification for the
         # recursive aggregate TypeCode reference.
         sed -i 's/dynamic_type< Recursive>/dynamic_type< ::CorpusAggregates::Recursive>/g' \
             "$native_dir/idl.cxx"
     fi
-    if [[ "$case_id" == "07-union-char-numeric-255" ]]; then
+    if [[ "$case_id" == "07-union-char-numeric-255" && -z "$rti_cpp_oracle_source" ]]; then
         # RTI's native char label lookup requires the signed byte representation.
         matrix_tool adapt-rti-characters cpp "$case_id" "$native_dir"
     fi

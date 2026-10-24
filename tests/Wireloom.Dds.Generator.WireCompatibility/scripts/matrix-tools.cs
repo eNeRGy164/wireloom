@@ -10,7 +10,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 
-const string usage = "Usage: matrix-tools.cs <repository-root|list-cases|list-rti-only-cases|case-field|case-pairings|case-info|json-field|discover-cases|discover-rti|generation-provenance|includes|includes-recursive|partition-shard|merge-shards|render-report|adapt-rti-characters> ...";
+const string usage = "Usage: matrix-tools.cs <repository-root|list-cases|list-rti-only-cases|case-field|case-pairings|case-profile-pairings|case-wire-oracle-source|case-info|json-field|discover-cases|discover-rti|generation-provenance|includes|includes-recursive|partition-shard|merge-shards|render-report|adapt-rti-characters> ...";
 var jsonOptions = new JsonSerializerOptions
 {
     WriteIndented = true,
@@ -109,6 +109,47 @@ try
             }
             break;
         }
+        case "case-profile-pairings":
+        {
+            if (args.Length is not (4 or 5))
+            {
+                throw new ArgumentException(usage);
+            }
+
+            var item = FindCase(ReadJson(args[1]), args[2]);
+            foreach (var (writer, reader) in CasePairings(item, args.Length == 5 ? args[4] : null, args[3]))
+            {
+                Console.WriteLine($"{writer}|{reader}");
+            }
+            break;
+        }
+        case "case-wire-oracle-source":
+        {
+            RequireArgs(4);
+            var cases = ReadJson(args[1])["cases"];
+            var caseEntry = cases?[args[2]];
+            var item = caseEntry?[args[3]];
+            if (item is not null && ((string?)item["mode"] is "captured" or "adjusted"))
+            {
+                Console.WriteLine((string)item["sourceDirectory"]!);
+            }
+            else if (item is null)
+            {
+                var language = args[3] switch
+                {
+                    "rtiCSharp" => "csharp",
+                    "rtiCpp" => "cpp",
+                    _ => throw new ArgumentException($"Unknown wire oracle peer: {args[3]}"),
+                };
+                var oracleRoot = Path.GetDirectoryName(Path.GetFullPath(args[1]))!;
+                var defaultSource = Path.Combine(language, "features", args[2]);
+                if (Directory.Exists(Path.Combine(oracleRoot, defaultSource)))
+                {
+                    Console.WriteLine(defaultSource.Replace('\\', '/'));
+                }
+            }
+            break;
+        }
         case "case-info":
         {
             RequireArgs(4);
@@ -182,14 +223,23 @@ JsonNode ReadJson(string path)
     return JsonNode.Parse(File.ReadAllText(path))!;
 }
 
-/// <summary>Gets the explicitly qualified peers; ordinary cases keep all nine directed pairings.</summary>
-string[] CasePeers(JsonNode item) => item["wireMatrix"]?["peers"] is JsonArray peers
-    ? peers.Select(peer => (string)peer!).ToArray()
-    : ["Wireloom C#", "RTI C#", "RTI C++"];
-
-PeerPair[] CasePairings(JsonNode item, string? fixture = null)
+/// <summary>Gets the peers available for the selected RTI profile.</summary>
+string[] CasePeers(JsonNode item, string? version = null)
 {
-    var peers = CasePeers(item);
+    var peers = item["wireMatrix"]?["peers"] is JsonArray configuredPeers
+        ? configuredPeers.Select(peer => (string)peer!).ToList()
+        : ["Wireloom C#", "RTI C#", "RTI C++"];
+    foreach (var exclusion in item["wireMatrix"]?["excludedPeersByRtiVersion"]?[version ?? ""]?.AsObject() ?? [])
+    {
+        peers.Remove(exclusion.Key);
+    }
+
+    return peers.ToArray();
+}
+
+PeerPair[] CasePairings(JsonNode item, string? fixture = null, string? version = null)
+{
+    var peers = CasePeers(item, version);
     if (fixture is not null && item["wireMatrix"]?["fixturePairings"]?[fixture] is JsonArray fixturePairings)
     {
         var pairings = fixturePairings.Select(value =>
@@ -211,6 +261,23 @@ PeerPair[] CasePairings(JsonNode item, string? fixture = null)
     }
 
     return peers.SelectMany(writer => peers.Select(reader => (Writer: writer, Reader: reader))).ToArray();
+}
+
+JsonObject EffectiveWireMatrixConfiguration(JsonNode configuration, string version)
+{
+    var effective = (JsonObject)configuration.DeepClone();
+    var excludedPeers = effective["excludedPeers"] as JsonObject ?? new JsonObject();
+    var profileExclusions = effective["excludedPeersByRtiVersion"]?[version]?.AsObject();
+    if (profileExclusions is not null)
+    {
+        foreach (var (peer, reason) in profileExclusions)
+        {
+            excludedPeers[peer] = reason?.DeepClone();
+        }
+    }
+
+    effective["excludedPeers"] = excludedPeers;
+    return effective;
 }
 
 /// <summary>Captures the selected mode and hashes of the actual IDL and generated sources used by a peer build.</summary>
@@ -801,14 +868,14 @@ void RenderReport(string[] commandArgs)
         };
         if (wireMatrixConfiguration.TryGetValue(id, out var matrixConfiguration))
         {
-            scenario["matrixConfiguration"] = matrixConfiguration;
+            scenario["matrixConfiguration"] = EffectiveWireMatrixConfiguration(matrixConfiguration, version);
         }
         var corpusCase = FindCase(manifest, id);
-        if (!CasePeers(corpusCase).Contains(writer) || !CasePeers(corpusCase).Contains(reader))
+        if (!CasePeers(corpusCase, version).Contains(writer) || !CasePeers(corpusCase, version).Contains(reader))
         {
             throw new InvalidDataException($"Exchange uses an excluded peer for {id}.");
         }
-        if (!CasePairings(corpusCase, fixture).Contains((writer, reader)))
+        if (!CasePairings(corpusCase, fixture, version).Contains((writer, reader)))
         {
             throw new InvalidDataException($"Exchange uses an excluded pairing for {id} [{fixture}].");
         }
@@ -901,6 +968,17 @@ void RenderReport(string[] commandArgs)
         scenarios.Add(scenario);
     }
 
+    var reportedCaseIds = scenarios.Select(scenario => (string)scenario["case"]!).ToHashSet(StringComparer.Ordinal);
+    var knownExceptions = wireMatrixConfiguration
+        .Where(entry => reportedCaseIds.Contains(entry.Key))
+        .SelectMany(entry => (entry.Value["excludedPeersByRtiVersion"]?[version]?.AsObject() ?? [])
+            .Select(exclusion => new JsonObject
+            {
+                ["case"] = entry.Key,
+                ["peer"] = exclusion.Key,
+                ["reason"] = exclusion.Value?.DeepClone(),
+            }))
+        .ToArray();
     var report = new ReportFields
     {
         ["rtiVersion"] = version,
@@ -910,12 +988,14 @@ void RenderReport(string[] commandArgs)
         ["notImplementedCount"] = notImplemented.Count,
         ["adaptedScenarioCount"] = scenarios.Count(scenario => scenario.ContainsKey("adaptations")),
         ["notApplicableCount"] = notApplicable.Count,
+        ["knownExceptionCount"] = knownExceptions.Length,
+        ["knownExceptions"] = knownExceptions,
         ["notApplicableCases"] = notApplicable,
         ["notImplementedCases"] = notImplemented,
         ["scenarios"] = scenarios,
     };
     File.WriteAllText(outputPath, JsonSerializer.Serialize(report, jsonOptions) + "\n");
-    WriteMarkdown(version, scenarios, notImplemented, notApplicable, manifest, markdownPath);
+    WriteMarkdown(version, scenarios, notImplemented, notApplicable, knownExceptions.Length, manifest, markdownPath);
 }
 
 // Report modes describe the actual endpoint setup, independently of PASS/FAIL.
@@ -936,6 +1016,16 @@ string EndpointMode(string peer, string? adaptation)
 
 string? Adaptation(string id, string fixture, string peer, string peerVersion)
 {
+    if (peer == "RTI C#" && (id is "07-union-uint32" or "07-union-ulong"))
+    {
+        return "Checked-in adjusted RTI C# oracle: use an unchecked 32-bit conversion for the maximum union label.";
+    }
+
+    if (peer == "RTI C#" && id == "07-union-char-boundaries")
+    {
+        return "Checked-in adjusted RTI C# oracle: restore the IDL ASCII maximum label U+007E in place of the captured U+00FF literal.";
+    }
+
     if ((id is "14-autoid-scope" or "14-enum-constant") && peer == "RTI C#")
     {
         return peerVersion == "7.3.1"
@@ -1127,30 +1217,39 @@ string DisplayPeer(string peer)
     return peer;
 }
 
+string DisplayPeerHeader(string peer)
+{
+    return peer == "Wireloom C#" ? "🧵" : peer;
+}
+
 string WorkaroundLink(string? caseId = null)
 {
-    var anchor = caseId switch
+    var workaroundIds = caseId switch
     {
-        "09-optional-string-sequences" => "optional-wide-string-sequences",
-        "06-alias-composition" => "shadowed-c-member",
-        "07-union-char-numeric" or "07-union-char-numeric-255" => "numeric-character-unions",
-        "09-optional-recursive-array" => "recursive-metadata-propagation",
-        "06-aggregates" => "recursive-type-generation",
-        "07-union-wchar-label" => "wide-character-union-reference",
-        "10-flat-data-binding" => "flatdata-reference-input",
-        "10-resolve-name-wstring-aliases" => "wstring-alias-typecode-tags",
-        _ => null,
+        "09-optional-string-sequences" => new[] { "W001" },
+        "06-alias-composition" => new[] { "W002" },
+        "07-union-char-numeric" => new[] { "W003", "W004" },
+        "07-union-char-numeric-255" => new[] { "W003", "W004", "W005", "W006" },
+        "09-optional-recursive-array" => new[] { "W007", "W008", "W009", "W010" },
+        "06-aggregates" => new[] { "W011", "W012" },
+        "07-union-wchar-label" => new[] { "W013" },
+        "10-flat-data-binding" => new[] { "W014" },
+        "10-resolve-name-wstring-aliases" => new[] { "W015" },
+        "07-union-ulong" or "07-union-uint32" => new[] { "W016" },
+        "07-union-char-boundaries" => new[] { "W017" },
+        "14-autoid-scope" or "14-enum-constant" => new[] { "W018" },
+        _ => Array.Empty<string>(),
     };
     var server = Environment.GetEnvironmentVariable("GITHUB_SERVER_URL") ?? "https://github.com";
     var repository = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY") ?? "eNeRGy164/wireloom";
     var revision = Environment.GetEnvironmentVariable("GITHUB_SHA") ?? "main";
     var url = $"{server}/{repository}/blob/{revision}/tests/Wireloom.Dds.Generator.WireCompatibility/WORKAROUNDS.md";
-    if (anchor is not null)
+    if (workaroundIds.Length == 0)
     {
-        url += $"#{anchor}";
+        return $"[Workaround guide]({url})";
     }
 
-    return $"[Workaround guide]({url})";
+    return string.Join(", ", workaroundIds.Select(id => $"[Workaround {id}]({url}#{id.ToLowerInvariant()})"));
 }
 
 string FormatExplanation(string text)
@@ -1184,7 +1283,48 @@ string FormatExplanation(string text)
     return formatted.Replace("|", "\\|", StringComparison.Ordinal);
 }
 
-void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray unsupported, JsonArray notApplicable, JsonNode manifest, string destination)
+Dictionary<string, (string Tag, string Theme)> FeatureLabels(JsonNode manifest)
+{
+    var entries = manifest["positiveCases"]!.AsArray()
+        .Concat(manifest["negativeCases"]!.AsArray())
+        .ToList();
+    foreach (var integrationIdl in manifest["integrationEntryPoints"]!.AsArray())
+    {
+        var idl = (string)integrationIdl!;
+        entries.Add(new JsonObject
+        {
+            ["id"] = Path.GetFileNameWithoutExtension(idl),
+            ["theme"] = Path.GetFileNameWithoutExtension(idl),
+        });
+    }
+
+    var explicitTags = entries
+        .Where(entry => !string.IsNullOrEmpty((string?)entry!["tag"]))
+        .Select(entry => int.Parse(((string)entry!["tag"]!)[1..], System.Globalization.CultureInfo.InvariantCulture))
+        .ToHashSet();
+    var labels = new Dictionary<string, (string Tag, string Theme)>(StringComparer.Ordinal);
+    var nextTag = 1;
+    foreach (var entry in entries)
+    {
+        var id = (string)entry!["id"]!;
+        var tag = (string?)entry["tag"];
+        if (tag is null)
+        {
+            while (explicitTags.Contains(nextTag))
+            {
+                nextTag++;
+            }
+
+            tag = $"C{nextTag++:D3}";
+        }
+
+        labels.Add(id, (tag, (string?)entry["theme"] ?? id));
+    }
+
+    return labels;
+}
+
+void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray unsupported, JsonArray notApplicable, int knownExceptionCount, JsonNode manifest, string destination)
 {
     PeerPair[] pairings =
     {
@@ -1244,7 +1384,7 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
     var lines = new List<string>
     {
         $"# {rtiVersion} Wire compatibility results", "",
-        $"**{scenarios.Count}** DDS exchanges · **{passed}** passed · **{failed.Length}** failed · **{notRunCount}** not run · **{unsupported.Count}** case(s) not implemented · **{notApplicable.Count}** case(s) not applicable", "",
+        $"**{scenarios.Count}** DDS exchanges · **{passed}** passed · **{failed.Length}** failed · **{notRunCount}** not run · **{knownExceptionCount}** known peer exception(s) · **{unsupported.Count}** case(s) not implemented · **{notApplicable.Count}** case(s) not applicable", "",
         "Each cell is a writer → reader exchange. A `\"` repeats the IDL from the previous row. Observed errors are quoted from sanitized logs.", "",
         "| Legend | Meaning |",
         "| :-- | :-- |",
@@ -1252,10 +1392,11 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
         "| 🟧<sup>†</sup> | Passed with an adaptation |",
         "| ⛔ | Failed |",
         "| ❔ | Not run |",
-        "| N/A | Peer or pairing excluded by the recorded configuration |",
+        "| ⚠️ Exception | Known peer generation or compile issue; see the message in Problem / defect |",
+        "| N/A | Peer or pairing is outside this case's configured scope |",
         "| ⚫ | Not implemented |",
         "",
-        "Failure details show the observed symptom.", "",
+        "Failure details show the observed symptom. Adaptation notes link to the applicable workaround IDs (`W001`–`W018`).", "",
         $"{WorkaroundLink()} explains the default paths and applied code changes.", "",
     };
     if (notApplicable.Count > 0)
@@ -1298,13 +1439,24 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
 
             foreach (var exclusion in configuration["excludedPeers"]?.AsObject() ?? [])
             {
-                lines.Add($"  Excluded peer **{exclusion.Key}**: {(string)exclusion.Value!}");
+                lines.Add($"  Known exception for **{exclusion.Key}**: {(string)exclusion.Value!}");
+            }
+
+            foreach (var adjustment in configuration["adjustments"]?.AsObject() ?? [])
+            {
+                lines.Add($"  Adjustment for **{adjustment.Key}**: {(string)adjustment.Value!}");
+            }
+
+            var adjustedCSharpOracle = (string?)configuration["adjustedRtiCSharpOracleByRtiVersion"]?[rtiVersion];
+            if (adjustedCSharpOracle is not null)
+            {
+                lines.Add($"  RTI C# source: checked-in adjusted oracle at `{adjustedCSharpOracle}`.");
             }
         }
         lines.Add("");
     }
     lines.AddRange([
-        "| IDL scenario | Variation | " + string.Join(" | ", pairings.Select(p => $"{DisplayPeer(p.Writer)} → {DisplayPeer(p.Reader)}")) + " | Adaptations | Problem / defect |",
+        "| Corpus feature | Variation | " + string.Join(" | ", pairings.Select(p => $"{DisplayPeerHeader(p.Writer)} → {DisplayPeerHeader(p.Reader)}")) + " | Adaptations | Problem / defect |",
         "| :-- | :-- | " + string.Join(" | ", pairings.Select(_ => ":--:")) + " | :-- | :-- |",
     ]);
     var unsupportedById = unsupported.ToDictionary(item => (string)item!["id"]!, StringComparer.Ordinal);
@@ -1327,22 +1479,26 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
     var orderedRows = reportRows
         .OrderBy(row => row.CaseId, StringComparer.Ordinal)
         .ThenBy(row => row.Fixture, StringComparer.Ordinal);
-    string? previous = null;
+    var featureLabels = FeatureLabels(manifest);
     foreach (var (id, fixture, row, unsupportedCase) in orderedRows)
     {
+        var caseItem = FindCase(manifest, id);
         var plannedPairings = unsupportedCase is null
-            ? CasePairings(FindCase(manifest, id), fixture).ToHashSet()
+            ? CasePairings(caseItem, fixture).ToHashSet()
             : pairings.ToHashSet();
-        var excludedPeers = row.Values.Where(item => item.ContainsKey("matrixConfiguration"))
-            .Select(item => ((JsonObject)item["matrixConfiguration"]!)["excludedPeers"]?.AsObject())
-            .FirstOrDefault() ?? new JsonObject();
+        var baseExcludedPeers = caseItem["wireMatrix"]?["excludedPeers"]?.AsObject() ?? new JsonObject();
+        var profileExceptions = caseItem["wireMatrix"]?["excludedPeersByRtiVersion"]?[rtiVersion]?.AsObject() ?? new JsonObject();
         var cells = new List<string>();
         foreach (var pairing in pairings)
         {
             if (!plannedPairings.Contains(pairing)
-                || excludedPeers.ContainsKey(pairing.Writer) || excludedPeers.ContainsKey(pairing.Reader))
+                || baseExcludedPeers.ContainsKey(pairing.Writer) || baseExcludedPeers.ContainsKey(pairing.Reader))
             {
                 cells.Add("N/A");
+            }
+            else if (profileExceptions.ContainsKey(pairing.Writer) || profileExceptions.ContainsKey(pairing.Reader))
+            {
+                cells.Add("⚠️ Exception");
             }
             else if (unsupportedCase is not null && UsesWireloom(pairing))
             {
@@ -1395,8 +1551,17 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
         {
             if (!plannedPairings.Contains(pair)
                 || (unsupportedCase is not null && UsesWireloom(pair))
-                || excludedPeers.ContainsKey(pair.Writer) || excludedPeers.ContainsKey(pair.Reader))
+                || baseExcludedPeers.ContainsKey(pair.Writer) || baseExcludedPeers.ContainsKey(pair.Reader))
             {
+                continue;
+            }
+
+            var excludedPeer = new[] { pair.Writer, pair.Reader }
+                .Distinct(StringComparer.Ordinal)
+                .FirstOrDefault(peer => profileExceptions.ContainsKey(peer));
+            if (excludedPeer is not null)
+            {
+                problems.Add(($"{DisplayPeer(pair.Writer)} → {DisplayPeer(pair.Reader)}", profileExceptions[excludedPeer]!.GetValue<string>()));
                 continue;
             }
 
@@ -1426,9 +1591,9 @@ void WriteMarkdown(string rtiVersion, List<ReportFields> scenarios, JsonArray un
             problemParts.Add($"**{names}:** “{detail}”");
         }
         var problemText = problemParts.Count == 0 ? "—" : string.Join("<br><br>", problemParts);
-        var caseCell = id == previous ? "\"" : $"`{id}.idl`";
+        var feature = featureLabels[id];
+        var caseCell = $"**{feature.Tag}** · `{id}`<br>{FormatExplanation(feature.Theme)}";
         lines.Add($"| {caseCell} | `{fixture}` | {string.Join(" | ", cells)} | {(adaptationText.Length == 0 ? "—" : adaptationText)} | {problemText} |");
-        previous = id;
     }
 
     File.WriteAllText(destination, string.Join("\n", lines) + "\n");

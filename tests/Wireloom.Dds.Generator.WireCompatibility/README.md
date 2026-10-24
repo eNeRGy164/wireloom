@@ -31,9 +31,10 @@ so inspect the combined report before making a profile-qualification claim.
 ### GitHub Actions
 
 Manually dispatch the **Wire compatibility** workflow. It runs both RTI
-versions in the same workflow. Each version has four case shards and a separate
-report job, summary, and combined artifact. Up to four shard jobs can run at
-once for each version. The workflow requires the `RTI_CONNEXT_LICENSE` secret.
+versions in the same workflow. Each version has eight case shards and a separate
+report job, summary, and combined artifact. Up to eight shard jobs per version
+can run concurrently (16 total). The workflow requires the `RTI_CONNEXT_LICENSE`
+secret.
 
 The combined artifacts are named `wire-compatibility-rti-7.3.1` and
 `wire-compatibility-rti-7.7.0`. Shard artifacts use the corresponding
@@ -42,47 +43,47 @@ mappings under `raw/`. Partial evidence is uploaded even when a shard fails;
 the report job validates available evidence and retains a failing workflow
 status for setup errors or incomplete exchanges.
 
-### Local container run
+### Container variants and local wire run
 
-Run `scripts/run-matrix.sh` inside the helper image built from
-`Containerfile`. Set the RTI version to exactly `7.3.1` or `7.7.0`, provide a
-matching RTI license through `RTI_LICENSE_FILE`, and make the repository
-available inside the container. Use a version-specific output directory so
-local evidence cannot be confused across profiles.
+`Containerfile.dev` keeps the full RTI base, .NET SDK, and native build tools
+for local development and debugging. Oracle capture continues to use the
+version-pinned full RTI base directly through
+[`Capture-RtiOracles.ps1`](../../../docs/corpus/scripts/Capture-RtiOracles.ps1).
 
-For example, inside the container:
+`Containerfile.wire` is the execution image used by GitHub Actions. It starts
+from the pinned .NET 10 Noble SDK image and installs the RTI C/C++ runtime and
+development libraries plus native build tools. It does not include Java or
+`rtiddsgen`; wire peers come from the checked-in corpus. Package revisions
+must match the selected RTI profile:
 
-```bash
-export WIRE_COMPATIBILITY_RTI_VERSION=7.7.0
-export WIRE_COMPATIBILITY_OUTPUT_DIR=/workspace/artifacts/wire-compatibility-rti-7.7.0
-bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.sh
-```
-
-The 7.3.1 run uses the same command with `WIRE_COMPATIBILITY_RTI_VERSION=7.3.1`
-and a 7.3.1 output directory. For local runs, copy the checked-out source into
-the helper container and copy or mount the license as a read-only file; do not
-include the license in the source tree or generated artifacts.
+| RTI version | RTI package revision  |
+| ----------- | --------------------- |
+| 7.3.1       | `7.3.1.0-1-1bullseye` |
+| 7.7.0       | `7.7.0.0-1-1bookworm` |
 
 For a complete local reproduction, use a clean Linux checkout of the recorded
 revision; do not reuse Windows `obj`/`bin` directories or a Windows worktree's
 `.git` pointer inside Linux. The PowerShell corpus capture/export recipes in
 the [LTS runbook](../../docs/corpus/LTS-PROFILES.md) run directly on Windows.
-For example, from that Linux checkout with Docker available:
+From a clean Linux checkout with Docker available, build and run one profile:
 
 ```bash
 version=7.3.1
-base='rticom/connext-base:7.3.1@sha256:f33a61ec6381a8fb73cbb019fbb5c081f434dc5217eb14283fad995306be0f04'
-# For 7.7.0 use the matching base digest from docs/corpus/LTS-PROFILES.md.
+package_version=7.3.1.0-1-1bullseye
+# For 7.7.0 use package_version=7.7.0.0-1-1bookworm.
 license_file="$HOME/rti_license.dat" # Keep the license outside the checkout.
 [[ -f "$license_file" && -z "$(git status --porcelain)" ]] || exit 1
 run_dir="$PWD/artifacts/wire-rti-$version-$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$run_dir"
 git rev-parse HEAD > "$run_dir/source-commit.txt"
-printf '%s\n' "$base" > "$run_dir/base-image.txt"
+printf '%s\n' "$package_version" > "$run_dir/rti-package-version.txt"
 date -u +%FT%TZ > "$run_dir/started-at.txt"
-docker build --file tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile \
-  --build-arg "RTI_BASE_IMAGE=$base" --tag "wireloom-rti-$version:repro" \
-  --iidfile "$run_dir/helper-image-id.txt" .
+docker build --file tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile.wire \
+  --build-arg "RTI_VERSION=$version" \
+  --build-arg "RTI_PACKAGE_VERSION=$package_version" \
+  --tag "wireloom-wire-$version:repro" \
+  --iidfile "$run_dir/image-id.txt" \
+  tests/Wireloom.Dds.Generator.WireCompatibility
 status=0
 docker run --rm --user 0:0 --workdir /workspace \
   --volume "$PWD:/workspace" \
@@ -91,9 +92,9 @@ docker run --rm --user 0:0 --workdir /workspace \
   --env RTI_LICENSE_FILE=/run/secrets/rti_license.dat \
   --env "WIRE_COMPATIBILITY_RTI_VERSION=$version" \
   --env "WIRE_COMPATIBILITY_OUTPUT_DIR=/workspace/${run_dir#"$PWD/"}" \
-  --entrypoint bash "wireloom-rti-$version:repro" -c \
-  'dotnet --info > "$WIRE_COMPATIBILITY_OUTPUT_DIR/dotnet-info.txt";
-   "$NDDSHOME/bin/rtiddsgen" -version > "$WIRE_COMPATIBILITY_OUTPUT_DIR/rtiddsgen-version.txt" 2>&1;
+  --entrypoint bash "wireloom-wire-$version:repro" -lc \
+  'eval "$(rtienv -l "$RTI_LICENSE_FILE")";
+   dotnet --info > "$WIRE_COMPATIBILITY_OUTPUT_DIR/dotnet-info.txt";
    bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.sh' || status=$?
 date -u +%FT%TZ > "$run_dir/completed-at.txt"
 printf '%s\n' "$status" > "$run_dir/exit-code.txt"
@@ -102,13 +103,12 @@ printf '%s\n' "$status" > "$run_dir/exit-code.txt"
 
 A dirty-tree run needs the actual source snapshot/patch and untracked inputs,
 not just `git rev-parse HEAD`; the example deliberately uses a clean checkout.
-The report JSON alone does not currently record every source/image identity.
-Keep the provenance sidecars above with it, and record case filters, shard
-settings, host/compiler versions, and any deviations from the runbook. Do not
-add license files or secret values to the evidence bundle. The helper base is
-pinned, but compiler packages installed while building it can change: retain
-the helper image ID, tool versions, and build logs when reproducing old results.
-No licensed exchange is implied by a successful capture, build, or dry check.
+Keep the provenance sidecars with the report, and record case filters, shard
+settings, host/compiler versions, and any deviations from the runbook. Never
+add license files or secret values to the evidence bundle. RTI package
+revisions and the .NET base image are pinned; retain the image ID, tool
+versions, and build logs when reproducing old results. A successful build or
+capture does not imply that a licensed exchange ran.
 
 Useful runner settings:
 
@@ -249,16 +249,17 @@ are separate adjustments documented in the workaround guide.
 
 ### Reference generation settings
 
-RTI C# sources are generated in scratch with the selected `rtiddsgen`. The native
-runner retains its generic DynamicData path for existing cases and typed paths
-for explicitly selected cases. Some cases configure reference generation in
-`docs/corpus/manifest.json`:
+RTI C# and C++ peers are selected from the checked-in corpus and copied into
+scratch build directories. Wire execution does not invoke `rtiddsgen`. Wrapper
+specific peers and known corrections have dedicated corpus folders with input
+and generated-source hashes. Some cases record reference generation settings
+in `docs/corpus/manifest.json`:
 
-- `rtiCppCodegenOptions` passes options only to that case's C++ generator. Any
-  documented qualification, such as RTI's experimental recursive-structure
-  support, is copied into scenario evidence.
-- `rtiCppIdlAdaptations` changes only the scratch IDL used for RTI C++
-  generation. It does not change the corpus IDL or Wireloom and RTI C# inputs.
+- `rtiCppCodegenOptions` records options used to capture that case's RTI C++
+  oracle. Any documented qualification, such as RTI's experimental
+  recursive-structure support, is copied into scenario evidence.
+- `rtiCppIdlAdaptations` records changes used only when capturing the RTI C++
+  oracle. They do not change the corpus IDL or Wireloom inputs.
 
 The exclusion registries `wire-case-exclusions-7.3.1.json` and
 `wire-case-exclusions-7.7.0.json` record cases that are not applicable to each
@@ -302,7 +303,8 @@ adaptations. This harness configuration does not modify generated bindings.
 ### RTI 7.3.1 negative int8 union discriminator
 
 `07-union-int8` remains valid positive IDL. Its `union-minimum` fixture uses
-`-128` and has eight failing pairings on RTI 7.3.1. RTI stores the negative discriminator as an unsigned
+`-128` and has eight failing pairings on RTI 7.3.1. RTI stores the negative
+discriminator as an unsigned
 value, causing managed DynamicData branch lookup failures and interpreted C#
 serializer payload loss. RTI documents this as
 [CORE-14660, fixed in 7.6.0](https://community.rti.com/static/documentation/connext-dds/7.7.0.1/doc/manuals/connext_dds_professional/release_notes/whats_fixed/760/fixes_dynamic_data.html).

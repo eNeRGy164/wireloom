@@ -13,26 +13,26 @@ concurrency:
 jobs:
   wire-shards:
     name: ${{ matrix.rti_version }} wire test shard ${{ matrix.shard }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 360
     strategy:
       fail-fast: false
-      # Four shards exist for each version, allowing up to four probes per
-      # version to run concurrently (eight runners total).
-      max-parallel: 8
+      # Eight shards exist for each version, allowing all 16 probes to run
+      # concurrently when the repository's runner quota permits it.
+      max-parallel: 16
       matrix:
         rti_version: ['7.3.1', '7.7.0']
-        shard: [0, 1, 2, 3]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
         include:
           - rti_version: '7.3.1'
-            rti_base_image: rticom/connext-base:7.3.1@sha256:f33a61ec6381a8fb73cbb019fbb5c081f434dc5217eb14283fad995306be0f04
+            rti_package_version: 7.3.1.0-1-1bullseye
           - rti_version: '7.7.0'
-            rti_base_image: rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca
+            rti_package_version: 7.7.0.0-1-1bookworm
     env:
       WIRE_COMPATIBILITY_RTI_VERSION: ${{ matrix.rti_version }}
       WIRE_COMPATIBILITY_OUTPUT_DIR: artifacts/wire-compatibility-rti-${{ matrix.rti_version }}
       WIRE_COMPATIBILITY_SHARD_INDEX: ${{ matrix.shard }}
-      WIRE_COMPATIBILITY_SHARD_COUNT: 4
+      WIRE_COMPATIBILITY_SHARD_COUNT: 8
     steps:
       - name: Check out repository
         uses: actions/checkout@v7.0.1
@@ -42,19 +42,30 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.4.1
 
-      - name: Build cached RTI test image
+      - name: Build cached wire execution image
         uses: docker/build-push-action@v7.4.0
         env:
           DOCKER_BUILD_SUMMARY: 'false'
         with:
-          context: .
-          file: tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile
-          tags: wireloom-rti-${{ matrix.rti_version }}:local
+          context: tests/Wireloom.Dds.Generator.WireCompatibility
+          file: tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile.wire
+          tags: wireloom-wire-${{ matrix.rti_version }}:local
           build-args: |
-            RTI_BASE_IMAGE=${{ matrix.rti_base_image }}
+            RTI_VERSION=${{ matrix.rti_version }}
+            RTI_PACKAGE_VERSION=${{ matrix.rti_package_version }}
           load: true
-          cache-from: type=gha,scope=wireloom-rti-${{ matrix.rti_version }}
-          cache-to: ${{ matrix.shard == 0 && format('type=gha,scope=wireloom-rti-{0},mode=max', matrix.rti_version) || '' }}
+          cache-from: type=gha,scope=wireloom-wire-${{ matrix.rti_version }}
+          cache-to: ${{ matrix.shard == 0 && format('type=gha,scope=wireloom-wire-{0},mode=min', matrix.rti_version) || '' }}
+
+      - name: Identify C++ compiler for cache
+        id: cpp_toolchain
+        shell: bash
+        run: |
+          image="wireloom-wire-${WIRE_COMPATIBILITY_RTI_VERSION}:local"
+          version="$(docker run --rm --entrypoint g++ "$image" -dumpfullversion -dumpversion)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          source_hash="${{ hashFiles('tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile.wire', 'tests/Wireloom.Dds.Generator.WireCompatibility/Native/**', 'tests/Wireloom.Dds.Generator.WireCompatibility/scripts/**', 'docs/corpus/manifest.json', 'docs/corpus/**/rtiddsgen/wire-oracles.json', 'docs/corpus/**/rtiddsgen/cpp/**') }}"
+          echo "source_hash=$source_hash" >> "$GITHUB_OUTPUT"
 
       - name: Prepare persistent build caches
         shell: bash
@@ -65,8 +76,10 @@ jobs:
         uses: actions/cache/restore@v6.1.0
         with:
           path: ${{ runner.temp }}/wireloom-cache/ccache
-          key: ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-shard-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: ccache-${{ runner.os }}-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-g++-${{ steps.cpp_toolchain.outputs.version }}-shard-${{ matrix.shard }}-${{ steps.cpp_toolchain.outputs.source_hash }}
           restore-keys: |
+            ccache-${{ runner.os }}-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-g++-${{ steps.cpp_toolchain.outputs.version }}-shard-${{ matrix.shard }}-
+            ccache-${{ runner.os }}-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-g++-${{ steps.cpp_toolchain.outputs.version }}-
             ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-shard-${{ matrix.shard }}-
             ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-
 
@@ -91,7 +104,7 @@ jobs:
           umask 077
           printf '%s' "$RTI_CONNEXT_LICENSE" > "$RUNNER_TEMP/rti_license.dat"
 
-      - name: Verify RTI toolchain and run ${{ matrix.rti_version }} wire matrix
+      - name: Run ${{ matrix.rti_version }} wire matrix
         shell: bash
         run: |
           docker run --rm --user 0:0 \
@@ -110,15 +123,9 @@ jobs:
             --env WIRE_COMPATIBILITY_SHARD_INDEX="$WIRE_COMPATIBILITY_SHARD_INDEX" \
             --env WIRE_COMPATIBILITY_SHARD_COUNT="$WIRE_COMPATIBILITY_SHARD_COUNT" \
             --entrypoint bash \
-            "wireloom-rti-$WIRE_COMPATIBILITY_RTI_VERSION:local" \
+            "wireloom-wire-$WIRE_COMPATIBILITY_RTI_VERSION:local" \
             -lc '
-              version=$("$NDDSHOME/bin/rtiddsgen" -version 2>&1 | sed -n "s/.*rtiddsgen version //p" | head -n 1)
-              expected="4.7.0"
-              if [[ "$WIRE_COMPATIBILITY_RTI_VERSION" == "7.3.1" ]]; then expected="4.3.1"; fi
-              if [[ "$version" != "$expected" ]]; then
-                echo "Expected rtiddsgen $expected from the exact RTI $WIRE_COMPATIBILITY_RTI_VERSION image." >&2
-                exit 1
-              fi
+              eval "$(rtienv -l "$RTI_LICENSE_FILE")"
               bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.sh
             '
 
@@ -127,7 +134,7 @@ jobs:
         uses: actions/cache/save@v6.1.0
         with:
           path: ${{ runner.temp }}/wireloom-cache/ccache
-          key: ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-shard-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: ccache-${{ runner.os }}-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-g++-${{ steps.cpp_toolchain.outputs.version }}-shard-${{ matrix.shard }}-${{ steps.cpp_toolchain.outputs.source_hash }}
 
       - name: Save NuGet packages
         if: always() && matrix.shard == 0 && steps.nuget-cache.outcome == 'success' && steps.nuget-cache.outputs.cache-hit != 'true'
@@ -160,7 +167,7 @@ jobs:
     name: ${{ matrix.rti_version }} wire test results
     needs: wire-shards
     if: always()
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -201,7 +208,7 @@ jobs:
       - name: Validate and combine all exchanges
         run: >-
           dotnet "$RUNNER_TEMP/matrix-tools/matrix-tools.dll"
-          merge-shards ${{ matrix.rti_version }} 4 artifacts/wire-shards artifacts/wire-compatibility-rti-${{ matrix.rti_version }}
+          merge-shards ${{ matrix.rti_version }} 8 artifacts/wire-shards artifacts/wire-compatibility-rti-${{ matrix.rti_version }}
           tests/Wireloom.Dds.Generator.WireCompatibility/wire-case-exclusions-${{ matrix.rti_version }}.json
 
       - name: Publish combined wire matrix summary
