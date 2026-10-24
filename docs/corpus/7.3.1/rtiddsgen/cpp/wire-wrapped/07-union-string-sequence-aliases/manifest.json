@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "07-union-string-sequence-aliases",
+  "language": "cpp",
+  "rtiddsgenVersion": "4.3.1",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/07-union-string-sequence-aliases.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/07-union-string-sequence-aliases.idl",
+      "sha256": "c87a0d898d0bd4432b9194ae7482c8c7bc714adbd69509c8fca6e11fd64246ef"
+    },
+    {
+      "path": "docs/corpus/idl/features/07-union-string-sequence-aliases.idl",
+      "sha256": "83e177230435753e93f34b3370809681663878620b3c1b34cd34cc087a68263e"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "features/07-union-string-sequence-aliases.cxx",
+      "sha256": "8c661488fa97cdf0a978b19a356adaa27303ba2c769191c02da60d209d7229c4"
+    },
+    {
+      "path": "features/07-union-string-sequence-aliases.hpp",
+      "sha256": "bf1700d9ba363ce5a783625f309452e4ab4f47d76feb01f37736d75d8abf475d"
+    },
+    {
+      "path": "features/07-union-string-sequence-aliases.hpp",
+      "sha256": "bf1700d9ba363ce5a783625f309452e4ab4f47d76feb01f37736d75d8abf475d"
+    },
+    {
+      "path": "features/07-union-string-sequence-aliasesPlugin.cxx",
+      "sha256": "3627c9531c815406a0e9a87b56728d47db75a05a0c4cb53ccaf33a324c023c82"
+    },
+    {
+      "path": "features/07-union-string-sequence-aliasesPlugin.hpp",
+      "sha256": "9a0e6fdbc7a381653d8390cffd52bdbb2bf4a97120897f8e6c2a6cb0a139276f"
+    },
+    {
+      "path": "features/07-union-string-sequence-aliasesPlugin.hpp",
+      "sha256": "9a0e6fdbc7a381653d8390cffd52bdbb2bf4a97120897f8e6c2a6cb0a139276f"
+    },
+    {
+      "path": "idl.cxx",
+      "sha256": "0342ec96beea1b0639896b191fe26e0c6e609812c9cd30a20f79eff0da64ef77"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "ddfe5ab63ccdc6b912f7a5174e2fec63dabde0d2507a929f5438bd075d04f9a3"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "9342dba2ffacc05b8b8a7a9faed0eb43d9a902bd20dc6a97ce6a0ab4a7bcfb4a"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "78e2a1fe7775b3ff16e64dcf0805cba5a5005ce811fbc98497d5b01eae609400"
+    }
+  ]
+}

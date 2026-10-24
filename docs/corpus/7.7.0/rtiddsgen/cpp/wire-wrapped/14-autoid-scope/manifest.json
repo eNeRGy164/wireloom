@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "caseId": "14-autoid-scope",
+  "language": "cpp",
+  "rtiddsgenVersion": "4.7.0",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-autoid-scope-topic.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-autoid-scope-topic.idl",
+      "sha256": "9f05c4d932617cc906e80e2967742689428b67e3f0e09f49788c455452e28b37"
+    },
+    {
+      "path": "docs/corpus/idl/features/14-autoid-scope.idl",
+      "sha256": "b9bf886cd3c64e85d108fc2063f6ca0b1f921283de769364c9bf7744f3d00e5b"
+    },
+    {
+      "path": "docs/corpus/idl/includes/autoid-hash-include.idl",
+      "sha256": "6a4ba5a745de20fcb401350796eda734a611f144d90dcd09cd784c6de1af01d7"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "features/14-autoid-scope.cxx",
+      "sha256": "d8c65646f7486c54232463bb39ad0b4b93cdb6ee865f1d79786a0df376284c0f"
+    },
+    {
+      "path": "features/14-autoid-scope.hpp",
+      "sha256": "b7e7a2311d92b64350b6c1f7f713b79b115d9a92fae1a9f5d783a00c7f90c224"
+    },
+    {
+      "path": "features/14-autoid-scope.hpp",
+      "sha256": "b7e7a2311d92b64350b6c1f7f713b79b115d9a92fae1a9f5d783a00c7f90c224"
+    },
+    {
+      "path": "features/14-autoid-scopePlugin.cxx",
+      "sha256": "b5f602c896524697f74d40de525be97eedf3e63a78ca24141436b2eef94c9e4a"
+    },
+    {
+      "path": "features/14-autoid-scopePlugin.hpp",
+      "sha256": "ce7bb4fb46f3bd7a0794f5c03eadd7145dd6f385d59de1c3f950df96dc61cfe4"
+    },
+    {
+      "path": "features/14-autoid-scopePlugin.hpp",
+      "sha256": "ce7bb4fb46f3bd7a0794f5c03eadd7145dd6f385d59de1c3f950df96dc61cfe4"
+    },
+    {
+      "path": "idl.cxx",
+      "sha256": "d1a6cdf67b54d7a09bb41a06028e0896bc84cdb4bc29d4a1027469a932a5b437"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "3a2b7db6f87df1f896f62b027b8e1ec2f6fed4e0d0ddf944e7f5b246a630ddda"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "2e0e21999342a4912714691e1790dc19cb2ed2d4447cd8c815caf43fb4e83ae7"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "2e6eacdba91408e18b670d8fa50dd1d30fc2df005d8944a32b9aa7e98c78973c"
+    },
+    {
+      "path": "includes/autoid-hash-include.cxx",
+      "sha256": "8dcb457c633018a48ed20d2eaab491fe063b90cae39e158d7a1200597b3e40d3"
+    },
+    {
+      "path": "includes/autoid-hash-include.hpp",
+      "sha256": "6b9b9465ec324532297973ee24d6c698f30af067608da5e1af7f5879129ddb66"
+    },
+    {
+      "path": "includes/autoid-hash-include.hpp",
+      "sha256": "6b9b9465ec324532297973ee24d6c698f30af067608da5e1af7f5879129ddb66"
+    },
+    {
+      "path": "includes/autoid-hash-includePlugin.cxx",
+      "sha256": "3dfffd8cbe971bd7f62ae3e86376d6a69b7f3330bc7b7cbdc47b04d05517a644"
+    },
+    {
+      "path": "includes/autoid-hash-includePlugin.hpp",
+      "sha256": "9aa61d1b346efcca38f93102670c5575be1af2ce400cd665d643d44909b245dd"
+    },
+    {
+      "path": "includes/autoid-hash-includePlugin.hpp",
+      "sha256": "9aa61d1b346efcca38f93102670c5575be1af2ce400cd665d643d44909b245dd"
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "14-enum-constant",
+  "language": "cpp",
+  "rtiddsgenVersion": "4.3.1",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-enum-constant-topic.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-enum-constant-topic.idl",
+      "sha256": "7fd5d37f787a3c43b48db23de62759e59b27a3c541347283fc47b8b0827fe379"
+    },
+    {
+      "path": "docs/corpus/idl/features/14-enum-constant.idl",
+      "sha256": "6b62926cae967a8f5a4fde2397d2da23e1360fe8334963883e2567dc1f2c2782"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "features/14-enum-constant.cxx",
+      "sha256": "ccd1dc58668966f0d121c0dcc345157e4d442cb3c376ef4a7bc6811883eff812"
+    },
+    {
+      "path": "features/14-enum-constant.hpp",
+      "sha256": "14ce35c2c32daf29caaef861a447d2d3f8d984bcda9f41ac4e3637a0cf7835a4"
+    },
+    {
+      "path": "features/14-enum-constant.hpp",
+      "sha256": "14ce35c2c32daf29caaef861a447d2d3f8d984bcda9f41ac4e3637a0cf7835a4"
+    },
+    {
+      "path": "features/14-enum-constantPlugin.cxx",
+      "sha256": "88b562ab89b4bc8085fcfb9b396e78bb20323ab0e74fda22a259aa5bb617f3a9"
+    },
+    {
+      "path": "features/14-enum-constantPlugin.hpp",
+      "sha256": "2a51c7a4bdcf1955dacb082a089058c28ae340d0d73e916774b9f474a94cc18d"
+    },
+    {
+      "path": "features/14-enum-constantPlugin.hpp",
+      "sha256": "2a51c7a4bdcf1955dacb082a089058c28ae340d0d73e916774b9f474a94cc18d"
+    },
+    {
+      "path": "idl.cxx",
+      "sha256": "20268ddcaa1318bb01d9507faaff0693756288ebc93f4ba17aec6a5fabfe4537"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "b423bca28c93b87c9fb4af10223d4a908e69f053a68dff19c1797cf0056b33ea"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "8871a4873faaf7cb7dab0ad0e9e89d2477516edeb3b5eba3aaf9f186e2dd387e"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "250ed94c17fbd31289e3b5916ba4886c3b6318ddbcf35c9ca83f239292616604"
+    }
+  ]
+}

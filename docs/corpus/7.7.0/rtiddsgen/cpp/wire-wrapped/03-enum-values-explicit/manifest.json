@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "caseId": "03-enum-values-explicit",
+  "language": "cpp",
+  "rtiddsgenVersion": "4.7.0",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/03-enum-values-explicit.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/03-enum-values-explicit.idl",
+      "sha256": "570c020278664e5f3185530b1881da673d1202d34519462a3a3472570ab9470d"
+    },
+    {
+      "path": "docs/corpus/idl/features/03-enum-values-explicit.idl",
+      "sha256": "4013811a3503dfbb756c0ec6df12c128943c3e2c46d5adf3f50be17a6886595b"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "features/03-enum-values-explicit.cxx",
+      "sha256": "5cb77cbadc38683eab62773d8ae43181cbf5c184c242f35a065e32f4854af124"
+    },
+    {
+      "path": "features/03-enum-values-explicit.hpp",
+      "sha256": "e66bfa90a69256c8b2bc1fa9c2f22ef7b7bb23bb244efda81a3a9b5f92f1e26d"
+    },
+    {
+      "path": "features/03-enum-values-explicit.hpp",
+      "sha256": "e66bfa90a69256c8b2bc1fa9c2f22ef7b7bb23bb244efda81a3a9b5f92f1e26d"
+    },
+    {
+      "path": "features/03-enum-values-explicitPlugin.cxx",
+      "sha256": "a3b0e4e6dc4da395020633c6f6687bb1d93454cf25f754eba6b07bfc8210767d"
+    },
+    {
+      "path": "features/03-enum-values-explicitPlugin.hpp",
+      "sha256": "1ddb0a7be799da11d4ea1406d7aef8bc87e94b13cf2cfc106abf0e6d54d8cf36"
+    },
+    {
+      "path": "features/03-enum-values-explicitPlugin.hpp",
+      "sha256": "1ddb0a7be799da11d4ea1406d7aef8bc87e94b13cf2cfc106abf0e6d54d8cf36"
+    },
+    {
+      "path": "idl.cxx",
+      "sha256": "03e2c0130389edf3597df94a6ca9291ee4a623395f27a7b34eb0ac115742f94c"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "043645e354cef16849aa0ff7642168f9a5bc49ec6b44fcb3f9a0ddd38e3f8d4d"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "1654625b1492e251044ddf71751fbaa88882ff522145fbc3de7ba07c0313f3ef"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "dd54ea60fd5271c0069894884b801bf1f6d5bd9eee5cd611e60628b3b4e0c994"
+    }
+  ]
+}

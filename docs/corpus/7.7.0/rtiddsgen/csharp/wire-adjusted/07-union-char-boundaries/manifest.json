@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "caseId": "07-union-char-boundaries",
+  "language": "csharp",
+  "rtiddsgenVersion": "4.7.0",
+  "wireInput": "docs/corpus/idl/features/07-union-char-boundaries.idl",
+  "inputs": [
+    {
+      "path": "docs/corpus/idl/features/07-union-char-boundaries.idl",
+      "sha256": "f1171de2e7a7b843252006bc792385fd31e9d190df5d574993db970a69cb2224"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "07-union-char-boundaries.cs",
+      "sha256": "e9c7a51f8b57d7cbf6b02dae468c8d6fb2f54aec83b0d31b924f6208a752c040"
+    },
+    {
+      "path": "07-union-char-boundariesPlugin.cs",
+      "sha256": "4eea2304a7cfb84996744608695e37645a0b5795d571648e596296728c24b338"
+    }
+  ],
+  "adjustment": "Corrected the RTI C# maximum char label from U+00FF (ÿ) to the declared ASCII tilde U+007E (~); raw RTI generator output is preserved in csharp/features."
+}

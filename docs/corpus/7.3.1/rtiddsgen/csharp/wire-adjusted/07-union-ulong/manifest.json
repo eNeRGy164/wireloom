@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "07-union-ulong",
+  "language": "csharp",
+  "rtiddsgenVersion": "4.3.1",
+  "wireInput": "docs/corpus/idl/features/07-union-ulong.idl",
+  "inputs": [
+    {
+      "path": "docs/corpus/idl/features/07-union-ulong.idl",
+      "sha256": "aabc18a0640764aa32fba5b84564d865a9fef0a60b5984e9116d706bed3fd8b3"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "07-union-ulong.cs",
+      "sha256": "7ce1523a21249e4e39824a4084ea00f77b2219bd7043bc05e4d983cd5ec81e4b"
+    },
+    {
+      "path": "07-union-ulongPlugin.cs",
+      "sha256": "0efd1a2ae2688dee9b5bcf0c61cdee62c38160f2ea718291c1d44be0cc1791a7"
+    }
+  ],
+  "adjustment": "Changed the maximum unsigned 32-bit union label cast to unchecked((int) 4294967295), preserving the 0xFFFFFFFF wire label while allowing the RTI C# peer to compile."
+}

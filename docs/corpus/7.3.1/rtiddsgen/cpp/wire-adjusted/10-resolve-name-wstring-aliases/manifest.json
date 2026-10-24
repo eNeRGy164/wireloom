@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "10-resolve-name-wstring-aliases",
+  "sourceDirectory": "features/10-resolve-name-wstring-aliases",
+  "adjustment": "Use alias-tag DynamicType specializations for both generated wide-string aliases.",
+  "files": [
+    {
+      "path": "10-resolve-name-wstring-aliases.cxx",
+      "rawSha256": "d0d4a6548116ae4a5f78622b8eb198b0a3d5fb8b16bd69f21b749782628082b6",
+      "adjustedSha256": "0d5caa28beff6c0591fb7c93a7621e06ed9ec01ed5674764fa47dfed49b49a96"
+    },
+    {
+      "path": "10-resolve-name-wstring-aliases.hpp",
+      "rawSha256": "75bc3510ad337e7c49fc5463e3916ca52915a26ea1f7745e05329ecdd3b57d6f",
+      "adjustedSha256": "75bc3510ad337e7c49fc5463e3916ca52915a26ea1f7745e05329ecdd3b57d6f"
+    },
+    {
+      "path": "10-resolve-name-wstring-aliasesPlugin.cxx",
+      "rawSha256": "a15191be70333a7e1af9013d6481ad82038034b57af3f8dc1afeda955ed86880",
+      "adjustedSha256": "a15191be70333a7e1af9013d6481ad82038034b57af3f8dc1afeda955ed86880"
+    },
+    {
+      "path": "10-resolve-name-wstring-aliasesPlugin.hpp",
+      "rawSha256": "4289ed700e6f6f3edc120bd7073461bf5889d1fd7e6daf3045e0718ca9f9a4d7",
+      "adjustedSha256": "4289ed700e6f6f3edc120bd7073461bf5889d1fd7e6daf3045e0718ca9f9a4d7"
+    }
+  ]
+}

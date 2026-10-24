@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "caseId": "07-union-char-numeric",
+  "sourceDirectory": "../features/07-union-char-numeric",
+  "adjustment": "Cast generated numeric discriminator labels to char and preserve the incoming fallback discriminator.",
+  "files": [
+    {
+      "path": "07-union-char-numeric.cs",
+      "rawSha256": "52f497caf50e6b2a2dd9a3fd3bfc7b7910705c9a87c5333ed3c95bcb6d01eef2",
+      "adjustedSha256": "9f98f3913bdc487bc8411cc04a2193ae541cb8d77a65d9aae670a543d4533eb1"
+    },
+    {
+      "path": "07-union-char-numericPlugin.cs",
+      "rawSha256": "4a8f5095eddfc5a38a9d4abea60f9b448fd8db36af73f9ab3ed0f7c011ff0166",
+      "adjustedSha256": "5d8aa68b226de28bb88c4bd954de6735b8835a7deb31102d9b5feea99eb7b217"
+    }
+  ]
+}

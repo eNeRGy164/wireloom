@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "02-multiple",
+  "language": "csharp",
+  "rtiddsgenVersion": "4.3.1",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/02-multiple.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/02-multiple.idl",
+      "sha256": "3fcceae7d9b9474948968b443bbeb1157ad285d9095e2b1d4459ea8528f1136a"
+    },
+    {
+      "path": "docs/corpus/idl/features/02-multiple.idl",
+      "sha256": "3fdbaac615089748dc87faa2676e7226896ace87cbdbfe075090b4501133f5f2"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "02-multiple.cs",
+      "sha256": "a2efd2b1be2c4650faf62d6527b93ba6c82b54c2392fe4e5cb6073df3c2fbf6d"
+    },
+    {
+      "path": "02-multiplePlugin.cs",
+      "sha256": "793c1b2407e306a7b8c1d495a1b02de1d9f256c61d009f8b6b751f3b71355bae"
+    },
+    {
+      "path": "includes/0/02-multiple.cs",
+      "sha256": "78dc8b9fcc2df210048cfc1eaf2c104556ef750a9d7b9646490f2afc871ab8da"
+    },
+    {
+      "path": "includes/0/02-multiplePlugin.cs",
+      "sha256": "69ee64fac1bdbba17c69eb90479065b5bbe5e4046c55516c529cc4a47613f633"
+    }
+  ]
+}

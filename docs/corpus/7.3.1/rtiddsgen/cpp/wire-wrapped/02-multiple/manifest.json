@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "02-multiple",
+  "language": "cpp",
+  "rtiddsgenVersion": "4.3.1",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/02-multiple.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/02-multiple.idl",
+      "sha256": "3fcceae7d9b9474948968b443bbeb1157ad285d9095e2b1d4459ea8528f1136a"
+    },
+    {
+      "path": "docs/corpus/idl/features/02-multiple.idl",
+      "sha256": "3fdbaac615089748dc87faa2676e7226896ace87cbdbfe075090b4501133f5f2"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "features/02-multiple.cxx",
+      "sha256": "1cce495d2bd4d9b6ac318fc4513e73cd6aeaff50f3268922fe5cbbdb56991e9a"
+    },
+    {
+      "path": "features/02-multiple.hpp",
+      "sha256": "dcb2424835a0e6c8aea6dd355e4861307997a30b3bad25f3f81989504bf5be31"
+    },
+    {
+      "path": "features/02-multiple.hpp",
+      "sha256": "dcb2424835a0e6c8aea6dd355e4861307997a30b3bad25f3f81989504bf5be31"
+    },
+    {
+      "path": "features/02-multiplePlugin.cxx",
+      "sha256": "a7ba345fdaf11b43077b5a8ab58a1175a43dfe7b4332abc9b2aecee76007c8ca"
+    },
+    {
+      "path": "features/02-multiplePlugin.hpp",
+      "sha256": "c83efd8f994e137d375681e1e6b5aa2a985ae2e3af6709df767dc31e600d345c"
+    },
+    {
+      "path": "features/02-multiplePlugin.hpp",
+      "sha256": "c83efd8f994e137d375681e1e6b5aa2a985ae2e3af6709df767dc31e600d345c"
+    },
+    {
+      "path": "idl.cxx",
+      "sha256": "f587e2267cc34fcf56f5405915de8c4355677f247a3875cb7116e39bf042603c"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "8ceabdda566d832e5472d34f4325ca2e46e7cd7de2a2815a6632f13ffd78a4a9"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "6b4f6470ded36bdaafb56a986e2e4728827e91f90df27583aa8f548a776f6c61"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "f5def3060e1e623971ddbecfbe3ee35e31355aa0740863b312a29c9a5cbe7e3e"
+    }
+  ]
+}

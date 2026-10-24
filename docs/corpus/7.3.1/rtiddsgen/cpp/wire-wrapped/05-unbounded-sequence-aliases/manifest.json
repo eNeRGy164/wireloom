@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "05-unbounded-sequence-aliases",
+  "language": "cpp",
+  "rtiddsgenVersion": "4.3.1",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/05-unbounded-sequence-aliases.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/05-unbounded-sequence-aliases.idl",
+      "sha256": "33fc7871a119accd22f7fdebe219f5c19c5a46eda1176ea3a1d69c17c68043f9"
+    },
+    {
+      "path": "docs/corpus/idl/features/05-unbounded-sequence-aliases.idl",
+      "sha256": "b8d45edf7759e9f72f656670b1e4cc164c8720322c872f3594a686a89ce4b58f"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "features/05-unbounded-sequence-aliases.cxx",
+      "sha256": "9ed0764dd730af5b77b849534e6d4fbfc030d17f11c5cf5845547759a06bf717"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliases.hpp",
+      "sha256": "eb97b6aa4afbd54d7b1e9c2a34762d06886e80614c1b78b45c3887ca9bff286d"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliases.hpp",
+      "sha256": "eb97b6aa4afbd54d7b1e9c2a34762d06886e80614c1b78b45c3887ca9bff286d"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliasesPlugin.cxx",
+      "sha256": "bb0ae26ec14fd99c75a088351ca56d9da50e2898d8c26910c25bde83cab9367c"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliasesPlugin.hpp",
+      "sha256": "e510550f3be0aeba8a70a12a08039e40e18ac04e1310174176108eb57ff8faca"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliasesPlugin.hpp",
+      "sha256": "e510550f3be0aeba8a70a12a08039e40e18ac04e1310174176108eb57ff8faca"
+    },
+    {
+      "path": "idl.cxx",
+      "sha256": "fbd67065c576e72bd0a82468c2d07bebb8e97f9c7cf76e0485dc299ff04daa24"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "070aafbe1a55ed5f22d60af47feb77be359147b0f7418481ec815aed806f28fd"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "6c678ab8626afed575ce2cb5f7fd05d856e045352423fc94dd8f81ab71d408f5"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "1bcea8a34bbd66a9a9eb4b14844ceaebf9ff129e7b48b32e806be83462bcbc1b"
+    }
+  ]
+}

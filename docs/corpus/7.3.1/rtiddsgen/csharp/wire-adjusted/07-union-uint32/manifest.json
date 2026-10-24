@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "07-union-uint32",
+  "language": "csharp",
+  "rtiddsgenVersion": "4.3.1",
+  "wireInput": "docs/corpus/idl/features/07-union-uint32.idl",
+  "inputs": [
+    {
+      "path": "docs/corpus/idl/features/07-union-uint32.idl",
+      "sha256": "dfd6f30ce6b438e45ec2820e14aa920d929bd8d500712f4e9fb0948b71f1bed7"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "07-union-uint32.cs",
+      "sha256": "f7bf7db268ba631499b08f789039fe9dfe207f709585c32c1d6e5d59ebefb09f"
+    },
+    {
+      "path": "07-union-uint32Plugin.cs",
+      "sha256": "4e6264f5035be47da908ae357126cb9ef2395bb9df535a5611a12021dd6faafb"
+    }
+  ],
+  "adjustment": "Changed the maximum unsigned 32-bit union label cast to unchecked((int) 4294967295), preserving the 0xFFFFFFFF wire label while allowing the RTI C# peer to compile."
+}

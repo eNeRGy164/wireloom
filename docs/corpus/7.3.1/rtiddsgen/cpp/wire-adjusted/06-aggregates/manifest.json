@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "06-aggregates",
+  "sourceDirectory": "features/06-aggregates",
+  "adjustment": "Qualify the recursive TypeCode reference with CorpusAggregates.",
+  "files": [
+    {
+      "path": "06-aggregates.cxx",
+      "rawSha256": "dd6ce4d971709b9a369210ab53f059ae7e7b3246e3208b52a7991a8cea0f0463",
+      "adjustedSha256": "80bc38f8a35c15c357578edcdf301d9c7135de6c2c9a0296bdee9b5e1b0b2ffa"
+    },
+    {
+      "path": "06-aggregates.hpp",
+      "rawSha256": "f44a2220120f9b0b0698d98f5069f9ec772b21d55b5ad8469a94f734a08885ef",
+      "adjustedSha256": "f44a2220120f9b0b0698d98f5069f9ec772b21d55b5ad8469a94f734a08885ef"
+    },
+    {
+      "path": "06-aggregatesPlugin.cxx",
+      "rawSha256": "68c662fdd609ca4f65603b38f6a6fce65be73f1b70e580335733f993569b458a",
+      "adjustedSha256": "68c662fdd609ca4f65603b38f6a6fce65be73f1b70e580335733f993569b458a"
+    },
+    {
+      "path": "06-aggregatesPlugin.hpp",
+      "rawSha256": "98172a793f4dc684cd716b8acc53ce01f5a2305d4dd2ae001e7920f8d3782eb9",
+      "adjustedSha256": "98172a793f4dc684cd716b8acc53ce01f5a2305d4dd2ae001e7920f8d3782eb9"
+    }
+  ]
+}

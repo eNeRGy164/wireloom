@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "03-enum-values-explicit",
+  "language": "csharp",
+  "rtiddsgenVersion": "4.3.1",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/03-enum-values-explicit.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/03-enum-values-explicit.idl",
+      "sha256": "570c020278664e5f3185530b1881da673d1202d34519462a3a3472570ab9470d"
+    },
+    {
+      "path": "docs/corpus/idl/features/03-enum-values-explicit.idl",
+      "sha256": "4013811a3503dfbb756c0ec6df12c128943c3e2c46d5adf3f50be17a6886595b"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "03-enum-values-explicit.cs",
+      "sha256": "7878a38d1f6069f82015cf51203218dcbe4f2569f9e2093eddb6dafdec1d9861"
+    },
+    {
+      "path": "03-enum-values-explicitPlugin.cs",
+      "sha256": "731c2adf3b69ad80c7deacec87f3f284ac932f9fc3125e8cdfbf8b3a9747a4c1"
+    },
+    {
+      "path": "includes/0/03-enum-values-explicit.cs",
+      "sha256": "1046779e58fb76b46f1cfe9b10be21ae25b587f5f63673ffa07cca3a6bf98583"
+    },
+    {
+      "path": "includes/0/03-enum-values-explicitPlugin.cs",
+      "sha256": "bb3a9a0bbe6222fe581f0f82fb106d1cf7960b8df528c8740560aae817371ce9"
+    }
+  ]
+}

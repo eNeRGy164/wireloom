@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "caseId": "14-enum-constant",
+  "language": "csharp",
+  "rtiddsgenVersion": "4.7.0",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-enum-constant-topic.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-enum-constant-topic.idl",
+      "sha256": "7fd5d37f787a3c43b48db23de62759e59b27a3c541347283fc47b8b0827fe379"
+    },
+    {
+      "path": "docs/corpus/idl/features/14-enum-constant.idl",
+      "sha256": "6b62926cae967a8f5a4fde2397d2da23e1360fe8334963883e2567dc1f2c2782"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "14-enum-constant-topic.cs",
+      "sha256": "e822db0dac3927ecd2d1f9d903b5891be5c1ba79abe73d35df5e8a5e111e774a"
+    },
+    {
+      "path": "14-enum-constant-topicPlugin.cs",
+      "sha256": "b6150c67ba338dc3cbdfdbd8d31073b88d2f7a83235cb490be3e0a9b25078fa7"
+    },
+    {
+      "path": "includes/0/14-enum-constant.cs",
+      "sha256": "40d0d50f58b57d6b9e9d6cc6ea861044a245cd8cf4e16f1eb62722a690ee08fc"
+    },
+    {
+      "path": "includes/0/14-enum-constantPlugin.cs",
+      "sha256": "be6762afbec493ab607974e418fbe8a411fb0e554bb703f428a663a9d4289505"
+    }
+  ]
+}

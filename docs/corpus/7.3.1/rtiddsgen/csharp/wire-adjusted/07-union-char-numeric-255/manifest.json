@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "07-union-char-numeric-255",
+  "sourceDirectory": "../features/07-union-char-numeric-255",
+  "adjustment": "Cast label 255 to char, correct its signed TypeCode label, and preserve the incoming fallback discriminator.",
+  "files": [
+    {
+      "path": "07-union-char-numeric-255.cs",
+      "rawSha256": "f92205e15956114c0fb1ce3952f80fd59711b8df85be0797d4b890f38f312934",
+      "adjustedSha256": "bd45f457b4c07b7111a21fea0c2b201847875d6dca47b7ce18319bf340d95a37"
+    },
+    {
+      "path": "07-union-char-numeric-255Plugin.cs",
+      "rawSha256": "fc8811c8f894863e568f93027016d77f36a015b1221e05b6435bc3c27bb73613",
+      "adjustedSha256": "7d5e70c91ead2d0168ebab80a8984a4d6ae695c6834820f3f5af610686ce1431"
+    }
+  ]
+}

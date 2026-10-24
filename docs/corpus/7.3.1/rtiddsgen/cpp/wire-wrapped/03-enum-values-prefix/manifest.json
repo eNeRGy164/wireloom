@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "03-enum-values-prefix",
+  "language": "cpp",
+  "rtiddsgenVersion": "4.3.1",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/03-enum-values-prefix.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/03-enum-values-prefix.idl",
+      "sha256": "b2c34289207a7b6afc555478940e3d8c99b89f6137515285d7fabf178bce1046"
+    },
+    {
+      "path": "docs/corpus/idl/features/03-enum-values-prefix.idl",
+      "sha256": "f8b78b800b862fcce26ad7ed2b95f771edfb938152aaea38e158b4bb67f99a7b"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "features/03-enum-values-prefix.cxx",
+      "sha256": "438e5b873f0b65ab2bd56238403716d3dd451f9b768d2852e958e4afd87ea0c2"
+    },
+    {
+      "path": "features/03-enum-values-prefix.hpp",
+      "sha256": "4fbb6a8d3904277948561809427a85871751515b4332a80331379c67dfbc8255"
+    },
+    {
+      "path": "features/03-enum-values-prefix.hpp",
+      "sha256": "4fbb6a8d3904277948561809427a85871751515b4332a80331379c67dfbc8255"
+    },
+    {
+      "path": "features/03-enum-values-prefixPlugin.cxx",
+      "sha256": "4e65b7ad85ac4b62bcb8d81f8a793ba80fa14a5c2781b0870bbc366427d85182"
+    },
+    {
+      "path": "features/03-enum-values-prefixPlugin.hpp",
+      "sha256": "b6ac3a7d7fa97f69556b58a4d532005ae104f18c87cef274e5af6f6948d3c1b0"
+    },
+    {
+      "path": "features/03-enum-values-prefixPlugin.hpp",
+      "sha256": "b6ac3a7d7fa97f69556b58a4d532005ae104f18c87cef274e5af6f6948d3c1b0"
+    },
+    {
+      "path": "idl.cxx",
+      "sha256": "407a29ea3d96951f0d2917a8bcb25bf88099560e06d5221c36242bd6d95e04d7"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "01f1a18d49ebe3d88f28f845051256c832ae93eb69adc06293252ec7c124772e"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "b97d51e14df1b0ee4ba2a4d82f3ddff713a48f6419d6f0bbfcf879467e1b888e"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "bd6f7acb8d3e226f15405b05e1a1f35b35cf5266f2d7546173432157ba3c11a1"
+    }
+  ]
+}

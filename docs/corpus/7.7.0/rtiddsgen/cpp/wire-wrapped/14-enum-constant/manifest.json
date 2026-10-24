@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "caseId": "14-enum-constant",
+  "language": "cpp",
+  "rtiddsgenVersion": "4.7.0",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-enum-constant-topic.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-enum-constant-topic.idl",
+      "sha256": "7fd5d37f787a3c43b48db23de62759e59b27a3c541347283fc47b8b0827fe379"
+    },
+    {
+      "path": "docs/corpus/idl/features/14-enum-constant.idl",
+      "sha256": "6b62926cae967a8f5a4fde2397d2da23e1360fe8334963883e2567dc1f2c2782"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "features/14-enum-constant.cxx",
+      "sha256": "35e53e1db1a9171ad3d4de5019f3b021cc1734f8a7007942c3bc17b46255bafa"
+    },
+    {
+      "path": "features/14-enum-constant.hpp",
+      "sha256": "bd13dce0b7ba58e09fb4894b77cfa896d025da2fa143795946cfa587e6798ef8"
+    },
+    {
+      "path": "features/14-enum-constant.hpp",
+      "sha256": "bd13dce0b7ba58e09fb4894b77cfa896d025da2fa143795946cfa587e6798ef8"
+    },
+    {
+      "path": "features/14-enum-constantPlugin.cxx",
+      "sha256": "d539c96c91835bfa6fbd665db7ffeeaa7389c7099a537c16cdf3ed96d26cead0"
+    },
+    {
+      "path": "features/14-enum-constantPlugin.hpp",
+      "sha256": "41cbc65f7392f684740cd961c0fe2ae042e0a722d9b1a46371229329a73fe9f8"
+    },
+    {
+      "path": "features/14-enum-constantPlugin.hpp",
+      "sha256": "41cbc65f7392f684740cd961c0fe2ae042e0a722d9b1a46371229329a73fe9f8"
+    },
+    {
+      "path": "idl.cxx",
+      "sha256": "533a8a1eca46a67acc17ffcbe79268f16048acf009d4e9660b68dbf35b1363d1"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "c1c67a877c39806eccc52f41b55a4fbea7911508fbcb5563af2a7a54cbe1d37a"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "fb48be7c99fb00e7e010779a00244deace6c7d223dbf566b8a8aedde021ab272"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "46a28cce432aebf4ac294b86952f2a709759c19cba15ec4fcbd8dda0053d7296"
+    }
+  ]
+}

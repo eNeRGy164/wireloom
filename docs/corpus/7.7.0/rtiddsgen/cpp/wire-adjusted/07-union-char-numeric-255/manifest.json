@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "caseId": "07-union-char-numeric-255",
+  "sourceDirectory": "features/07-union-char-numeric-255",
+  "adjustment": "Map numeric char label 255 to the signed byte representation in RTI TypeCode metadata.",
+  "files": [
+    {
+      "path": "07-union-char-numeric-255.cxx",
+      "rawSha256": "0f14ab10e9d29f302104c0eae155fbaed911e5b9a229ced6327928ea42208528",
+      "adjustedSha256": "75424bb5b7bf6fb1ed439a655126088d3deedfe33f732ebe976653f7927b3719"
+    },
+    {
+      "path": "07-union-char-numeric-255.hpp",
+      "rawSha256": "8b5e63ded8e55ae816e343b09dbf77e913d8db428563a23719cd065de5f835c3",
+      "adjustedSha256": "8b5e63ded8e55ae816e343b09dbf77e913d8db428563a23719cd065de5f835c3"
+    },
+    {
+      "path": "07-union-char-numeric-255Plugin.cxx",
+      "rawSha256": "f28ac6362d26909c2b9e1fef646f91682ebfa51179e0c88438728493ca96f478",
+      "adjustedSha256": "f28ac6362d26909c2b9e1fef646f91682ebfa51179e0c88438728493ca96f478"
+    },
+    {
+      "path": "07-union-char-numeric-255Plugin.hpp",
+      "rawSha256": "dca86d1ce7c8fd3caeb73d2a6700d6d2af10cadf74761e6802fc13c97535597d",
+      "adjustedSha256": "dca86d1ce7c8fd3caeb73d2a6700d6d2af10cadf74761e6802fc13c97535597d"
+    }
+  ]
+}

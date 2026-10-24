@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.3.1",
+  "caseId": "05-array-of-sequences-idl",
+  "reusedCase": "05-array-of-sequences",
+  "idlSha256": "ee438aa923bca8dd73cb76934b64f120df765187344a8378997301128de61d81",
+  "sourceIdlSha256": "ee438aa923bca8dd73cb76934b64f120df765187344a8378997301128de61d81",
+  "adjustment": "The two IDL files have identical bytes. Generated filenames are normalized to idl.* for the wire harness.",
+  "files": [
+    {
+      "path": "idl.cxx",
+      "sourcePath": "05-array-of-sequences.cxx",
+      "sourceSha256": "be837310ee49468a92e3acc6d489b8b8ab648b14888f0eb60d4bb186afae794d",
+      "adjustedSha256": "23d0278b773b5825bf593cee6a05dc33efd0d4411c01d211acc1f3cdc7625581"
+    },
+    {
+      "path": "idl.hpp",
+      "sourcePath": "05-array-of-sequences.hpp",
+      "sourceSha256": "7ee3e134a0dea5e78b70c914259731d22c15d5a9f4de088eeb6a403d84846d2e",
+      "adjustedSha256": "7ee3e134a0dea5e78b70c914259731d22c15d5a9f4de088eeb6a403d84846d2e"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sourcePath": "05-array-of-sequencesPlugin.cxx",
+      "sourceSha256": "e19ed3b7f02c207351d70f3459146b5ae9d5c1e20dc65440cb7790831419c6c9",
+      "adjustedSha256": "e2c74229613d76c89de3cc7d1466788ed12c4d6458ba9c29ada6f364f7dafd75"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sourcePath": "05-array-of-sequencesPlugin.hpp",
+      "sourceSha256": "71036e99953478f3c81cc18555cf9a7bca9ac2a280737d5a4a4efdfe5544c6a1",
+      "adjustedSha256": "ebe025c7c1c0c9ffb9f764036085429053c729698543adbab3939afb4dba8775"
+    }
+  ]
+}

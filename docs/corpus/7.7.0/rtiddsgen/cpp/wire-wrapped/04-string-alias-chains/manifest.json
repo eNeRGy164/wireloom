@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "profile": "7.7.0",
+  "caseId": "04-string-alias-chains",
+  "language": "cpp",
+  "rtiddsgenVersion": "4.7.0",
+  "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-string-alias-chains.idl",
+  "inputs": [
+    {
+      "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-string-alias-chains.idl",
+      "sha256": "3f2be75ab14b0e35dbd840594368ece3f05f0b921c6570bf81c6d28946904e6f"
+    },
+    {
+      "path": "docs/corpus/idl/features/04-string-alias-chains.idl",
+      "sha256": "7f9e546341897dd601e70652a5edcf9de8a30f4a5f771a9eb33759a7d2c8c175"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "features/04-string-alias-chains.cxx",
+      "sha256": "25badf3d95967b5c0ab10ce6a21e7857f1abb8f91a14873d001ad628b6388abd"
+    },
+    {
+      "path": "features/04-string-alias-chains.hpp",
+      "sha256": "3f5b10be617cbc47545f92c5ec4402c58be78dde5e36276cb5703a2bbf79dceb"
+    },
+    {
+      "path": "features/04-string-alias-chains.hpp",
+      "sha256": "3f5b10be617cbc47545f92c5ec4402c58be78dde5e36276cb5703a2bbf79dceb"
+    },
+    {
+      "path": "features/04-string-alias-chainsPlugin.cxx",
+      "sha256": "51df30b5f9ee4726b41c1d76d4e7beeaa447cc446cef08e8e76f808984274d2d"
+    },
+    {
+      "path": "features/04-string-alias-chainsPlugin.hpp",
+      "sha256": "795492f7d77219e4cae17b3a582c245f3445f5b4b6b8c95b521a15ef11a61646"
+    },
+    {
+      "path": "features/04-string-alias-chainsPlugin.hpp",
+      "sha256": "795492f7d77219e4cae17b3a582c245f3445f5b4b6b8c95b521a15ef11a61646"
+    },
+    {
+      "path": "idl.cxx",
+      "sha256": "342bc689352ff81b083190dbc81c0defffd72ac02e356d771ce424be26bb6325"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "ffcde19d95de326a486fdb430a995a6a97102ec6f3a9ca45582d99c1e8d5ada3"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "cb10eb7e8d479b4bf74e0f1938678e6de8c518ce8171ad29852a39582d278568"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "f2b5e0a68cd8d9562e63e458cfe5a9a5b461a34ff90950ef28832642d6b4c111"
+    }
+  ]
+}
