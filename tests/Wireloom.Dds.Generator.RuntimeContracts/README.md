@@ -119,7 +119,8 @@ and allocation/key combinations reported by the tests.
 
 - `ScalarSpecs`, `ScalarEqualitySpecs`, `CollectionSpecs`, `CollectionEqualitySpecs`
 - `EnumArrayDefaultSpecs`
-- `TypedDefaultSpecs` (null-copy defaults, managed/native fractional and wide-string initialization, IEEE-754 signed zero, clearable metadata members, and FINAL/APPENDABLE enum metadata)
+- `TypedDefaultSpecs` (null-copy defaults, managed/native fractional and wide-string initialization, IEEE-754 signed zero,
+  clearable metadata members, and FINAL/APPENDABLE enum metadata)
 - `AggregateArrayConversionSpecs` (native conversion into previously inactive explicit, multidimensional, and default union array branches)
 - `InheritanceSpecs`, `AggregateNativeSpecs`
 

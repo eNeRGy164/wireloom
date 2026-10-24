@@ -5,9 +5,11 @@ Connext
 CSpell
 DDS
 DDSG
+Hompus
 IDL
 keyhashes
 Meziantou
+Michaël
 MSBuild
 NSubstitute
 NuGet
