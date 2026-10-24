@@ -9,9 +9,9 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class CollectionAliasEmitter
 {
     /// <summary>Emits all documents for a collection or value typedef.</summary>
-    public static IReadOnlyList<GeneratedIdlSource> Emit(CompilationContext compilation, IdlTypedef declaration, string sourceIdlFileName, RtiApiProfile profile)
+    public static IReadOnlyList<GeneratedIdlSource> Emit(CompilationContext compilation, IdlTypedef declaration, string sourceIdlFileName, RtiApiProfile profile, RecursiveTypeGraph recursiveTypes)
     {
-        var plan = CreatePlan(compilation, declaration, profile);
+        var plan = CreatePlan(compilation, declaration, profile, recursiveTypes);
         return Emit(declaration, plan, sourceIdlFileName, profile);
     }
 
@@ -28,7 +28,7 @@ internal static class CollectionAliasEmitter
         ];
     }
 
-    private static CollectionAliasEmissionPlan CreatePlan(CompilationContext compilation, IdlTypedef declaration, RtiApiProfile profile)
+    private static CollectionAliasEmissionPlan CreatePlan(CompilationContext compilation, IdlTypedef declaration, RtiApiProfile profile, RecursiveTypeGraph recursiveTypes)
     {
         string? element;
         if (declaration.IsString)
@@ -98,6 +98,11 @@ internal static class CollectionAliasEmitter
             }
         }
 
+        var elementValueType = EmissionTypeProjector.UnwrapValueEmissionType(elementPlan);
+        var isRecursiveUnboundedSequenceElement = declaration is { IsSequence: true, Bound: null }
+            && elementValueType is StructEmissionType { SupportType: { } supportType }
+            && recursiveTypes.ComponentFor(supportType).Count > 0;
+
         return new CollectionAliasEmissionPlan(
             elementPlan,
             declaration.IsSequence,
@@ -106,7 +111,8 @@ internal static class CollectionAliasEmitter
             elementNativeType,
             sequenceBound: declaration.Bound,
             profile: profile,
-            valueMetadata: declaration.ValueMetadata);
+            valueMetadata: declaration.ValueMetadata,
+            isRecursiveUnboundedSequenceElement: isRecursiveUnboundedSequenceElement);
     }
 
     private static bool RequiresNativeValueCast(EmissionTypePlan elementPlan)

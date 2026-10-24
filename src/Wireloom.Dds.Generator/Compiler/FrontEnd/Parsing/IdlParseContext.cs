@@ -132,11 +132,13 @@ internal sealed class IdlParseContext
         Validator.ValidateSpecificationRules(Identifiers, Declarations, strict, Diagnostics, CancellationToken);
 
         IdlSemanticValidator.ValidateValueTypeCycles(Declarations);
+        IdlSemanticValidator.ValidateRecursiveSequenceTypedefs(Declarations);
     }
 
     /// <summary>Binds all parsed declarations against the complete symbol graph.</summary>
     internal void BindDeclarations()
     {
+        Validator.ValidateForwardStructs();
         ValueBinder.BindDiscreteConstants(Declarations);
         foreach (var bound in DeferredBounds)
         {
@@ -230,6 +232,29 @@ internal sealed class IdlParseContext
         DeferValidation(() => Validator.ValidateNewName(input, mappedOffset, name));
     }
 
+    /// <summary>Registers a struct forward declaration and makes its type name available for later binding.</summary>
+    internal void EnsureForwardStruct(IdlInput input, int offset, string name)
+    {
+        var mappedOffset = MapOffset(offset);
+        Validator.RegisterForwardStruct(name, input, mappedOffset);
+    }
+
+    /// <summary>Registers a struct definition and validates completion of a preceding forward declaration.</summary>
+    internal void EnsureStructDefinitionName(IdlInput input, int offset, string name)
+    {
+        Validator.RegisterStructDefinition(name, isType: true);
+
+        if (Validator.HasForwardStruct(name))
+        {
+            var mappedOffset = MapOffset(offset);
+            DeferValidation(() => Validator.ValidateForwardStructDefinition(input, mappedOffset, name));
+            return;
+        }
+
+        var definitionOffset = MapOffset(offset);
+        DeferValidation(() => Validator.ValidateNewName(input, definitionOffset, name));
+    }
+
     /// <summary>Ensures generated companion names do not collide with declarations.</summary>
     internal void EnsureGeneratedCompanionNames(IdlInput input, int offset, string name, string? currentNamespace, bool includeUnmanaged)
     {
@@ -280,6 +305,19 @@ internal sealed class IdlParseContext
     /// <summary>Records an IDL type reference for resolution during binding.</summary>
     internal IdlType ReferenceType(string idlType, string? currentNamespace, IdlInput input, int offset, string errorPrefix) =>
         new IdlType.Reference(new IdlTypeReference(idlType, currentNamespace, input, MapOffset(offset)), errorPrefix);
+
+    /// <summary>Checks whether a field refers by value to a still-incomplete forward-declared struct.</summary>
+    internal bool IsIncompleteForwardValueType(IdlType type)
+    {
+        while (type is IdlType.Array array)
+        {
+            type = array.Element;
+        }
+
+        return type is IdlType.Reference reference
+            && Symbols.TryResolveTypeName(reference.TypeReference.Text, reference.TypeReference.CurrentNamespace, out var qualifiedName)
+            && Validator.IsIncompleteForwardStruct(qualifiedName);
+    }
 
     /// <summary>Parses an extensibility annotation into its semantic kind.</summary>
     internal static IdlExtensibilityKind ParseExtensibility(string annotation)

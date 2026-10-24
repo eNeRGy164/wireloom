@@ -140,6 +140,11 @@ internal sealed partial class MemberEmissionPlan
     {
         var element = IdlNaming.TypeReference(ElementCSharpType!, namespaceName);
 
+        if (IsRecursiveUnboundedSequence && HasAggregateElement)
+        {
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: 0, absoluteMax: Rti.Types.Dynamic.SequenceType.Unbounded, allocateMemory);";
+        }
+
         if (IsStringSequence)
         {
             return $"{nativeFieldPrefix}{EscapedName}.Initialize(max: {Bound}, absoluteMax: {Bound}, maxStrLen: {ElementType!.Bound}, allocateMemory);";

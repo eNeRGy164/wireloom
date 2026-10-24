@@ -474,6 +474,23 @@ These results qualify the recorded fixtures and peer scope. Recursive direct
 sequence arrays are rejected in `Idl` mode with `DDSG0001`. Existing effective
 limits for unbounded sequences and strings still apply.
 
+### Recursive type support
+
+Direct recursive sequence members serialize and exchange bidirectionally
+for the direct self-recursive shape between Wireloom-generated C# and typed RTI
+C++ peers on RTI 7.3.1 and 7.7.0
+with the documented TypeObject v1 participant configuration. RTI 7.3.1's
+generated C++ TypeCode needs the documented module-qualification correction.
+RTI 7.7.0's default TypeObject v2 profile rejects recursive SCC types during
+registration; use a nonzero `type_object_max_serialized_length` and enable only
+`SERVICE_REQUEST_CHANNEL`. Mutual recursive struct graphs remain unqualified.
+
+Recursive sequence typedefs, including self- and mutually recursive forms,
+are rejected with `DDSG0001`. RTI's standard C++11 `rtiddsgen
+-unboundedSupport` output does not compile for these forms on RTI 7.3.1 or
+7.7.0. Wireloom requires a normal RTI C++ interoperability path before
+supporting them; this rejection does not claim that the IDL forms are illegal.
+
 Programmatic compiler callers can pass `IdlSequenceArrayMapping.Idl` to the
 `IdlInput` overload. The existing constructor keeps `RtiCSharp` behavior.
 

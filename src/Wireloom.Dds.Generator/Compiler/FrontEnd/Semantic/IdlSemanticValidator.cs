@@ -7,6 +7,15 @@ namespace Wireloom.Compiler.FrontEnd.Semantic;
 internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
 {
     private readonly HashSet<string> duplicateNames = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, (IdlInput Input, int Offset)> forwardStructs = new(StringComparer.Ordinal);
+    private readonly HashSet<string> definedStructs = new(StringComparer.Ordinal);
+
+    /// <summary>Checks whether a struct name was forward-declared.</summary>
+    public bool HasForwardStruct(string name) => forwardStructs.ContainsKey(name);
+
+    /// <summary>Checks whether a resolved type name has an incomplete struct declaration.</summary>
+    public bool IsIncompleteForwardStruct(string name) =>
+        forwardStructs.ContainsKey(name) && !definedStructs.Contains(name);
 
     /// <summary>Registers a declaration name while retaining duplicate evidence for validation.</summary>
     public void RegisterName(string name, bool isType)
@@ -19,6 +28,67 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
         if (isType)
         {
             symbols.AddTypeName(name);
+        }
+    }
+
+    /// <summary>Registers an IDL struct forward declaration for later type references.</summary>
+    public void RegisterForwardStruct(string name, IdlInput input, int offset)
+    {
+        var isKnownForward = forwardStructs.ContainsKey(name);
+        var isDefinedStruct = definedStructs.Contains(name);
+        if (!symbols.AddName(name) && !isKnownForward && !isDefinedStruct)
+        {
+            duplicateNames.Add(name);
+        }
+
+        symbols.AddTypeName(name);
+
+        forwardStructs.TryAdd(name, (input, offset));
+    }
+
+    /// <summary>Registers a struct definition, completing a preceding forward declaration when present.</summary>
+    public void RegisterStructDefinition(string name, bool isType)
+    {
+        if (!definedStructs.Add(name))
+        {
+            duplicateNames.Add(name);
+            return;
+        }
+
+        if (forwardStructs.ContainsKey(name))
+        {
+            return;
+        }
+
+        RegisterName(name, isType);
+    }
+
+    /// <summary>Validates unresolved struct forward declarations after parsing the complete IDL input.</summary>
+    public void ValidateForwardStructs()
+    {
+        foreach (var forwardStruct in forwardStructs)
+        {
+            var name = forwardStruct.Key;
+            var (Input, Offset) = forwardStruct.Value;
+            if (!definedStructs.Contains(name))
+            {
+                throw new IdlException(Input, Offset, $"Forward-declared struct '{name}' has no definition.");
+            }
+        }
+    }
+
+    /// <summary>Validates a struct name after a forward declaration was completed.</summary>
+    public void ValidateForwardStructDefinition(IdlInput input, int offset, string name)
+    {
+        if (duplicateNames.Contains(name))
+        {
+            throw new IdlException(input, offset, $"Duplicate type: {name}");
+        }
+
+        var generatedIdentity = IdlNaming.EscapeQualifiedIdentifier(name);
+        if (!symbols.AddGeneratedIdentity(generatedIdentity))
+        {
+            throw new IdlException(input, offset, $"IDL declaration '{name}' collides with a generated type '{generatedIdentity}'.");
         }
     }
 
@@ -145,6 +215,103 @@ internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)
             }
 
             visiting.Remove(name);
+        }
+    }
+
+    /// <summary>Rejects recursive sequence typedef members that RTI C++ cannot generate as compilable TypeSupport.</summary>
+    public static void ValidateRecursiveSequenceTypedefs(IReadOnlyList<IdlDeclaration> declarations)
+    {
+        var classes = declarations
+            .OfType<IdlClassDeclaration>()
+            .ToDictionary(declaration => IdlNaming.ResolveTypeName(declaration.Name, declaration.Namespace), StringComparer.Ordinal);
+        var sequenceEdges = classes.Keys.ToDictionary(
+            name => name,
+            _ => new HashSet<string>(StringComparer.Ordinal),
+            StringComparer.Ordinal);
+
+        foreach (var declaration in classes.Values)
+        {
+            var owner = IdlNaming.ResolveTypeName(declaration.Name, declaration.Namespace);
+            foreach (var field in declaration.Fields)
+            {
+                AddSequenceTargets(field.Type, throughSequence: false, sequenceEdges[owner], classes.Keys);
+            }
+        }
+
+        foreach (var declaration in classes.Values)
+        {
+            var owner = IdlNaming.ResolveTypeName(declaration.Name, declaration.Namespace);
+            foreach (var field in declaration.Fields)
+            {
+                if (field.Type is not IdlType.Alias)
+                {
+                    continue;
+                }
+
+                var sequenceTargets = new HashSet<string>(StringComparer.Ordinal);
+                AddSequenceTargets(field.Type, throughSequence: false, sequenceTargets, classes.Keys);
+                foreach (var target in sequenceTargets)
+                {
+                    if (CanReach(target, owner, sequenceEdges))
+                    {
+                        throw new IdlException(
+                            field.SourceInput!,
+                            field.SourceOffset,
+                            $"Recursive collection typedef member '{field.Name}' is unsupported for wire compatibility with RTI C++ peers because rtiddsgen emits uncompilable TypeCode code for this shape on versions 7.3.1 and 7.7.0. Use a direct recursive sequence member until a working RTI C++ path is available.");
+                    }
+                }
+            }
+        }
+
+        static void AddSequenceTargets(
+            IdlType type,
+            bool throughSequence,
+            ISet<string> targets,
+            IEnumerable<string> knownTypes)
+        {
+            switch (type)
+            {
+                case IdlType.Alias alias:
+                    AddSequenceTargets(alias.Target, throughSequence, targets, knownTypes);
+                    break;
+                case IdlType.Sequence sequence:
+                    AddSequenceTargets(sequence.Element, throughSequence: true, targets, knownTypes);
+                    break;
+                case IdlType.Array array:
+                    AddSequenceTargets(array.Element, throughSequence, targets, knownTypes);
+                    break;
+                case IdlType.Struct structure when throughSequence && knownTypes.Contains(structure.QualifiedName):
+                    targets.Add(structure.QualifiedName);
+                    break;
+            }
+        }
+
+        static bool CanReach(string start, string expected, IReadOnlyDictionary<string, HashSet<string>> edges)
+        {
+            var pending = new Stack<string>();
+            var visited = new HashSet<string>(StringComparer.Ordinal);
+            pending.Push(start);
+
+            while (pending.Count > 0)
+            {
+                var current = pending.Pop();
+                if (string.Equals(current, expected, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (!visited.Add(current))
+                {
+                    continue;
+                }
+
+                foreach (var target in edges[current])
+                {
+                    pending.Push(target);
+                }
+            }
+
+            return false;
         }
     }
 

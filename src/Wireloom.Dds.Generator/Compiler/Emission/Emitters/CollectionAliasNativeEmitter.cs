@@ -227,7 +227,14 @@ internal static class CollectionAliasNativeEmitter
             }
             else if (collectionElementIsAggregate)
             {
-                writer.WriteLine($"Value.Initialize<{implementationElementType}, {collectionElementUnmanagedType}>(max: {plan.SequenceBound}, absoluteMax: {plan.SequenceBound}, allocateMemory);");
+                if (plan.IsRecursiveUnboundedSequenceElement)
+                {
+                    writer.WriteLine($"Value.Initialize<{implementationElementType}, {collectionElementUnmanagedType}>(max: 0, absoluteMax: Rti.Types.Dynamic.SequenceType.Unbounded, allocateMemory);");
+                }
+                else
+                {
+                    writer.WriteLine($"Value.Initialize<{implementationElementType}, {collectionElementUnmanagedType}>(max: {plan.SequenceBound}, absoluteMax: {plan.SequenceBound}, allocateMemory);");
+                }
             }
             else
             {
