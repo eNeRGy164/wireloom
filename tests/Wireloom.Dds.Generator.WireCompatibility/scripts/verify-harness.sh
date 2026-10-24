@@ -54,6 +54,7 @@ echo 'Harness finalization passed: 3 checks, no RTI license required.'
 
 # Arrange: load the production fixture selector without provisioning RTI.
 source <(sed -n '/^fixtures_for_case() {/,/^}/p' "$runner")
+rti_version=7.3.1
 
 # Act / Assert: the dedicated IDL case must retain every sequence-shape fixture.
 expected_fixtures=$'sequence-empty\nsequence-unequal\nsequence-mixed-empty\nsequence-boundary'
@@ -78,7 +79,9 @@ assert_fixtures 14-union-array-branch $'array-branch\nscalar-branch'
 assert_fixtures 14-string-expression-bound 'string-boundary'
 assert_fixtures 14-typed-defaults $'default\nnon-default'
 assert_fixtures 14-enum-constant 'constant-and-label'
-echo 'C163–C172 fixture selection passed: 10 cases, 16 fixtures.'
+rti_version=7.7.0
+assert_fixtures 14-typed-defaults $'default\nnon-default\nsparse-omitted'
+echo 'C163–C172 fixture selection passed: 10 cases, 17 fixtures; sparse C171 is RTI 7.7-only.'
 
 # Arrange: the wrapper and canonical IDL have the same basename. RTI emits
 # the wrapper pair at the output root before dependencies are generated.

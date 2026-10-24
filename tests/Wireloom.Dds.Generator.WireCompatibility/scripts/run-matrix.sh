@@ -196,7 +196,7 @@ fixtures_for_case() {
             ;;
         14-typed-defaults)
             printf '%s\n' default non-default
-            if [[ "$rti_version" == "7.7.0" ]]; then
+            if [[ "${rti_version:-}" == "7.7.0" ]]; then
                 printf '%s\n' sparse-omitted
             fi
             ;;
