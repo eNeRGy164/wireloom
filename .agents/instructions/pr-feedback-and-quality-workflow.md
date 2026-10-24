@@ -63,7 +63,7 @@ quality evidence before declaring the work ready:
 4. Run coverage and inspect branch coverage first, then line coverage. Add
    tests for newly introduced branches and error paths rather than accepting
    avoidable coverage regressions.
-5. Run Community Qodana using the documented `wslc` command in
+5. Run Community Qodana using the documented Docker command in
    [`CONTRIBUTING.md`](../../CONTRIBUTING.md#quality-evidence), keep
    `global.json` visible, and confirm the SARIF result is successful with no
    new problems.
