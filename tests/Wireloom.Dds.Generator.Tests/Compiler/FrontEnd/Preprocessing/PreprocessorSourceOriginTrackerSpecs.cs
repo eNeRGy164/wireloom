@@ -37,6 +37,20 @@ public sealed class PreprocessorSourceOriginTrackerSpecs
     }
 
     [Fact]
+    public void MapsTokensWhenHashArithmeticIsChecked()
+    {
+        // Arrange
+        var tracker = new PreprocessorSourceOriginTracker(offset => offset, CancellationToken.None);
+        var origins = new List<int>();
+
+        // Act
+        tracker.AppendExpandedOrigins(origins, "VALUE", "VALUE", sourceOffset: 3);
+
+        // Assert
+        origins.ShouldBe([3, 4, 5, 6, 7]);
+    }
+
+    [Fact]
     public void ClampsOutputOffsetsAtTheEndOfTheSourceLine()
     {
         // Arrange

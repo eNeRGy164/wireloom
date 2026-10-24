@@ -161,7 +161,7 @@ internal sealed class PreprocessorSourceOriginTracker(
         for (var index = token.Start; index < token.Start + token.Length; index++)
         {
             hash ^= text[index];
-            hash *= prime;
+            hash = unchecked(hash * prime);
         }
 
         return (token.Length, hash);
