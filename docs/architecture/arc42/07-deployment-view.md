@@ -7,6 +7,9 @@ selected RTI Connext DDS runtime.
 Effective finite limits for unbounded IDL values are build-time MSBuild
 properties with per-file item metadata overrides. They are compiled into the
 generated type metadata and do not add consumer runtime configuration.
+`DdsIdlEnableEscapeChar` is a build-time project property that changes emitted
+names and implicit hash member IDs when enabled; it has no runtime switch or
+per-file override.
 
 ## 7.1 Infrastructure level 1
 

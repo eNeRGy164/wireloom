@@ -31,7 +31,7 @@ expanded in the level-2 view.
 | :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------- |
 | Root intake               | Builds the graph from `DdsIdl` roots, project options, and file-owned mapping and effective-limit settings                                        | [`IdlInputGraph`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlInputGraph.cs)                          |
 | Include resolution        | Resolves paths while preserving root/include identity                                                                                             | [`IdlIncludeResolver`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlIncludeResolver.cs)                |
-| Preprocessing             | Applies directives and macros with source mapping                                                                                                 | [`IdlPreprocessor`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlPreprocessor.cs)                      |
+| Preprocessing             | Applies directives and macros with source mapping; optionally normalizes escaped identifier tokens while composing source origins                  | [`IdlPreprocessor`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Preprocessing/IdlPreprocessor.cs), `IdlEscapeCharNormalizer` |
 | Parsing                   | Reads ordered annotations, type/declarator syntax, and unresolved value expressions while preserving source locations                             | [`IdlDeclarationParser`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs), `IdlTypeParser` |
 | Semantic model            | Assigns stable symbols and target-independent meaning, including enum identity and typedef annotations                                            | [`IdlSymbolTable`](../../../src/Wireloom.Dds.Generator/Compiler/FrontEnd/Symbols/IdlSymbolTable.cs)                              |
 | Compilation state         | Coordinates parse, bind, and validate                                                                                                             | [`IdlCompilation`](../../../src/Wireloom.Dds.Generator/Compiler/IdlCompilation.cs)                                               |
@@ -94,6 +94,12 @@ distinguish ordinary interfaces from DDS services and operation parameters. Spec
 decides whether to ignore, warn, or fail, and Roslyn presents the resulting
 diagnostics. The validation scope index is private to each compilation;
 collision checks preserve case-sensitive binding and generated names.
+
+`DdsIdlEnableEscapeChar` enables token-aware normalization after preprocessing.
+The normalizer removes one leading underscore from each IDL identifier,
+preserves the original source location, and records escaped declaration facts
+for keyword validation. The project-wide setting keeps declarations and
+references consistent across the shared symbol graph.
 
 This view describes ownership rather than execution order. Build-time flow and
 failure paths are in [chapter 6](06-runtime-view.md). Deterministic

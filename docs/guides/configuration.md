@@ -19,7 +19,7 @@ fragments; add them inside the consuming project's `<Project>` element.
 
 ## Settings at a glance
 
-Wireloom has four project properties and eight input metadata settings:
+Wireloom has five project properties and eight input metadata settings:
 
 | Setting                      | Where to set it                        | Default                                                           | Effect and scope                                                                                                                   |
 | ---------------------------- | -------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -27,6 +27,7 @@ Wireloom has four project properties and eight input metadata settings:
 | `DdsIdlSequenceArrayMapping` | Project property                       | `RtiCSharp`                                                       | Sets the default mapping for direct arrays of sequences in all tracked files.                                                      |
 | `DdsIdlSequenceSize`         | Project property                       | `100`                                                             | Sets the effective element limit for unbounded sequences.                                                                          |
 | `DdsIdlStringSize`           | Project property                       | `255`                                                             | Sets the effective length limit for unbounded narrow and wide strings.                                                             |
+| `DdsIdlEnableEscapeChar`     | Project property                       | `false`                                                           | Removes one leading underscore from each IDL identifier across the generation batch.                                              |
 | `Generate`                   | `AdditionalFiles` metadata             | `false` for tracked includes; forced to `true` for `DdsIdl` items | Marks a file as a generation root.                                                                                                 |
 | `IncludeDirectories`         | Generating-root metadata               | Empty                                                             | Adds semicolon-separated include directories to the batch's search path.                                                           |
 | `Defines`                    | Generating-root metadata               | Empty                                                             | Supplies semicolon-separated preprocessor definitions to every root's initial macro environment.                                   |
@@ -44,7 +45,8 @@ with source-located `DDSG0001`.
 **Batch settings and file settings have different precedence rules.**
 `Defines`, `Undefines`, `IncludeDirectories`, and `Strict` are combined from
 all generation roots. Setting them on an included file with `Generate="false"`
-does not configure the batch. `SequenceArrayMapping`, `SequenceSize`, and
+does not configure the batch. `DdsIdlEnableEscapeChar` applies uniformly to
+every root and included file. `SequenceArrayMapping`, `SequenceSize`, and
 `StringSize` instead belong to each declaring file, including non-root files.
 A root's override does not flow through its includes.
 
@@ -274,8 +276,37 @@ suppression for nonfatal naming warnings.
 
 C# keyword escaping is independent: an IDL member named `event` still becomes
 `@event` in C#. A leading underscore such as `_Struct` keeps its existing
-literal spelling. Wireloom does not implement RTI's `-enableEscapeChar`
-normalization, which can remove that underscore and change names/metadata.
+spelling unless [escape-character normalization](#escape-leading-underscores)
+is enabled.
+
+## Escape leading underscores
+
+Set `DdsIdlEnableEscapeChar` to `true` to match RTI's
+`-enableEscapeChar` behavior:
+
+```xml
+<PropertyGroup>
+  <DdsIdlEnableEscapeChar>true</DdsIdlEnableEscapeChar>
+</PropertyGroup>
+```
+
+The setting defaults to `false`. When enabled, Wireloom removes exactly one
+leading underscore from each IDL identifier after preprocessing. It applies
+consistently to declarations and references, including identifiers produced by
+macros. String literals and comments are not changed. C# keyword escaping still
+applies after normalization, so `_event` is emitted as C# `@event`, while type
+metadata uses `event`.
+
+Normalized names define symbol identity. If two names in one scope normalize
+to the same name, generation fails with `DDSG0001` before source emission. The
+normalized member name also feeds implicit `@autoid(HASH)` IDs; enabling this
+setting can therefore change generated APIs and member IDs. Keep it disabled
+when preserving existing underscore-prefixed names and hash IDs matters.
+
+This is a project-wide option, not per-file metadata. All generation roots in
+one batch must use the same value because references and declarations share one
+symbol table. Programmatic compiler callers set `enableEscapeChar` on every
+generation-root `IdlInput`; included inputs inherit the batch setting.
 
 See the [corpus feature index](../corpus/FEATURE-COVERAGE.md) for retained
 generation evidence.
@@ -513,6 +544,8 @@ searches the supplied inputs rather than loading arbitrary files from disk.
 batch semantics. `sequenceArrayMapping` remains file-owned; omitting it selects
 `RtiCSharp`. Pass the caller's cancellation token instead of
 `CancellationToken.None` when the caller should be able to cancel compilation.
+Set `enableEscapeChar: true` on every generation root to enable leading-
+underscore normalization for the batch. Included inputs inherit this setting.
 
 The public programmatic compiler currently uses the 7.7.0 emission profile.
 Consumer builds using the Roslyn generator instead select a profile from

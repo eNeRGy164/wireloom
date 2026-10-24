@@ -774,6 +774,75 @@ public sealed class GeneratorSpecs
         }
     }
 
+    /// <summary>Applies escaped-identifier normalization from the project property.</summary>
+    [Fact]
+    public void EnablesEscapeCharFromProjectProperty()
+    {
+        // Arrange
+        const string source = "module _Escaped { struct _Sample { long _event; }; };";
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            ["build_property.DdsIdlEnableEscapeChar"] = "true"
+        };
+
+        // Act
+        var result = Run(source, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldBeEmpty();
+        var generated = string.Join(Environment.NewLine, result.Output.SyntaxTrees.Select(tree => tree.ToString()));
+        generated.ShouldContain("namespace Escaped");
+        generated.ShouldContain("class Sample");
+        generated.ShouldContain("public int @event");
+        generated.ShouldContain("new StructMember(\"event\"");
+    }
+
+    /// <summary>Ignores item metadata for this project-wide setting.</summary>
+    [Fact]
+    public void DoesNotAllowPerFileEscapeCharOverride()
+    {
+        // Arrange
+        const string source = "module _Escaped { struct _Sample { long _event; }; };";
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            ["EnableEscapeChar"] = "true"
+        };
+
+        // Act
+        var result = Run(source, LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldBeEmpty();
+        var generated = string.Join(Environment.NewLine, result.Output.SyntaxTrees.Select(tree => tree.ToString()));
+        generated.ShouldContain("namespace _Escaped");
+        generated.ShouldContain("class _Sample");
+        generated.ShouldContain("public int _event");
+    }
+
+    /// <summary>Rejects project escape-character values that are not boolean.</summary>
+    [Fact]
+    public void RejectsInvalidEscapeCharProjectProperty()
+    {
+        // Arrange
+        var metadata = new Dictionary<string, string>
+        {
+            ["Generate"] = "true",
+            ["build_property.DdsIdlEnableEscapeChar"] = "enabled"
+        };
+
+        // Act
+        var result = Run("struct _Sample { long value; };", LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0001"
+            && diagnostic.GetMessage().Contains("DdsIdlEnableEscapeChar", StringComparison.Ordinal)
+            && diagnostic.Location.GetLineSpan().Path == "sample.idl");
+        string.Join(Environment.NewLine, result.Output.SyntaxTrees.Select(tree => tree.ToString()))
+            .ShouldNotContain("class _Sample");
+    }
+
     /// <summary>Uses project effective limits unless the declaring file overrides them.</summary>
     [Fact]
     public void AppliesProjectAndFileUnboundedSizeSettings()

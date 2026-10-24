@@ -20,6 +20,7 @@
     <CompilerVisibleProperty Include="DdsIdlSequenceArrayMapping" />
     <CompilerVisibleProperty Include="DdsIdlSequenceSize" />
     <CompilerVisibleProperty Include="DdsIdlStringSize" />
+    <CompilerVisibleProperty Include="DdsIdlEnableEscapeChar" />
     <AvailableItemName Include="DdsIdl" />
   </ItemGroup>
 

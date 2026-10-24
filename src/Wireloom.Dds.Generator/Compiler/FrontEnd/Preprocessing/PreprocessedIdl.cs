@@ -3,13 +3,16 @@ namespace Wireloom.Compiler.FrontEnd.Preprocessing;
 internal sealed class PreprocessedIdl(
     string text,
     bool hasPragmaOnce,
-    IReadOnlyList<SourceOriginSpan> sourceOrigins)
+    IReadOnlyList<SourceOriginSpan> sourceOrigins,
+    HashSet<int>? escapedIdentifierOffsets = null)
 {
     public string Text { get; } = text;
 
     public bool HasPragmaOnce { get; } = hasPragmaOnce;
 
     public IReadOnlyList<SourceOriginSpan> SourceOrigins { get; } = sourceOrigins;
+
+    public HashSet<int> EscapedIdentifierOffsets { get; } = escapedIdentifierOffsets ?? [];
 }
 
 /// <summary>Maps a contiguous generated range to a source range or invocation.</summary>

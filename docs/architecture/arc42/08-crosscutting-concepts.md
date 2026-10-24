@@ -91,6 +91,13 @@ override them for declarations physically in one IDL file. Explicit IDL bounds
 take precedence. Values must be positive `Int32` numbers. This configuration
 does not enable RTI's true-unbounded allocation and deserialization behavior.
 
+`DdsIdlEnableEscapeChar` defaults to `false` and applies across the generation
+batch. Its token-aware preprocessing follow-up removes one leading underscore
+from each identifier while composing source origins; strings and comments are
+preserved. Canonical names drive binding, duplicate detection, generated C# and
+DynamicType names, and implicit hash member IDs. Escaped IDL keywords are
+permitted, while names colliding after normalization fail before emission.
+
 ## 8.4 Dependency and supply-chain boundaries
 
 The consumer owns the RTI runtime reference. Roslyn compiler packages remain

@@ -27,8 +27,10 @@ internal static class GeneratorInputFactory
 
         inputAndOptions.Options.GlobalOptions.TryGetValue("build_property.DdsIdlSequenceSize", out var projectSequenceSize);
         inputAndOptions.Options.GlobalOptions.TryGetValue("build_property.DdsIdlStringSize", out var projectStringSize);
+        inputAndOptions.Options.GlobalOptions.TryGetValue("build_property.DdsIdlEnableEscapeChar", out var enableEscapeCharSetting);
+        var (enableEscapeChar, invalidEnableEscapeCharValue) = ParseBooleanSetting(enableEscapeCharSetting);
 
-        return new(
+        return new IdlInput(
             input.Path,
             input.GetText(cancellationToken)?.ToString() ?? string.Empty,
             ParseSequenceArrayMapping(sequenceArrayMapping),
@@ -38,7 +40,11 @@ internal static class GeneratorInputFactory
             undefines: ParseSymbols(undefines),
             includeDirectories: ParseIncludeDirectories(includeDirectories),
             sequenceSize: ParsePositiveSize(sequenceSize, projectSequenceSize, 100),
-            stringSize: ParsePositiveSize(stringSize, projectStringSize, 255));
+            stringSize: ParsePositiveSize(stringSize, projectStringSize, 255),
+            enableEscapeChar: enableEscapeChar)
+        {
+            InvalidEnableEscapeCharValue = invalidEnableEscapeCharValue
+        };
     }
 
     private static IdlSequenceArrayMapping ParseSequenceArrayMapping(string? value)
@@ -72,6 +78,21 @@ internal static class GeneratorInputFactory
         return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) && parsed > 0
             ? parsed
             : 0;
+    }
+
+    private static (bool Value, string? InvalidValue) ParseBooleanSetting(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return (false, null);
+        }
+
+        if (bool.TryParse(value!.Trim(), out var parsed))
+        {
+            return (parsed, null);
+        }
+
+        return (false, value);
     }
 
     private static List<string> ParseValues(string? value, char[] separators)

@@ -17,13 +17,15 @@ internal sealed class IdlInputGraph
     private IdlPreprocessor preprocessor;
     private readonly IdlIncludeResolver includeResolver;
     private readonly CancellationToken cancellationToken;
+    private readonly bool enableEscapeChar;
 
     public IdlInputGraph(
         IReadOnlyDictionary<string, IdlInput> files,
         IEnumerable<string> defines,
         IEnumerable<string> undefines,
         IEnumerable<string> includeDirectories,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool enableEscapeChar = false)
     {
         var comparer = Path.DirectorySeparatorChar == '\\'
             ? StringComparer.OrdinalIgnoreCase
@@ -38,6 +40,7 @@ internal sealed class IdlInputGraph
         onceIncluded = new HashSet<string>(comparer);
         active = new HashSet<string>(comparer);
         this.cancellationToken = cancellationToken;
+        this.enableEscapeChar = enableEscapeChar;
     }
 
     /// <summary>Starts a root with an isolated macro environment and search path.</summary>
@@ -49,10 +52,10 @@ internal sealed class IdlInputGraph
         includeResolver.SetIncludeDirectories(batchIncludeDirectories);
     }
 
-    public void Visit(IdlInput input, Action<string, IdlInput, int, string?, IReadOnlyList<SourceOriginSpan>> parse, ICollection<IdlDiagnostic>? diagnostics = null) =>
+    public void Visit(IdlInput input, Action<string, IdlInput, int, string?, IReadOnlyList<SourceOriginSpan>, HashSet<int>> parse, ICollection<IdlDiagnostic>? diagnostics = null) =>
         Visit(input, parse, diagnostics, 0);
 
-    private void Visit(IdlInput input, Action<string, IdlInput, int, string?, IReadOnlyList<SourceOriginSpan>> parse, ICollection<IdlDiagnostic>? diagnostics, int includeDepth)
+    private void Visit(IdlInput input, Action<string, IdlInput, int, string?, IReadOnlyList<SourceOriginSpan>, HashSet<int>> parse, ICollection<IdlDiagnostic>? diagnostics, int includeDepth)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -92,6 +95,11 @@ internal sealed class IdlInputGraph
                 onceIncluded.Add(path);
             }
 
+            if (enableEscapeChar)
+            {
+                result = IdlEscapeCharNormalizer.Normalize(result, input, cancellationToken);
+            }
+
             // A non-once include may produce different declarations under
             // different macro states. Parse each distinct preprocessed output
             // once, while still replaying the file for macro side effects.
@@ -103,7 +111,7 @@ internal sealed class IdlInputGraph
 
             if (outputs.Add(result.Text))
             {
-                parse(result.Text, input, 0, null, result.SourceOrigins);
+                parse(result.Text, input, 0, null, result.SourceOrigins, result.EscapedIdentifierOffsets);
             }
         }
         finally

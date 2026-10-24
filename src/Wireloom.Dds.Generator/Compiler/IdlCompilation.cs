@@ -14,6 +14,7 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, Cancellatio
             ? StringComparer.OrdinalIgnoreCase
             : StringComparer.Ordinal;
         var files = new Dictionary<string, IdlInput>(comparer);
+        var roots = inputs.Where(input => input.Generate).ToArray();
 
         foreach (var file in inputs)
         {
@@ -25,9 +26,21 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, Cancellatio
             files[Path.GetFullPath(file.Path)] = file;
         }
 
+        var invalidEscapeSetting = roots.FirstOrDefault(input => input.InvalidEnableEscapeCharValue is not null);
+        if (invalidEscapeSetting is not null)
+        {
+            throw new IdlException(invalidEscapeSetting, 0, "DdsIdlEnableEscapeChar must be 'true' or 'false'.");
+        }
+
+        var escapeSettings = roots.Select(input => input.EnableEscapeChar).Distinct().ToArray();
+        if (escapeSettings.Length > 1)
+        {
+            throw new IdlException(roots[0], 0, "EnableEscapeChar must have the same value for every generation root in a compilation batch.");
+        }
+
+        var enableEscapeChar = escapeSettings.FirstOrDefault();
         var symbols = new IdlSymbolTable();
-        var roots = inputs.Where(input => input.Generate).ToArray();
-        var graph = new IdlInputGraph(files, roots.SelectMany(input => input.Defines), roots.SelectMany(input => input.Undefines), roots.SelectMany(input => input.IncludeDirectories), cancellationToken);
+        var graph = new IdlInputGraph(files, roots.SelectMany(input => input.Defines), roots.SelectMany(input => input.Undefines), roots.SelectMany(input => input.IncludeDirectories), cancellationToken, enableEscapeChar);
         var parser = new IdlDeclarationParser(symbols, cancellationToken, diagnostics);
         var result = new EmissionResult();
         var compilation = new CompilationContext(symbols);
@@ -37,7 +50,8 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, Cancellatio
         foreach (var input in roots.OrderBy(input => input.Path, StringComparer.Ordinal))
         {
             graph.BeginRoot();
-            graph.Visit(input, (text, file, offset, currentNamespace, origins) => parser.Parse(text, file, offset, currentNamespace, origins), diagnostics);
+            graph.Visit(input, (text, file, offset, currentNamespace, origins, escapedIdentifierOffsets) =>
+                parser.Parse(text, file, offset, currentNamespace, origins, escapedIdentifierOffsets), diagnostics);
         }
 
         parser.Bind();

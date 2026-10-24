@@ -306,6 +306,7 @@ Preprocessing and validation settings:
 | `Defines`                  | Root-item metadata collected for the batch | Semicolon-separated preprocessor symbols                                                      |
 | `Undefines`                | Root-item metadata collected for the batch | Semicolon-separated symbols removed before preprocessing                                      |
 | `Strict`                   | Root-item metadata collected for the batch | Enables strict validation for the generation batch when any root sets it                      |
+| `DdsIdlEnableEscapeChar`   | Project                                    | Removes one leading underscore from each IDL identifier across the generation batch           |
 
 The current compiler combines these settings across all generating roots. It
 does not provide isolated preprocessing or validation settings per root.
@@ -339,6 +340,14 @@ bodies. Ordinary interface bodies retain RTI's acceptance of case-only names;
 remain omitted with `DDSG0103`. See the
 [configuration reference](../../docs/guides/configuration.md#enable-strict-validation)
 for examples, warning exemptions, and differences from RTI's strict mode.
+
+`DdsIdlEnableEscapeChar` defaults to `false`. When enabled, Wireloom removes
+one leading underscore from each IDL identifier after preprocessing.
+Declarations, references, macro-expanded names, and generated type metadata
+use the normalized name; string literals are unchanged. The setting is
+project-wide because all roots and includes share one symbol table. Names that
+collide after normalization fail before emission. Normalized names also affect
+implicit `@autoid(HASH)` IDs.
 
 Large inputs may hit deterministic preprocessing safety limits. They are not
 configurable through MSBuild; see [preprocessor limits](#preprocessor-limits).
@@ -494,7 +503,9 @@ supporting them; this rejection does not claim that the IDL forms are illegal.
 Programmatic compiler callers can pass `IdlSequenceArrayMapping.Idl` to the
 `IdlInput` overload. `sequenceSize` and `stringSize` constructor arguments set
 effective limits for unbounded types in that input. The defaults remain 100 and
-255, respectively.
+255, respectively. Set `enableEscapeChar: true` on every generation root to
+normalize leading-underscore identifiers across the batch; included inputs
+inherit the setting.
 
 ## Inspect generated source
 

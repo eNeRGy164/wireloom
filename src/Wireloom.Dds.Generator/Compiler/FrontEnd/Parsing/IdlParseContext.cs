@@ -49,9 +49,15 @@ internal sealed class IdlParseContext
 
     private IReadOnlyList<SourceOriginSpan>? SourceOrigins { get; set; }
 
+    private HashSet<int> EscapedIdentifierOffsets { get; set; } = [];
+
     /// <summary>Sets source-origin mappings for the current parsed input.</summary>
     internal void SetSourceOrigins(IReadOnlyList<SourceOriginSpan>? sourceOrigins) =>
         SourceOrigins = sourceOrigins;
+
+    /// <summary>Sets the normalized source offsets of identifiers that used the escape character.</summary>
+    internal void SetEscapedIdentifierOffsets(HashSet<int>? escapedIdentifierOffsets) =>
+        EscapedIdentifierOffsets = escapedIdentifierOffsets ?? [];
 
     /// <summary>Maps a preprocessed offset to its original source offset.</summary>
     internal int MapOffset(int offset)
@@ -221,7 +227,8 @@ internal sealed class IdlParseContext
     /// <summary>Captures an identifier and its original location without applying validation policy.</summary>
     internal void RecordIdentifier(IdlInput input, int offset, string name, string? scope, IdlIdentifierScopeKind scopeKind = IdlIdentifierScopeKind.Namespace)
     {
-        Identifiers.Add(new IdlIdentifierOccurrence(name, scope ?? string.Empty, scopeKind, input, MapOffset(offset)));
+        var wasEscaped = EscapedIdentifierOffsets.Contains(offset);
+        Identifiers.Add(new IdlIdentifierOccurrence(name, wasEscaped, scope ?? string.Empty, scopeKind, input, MapOffset(offset)));
     }
 
     /// <summary>Records a declaration name and defers its semantic validation.</summary>

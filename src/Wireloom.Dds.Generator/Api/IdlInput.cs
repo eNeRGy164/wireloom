@@ -22,6 +22,7 @@ namespace Wireloom;
 /// <param name="includeDirectories">Directories searched for non-relative includes.</param>
 /// <param name="sequenceSize">Effective size for unbounded sequences in this file.</param>
 /// <param name="stringSize">Effective size for unbounded strings in this file.</param>
+/// <param name="enableEscapeChar">Whether leading underscores escape IDL identifiers for the generation batch.</param>
 public sealed class IdlInput(
     string path,
     string text,
@@ -31,7 +32,8 @@ public sealed class IdlInput(
     List<string>? undefines = null,
     List<string>? includeDirectories = null,
     int sequenceSize = 100,
-    int stringSize = 255)
+    int stringSize = 255,
+    bool enableEscapeChar = false)
 {
     /// <summary>Initializes an IDL input with an explicit direct sequence-array mapping.</summary>
     /// <param name="path">The absolute or project-relative input path.</param>
@@ -44,12 +46,13 @@ public sealed class IdlInput(
     /// <param name="includeDirectories">Directories searched for includes.</param>
     /// <param name="sequenceSize">Effective size for unbounded sequences in this file.</param>
     /// <param name="stringSize">Effective size for unbounded strings in this file.</param>
+    /// <param name="enableEscapeChar">Whether leading underscores escape IDL identifiers for the generation batch.</param>
     [JetBrains.Annotations.PublicAPI]
     public IdlInput(string path, string text, IdlSequenceArrayMapping sequenceArrayMapping,
         bool generate = true, bool strict = false, List<string>? defines = null,
         List<string>? undefines = null, List<string>? includeDirectories = null,
-        int sequenceSize = 100, int stringSize = 255)
-        : this(path, text, generate, strict, defines, undefines, includeDirectories, sequenceSize, stringSize)
+        int sequenceSize = 100, int stringSize = 255, bool enableEscapeChar = false)
+        : this(path, text, generate, strict, defines, undefines, includeDirectories, sequenceSize, stringSize, enableEscapeChar)
     {
         SequenceArrayMapping = sequenceArrayMapping;
     }
@@ -102,4 +105,10 @@ public sealed class IdlInput(
 
     /// <summary>Gets the effective size assigned to unbounded strings in this file.</summary>
     public int StringSize { get; } = stringSize;
+
+    /// <summary>Gets whether leading underscores escape IDL identifiers for the generation batch.</summary>
+    public bool EnableEscapeChar { get; } = enableEscapeChar;
+
+    /// <summary>Gets an invalid project setting value that must be reported at the compiler boundary.</summary>
+    internal string? InvalidEnableEscapeCharValue { get; set; }
 }
