@@ -15,7 +15,12 @@ namespace Wireloom.Compiler.Emission.Planning;
 /// support are not frozen into reusable source fragments.
 /// </summary>
 [PublicAPI]
-internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string? currentNamespace, string? managedBackingFieldName = null, RtiApiProfile? profile = null)
+internal sealed partial class MemberEmissionPlan(
+    IdlEmissionField field,
+    string? currentNamespace,
+    string? managedBackingFieldName = null,
+    RtiApiProfile? profile = null,
+    bool isRecursiveUnboundedSequence = false)
 {
     private RtiApiProfile Profile { get; } = profile ?? RtiApiProfile.Rtiddsgen470;
     private readonly MemberEmissionFacts facts = new(field, currentNamespace);
@@ -56,6 +61,8 @@ internal sealed partial class MemberEmissionPlan(IdlEmissionField field, string?
     public bool IsWideString => facts.IsString && ValueType is StringEmissionType { IsWide: true };
     public bool IsBoundedString => ValueType is StringEmissionType { IsBounded: true };
     public bool IsSequence => facts.IsSequence;
+    /// <summary>Gets whether this unbounded sequence breaks a recursive type cycle.</summary>
+    public bool IsRecursiveUnboundedSequence { get; } = isRecursiveUnboundedSequence;
     public bool IsArray => facts.IsArray;
     public bool IsSequenceArray => IsSequence && Dimensions.Count > 0;
     public bool IsArrayLoopLocalCollision

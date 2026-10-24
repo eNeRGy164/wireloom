@@ -10,6 +10,8 @@ internal sealed class IdlDeclarationEmitter(CompilationContext compilation, IRea
     /// <summary>Emits source documents for all validated declarations.</summary>
     public IReadOnlyList<GeneratedIdlSource> Emit()
     {
+        var recursiveTypes = new RecursiveTypeGraph(declarations);
+
         foreach (var element in sequenceArrays.Elements)
         {
             result.AddRange(CollectionAliasEmitter.Emit(element.Declaration, element.Plan, element.SourceIdlFileName, profile));
@@ -28,11 +30,11 @@ internal sealed class IdlDeclarationEmitter(CompilationContext compilation, IRea
                     break;
 
                 case IdlTypedefDeclaration typedef:
-                    result.AddRange(CollectionAliasEmitter.Emit(compilation, typedef.Declaration, typedef.SourceIdlFileName, profile));
+                    result.AddRange(CollectionAliasEmitter.Emit(compilation, typedef.Declaration, typedef.SourceIdlFileName, profile, recursiveTypes));
                     break;
 
                 case IdlClassDeclaration @class:
-                    result.AddRange(ClassEmitter.Emit(@class.Name, @class.Namespace, @class.Fields, @class.Extensibility, @class.SourceIdlFileName, @class.BaseType, @class.InheritedFields, @class.IsTopic, profile, sequenceArrays));
+                    result.AddRange(ClassEmitter.Emit(@class.Name, @class.Namespace, @class.Fields, @class.Extensibility, @class.SourceIdlFileName, @class.BaseType, @class.InheritedFields, @class.IsTopic, profile, sequenceArrays, recursiveTypes));
                     break;
 
                 case IdlUnionDeclaration union:

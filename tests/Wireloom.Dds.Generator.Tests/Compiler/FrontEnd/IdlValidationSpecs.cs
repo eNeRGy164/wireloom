@@ -526,6 +526,78 @@ public sealed class IdlValidationSpecs
         exception.Message.ShouldContain("Typedef alias cycle");
     }
 
+    [Fact]
+    public void RejectsForwardDeclaredStructUsedByRecursiveSequenceTypedef()
+    {
+        // Arrange
+        var input = Input("recursive-sequence-typedef.idl",
+            "struct Node; typedef sequence<Node> Children; struct Node { long value; Children children; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Recursive collection typedef member 'children'");
+        exception.Message.ShouldContain("wire compatibility with RTI C++");
+    }
+
+    [Fact]
+    public void RejectsMutuallyRecursiveSequenceTypedefMembers()
+    {
+        // Arrange
+        var input = Input("mutual-recursive-sequence-typedef.idl",
+            "struct Node; struct Mirror; typedef sequence<Mirror> Mirrors; typedef sequence<Node> Nodes; " +
+            "struct Node { long value; Mirrors children; }; struct Mirror { long value; Nodes parents; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Recursive collection typedef member");
+        exception.Message.ShouldContain("wire compatibility with RTI C++");
+    }
+
+    [Fact]
+    public void RejectsUnresolvedStructForwardDeclaration()
+    {
+        // Arrange
+        var input = Input("unresolved-struct-forward.idl", "struct Missing;");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Forward-declared struct 'Missing' has no definition");
+    }
+
+    [Fact]
+    public void RejectsDuplicateDefinitionAfterStructForwardDeclaration()
+    {
+        // Arrange
+        var input = Input("duplicate-struct-definition.idl",
+            "struct Node; struct Node { long value; }; struct Node { long other; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Duplicate type: Node");
+    }
+
+    [Fact]
+    public void DoesNotTreatValueTypeAsAForwardDeclaredStructDefinition()
+    {
+        // Arrange
+        var input = Input("wrong-struct-forward-definition.idl",
+            "struct Node; valuetype Node { public long value; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Forward-declared struct 'Node' has no definition");
+    }
+
     [Theory]
     [InlineData("union Choice switch(long) { case 0: Choice value; };", "Choice")]
     [InlineData("union Choice switch(long) { case 0: Value value; }; struct Value { Choice choice; };", "Value")]

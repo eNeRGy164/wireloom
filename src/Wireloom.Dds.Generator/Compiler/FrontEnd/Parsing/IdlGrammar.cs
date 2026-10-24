@@ -15,7 +15,11 @@ internal static class IdlGrammar
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     internal static readonly Regex StructPattern = new(
-        @"^(?:struct|valuetype)\s+(?<name>[A-Za-z_]\w*)(?:\s*:\s*(?<base>(?:::)?[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*))?\s*\{",
+        @"^(?<kind>struct|valuetype)\s+(?<name>[A-Za-z_]\w*)(?:\s*:\s*(?<base>(?:::)?[A-Za-z_]\w*(?:::[A-Za-z_]\w*)*))?\s*\{",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    internal static readonly Regex StructForwardPattern = new(
+        @"^struct\s+(?<name>[A-Za-z_]\w*)\s*;",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     internal static readonly Regex InterfacePattern = new(

@@ -16,7 +16,8 @@ internal static class DynamicTypeEmitter
         string sourceIdlFileName,
         string? baseType,
         bool isRecursive,
-        RtiApiProfile profile)
+        RtiApiProfile profile,
+        IReadOnlyCollection<string> recursiveComponent)
     {
         var typeName = names.ManagedTypeName;
         var runtimeTypeName = names.RuntimeTypeName;
@@ -93,7 +94,7 @@ internal static class DynamicTypeEmitter
             var mustUnderstand = field.IsMustUnderstand ? ", isMustUnderstand: true" : string.Empty;
             var comma = index == fields.Count - 1 ? string.Empty : ",";
 
-            writer.WriteLine($"new StructMember(\"{field.Name}\", {field.BuildDynamicTypeExpression(names.ImplementationNamespace, runtimeTypeName, isRecursive)}{key}{optional}{mustUnderstand}, id: {field.EffectiveMemberId ?? field.MemberId ?? inheritedFields.Count + index}){comma}");
+            writer.WriteLine($"new StructMember(\"{field.Name}\", {field.BuildDynamicTypeExpression(names.ImplementationNamespace, runtimeTypeName, isRecursive, recursiveComponent)}{key}{optional}{mustUnderstand}, id: {field.EffectiveMemberId ?? field.MemberId ?? inheritedFields.Count + index}){comma}");
         }
 
         writer.CloseBlock(";");

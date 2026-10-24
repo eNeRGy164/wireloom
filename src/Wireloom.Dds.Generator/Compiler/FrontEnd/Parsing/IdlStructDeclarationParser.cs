@@ -20,7 +20,25 @@ internal sealed class IdlStructDeclarationParser
         var declarationStart = prefix.DeclarationStart;
         var useHashIds = prefix.UseHashIds;
 
-        var declaration = StructPattern.Match(declarations.Substring(declarationStart));
+        var remainingDeclarations = declarations[declarationStart..];
+        var forwardDeclaration = StructForwardPattern.Match(remainingDeclarations);
+        if (forwardDeclaration.Success)
+        {
+            if (isTopic || prefix.Extensibility is not null || prefix.UnknownApplications.Count > 0 || localAutoId is not null)
+            {
+                throw new IdlException(input, context.MapOffset(baseOffset + declarationStart), "Annotations are not supported on struct forward declarations.");
+            }
+
+            var forwardName = forwardDeclaration.Groups["name"].Value;
+            var qualifiedForwardName = context.Qualify(forwardName, currentNamespace);
+
+            context.RecordIdentifier(input, baseOffset + declarationStart + forwardDeclaration.Groups["name"].Index, forwardName, currentNamespace);
+            context.EnsureForwardStruct(input, baseOffset + declarationStart, qualifiedForwardName);
+
+            return declarationStart + forwardDeclaration.Length - position;
+        }
+
+        var declaration = StructPattern.Match(remainingDeclarations);
         if (!declaration.Success)
         {
             var remaining = declarations[declarationStart..].TrimStart();
@@ -34,8 +52,18 @@ internal sealed class IdlStructDeclarationParser
         var name = declaration.Groups["name"].Value;
         var fullyQualifiedName = context.Qualify(name, currentNamespace);
         context.RecordIdentifier(input, baseOffset + declarationStart + declaration.Groups["name"].Index, name, currentNamespace);
-        context.EnsureNewName(input, baseOffset + declarationStart, fullyQualifiedName);
+
+        if (declaration.Groups["kind"].Value.Equals("struct", StringComparison.OrdinalIgnoreCase))
+        {
+            context.EnsureStructDefinitionName(input, baseOffset + declarationStart, fullyQualifiedName);
+        }
+        else
+        {
+            context.EnsureNewName(input, baseOffset + declarationStart, fullyQualifiedName);
+        }
+
         context.EnsureGeneratedCompanionNames(input, baseOffset + declarationStart, name, currentNamespace, includeUnmanaged: true);
+
         var openingBrace = declarationStart + declaration.Length - 1;
         var closingBrace = IdlSyntaxReader.FindClosingDelimiter(declarations, openingBrace, '{', '}');
         if (closingBrace < 0)
@@ -57,6 +85,17 @@ internal sealed class IdlStructDeclarationParser
         var body = declarations.Substring(openingBrace + 1, closingBrace - openingBrace - 1);
         var extensibility = prefix.Extensibility ?? IdlExtensibilityKind.Extensible;
         var fields = ParseMembers(input, body, baseOffset + openingBrace + 1, currentNamespace, fullyQualifiedName, useHashIds);
+        var incompleteValueMember = fields.FirstOrDefault(field =>
+            field.Metadata is { IsOptional: false, IsExternal: false }
+            && context.IsIncompleteForwardValueType(field.Type));
+        if (incompleteValueMember is not null)
+        {
+            throw new IdlException(
+                incompleteValueMember.SourceInput ?? input,
+                incompleteValueMember.SourceOffset,
+                $"Forward-declared struct member '{incompleteValueMember.Name}' must use a sequence, @optional, or @external indirection before the type is defined.");
+        }
+
         var validationOffset = context.MapOffset(baseOffset + declarationStart);
         var baseType = declaration.Groups["base"].Success
             ? NormalizeIdlType(declaration.Groups["base"].Value)

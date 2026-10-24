@@ -7,9 +7,20 @@ namespace Wireloom.Compiler.Emission.Planning;
 internal sealed partial class MemberEmissionPlan
 {
     /// <summary>Builds the dynamic-type expression for this member.</summary>
-    public string BuildDynamicTypeExpression(string implementationNamespace, string? recursiveTypeName = null, bool isRecursive = false)
+    public string BuildDynamicTypeExpression(
+        string implementationNamespace,
+        string? recursiveTypeName = null,
+        bool isRecursive = false,
+        IReadOnlyCollection<string>? recursiveComponent = null)
     {
         var dynamicType = IsOptional && IsAggregate ? Field.DeclaredType : Type;
+
+        if (recursiveComponent is { Count: > 0 }
+            && Type is SequenceEmissionType sequence
+            && TryBuildRecursiveSequenceExpression(sequence, implementationNamespace, recursiveComponent, out var sequenceExpression))
+        {
+            return sequenceExpression;
+        }
 
         return dynamicType.Shape.Kind switch
         {
@@ -18,6 +29,38 @@ internal sealed partial class MemberEmissionPlan
             EmissionShapeKind.String => BuildStringDynamicType(),
             _ => $"dtf.GetPrimitiveType<{PrimitiveDynamicType()}>()",
         };
+    }
+
+    private static bool TryBuildRecursiveSequenceExpression(SequenceEmissionType sequence, string implementationNamespace, IReadOnlyCollection<string> recursiveComponent, out string expression)
+    {
+        var element = EmissionTypeProjector.UnwrapValueEmissionType(sequence.Element);
+        if (element is not StructEmissionType structure
+            || structure.SupportType is null
+            || !Contains(recursiveComponent, structure.SupportType))
+        {
+            expression = string.Empty;
+            return false;
+        }
+
+        var recursiveSupportType = IdlNaming.GeneratedSupportTypeReference(structure.SupportType, implementationNamespace);
+
+        var bound = sequence.IsBounded ? sequence.Bound.ToString() : "Rti.Types.Dynamic.SequenceType.Unbounded";
+
+        expression = $"tsf.CreateSequenceWithAccessInfo(dtf, {recursiveSupportType}Support.GetOrCreateInstanceImpl().GetDynamicTypeInternal(isPublic), {bound})";
+        return true;
+    }
+
+    private static bool Contains(IReadOnlyCollection<string> values, string expected)
+    {
+        foreach (var value in values)
+        {
+            if (string.Equals(value, expected, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private string BuildCollectionDynamicType(string implementationNamespace, string? recursiveTypeName, bool isRecursive)

@@ -27,17 +27,33 @@ internal static class CollectionAliasTypeSupportEmitter
         writer.CloseBlock();
         writer.BlankLine();
 
+        var instanceAccessors = plan.IsRecursiveUnboundedSequenceElement ? "{ get; private set; }" : "{ get; }";
         writer.WriteXmlSummary("Gets the shared type-support instance for formatting, serialization, and dynamic-type utilities for this typedef.");
         writer.WriteXmlRemarks("The generated plugin and unmanaged type are runtime implementation details; application code should use this support class and the managed typedef.");
-        writer.WriteLine($"public static {typeName}Support Instance {{ get; }} =");
+        writer.WriteLine($"public static {typeName}Support Instance {instanceAccessors} =");
         writer.Indent();
         writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{typeName}Support, {typeName}>();");
         writer.Unindent();
+
+        if (plan.IsRecursiveUnboundedSequenceElement)
+        {
+            writer.BlankLine();
+            writer.WriteXmlSummary("Gets or creates the recursive sequence type-support instance without forcing its public dynamic type.");
+            writer.OpenBlock($"internal static {typeName}Support GetOrCreateInstanceImpl()");
+            writer.OpenBlock("if (Instance is null)");
+            writer.WriteLine($"Instance = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{typeName}Support, {typeName}>();");
+            writer.CloseBlock();
+            writer.BlankLine();
+            writer.WriteLine("return Instance;");
+            writer.CloseBlock();
+        }
+
         if (fallback)
         {
             writer.BlankLine();
             AliasFormattingEmitter.EmitSupportFormatter(writer, declaration, plan);
         }
+
         writer.CloseBlock();
 
         return [new GeneratedIdlSource(names.Support.HintName, writer.ToString())];

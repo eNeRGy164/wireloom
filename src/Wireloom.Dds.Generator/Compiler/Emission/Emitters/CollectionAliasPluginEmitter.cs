@@ -48,7 +48,7 @@ internal static class CollectionAliasPluginEmitter
 
         if (plan.IsSequence)
         {
-            writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{names.UnmanagedTypeName}>(dtf, \"{typeName}\", tsf.CreateSequenceWithAccessInfo(dtf, {GetDynamicElementType(plan, names.ImplementationNamespace)}, {plan.SequenceBound}));");
+            writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{names.UnmanagedTypeName}>(dtf, \"{typeName}\", tsf.CreateSequenceWithAccessInfo(dtf, {GetDynamicElementType(plan, names.ImplementationNamespace, plan.IsRecursiveUnboundedSequenceElement)}, {(plan.IsRecursiveUnboundedSequenceElement ? "Rti.Types.Dynamic.SequenceType.Unbounded" : plan.SequenceBound.ToString())}));");
         }
         else if (plan.IsArray)
         {
@@ -145,7 +145,7 @@ internal static class CollectionAliasPluginEmitter
         return $"new AnnotationParameterValue {{ {property} = {value} }}";
     }
 
-    private static string GetDynamicElementType(CollectionAliasEmissionPlan plan, string? currentNamespace)
+    private static string GetDynamicElementType(CollectionAliasEmissionPlan plan, string? currentNamespace, bool recursiveElementType = false)
     {
         if (plan.IsString)
         {
@@ -163,6 +163,9 @@ internal static class CollectionAliasPluginEmitter
             ? EmissionTypeProjector.UnwrapValueEmissionType(plan.ElementPlan)
             : plan.ElementPlan;
         var supportType = elementPlan.SupportType ?? elementPlan.CSharpType;
-        return $"{IdlNaming.GeneratedSupportTypeReference(supportType, currentNamespace)}Support.Instance.GetDynamicTypeInternal(isPublic)";
+        var supportInstance = recursiveElementType
+            ? $"{IdlNaming.GeneratedSupportTypeReference(supportType, currentNamespace)}Support.GetOrCreateInstanceImpl()"
+            : $"{IdlNaming.GeneratedSupportTypeReference(supportType, currentNamespace)}Support.Instance";
+        return $"{supportInstance}.GetDynamicTypeInternal(isPublic)";
     }
 }

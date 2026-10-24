@@ -16,8 +16,9 @@ internal static class TypeSupportEmitter
         string sourceIdlFileName,
         string? baseType,
         bool isRecursive,
-        RtiApiProfile profile) =>
-        EmitDocuments(names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive, profile);
+        RtiApiProfile profile,
+        IReadOnlyCollection<string> recursiveComponent) =>
+        EmitDocuments(names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive, profile, recursiveComponent);
 
     private static IReadOnlyList<GeneratedIdlSource> EmitDocuments(
         GeneratedTypeNames names,
@@ -27,7 +28,8 @@ internal static class TypeSupportEmitter
         string sourceIdlFileName,
         string? baseType,
         bool isRecursive,
-        RtiApiProfile profile)
+        RtiApiProfile profile,
+        IReadOnlyCollection<string> recursiveComponent)
     {
         var typeName = names.ManagedTypeName;
         var implementationTypeName = IdlNaming.TypeReference(typeName, names.Namespace, names.ImplementationNamespace);
@@ -55,7 +57,7 @@ internal static class TypeSupportEmitter
             new(names.Unmanaged.HintName, writer.ToString())
         };
 
-        documents.AddRange(DynamicTypeEmitter.EmitStructPlugin(names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive, profile));
+        documents.AddRange(DynamicTypeEmitter.EmitStructPlugin(names, fields, inheritedFields, extensibility, sourceIdlFileName, baseType, isRecursive, profile, recursiveComponent));
 
         var dynamicTypeExample = isRecursive ? string.Empty : $"\nvar dynamicType = {names.SupportTypeName}.Instance.DynamicType;";
 

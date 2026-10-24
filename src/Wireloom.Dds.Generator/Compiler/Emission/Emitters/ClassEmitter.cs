@@ -1,4 +1,5 @@
 using Wireloom.Compiler.Emission.Planning;
+using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Naming;
 
@@ -18,21 +19,28 @@ internal static class ClassEmitter
         IReadOnlyList<IdlMember> inheritedFields,
         bool isTopic,
         RtiApiProfile profile,
-        SequenceArrayEmissionPlan? sequenceArrays = null)
+        SequenceArrayEmissionPlan? sequenceArrays,
+        RecursiveTypeGraph recursiveTypes)
     {
         var names = IdlNaming.CreateGeneratedTypeNames(currentNamespace, name);
         var escapedName = names.ManagedTypeName;
+        var runtimeTypeName = currentNamespace is null ? name : $"{currentNamespace}.{name}";
+        var recursiveComponent = recursiveTypes.ComponentFor(runtimeTypeName);
         var emissionFields = fields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace, sequenceArrays)).ToArray();
         var emissionInheritedFields = inheritedFields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace, sequenceArrays)).ToArray();
         var initialFieldPlans = emissionFields.Select(field => new MemberEmissionPlan(field, currentNamespace, profile: profile)).ToArray();
         var managedBackingNames = ResolveManagedBackingNames(escapedName: names.ManagedTypeName, initialFieldPlans);
         var fieldPlans = initialFieldPlans
-            .Select((field, index) => new MemberEmissionPlan(field.Field, currentNamespace, managedBackingNames[index], profile))
+            .Select((field, index) => new MemberEmissionPlan(
+                field.Field,
+                currentNamespace,
+                managedBackingNames[index],
+                profile,
+                IsRecursiveUnboundedSequence(field, recursiveComponent)))
             .ToArray();
         var inheritedFieldPlans = emissionInheritedFields.Select(field => new MemberEmissionPlan(field, currentNamespace, profile: profile)).ToArray();
         var hasTypeSupport = fieldPlans.All(field => field.HasTypeSupport);
-        var runtimeTypeName = currentNamespace is null ? name : $"{currentNamespace}.{name}";
-        var isRecursive = fieldPlans.Any(field => field.IsRecursive(runtimeTypeName));
+        var isRecursive = recursiveComponent.Count > 0 || fieldPlans.Any(field => field.IsRecursive(runtimeTypeName));
         var writer = EmissionSupport.CreateSource(currentNamespace, EmissionSupport.GetManagedTypeUsings(fieldPlans.Concat(inheritedFieldPlans)), sourceIdlFileName);
         var typeSummary = $"Represents the <c>{name}</c> DDS type declared in <c>{sourceIdlFileName}</c>.";
 
@@ -96,7 +104,8 @@ internal static class ClassEmitter
                 sourceIdlFileName,
                 baseType,
                 isRecursive,
-                profile));
+                profile,
+                recursiveComponent));
         }
 
         return documents;
@@ -128,5 +137,16 @@ internal static class ClassEmitter
         }
 
         return result;
+    }
+
+    private static bool IsRecursiveUnboundedSequence(MemberEmissionPlan field, IReadOnlyCollection<string> recursiveComponent)
+    {
+        if (EmissionTypeProjector.UnwrapValueEmissionType(field.Type) is not SequenceEmissionType { IsBounded: false } sequence
+            || EmissionTypeProjector.UnwrapValueEmissionType(sequence.Element) is not StructEmissionType { SupportType: { } supportType })
+        {
+            return false;
+        }
+
+        return recursiveComponent.Contains(supportType, StringComparer.Ordinal);
     }
 }

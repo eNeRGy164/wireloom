@@ -14,10 +14,14 @@ internal sealed class CollectionAliasEmissionPlan(
     int? sequenceBound = null,
     RtiApiProfile? profile = null,
     bool isSequenceArrayElement = false,
-    IdlMemberValueMetadata? valueMetadata = null)
+    IdlMemberValueMetadata? valueMetadata = null,
+    bool isRecursiveUnboundedSequenceElement = false)
 {
     /// <summary>Gets whether the wrapper is generated for an anonymous sequence-array element.</summary>
     internal bool IsSequenceArrayElement { get; } = isSequenceArrayElement;
+
+    /// <summary>Gets whether this unbounded sequence contains an element in a recursive sequence component.</summary>
+    internal bool IsRecursiveUnboundedSequenceElement { get; } = isRecursiveUnboundedSequenceElement;
 
     private RtiApiProfile Profile { get; } = profile ?? RtiApiProfile.Rtiddsgen470;
     public EmissionTypePlan ElementPlan { get; } = elementPlan;
