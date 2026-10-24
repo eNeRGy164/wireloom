@@ -12,6 +12,7 @@
 #include <vector>
 
 #include <dds/dds.hpp>
+#include <dds/core/xtypes/DynamicType.hpp>
 #include <dds/core/xtypes/MemberType.hpp>
 #include <dds/core/xtypes/PrimitiveTypes.hpp>
 #include <dds/core/xtypes/StructType.hpp>
@@ -94,19 +95,19 @@ int main(int argc, char **argv)
         // Normal cases use metadata emitted by rtiddsgen. Character-union
         // probes that expose RTI code-generation issues use an equivalent
         // hand-built DynamicType instead.
-        auto dynamic_type = rti::topic::dynamic_type<DdsType>::get();
+        dds::core::xtypes::DynamicType dynamic_type = rti::topic::dynamic_type<DdsType>::get();
 #ifdef WIRELOOM_TYPED_IDL_GAPS_FIXTURE
         if (case_id == "14-typed-defaults" && fixture == "sparse-omitted"
             && role == "writer") {
             using namespace dds::core::xtypes;
-            dynamic_type = StructType("TypedDefaults");
-            dynamic_type.add_member(
+            StructType sparse_dynamic_type("TypedDefaults");
+            sparse_dynamic_type.add_member(
                 Member("inherited", primitive_type<int32_t>()).id(0));
-            dynamic_type.extensibility_kind(ExtensibilityKind::EXTENSIBLE);
+            sparse_dynamic_type.extensibility_kind(ExtensibilityKind::EXTENSIBLE);
             const auto &reader_type = rti::topic::dynamic_type<DdsType>::get();
 #if RTI_DDS_VERSION_MAJOR > 7 \
     || (RTI_DDS_VERSION_MAJOR == 7 && RTI_DDS_VERSION_MINOR >= 7)
-            if (!reader_type.is_assignable_from(dynamic_type)) {
+            if (!reader_type.is_assignable_from(sparse_dynamic_type)) {
                 throw std::runtime_error(
                     "The full C171 reader type is not assignable from the sparse writer type");
             }
@@ -115,6 +116,7 @@ int main(int argc, char **argv)
             // assignability method. The writer/reader match below performs
             // the profile's authoritative compatibility check.
 #endif
+            dynamic_type = sparse_dynamic_type;
         }
 #endif
 #endif
