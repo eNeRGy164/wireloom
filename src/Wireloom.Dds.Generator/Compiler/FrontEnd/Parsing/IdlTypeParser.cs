@@ -216,7 +216,15 @@ internal sealed class IdlTypeParser
                 case "hashid":
                     if (annotations.MemberId is not null || annotations.MemberIdExpression is not null || annotations.HashIdExpression is not null)
                         throw new IdlException(input, captured.Offset, "Duplicate or conflicting @id/@hashid annotation.");
-                    annotations.HashIdExpression = value?.Trim('"') ?? string.Empty;
+                    if (value is null)
+                    {
+                        annotations.HashIdExpression = string.Empty;
+                    }
+                    else
+                    {
+                        var isWide = value.TrimStart().StartsWith("L\"", StringComparison.Ordinal);
+                        annotations.HashIdExpression = IdlStringLiteralDecoder.Decode(value, isWide, input, captured.Offset);
+                    }
                     break;
                 case "min":
                     if (annotations.MinimumExpression is not null) throw new IdlException(input, captured.Offset, "Duplicate @min or @range annotation.");

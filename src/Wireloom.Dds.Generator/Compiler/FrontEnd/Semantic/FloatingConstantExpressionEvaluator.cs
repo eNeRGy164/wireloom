@@ -101,7 +101,12 @@ internal sealed class FloatingConstantExpressionEvaluator(string text, IdlSymbol
 
         SkipWhitespace();
         var start = position;
-        while (position < text.Length && (char.IsDigit(text[position]) || text[position] is '.' or 'e' or 'E'))
+        var startsNumericLiteral = position < text.Length
+            && (char.IsDigit(text[position])
+                || (text[position] == '.' && position + 1 < text.Length && char.IsDigit(text[position + 1])));
+        while (startsNumericLiteral
+            && position < text.Length
+            && (char.IsDigit(text[position]) || text[position] is '.' or 'e' or 'E'))
         {
             if ((text[position] is 'e' or 'E') && position + 1 < text.Length && (text[position + 1] is '+' or '-'))
             {
