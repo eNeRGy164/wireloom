@@ -145,6 +145,28 @@
         "sourceDirectory": "cpp/features/10-default-literal-enum-array"
       }
     },
+    "11-preprocessing": {
+      "tag": "C048",
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/11-preprocessing"
+      },
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/features/11-preprocessing"
+      }
+    },
+    "11-include-search": {
+      "tag": "C053",
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/11-include-search"
+      },
+      "rtiCpp": {
+        "mode": "adjusted",
+        "sourceDirectory": "cpp/wire-adjusted/11-include-search"
+      }
+    },
     "05-array-of-sequences-idl": {
       "tag": "C149",
       "rtiCSharp": {

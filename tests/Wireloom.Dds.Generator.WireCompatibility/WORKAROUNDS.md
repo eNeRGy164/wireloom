@@ -5,27 +5,32 @@ deviations. Ordinary typed fixtures and topic wrappers are
 [harness setup](README.md#case-specific-fixture-construction), not compatibility workarounds.
 Version lists the releases with the described limitation or configuration requirement.
 Snippets use the corpus type names; linked sources contain the complete implementation.
-Retained RTI oracle sources are not edited.
+Raw captured RTI oracle sources are not edited; corrections live in versioned
+`wire-adjusted` copies with per-file hashes.
 
-- [1. Optional wide-string sequences](#optional-wide-string-sequences)
-- [2. Shadowed C# member](#shadowed-c-member)
-- [3. Numeric character casts](#numeric-character-unions)
-- [4. Character fallback discriminator](#character-fallback-discriminator)
-- [5. Character label metadata](#character-label-metadata)
-- [6. Unsigned character compilation](#unsigned-character-compilation)
-- [7. Recursive metadata propagation](#recursive-metadata-propagation)
-- [8. Recursive C# plugin bootstrap](#recursive-csharp-bootstrap)
-- [9. Recursive array TypeCode traversal](#recursive-array-typecode-traversal)
-- [10. Recursive writer memory](#recursive-writer-memory)
-- [11. Recursive type generation](#recursive-type-generation)
-- [12. Recursive type-name qualification](#recursive-aggregate-qualification)
-- [13. Wide-character union reference](#wide-character-union-reference)
-- [14. FlatData reference input](#flatdata-reference-input)
-- [15. Wstring alias peer corrections](#wstring-alias-typecode-tags)
+- [W001 · Optional wide-string sequences](#w001)
+- [W002 · Shadowed C# member](#w002)
+- [W003 · Numeric character casts](#w003)
+- [W004 · Character fallback discriminator](#w004)
+- [W005 · Character label metadata](#w005)
+- [W006 · Unsigned character compilation](#w006)
+- [W007 · Recursive metadata propagation](#w007)
+- [W008 · Recursive C# plugin bootstrap](#w008)
+- [W009 · Recursive array TypeCode traversal](#w009)
+- [W010 · Recursive writer memory](#w010)
+- [W011 · Recursive type generation](#w011)
+- [W012 · Recursive type-name qualification](#w012)
+- [W013 · Wide-character union reference](#w013)
+- [W014 · FlatData reference input](#w014)
+- [W015 · Wstring alias peer corrections](#w015)
+- [W016 · Unsigned 32-bit union labels](#w016)
+- [W017 · ASCII character label capture](#w017)
+- [W018 · Generated include staging](#w018)
 
 <a id="optional-wide-string-sequences"></a>
+<a id="w001"></a>
 
-## 1. Optional wide-string sequences
+## W001 · Optional wide-string sequences
 
 **Scope:** C114 `09-optional-string-sequences`  
 **Version:** `7.3.1`, `7.7.0`  
@@ -55,8 +60,9 @@ The implementation checks the return code and sets each element. It constructs
 16-bit `DDS_Wchar` values explicitly; Linux `wchar_t` is 32-bit. See [native peer](Native/main.cpp.in).
 
 <a id="shadowed-c-member"></a>
+<a id="w002"></a>
 
-## 2. Shadowed C# member
+## W002 · Shadowed C# member
 
 **Scope:** C021 `06-alias-composition`  
 **Version:** `7.3.1`, `7.7.0`  
@@ -82,8 +88,9 @@ this.sample.ToNative(sample.sample, keysOnly: false);
 The patch changes only those receivers. See [reference build](scripts/run-matrix.sh).
 
 <a id="numeric-character-unions"></a>
+<a id="w003"></a>
 
-## 3. Numeric character casts
+## W003 · Numeric character casts
 
 **Scope:** C137 `07-union-char-numeric`; C141 `07-union-char-numeric-255`  
 **Version:** `7.3.1`, `7.7.0`  
@@ -116,8 +123,9 @@ source stops the build. See [maintainer commands](README.md#maintainer-checks)
 and [patch utility](scripts/matrix-tools.cs).
 
 <a id="character-fallback-discriminator"></a>
+<a id="w004"></a>
 
-## 4. Character fallback discriminator
+## W004 · Character fallback discriminator
 
 **Scope:** C137 `07-union-char-numeric`; C141 `07-union-char-numeric-255`  
 **Version:** `7.3.1`, `7.7.0`  
@@ -143,8 +151,9 @@ fallback property remains available for normal application assignments. The
 See [patch utility](scripts/matrix-tools.cs).
 
 <a id="character-label-metadata"></a>
+<a id="w005"></a>
 
-## 5. Character label metadata
+## W005 · Character label metadata
 
 **Scope:** C141 `07-union-char-numeric-255`  
 **Version:** `7.3.1`, `7.7.0`  
@@ -180,8 +189,9 @@ The C++ binding also needs the independent [unsigned-char compiler setting](#uns
 See [patch utility](scripts/matrix-tools.cs).
 
 <a id="unsigned-character-compilation"></a>
+<a id="w006"></a>
 
-## 6. Unsigned character compilation
+## W006 · Unsigned character compilation
 
 **Scope:** C141 `07-union-char-numeric-255`  
 **Version:** `7.3.1`, `7.7.0`  
@@ -208,8 +218,9 @@ The same C++ expression then yields `255`. This compiler setting does not correc
 [internal label metadata](#character-label-metadata). See [native build](Native/CMakeLists.txt).
 
 <a id="recursive-metadata-propagation"></a>
+<a id="w007"></a>
 
-## 7. Recursive metadata propagation
+## W007 · Recursive metadata propagation
 
 **Scope:** C134 `09-optional-recursive-array`  
 **Version:** `7.7.0`  
@@ -236,8 +247,9 @@ or [recursive C++ traversal](#recursive-array-typecode-traversal). See
 [managed peer](Peer/TypedPeer.cs) and [native peer](Native/typed-fixture-peer.hpp.in).
 
 <a id="recursive-csharp-bootstrap"></a>
+<a id="w008"></a>
 
-## 8. Recursive C# plugin bootstrap
+## W008 · Recursive C# plugin bootstrap
 
 **Scope:** C134 `09-optional-recursive-array`  
 **Version:** `7.3.1`, `7.7.0`  
@@ -263,8 +275,9 @@ correction does not enable [public recursive metadata](README.md#recursive-fixtu
 See [typed peer setup](Peer/TypedPeer.cs).
 
 <a id="recursive-array-typecode-traversal"></a>
+<a id="w009"></a>
 
-## 9. Recursive array TypeCode traversal
+## W009 · Recursive array TypeCode traversal
 
 **Scope:** C134 `09-optional-recursive-array`  
 **Version:** `7.3.1`, `7.7.0`  
@@ -289,8 +302,9 @@ correction. Generation requires [recursive-type support](#recursive-type-generat
 See [scratch C++ corrections](scripts/run-matrix.sh).
 
 <a id="recursive-writer-memory"></a>
+<a id="w010"></a>
 
-## 10. Recursive writer memory
+## W010 · Recursive writer memory
 
 **Scope:** C134 `09-optional-recursive-array`  
 **Version:** `7.3.1`  
@@ -324,8 +338,9 @@ sample-size limit. See
 The harness applies this writer setting on both LTS profiles.
 
 <a id="recursive-type-generation"></a>
+<a id="w011"></a>
 
-## 11. Recursive type generation
+## W011 · Recursive type generation
 
 **Scope:** C019 `06-aggregates`; C134 `09-optional-recursive-array`  
 **Version:** `7.3.1`, `7.7.0`  
@@ -350,8 +365,9 @@ RTI `7.3.1` also needs [type-name qualification](#recursive-aggregate-qualificat
 See [reference build](scripts/run-matrix.sh).
 
 <a id="recursive-aggregate-qualification"></a>
+<a id="w012"></a>
 
-## 12. Recursive type-name qualification
+## W012 · Recursive type-name qualification
 
 **Scope:** C019 `06-aggregates`; C134 `09-optional-recursive-array`  
 **Version:** `7.3.1`  
@@ -377,8 +393,9 @@ This does not replace the [visited-node traversal correction](#recursive-array-t
 for C134. See [reference build](scripts/run-matrix.sh).
 
 <a id="wide-character-union-reference"></a>
+<a id="w013"></a>
 
-## 13. Wide-character union reference
+## W013 · Wide-character union reference
 
 **Scope:** C113 `07-union-wchar-label`  
 **Version:** `7.3.1`, `7.7.0`  
@@ -419,8 +436,9 @@ This covers the manual C++ model only; it does not make the RTI C# generation
 failures pass. See [native type model](Native/main.cpp.in).
 
 <a id="flatdata-reference-input"></a>
+<a id="w014"></a>
 
-## 14. FlatData reference input
+## W014 · FlatData reference input
 
 **Scope:** C047 `10-flat-data-binding`  
 **Version:** `7.3.1`, `7.7.0`  
@@ -440,7 +458,8 @@ module CorpusFlatDataBinding {
 // Generation rejects Sample: FlatData requires @mutable or @final.
 ```
 
-[FlatData is a C++ binding](https://community.rti.com/static/documentation/connext-dds/7.4.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Using_BuiltinAnnotations.htm); RTI C# ignores the annotation.
+[FlatData is a C++ binding](https://community.rti.com/static/documentation/connext-dds/7.4.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Using_BuiltinAnnotations.htm);
+RTI C# ignores the annotation.
 For the reference exchange, remove the mapping annotation from scratch C++ input:
 
 ```sh
@@ -453,8 +472,9 @@ The canonical IDL and C# inputs are unchanged; FlatData C++ layout is unqualifie
 See [IDL adaptation](scripts/run-matrix.sh).
 
 <a id="wstring-alias-typecode-tags"></a>
+<a id="w015"></a>
 
-## 15. Wstring alias peer corrections
+## W015 · Wstring alias peer corrections
 
 **Scope:** C147 `10-resolve-name-wstring-aliases`<br>
 **Version:** `7.3.1`, `7.7.0`<br>
@@ -499,3 +519,68 @@ With both guarded corrections, the C147 matrix exercises all nine directed
 pairings among Wireloom C#, RTI C#, and RTI C++ for empty and exact-boundary
 values. See [the guarded edits](scripts/run-matrix.sh) and [C147's corpus
 row](../../../docs/corpus/FEATURE-COVERAGE.md).
+
+<a id="unsigned-32-bit-union-labels"></a>
+<a id="w016"></a>
+
+## W016 · Unsigned 32-bit union labels
+
+**Scope:** C119 `07-union-ulong`; C125 `07-union-uint32`; **Version:** `7.3.1`, `7.7.0`
+**Peer:** RTI C# reference
+
+**Applies when:** Compiling the generated RTI C# plugin metadata for the
+maximum discriminator label `4294967295`.
+
+RTI emits an explicit cast of that unsigned 32-bit label to `int` in the
+`UnionMember` metadata. The checked constant conversion fails with `CS0221`:
+
+```csharp
+new int[] { (int) 4294967295 } // CS0221
+```
+
+The adjusted oracle uses an unchecked conversion:
+
+```csharp
+new int[] { unchecked((int) 4294967295) } // -1, the same 0xFFFFFFFF bits
+```
+
+This preserves the discriminator's 32-bit representation in RTI's signed
+metadata API. The raw generated C# stays under `csharp/features`; the adjusted
+peer and its hashes are recorded under `csharp/wire-adjusted` in
+`wire-oracles.json`. See the [adjusted source manifests](../../../docs/corpus/7.3.1/rtiddsgen/csharp/wire-adjusted/07-union-uint32/manifest.json).
+
+<a id="ascii-character-label-capture"></a>
+<a id="w017"></a>
+
+## W017 · ASCII character label capture
+
+**Scope:** C130 `07-union-char-boundaries`; **Version:** `7.3.1`, `7.7.0`
+**Peer:** RTI C# reference
+
+**Applies when:** The captured RTI C# source represents the maximum label for
+the IDL `char` discriminator.
+
+The IDL declares ASCII tilde (`~`, U+007E), but the captured RTI C# output uses
+U+00FF (`ÿ`) in its branch checks and type metadata. The adjusted oracle changes
+those literals to `~`, matching the declared label and the 27 passing pairings
+in the latest wire CI run. The original captures remain unchanged in
+`csharp/features`; the corrected sources and hashes are in
+`csharp/wire-adjusted/07-union-char-boundaries`.
+
+<a id="w018"></a>
+
+## W018 · Generated include staging
+
+**Scope:** C164 `14-autoid-scope`; C172 `14-enum-constant`<br>
+**Version:** `7.3.1`, `7.7.0`<br>
+**Peer:** RTI C# and RTI C++ references
+
+**Applies when:** Compiling generated peers whose IDL includes resolve by
+basename or relative path, or whose generated helper files are shared by
+multiple IDL inputs.
+
+The matrix stages include dependencies in an isolated scratch tree. It reuses
+generated files only after checking expected names, unique destinations, and
+byte identity; otherwise it copies matching headers to IDL-relative paths.
+This works around generator include-resolution behavior while retaining the
+original corpus inputs and recording source and staged hashes.

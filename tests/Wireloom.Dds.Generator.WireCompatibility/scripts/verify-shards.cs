@@ -369,11 +369,19 @@ try
         && autoIdProvenance["oracleDependencies"]!.AsArray().Any(item =>
             (string?)item!["path"] == "docs/corpus/idl/includes/autoid-hash-include.idl"),
         "C164 wrapper provenance includes the canonical source and its transitive include dependency.");
-    var idlMarkdown = File.ReadAllLines(Path.Combine(merged, "results.md"))
-        .Single(line => line.StartsWith("| `05-array-of-sequences-idl.idl`", StringComparison.Ordinal));
-    Check(idlMarkdown.Split("N/A", StringSplitOptions.None).Length == 6
-        && !idlMarkdown.Contains("❔", StringComparison.Ordinal),
-        "The five excluded RTI C# pairings are N/A rather than missing exchanges.");
+    var idlMarkdownRows = File.ReadAllLines(Path.Combine(merged, "results.md"))
+        .Where(line =>
+        {
+            var columns = line.Split('|', StringSplitOptions.TrimEntries);
+            return columns.Length > 2
+                && columns[1].Contains("`05-array-of-sequences-idl`", StringComparison.Ordinal)
+                && columns[2] is "`sequence-empty`" or "`sequence-unequal`" or "`sequence-mixed-empty`" or "`sequence-boundary`";
+        })
+        .ToArray();
+    Check(idlMarkdownRows.Length == 4 && idlMarkdownRows.All(line =>
+            line.Split("N/A", StringSplitOptions.None).Length == 6
+            && !line.Contains("❔", StringComparison.Ordinal)),
+        "Each IDL-preserving fixture reports five excluded RTI C# pairings as N/A rather than missing exchanges.");
 
     // Arrange / Act / Assert: missing or different generation provenance must not qualify.
     var provenanceFile = Path.Combine(merged, "logs", "05-array-of-sequences-idl-generation.json");
@@ -517,13 +525,12 @@ try
     Check(scalarMarkdown.StartsWith($"# {rtiVersion} Wire compatibility results\n", StringComparison.Ordinal),
         "The report title identifies the tested profile.");
 
-    var header = scalarMarkdown.Split('\n').Single(line => line.StartsWith("| IDL scenario |", StringComparison.Ordinal));
-    Check(header.Contains("Wireloom → Wireloom", StringComparison.Ordinal)
-        && !header.Contains("Wireloom C#", StringComparison.Ordinal)
-        && !header.Contains("🧵", StringComparison.Ordinal),
-        "Table headings use the compact Wireloom label without changing RTI peer labels.");
+    var header = scalarMarkdown.Split('\n').Single(line => line.StartsWith("| Corpus feature | Variation |", StringComparison.Ordinal));
+    Check(header.Contains("🧵 → 🧵", StringComparison.Ordinal)
+        && !header.Contains("Wireloom C#", StringComparison.Ordinal),
+        "Table headings use the compact Wireloom symbol without changing RTI peer labels.");
 
-    var boundaryRow = scalarMarkdown.Split('\n').Single(line => line.StartsWith("| `01-boundaries.idl`", StringComparison.Ordinal));
+    var boundaryRow = FindReportRow(scalarMarkdown, "01-boundaries", "non-default");
     Check(!boundaryRow.Contains("Typed fixture:", StringComparison.Ordinal),
         "Normal generated sample construction is not described as a wire workaround.");
 
@@ -532,7 +539,7 @@ try
         && scalarMarkdown.Contains("`0xFF`", StringComparison.Ordinal),
         "Compiler flags, API identifiers, and discriminator values use code spans.");
 
-    var recursiveRow = scalarMarkdown.Split('\n').Single(line => line.StartsWith("| `09-optional-recursive-array.idl`", StringComparison.Ordinal));
+    var recursiveRow = FindReportRow(scalarMarkdown, "09-optional-recursive-array", "optional-absent");
     Check(recursiveRow.Contains("**Wireloom, RTI C#, RTI C++:**", StringComparison.Ordinal)
         && recursiveRow.Split("pool_buffer_max_size=4096").Length == 2
         && recursiveRow.Contains("**RTI C#:** Bootstrap", StringComparison.Ordinal)
@@ -653,7 +660,7 @@ try
         && compilerPairings.All(pairing => line.Contains(pairing, StringComparison.Ordinal))),
         "Each row shows one compiler message and identifies all five affected pairings.");
 
-    var arrayRow = markdownLines.Single(line => line.StartsWith("| `05-array-of-sequences.idl`", StringComparison.Ordinal));
+    var arrayRow = FindReportRow(string.Join('\n', markdownLines), "05-array-of-sequences", "default");
     Check(arrayRow.Split("retained symptom").Length == 2
         && arrayRow.Contains("**Wireloom → RTI C++, RTI C++ → Wireloom:**", StringComparison.Ordinal),
         "Pairings with the same observed failure are grouped together.");
@@ -663,7 +670,7 @@ try
     Check(aliasScenarios.Length == 18 && aliasScenarios.All(item => (string?)item!["status"] == "PASS"),
         "C147 reports all 18 empty and boundary exchanges passing across its three peers.");
     var aliasReport = File.ReadAllText(Path.Combine(merged, "results.md"));
-    Check(aliasReport.Contains("wstring-alias-typecode-tags", StringComparison.Ordinal)
+    Check(aliasReport.Contains("Workaround W015", StringComparison.Ordinal)
         && aliasReport.Contains("Post-generation namespace correction", StringComparison.Ordinal)
         && aliasReport.Contains("Post-generation `TypeCode` correction", StringComparison.Ordinal),
         "C147 report rows link both guarded RTI peer corrections.");
@@ -897,6 +904,17 @@ void Check(bool condition, string description)
 }
 
 JsonNode ReadJson(string path) => JsonNode.Parse(File.ReadAllText(path))!;
+
+string FindReportRow(string markdown, string caseId, string fixture)
+{
+    return markdown.Split('\n').Single(line =>
+    {
+        var columns = line.Split('|', StringSplitOptions.TrimEntries);
+        return columns.Length > 2
+            && columns[1].Contains($"`{caseId}`", StringComparison.Ordinal)
+            && columns[2] == $"`{fixture}`";
+    });
+}
 
 void ChangeJson(string path, Action<JsonNode> change)
 {
