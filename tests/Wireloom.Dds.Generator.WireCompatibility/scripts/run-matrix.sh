@@ -111,6 +111,9 @@ fixtures_for_case() {
         05-unbounded-sequence-aliases)
             printf '%s\n' sequence-empty sequence-multiple
             ;;
+        06-aggregates)
+            printf '%s\n' non-default direct-recursive-sequence
+            ;;
         04-boundaries)
             printf '%s\n' string-boundary non-default
             ;;
@@ -554,6 +557,9 @@ start_peer() {
         timeout "$((timeout_seconds + 5))" dotnet "$rti_cs_peer" \
             --case "$case_id" --type "$rti_type" --topic "$topic" \
             --runtime-version "$rti_version" --role "$role" --fixture "$fixture"
+    elif [[ "$case_id" == "06-aggregates" && "$fixture" == "direct-recursive-sequence" ]]; then
+        timeout "$((timeout_seconds + 5))" "$case_dir/native/build/wire-peer-recursive-sequence" \
+            "$role" "$topic" "$timeout_seconds" "$case_id" "$fixture"
     else
         timeout "$((timeout_seconds + 5))" "$cpp_peer" "$role" "$topic" "$timeout_seconds" "$case_id" "$fixture"
     fi
@@ -613,6 +619,12 @@ run_scenario() {
     local reader_ready=0
     local reader_status=0
     local writer_status=0
+
+    if [[ "$case_id" == "06-aggregates" && "$fixture" == "direct-recursive-sequence" ]]; then
+        wireloom_type="CorpusAggregates.Recursive"
+        rti_type="CorpusAggregates.Recursive"
+        cpp_type="::CorpusAggregates::Recursive"
+    fi
 
     scenario_index=$((scenario_index + 1))
     printf 'WIRE_MATRIX_PROGRESS started=%d/%d completed=%d/%d passed=%d failed=%d elapsed=%ss current=%s [%s] %s -> %s\n' \
@@ -1001,6 +1013,9 @@ for case_id in "${case_ids[@]}"; do
     fi
     if [[ "$case_id" == "09-optional-recursive-array" ]]; then
         cmake_adaptation_args+=( -DWIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE=ON )
+    fi
+    if [[ "$case_id" == "06-aggregates" ]]; then
+        cp "$native_template/recursive-sequence-peer.cpp" "$native_dir/recursive-sequence-peer.cpp"
     fi
     if [[ "$case_id" == "09-optional-recursive-array" && -z "$rti_cpp_oracle_source" ]]; then
         # RTI 4.7.0 omits the visited-node chain when initializing the recursive

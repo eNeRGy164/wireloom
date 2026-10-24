@@ -33,6 +33,12 @@ add_executable(wire-peer main.cpp ${RTI_GENERATED_SOURCES})
 target_include_directories(wire-peer PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_features(wire-peer PRIVATE cxx_std_11)
 target_link_libraries(wire-peer PRIVATE RTIConnextDDS::cpp2_api)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/recursive-sequence-peer.cpp")
+    add_executable(wire-peer-recursive-sequence recursive-sequence-peer.cpp ${RTI_GENERATED_SOURCES})
+    target_include_directories(wire-peer-recursive-sequence PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_compile_features(wire-peer-recursive-sequence PRIVATE cxx_std_11)
+    target_link_libraries(wire-peer-recursive-sequence PRIVATE RTIConnextDDS::cpp2_api)
+endif()
 if(WIRELOOM_CHAR8_LITERAL_FIXTURE)
     # RTI emits the high-bit char label literally. Compile it as one char8 byte,
     # not as a UTF-8 multicharacter integer truncated into the discriminator.

@@ -73,6 +73,46 @@ must match the selected RTI profile:
 | 7.3.1       | `7.3.1.0-1-1bullseye` |
 | 7.7.0       | `7.7.0.0-1-1bookworm` |
 
+### Direct recursive sequence matrix fixture
+
+The standard `06-aggregates` matrix case includes both its composed aggregate
+fixture and a direct recursive sequence fixture. To run that case by itself
+inside the matching RTI helper container:
+
+```bash
+export WIRE_COMPATIBILITY_RTI_VERSION=7.7.0 # Or 7.3.1
+export WIRE_COMPATIBILITY_CASE_FILTER=06-aggregates
+export WIRE_COMPATIBILITY_OUTPUT_DIR=/workspace/artifacts/recursive-sequence-matrix-$WIRE_COMPATIBILITY_RTI_VERSION
+bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.sh
+```
+
+The fixture scopes its directed exchanges to Wireloom C# and typed RTI C++;
+the other `06-aggregates` fixtures retain their existing peer matrix. RTI C++
+source selection comes from the profile's `wire-oracles.json`, and the
+profile-specific correction stays in the checked-in
+`cpp/wire-adjusted/06-aggregates` source with its usual hashes and adjustment
+manifest. Wire execution does not invoke `rtiddsgen`. The typed C++ peer and
+Wireloom C# peer exchange a finite three-node
+`CorpusAggregates.Recursive` value in both directions and verify values 6101,
+6102, and 6103. Both participants set
+`type_object_max_serialized_length=8192` and enable only
+`SERVICE_REQUEST_CHANNEL`, so RTI 7.7.0 uses TypeObject v1. RTI 7.3.1's
+TypeCode correction is already present in the retained adjusted source; see
+[WORKAROUNDS.md](WORKAROUNDS.md#recursive-aggregate-qualification).
+
+The direct recursive sequence member has a working typed C# / RTI C++ wire
+path on both LTS versions with that documented discovery profile.
+This qualification covers direct self-recursion only; mutually recursive
+struct graphs remain unqualified.
+RTI 7.7.0's default TypeObject v2 profile rejects recursive types at type
+registration with `Strongly Connected Components (recursive types) are not
+yet supported with TypeObjectV2`; setting
+`WIRELOOM_RECURSIVE_TYPEOBJECT_PROFILE=v2` on the C# peer reproduces this
+failure. RTI 7.3.1's default profile is TypeObject v1. This evidence covers
+the direct sequence member only; recursive sequence typedef aliases remain
+unsupported by Wireloom because RTI C++11 generation does not compile for
+those IDL shapes.
+
 For a complete local reproduction, use a clean Linux checkout of the recorded
 revision; do not reuse Windows `obj`/`bin` directories or a Windows worktree's
 `.git` pointer inside Linux. The PowerShell corpus capture/export recipes in

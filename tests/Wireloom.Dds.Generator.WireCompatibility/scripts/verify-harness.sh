@@ -70,6 +70,7 @@ assert_fixtures() {
 }
 
 assert_fixtures 14-extensibility-full 'non-default'
+assert_fixtures 06-aggregates $'non-default\ndirect-recursive-sequence'
 assert_fixtures 14-autoid-scope 'scope-nested'
 assert_fixtures 14-annotation-arguments $'default\nnon-default'
 assert_fixtures 14-member-declarators 'non-default'

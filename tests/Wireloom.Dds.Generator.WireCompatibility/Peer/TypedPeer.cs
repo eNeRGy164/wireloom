@@ -1,6 +1,7 @@
 #nullable enable annotations
 
 using System.Reflection;
+using Rti.Dds.Core.Policy;
 using Rti.Dds.Domain;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
@@ -29,7 +30,10 @@ internal static class TypedPeer
         var typeSupport = (TypeSupport<T>)TypeSupportHelper.GetTypeSupportForType(typeof(T));
         using var serializer = typeSupport.CreateSerializer();
         DynamicData? fixture = null;
-        if (options.CaseId is not ("09-optional-recursive-array" or "05-unbounded-sequence-aliases"
+        var isDirectRecursiveSequenceFixture = options.CaseId == "06-aggregates"
+            && options.Fixture == "direct-recursive-sequence";
+        if (!isDirectRecursiveSequenceFixture
+            && options.CaseId is not ("09-optional-recursive-array" or "05-unbounded-sequence-aliases"
             or "07-union-char-numeric" or "07-union-char-numeric-255" or "07-union-string-sequence-aliases"
             or "09-defaults-ranges" or "01-boundaries" or "01-full-widths"
             or "10-default-literal-enum-array" or "05-array-of-sequences-idl"
@@ -54,6 +58,21 @@ internal static class TypedPeer
         }
 
         var participantQos = DomainParticipantFactory.Instance.DefaultParticipantQos;
+        var recursiveTypeObjectProfile =
+            Environment.GetEnvironmentVariable("WIRELOOM_RECURSIVE_TYPEOBJECT_PROFILE") ?? "v1";
+        if (isDirectRecursiveSequenceFixture && recursiveTypeObjectProfile == "v1")
+        {
+            participantQos = participantQos
+                .WithResourceLimits(policy => policy.TypeObjectMaxSerializedLength = 8192)
+                .WithDiscoveryConfig(policy => policy.EnabledBuiltinChannels = BuiltinChannelsKind.ServiceRequest);
+        }
+        else if (isDirectRecursiveSequenceFixture && recursiveTypeObjectProfile != "v2")
+        {
+            throw new ArgumentException(
+                "WIRELOOM_RECURSIVE_TYPEOBJECT_PROFILE must be 'v1' or 'v2'.",
+                nameof(options));
+        }
+
         if (options.CaseId == "09-optional-recursive-array")
         {
             // RTI 7.7.0 cannot register recursive types with TypeObject v2 enabled.

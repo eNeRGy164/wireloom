@@ -18,6 +18,12 @@ internal static class ReceivedSampleVerifier
             return;
         }
 
+        if (options.CaseId == "06-aggregates" && options.Fixture == "direct-recursive-sequence")
+        {
+            VerifyTypedValue(expected!, sample, context);
+            return;
+        }
+
         switch (options.CaseId)
         {
 #if WIRE_COMPATIBILITY_SEQUENCE_ARRAYS
