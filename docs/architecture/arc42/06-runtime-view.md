@@ -10,16 +10,18 @@ RTI runtime.
 
 1. MSBuild adds explicit `DdsIdl` roots and tracks other `.idl` files as
    non-generating inputs. Root metadata determines strictness for the batch;
-   project properties provide default effective limits for unbounded sequences
-   and strings, and file metadata can override those defaults.
+   project properties provide effective limits and the batch-wide
+   `DdsIdlEnableEscapeChar` name-normalization setting.
 2. Roslyn supplies the files, item metadata, compiler options, and compilation
    references to `Generator`.
 3. The generator requires C# 12 or later and a resolved RTI runtime reference
    of at least 7.3.1. The Roslyn adapter reads the resolved assembly version
    and compilation orchestration selects the matching immutable profile.
-4. `IdlCompiler` resolves the include graph and preprocesses input. The front
-   end then parses declarations, binds references and deferred bounds against
-   the complete symbol graph, and validates semantics using the batch policy.
+4. `IdlCompiler` resolves the include graph and preprocesses input. If escape
+   normalization is enabled, a token-aware pass removes one leading underscore
+   from identifiers and composes source origins before parsing. The front end
+   then binds normalized references and deferred bounds against the complete
+   symbol graph and validates semantics using the batch policy.
 5. Emission planning applies profile-specific API policies; emitters render the
    resolved plans and return generated C# documents to the central result.
    Input that prevents safe managed output produces `DDSG0001` at its IDL
@@ -60,6 +62,9 @@ semantic model. Other collections retain their existing emission paths.
   with source-located `DDSG0001` before emission.
 - Exact reserved keyword identifiers fail in both modes. Suppressing a
   diagnostic does not restore output after semantic validation fails.
+- With `DdsIdlEnableEscapeChar`, collisions created by normalized identifiers
+  and the identifier `_` (which would normalize to an empty name) fail before
+  emission. Implicit hash member IDs use normalized names.
 - Invalid sequence-array settings and unsupported recursive direct sequence
   arrays in `Idl` mode produce `DDSG0001` with no partial source emission;
   there is no silent fallback to flattening. The default `RtiCSharp` mapping

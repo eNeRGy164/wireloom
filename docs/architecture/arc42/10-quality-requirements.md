@@ -24,6 +24,7 @@ Wireloom quality
 | Q-01 | Run the manifest corpus           | Compliance records every manifest case; retained oracle sources are compared for required API shape. Selected generated outputs compile against exact RTI APIs, while runtime and wire verification remain separate evidence. |
 | Q-09 | Select sequence-array mapping     | The default output remains RTI C# compatible; opt-in runtime tests preserve both layers on both LTS profiles. Packed consumers verify project defaults and file overrides. Dedicated C149 retains ordinary corpus sources.    |
 | Q-11 | Configure unbounded finite limits | Project defaults and file overrides produce matching generated bounds for sequence and string members, typedefs, unions, and included files; explicit IDL bounds remain authoritative. Invalid values fail before emission.   |
+| Q-12 | Normalize escaped IDL names       | The opt-in project setting normalizes declarations, references, macro expansions, and metadata, preserves string literals and source locations, permits escaped keywords in strict mode, and rejects normalized collisions before emission. |
 | Q-08 | Dispatch the licensed matrix      | Exact LTS package and container versions are paired; reports show all nine directed pairings and expected array-of-sequences failures for the selected target.                                                                |
 
 Sixteen typed C163–C172 fixtures exercise all directed pairings among Wireloom

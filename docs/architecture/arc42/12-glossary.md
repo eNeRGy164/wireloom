@@ -5,6 +5,9 @@
 - **Strict validation** — A batch-wide semantic policy that rejects supported
   IDL specification violations before emission. It is distinct from compiler
   warnings-as-errors and identifier escaping.
+- **Escaped IDL identifier** — An IDL identifier with a leading underscore
+  normalized by `DdsIdlEnableEscapeChar`; exactly one underscore is removed
+  after preprocessing, and the resulting canonical name defines symbol identity.
 - **Annotation application** — One `@name` with an optional balanced argument
   list. The parser captures its source order, raw text, and location before
   known built-ins are interpreted; unknown applications stay opaque.

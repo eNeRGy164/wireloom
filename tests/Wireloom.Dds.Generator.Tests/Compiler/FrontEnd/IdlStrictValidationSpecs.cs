@@ -277,7 +277,7 @@ public sealed class IdlStrictValidationSpecs
     {
         // Arrange
         var input = new IdlInput("input.idl", "Struct");
-        var occurrences = new[] { new IdlIdentifierOccurrence("Struct", "", IdlIdentifierScopeKind.Namespace, input, 0) };
+        var occurrences = new[] { new IdlIdentifierOccurrence("Struct", false, "", IdlIdentifierScopeKind.Namespace, input, 0) };
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
 

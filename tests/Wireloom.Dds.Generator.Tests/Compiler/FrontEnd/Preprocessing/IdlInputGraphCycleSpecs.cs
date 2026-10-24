@@ -126,7 +126,7 @@ public sealed class IdlInputGraphCycleSpecs
         var parsedInputs = 0;
 
         // Act
-        graph.Visit(inputs[0], (_, _, _, _, _) => parsedInputs++);
+        graph.Visit(inputs[0], (_, _, _, _, _, _) => parsedInputs++);
 
         // Assert
         parsedInputs.ShouldBe(maximumDepth + 1);
@@ -144,8 +144,8 @@ public sealed class IdlInputGraphCycleSpecs
         var parsedInputs = 0;
 
         // Act
-        graph.Visit(lowerCasePath, (_, _, _, _, _) => parsedInputs++);
-        graph.Visit(upperCasePath, (_, _, _, _, _) => parsedInputs++);
+        graph.Visit(lowerCasePath, (_, _, _, _, _, _) => parsedInputs++);
+        graph.Visit(upperCasePath, (_, _, _, _, _, _) => parsedInputs++);
 
         // Assert
         parsedInputs.ShouldBe(Path.DirectorySeparatorChar == '\\' ? 1 : 2);
@@ -172,7 +172,7 @@ public sealed class IdlInputGraphCycleSpecs
         var files = chain.Append(shared).ToDictionary(input => Path.GetFullPath(input.Path), pathComparer);
         var graph = new IdlInputGraph(files, [], [], [], CancellationToken.None);
         graph.BeginRoot();
-        var parse = (string _, IdlInput _, int _, string? _, IReadOnlyList<SourceOriginSpan> _) => { };
+        var parse = (string _, IdlInput _, int _, string? _, IReadOnlyList<SourceOriginSpan> _, HashSet<int> _) => { };
         graph.Visit(shared, parse);
 
         // Act

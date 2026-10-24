@@ -27,7 +27,7 @@ internal static class IdlIdentifierValidator
 
             names.TryGetValue(identifier.Name, out var previous);
             names.TryAdd(identifier.Name, identifier);
-            if (keywords.TryGetValue(identifier.Name, out var keyword))
+            if (!identifier.WasEscaped && keywords.TryGetValue(identifier.Name, out var keyword))
             {
                 var rule = IdlSpecificationRule.KeywordCaseCollision;
                 if (string.Equals(identifier.Name, keyword, StringComparison.Ordinal))

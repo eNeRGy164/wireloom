@@ -37,6 +37,7 @@ internal sealed class IdlDeclarationParser
         int baseOffset,
         string? currentNamespace,
         IReadOnlyList<SourceOriginSpan>? sourceOrigins = null,
+        HashSet<int>? escapedIdentifierOffsets = null,
         bool inheritedHashIds = false)
     {
         if (input.SequenceSize <= 0)
@@ -52,6 +53,7 @@ internal sealed class IdlDeclarationParser
         // Always replace the mapping: sequential files must never inherit the
         // previous parse's origin table.
         context.SetSourceOrigins(sourceOrigins);
+        context.SetEscapedIdentifierOffsets(escapedIdentifierOffsets);
 
         var position = 0;
         IdlAnnotationApplicationSyntax? pendingAutoId = null;
@@ -155,7 +157,7 @@ internal sealed class IdlDeclarationParser
             }
 
             var effectiveHashIds = pendingAutoId is null ? inheritedHashIds : UsesHashIds(pendingAutoId);
-            if (TryParseModule(declarations, input, baseOffset, currentNamespace, sourceOrigins, inheritedHashIds, pendingAutoId, ref position))
+            if (TryParseModule(declarations, input, baseOffset, currentNamespace, sourceOrigins, escapedIdentifierOffsets, inheritedHashIds, pendingAutoId, ref position))
             {
                 pendingAutoId = null;
                 continue;
@@ -332,6 +334,7 @@ internal sealed class IdlDeclarationParser
         int baseOffset,
         string? currentNamespace,
         IReadOnlyList<SourceOriginSpan>? sourceOrigins,
+        HashSet<int>? escapedIdentifierOffsets,
         bool inheritedHashIds,
         IdlAnnotationApplicationSyntax? localAutoId,
         ref int position)
@@ -366,6 +369,7 @@ internal sealed class IdlDeclarationParser
             baseOffset + openBrace + 1,
             moduleName,
             sourceOrigins,
+            escapedIdentifierOffsets,
             moduleDeclaration.ResolveMemberIdHashPolicy(inheritedHashIds));
 
         position = closeBrace + 1;
