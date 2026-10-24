@@ -296,7 +296,7 @@ namespace Implementation
             text.Initialize(size: ((int) 8), allocateMemory: allocateMemory);
             text.ToNative("alias", ((int) 8));
             ratio = (double) (1.5);
-            single = (float) (0.0f);
+            single = (float) (1.25f);
         }
 
         public void ToNative(global::TypedDefaults sample, bool keysOnly = false)
@@ -404,7 +404,7 @@ namespace Implementation
             }
             {
                 AnnotationParameterValue defaultValueParam = new AnnotationParameterValue();
-                defaultValueParam.Float32Value = (float) 0;
+                defaultValueParam.Float32Value = (float) 1.25f;
                 AnnotationParameterValue minValueParam = new AnnotationParameterValue();
                 minValueParam.Float32Value = (float) float.MinValue;
                 AnnotationParameterValue maxValueParam = new AnnotationParameterValue();

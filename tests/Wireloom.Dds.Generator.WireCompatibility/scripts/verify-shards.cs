@@ -57,6 +57,9 @@ try
                     .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                     .SequenceEqual(["Wireloom C#|Wireloom C#", "Wireloom C#|RTI C++", "RTI C++|Wireloom C#", "RTI C++|RTI C++"]),
                 "The IDL case schedules four pairings and explicitly excludes flattened RTI C#.");
+            Check(Invoke(succeeds: true, "case-pairings", manifestPath, "14-typed-defaults", "sparse-omitted").Trim()
+                    == "RTI C++|Wireloom C#",
+                "C171's sparse fixture records only its focused writer-to-reader pairing.");
             Check(Invoke(succeeds: true, "case-field", manifestPath, "05-array-of-sequences-idl", "idl").Trim()
                     == "idl/features/05-array-of-sequences-idl.idl"
                 && Invoke(succeeds: true, "case-field", manifestPath, "05-array-of-sequences-idl", "sequence-array-mapping").Trim() == "Idl"
@@ -436,6 +439,33 @@ try
         Path.Combine(root, "early-failure.json"), Path.Combine(root, "early-failure.md"), emptyLogs, exclusions, manifestPath);
     Check((string?)ReadJson(Path.Combine(root, "early-failure.json"))["scenarios"]![0]!["status"] == "NOT_RUN",
         "Missing build provenance never turns an early setup failure into completed qualification.");
+    if (rtiVersion == "7.7.0")
+    {
+        // Arrange: one planned sparse pairing with eight deliberately unplanned cells.
+        var sparseRow = rows.Single(row => row[0] == "14-typed-defaults"
+            && row[9] == "default" && row[4] == peers[2] && row[6] == peers[0]).ToArray();
+        sparseRow[8] = "NOT_RUN";
+        sparseRow[9] = "sparse-omitted";
+        var sparseSeed = Path.Combine(root, "sparse-omitted.tsv");
+        File.WriteAllText(sparseSeed, string.Join('\t', sparseRow));
+        var sparseJson = Path.Combine(root, "sparse-omitted.json");
+        var sparseMarkdown = Path.Combine(root, "sparse-omitted.md");
+
+        // Act: report the sparse scenario before it has run.
+        Invoke(succeeds: true, "render-report", rtiVersion, "1", sparseSeed, sparseJson,
+            sparseMarkdown, emptyLogs, exclusions, manifestPath);
+
+        // Assert: only the planned exchange is counted; other cells are N/A, not false missing runs.
+        var sparseReport = ReadJson(sparseJson);
+        var sparseReportRow = File.ReadAllLines(sparseMarkdown)
+            .Single(line => line.Contains("`sparse-omitted`", StringComparison.Ordinal));
+        Check((int)sparseReport["scenarioCount"]! == 1
+            && (string?)sparseReport["scenarios"]![0]!["status"] == "NOT_RUN"
+            && sparseReportRow.Split('|').Count(cell => cell.Trim() == "N/A") == 8
+            && sparseReportRow.Contains("**RTI C++ → Wireloom:**", StringComparison.Ordinal)
+            && !sparseReportRow.Contains("Wireloom → Wireloom", StringComparison.Ordinal),
+            $"Sparse report rows show only one planned NOT_RUN exchange; row: {sparseReportRow}");
+    }
     Check((int)ReadJson(baseline)["notApplicableCount"]! == 1, "Unavailable features are recorded separately from failures.");
     Check(ReadJson(baseline)["scenarios"]!.AsArray().All(item => (string?)item!["case"] != "09-must-understand"), "Unavailable features add no exchanges to the denominator.");
     Check(File.ReadAllText(Path.Combine(merged, "results.md")).Contains("Not applicable", StringComparison.Ordinal), "The Markdown report explains unavailable features.");

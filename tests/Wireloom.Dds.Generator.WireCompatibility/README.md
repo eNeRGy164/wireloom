@@ -206,9 +206,20 @@ canonical, and C164 dependency copies from an isolated scratch tree, then keeps
 the staged inputs and source/staged hashes in the evidence. The canonical IDL
 files in the snapshot remain unchanged.
 
-The C171 default fixture transmits values initialized by generated constructors.
-It does not remove fields from serialized samples or test schema evolution.
-Missing-field DDS deserialization remains a separate, unverified contract.
+The C171 type declares `inherited=7`, `overridden=9`, `text="alias"`,
+`ratio=1.5`, and `single=1.25`. Its focused sparse case uses an older appendable
+C++ DynamicData writer type containing only member ID 0 (`inherited`) and sends
+`inherited=17101`. The full Wireloom C# reader supplies the declared defaults
+for the four absent trailing members. This sparse schema is compatible through
+RTI 7.7.0's member-annotation path; RTI 7.3.1 does not expose that metadata API.
+
+The in-memory `ClearMember` probe is a separate runtime-contract check. On
+RTI 7.7.0 it restores integral, narrow-string, and signed-zero defaults, but
+fractional defaults are truncated and non-ASCII wide-string defaults are
+returned as `??`. A separate runtime metadata check confirms the exact
+fractional and wide-string annotation values on 7.7.0, and managed/native
+initialization is checked on both profiles; the clear behavior is retained as
+a profile limitation.
 
 ### DynamicData fixture API limits
 

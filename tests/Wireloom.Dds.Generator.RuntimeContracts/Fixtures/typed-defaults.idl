@@ -4,6 +4,7 @@ module TypedDefaults {
     @default(7) typedef long Seven;
     @default(9) typedef Seven Nine;
     @default("alias") typedef string<16> Text;
+    @default(L"世界") typedef wstring<16> WideText;
     @default(1.5) typedef double Ratio;
     @default(-0.0) typedef double NegativeZero;
     @default(-0.0) typedef float NegativeFloatZero;
@@ -21,6 +22,8 @@ module TypedDefaults {
         Ratio ratio;
         @default("local") string<12> localText;
         @default(2.5) double localRatio;
+        @default(1.25) float localSingle;
+        WideText wideText;
         NegativeZero negativeZero;
         NegativeFloatZero negativeFloatZero;
         @default(L'\u8000') wchar highCharacter;

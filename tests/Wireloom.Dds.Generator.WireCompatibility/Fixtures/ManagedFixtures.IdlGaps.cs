@@ -301,6 +301,7 @@ internal static partial class ManagedFixtures
     {
         "default" => new TypedDefaults(),
         "non-default" => new TypedDefaults { inherited = 17101, overridden = 17102, text = "explicit", ratio = 2.25d, single = -3.5f },
+        "sparse-omitted" => new TypedDefaults { inherited = 17101 },
         _ => throw new FixtureException($"Unknown 14-typed-defaults fixture '{fixture}'.")
     };
 
@@ -308,8 +309,9 @@ internal static partial class ManagedFixtures
     {
         var expected = options.Fixture switch
         {
-            "default" => new TypedDefaultsExpected(7, 9, "alias", 1.5d, 0f),
+            "default" => new TypedDefaultsExpected(7, 9, "alias", 1.5d, 1.25f),
             "non-default" => new TypedDefaultsExpected(17101, 17102, "explicit", 2.25d, -3.5f),
+            "sparse-omitted" => new TypedDefaultsExpected(17101, 9, "alias", 1.5d, 1.25f),
             _ => throw UnknownFixture(options)
         };
         AssertValue(sample.inherited, expected.Inherited, "inherited", options);

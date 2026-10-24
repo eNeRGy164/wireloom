@@ -279,9 +279,21 @@ The default is therefore a type-aware semantic value rather than a literal
 string interpreted independently by each emitter. Profile runtime support for
 DynamicType defaults is recorded with the corresponding corpus and runtime
 evidence. The 7.3.1 API has no member annotation support for missing-field
-defaults. On 7.7.0, runtime tests restore integral and string defaults after
-clearing DynamicData members. Floating-point default restoration and DDS
-deserialization with missing fields remain unverified.
+defaults. On 7.7.0, runtime tests restore integral and narrow-string defaults
+after clearing DynamicData members. Managed/native initialization preserves
+fractional float/double and non-ASCII wide-string defaults on both LTS
+profiles. Runtime metadata tests confirm that RTI 7.7.0 exposes the fractional
+and wide-string annotation values exactly. Its `ClearMember` path does not
+preserve fractional metadata defaults (1.5 becomes 1.0, 2.5 becomes 2.0, and
+1.25 becomes 1.0) and returns `??` for a cleared non-ASCII wide-string
+default; these are recorded as DynamicData restoration limitations, not
+generator initialization failures.
+Negative-zero sign bits survive cleared-member restoration on 7.7.0. For C171,
+a one-member appendable writer sends `inherited=17101`; the full reader receives
+`overridden=9`, `text="alias"`, `ratio=1.5`, and `single=1.25` from the omitted
+trailing members' declared defaults. This behavior uses DDS deserialization,
+separately from in-memory `ClearMember` behavior. RTI 7.3.1 lacks the
+member-annotation API used for metadata restoration and sparse-field defaults.
 
 Range validation compares integral, boolean, and character defaults with the
 declared limits, including defaults inherited from typedefs. Boolean and
