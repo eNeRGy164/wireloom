@@ -22,12 +22,12 @@ public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
     /// <summary>
     /// Gets or sets the <c>relative</c> member.
     /// </summary>
-    public Nested.Point relative { get; set; } = new Nested.Point();
+    public Nested.Point relative { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the <c>absolute</c> member.
     /// </summary>
-    public Nested.Point absolute { get; set; } = new Nested.Point();
+    public Nested.Point absolute { get; set; } = new();
 
     /// <summary>
     /// Gets the <c>values</c> member. Its maximum number of elements is <c>4</c>. Each element's representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.

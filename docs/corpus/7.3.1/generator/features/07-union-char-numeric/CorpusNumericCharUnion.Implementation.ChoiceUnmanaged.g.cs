@@ -5,7 +5,6 @@
 #nullable enable
 
 using Rti.Dds.NativeInterface.TypePlugin;
-using Rti.Types;
 
 namespace CorpusNumericCharUnion.Implementation;
 
@@ -25,10 +24,6 @@ public struct ChoiceUnmanaged : INativeTopicType<Choice>
     /// <param name="optionalsOnly">Indicates whether only optional members should be released.</param>
     public void Destroy(bool optionalsOnly)
     {
-        if (optionalsOnly)
-        {
-            return;
-        }
     }
 
     /// <summary>

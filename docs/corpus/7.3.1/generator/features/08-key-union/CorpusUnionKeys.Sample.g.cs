@@ -17,7 +17,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// Gets or sets the <c>identity</c> member. This member forms part of the DDS instance key.
     /// </summary>
     [Key]
-    public Identity identity { get; set; } = new Identity();
+    public Identity identity { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the <c>payload</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.

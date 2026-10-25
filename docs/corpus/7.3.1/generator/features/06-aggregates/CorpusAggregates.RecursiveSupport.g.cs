@@ -45,10 +45,7 @@ public class RecursiveSupport : TypeSupport<Recursive>
     /// </summary>
     internal static RecursiveSupport GetOrCreateInstanceImpl()
     {
-        if (Instance is null)
-        {
-            Instance = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<RecursiveSupport, Recursive>();
-        }
+        Instance ??= ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<RecursiveSupport, Recursive>();
 
         return Instance;
     }

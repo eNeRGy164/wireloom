@@ -55,7 +55,7 @@ internal class NodePlugin : InterpretedTypePlugin<Node, NodeUnmanaged>
         var members = new[]
         {
             new StructMember("value", dtf.GetPrimitiveType<int>(), id: 0),
-            new StructMember("children", tsf.CreateArrayWithAccessInfo<NodeUnmanaged>(dtf, NodeSupport.GetOrCreateInstanceImpl().GetDynamicTypeInternal(isPublic), new uint[] { 2 }), isOptional: true, id: 1)
+            new StructMember("children", tsf.CreateArrayWithAccessInfo<NodeUnmanaged>(dtf, NodeSupport.GetOrCreateInstanceImpl().GetDynamicTypeInternal(isPublic), [2]), isOptional: true, id: 1)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<NodeUnmanaged>(

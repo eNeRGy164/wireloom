@@ -88,7 +88,7 @@ public partial class Sample : global::System.IEquatable<Sample>
         }
 
         values = other.values is null ? null! : new Sequence<int>(other.values);
-        items = other.items is null ? null! : (int[])other.items.Clone();
+        items = ((int[]?)other.items?.Clone())!;
     }
 
     /// <inheritdoc />

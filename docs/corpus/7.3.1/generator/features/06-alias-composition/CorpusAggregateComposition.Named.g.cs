@@ -14,7 +14,7 @@ public partial class Named : global::System.IEquatable<Named>
     /// <summary>
     /// Gets or sets the <c>sample</c> member.
     /// </summary>
-    public Sample sample { get; set; } = new Sample();
+    public Sample sample { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Named"/> class.

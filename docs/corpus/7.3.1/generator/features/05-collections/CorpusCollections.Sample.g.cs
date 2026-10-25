@@ -38,7 +38,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// Gets or sets the <c>bounded</c> member. Its maximum number of elements is <c>4</c>. Each element's representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     [Bound(4)]
-    public BoundedLongs bounded { get; set; } = new BoundedLongs();
+    public BoundedLongs bounded { get; set; } = new();
 
     /// <summary>
     /// Gets the <c>items</c> member. Its maximum number of elements is <c>2</c>.
@@ -58,7 +58,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Gets or sets the <c>grid</c> member.
     /// </summary>
-    public CoordinateGrid grid { get; set; } = new CoordinateGrid();
+    public CoordinateGrid grid { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Sample"/> class.

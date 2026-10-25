@@ -36,8 +36,8 @@ internal class IdentityPlugin : InterpretedTypePlugin<Identity, IdentityUnmanage
 
         var members = new[]
         {
-            new UnionMember("number", dtf.GetPrimitiveType<int>(), new[] { 0 }, id: 1),
-            new UnionMember("text", dtf.CreateString(255), new[] { 1 }, id: 2)
+            new UnionMember("number", dtf.GetPrimitiveType<int>(), [0], id: 1),
+            new UnionMember("text", dtf.CreateString(255), [1], id: 2)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<IdentityUnmanaged>(

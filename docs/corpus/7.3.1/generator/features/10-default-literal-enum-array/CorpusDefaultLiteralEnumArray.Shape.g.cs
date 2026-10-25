@@ -19,7 +19,7 @@ public partial class Shape : global::System.IEquatable<Shape>
     /// <summary>
     /// Gets or sets the <c>colorArray</c> member.
     /// </summary>
-    public ColorArray colorArray { get; set; } = new ColorArray();
+    public ColorArray colorArray { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Shape"/> class.

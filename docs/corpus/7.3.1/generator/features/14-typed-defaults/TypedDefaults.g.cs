@@ -27,7 +27,7 @@ public partial class TypedDefaults : global::System.IEquatable<TypedDefaults>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.3.1 string and wide-string bounds</seealso>
     /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(8)]
-    public string text { get; set; } = "alias";
+    public string text { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>ratio</c> member. Finite values are in the inclusive range <c>double.MinValue</c> through <c>double.MaxValue</c>. NaN and positive or negative infinity are also representable. Its default value is <c>1.5</c>.

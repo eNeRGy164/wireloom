@@ -14,12 +14,12 @@ public partial class Composed : global::System.IEquatable<Composed>
     /// <summary>
     /// Gets or sets the <c>base</c> member.
     /// </summary>
-    public Base @base { get; set; } = new Base();
+    public Base @base { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the <c>derived</c> member.
     /// </summary>
-    public Derived derived { get; set; } = new Derived();
+    public Derived derived { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Composed"/> class.

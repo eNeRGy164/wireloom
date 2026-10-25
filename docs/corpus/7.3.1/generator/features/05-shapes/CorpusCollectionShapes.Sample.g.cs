@@ -33,7 +33,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// Gets or sets the <c>boundedItems</c> member. Its maximum number of elements is <c>3</c>.
     /// </summary>
     [Bound(3)]
-    public Items boundedItems { get; set; } = new Items();
+    public Items boundedItems { get; set; } = new();
 
     /// <summary>
     /// Gets the <c>nestedSequences</c> member. Its maximum number of elements is <c>2</c>. Each nested sequence is limited to <c>4</c> elements. Each element's representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
@@ -89,7 +89,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// Gets or sets the <c>names</c> member. Its maximum number of elements is <c>4</c>. Each narrow IDL string element is limited to <c>32</c> UTF-8 bytes.
     /// </summary>
     [Bound(4)]
-    public Names names { get; set; } = new Names();
+    public Names names { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Sample"/> class.

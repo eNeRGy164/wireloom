@@ -14,7 +14,7 @@ public partial class Reopened : global::System.IEquatable<Reopened>
     /// <summary>
     /// Gets or sets the <c>value</c> member.
     /// </summary>
-    public KeywordRecord value { get; set; } = new KeywordRecord();
+    public KeywordRecord value { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Reopened"/> class.

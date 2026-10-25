@@ -36,7 +36,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
         var members = new[]
         {
             new StructMember("values", tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), 5), id: 0),
-            new StructMember("array", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), new uint[] { 5 }), id: 1)
+            new StructMember("array", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), [5]), id: 1)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<SampleUnmanaged>(

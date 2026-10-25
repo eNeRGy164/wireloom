@@ -12,7 +12,7 @@ public partial class UsesInclude : global::System.IEquatable<UsesInclude>
     /// <summary>
     /// Gets or sets the <c>included</c> member.
     /// </summary>
-    public Included included { get; set; } = new Included();
+    public Included included { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UsesInclude"/> class.

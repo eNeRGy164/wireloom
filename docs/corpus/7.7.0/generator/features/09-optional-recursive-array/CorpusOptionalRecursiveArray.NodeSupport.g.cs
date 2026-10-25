@@ -45,10 +45,7 @@ public class NodeSupport : TypeSupport<Node>
     /// </summary>
     internal static NodeSupport GetOrCreateInstanceImpl()
     {
-        if (Instance is null)
-        {
-            Instance = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<NodeSupport, Node>();
-        }
+        Instance ??= ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<NodeSupport, Node>();
 
         return Instance;
     }

@@ -36,9 +36,9 @@ internal class LabelExpressionsPlugin : InterpretedTypePlugin<global::LabelExpre
 
         var members = new[]
         {
-            new UnionMember("symbolic", dtf.GetPrimitiveType<int>(), new[] { 42 }, id: 1),
-            new UnionMember("arithmetic", dtf.GetPrimitiveType<int>(), new[] { 4 }, id: 2),
-            new UnionMember("hexadecimal", dtf.GetPrimitiveType<int>(), new[] { 16 }, id: 3)
+            new UnionMember("symbolic", dtf.GetPrimitiveType<int>(), [42], id: 1),
+            new UnionMember("arithmetic", dtf.GetPrimitiveType<int>(), [4], id: 2),
+            new UnionMember("hexadecimal", dtf.GetPrimitiveType<int>(), [16], id: 3)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<LabelExpressionsUnmanaged>(

@@ -38,8 +38,8 @@ internal class DeclaratorsPlugin : InterpretedTypePlugin<global::Declarators, De
         {
             new StructMember("first", dtf.GetPrimitiveType<int>(), id: 0),
             new StructMember("second", dtf.GetPrimitiveType<int>(), isKey: true, id: 4),
-            new StructMember("numbers", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), new uint[] { 2 }), id: 5),
-            new StructMember("matrix", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), new uint[] { 2, 3 }), id: 6)
+            new StructMember("numbers", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), [2]), id: 5),
+            new StructMember("matrix", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), [2, 3]), id: 6)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<DeclaratorsUnmanaged>(

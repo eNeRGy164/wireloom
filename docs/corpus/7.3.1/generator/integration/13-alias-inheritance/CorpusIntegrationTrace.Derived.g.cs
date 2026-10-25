@@ -24,7 +24,7 @@ public partial class Derived : Base, global::System.IEquatable<Derived>
     /// <summary>
     /// Gets or sets the <c>traceContext</c> member.
     /// </summary>
-    public Context traceContext { get; set; } = new Context();
+    public Context traceContext { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Derived"/> class.

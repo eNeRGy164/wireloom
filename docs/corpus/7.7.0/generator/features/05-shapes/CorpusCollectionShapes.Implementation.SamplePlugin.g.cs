@@ -38,7 +38,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
             new StructMember("unboundedItems", tsf.CreateSequenceWithAccessInfo(dtf, ItemSupport.Instance.GetDynamicTypeInternal(isPublic), 100), id: 0),
             new StructMember("boundedItems", ItemsSupport.Instance.GetDynamicTypeInternal(isPublic), id: 1),
             new StructMember("nestedSequences", tsf.CreateSequenceWithAccessInfo(dtf, BoundedLongsSupport.Instance.GetDynamicTypeInternal(isPublic), 2), id: 2),
-            new StructMember("rows", tsf.CreateArrayWithAccessInfo<RowUnmanaged>(dtf, RowSupport.Instance.GetDynamicTypeInternal(isPublic), new uint[] { 2 }), id: 3),
+            new StructMember("rows", tsf.CreateArrayWithAccessInfo<RowUnmanaged>(dtf, RowSupport.Instance.GetDynamicTypeInternal(isPublic), [2]), id: 3),
             new StructMember("sequenceOfArrays", tsf.CreateSequenceWithAccessInfo(dtf, RowSupport.Instance.GetDynamicTypeInternal(isPublic), 2), id: 4),
             new StructMember("sequenceOfArrayAliases", tsf.CreateSequenceWithAccessInfo(dtf, RowsSupport.Instance.GetDynamicTypeInternal(isPublic), 2), id: 5),
             new StructMember("names", NamesSupport.Instance.GetDynamicTypeInternal(isPublic), id: 6)

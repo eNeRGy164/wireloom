@@ -37,7 +37,7 @@ public partial class Record : global::System.IEquatable<Record>
     /// Gets or sets the <c>colors</c> member. Its maximum number of elements is <c>3</c>.
     /// </summary>
     [Bound(3)]
-    public ColorSequence colors { get; set; } = new ColorSequence();
+    public ColorSequence colors { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Record"/> class.
