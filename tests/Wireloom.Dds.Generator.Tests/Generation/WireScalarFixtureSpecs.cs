@@ -29,10 +29,10 @@ public sealed class WireScalarFixtureSpecs
         var sample = ManagedFixtures.CreateDefaultsAndRangesFixture<WrongDefaultSample>("non-default");
 
         // Act
-        var verify = () => IndependentSampleVerifier.VerifyDefaultsAndRangesFixture(sample, "wrong default");
+        void Verify() => IndependentSampleVerifier.VerifyDefaultsAndRangesFixture(sample, "wrong default");
 
         // Assert
-        Should.Throw<InvalidDataException>(verify).Message.ShouldContain("Received sample differs");
+        Should.Throw<InvalidDataException>(Verify).Message.ShouldContain("Received sample differs");
     }
 
     /// <summary>Checks all signed boundary values and rejects corruption in each scalar member.</summary>
@@ -53,10 +53,10 @@ public sealed class WireScalarFixtureSpecs
         property.SetValue(sample, Activator.CreateInstance(property.PropertyType));
 
         // Act
-        var verify = () => IndependentSampleVerifier.VerifyPrimitiveBoundaryFixture(sample, "01-boundaries", "changed boundary");
+        void Verify() => IndependentSampleVerifier.VerifyPrimitiveBoundaryFixture(sample, "01-boundaries", "changed boundary");
 
         // Assert
-        Should.Throw<InvalidDataException>(verify).Message.ShouldContain("Received sample differs");
+        Should.Throw<InvalidDataException>(Verify).Message.ShouldContain("Received sample differs");
     }
 
     /// <summary>Does not confuse signed int8 with uint8 or omit any full-width field from verification.</summary>
@@ -78,10 +78,10 @@ public sealed class WireScalarFixtureSpecs
         property.SetValue(sample, Activator.CreateInstance(property.PropertyType));
 
         // Act
-        var verify = () => IndependentSampleVerifier.VerifyPrimitiveBoundaryFixture(sample, "01-full-widths", "changed full widths");
+        void Verify() => IndependentSampleVerifier.VerifyPrimitiveBoundaryFixture(sample, "01-full-widths", "changed full widths");
 
         // Assert
-        Should.Throw<InvalidDataException>(verify).Message.ShouldContain("Received sample differs");
+        Should.Throw<InvalidDataException>(Verify).Message.ShouldContain("Received sample differs");
     }
 
     /// <summary>Rejects unknown fixture names instead of silently applying an adaptation.</summary>
@@ -92,20 +92,23 @@ public sealed class WireScalarFixtureSpecs
         const string unknown = "unknown";
 
         // Act
-        var defaults = () => ManagedFixtures.CreateDefaultsAndRangesFixture<DefaultedSample>(unknown);
-        var boundary = () => ManagedFixtures.CreatePrimitiveBoundaryFixture<BoundarySample>("01-boundaries", unknown);
-        var unknownCase = () => ManagedFixtures.CreatePrimitiveBoundaryFixture<BoundarySample>(unknown, "non-default");
-        var verifyUnknown = () => IndependentSampleVerifier.VerifyPrimitiveBoundaryFixture(new object(), unknown, "unknown case");
+        DefaultedSample Defaults() => ManagedFixtures.CreateDefaultsAndRangesFixture<DefaultedSample>(unknown);
+        BoundarySample Boundary() => ManagedFixtures.CreatePrimitiveBoundaryFixture<BoundarySample>("01-boundaries", unknown);
+        BoundarySample UnknownCase() => ManagedFixtures.CreatePrimitiveBoundaryFixture<BoundarySample>(unknown, "non-default");
+        void VerifyUnknown() => IndependentSampleVerifier.VerifyPrimitiveBoundaryFixture(new object(), unknown, "unknown case");
 
         // Assert
-        Should.Throw<FixtureException>(defaults);
-        Should.Throw<FixtureException>(boundary);
-        Should.Throw<FixtureException>(unknownCase);
-        Should.Throw<InvalidDataException>(verifyUnknown);
+        Should.Throw<FixtureException>(Defaults);
+        Should.Throw<FixtureException>(Boundary);
+        Should.Throw<FixtureException>(UnknownCase);
+        Should.Throw<InvalidDataException>(VerifyUnknown);
     }
 
-    private enum Color { Green, Red, Blue }
+    private enum Color { Green = 0, Blue = 2 }
 
+    // ReSharper disable UnusedMember.Local
+    // Fixture properties are read by IndependentSampleVerifier through reflection.
+    // ReSharper disable once ClassNeverInstantiated.Local
     private sealed class DefaultedSample
     {
         /// <summary>Gets the constructor's untouched declared default.</summary>
@@ -116,6 +119,7 @@ public sealed class WireScalarFixtureSpecs
         public int ranged { get; set; }
     }
 
+    // ReSharper disable once ClassNeverInstantiated.Local
     private sealed class WrongDefaultSample
     {
         /// <summary>Gets an intentionally incorrect constructor default.</summary>
@@ -163,4 +167,5 @@ public sealed class WireScalarFixtureSpecs
         /// <summary>Gets or sets the unsigned 64-bit fixture.</summary>
         public ulong u64 { get; set; }
     }
+    // ReSharper restore UnusedMember.Local
 }

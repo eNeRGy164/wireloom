@@ -1,7 +1,6 @@
 using TypedDefaults;
 using System.Reflection;
 using Omg.Types;
-using Omg.Types.Dynamic;
 using Rti.Types.Dynamic;
 
 namespace Wireloom.Dds.Generator.RuntimeContracts.Defaults;
@@ -117,14 +116,14 @@ public sealed class TypedDefaultSpecs
     public void NullCopyConstructionPreservesTypedDefaultsForAliasesAndMembers()
     {
         // Arrange
-        var seven = new Seven((Seven?)null);
-        var nine = new Nine((Nine?)null);
+        var seven = new Seven(null);
+        var nine = new Nine(null);
         var text = new Text((Text?)null);
-        var ratio = new Ratio((Ratio?)null);
+        var ratio = new Ratio(null);
 
         // Act
-        var sample = new Sample((Sample?)null);
-        var derived = new Derived((Derived?)null);
+        var sample = new Sample(null);
+        var derived = new Derived(null);
 
         // Assert
         seven.Value.ShouldBe(7);
@@ -149,7 +148,7 @@ public sealed class TypedDefaultSpecs
     {
         // Arrange
         var sample = new Sample();
-        var alias = new NegativeZero((NegativeZero?)null);
+        var alias = new NegativeZero(null);
 
         // Act
         var doubleBits = BitConverter.DoubleToInt64Bits(sample.negativeZero);

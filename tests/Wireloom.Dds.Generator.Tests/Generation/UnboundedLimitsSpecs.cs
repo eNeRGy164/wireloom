@@ -1,4 +1,3 @@
-using Wireloom;
 
 namespace Wireloom.Generation.Tests;
 
@@ -23,7 +22,7 @@ public sealed class UnboundedLimitsSpecs
             stringSize: 5);
 
         // Act
-        var generated = IdlCompiler.CompileSources([root, shared], TestContext.Current.CancellationToken);
+        var generated = Compiler.Tests.CompilerTestSupport.CompileSources([root, shared], TestContext.Current.CancellationToken);
 
         // Assert
         generated["Local.Root.g.cs"].Source.ShouldContain("effective limit of 7 elements");
@@ -44,7 +43,7 @@ public sealed class UnboundedLimitsSpecs
 
         // Act
         var exception = Should.Throw<IdlException>(() =>
-            IdlCompiler.CompileSources([input], TestContext.Current.CancellationToken));
+            Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken));
 
         // Assert
         exception.Message.ShouldContain(settingName);

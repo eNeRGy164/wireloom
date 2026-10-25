@@ -69,7 +69,7 @@ public sealed class AliasFormattingSpecs
     {
         // Arrange
         var numbers = new Numbers(new Sequence<int> { 17, 18 });
-        var matrix = new Matrix(new int[,] { { 17, 18, 19 }, { 20, 21, 22 } });
+        var matrix = new Matrix(new [,] { { 17, 18, 19 }, { 20, 21, 22 } });
 
         // Act / Assert
         numbers.ToString().ShouldBe("[17, 18]");
@@ -190,7 +190,7 @@ public sealed class AliasFormattingSpecs
         });
 
         // Act / Assert
-        new RuntimeAliasFormatting.Cube(new int[,,] { { { 1, 2 }, { 3, 4 } } }).ToString().ShouldBe("[[[1, 2], [3, 4]]]");
+        new RuntimeAliasFormatting.Cube(new [,,] { { { 1, 2 }, { 3, 4 } } }).ToString().ShouldBe("[[[1, 2], [3, 4]]]");
         rows.ToString().ShouldBe("[[1.25, 2.5], []]");
     }
 }

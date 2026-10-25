@@ -1,5 +1,4 @@
 using RuntimeAliases;
-using Rti.Types;
 
 namespace Wireloom.Dds.Generator.RuntimeContracts.Aliases;
 
@@ -12,7 +11,7 @@ public sealed class ScalarAliasSpecs
     {
         // Arrange
         var defaults = new Scalar();
-        var nullCopy = new Scalar((Scalar?)null);
+        var nullCopy = new Scalar(null);
         var source = new Scalar(17);
 
         // Act
@@ -24,7 +23,7 @@ public sealed class ScalarAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((Scalar?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
@@ -38,7 +37,7 @@ public sealed class ScalarAliasSpecs
     {
         // Arrange
         var defaults = new ScalarChain();
-        var nullCopy = new ScalarChain((ScalarChain?)null);
+        var nullCopy = new ScalarChain(null);
         var source = new ScalarChain(17);
 
         // Act
@@ -50,7 +49,7 @@ public sealed class ScalarAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((ScalarChain?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
@@ -64,7 +63,7 @@ public sealed class ScalarAliasSpecs
     {
         // Arrange
         var defaults = new EnumAlias();
-        var nullCopy = new EnumAlias((EnumAlias?)null);
+        var nullCopy = new EnumAlias(null);
         var source = new EnumAlias(State.Ready);
 
         // Act
@@ -76,7 +75,7 @@ public sealed class ScalarAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((EnumAlias?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
@@ -90,7 +89,7 @@ public sealed class ScalarAliasSpecs
     {
         // Arrange
         var defaults = new EnumChain();
-        var nullCopy = new EnumChain((EnumChain?)null);
+        var nullCopy = new EnumChain(null);
         var source = new EnumChain(State.Ready);
 
         // Act
@@ -102,7 +101,7 @@ public sealed class ScalarAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((EnumChain?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
@@ -128,7 +127,7 @@ public sealed class ScalarAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((Text?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
@@ -154,7 +153,7 @@ public sealed class ScalarAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((WideText?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());

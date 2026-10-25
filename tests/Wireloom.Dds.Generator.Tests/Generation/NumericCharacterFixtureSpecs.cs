@@ -17,10 +17,10 @@ public sealed class NumericCharacterFixtureSpecs
         var sample = new Sample(discriminator, payload);
 
         // Act
-        var verify = () => IndependentSampleVerifier.VerifyNumericCharacterUnionFixture(sample, caseId, fixture);
+        void Verify() => IndependentSampleVerifier.VerifyNumericCharacterUnionFixture(sample, caseId, fixture);
 
         // Assert
-        Should.NotThrow(verify);
+        Should.NotThrow(Verify);
     }
 
     /// <summary>Rejects a different discriminator even when it still selects the fallback branch.</summary>
@@ -35,10 +35,10 @@ public sealed class NumericCharacterFixtureSpecs
         var sample = new Sample(discriminator: (char)0, payload);
 
         // Act
-        var verify = () => IndependentSampleVerifier.VerifyNumericCharacterUnionFixture(sample, caseId, fixture);
+        void Verify() => IndependentSampleVerifier.VerifyNumericCharacterUnionFixture(sample, caseId, fixture);
 
         // Assert
-        Should.Throw<InvalidDataException>(verify).Message.ShouldContain("Received sample differs");
+        Should.Throw<InvalidDataException>(Verify).Message.ShouldContain("Received sample differs");
     }
 
     /// <summary>Detects the observed zero payload even if the discriminator is correct.</summary>
@@ -53,10 +53,10 @@ public sealed class NumericCharacterFixtureSpecs
         var sample = new Sample(discriminator, payload: 0);
 
         // Act
-        var verify = () => IndependentSampleVerifier.VerifyNumericCharacterUnionFixture(sample, caseId, fixture);
+        void Verify() => IndependentSampleVerifier.VerifyNumericCharacterUnionFixture(sample, caseId, fixture);
 
         // Assert
-        Should.Throw<InvalidDataException>(verify).Message.ShouldContain("Received sample differs");
+        Should.Throw<InvalidDataException>(Verify).Message.ShouldContain("Received sample differs");
     }
 
     /// <summary>Does not silently apply expectations for another case or fixture.</summary>
@@ -70,12 +70,14 @@ public sealed class NumericCharacterFixtureSpecs
         var sample = new Sample(discriminator: (char)65, payload: 13703);
 
         // Act
-        var verify = () => IndependentSampleVerifier.VerifyNumericCharacterUnionFixture(sample, caseId, fixture);
+        void Verify() => IndependentSampleVerifier.VerifyNumericCharacterUnionFixture(sample, caseId, fixture);
 
         // Assert
-        Should.Throw<InvalidDataException>(verify).Message.ShouldContain("Unknown numeric character union fixture");
+        Should.Throw<InvalidDataException>(Verify).Message.ShouldContain("Unknown numeric character union fixture");
     }
 
+    // ReSharper disable UnusedMember.Local
+    // Fixture properties are read by IndependentSampleVerifier through reflection.
     private sealed class Sample(char discriminator, int payload)
     {
         /// <summary>Gets the supplied character discriminator.</summary>
@@ -87,4 +89,5 @@ public sealed class NumericCharacterFixtureSpecs
         /// <summary>Gets the fallback-branch payload.</summary>
         public int fallback { get; } = payload;
     }
+    // ReSharper restore UnusedMember.Local
 }

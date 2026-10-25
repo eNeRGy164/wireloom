@@ -1,4 +1,3 @@
-#nullable enable annotations
 
 using System.Collections;
 using Omg.Types.Dynamic;
@@ -74,9 +73,8 @@ public static partial class IndependentSampleVerifier
                     ["$items"] = elements
                 };
             }
-            case AliasType:
+            case AliasType alias:
             {
-                var alias = (AliasType)data.Type;
                 if (IsComplexDynamicType(alias.RelatedType))
                 {
                     using var relatedValue = data.LoanValue(0);

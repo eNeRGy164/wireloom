@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Wireloom</RootNamespace>
+    <Version>$(WireloomVersion)</Version>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Wireloom.Dds.Generator.Tests" />
+    <InternalsVisibleTo Include="Wireloom.Dds.Compiler.Tests" />
+    <InternalsVisibleTo Include="Wireloom.Dds.Generator.CorpusCompliance" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Memory">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

@@ -1,6 +1,4 @@
-using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
-using Wireloom;
-using Wireloom.Dds.Generator.Tests;
+using static Wireloom.Compiler.Tests.CompilerTestSupport;
 
 namespace Wireloom.Generation.Tests;
 
@@ -12,7 +10,7 @@ public sealed class GeneratedIncludeSpecs
     {
         // Arrange
         var inputs = new List<IdlInput> {
-            new IdlInput("includes/common.idl", "struct IncludedType { long value; };", generate: false),
+            new ("includes/common.idl", "struct IncludedType { long value; };", generate: false),
                 Input("main.idl",
                     """
                     #include "includes/common.idl"

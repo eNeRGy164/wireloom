@@ -123,7 +123,7 @@ public sealed class MetadataSpecs
         // Assert
         choice.Discriminator.Kind.ShouldBe(TypeKind.Int32);
         choice.Members.Single(member => member.Name == "text").Labels.ShouldBe([1, 2]);
-        choice.Members.Single(member => member.Name == "flag").Labels.ShouldContain((int)UnionMember.DefaultLabel);
+        choice.Members.Single(member => member.Name == "flag").Labels.ShouldContain(UnionMember.DefaultLabel);
         character.Members.Single(member => member.Name == "other").Labels.ShouldBe([-2]);
         RuntimeUnions.ChoiceSupport.Instance.ShouldBeSameAs(RuntimeUnions.ChoiceSupport.Instance);
         RuntimeUnions.ChoiceSupport.Instance.DynamicType.ShouldBeOfType<UnionType>();

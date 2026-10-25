@@ -1,5 +1,4 @@
 using RuntimeAliases;
-using Rti.Types;
 
 namespace Wireloom.Dds.Generator.RuntimeContracts.Aliases;
 
@@ -24,7 +23,7 @@ public sealed class AggregateAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((Aggregate?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
@@ -54,7 +53,7 @@ public sealed class AggregateAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((AggregateChain?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());

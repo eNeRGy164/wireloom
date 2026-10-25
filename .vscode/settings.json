@@ -19,4 +19,5 @@
   "markdown.validate.referenceLinks.enabled": "ignore",
   "markdown.validate.fragmentLinks.enabled": "ignore",
   "markdown.validate.fileLinks.enabled": "ignore",
+  "dotnet.defaultSolution": "Wireloom.slnx",
 }

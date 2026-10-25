@@ -16,7 +16,10 @@ public sealed class RecursiveSequenceSpecs
         if (childMode == "direct-serializer")
         {
             VerifyDirectSerializer();
-            File.WriteAllText(Environment.GetEnvironmentVariable(EvidenceVariable)!, childMode);
+            await File.WriteAllTextAsync(
+                Environment.GetEnvironmentVariable(EvidenceVariable)!,
+                childMode,
+                TestContext.Current.CancellationToken);
             return;
         }
 
@@ -48,7 +51,7 @@ public sealed class RecursiveSequenceSpecs
             await process.WaitForExitAsync(timeout.Token);
             process.ExitCode.ShouldBe(0, $"{await output}\n{await error}");
             File.Exists(evidence).ShouldBeTrue("The child must complete the recursive serializer round-trip.");
-            File.ReadAllText(evidence).ShouldBe("direct-serializer");
+            (await File.ReadAllTextAsync(evidence, TestContext.Current.CancellationToken)).ShouldBe("direct-serializer");
         }
         catch (OperationCanceledException) when (!TestContext.Current.CancellationToken.IsCancellationRequested)
         {

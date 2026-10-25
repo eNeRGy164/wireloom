@@ -14,7 +14,7 @@ public sealed class ReferenceOwnershipSpecs
         var child = new Child(17, "original");
         var numbers = new Sequence<int> { 1, 2 };
         var vector = new[] { 3, 4 };
-        var matrix = new int[,] { { 1, 2, 3 }, { 4, 5, 6 } };
+        var matrix = new [,] { { 1, 2, 3 }, { 4, 5, 6 } };
 
         // Act
         var aggregateAlias = new Aggregate(child);

@@ -24,7 +24,7 @@ public sealed class CollectionAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((Numbers?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
@@ -53,7 +53,7 @@ public sealed class CollectionAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((NumbersChain?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
@@ -71,7 +71,7 @@ public sealed class CollectionAliasSpecs
         // Arrange
         var defaults = new Children();
         var nullCopy = new Children((Children?)null);
-        var source = new Children(new Sequence<Child> { new Child(17, "nested") });
+        var source = new Children(new Sequence<Child> { new (17, "nested") });
 
         // Act
         var copy = new Children(source);
@@ -82,7 +82,7 @@ public sealed class CollectionAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((Children?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
@@ -113,7 +113,7 @@ public sealed class CollectionAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((Texts?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
@@ -142,7 +142,7 @@ public sealed class CollectionAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((WideTexts?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
@@ -171,7 +171,7 @@ public sealed class CollectionAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((Vector?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
@@ -189,7 +189,7 @@ public sealed class CollectionAliasSpecs
         // Arrange
         var defaults = new Matrix();
         var nullCopy = new Matrix((Matrix?)null);
-        var source = new Matrix(new int[,] { { 1, 2, 3 }, { 4, 5, 6 } });
+        var source = new Matrix(new [,] { { 1, 2, 3 }, { 4, 5, 6 } });
 
         // Act
         var copy = new Matrix(source);
@@ -200,14 +200,14 @@ public sealed class CollectionAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((Matrix?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
         copy.Value.ShouldNotBeSameAs(source.Value);
         copy.Value[1, 2] = 99;
         copy.Equals(source).ShouldBeFalse();
-        copy.Value = new int[,] { { 7, 8, 9 }, { 10, 11, 12 } };
+        copy.Value = new [,] { { 7, 8, 9 }, { 10, 11, 12 } };
         copy.Equals(source).ShouldBeFalse();
     }
 
@@ -218,7 +218,7 @@ public sealed class CollectionAliasSpecs
         // Arrange
         var defaults = new MatrixChain();
         var nullCopy = new MatrixChain((MatrixChain?)null);
-        var source = new MatrixChain(new Matrix(new int[,] { { 1, 2, 3 }, { 4, 5, 6 } }));
+        var source = new MatrixChain(new Matrix(new [,] { { 1, 2, 3 }, { 4, 5, 6 } }));
 
         // Act
         var copy = new MatrixChain(source);
@@ -229,14 +229,14 @@ public sealed class CollectionAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((MatrixChain?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
         copy.Value.ShouldNotBeSameAs(source.Value);
         copy.Value.Value[1, 2] = 99;
         source.Value.Value[1, 2].ShouldBe(6);
-        copy.Value = new Matrix(new int[,] { { 7, 8, 9 }, { 10, 11, 12 } });
+        copy.Value = new Matrix(new [,] { { 7, 8, 9 }, { 10, 11, 12 } });
         copy.Equals(source).ShouldBeFalse();
     }
 
@@ -258,7 +258,7 @@ public sealed class CollectionAliasSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((Points?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());

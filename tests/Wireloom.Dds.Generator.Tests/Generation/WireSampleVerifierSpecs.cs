@@ -24,10 +24,10 @@ public sealed class WireSampleVerifierSpecs
         var actual = new UnionSample(ManagedDiscriminator(kind, logicalValue), value: 42, fallback: 0);
 
         // Act
-        var verify = () => IndependentSampleVerifier.Verify(expected, actual, "boundary");
+        void Verify() => IndependentSampleVerifier.Verify(expected, actual, "boundary");
 
         // Assert
-        Should.NotThrow(verify);
+        Should.NotThrow(Verify);
     }
 
     /// <summary>Does not confuse normalized labels with default branches or suppress payload mismatches.</summary>
@@ -44,10 +44,10 @@ public sealed class WireSampleVerifierSpecs
 
         // Act
         IndependentSampleVerifier.Verify(expected, correct, "correct payload");
-        var verifyIncorrect = () => IndependentSampleVerifier.Verify(expected, incorrect, "wrong payload");
+        void VerifyIncorrect() => IndependentSampleVerifier.Verify(expected, incorrect, "wrong payload");
 
         // Assert
-        Should.Throw<InvalidDataException>(verifyIncorrect).Message.ShouldContain("Received sample differs");
+        Should.Throw<InvalidDataException>(VerifyIncorrect).Message.ShouldContain("Received sample differs");
     }
 
     /// <summary>Unwraps generated scalar alias classes before comparing their logical values.</summary>
@@ -60,9 +60,9 @@ public sealed class WireSampleVerifierSpecs
         var secondLevel = factory.CreateAlias("BoundedWideTextAlias", firstLevel, isExternal: false);
         var type = factory.BuildStruct()
             .WithName("ScalarAliasVerifier")
-            .AddMembers([
+            .AddMembers(
                 new StructMember("firstLevel", firstLevel, id: 0),
-                new StructMember("secondLevel", secondLevel, id: 1)])
+                new StructMember("secondLevel", secondLevel, id: 1))
             .Create();
         using var expected = new DynamicData(type);
         expected.SetAnyValue("firstLevel", "12345678");
@@ -70,14 +70,16 @@ public sealed class WireSampleVerifierSpecs
         var actual = new ScalarAliasSample(new ScalarAlias("12345678"), new ScalarAlias("ABCDEFGH"));
 
         // Act
-        var verifyIncorrect = () => IndependentSampleVerifier.Verify(
+        void VerifyIncorrect() => IndependentSampleVerifier.Verify(
             expected,
             new ScalarAliasSample(new ScalarAlias("wrong"), new ScalarAlias("ABCDEFGH")),
             "wstring alias boundary");
 
         // Assert
-        Should.NotThrow(() => IndependentSampleVerifier.Verify(expected, actual, "wstring alias boundary"));
-        Should.Throw<InvalidDataException>(verifyIncorrect).Message.ShouldContain("Received sample differs");
+        Should.NotThrow(VerifyCorrect);
+        Should.Throw<InvalidDataException>(VerifyIncorrect).Message.ShouldContain("Received sample differs");
+
+        void VerifyCorrect() => IndependentSampleVerifier.Verify(expected, actual, "wstring alias boundary");
     }
 
     /// <summary>Checks independent character payloads against the printable ASCII wire fixture.</summary>
@@ -92,20 +94,20 @@ public sealed class WireSampleVerifierSpecs
         var type = factory.BuildUnion()
             .WithName($"CharacterVerifier_{(int)discriminator}")
             .WithDiscriminator(factory.GetPrimitiveType<char>())
-            .AddMembers([
+            .AddMembers(
                 new UnionMember("minimum", factory.GetPrimitiveType<int>(), [0]),
                 new UnionMember("maximum", factory.GetPrimitiveType<int>(), [126]),
-                new UnionMember("fallback", factory.GetPrimitiveType<int>(), [UnionMember.DefaultLabel])])
+                new UnionMember("fallback", factory.GetPrimitiveType<int>(), [UnionMember.DefaultLabel]))
             .Create();
         var correct = new CharacterSample(discriminator, value: 8201);
         var incorrect = new CharacterSample(discriminator, value: 0);
 
         // Act
         IndependentSampleVerifier.VerifyCharacterUnionFixture(type, correct, fixture);
-        var verifyIncorrect = () => IndependentSampleVerifier.VerifyCharacterUnionFixture(type, incorrect, fixture);
+        void VerifyIncorrect() => IndependentSampleVerifier.VerifyCharacterUnionFixture(type, incorrect, fixture);
 
         // Assert
-        Should.Throw<InvalidDataException>(verifyIncorrect).Message.ShouldContain("Received sample differs");
+        Should.Throw<InvalidDataException>(VerifyIncorrect).Message.ShouldContain("Received sample differs");
     }
 
     /// <summary>Rejects the obsolete high-bit fixture even when its branch and payload match.</summary>
@@ -119,18 +121,18 @@ public sealed class WireSampleVerifierSpecs
         var type = factory.BuildUnion()
             .WithName($"ObsoleteCharacterVerifier_{maximumLabel}")
             .WithDiscriminator(factory.GetPrimitiveType<char>())
-            .AddMembers([
+            .AddMembers(
                 new UnionMember("minimum", factory.GetPrimitiveType<int>(), [0]),
                 new UnionMember("maximum", factory.GetPrimitiveType<int>(), [maximumLabel]),
-                new UnionMember("fallback", factory.GetPrimitiveType<int>(), [UnionMember.DefaultLabel])])
+                new UnionMember("fallback", factory.GetPrimitiveType<int>(), [UnionMember.DefaultLabel]))
             .Create();
         var obsolete = new CharacterSample('\u00ff', value: 8201);
 
         // Act
-        var verify = () => IndependentSampleVerifier.VerifyCharacterUnionFixture(type, obsolete, "union-maximum");
+        void Verify() => IndependentSampleVerifier.VerifyCharacterUnionFixture(type, obsolete, "union-maximum");
 
         // Assert
-        var exception = Should.Throw<InvalidDataException>(verify);
+        var exception = Should.Throw<InvalidDataException>(Verify);
         exception.Message.ShouldContain("\"$discriminator\":126");
         exception.Message.ShouldContain("\"$discriminator\":255");
     }
@@ -142,9 +144,9 @@ public sealed class WireSampleVerifierSpecs
         var type = factory.BuildUnion()
             .WithName($"Verifier_{kind}_{label}")
             .WithDiscriminator(factory.GetPrimitiveType(kind))
-            .AddMembers([
+            .AddMembers(
                 new UnionMember("value", factory.GetPrimitiveType<int>(), [label]),
-                new UnionMember("fallback", factory.GetPrimitiveType<int>(), [UnionMember.DefaultLabel])])
+                new UnionMember("fallback", factory.GetPrimitiveType<int>(), [UnionMember.DefaultLabel]))
             .Create();
         var data = new DynamicData(type);
         data.SetAnyValue(branch, 42);
@@ -163,6 +165,8 @@ public sealed class WireSampleVerifierSpecs
     };
 
     /// <summary>Provides the public members inspected independently of generated equality and conversions.</summary>
+    // ReSharper disable UnusedMember.Local
+    // Fixture properties are read by IndependentSampleVerifier through reflection.
     private sealed class UnionSample(object discriminator, int value, int fallback)
     {
         /// <summary>Gets the managed discriminator.</summary>
@@ -191,9 +195,12 @@ public sealed class WireSampleVerifierSpecs
         public int fallback { get; } = value;
     }
 
+    // ReSharper disable NotAccessedPositionalProperty.Local
     /// <summary>Represents a generated scalar alias class with its public value property.</summary>
     private sealed record ScalarAlias(string Value);
 
     /// <summary>Provides members whose dynamic types contain scalar aliases.</summary>
     private sealed record ScalarAliasSample(ScalarAlias firstLevel, ScalarAlias secondLevel);
+    // ReSharper restore NotAccessedPositionalProperty.Local
+    // ReSharper restore UnusedMember.Local
 }

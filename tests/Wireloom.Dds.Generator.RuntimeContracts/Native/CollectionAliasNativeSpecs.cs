@@ -43,7 +43,7 @@ public sealed class CollectionAliasNativeSpecs
     public void ConvertsChildren(bool keysOnly, bool allocatePointers, bool allocateMemory)
     {
         // Arrange
-        var source = new Children(new Sequence<Child> { new Child(17, "nested") });
+        var source = new Children(new Sequence<Child> { new (17, "nested") });
 
         // Act
         var result = NativeSample.RoundTrip<Children, ChildrenUnmanaged>(source, allocatePointers, allocateMemory, keysOnly);
@@ -103,7 +103,7 @@ public sealed class CollectionAliasNativeSpecs
     public void ConvertsMatrix(bool keysOnly, bool allocatePointers, bool allocateMemory)
     {
         // Arrange
-        var source = new Matrix(new int[,] { { 1, 2, 3 }, { 4, 5, 6 } });
+        var source = new Matrix(new [,] { { 1, 2, 3 }, { 4, 5, 6 } });
 
         // Act
         var result = NativeSample.RoundTrip<Matrix, MatrixUnmanaged>(source, allocatePointers, allocateMemory, keysOnly);
@@ -118,7 +118,7 @@ public sealed class CollectionAliasNativeSpecs
     public void ConvertsMatrixChain(bool keysOnly, bool allocatePointers, bool allocateMemory)
     {
         // Arrange
-        var source = new MatrixChain(new Matrix(new int[,] { { 1, 2, 3 }, { 4, 5, 6 } }));
+        var source = new MatrixChain(new Matrix(new [,] { { 1, 2, 3 }, { 4, 5, 6 } }));
 
         // Act
         var result = NativeSample.RoundTrip<MatrixChain, MatrixChainUnmanaged>(source, allocatePointers, allocateMemory, keysOnly);

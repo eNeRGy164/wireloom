@@ -28,7 +28,7 @@ public sealed class Generator : IIncrementalGenerator
             var files = compilationAndInputs.Left;
             var compilation = compilationAndInputs.Right;
 
-            if (!files.Any(file => file.Generate))
+            if (!files.Any(file => file.Input.Generate))
             {
                 return;
             }
@@ -46,27 +46,34 @@ public sealed class Generator : IIncrementalGenerator
                 return;
             }
 
-            var diagnostics = new List<IdlDiagnostic>();
-
-            try
+            var invalidBooleanSetting = files.FirstOrDefault(file => file.Input.Generate && file.InvalidEnableEscapeCharValue is not null);
+            if (invalidBooleanSetting is not null)
             {
-                var outputs = IdlCompiler.CompileSourcesWithDiagnostics([.. files], diagnostics, production.CancellationToken, profile);
-                GeneratorDiagnostics.Report(production, diagnostics);
-
-                foreach (var output in outputs.Values)
-                {
-                    production.AddSource(output.HintName, SourceText.From(output.Source, Encoding.UTF8));
-                }
+                ReportInvalidBooleanSetting(production, invalidBooleanSetting);
+                return;
             }
-            catch (IdlException exception)
-            {
-                GeneratorDiagnostics.Report(production, diagnostics);
-                var text = SourceText.From(exception.Input.Text);
-                var span = new TextSpan(Math.Min(exception.Offset, text.Length), 0);
 
-                production.ReportDiagnostic(Diagnostic.Create(GeneratorDiagnostics.GenerationError, Location.Create(exception.Input.Path, span, text.Lines.GetLinePositionSpan(span)), exception.Message));
+            var result = IdlCompiler.Compile(files.Select(file => file.Input).ToArray(), profile, production.CancellationToken);
+            GeneratorDiagnostics.Report(production, result.Diagnostics);
+
+            if (!result.Success)
+            {
+                return;
+            }
+
+            foreach (var output in result.Documents)
+            {
+                production.AddSource(output.HintName, SourceText.From(output.Source, Encoding.UTF8));
             }
         });
     }
 
+    private static void ReportInvalidBooleanSetting(SourceProductionContext production, GeneratorInput input)
+    {
+        var text = SourceText.From(input.Input.Text);
+        var span = new TextSpan(0, 0);
+        production.ReportDiagnostic(Diagnostic.Create(GeneratorDiagnostics.GenerationError,
+            Location.Create(input.Input.Path, span, text.Lines.GetLinePositionSpan(span)),
+            "DdsIdlEnableEscapeChar must be 'true' or 'false'."));
+    }
 }

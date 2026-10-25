@@ -4,12 +4,49 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
-using Wireloom.Compiler.Emission;
 
 namespace Wireloom.Generation.Tests;
 
 public sealed class GeneratorSpecs
 {
+    [Theory]
+    [InlineData("7.3.1", IdlCompilerProfile.Rti731)]
+    [InlineData("7.7.0", IdlCompilerProfile.Rti770)]
+    public void RoslynAdapterMatchesPublicCompilerForWarningAndGeneratedDocuments(
+        string runtimeVersion,
+        IdlCompilerProfile profile)
+    {
+        // Arrange
+        const string source = "struct Sample { long Context; };";
+
+        // Act
+        var (compilerResult, adapterResult) = CompileThroughBothBoundaries(source, profile, runtimeVersion);
+
+        // Assert
+        compilerResult.Success.ShouldBeTrue();
+        adapterResult.GeneratedSources.ShouldNotBeEmpty();
+        AssertEquivalentResults(compilerResult, adapterResult);
+    }
+
+    [Theory]
+    [InlineData("7.3.1", IdlCompilerProfile.Rti731)]
+    [InlineData("7.7.0", IdlCompilerProfile.Rti770)]
+    public void RoslynAdapterMatchesPublicCompilerForFatalDiagnostic(
+        string runtimeVersion,
+        IdlCompilerProfile profile)
+    {
+        // Arrange
+        const string source = "#include \"missing.idl\"\n";
+
+        // Act
+        var (compilerResult, adapterResult) = CompileThroughBothBoundaries(source, profile, runtimeVersion);
+
+        // Assert
+        compilerResult.Success.ShouldBeFalse();
+        adapterResult.GeneratedSources.ShouldBeEmpty();
+        AssertEquivalentResults(compilerResult, adapterResult);
+    }
+
     [Theory]
     [InlineData("const long long Wide = 7; typedef long Count; const Count Narrow = Wide;")]
     [InlineData("const double Wide = 1.5; typedef float Ratio; const Ratio Narrow = Wide;")]
@@ -263,11 +300,11 @@ public sealed class GeneratorSpecs
         var version = Version.Parse(runtimeVersion);
 
         // Act
-        var profile = RtiApiProfile.ForVersion(version);
+        var profile = IdlCompiler.GetProfileForRuntimeVersion(version);
 
         // Assert
-        profile.RtiVersion.ShouldBe(expectedRtiVersion);
-        profile.RtiddsgenVersion.ShouldBe(expectedRtiddsgenVersion);
+        profile.ShouldBe(expectedRtiVersion == "7.3.1" ? IdlCompilerProfile.Rti731 : IdlCompilerProfile.Rti770);
+        (profile == IdlCompilerProfile.Rti731 ? "4.3.1" : "4.7.0").ShouldBe(expectedRtiddsgenVersion);
     }
 
     [Fact]
@@ -1140,7 +1177,7 @@ public sealed class GeneratorSpecs
         var enumDeclaration = discriminatorType == "Kind" ? "enum Kind { Minimum, Middle, Maximum }; " : string.Empty;
         var isBoolean = discriminatorType == "boolean";
         var input = isBoolean
-            ? $"module Matrix {{ union Choice switch(boolean) {{ case FALSE: long whenFalse; case TRUE: long whenTrue; }}; }};"
+            ? "module Matrix { union Choice switch(boolean) { case FALSE: long whenFalse; case TRUE: long whenTrue; }; };"
             : $"module Matrix {{ {enumDeclaration}union Choice switch({discriminatorType}) {{ case {label}: long value; default: long fallback; }}; }};";
         var result = Run(
             input,
@@ -1337,7 +1374,7 @@ public sealed class GeneratorSpecs
         originalItem.ShouldNotBeNull();
         valueProperty.SetValue(originalItem, 17);
 
-        var copy = Activator.CreateInstance(choiceType, [choice])!;
+        var copy = Activator.CreateInstance(choiceType, choice)!;
         var copiedItems = (Array)itemsProperty.GetValue(copy)!;
         var copiedItem = copiedItems.GetValue(0)!;
 
@@ -1348,6 +1385,56 @@ public sealed class GeneratorSpecs
 
         valueProperty.SetValue(originalItem, 23);
         valueProperty.GetValue(copiedItem).ShouldBe(17);
+    }
+
+    private static (IdlCompilationResult Compiler, GeneratorRunResult Adapter) CompileThroughBothBoundaries(
+        string source,
+        IdlCompilerProfile profile,
+        string runtimeVersion)
+    {
+        var compilerResult = IdlCompiler.Compile(
+            [new IdlInput("sample.idl", source)],
+            profile,
+            TestContext.Current.CancellationToken);
+        var adapterResult = Run(
+            source,
+            LanguageVersion.CSharp12,
+            new Dictionary<string, string> { ["Generate"] = "true" },
+            includeRuntime: false,
+            runtimeVersion: runtimeVersion);
+
+        return (compilerResult, adapterResult);
+    }
+
+    private static void AssertEquivalentResults(IdlCompilationResult compilerResult, GeneratorRunResult adapterResult)
+    {
+        var compilerDocuments = compilerResult.Documents
+            .Select(document => (document.HintName, document.Source))
+            .ToArray();
+        var adapterDocuments = adapterResult.GeneratedSources
+            .Select(document => (document.HintName, document.SourceText.ToString()))
+            .ToArray();
+        adapterDocuments.ShouldBe(compilerDocuments);
+
+        var compilerDiagnostics = compilerResult.Diagnostics
+            .Select(diagnostic => (diagnostic.Id, diagnostic.Severity, diagnostic.Message, diagnostic.Path, diagnostic.Offset))
+            .ToArray();
+        var adapterDiagnostics = adapterResult.Diagnostics
+            .Where(diagnostic => diagnostic.Id.StartsWith("DDSG", StringComparison.Ordinal))
+            .Select(diagnostic => (
+                diagnostic.Id,
+                diagnostic.Severity switch
+                {
+                    DiagnosticSeverity.Error => IdlDiagnosticSeverity.Error,
+                    DiagnosticSeverity.Warning => IdlDiagnosticSeverity.Warning,
+                    DiagnosticSeverity.Info => IdlDiagnosticSeverity.Info,
+                    _ => throw new ArgumentOutOfRangeException(nameof(diagnostic.Severity), diagnostic.Severity, null)
+                },
+                diagnostic.GetMessage(),
+                diagnostic.Location.GetLineSpan().Path,
+                diagnostic.Location.SourceSpan.Start))
+            .ToArray();
+        adapterDiagnostics.ShouldBe(compilerDiagnostics);
     }
 
     private static GeneratorRunResult Run(
@@ -1375,9 +1462,12 @@ public sealed class GeneratorSpecs
             parseOptions,
             new TestAnalyzerConfigOptionsProvider(metadata));
 
-        driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out var generatorDiagnostics);
+        var updatedDriver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out var generatorDiagnostics);
         var runDiagnostics = driver.GetRunResult().Results
             .SelectMany(result => result.Diagnostics.IsDefault ? [] : result.Diagnostics)
+            .ToImmutableArray();
+        var generatedSources = updatedDriver.GetRunResult().Results
+            .SelectMany(result => result.GeneratedSources.IsDefault ? [] : result.GeneratedSources)
             .ToImmutableArray();
 
         return new GeneratorRunResult(output,
@@ -1385,7 +1475,7 @@ public sealed class GeneratorSpecs
             .. generatorDiagnostics,
             .. runDiagnostics,
             .. output.GetDiagnostics().Where(d => d.Id.StartsWith("DDSG", StringComparison.Ordinal)),
-        ]);
+        ], generatedSources);
     }
 
     private static IEnumerable<MetadataReference> FrameworkReferences()
@@ -1424,13 +1514,16 @@ public sealed class GeneratorSpecs
         return MetadataReference.CreateFromImage(stream.ToArray());
     }
 
-    private sealed record GeneratorRunResult(Compilation Output, ImmutableArray<Diagnostic> Diagnostics);
+    private sealed record GeneratorRunResult(
+        Compilation Output,
+        ImmutableArray<Diagnostic> Diagnostics,
+        ImmutableArray<GeneratedSourceResult> GeneratedSources);
 
     private sealed class TestAdditionalText(string path, string text) : AdditionalText
     {
         public override string Path { get; } = path;
 
-        public override SourceText? GetText(CancellationToken cancellationToken = default) => SourceText.From(text);
+        public override SourceText GetText(CancellationToken cancellationToken = default) => SourceText.From(text);
     }
 
     private sealed class TestAnalyzerConfigOptionsProvider(IReadOnlyDictionary<string, string> values) : AnalyzerConfigOptionsProvider

@@ -77,7 +77,7 @@ public sealed class UnboundedAliasNativeSpecs
     public void ConvertsUnboundedAggregates(bool keysOnly, bool allocatePointers, bool allocateMemory)
     {
         // Arrange
-        var source = new Children(new Sequence<Child> { new Child { value = 17 }, new Child { value = 18 } });
+        var source = new Children(new Sequence<Child> { new () { value = 17 }, new () { value = 18 } });
 
         // Act
         var result = NativeSample.RoundTrip<Children, ChildrenUnmanaged>(source, allocatePointers, allocateMemory, keysOnly);
@@ -110,7 +110,7 @@ public sealed class UnboundedAliasNativeSpecs
     public void ConvertsUnboundedTextSequences(bool keysOnly, bool allocatePointers, bool allocateMemory)
     {
         // Arrange
-        var source = new Texts(new Sequence<string> { "hello", new string('x', 255) });
+        var source = new Texts(new Sequence<string> { "hello", new ('x', 255) });
 
         // Act
         var result = NativeSample.RoundTrip<Texts, TextsUnmanaged>(source, allocatePointers, allocateMemory, keysOnly);
@@ -125,7 +125,7 @@ public sealed class UnboundedAliasNativeSpecs
     public void ConvertsUnboundedWideTextSequences(bool keysOnly, bool allocatePointers, bool allocateMemory)
     {
         // Arrange
-        var source = new WideTexts(new Sequence<string> { "世界", new string('Ω', 255) });
+        var source = new WideTexts(new Sequence<string> { "世界", new ('Ω', 255) });
 
         // Act
         var result = NativeSample.RoundTrip<WideTexts, WideTextsUnmanaged>(source, allocatePointers, allocateMemory, keysOnly);

@@ -1,4 +1,3 @@
-#nullable enable annotations
 
 namespace Wireloom.Dds.Generator.TestSupport;
 

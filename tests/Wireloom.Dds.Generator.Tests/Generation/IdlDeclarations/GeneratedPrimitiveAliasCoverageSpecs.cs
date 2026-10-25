@@ -1,6 +1,6 @@
 namespace Wireloom.Generation.IdlDeclarations.Tests;
 
-using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
+using static Wireloom.Compiler.Tests.CompilerTestSupport;
 
 public sealed class GeneratedPrimitiveAliasCoverageSpecs
 {

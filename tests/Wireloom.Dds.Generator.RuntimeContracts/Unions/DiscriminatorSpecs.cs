@@ -29,7 +29,7 @@ public sealed class DiscriminatorSpecs
         result.Get().ShouldBe(17);
         copy.Equals(sample).ShouldBeTrue();
         copy.Equals((object)sample).ShouldBeTrue();
-        copy.Equals((BooleanChoice?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(sample.GetHashCode());
         sample.ToString().ShouldContain("17");
         copy.number = 23;
@@ -59,7 +59,7 @@ public sealed class DiscriminatorSpecs
         result.Get().ShouldBe(17);
         copy.Equals(sample).ShouldBeTrue();
         copy.Equals((object)sample).ShouldBeTrue();
-        copy.Equals((SignedByteChoice?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(sample.GetHashCode());
         sample.ToString().ShouldContain("17");
         copy.number = 23;
@@ -89,7 +89,7 @@ public sealed class DiscriminatorSpecs
         result.Get().ShouldBe(17);
         copy.Equals(sample).ShouldBeTrue();
         copy.Equals((object)sample).ShouldBeTrue();
-        copy.Equals((UnsignedByteChoice?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(sample.GetHashCode());
         sample.ToString().ShouldContain("17");
         copy.number = 23;
@@ -119,7 +119,7 @@ public sealed class DiscriminatorSpecs
         result.Get().ShouldBe(17);
         copy.Equals(sample).ShouldBeTrue();
         copy.Equals((object)sample).ShouldBeTrue();
-        copy.Equals((OctetChoice?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(sample.GetHashCode());
         sample.ToString().ShouldContain("17");
         copy.number = 23;
@@ -149,7 +149,7 @@ public sealed class DiscriminatorSpecs
         result.Get().ShouldBe(17);
         copy.Equals(sample).ShouldBeTrue();
         copy.Equals((object)sample).ShouldBeTrue();
-        copy.Equals((ShortChoice?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(sample.GetHashCode());
         sample.ToString().ShouldContain("17");
         copy.number = 23;
@@ -179,7 +179,7 @@ public sealed class DiscriminatorSpecs
         result.Get().ShouldBe(17);
         copy.Equals(sample).ShouldBeTrue();
         copy.Equals((object)sample).ShouldBeTrue();
-        copy.Equals((UnsignedShortChoice?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(sample.GetHashCode());
         sample.ToString().ShouldContain("17");
         copy.number = 23;
@@ -209,7 +209,7 @@ public sealed class DiscriminatorSpecs
         result.Get().ShouldBe(17);
         copy.Equals(sample).ShouldBeTrue();
         copy.Equals((object)sample).ShouldBeTrue();
-        copy.Equals((IntChoice?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(sample.GetHashCode());
         sample.ToString().ShouldContain("17");
         copy.number = 23;
@@ -239,7 +239,7 @@ public sealed class DiscriminatorSpecs
         result.Get().ShouldBe(17);
         copy.Equals(sample).ShouldBeTrue();
         copy.Equals((object)sample).ShouldBeTrue();
-        copy.Equals((UnsignedIntChoice?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(sample.GetHashCode());
         sample.ToString().ShouldContain("17");
         copy.number = 23;
@@ -271,7 +271,7 @@ public sealed class DiscriminatorSpecs
         result.Get().ShouldBe(17);
         copy.Equals(sample).ShouldBeTrue();
         copy.Equals((object)sample).ShouldBeTrue();
-        copy.Equals((CharacterChoice?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(sample.GetHashCode());
         sample.ToString().ShouldContain("17");
         copy.number = 23;
@@ -301,7 +301,7 @@ public sealed class DiscriminatorSpecs
         result.Get().ShouldBe(17);
         copy.Equals(sample).ShouldBeTrue();
         copy.Equals((object)sample).ShouldBeTrue();
-        copy.Equals((WideCharacterChoice?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(sample.GetHashCode());
         sample.ToString().ShouldContain("17");
         copy.number = 23;
@@ -331,7 +331,7 @@ public sealed class DiscriminatorSpecs
         result.Get().ShouldBe(17);
         copy.Equals(sample).ShouldBeTrue();
         copy.Equals((object)sample).ShouldBeTrue();
-        copy.Equals((EnumChoice?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(sample.GetHashCode());
         sample.ToString().ShouldContain("17");
         copy.number = 23;
@@ -361,7 +361,7 @@ public sealed class DiscriminatorSpecs
         result.Get().ShouldBe(17);
         copy.Equals(sample).ShouldBeTrue();
         copy.Equals((object)sample).ShouldBeTrue();
-        copy.Equals((AliasChoice?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(sample.GetHashCode());
         sample.ToString().ShouldContain("17");
         copy.number = 23;
