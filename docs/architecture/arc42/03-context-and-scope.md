@@ -19,10 +19,10 @@ remains responsible for serialization and communication.
 
 ## 3.2 Technical context
 
-| Interface              | Neighbor                | Protocol / format                         | Where documented                                                                                             |
-| :--------------------- | :---------------------- | :---------------------------------------- | :----------------------------------------------------------------------------------------------------------- |
-| `DdsIdl` MSBuild items | Consumer project        | MSBuild item metadata and project properties | [Configuration guide](../../guides/configuration.md)                                                        |
-| `AdditionalFiles`      | Roslyn                  | Compiler input and analyzer configuration | [`Wireloom.Dds.Generator.targets`](../../../src/Wireloom.Dds.Generator/build/Wireloom.Dds.Generator.targets) |
-| IDL include graph      | Wireloom compiler       | Connext IDL text and `#include`           | [Corpus guide](../../corpus/README.md)                                                                       |
-| Generated documents    | Consumer compilation    | C# source                                 | [Building block view](05-building-block-view.md)                                                             |
-| Oracle fixtures        | Corpus compliance tests | IDL, JSON manifest, retained C#           | [Feature coverage](../../corpus/FEATURE-COVERAGE.md)                                                         |
+| Interface              | Neighbor                | Protocol / format                            | Where documented                                                                                             |
+| :--------------------- | :---------------------- | :------------------------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| `DdsIdl` MSBuild items | Consumer project        | MSBuild item metadata and project properties | [Configuration guide](../../guides/configuration.md)                                                         |
+| `AdditionalFiles`      | Roslyn                  | Compiler input and analyzer configuration    | [`Wireloom.Dds.Generator.targets`](../../../src/Wireloom.Dds.Generator/build/Wireloom.Dds.Generator.targets) |
+| IDL include graph      | Wireloom compiler       | Connext IDL text and `#include`              | [Corpus guide](../../corpus/README.md)                                                                       |
+| Generated documents    | Consumer compilation    | C# source                                    | [Building block view](05-building-block-view.md)                                                             |
+| Oracle fixtures        | Corpus compliance tests | IDL, JSON manifest, retained C#              | [Feature coverage](../../corpus/FEATURE-COVERAGE.md)                                                         |

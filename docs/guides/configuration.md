@@ -27,7 +27,7 @@ Wireloom has five project properties and eight input metadata settings:
 | `DdsIdlSequenceArrayMapping` | Project property                       | `RtiCSharp`                                                       | Sets the default mapping for direct arrays of sequences in all tracked files.                                                      |
 | `DdsIdlSequenceSize`         | Project property                       | `100`                                                             | Sets the effective element limit for unbounded sequences.                                                                          |
 | `DdsIdlStringSize`           | Project property                       | `255`                                                             | Sets the effective length limit for unbounded narrow and wide strings.                                                             |
-| `DdsIdlEnableEscapeChar`     | Project property                       | `false`                                                           | Removes one leading underscore from each IDL identifier across the generation batch.                                              |
+| `DdsIdlEnableEscapeChar`     | Project property                       | `false`                                                           | Removes one leading underscore from each IDL identifier across the generation batch.                                               |
 | `Generate`                   | `AdditionalFiles` metadata             | `false` for tracked includes; forced to `true` for `DdsIdl` items | Marks a file as a generation root.                                                                                                 |
 | `IncludeDirectories`         | Generating-root metadata               | Empty                                                             | Adds semicolon-separated include directories to the batch's search path.                                                           |
 | `Defines`                    | Generating-root metadata               | Empty                                                             | Supplies semicolon-separated preprocessor definitions to every root's initial macro environment.                                   |
@@ -402,7 +402,7 @@ checks. The dedicated corpus case `05-array-of-sequences-idl` also passes all 16
 planned live DDS exchanges between Wireloom C# and RTI C++ on each exact RTI
 7.3.1 and 7.7.0 release. These results qualify the four recorded fixtures;
 they do not establish interoperability for every IDL shape or language.
-See the [verification record](../testing/sequence-array-mapping.md).
+See the [verification summary](../testing/sequence-array-mapping.md).
 
 ## Select the consumer framework, language, and RTI runtime
 

@@ -53,7 +53,7 @@ Dedicated case C149, `05-array-of-sequences-idl`, selects the `Idl` mapping for
 the declarations also covered by C018. This isolates the mapping choice from
 the declaration shape. See the
 [configuration reference](../guides/configuration.md) and [verification
-record](../testing/sequence-array-mapping.md#retained-corpus-case-and-live-dds-results).
+summary](../testing/sequence-array-mapping.md#focused-verification).
 
 Generation coverage and DDS interoperability are separate. The profile pages
 record the current limitations and required peer setup. The

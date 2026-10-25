@@ -478,7 +478,7 @@ sequences, other arrays, and explicit sequence typedefs retain their mappings.
 Both supported RTI profiles have typed runtime coverage. The retained C149
 `Idl` corpus case also passes all 16 focused Wireloom/C++ live DDS exchanges on
 each exact RTI 7.3.1 and 7.7.0 release; see the
-[verification record](https://github.com/eNeRGy164/wireloom/blob/main/docs/testing/sequence-array-mapping.md#retained-corpus-case-and-live-dds-results).
+[verification summary](https://github.com/eNeRGy164/wireloom/blob/main/docs/testing/sequence-array-mapping.md#focused-verification).
 These results qualify the recorded fixtures and peer scope. Recursive direct
 sequence arrays are rejected in `Idl` mode with `DDSG0001`. Existing effective
 limits for unbounded sequences and strings still apply.
@@ -595,7 +595,7 @@ contract, not as evidence that the annotation is harmless.
 | `DDSG0106` | An active `#warning` directive was encountered                       | Review the warning in the IDL or included file; preprocessing and generation continue                      |
 | `DDSG0107` | An active `#pragma message` directive was encountered                | Review the informational message in the IDL or included file; generation continues                         |
 | `DDSG0108` | An IDL name conflicts with a keyword or another name ignoring case   | Rename the identifier or exempt the default warning; strict validation rejects the declaration             |
-| `DDSG0109` | An escaped identifier normalizes to `TRUE` or `FALSE`                 | Rename it to avoid ambiguity with IDL boolean literals; Wireloom still resolves it as an identifier        |
+| `DDSG0109` | An escaped identifier normalizes to `TRUE` or `FALSE`                | Rename it to avoid ambiguity with IDL boolean literals; Wireloom still resolves it as an identifier        |
 
 Diagnostics are owned by the generator and use the original IDL/include
 location where one is available. Review the table's typical actions before
@@ -735,6 +735,7 @@ have evidence for a safe generated contract.
 - [Corpus compliance tests](https://github.com/eNeRGy164/wireloom/blob/main/tests/Wireloom.Dds.Generator.CorpusCompliance/README.md)
 - [Package integration test](https://github.com/eNeRGy164/wireloom/blob/main/tests/Wireloom.Dds.Generator.PackageIntegration/README.md)
 - [Generated value semantics](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/generated-value-semantics.md)
+- [Release qualification records](https://github.com/eNeRGy164/wireloom/blob/main/docs/releases/README.md)
 
 RTI-generated reference material in the repository is retained under the
 applicable RTI license and review rules. It is not redistributed by this NuGet

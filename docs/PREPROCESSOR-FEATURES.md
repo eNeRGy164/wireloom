@@ -129,11 +129,11 @@ they do not claim byte-for-byte output parity with `cl /P`.
 described above. Inputs outside those domains are rejected rather than treated
 as evidence of general C-preprocessor compatibility.
 
-| Contract                 | Adversarial cases                                                                              | Evidence                                              |
-| :----------------------- | :--------------------------------------------------------------------------------------------- | :---------------------------------------------------- |
-| PP006–PP020              | No-space bodies, duplicate/named parameters, lazy arguments, stringize/paste, recursion        | Macro specs                                           |
-| PP013                    | Punctuation, invalid and chained pastes, placemarkers, literals, comments, long chains         | Macro specs; restricted preprocessing-token scope     |
-| PP021–PP030              | Unsigned shifts/masks, mixed comparisons, literal boundaries, overflow, nesting                | Conditional specs; unsupported arithmetic is rejected |
+| Contract                        | Adversarial cases                                                                                                         | Evidence                                              |
+| :------------------------------ | :------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------- |
+| PP006–PP020                     | No-space bodies, duplicate/named parameters, lazy arguments, stringize/paste, recursion                                   | Macro specs                                           |
+| PP013                           | Punctuation, invalid and chained pastes, placemarkers, literals, comments, long chains                                    | Macro specs; restricted preprocessing-token scope     |
+| PP021–PP030                     | Unsigned shifts/masks, mixed comparisons, literal boundaries, overflow, nesting                                           | Conditional specs; unsupported arithmetic is rejected |
 | PP031–PP043, PP048–PP049, PP052 | Guarded/unguarded cycles, malformed operands/directives, macro-expanded probes, `#line` bounds, root-output path identity | Include, directive, and graph specs                   |
-| PP050                    | Longer/shorter expansion, post-expansion, included-file, EOF, and sequential-parse diagnostics | Diagnostic and validation specs                       |
-| PP051                    | Per-input macro-work reset; bounded macro expansion and origin alignment                      | Limit and source-origin specs                        |
+| PP050                           | Longer/shorter expansion, post-expansion, included-file, EOF, and sequential-parse diagnostics                            | Diagnostic and validation specs                       |
+| PP051                           | Per-input macro-work reset; bounded macro expansion and origin alignment                                                  | Limit and source-origin specs                         |

@@ -221,19 +221,19 @@ authoritative; this summary is a retrieval aid, not a replacement.
 
 ## Repository defaults
 
-| Setting                | Current value                              | Qualification                                                                                                          |
-| :--------------------- | :----------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
-| Consumer minimum       | `net8.0`, C# 12+                           | Support policy applies                                                                                                 |
-| Consumer compiler host | Roslyn 4.8.0 (`SDK 8.0.100`)               | Minimum qualified SDK host                                                                                             |
-| Repository target      | `net10.0`                                  | Pinned SDK in `global.json`                                                                                            |
-| Generator target       | `netstandard2.0`                           | Analyzer/source-generator package                                                                                      |
-| RTI package floor      | `7.3.1+`                                   | Reference eligibility only, not compatibility evidence                                                                 |
-| RTI profile range      | `7.3.1+`                                   | Nearest profile selected by assembly identity                                                                          |
-| Qualified RTI versions | `7.3.1`, `7.7.0`                           | Exact LTS version evidence only                                                                                        |
-| Test platform          | Microsoft.Testing.Platform, xUnit v3       | Runner filters follow `--`                                                                                             |
-| Sequence-array mapping | `RtiCSharp`; opt-in `Idl` per project/file | File ownership; runtime coverage on both LTS profiles; C149 Idl case passes 16 focused DDS exchanges per exact profile |
-| Unbounded finite limits | 100 sequence elements; 255 string bytes/code units | Project defaults with file-level overrides; explicit IDL bounds win; positive Int32 only |
-| Strict validation      | `false`; any root enables the batch        | DDSG0108 by default; strict failure before emission                                                                    |
+| Setting                 | Current value                                      | Qualification                                                                                                          |
+| :---------------------- | :------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| Consumer minimum        | `net8.0`, C# 12+                                   | Support policy applies                                                                                                 |
+| Consumer compiler host  | Roslyn 4.8.0 (`SDK 8.0.100`)                       | Minimum qualified SDK host                                                                                             |
+| Repository target       | `net10.0`                                          | Pinned SDK in `global.json`                                                                                            |
+| Generator target        | `netstandard2.0`                                   | Analyzer/source-generator package                                                                                      |
+| RTI package floor       | `7.3.1+`                                           | Reference eligibility only, not compatibility evidence                                                                 |
+| RTI profile range       | `7.3.1+`                                           | Nearest profile selected by assembly identity                                                                          |
+| Qualified RTI versions  | `7.3.1`, `7.7.0`                                   | Exact LTS version evidence only                                                                                        |
+| Test platform           | Microsoft.Testing.Platform, xUnit v3               | Runner filters follow `--`                                                                                             |
+| Sequence-array mapping  | `RtiCSharp`; opt-in `Idl` per project/file         | File ownership; runtime coverage on both LTS profiles; C149 Idl case passes 16 focused DDS exchanges per exact profile |
+| Unbounded finite limits | 100 sequence elements; 255 string bytes/code units | Project defaults with file-level overrides; explicit IDL bounds win; positive Int32 only                               |
+| Strict validation       | `false`; any root enables the batch                | DDSG0108 by default; strict failure before emission                                                                    |
 
 ## Open risks
 
