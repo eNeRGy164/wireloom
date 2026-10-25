@@ -56,18 +56,22 @@ tests and corpus evidence.
 Run the smallest focused test while iterating, then run the relevant complete
 quality evidence before declaring the work ready:
 
-1. Restore in locked mode, then build the affected projects in Release.
-2. Run unit tests and the applicable corpus-compliance tests.
-3. Run fresh package integration when package assets, MSBuild targets,
+1. Before creating or updating a PR for generator changes that may affect
+   retained corpus output, run `Export-CorpusGeneratorSources.ps1` from the
+   repository root for both RTI profiles. Review the generated diff and retain
+   the script's test and provenance evidence.
+2. Restore in locked mode, then build the affected projects in Release.
+3. Run unit tests and the applicable corpus-compliance tests.
+4. Run fresh package integration when package assets, MSBuild targets,
    additional-file handling, or generated consumer code may be affected.
-4. Run coverage and inspect branch coverage first, then line coverage. Add
+5. Run coverage and inspect branch coverage first, then line coverage. Add
    tests for newly introduced branches and error paths rather than accepting
    avoidable coverage regressions.
-5. Run Community Qodana using the documented Docker command in
+6. Run Community Qodana using the documented Docker command in
    [`CONTRIBUTING.md`](../../CONTRIBUTING.md#quality-evidence), keep
    `global.json` visible, and confirm the SARIF result is successful with no
    new problems.
-6. After pushing, confirm that CI and Coveralls pass. Local green tests do not
+7. After pushing, confirm that CI and Coveralls pass. Local green tests do not
    substitute for the CI coverage upload and package/platform checks.
 
 Report the actual commands, pass counts, coverage counters, and any intentional

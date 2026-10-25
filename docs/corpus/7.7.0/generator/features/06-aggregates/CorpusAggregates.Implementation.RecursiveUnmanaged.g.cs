@@ -5,6 +5,7 @@
 #nullable enable
 
 using Rti.Dds.NativeInterface.TypePlugin;
+using Rti.Types.Dynamic;
 
 namespace CorpusAggregates.Implementation;
 
@@ -52,7 +53,7 @@ public struct RecursiveUnmanaged : INativeTopicType<Recursive>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
         value = 0;
-        children.Initialize<Recursive, RecursiveUnmanaged>(max: 100, absoluteMax: 100, allocateMemory);
+        children.Initialize<Recursive, RecursiveUnmanaged>(max: 0, absoluteMax: SequenceType.Unbounded, allocateMemory);
     }
 
     /// <summary>

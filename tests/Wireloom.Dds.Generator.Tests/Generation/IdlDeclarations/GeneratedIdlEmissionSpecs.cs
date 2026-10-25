@@ -250,6 +250,29 @@ public sealed class GeneratedIdlEmissionSpecs
     }
 
     [Fact]
+    public void EmitsUnboundedRecursiveSequenceWithImportedSequenceType()
+    {
+        // Arrange
+        var input = Input("recursive-sequence-bound.idl",
+            "module RecursiveSupport { struct Node { sequence<Node> children; }; };");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var plugin = documents["RecursiveSupport.Implementation.NodePlugin.g.cs"].Source;
+        plugin.ShouldContain("using Rti.Types.Dynamic;");
+        plugin.ShouldContain("SequenceType.Unbounded");
+        plugin.ShouldNotContain("Rti.Types.Dynamic.SequenceType.Unbounded");
+
+        var unmanaged = documents["RecursiveSupport.Implementation.NodeUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("using Rti.Types.Dynamic;");
+        unmanaged.ShouldContain("SequenceType.Unbounded");
+        unmanaged.ShouldNotContain("Rti.Types.Dynamic.SequenceType.Unbounded");
+        unmanaged.ShouldNotContain("using Rti.Types;");
+    }
+
+    [Fact]
     [Trait("Corpus", "C044")]
     public void AcceptsTopicAnnotationsAndPreservesTheirMeaningInTheGeneratedDocumentation()
     {
