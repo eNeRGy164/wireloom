@@ -422,5 +422,3 @@ jobs:
           post-pr-comment: false
           upload-result: true
           artifact-name: qodana-community-report
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_646265375 }}
