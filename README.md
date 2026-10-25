@@ -30,11 +30,11 @@ Your application continues to use RTI's runtime, APIs, and configuration.
   bounds, defaults, member IDs, and union branch selection. Remarks, examples,
   exception documentation, and RTI API links put the contract beside the code
   you are writing.
-- **Keep generated C# clean and readable.** It compiles with zero warnings. In
-  the reported Qodana scans, Wireloom had 1,290 raw findings versus 8,544 for
-  retained RTI output; after review, six Wireloom warnings remained. This keeps
-  generated-code noise low so issues in your code stand out. See the
-  [quality report](docs/corpus/csharp-quality.md) for scope and results.
+- **Keep generated C# usable under strict checks.** The generated C# in the
+  original build added a static-analysis burden alongside the external tooling
+  cost. The [quality evidence](#quality-evidence) records what has been checked
+  and links to the Qodana method and exclusions; static findings are not an
+  interoperability measure.
 - **Make generation setup repeatable.** One `PackageReference` and one
   `DdsIdl` item connect IDL to the build. Includes and defines are declarative
   MSBuild settings carried with the project. A clean restore and build use that
@@ -130,6 +130,50 @@ package's compiler integration.
 - **Migration:** Inventory IDL and options, compare APIs, check runtime and
   wire behavior, verify deployment, and retain a rollback baseline. Follow the
   [migration procedure](docs/migration/rtiddsgen-to-wireloom.md#migration-procedure).
+
+## Quality evidence
+
+The checks below answer different questions. A passing source build or runtime
+test does not establish DDS wire compatibility. For a released package, use its
+[version-specific release record](docs/releases/README.md); CI checks on the
+current source commit do not retroactively qualify every package release.
+
+- **Released-package sample build:** The Quality workflow clean-restores and
+  builds the `net10.0` Hello World sample with released Wireloom 0.4.0 on
+  Ubuntu 26.04 and Windows 2025. It does not load native DDS libraries or need
+  an RTI license. See the [workflow](.github/workflows/quality.yml),
+  [0.4.0 release record](docs/releases/0.4.0.md), and
+  [sample guide](samples/HelloWorld/README.md).
+- **Fresh package and diagnostics:** CI packs the source commit under test;
+  package integration restores it and compiles and exercises generated C# for
+  RTI 7.3.1 and 7.7.0 on `net8.0` and `net10.0`, Ubuntu 26.04 and Windows
+  2025, with C# 12. Strict validation must report `DDSG0001` for the invalid
+  consumer fixture. A separate SDK 8.0.100 container checks the minimum
+  compiler host. See the [Quality workflow](.github/workflows/quality.yml),
+  [package integration guide](tests/Wireloom.Dds.Generator.PackageIntegration/README.md),
+  and [diagnostic reference](src/Wireloom.Dds.Generator/README.md#diagnostics).
+- **Source generation:** Corpus compliance checks generated shapes against
+  retained RTI C# outputs and checks expected diagnostics for recorded cases
+  on exact RTI 7.3.1 and 7.7.0, using `net10.0` on Ubuntu 26.04. Unavailable
+  cases remain N/A. This does not prove runtime or wire behavior. See the
+  [Quality workflow](.github/workflows/quality.yml) and
+  [feature coverage](docs/corpus/FEATURE-COVERAGE.md).
+- **Runtime contracts:** Tests exercise generated APIs and native support
+  without DDS participants or peer discovery. CI covers both RTI versions,
+  `net8.0` and `net10.0`, and Ubuntu 26.04 and Windows 2025. See the
+  [runtime contract guide](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
+  and [Quality workflow](.github/workflows/quality.yml).
+- **Live DDS exchanges:** The manually dispatched matrix tests nine directed
+  Wireloom C#, RTI C#, and RTI C++ pairings where applicable, separately on
+  RTI 7.3.1 and 7.7.0. Reports retain failures, N/A cases, and peer
+  adaptations. See the [wire runbook](tests/Wireloom.Dds.Generator.WireCompatibility/README.md),
+  [recorded wire evidence](docs/corpus/FEATURE-COVERAGE.md#recorded-wire-evidence),
+  and [workflow](.github/workflows/wire-compatibility.yml).
+- **Generated-code static analysis:** The October 25, 2026 Qodana report covers
+  109 Wireloom exports with C# 12, .NET 10, and RTI 7.7.0: zero errors and
+  zero preventable warnings after documented exclusions. It is a static scan,
+  not a compatibility result or a like-for-like RTI score. See the
+  [report and method](docs/corpus/csharp-quality.md).
 
 ## Get started
 
@@ -309,11 +353,10 @@ also passes when targeting .NET 8 with C# 12, using the repository's pinned SDK.
 
 Corpus results compare source-generation behavior and generated C# shape. They
 do not establish serialization-byte equivalence, live DDS behavior, or C++
-interoperability. The separate [wire compatibility matrix](tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
-tests fixture values across all nine directed pairings of Wireloom C#,
-RTI-generated C#, and RTI C++ peers on exact RTI 7.7.0. Consult its
-[workflow reports](https://github.com/eNeRGy164/wireloom/actions/workflows/wire-compatibility.yml)
-for executed outcomes, known failures, and peer adaptations.
+interoperability. The separately dispatched [wire compatibility matrix](tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
+covers both exact RTI LTS versions; fixture-specific failures, N/A pairings,
+and peer adaptations are recorded in its reports and the
+[feature coverage index](docs/corpus/FEATURE-COVERAGE.md#recorded-wire-evidence).
 
 Before replacing existing generated code, check your IDL shapes and public API
 usage against that evidence. Direct arrays of sequences flatten by default;
@@ -332,21 +375,17 @@ expectations, and guidance on choosing a generation path.
 
 ## Testing and quality
 
-The [Quality workflow](.github/workflows/quality.yml) checks multiple parts of
-the generator: unit tests and tracked code coverage, bounded FsCheck fuzzing of
-the public compiler and Roslyn adapter, corpus compliance for RTI 7.3.1 and
-7.7.0, runtime contracts, packed-package consumers, and a Qodana static
-analysis scan. The fuzz gate runs 10,000 generated inputs per property in CI;
-see the [fuzzing guide](docs/testing/fuzzing.md) for its scope and limits.
+The [Quality workflow](.github/workflows/quality.yml) runs on pull requests,
+pushes to `main`, and manual dispatches. Alongside the consumer checks above, it
+runs unit tests with tracked code coverage and bounded FsCheck fuzzing of the
+public compiler and Roslyn adapter. The fuzz gate runs 10,000 generated inputs
+per property; see the [fuzzing guide](docs/testing/fuzzing.md) for its scope and
+limits.
 
-Two deeper checks run separately. The manual
-[mutation-testing workflow](.github/workflows/mutation.yml) uses Stryker to
-change generator code and checks whether the test suite detects those changes;
-it is advisory, not a check on every pull request. Licensed
-[DDS wire-compatibility tests](tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
-exercise live exchanges between Wireloom and RTI C# and C++ peers. See
-[contributor quality evidence](CONTRIBUTING.md#quality-evidence) for the
-verification expectations and reports.
+Mutation testing with Stryker is a separate advisory workflow, not a check on
+every pull request. Licensed live DDS tests require manual dispatch. See the
+[contributor quality guide](CONTRIBUTING.md#quality-evidence) for maintainer
+commands and evidence requirements.
 
 ## Documentation
 
