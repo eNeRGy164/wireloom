@@ -32,7 +32,9 @@ jobs:
         with:
           dotnet-version: 10.0.x
           cache: true
-          cache-dependency-path: '**/packages.lock.json'
+          cache-dependency-path: |
+            global.json
+            **/packages*.lock.json
 
       - name: Restore locked dependencies
         run: dotnet restore $env:TEST_PROJECT --locked-mode
