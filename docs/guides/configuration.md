@@ -295,7 +295,9 @@ leading underscore from each IDL identifier after preprocessing. It applies
 consistently to declarations and references, including identifiers produced by
 macros. String literals and comments are not changed. C# keyword escaping still
 applies after normalization, so `_event` is emitted as C# `@event`, while type
-metadata uses `event`.
+metadata uses `event`. An escaped identifier that normalizes to `TRUE` or
+`FALSE` produces `DDSG0109` at each occurrence because those spellings are also
+IDL boolean literals; Wireloom preserves the escaped spelling as an identifier.
 
 Normalized names define symbol identity. If two names in one scope normalize
 to the same name, generation fails with `DDSG0001` before source emission. The
@@ -444,7 +446,7 @@ configuration; they are not Wireloom generation settings.
 ## Control diagnostics
 
 Generator defaults are errors for `DDSG0001`–`DDSG0004`, warnings for
-`DDSG0101`–`DDSG0106` and `DDSG0108`, and informational messages for
+`DDSG0101`–`DDSG0106` and `DDSG0108`–`DDSG0109`, and informational messages for
 `DDSG0107`. The [diagnostic reference](../../src/Wireloom.Dds.Generator/README.md#diagnostics)
 explains the individual causes.
 

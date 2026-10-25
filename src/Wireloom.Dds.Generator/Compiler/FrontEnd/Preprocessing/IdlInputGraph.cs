@@ -97,7 +97,7 @@ internal sealed class IdlInputGraph
 
             if (enableEscapeChar)
             {
-                result = IdlEscapeCharNormalizer.Normalize(result, input, cancellationToken);
+                result = IdlEscapeCharNormalizer.Normalize(result, input, cancellationToken, diagnostics);
             }
 
             // A non-once include may produce different declarations under
