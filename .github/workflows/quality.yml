@@ -23,9 +23,38 @@ env:
   PACKAGE_INTEGRATION_TEST_PROJECT: tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj
 
 jobs:
+  sample-build:
+    name: Publisher/subscriber sample (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-26.04, windows-2025]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up repository SDK
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: |
+            global.json
+            **/packages*.lock.json
+
+      - name: Restore sample dependencies
+        run: dotnet restore samples/HelloWorld/HelloWorld.csproj --locked-mode
+
+      - name: Build sample and generate its contracts
+        run: dotnet build samples/HelloWorld/HelloWorld.csproj --no-restore --configuration Release
+
   corpus-compliance:
     name: Corpus (RTI ${{ matrix.rti_version }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -44,7 +73,9 @@ jobs:
         with:
           global-json-file: global.json
           cache: true
-          cache-dependency-path: '**/packages*.lock.json'
+          cache-dependency-path: |
+            global.json
+            **/packages*.lock.json
 
       - name: Restore locked dependencies
         run: dotnet restore "$CORPUS_TEST_PROJECT" --locked-mode
@@ -67,7 +98,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-2025]
+        os: [ubuntu-26.04, windows-2025]
         rti_version: ['7.3.1', '7.7.0']
         framework: [net8.0, net10.0]
     env:
@@ -86,7 +117,9 @@ jobs:
           global-json-file: global.json
           dotnet-version: 8.0.x
           cache: true
-          cache-dependency-path: '**/packages*.lock.json'
+          cache-dependency-path: |
+            global.json
+            **/packages*.lock.json
 
       - name: Restore locked runtime dependencies
         run: >-
@@ -163,7 +196,7 @@ jobs:
 
   net8-package-consumer:
     name: .NET 8 package consumer (RTI ${{ matrix.rti_version }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -183,7 +216,9 @@ jobs:
         with:
           global-json-file: global.json
           cache: true
-          cache-dependency-path: '**/packages*.lock.json'
+          cache-dependency-path: |
+            global.json
+            **/packages*.lock.json
 
       - name: Restore generator dependencies
         run: dotnet restore $env:PACKAGE_PROJECT --locked-mode
@@ -274,7 +309,7 @@ jobs:
   coverage:
     name: Test and upload coverage
     needs: [runtime-contracts, corpus-compliance, net8-package-consumer]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
       - name: Check out repository
@@ -288,7 +323,9 @@ jobs:
         with:
           dotnet-version: 10.0.x
           cache: true
-          cache-dependency-path: '**/packages.lock.json'
+          cache-dependency-path: |
+            global.json
+            **/packages*.lock.json
 
       - name: Restore locked dependencies
         run: |
@@ -336,7 +373,7 @@ jobs:
 
   qodana:
     name: Qodana community scan
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     permissions:
       contents: write
