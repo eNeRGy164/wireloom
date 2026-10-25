@@ -11,6 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The compiler is a runtime dependency of the generator when both are project-reference analyzers. -->
+    <ProjectReference Include="../../src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
