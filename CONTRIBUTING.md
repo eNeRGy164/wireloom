@@ -233,3 +233,9 @@ validation, then produce package and SBOM attestations. See
 [`publish-preview.yml`](.github/workflows/publish-preview.yml) and
 [`publish-release.yml`](.github/workflows/publish-release.yml) for the
 authoritative release process.
+
+Follow the [release-preparation checklist](docs/releases/PREPARING-A-RELEASE.md)
+and update the [release qualification records](docs/releases/README.md) for
+each package. GitHub Releases and NuGet package readmes are immutable after
+publication, so make the package README link to the stable record index before
+tagging.

@@ -66,5 +66,10 @@ Preview publication uses GitHub Packages. Validated release tags publish to
 NuGet.org with SBOM and provenance attestations.
 
 > [!NOTE]
-> Additional information: This architecture context is also summarized in [Architecture memory](../architecture-memory.md) and `.agents/architecture-memory.yaml` so implementation agents can use it efficiently in limited context windows.
-> The arc42 chapters, linked ADRs, and contracts remain the primary source documents. If the derived memory differs, update the source docs first and refresh the derived memory.
+> Additional information: This architecture context is also summarized in
+> [Architecture memory](../architecture-memory.md) and
+> `.agents/architecture-memory.yaml` so implementation agents can use it
+> efficiently in limited context windows.
+> The arc42 chapters, linked ADRs, and contracts remain the primary source
+> documents. If the derived memory differs, update the source docs first and
+> refresh the derived memory.

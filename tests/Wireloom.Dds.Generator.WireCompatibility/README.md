@@ -60,7 +60,7 @@ available scope but do not make caches globally shared.
 `Containerfile.dev` keeps the full RTI base, .NET SDK, and native build tools
 for local development and debugging. Oracle capture continues to use the
 version-pinned full RTI base directly through
-[`Capture-RtiOracles.ps1`](../../../docs/corpus/scripts/Capture-RtiOracles.ps1).
+[`Capture-RtiOracles.ps1`](../../docs/corpus/scripts/Capture-RtiOracles.ps1).
 
 `Containerfile.wire` is the execution image used by GitHub Actions. It starts
 from the pinned .NET 10 Noble SDK image and installs the RTI C/C++ runtime and

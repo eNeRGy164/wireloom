@@ -43,10 +43,10 @@ defines fixture and adaptation scope.
 
 ### Build-time developer experience
 
-| ID   | Scenario                                | Acceptance and evidence                                                                                                                                                           |
-| :--- | :-------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Q-03 | Consume the packed `.nupkg`             | Analyzer targets load and generated types compile without a project reference; the package suite links the runtime contracts and passes in a .NET 8-only compiler-host container. |
-| Q-07 | Change roots, includes, or other inputs | Roslyn reuses unaffected inputs; the baseline records tracked-step reasons and timings. Per-root output caching remains a follow-up.                                              |
+| ID   | Scenario                                | Acceptance and evidence                                                                                                                                                                                     |
+| :--- | :-------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q-03 | Consume the packed `.nupkg`             | Analyzer targets load and generated types compile without a project reference; the package suite links the runtime contracts and passes in a .NET 8-only compiler-host container.                           |
+| Q-07 | Change roots, includes, or other inputs | Roslyn reuses unaffected inputs; the baseline records tracked-step reasons and timings. Per-root output caching remains a follow-up.                                                                        |
 | Q-13 | Build the checked-in DDS sample         | CI restores released Wireloom.Dds.Generator 0.4.0 from NuGet.org in locked mode and builds the sample on Windows and Ubuntu without an RTI license; local licensed exchange steps are in the sample README. |
 
 ### Build safety
@@ -96,5 +96,10 @@ and test project code are excluded. Unresolved required contracts remain gaps
 rather than completed compatibility evidence.
 
 > [!NOTE]
-> Additional information: This architecture context is also summarized in [Architecture memory](../architecture-memory.md) and `.agents/architecture-memory.yaml` so implementation agents can use it efficiently in limited context windows.
-> The arc42 chapters, linked ADRs, and contracts remain the primary source documents. If the derived memory differs, update the source docs first and refresh the derived memory.
+> Additional information: This architecture context is also summarized in
+> [Architecture memory](../architecture-memory.md) and
+> `.agents/architecture-memory.yaml` so implementation agents can use it
+> efficiently in limited context windows.
+> The arc42 chapters, linked ADRs, and contracts remain the primary source
+> documents. If the derived memory differs, update the source docs first and
+> refresh the derived memory.

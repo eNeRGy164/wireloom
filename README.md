@@ -75,9 +75,10 @@ the member is absent:
 ### Less tooling to install
 
 Generate C# from IDL using the SDK already building your application and a
-small generator package. The locally packed Wireloom 0.4.0 package measured
-**175,113 bytes (about 175 kB)**. The RTI runtime remains a NuGet dependency
-in either workflow; the package measurement covers generation tooling.
+small generator package. The latest release, Wireloom 0.4.0, measured
+**175,113 bytes (about 175 kB)** when packed locally. The RTI runtime remains a
+NuGet dependency in either workflow; the package measurement covers generation
+tooling.
 
 The footprint matters in practice: provisioning RTI generation tooling added
 about **2 GB** to the C# Docker build images in the pipeline that motivated
@@ -360,7 +361,8 @@ verification expectations and reports.
 | Check runtime and DDS wire compatibility evidence                             | [Wire compatibility matrix](tests/Wireloom.Dds.Generator.WireCompatibility/README.md)                                                            |
 | Compare generated C# quality and observed RTI code-generation defects         | [Generated C# quality comparison](docs/corpus/csharp-quality.md) · [RTI code-generation defect catalog](docs/corpus/RTI-CODEGEN-DEFECTS.md)      |
 | Understand version qualification, support boundaries, and generation-path fit | [Support and compatibility policy](docs/guides/support-and-compatibility.md)                                                                     |
-| Report a security vulnerability                                              | [Security policy](SECURITY.md)                                                                                                                     |
+| Review package release evidence and prepare a release                         | [Release qualification records](docs/releases/README.md) · [Release preparation](docs/releases/PREPARING-A-RELEASE.md)                           |
+| Report a security vulnerability                                               | [Security policy](SECURITY.md)                                                                                                                   |
 | Learn the architecture or incremental-generation baseline                     | [Architecture overview](docs/architecture/arc42/index.md) · [Incremental generator baseline](docs/performance/incremental-generator-baseline.md) |
 | Contribute code or documentation                                              | [Code style](docs/CODE-STYLE.md) · [Contributing and maintainer guide](CONTRIBUTING.md)                                                          |
 
