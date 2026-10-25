@@ -25,14 +25,14 @@ architecture baseline.
 
 Restore and build the generator:
 
-```powershell
+```shell
 dotnet restore src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --locked-mode
 dotnet build src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --no-restore --configuration Release
 ```
 
 Run the fast unit tests and manifest-driven corpus compliance suite:
 
-```powershell
+```shell
 dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
 dotnet test tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --no-restore --configuration Release
 
@@ -47,7 +47,7 @@ The repository uses Microsoft.Testing.Platform; pass test runner options after
 `--filter-trait` options. Do not use the legacy `--filter` option.
 For example, run the focused preprocessor review gate with:
 
-```powershell
+```shell
 dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
   --no-build --configuration Release -- `
   --filter-namespace Wireloom.Compiler.FrontEnd.Preprocessing.Tests
@@ -166,7 +166,7 @@ Generate local Cobertura coverage after restoring the unit-test project. The
 command matches the CI coverage invocation and writes
 `coverage/coverage.cobertura.xml`:
 
-```powershell
+```shell
 dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
 dotnet test tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
   --no-restore `
@@ -198,6 +198,9 @@ and update its evidence before considering a caching redesign.
 For the bounded IDL compiler fuzzing gate, run the [fuzzing guide](docs/testing/fuzzing.md)
 and preserve FsCheck's reported input and replay information when investigating a failure.
 
+For mutation testing commands, shared timeout settings, focused batch configs,
+and result interpretation, see the [Stryker guide](docs/testing/stryker.md).
+
 ## Pull requests
 
 - Describe the behavior or evidence change and the reason for it.
@@ -218,7 +221,7 @@ and preserve FsCheck's reported input and replay information when investigating 
 
 Pack the analyzer/source-generator package locally with:
 
-```powershell
+```shell
 dotnet restore src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --locked-mode
 dotnet pack src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --no-restore --configuration Release --output artifacts
 ```

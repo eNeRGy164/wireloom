@@ -18,7 +18,7 @@ env:
 jobs:
   mutation:
     name: Advisory mutation testing
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 360
     steps:
       - name: Check out repository
@@ -44,6 +44,21 @@ jobs:
 
       - name: Run mutation testing
         run: dotnet tool run dotnet-stryker -- --config-file stryker-config.json
+        shell: pwsh
+
+      - name: Add mutation summary to run
+        if: always()
+        run: |
+          $report = Get-ChildItem -Path StrykerOutput -Filter 'mutation-report.md' -File -Recurse -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTimeUtc -Descending |
+            Select-Object -First 1
+
+          if ($null -eq $report) {
+            "## Stryker mutation summary`n`nNo Markdown report was produced. Check the mutation test step for details." >> $env:GITHUB_STEP_SUMMARY
+          }
+          else {
+            Get-Content -LiteralPath $report.FullName -Raw >> $env:GITHUB_STEP_SUMMARY
+          }
         shell: pwsh
 
       - name: Upload mutation reports
