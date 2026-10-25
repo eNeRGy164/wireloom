@@ -71,11 +71,11 @@ LTS versions without requiring a licensed wire environment:
 
 | Check                                                | RTI versions | Consumer targets              | Hosts                      |
 | :--------------------------------------------------- | :----------- | :---------------------------- | :------------------------- |
-| Corpus compliance against matching retained oracles  | 7.3.1, 7.7.0 | Repository target (`net10.0`) | Ubuntu 24.04               |
-| Generated runtime contracts                          | 7.3.1, 7.7.0 | `net8.0`, `net10.0`           | Windows 2025, Ubuntu 24.04 |
-| Fresh packed-analyzer integration with C# 12         | 7.3.1, 7.7.0 | `net8.0`, `net10.0`           | Windows 2025, Ubuntu 24.04 |
+| Corpus compliance against matching retained oracles  | 7.3.1, 7.7.0 | Repository target (`net10.0`) | Ubuntu 26.04               |
+| Generated runtime contracts                          | 7.3.1, 7.7.0 | `net8.0`, `net10.0`           | Windows 2025, Ubuntu 26.04 |
+| Fresh packed-analyzer integration with C# 12         | 7.3.1, 7.7.0 | `net8.0`, `net10.0`           | Windows 2025, Ubuntu 26.04 |
 | .NET 8-only fresh-package consumer                   | 7.3.1, 7.7.0 | `net8.0`                      | Ubuntu SDK 8 container     |
-| Applicability, shard planning, and report validation | 7.3.1, 7.7.0 | Repository tooling            | Ubuntu 24.04               |
+| Applicability, shard planning, and report validation | 7.3.1, 7.7.0 | Repository tooling            | Ubuntu 26.04               |
 
 All eight runtime/package combinations fail their jobs on errors, with
 independent failure reporting and retained test output. Runtime restores use version- and
