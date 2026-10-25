@@ -110,6 +110,8 @@ public sealed class GeneratedPluginSpecs
             "public int value");
         managed.ShouldContain("global::System.ArgumentOutOfRangeException.ThrowIfLessThan(value, 0);");
         managed.ShouldContain("global::System.ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 100);");
+        managed.ShouldContain("get => _value;");
+        managed.ShouldContain("get => _ranged;");
         managed.ShouldContain("global::System.ArgumentOutOfRangeException.ThrowIfLessThan(value, -32);");
         managed.ShouldContain("global::System.ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 31);");
         managed.ShouldContain("Valid values are in the inclusive range <c>0</c> through <c>100</c>. Its default value is <c>50</c>.");
@@ -204,7 +206,15 @@ public sealed class GeneratedPluginSpecs
 
         documents["Seven.g.cs"].Source.ShouldContain("Value = 7;");
         documents["Nine.g.cs"].Source.ShouldContain("Value = 9;");
-        documents["Text.g.cs"].Source.ShouldContain("Value = \"alias\";");
+
+        var textAlias = documents["Text.g.cs"].Source;
+        textAlias.ShouldContain("public string Value { get; set; }");
+        textAlias.ShouldNotContain("public string Value { get; set; } = string.Empty;");
+        textAlias.ShouldContain("Value = \"alias\";");
+
+        managed.ShouldContain("public string text { get; set; }");
+        managed.ShouldNotContain("public string text { get; set; } = \"alias\";");
+
         documents["Ratio.g.cs"].Source.ShouldContain("Value = 1.5;");
         documents["Factor.g.cs"].Source.ShouldContain("Value = 0.5F;");
     }

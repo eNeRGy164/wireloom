@@ -38,9 +38,9 @@ public sealed class GeneratedCollectionBoundarySpecs
         // Managed defaults establish the empty value and fixed-array shape.
         data.ShouldContain("values = new int[2, 3];");
         data.ShouldContain("unbounded = new Sequence<int>();");
-        data.ShouldContain("public BoundedLongs bounded { get; set; } = new BoundedLongs();");
+        data.ShouldContain("public BoundedLongs bounded { get; set; } = new();");
         data.ShouldContain("items = new Sequence<Item>();");
-        data.ShouldContain("public CoordinateGrid grid { get; set; } = new CoordinateGrid();");
+        data.ShouldContain("public CoordinateGrid grid { get; set; } = new();");
         data.ShouldContain(
             """
             return values.Rank == other.values.Rank
@@ -64,7 +64,7 @@ public sealed class GeneratedCollectionBoundarySpecs
         native.ShouldContain("items.ToNative<Item, ItemUnmanaged>(sample.items);");
 
         // DynamicType metadata must expose the same bounds and dimensions.
-        plugin.ShouldContain("CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), new uint[] { 2, 3 })");
+        plugin.ShouldContain("CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), [2, 3])");
         plugin.ShouldContain("CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), 100)");
         plugin.ShouldContain("CreateSequenceWithAccessInfo(dtf, ItemSupport.Instance.GetDynamicTypeInternal(isPublic), 2)");
     }

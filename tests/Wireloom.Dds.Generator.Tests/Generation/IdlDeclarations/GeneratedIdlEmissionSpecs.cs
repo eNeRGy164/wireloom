@@ -243,8 +243,8 @@ public sealed class GeneratedIdlEmissionSpecs
         var support = documents["RecursiveSupport.NodeSupport.g.cs"].Source;
         support.ShouldContain("public static NodeSupport Instance { get; private set; } =");
         support.ShouldContain("internal static NodeSupport GetOrCreateInstanceImpl()");
-        support.ShouldContain("if (Instance is null)");
-        support.ShouldContain("Instance = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<NodeSupport, Node>();");
+        support.ShouldContain("Instance ??= ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<NodeSupport, Node>();");
+        support.ShouldContain("CreateTypeSupport<NodeSupport, Node>();\n\n");
         support.ShouldContain("return Instance;");
         support.ShouldNotContain("var dynamicType = NodeSupport.Instance.DynamicType;");
     }

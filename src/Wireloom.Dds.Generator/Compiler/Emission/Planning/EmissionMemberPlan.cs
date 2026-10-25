@@ -221,7 +221,9 @@ internal sealed partial class MemberEmissionPlan(
         if (IsArray)
         {
             var copy = $"({TypeReference(CSharpType.TrimEnd('?'), currentNamespace)}){source}.Clone()";
-            return IsOptional ? $"{source} is null ? null! : {copy}" : copy;
+            return IsOptional
+                ? $"(({TypeReference(CSharpType.TrimEnd('?'), currentNamespace)}?){source}?.Clone())!"
+                : copy;
         }
 
         if (IsAggregate)
@@ -256,7 +258,9 @@ internal sealed partial class MemberEmissionPlan(
         if (IsArray)
         {
             var copy = $"({TypeReference(CSharpType.TrimEnd('?'), currentNamespace)}){source}.Clone()";
-            return IsOptional ? $"{source} is null ? null! : {copy}" : copy;
+            return IsOptional
+                ? $"(({TypeReference(CSharpType.TrimEnd('?'), currentNamespace)}?){source}?.Clone())!"
+                : copy;
         }
 
         return source;

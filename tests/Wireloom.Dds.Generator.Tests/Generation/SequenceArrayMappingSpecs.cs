@@ -87,7 +87,7 @@ public sealed class SequenceArrayMappingSpecs
         sources["Arrays.Sample_namesSequence.g.cs"].Source.ShouldNotContain("For an unbounded IDL sequence");
         var metadata = sources["Arrays.Implementation.SamplePlugin.g.cs"].Source;
         metadata.ShouldContain("CreateArrayWithAccessInfo<Sample_valuesSequenceUnmanaged>");
-        metadata.ShouldContain("tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), 100), new uint[] { 2 }");
+        metadata.ShouldContain("tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), 100), [2]");
         metadata.ShouldContain("tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(8), 3)");
         metadata.ShouldNotContain("Sample_valuesSequenceSupport.Instance.GetDynamicTypeInternal");
         sources["Arrays.Implementation.Sample_valuesSequenceUnmanaged.g.cs"].Source.ShouldContain("NativeSeq Value");

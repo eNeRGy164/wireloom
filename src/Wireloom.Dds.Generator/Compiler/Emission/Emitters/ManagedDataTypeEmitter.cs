@@ -185,9 +185,7 @@ internal static class ManagedDataTypeEmitter
         var backingField = field.ManagedBackingFieldName;
 
         writer.OpenBlock($"public {type} {name}");
-        writer.OpenBlock("get");
-        writer.WriteLine($"return {backingField};");
-        writer.CloseBlock();
+        writer.WriteLine($"get => {backingField};");
         writer.OpenBlock("set");
 
         if (field.MinimumValue is { } minimum)

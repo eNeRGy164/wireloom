@@ -63,7 +63,7 @@ internal static class CollectionAliasPluginEmitter
             }
 
             var dimensions = string.Join(", ", declaration.Dimensions);
-            writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{names.UnmanagedTypeName}>(dtf, \"{typeName}\", tsf.CreateArrayWithAccessInfo<{arrayElementType}>(dtf, {GetDynamicElementType(plan, names.ImplementationNamespace)}, new uint[] {{ {dimensions} }}));");
+            writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{names.UnmanagedTypeName}>(dtf, \"{typeName}\", tsf.CreateArrayWithAccessInfo<{arrayElementType}>(dtf, {GetDynamicElementType(plan, names.ImplementationNamespace)}, [{dimensions}]));");
         }
         else
         {

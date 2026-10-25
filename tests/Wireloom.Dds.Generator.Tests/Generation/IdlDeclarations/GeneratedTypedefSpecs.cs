@@ -190,7 +190,7 @@ public sealed class GeneratedTypedefSpecs
         matrix.ShouldContain("public int[,] Value { get; set; } = new int[2, 3];");
 
         var matrixPlugin = documents["CollectionAliases.Implementation.MatrixPlugin.g.cs"].Source;
-        matrixPlugin.ShouldContain("CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), new uint[] { 2, 3 })");
+        matrixPlugin.ShouldContain("CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), [2, 3])");
 
         var matrixNative = documents["CollectionAliases.Implementation.MatrixUnmanaged.g.cs"].Source;
         matrixNative.ShouldContain("private NativeUnmanagedArray Value;");
@@ -205,7 +205,7 @@ public sealed class GeneratedTypedefSpecs
         itemArray.ShouldContain("Value[dimension0] = new Item();");
 
         var itemArrayPlugin = documents["CollectionAliases.Implementation.ItemArrayPlugin.g.cs"].Source;
-        itemArrayPlugin.ShouldContain("CreateArrayWithAccessInfo<ItemUnmanaged>(dtf, ItemSupport.Instance.GetDynamicTypeInternal(isPublic), new uint[] { 2 })");
+        itemArrayPlugin.ShouldContain("CreateArrayWithAccessInfo<ItemUnmanaged>(dtf, ItemSupport.Instance.GetDynamicTypeInternal(isPublic), [2])");
 
         var itemArrayNative = documents["CollectionAliases.Implementation.ItemArrayUnmanaged.g.cs"].Source;
         itemArrayNative.ShouldContain("private NativeManagedArray Value;");

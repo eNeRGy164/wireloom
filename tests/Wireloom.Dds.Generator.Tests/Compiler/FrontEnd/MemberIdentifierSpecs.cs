@@ -87,8 +87,8 @@ public sealed class MemberIdentifierSpecs
         // Assert
         plugin.ShouldContain("new StructMember(\"first\", dtf.GetPrimitiveType<int>(), id: 0)");
         plugin.ShouldContain("new StructMember(\"second\", dtf.GetPrimitiveType<int>(), isKey: true, id: 4)");
-        plugin.ShouldContain("new uint[] { 2 }), id: 5)");
-        plugin.ShouldContain("new uint[] { 2, 3 }), id: 6)");
+        plugin.ShouldContain("[2]), id: 5)");
+        plugin.ShouldContain("[2, 3]), id: 6)");
     }
 
     [Fact]
