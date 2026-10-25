@@ -142,7 +142,7 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsRecursiveUnboundedSequence && HasAggregateElement)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: 0, absoluteMax: Rti.Types.Dynamic.SequenceType.Unbounded, allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: 0, absoluteMax: SequenceType.Unbounded, allocateMemory);";
         }
 
         if (IsStringSequence)

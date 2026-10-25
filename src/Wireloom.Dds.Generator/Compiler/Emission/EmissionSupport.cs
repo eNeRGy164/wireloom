@@ -72,6 +72,7 @@ internal static class EmissionSupport
         var plans = fields.ToArray();
         var types = plans.Select(field => field.Type).ToArray();
         var usesOmgSequence = plans.Any(field => field.IsSequence && field.IsOptional && (field.IsStringSequence || field.HasAggregateElement));
+        var usesDynamicSequenceType = plans.Any(field => field.IsRecursiveUnboundedSequence);
         var usesSequenceType = usesSequence || plans.Any(field => field is
         {
             IsSequence: true,
@@ -79,7 +80,14 @@ internal static class EmissionSupport
             IsStringSequence: false,
             Type.Shape.Kind: not EmissionShapeKind.Alias
         });
-        return GetTypeUsings(types, usesOmgSequence, usesSequenceType, includeNativeTopicTypePlugin: true, requireNativeRtiTypes: true, usesNativeChar);
+        return GetTypeUsings(
+            types,
+            usesOmgSequence,
+            usesSequenceType,
+            includeNativeTopicTypePlugin: true,
+            requireNativeRtiTypes: true,
+            usesNativeChar,
+            usesDynamicSequenceType);
     }
 
     /// <summary>Gets namespaces required by native storage for an alias or collection type.</summary>
@@ -132,7 +140,14 @@ internal static class EmissionSupport
     }
 
     /// <summary>Builds a namespace list for a generated document from its type and runtime requirements.</summary>
-    private static List<string> GetTypeUsings(IEnumerable<EmissionTypePlan> types, bool usesOmgTypes, bool usesSequence, bool includeNativeTopicTypePlugin, bool requireNativeRtiTypes, bool usesNativeChar = false)
+    private static List<string> GetTypeUsings(
+        IEnumerable<EmissionTypePlan> types,
+        bool usesOmgTypes,
+        bool usesSequence,
+        bool includeNativeTopicTypePlugin,
+        bool requireNativeRtiTypes,
+        bool usesNativeChar = false,
+        bool usesDynamicSequenceType = false)
     {
         var typePlans = types.ToArray();
         var usings = new List<string>();
@@ -150,6 +165,11 @@ internal static class EmissionSupport
         if (includeNativeTopicTypePlugin)
         {
             usings.Add("Rti.Dds.NativeInterface.TypePlugin");
+        }
+
+        if (usesDynamicSequenceType)
+        {
+            usings.Add("Rti.Types.Dynamic");
         }
 
         return usings;

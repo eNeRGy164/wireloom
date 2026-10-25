@@ -44,7 +44,7 @@ internal sealed partial class MemberEmissionPlan
 
         var recursiveSupportType = IdlNaming.GeneratedSupportTypeReference(structure.SupportType, implementationNamespace);
 
-        var bound = sequence.IsBounded ? sequence.Bound.ToString() : "Rti.Types.Dynamic.SequenceType.Unbounded";
+        var bound = sequence.IsBounded ? sequence.Bound.ToString() : "SequenceType.Unbounded";
 
         expression = $"tsf.CreateSequenceWithAccessInfo(dtf, {recursiveSupportType}Support.GetOrCreateInstanceImpl().GetDynamicTypeInternal(isPublic), {bound})";
         return true;
