@@ -18,10 +18,16 @@ if (Directory.Exists(output) && Directory.EnumerateFileSystemEntries(output).Any
 }
 
 var inputs = args.Skip(1).Select(path => new IdlInput(Path.GetFullPath(path), File.ReadAllText(path))).ToList();
-var sources = IdlCompiler.CompileSources(inputs, CancellationToken.None);
+var result = IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, CancellationToken.None);
+if (!result.Success)
+{
+    throw new InvalidOperationException(string.Join(Environment.NewLine, result.Diagnostics.Select(diagnostic => diagnostic.Message)));
+}
+
+var sources = result.Documents;
 Directory.CreateDirectory(output);
 
-foreach (var source in sources.Values)
+foreach (var source in sources)
 {
     File.WriteAllText(Path.Combine(output, source.HintName), source.Source);
 }

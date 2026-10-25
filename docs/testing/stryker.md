@@ -9,10 +9,11 @@ corpus-compliance suites; it does not replace them.
 Use the repository-pinned .NET SDK from [`global.json`](../../global.json).
 The Stryker.NET 5.0.0 tool is pinned in
 [`dotnet-tools.json`](../../.config/dotnet-tools.json). Restore the local tool
-and the generator test project before running Stryker:
+and both unit-test projects before running Stryker:
 
 ```shell
 dotnet tool restore
+dotnet restore tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj --locked-mode
 dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
 ```
 
@@ -27,11 +28,14 @@ Run the full mutation campaign with:
 dotnet stryker
 ```
 
-The central config targets the generator project and its unit-test project,
-uses the Microsoft.Testing.Platform runner, and writes HTML, JSON, Markdown,
-and progress reports. The current mutation thresholds are zero because this campaign is
-used to inspect and improve test strength; a score threshold is not a CI gate.
-Stryker writes reports below `StrykerOutput/`.
+[`stryker-config.json`](../../stryker-config.json) targets both maintained
+projects through the committed [`Wireloom.slnx`](../../Wireloom.slnx). Its
+test-project list includes the dedicated compiler and generator unit-test
+projects.
+The advisory workflow runs one combined campaign using
+Microsoft.Testing.Platform. Mutation thresholds are zero because this run
+inspects test strength rather than gates CI. Stryker writes reports below
+`StrykerOutput/`.
 
 ## GitHub Actions workflow
 
@@ -39,12 +43,12 @@ The [Mutation testing workflow](../../.github/workflows/mutation.yml) is an
 advisory, manually dispatched workflow. Open the repository's Actions tab,
 select **Mutation testing**, and choose **Run workflow** for the branch to
 analyze. It restores the pinned .NET SDK dependencies and Stryker tool, then
-runs the central config against the complete generator. The workflow has a
-six-hour job limit and appends Stryker's `mutation-report.md` to the run
-summary. It also uploads `StrykerOutput/**/reports/*` as a `mutation-reports`
-artifact, retained for 14 days; open `mutation-report.html` from that artifact
-for per-mutant details. The workflow is not a required pull request check and
-has no scheduled trigger.
+runs the combined campaign against the adapter and compiler core. The workflow
+has a six-hour job limit and appends the latest Stryker `mutation-report.md` to
+the run summary. It also uploads `StrykerOutput/**/reports/*` as a
+`mutation-reports` artifact, retained for 14 days; open `mutation-report.html`
+from that artifact for per-mutant details. The workflow is not a required pull
+request check and has no scheduled trigger.
 
 Our timeout settings are:
 
@@ -63,49 +67,51 @@ that status as a surviving defect.
 The full project can produce thousands of candidate mutations. For shorter,
 focused runs, create a local Stryker config with a `mutate` filter for one
 responsibility area. The whole-application partition below is a local workflow;
-its per-scope configs are not checked into the repository. The existing
-checked-in focused configs under [`.stryker/batches`](../../.stryker/batches/)
-remain useful for their specific targets, but do not partition the whole
-application. For a full local partition, keep the temporary scopes
-non-overlapping so running all batches covers the same production source as
-the central config.
+its per-scope configs are not checked into the repository. Run a focused config
+from the unit-test project directory so Stryker uses test-project context
+instead of the root solution context. For a full local partition, keep the
+temporary scopes non-overlapping so running all batches covers the same
+production source as the central config.
 
-Use these responsibility areas to divide the generator's production C# files:
+Use these responsibility areas to divide production C# files. Compiler
+responsibilities belong to `Wireloom.Dds.Compiler`; adapter responsibilities
+belong to `Wireloom.Dds.Generator`.
 
-| Local batch scope          | Production source patterns                                                                                                   |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| API and Roslyn integration | `**/Api/**/*.cs`, `**/Roslyn/**/*.cs`                                                                                        |
-| Compiler core and naming   | `**/Compiler/Compilation*.cs`, `**/Compiler/GeneratedName.cs`, `**/Compiler/IdlCompilation.cs`, `**/Compiler/Naming/**/*.cs` |
-| Preprocessing              | `**/Compiler/FrontEnd/Preprocessing/**/*.cs`                                                                                 |
-| IDL parsing                | `**/Compiler/FrontEnd/IdlBuiltinTypeSyntax.cs`, `**/Compiler/FrontEnd/Parsing/**/*.cs`                                       |
-| Semantic analysis          | `**/Compiler/FrontEnd/Semantic/**/*.cs`, `**/Compiler/FrontEnd/Symbols/**/*.cs`                                              |
-| Emission planning          | `**/Compiler/Emission/Model/**/*.cs`, `**/Compiler/Emission/Planning/**/*.cs`                                                |
-| Emission generation        | `**/Compiler/Emission/Emitters/**/*.cs`, `**/Compiler/Emission/Writers/**/*.cs`, `**/Compiler/Emission/*****.cs`             |
+| Local batch scope          | Owning project                   | Production source patterns                                                                                                   |
+| -------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| API and Roslyn integration | `Wireloom.Dds.Generator`         | `**/Api/**/*.cs`, `**/Roslyn/**/*.cs`                                                                                        |
+| Compiler core and naming   | `Wireloom.Dds.Compiler`          | `**/Compiler/Compilation*.cs`, `**/Compiler/GeneratedName.cs`, `**/Compiler/IdlCompilation.cs`, `**/Compiler/Naming/**/*.cs` |
+| Preprocessing              | `Wireloom.Dds.Compiler`          | `**/Compiler/FrontEnd/Preprocessing/**/*.cs`                                                                                 |
+| IDL parsing                | `Wireloom.Dds.Compiler`          | `**/Compiler/FrontEnd/IdlBuiltinTypeSyntax.cs`, `**/Compiler/FrontEnd/Parsing/**/*.cs`                                       |
+| Semantic analysis          | `Wireloom.Dds.Compiler`          | `**/Compiler/FrontEnd/Semantic/**/*.cs`, `**/Compiler/FrontEnd/Symbols/**/*.cs`                                              |
+| Emission planning          | `Wireloom.Dds.Compiler`          | `**/Compiler/Emission/Model/**/*.cs`, `**/Compiler/Emission/Planning/**/*.cs`                                                |
+| Emission generation        | `Wireloom.Dds.Compiler`          | `**/Compiler/Emission/Emitters/**/*.cs`, `**/Compiler/Emission/Writers/**/*.cs`, `**/Compiler/Emission/*****.cs`             |
 
-Together, these scopes cover all production C# files in the generator project.
+Together, these scopes cover the maintained C# source in both production
+projects.
 When files are added or moved, update this map so every production file still
-belongs to exactly one scope. Keep a local config's project, test project,
-runner, mutation level, reporters, thresholds, and timeout values aligned with
-the central [`stryker-config.json`](../../stryker-config.json); add only the
-`mutate` patterns for the selected scope. Stryker treats the selected config as
-the run configuration rather than inheriting the central config.
+belongs to exactly one scope. Set each local config's `project` to the owning
+project filename (for example, `Wireloom.Dds.Compiler.csproj`), and keep its
+runner, mutation level, reporters, thresholds, and timeout values aligned with the central
+[`stryker-config.json`](../../stryker-config.json). Add only the `mutate`
+patterns for the selected scope. Stryker treats the selected config as the run
+configuration rather than inheriting the central config.
 
-After restoring the pinned tool and test project, save the temporary config
-outside the repository and pass its path to Stryker:
+After restoring the pinned tool and test project, change to
+`tests/Wireloom.Dds.Compiler.Tests`, save the temporary config outside the
+repository, and pass its path to Stryker:
 
 ```shell
 dotnet stryker --config-file C:/temp/wireloom-preprocessing.stryker.json
 ```
 
-For example, a temporary preprocessing config contains the shared project,
-runner, timeout, and reporting settings, with only that subsystem in its
-`mutate` filter:
+For example, a temporary preprocessing config uses the test-project context,
+the compiler project filename, and only that subsystem in its `mutate` filter:
 
 ```json
 {
   "stryker-config": {
-    "project": "src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj",
-    "test-projects": ["tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj"],
+    "project": "Wireloom.Dds.Compiler.csproj",
     "test-runner": "mtp",
     "additional-timeout": 4000,
     "timeout-ratio": 1.1,

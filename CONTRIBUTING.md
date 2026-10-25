@@ -26,7 +26,9 @@ architecture baseline.
 Restore and build the generator:
 
 ```shell
+dotnet restore src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj --locked-mode
 dotnet restore src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --locked-mode
+dotnet build src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj --no-restore --configuration Release
 dotnet build src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --no-restore --configuration Release
 ```
 
@@ -34,7 +36,10 @@ Run the fast unit tests and manifest-driven corpus compliance suite:
 
 ```shell
 dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
-dotnet test tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --no-restore --configuration Release
+dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --no-restore --configuration Release
+
+dotnet restore tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj --locked-mode
+dotnet run --project tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj --no-restore --configuration Release
 
 dotnet restore tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --locked-mode
 dotnet run --project tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --no-restore --configuration Release
@@ -48,7 +53,7 @@ The repository uses Microsoft.Testing.Platform; pass test runner options after
 For example, run the focused preprocessor review gate with:
 
 ```shell
-dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
+dotnet run --project tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj `
   --no-build --configuration Release -- `
   --filter-namespace Wireloom.Compiler.FrontEnd.Preprocessing.Tests
 ```
@@ -68,7 +73,8 @@ Keep the test layers focused:
 - [Runtime contract tests](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
   compile focused IDL fixtures during the build and execute generated APIs
   directly against RTI 7.7.0 on Windows and Linux. Their behavior matrix tracks
-  runtime contracts; Coveralls measures maintained generator source only.
+  runtime contracts; Coveralls measures maintained compiler and generator
+  source while excluding generated fixtures and test-project code.
   Keep known failures visible and distinguish API behavior from serialization
   and DDS wire evidence.
 
@@ -108,17 +114,45 @@ under `.qodana`; do not let them overwrite the Windows `obj` or `bin` folders.
 $nugetCache = Join-Path $env:USERPROFILE '.nuget\packages'
 $qodanaObj = Join-Path $PWD '.qodana\obj'
 $qodanaBin = Join-Path $PWD '.qodana\bin'
-New-Item -ItemType Directory -Force -Path $qodanaObj, $qodanaBin | Out-Null
+$qodanaCompilerObj = Join-Path $PWD '.qodana\compiler-obj'
+$qodanaCompilerBin = Join-Path $PWD '.qodana\compiler-bin'
+$qodanaCompilerTestsObj = Join-Path $PWD '.qodana\compiler-tests-obj'
+$qodanaCompilerTestsBin = Join-Path $PWD '.qodana\compiler-tests-bin'
+$qodanaGeneratorTestsObj = Join-Path $PWD '.qodana\generator-tests-obj'
+$qodanaGeneratorTestsBin = Join-Path $PWD '.qodana\generator-tests-bin'
+$qodanaRuntimeTestsObj = Join-Path $PWD '.qodana\runtime-tests-obj'
+$qodanaRuntimeTestsBin = Join-Path $PWD '.qodana\runtime-tests-bin'
+$qodanaTestSupportObj = Join-Path $PWD '.qodana\test-support-obj'
+$qodanaTestSupportBin = Join-Path $PWD '.qodana\test-support-bin'
+New-Item -ItemType Directory -Force -Path `
+  $qodanaObj, $qodanaBin, $qodanaCompilerObj, $qodanaCompilerBin, `
+  $qodanaCompilerTestsObj, $qodanaCompilerTestsBin, `
+  $qodanaGeneratorTestsObj, $qodanaGeneratorTestsBin, `
+  $qodanaRuntimeTestsObj, $qodanaRuntimeTestsBin, `
+  $qodanaTestSupportObj, $qodanaTestSupportBin | Out-Null
 
 docker run --rm `
   --volume "${PWD}:/data/project" `
   --volume "${PWD}\.qodana\cache:/data/cache" `
   --volume "${qodanaObj}:/data/project/src/Wireloom.Dds.Generator/obj" `
   --volume "${qodanaBin}:/data/project/src/Wireloom.Dds.Generator/bin" `
+  --volume "${qodanaCompilerObj}:/data/project/src/Wireloom.Dds.Compiler/obj" `
+  --volume "${qodanaCompilerBin}:/data/project/src/Wireloom.Dds.Compiler/bin" `
+  --volume "${qodanaCompilerTestsObj}:/data/project/tests/Wireloom.Dds.Compiler.Tests/obj" `
+  --volume "${qodanaCompilerTestsBin}:/data/project/tests/Wireloom.Dds.Compiler.Tests/bin" `
+  --volume "${qodanaGeneratorTestsObj}:/data/project/tests/Wireloom.Dds.Generator.Tests/obj" `
+  --volume "${qodanaGeneratorTestsBin}:/data/project/tests/Wireloom.Dds.Generator.Tests/bin" `
+  --volume "${qodanaRuntimeTestsObj}:/data/project/tests/Wireloom.Dds.Generator.RuntimeContracts/obj" `
+  --volume "${qodanaRuntimeTestsBin}:/data/project/tests/Wireloom.Dds.Generator.RuntimeContracts/bin" `
+  --volume "${qodanaTestSupportObj}:/data/project/tests/Wireloom.Dds.Generator.TestSupport/obj" `
+  --volume "${qodanaTestSupportBin}:/data/project/tests/Wireloom.Dds.Generator.TestSupport/bin" `
   --volume "${nugetCache}:/root/.nuget/packages:ro" `
   -e NUGET_PACKAGES=/root/.nuget/packages `
   -e DOTNET_NOLOGO=1 `
   jetbrains/qodana-cdnet:2026.2-privileged `
+  --solution /data/project/Wireloom.slnx `
+  --configuration Release `
+  --fail-threshold 0 `
   --results-dir /data/project/.qodana/results
 ```
 
@@ -157,32 +191,44 @@ completed report can still contain findings, and CI uses a zero-finding
 threshold. A report left by an earlier run is not evidence for the current
 source.
 
-The local and CI configurations target only
-`src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj`. The wire
-compatibility projects are not loaded by this Qodana scan, so excluding them
-does not address Docker watcher warnings or a local container stall.
+The local and CI configurations scan the committed `Wireloom.slnx`, which
+contains the compiler, generator, compiler and generator unit-test projects,
+runtime contract tests, and shared test support. Loading both production
+projects through the solution lets InspectCode resolve their project
+reference. The wire compatibility projects are not included in this solution.
 
-Generate local Cobertura coverage after restoring the unit-test project. The
-command matches the CI coverage invocation and writes
-`coverage/coverage.cobertura.xml`:
+Generate local Cobertura coverage after restoring both unit-test projects. The
+commands match the CI coverage invocation and write separate compiler and
+generator reports:
 
 ```shell
 dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
-dotnet test tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
+dotnet restore tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj --locked-mode
+dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
   --no-restore `
   --configuration Release `
+  -- `
   --results-directory coverage `
   --coverage `
   --coverage-settings coverage.settings.xml `
-  --coverage-output coverage.cobertura.xml `
+  --coverage-output generator.cobertura.xml `
+  --coverage-output-format cobertura
+dotnet run --project tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj `
+  --no-restore `
+  --configuration Release `
+  -- `
+  --results-directory coverage `
+  --coverage `
+  --coverage-settings coverage.settings.xml `
+  --coverage-output compiler.cobertura.xml `
   --coverage-output-format cobertura
 ```
 
-The Cobertura report must contain both branch and line rates and a positive
+Each Cobertura report must contain both branch and line rates and a positive
 `branches-valid` count. Check its counters with:
 
 ```powershell
-[xml]$coverageReport = Get-Content -LiteralPath 'coverage\coverage.cobertura.xml'
+[xml]$coverageReport = Get-Content -LiteralPath 'coverage\compiler.cobertura.xml'
 $coverageReport.coverage | Select-Object branch-rate, line-rate, branches-covered, branches-valid, lines-covered, lines-valid
 ```
 

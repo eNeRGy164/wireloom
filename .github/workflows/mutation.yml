@@ -14,6 +14,7 @@ concurrency:
 env:
   DOTNET_NOLOGO: true
   TEST_PROJECT: tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj
+  COMPILER_TEST_PROJECT: tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj
 
 jobs:
   mutation:
@@ -37,7 +38,9 @@ jobs:
             **/packages*.lock.json
 
       - name: Restore locked dependencies
-        run: dotnet restore $env:TEST_PROJECT --locked-mode
+        run: |
+          dotnet restore $env:TEST_PROJECT --locked-mode
+          dotnet restore $env:COMPILER_TEST_PROJECT --locked-mode
         shell: pwsh
 
       - name: Restore pinned Stryker tool
