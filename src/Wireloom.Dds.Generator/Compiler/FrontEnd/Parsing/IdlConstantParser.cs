@@ -28,10 +28,14 @@ internal sealed class IdlConstantParser
 
         var type = NormalizeIdlType(constant.Groups["type"].Value);
         var typeWasEscaped = context.IsEscapedIdentifier(baseOffset + position + constant.Groups["type"].Index);
-        var expression = constant.Groups["expression"].Value.Trim();
+        var expressionGroup = constant.Groups["expression"];
+        var expression = expressionGroup.Value.Trim();
+        var expressionOffset = baseOffset + position + expressionGroup.Index
+            + (expressionGroup.Value.Length - expressionGroup.Value.TrimStart().Length);
+        var expressionWasEscaped = context.IsEscapedIdentifier(expressionOffset);
         var declarationOffset = context.MapOffset(baseOffset + position);
         context.DeferGeneratedDeclarationNameValidation(input, declarationOffset, name, ["Value"]);
-        var declaration = new IdlConstantDeclaration(name, type, expression, currentNamespace, Path.GetFileName(input.Path), value: null, input, declarationOffset, typeWasEscaped);
+        var declaration = new IdlConstantDeclaration(name, type, expression, currentNamespace, Path.GetFileName(input.Path), value: null, input, declarationOffset, typeWasEscaped, expressionWasEscaped);
 
         context.Symbols.AddConstant(qualified, declaration);
         context.Declarations.Add(declaration);

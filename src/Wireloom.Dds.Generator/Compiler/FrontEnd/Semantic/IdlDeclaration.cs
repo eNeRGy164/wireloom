@@ -35,7 +35,7 @@ internal sealed class IdlModuleDeclaration(string name, string? @namespace) : Id
 }
 
 /// <summary>Represents an IDL constant declaration and its evaluated value.</summary>
-internal sealed class IdlConstantDeclaration(string name, string type, string expression, string? @namespace, string sourceIdlFileName, IdlScalarValue? value, IdlInput sourceInput, int sourceOffset, bool typeWasEscaped = false) : IdlDeclaration
+internal sealed class IdlConstantDeclaration(string name, string type, string expression, string? @namespace, string sourceIdlFileName, IdlScalarValue? value, IdlInput sourceInput, int sourceOffset, bool typeWasEscaped = false, bool expressionWasEscaped = false) : IdlDeclaration
 {
     public string Name { get; } = name;
     public string Type { get; } = type;
@@ -49,6 +49,7 @@ internal sealed class IdlConstantDeclaration(string name, string type, string ex
     internal IdlInput SourceInput { get; } = sourceInput;
     internal int SourceOffset { get; } = sourceOffset;
     internal bool TypeWasEscaped { get; } = typeWasEscaped;
+    internal bool ExpressionWasEscaped { get; } = expressionWasEscaped;
 
     /// <summary>Applies the typed value established by semantic binding.</summary>
     internal void SetValue(IdlScalarValue? boundValue) => Value = boundValue;

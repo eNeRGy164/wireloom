@@ -182,7 +182,10 @@ internal sealed class IdlTypeParser
                 throw new IdlException(input, captured.Offset, exception.Message);
             }
 
-            var value = arguments.Count == 0 ? null : arguments[0].Expression;
+            var valueArgument = arguments.Count == 0 ? null : arguments[0];
+            var value = valueArgument?.Expression;
+            var valueWasEscaped = valueArgument is not null
+                && context.IsEscapedIdentifier(sourceOffset + offset + valueArgument.RelativeOffset);
             switch (capturedName.ToLowerInvariant())
             {
                 case "range":
@@ -193,14 +196,16 @@ internal sealed class IdlTypeParser
                 case "key":
                     if (annotations.HasKey) throw new IdlException(input, captured.Offset, "Duplicate @key annotation.");
                     annotations.HasKey = true;
-                    annotations.IsKey = ParseBooleanAnnotationArgument(value, true, out var keyExpression);
+                    annotations.IsKey = ParseBooleanAnnotationArgument(value, true, out var keyExpression, valueWasEscaped);
                     annotations.KeyExpression = keyExpression;
+                    annotations.KeyExpressionWasEscaped = valueWasEscaped;
                     break;
                 case "optional":
                     if (annotations.HasOptional) throw new IdlException(input, captured.Offset, "Duplicate @optional annotation.");
                     annotations.HasOptional = true;
-                    annotations.IsOptional = ParseBooleanAnnotationArgument(value, true, out var optionalExpression);
+                    annotations.IsOptional = ParseBooleanAnnotationArgument(value, true, out var optionalExpression, valueWasEscaped);
                     annotations.OptionalExpression = optionalExpression;
+                    annotations.OptionalExpressionWasEscaped = valueWasEscaped;
                     break;
                 case "id":
                     annotations.MemberIdExpression = value;
@@ -219,6 +224,7 @@ internal sealed class IdlTypeParser
                 case "default":
                     if (annotations.DefaultExpression is not null) throw new IdlException(input, captured.Offset, "Duplicate @default annotation.");
                     annotations.DefaultExpression = value;
+                    annotations.DefaultExpressionWasEscaped = valueWasEscaped;
                     break;
                 case "unit":
                     if (annotations.UnitExpression is not null) throw new IdlException(input, captured.Offset, "Duplicate @unit annotation.");
@@ -231,14 +237,16 @@ internal sealed class IdlTypeParser
                 case "external":
                     if (annotations.HasExternal) throw new IdlException(input, captured.Offset, "Duplicate @external annotation.");
                     annotations.HasExternal = true;
-                    annotations.IsExternal = ParseBooleanAnnotationArgument(value, true, out var externalExpression);
+                    annotations.IsExternal = ParseBooleanAnnotationArgument(value, true, out var externalExpression, valueWasEscaped);
                     annotations.ExternalExpression = externalExpression;
+                    annotations.ExternalExpressionWasEscaped = valueWasEscaped;
                     break;
                 case "must_understand":
                     if (annotations.HasMustUnderstand) throw new IdlException(input, captured.Offset, "Duplicate @must_understand annotation.");
                     annotations.HasMustUnderstand = true;
-                    annotations.IsMustUnderstand = ParseBooleanAnnotationArgument(value, true, out var mustUnderstandExpression);
+                    annotations.IsMustUnderstand = ParseBooleanAnnotationArgument(value, true, out var mustUnderstandExpression, valueWasEscaped);
                     annotations.MustUnderstandExpression = mustUnderstandExpression;
+                    annotations.MustUnderstandExpressionWasEscaped = valueWasEscaped;
                     break;
                 default:
                     throw new IdlException(input, captured.Offset, $"Annotation '@{capturedName}' is not supported on members.");
@@ -260,7 +268,7 @@ internal sealed class IdlTypeParser
         return IdlStringLiteralDecoder.Decode(value, isWide, input, offset);
     }
 
-    private static bool ParseBooleanAnnotationArgument(string? value, bool defaultValue, out string? unresolvedExpression)
+    private static bool ParseBooleanAnnotationArgument(string? value, bool defaultValue, out string? unresolvedExpression, bool expressionWasEscaped = false)
     {
         unresolvedExpression = null;
         if (value is null)
@@ -268,12 +276,12 @@ internal sealed class IdlTypeParser
             return defaultValue;
         }
 
-        if (string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
+        if (!expressionWasEscaped && string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
 
-        if (string.Equals(value, "false", StringComparison.OrdinalIgnoreCase))
+        if (!expressionWasEscaped && string.Equals(value, "false", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
