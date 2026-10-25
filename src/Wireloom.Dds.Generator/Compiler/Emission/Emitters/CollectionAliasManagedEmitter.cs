@@ -254,7 +254,21 @@ internal static class CollectionAliasManagedEmitter
                 writer.WriteLine($"[Bound({plan.StringBound})]");
             }
 
-            writer.WriteLine($"public {elementReference} Value {{ get; set; }}{(plan.IsString ? " = string.Empty;" : requiresNullForgivingValueInitializer ? " = null!;" : string.Empty)}");
+            string valueInitializer;
+            if (plan is { IsString: true, ManagedDefaultLiteral: null })
+            {
+                valueInitializer = " = string.Empty;";
+            }
+            else if (requiresNullForgivingValueInitializer)
+            {
+                valueInitializer = " = null!;";
+            }
+            else
+            {
+                valueInitializer = string.Empty;
+            }
+
+            writer.WriteLine($"public {elementReference} Value {{ get; set; }}{valueInitializer}");
             writer.BlankLine();
 
             writer.WriteXmlSummary("Initializes the typedef value to its default value.");
@@ -284,7 +298,10 @@ internal static class CollectionAliasManagedEmitter
 
             writer.WriteXmlSummary("Initializes a copy of another typedef value.");
             writer.WriteXmlParam("other", "The typedef to copy.");
-            writer.WriteXmlRemarks("When <paramref name=\"other\"/> is null, the constructor keeps the declared default and property initializer. An aggregate value is copied through its generated copy constructor.");
+            var nullCopyRemarks = plan is { IsString: true, ManagedDefaultLiteral: not null }
+                ? "When <paramref name=\"other\"/> is null, the constructor keeps the declared default. An aggregate value is copied through its generated copy constructor."
+                : "When <paramref name=\"other\"/> is null, the constructor keeps the declared default and property initializer. An aggregate value is copied through its generated copy constructor.";
+            writer.WriteXmlRemarks(nullCopyRemarks);
             writer.OpenBlock($"public {typeName}({typeName}? other){(plan.ManagedDefaultLiteral is not null ? " : this()" : string.Empty)}");
             writer.OpenBlock("if (other is not null)");
             if (plan.IsAggregate)

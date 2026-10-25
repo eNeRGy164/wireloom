@@ -67,7 +67,7 @@ internal static class EmissionSupport
     }
 
     /// <summary>Gets namespaces required by native storage types and their runtime interfaces.</summary>
-    internal static IReadOnlyList<string> GetUnmanagedTypeUsings(IEnumerable<MemberEmissionPlan> fields, bool usesSequence = false, bool usesNativeChar = false)
+    internal static IReadOnlyList<string> GetUnmanagedTypeUsings(IEnumerable<MemberEmissionPlan> fields, bool usesSequence = false)
     {
         var plans = fields.ToArray();
         var types = plans.Select(field => field.Type).ToArray();
@@ -86,15 +86,14 @@ internal static class EmissionSupport
             usesSequenceType,
             includeNativeTopicTypePlugin: true,
             requireNativeRtiTypes: true,
-            usesNativeChar,
-            usesDynamicSequenceType);
+            usesDynamicSequenceType: usesDynamicSequenceType);
     }
 
     /// <summary>Gets namespaces required by native storage for an alias or collection type.</summary>
-    internal static IReadOnlyList<string> GetUnmanagedTypeUsings(IEnumerable<EmissionTypePlan> types, bool usesSequence = false, bool usesNativeChar = false)
+    internal static IReadOnlyList<string> GetUnmanagedTypeUsings(IEnumerable<EmissionTypePlan> types, bool usesSequence = false)
     {
         var typePlans = types.ToArray();
-        return GetTypeUsings(typePlans, usesOmgTypes: false, usesSequence, includeNativeTopicTypePlugin: true, requireNativeRtiTypes: true, usesNativeChar);
+        return GetTypeUsings(typePlans, usesOmgTypes: false, usesSequence, includeNativeTopicTypePlugin: true, requireNativeRtiTypes: true);
     }
 
     /// <summary>Gets namespaces required by one plugin document's dynamic types and metadata.</summary>
@@ -146,7 +145,6 @@ internal static class EmissionSupport
         bool usesSequence,
         bool includeNativeTopicTypePlugin,
         bool requireNativeRtiTypes,
-        bool usesNativeChar = false,
         bool usesDynamicSequenceType = false)
     {
         var typePlans = types.ToArray();
@@ -157,7 +155,7 @@ internal static class EmissionSupport
             usings.Add("Omg.Types");
         }
 
-        if (usesNativeChar || typePlans.Any(requireNativeRtiTypes ? RequiresRtiTypes : RequiresManagedRtiTypes) || usesSequence)
+        if (typePlans.Any(requireNativeRtiTypes ? RequiresRtiTypes : RequiresManagedRtiTypes) || usesSequence)
         {
             usings.Add("Rti.Types");
         }

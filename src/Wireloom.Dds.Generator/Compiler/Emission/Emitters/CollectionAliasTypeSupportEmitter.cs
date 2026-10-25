@@ -40,9 +40,7 @@ internal static class CollectionAliasTypeSupportEmitter
             writer.BlankLine();
             writer.WriteXmlSummary("Gets or creates the recursive sequence type-support instance without forcing its public dynamic type.");
             writer.OpenBlock($"internal static {typeName}Support GetOrCreateInstanceImpl()");
-            writer.OpenBlock("if (Instance is null)");
-            writer.WriteLine($"Instance = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{typeName}Support, {typeName}>();");
-            writer.CloseBlock();
+            writer.WriteLine($"Instance ??= ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{typeName}Support, {typeName}>();");
             writer.BlankLine();
             writer.WriteLine("return Instance;");
             writer.CloseBlock();

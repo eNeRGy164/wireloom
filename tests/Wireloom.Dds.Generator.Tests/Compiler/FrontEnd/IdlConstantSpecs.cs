@@ -145,13 +145,13 @@ public sealed class IdlConstantSpecs
         // Assert
         var samplePlugin = documents["Constants.Implementation.SamplePlugin.g.cs"].Source;
         samplePlugin.ShouldContain("CreateString(6)");
-        samplePlugin.ShouldContain("new uint[] { 6 }");
+        samplePlugin.ShouldContain("[6]");
 
         var valuesPlugin = documents["Constants.Implementation.ValuesPlugin.g.cs"].Source;
         valuesPlugin.ShouldContain("CreateSequenceWithAccessInfo(dtf");
 
         var samplesPlugin = documents["Constants.Implementation.SamplesPlugin.g.cs"].Source;
-        samplesPlugin.ShouldContain("new uint[] { 5 }");
+        samplesPlugin.ShouldContain("[5]");
     }
 
     [Fact]

@@ -1,5 +1,4 @@
 using Wireloom.Compiler.Emission.Model;
-using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Naming;
 
 using static Wireloom.Compiler.Naming.IdlNaming;
@@ -156,9 +155,7 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
         {
             if (HasExplicitDefault)
             {
-                return facts is { CSharpType: "string", ValueMetadata.DefaultValue: IdlScalarValue.Text }
-                    ? $" = {ManagedDefaultValue};"
-                    : null;
+                return null;
             }
 
             if (facts.CSharpType == "string")
@@ -186,7 +183,7 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
 
             if (facts is { IsAggregate: true, IsOptional: false })
             {
-                return $" = new {TypeReference(facts.CSharpType, currentNamespace)}();";
+                return " = new();";
             }
 
             return null;

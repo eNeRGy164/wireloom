@@ -24,8 +24,7 @@ internal static class UnionTypeSupportEmitter
             names.ImplementationNamespace,
             EmissionSupport.GetUnmanagedTypeUsings(
                 declaration.Branches.Select(branch => branch.Plan),
-                usesSequence: declaration.Branches.Any(branch => branch.Plan.IsSequence),
-                usesNativeChar: declaration.UsesNativeCharDiscriminator),
+                usesSequence: declaration.Branches.Any(branch => branch.Plan.IsSequence)),
             sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides the RTI native representation for <see cref=\"{typeName}\"/>.");
@@ -43,9 +42,6 @@ internal static class UnionTypeSupportEmitter
         writer.WriteXmlSummary("Releases native resources held by this union.");
         writer.WriteXmlParam("optionalsOnly", "Indicates whether only optional members should be released.");
         writer.OpenBlock("public void Destroy(bool optionalsOnly)");
-        writer.OpenBlock("if (optionalsOnly)");
-        writer.WriteLine("return;");
-        writer.CloseBlock();
 
         var destroyableBranches = declaration.Branches
             .Select(branch => (Branch: branch, Statement: branch.Plan.BuildDestroyStatement(names.ImplementationNamespace, NativeFieldPrefix(branch.Plan, "optionalsOnly"))))
@@ -53,6 +49,9 @@ internal static class UnionTypeSupportEmitter
             .ToArray();
         if (destroyableBranches.Length > 0)
         {
+            writer.OpenBlock("if (optionalsOnly)");
+            writer.WriteLine("return;");
+            writer.CloseBlock();
             writer.BlankLine();
 
             foreach (var (_, Statement) in destroyableBranches)
@@ -104,8 +103,8 @@ internal static class UnionTypeSupportEmitter
             var branch = declaration.Branches[index];
             var dynamicType = branch.Plan.BuildDynamicTypeExpression(names.ImplementationNamespace);
             var labels = branch.IsDefault
-                ? "new[] { UnionMember.DefaultLabel }"
-                : $"new[] {{ {string.Join(", ", branch.LabelValues.Select(l => FormatRtiLabel(declaration, l)))} }}";
+                ? "[UnionMember.DefaultLabel]"
+                : $"[{string.Join(", ", branch.LabelValues.Select(l => FormatRtiLabel(declaration, l)))}]";
 
             writer.WriteLine($"new UnionMember(\"{branch.Field.Name}\", {dynamicType}, {labels}, id: {branch.Plan.MemberId ?? index + 1}){(index == declaration.Branches.Count - 1 ? string.Empty : ",")}");
         }

@@ -93,9 +93,7 @@ internal static class TypeSupportEmitter
 
             writer.WriteXmlSummary("Gets or creates the recursive type-support instance without forcing its public dynamic type.");
             writer.OpenBlock($"internal static {names.SupportTypeName} GetOrCreateInstanceImpl()");
-            writer.OpenBlock("if (Instance is null)");
-            writer.WriteLine($"Instance = ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{names.SupportTypeName}, {supportTypeName}>();");
-            writer.CloseBlock();
+            writer.WriteLine($"Instance ??= ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{names.SupportTypeName}, {supportTypeName}>();");
             writer.BlankLine();
             writer.WriteLine("return Instance;");
             writer.CloseBlock();

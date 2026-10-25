@@ -38,13 +38,13 @@ public sealed class GeneratedNestedAliasSpecs
 
         // Assert
         var sample = documents["AliasMembers.Sample.g.cs"].Source;
-        sample.ShouldContain("public Numbers direct { get; set; } = new Numbers();");
-        sample.ShouldContain("public Numbers chained { get; set; } = new Numbers();");
-        sample.ShouldContain("public Vector arrayAlias { get; set; } = new Vector();");
+        sample.ShouldContain("public Numbers direct { get; set; } = new();");
+        sample.ShouldContain("public Numbers chained { get; set; } = new();");
+        sample.ShouldContain("public Vector arrayAlias { get; set; } = new();");
         sample.ShouldContain("public Numbers? optionalChain { get; set; }");
         sample.ShouldContain("chained = new Numbers(other.chained);");
-        sample.ShouldContain("public Nested nested { get; set; } = new Nested();");
-        sample.ShouldContain("public Rows rows { get; set; } = new Rows();");
+        sample.ShouldContain("public Nested nested { get; set; } = new();");
+        sample.ShouldContain("public Rows rows { get; set; } = new();");
         documents["AliasMembers.Nested.g.cs"].Source.ShouldContain("public ISequence<Numbers> Value { get; }");
         documents["AliasMembers.Rows.g.cs"].Source.ShouldContain("public Numbers[] Value { get; set; }");
         documents["AliasMembers.Choice.g.cs"].Source.ShouldContain("public Numbers numbers");
@@ -74,7 +74,7 @@ public sealed class GeneratedNestedAliasSpecs
         alias.ShouldContain("Value = new Point(other.Value);");
 
         var sample = documents["AggregateAliasCopy.Sample.g.cs"].Source;
-        sample.ShouldContain("public Point point { get; set; } = new Point();");
+        sample.ShouldContain("public Point point { get; set; } = new();");
         sample.ShouldContain("point = new Point(other.point);");
     }
 
@@ -186,7 +186,7 @@ public sealed class GeneratedNestedAliasSpecs
 
         var derived = documents["Envelope.Metadata.Derived.g.cs"].Source;
         derived.ShouldContain("public partial class Derived : Base, global::System.IEquatable<Derived>");
-        derived.ShouldContain("public Context traceContext { get; set; } = new Context();");
+        derived.ShouldContain("public Context traceContext { get; set; } = new();");
         derived.ShouldNotContain("public Derived()\n    {\n        traceContext = new Context();\n    }");
         derived.ShouldContain("public Derived(string state, Context traceContext) : base(state)");
 

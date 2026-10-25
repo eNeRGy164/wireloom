@@ -30,14 +30,16 @@ public sealed class GeneratedOptionalCollectionSpecs
         plugin.ShouldNotContain("NodeSupport.Instance.GetDynamicTypeInternal(isPublic)");
         plugin.ShouldContain("\n\n        isInitialized = false;");
         plugin.ShouldContain("\n                .WithExtensibility(ExtensibilityKind.Extensible)");
-        plugin.ShouldContain($"new uint[] {{ {dimensions} }}");
+        plugin.ShouldContain($"[{dimensions}]");
         plugin.ShouldNotContain("CreateSequenceWithAccessInfo");
         var managed = documents["RecursiveArrays.Node.g.cs"].Source;
         managed.ShouldContain("if (children is not null)");
         managed.ShouldContain("hash.Add(children[");
         managed.ShouldContain("hash.Add(-1);");
         managed.ShouldNotContain("children is null ? -1");
-        documents["RecursiveArrays.NodeSupport.g.cs"].Source.ShouldContain("internal static NodeSupport GetOrCreateInstanceImpl()");
+        var support = documents["RecursiveArrays.NodeSupport.g.cs"].Source;
+        support.ShouldContain("internal static NodeSupport GetOrCreateInstanceImpl()");
+        support.ShouldContain("Instance ??= ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<NodeSupport, Node>();");
     }
 
     [Fact]
@@ -57,7 +59,7 @@ public sealed class GeneratedOptionalCollectionSpecs
 
         // Assert
         var native = documents["OptionalKeyedArrays.Implementation.ParentUnmanaged.g.cs"].Source;
-        native.ShouldContain("out Child[] childrenTemporary_, keysOnly, dimensions: new[] { 2 }");
+        native.ShouldContain("out Child[] childrenTemporary_, keysOnly, dimensions: [2]");
         native.ShouldContain("sample.children, keysOnly, dimension: 2");
         native.ShouldContain("dimension: 2, optionalsOnly);");
     }
@@ -116,7 +118,7 @@ public sealed class GeneratedOptionalCollectionSpecs
         unmanaged.ShouldContain("values.Initialize();");
         unmanaged.ShouldContain("values.FromNative(out Sequence<int> valuesTemporary_);");
         unmanaged.ShouldContain("values.ToNative((Sequence<int>)sample.values!, 4);");
-        unmanaged.ShouldContain("matrix.FromNative(out int[,] matrixTemporary_, dimensions: new[] { 2, 3 });");
+        unmanaged.ShouldContain("matrix.FromNative(out int[,] matrixTemporary_, dimensions: [2, 3]);");
         unmanaged.ShouldContain("matrix.ToNative(sample.matrix, 2 * 3);");
         unmanaged.ShouldContain("text.ToNativeOptional(sample.text, 8);");
         unmanaged.ShouldContain("values.Destroy(optionalsOnly);\n        matrix.Destroy(optionalsOnly);\n        text.Destroy();");
@@ -124,7 +126,7 @@ public sealed class GeneratedOptionalCollectionSpecs
 
         var plugin = documents["OracleOptionalCollections.Implementation.MessagePlugin.g.cs"].Source;
         plugin.ShouldContain("new StructMember(\"values\", tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), 4), isOptional: true, id: 1)");
-        plugin.ShouldContain("new StructMember(\"matrix\", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), new uint[] { 2, 3 }), isOptional: true, id: 2)");
+        plugin.ShouldContain("new StructMember(\"matrix\", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), [2, 3]), isOptional: true, id: 2)");
         plugin.ShouldContain("new StructMember(\"text\", dtf.CreateString(8), isOptional: true, id: 3)");
     }
 
@@ -148,7 +150,7 @@ public sealed class GeneratedOptionalCollectionSpecs
         // Assert
         var source = documents["OracleOptionalCollections.Message.g.cs"].Source;
         source.ShouldContain("values is null ? null! : new Sequence<int>(other.values)");
-        source.ShouldContain("matrix is null ? null! : (int[,])other.matrix.Clone()");
+        source.ShouldContain("matrix = ((int[,]?)other.matrix?.Clone())!;");
         source.ShouldContain("values?.Count ?? -1");
         source.ShouldContain("matrix is null ? -1 : matrix[0, 0]");
         source.ShouldContain("global::System.Object.ReferenceEquals(values, other.values)");

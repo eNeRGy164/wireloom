@@ -236,7 +236,7 @@ public sealed class UnionSpecs
         native.ShouldContain("numbers.Destroy");
         native.ShouldContain("FromNative");
         native.ShouldContain("ToNative");
-        documents["Implementation.SamplePlugin.g.cs"].Source.ShouldContain("new[] { 0 }");
+        documents["Implementation.SamplePlugin.g.cs"].Source.ShouldContain("[0]");
     }
 
     [Fact]
@@ -293,7 +293,7 @@ public sealed class UnionSpecs
 
         var plugin = documents["Implementation.ChoicePlugin.g.cs"].Source;
         plugin.ShouldContain("CreateArrayWithAccessInfo<global::Implementation.Choice_valuesSequenceUnmanaged>");
-        plugin.ShouldContain("new uint[] { 2 }");
+        plugin.ShouldContain("[2]");
         documents.ContainsKey("Choice_valuesSequence.g.cs").ShouldBeTrue();
     }
 

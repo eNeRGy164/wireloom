@@ -1131,7 +1131,7 @@ public sealed class IdlValidationSpecs
         var output = Compile(input);
 
         // Assert
-        output.ShouldContain($"new[] {{ {expectedMetadataLabel} }}");
+        output.ShouldContain($"[{expectedMetadataLabel}]");
     }
 
     /// <summary>Rejects hexadecimal character escapes outside the discriminator's supported range.</summary>

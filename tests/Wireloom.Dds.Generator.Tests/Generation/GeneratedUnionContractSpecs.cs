@@ -33,8 +33,8 @@ public sealed class GeneratedUnionContractSpecs
         managed.ShouldContain("case 4294967295:");
 
         var plugin = documents["UnsignedLabels.Implementation.ChoicePlugin.g.cs"].Source;
-        plugin.ShouldContain("new[] { unchecked((int)2147483648) }");
-        plugin.ShouldContain("new[] { unchecked((int)4294967295) }");
+        plugin.ShouldContain("[unchecked((int)2147483648)]");
+        plugin.ShouldContain("[unchecked((int)4294967295)]");
 
         var unmanaged = documents["UnsignedLabels.Implementation.ChoiceUnmanaged.g.cs"].Source;
         unmanaged.ShouldContain("private uint _discriminator;");
@@ -82,7 +82,7 @@ public sealed class GeneratedUnionContractSpecs
         unmanaged.ShouldNotContain("sample.Setnumber(sample.number = number, _discriminator);");
 
         var choicePlugin = documents["MultiLabel.Implementation.ChoicePlugin.g.cs"].Source;
-        choicePlugin.ShouldContain("new[] { 1, 5 }");
+        choicePlugin.ShouldContain("[1, 5]");
 
         var choiceSupport = documents["MultiLabel.ChoiceSupport.g.cs"].Source;
         choiceSupport.ShouldContain("TypeSupport<Choice>");
@@ -231,7 +231,7 @@ public sealed class GeneratedUnionContractSpecs
         managed.ShouldContain("Discriminator != 'z'");
 
         var unmanaged = documents["CharUnion.Implementation.ChoiceUnmanaged.g.cs"].Source;
-        unmanaged.ShouldContain("using Rti.Types;");
+        unmanaged.ShouldNotContain("using Rti.Types;");
         unmanaged.ShouldContain("private byte _discriminator");
         unmanaged.ShouldContain("switch (NativeChar.FromUtf8(_discriminator))");
         unmanaged.ShouldContain("_discriminator = NativeChar.ToUtf8(sample.Discriminator);");
@@ -239,8 +239,8 @@ public sealed class GeneratedUnionContractSpecs
 
         var plugin = documents["CharUnion.Implementation.ChoicePlugin.g.cs"].Source;
         plugin.ShouldContain("WithDiscriminator(dtf.GetPrimitiveType<char>())");
-        plugin.ShouldContain("new[] { 97 }");
-        plugin.ShouldContain("new[] { 122 }");
+        plugin.ShouldContain("[97]");
+        plugin.ShouldContain("[122]");
     }
 
     [Fact]
@@ -379,8 +379,8 @@ public sealed class GeneratedUnionContractSpecs
 
         var plugin = documents["BooleanUnion.Implementation.ChoicePlugin.g.cs"].Source;
         plugin.ShouldContain("WithDiscriminator(dtf.GetPrimitiveType<bool>())");
-        plugin.ShouldContain("new[] { 1 }");
-        plugin.ShouldContain("new[] { 0 }");
+        plugin.ShouldContain("[1]");
+        plugin.ShouldContain("[0]");
     }
 
     [Fact]
@@ -462,5 +462,22 @@ public sealed class GeneratedUnionContractSpecs
         var holder = documents["DestroyOrder.Implementation.HolderUnmanaged.g.cs"].Source;
         holder.ShouldNotContain("if (optionalsOnly)");
         holder.ShouldContain("value.Destroy(optionalsOnly);");
+    }
+
+    [Fact]
+    public void DestroyOmitsOptionalGuardWhenUnionHasNoResources()
+    {
+        // Arrange
+        var input = Input("primitive-union-destroy.idl",
+            "union Choice switch(long) { case 1: long number; }; ");
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var unmanaged = documents["Implementation.ChoiceUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain("public void Destroy(bool optionalsOnly)");
+        unmanaged.ShouldNotContain("if (optionalsOnly)");
+        unmanaged.ShouldNotContain("return;");
     }
 }

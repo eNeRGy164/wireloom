@@ -74,7 +74,7 @@ internal sealed partial class MemberEmissionPlan
             }
 
             var supportType = $"{IdlNaming.GeneratedSupportTypeReference(recursiveTypeName!, implementationNamespace)}Support.GetOrCreateInstanceImpl()";
-            return $"tsf.CreateArrayWithAccessInfo<{ElementUnmanagedType(implementationNamespace)}>(dtf, {supportType}.GetDynamicTypeInternal(isPublic), new uint[] {{ {string.Join(", ", Dimensions)} }})";
+            return $"tsf.CreateArrayWithAccessInfo<{ElementUnmanagedType(implementationNamespace)}>(dtf, {supportType}.GetDynamicTypeInternal(isPublic), [{string.Join(", ", Dimensions)}])";
         }
 
         return BuildCollectionDynamicType(implementationNamespace);
@@ -109,7 +109,7 @@ internal sealed partial class MemberEmissionPlan
 
         var unmanagedElementType = HasAggregateElement ? ElementUnmanagedType(implementationNamespace) : ElementCSharpType;
 
-        return $"tsf.CreateArrayWithAccessInfo<{unmanagedElementType}>(dtf, {element}, new uint[] {{ {string.Join(", ", Dimensions)} }})";
+        return $"tsf.CreateArrayWithAccessInfo<{unmanagedElementType}>(dtf, {element}, [{string.Join(", ", Dimensions)}])";
     }
 
     private string BuildCollectionElementDynamicType(string implementationNamespace)
