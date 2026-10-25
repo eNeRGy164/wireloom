@@ -100,6 +100,36 @@ describes generator invocation, path setup, and external preprocessing. Existing
 projects may already automate these steps; Wireloom makes them part of the
 package's compiler integration.
 
+## Check project fit
+
+- **Build baseline:** Consumer projects need .NET 8 or later, C# 12 or later,
+  and an explicit `Rti.ConnextDds` reference at version 7.3.1 or later. See
+  [consumer requirements](#support-and-compatibility) and the
+  [generator diagnostics](src/Wireloom.Dds.Generator/README.md#diagnostics).
+- **Qualification:** Only exact RTI 7.3.1 and 7.7.0 releases have qualification
+  evidence for documented cases; mapping other versions does not qualify them.
+  See the [RTI version policy](docs/guides/support-and-compatibility.md#rti-version-qualification).
+- **IDL and options:** Coverage is evidence-backed, not universal. RTI's
+  dynamic `-unboundedSupport` behavior is unsupported; defaults are 100 sequence
+  elements, 255 UTF-8 bytes for narrow strings, and 255 UTF-16 code units for
+  wide strings. Direct arrays of sequences flatten by default. Check the
+  [feature coverage](docs/corpus/FEATURE-COVERAGE.md),
+  [`rtiddsgen` option map](docs/migration/rtiddsgen-to-wireloom.md#rtiddsgen-option-map),
+  [unbounded limits](src/Wireloom.Dds.Generator/README.md#effective-limits-for-unbounded-values),
+  and [sequence-array mapping](docs/guides/configuration.md#choose-the-sequence-array-mapping).
+- **Runtime and license:** Generated sources do not provide the RTI runtime or
+  native assets; applications still need those and the applicable RTI license.
+  See the [support boundary](docs/guides/support-and-compatibility.md#support-boundary)
+  and [Hello World prerequisites](docs/guides/hello-world.md#before-you-start).
+- **Support and stability:** Support is best effort, without response-time or
+  resolution commitments. Breaking changes may occur in 0.x; the post-1.0
+  policy is undecided. See the
+  [support commitment](docs/guides/support-and-compatibility.md#support-boundary)
+  and [stability policy](docs/guides/support-and-compatibility.md#compatibility-and-stability).
+- **Migration:** Inventory IDL and options, compare APIs, check runtime and
+  wire behavior, verify deployment, and retain a rollback baseline. Follow the
+  [migration procedure](docs/migration/rtiddsgen-to-wireloom.md#migration-procedure).
+
 ## Get started
 
 Add the generator and RTI runtime to the project that owns your DDS contracts.
