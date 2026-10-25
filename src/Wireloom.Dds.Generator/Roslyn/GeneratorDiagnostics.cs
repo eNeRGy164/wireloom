@@ -28,6 +28,7 @@ internal static class GeneratorDiagnostics
             var span = new TextSpan(Math.Min(diagnostic.Offset, text.Length), 0);
             var descriptor = diagnostic.Id switch
             {
+                "DDSG0001" => GenerationError,
                 "DDSG0004" => profileCompatibilityError,
                 "DDSG0102" => unsupportedAnnotationWarning,
                 "DDSG0103" => ignoredInterfaceWarning,

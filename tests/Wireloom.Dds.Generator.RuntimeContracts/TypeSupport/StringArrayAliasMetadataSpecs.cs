@@ -1,4 +1,3 @@
-using Omg.Types.Dynamic;
 using Rti.Types.Dynamic;
 using RuntimeStringArrayAliases;
 using RuntimeStringArrayAliases.Implementation;

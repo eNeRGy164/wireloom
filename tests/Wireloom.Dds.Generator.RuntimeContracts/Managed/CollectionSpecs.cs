@@ -14,7 +14,7 @@ public sealed class CollectionSpecs
 
         // Act
         var second = new Collections();
-        var nullCopy = new Collections((Collections?)null);
+        var nullCopy = new Collections(null);
 
         // Assert
         first.child.ShouldNotBeNull();
@@ -63,7 +63,7 @@ public sealed class CollectionSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((Collections?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
         copy.child.ShouldNotBeSameAs(source.child);

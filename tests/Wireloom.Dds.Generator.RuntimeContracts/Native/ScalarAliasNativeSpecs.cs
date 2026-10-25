@@ -1,6 +1,5 @@
 using RuntimeAliases;
 using RuntimeAliases.Implementation;
-using Rti.Types;
 
 namespace Wireloom.Dds.Generator.RuntimeContracts.Native;
 

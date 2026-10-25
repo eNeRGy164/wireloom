@@ -1,6 +1,5 @@
-using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
-using Wireloom;
 using Wireloom.Dds.Generator.Tests;
+using static Wireloom.Compiler.Tests.CompilerTestSupport;
 using Wireloom.Compiler.Emission;
 
 namespace Wireloom.Generation.Tests;
@@ -26,10 +25,10 @@ public sealed class GeneratedPluginSpecs
             {{alias}}
             union Choice switch({{discriminator}}) { {{branches}} };
             """);
-        var profile = RtiApiProfile.ForVersion(Version.Parse(version));
+        var profile = GetEmissionProfile(Version.Parse(version));
 
         // Act
-        var documents = IdlCompiler.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, profile);
+        var documents = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, profile);
 
         // Assert
         documents["Choice.g.cs"].Source.ShouldContain($"DefaultDiscriminator = {expected};");
@@ -55,10 +54,10 @@ public sealed class GeneratedPluginSpecs
             {{alias}}
             union Choice switch({{discriminator}}) { {{branches}} };
             """);
-        var profile = RtiApiProfile.ForVersion(Version.Parse(version));
+        var profile = GetEmissionProfile(Version.Parse(version));
 
         // Act
-        var documents = IdlCompiler.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, profile);
+        var documents = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, profile);
 
         // Assert
         documents["Choice.g.cs"].Source.ShouldContain($"DefaultDiscriminator = (E){expected};");
@@ -227,7 +226,7 @@ public sealed class GeneratedPluginSpecs
             "enum Kind { First, Second }; @default(Second) typedef Kind Selected;");
 
         // Act
-        var documents = IdlCompiler.CompileSourcesWithDiagnostics(
+        var documents = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
             [input], null, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen470);
 
         // Assert
@@ -345,7 +344,11 @@ public sealed class GeneratedPluginSpecs
             """);
 
         // Act
-        var documents = IdlCompiler.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, RtiApiProfile.ForVersion(Version.Parse(version)));
+        var documents = CompileSourcesWithDiagnostics(
+            [input],
+            null,
+            TestContext.Current.CancellationToken,
+            GetEmissionProfile(Version.Parse(version)));
 
         // Assert
         var managed = documents["AutoIdHash.Sample.g.cs"].Source;
@@ -380,8 +383,8 @@ public sealed class GeneratedPluginSpecs
         var diagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var oldProfileOutputs = IdlCompiler.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen431);
-        var currentProfileOutputs = IdlCompiler.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen470);
+        var oldProfileOutputs = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen431);
+        var currentProfileOutputs = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen470);
 
         // Assert
         oldProfileOutputs.ShouldBeEmpty();
@@ -552,4 +555,12 @@ public sealed class GeneratedPluginSpecs
         var derivedPlugin = documents["AliasInheritance.Implementation.DerivedPlugin.g.cs"].Source;
         derivedPlugin.ShouldContain(".WithParent((StructType) BaseSupport.Instance.GetDynamicTypeInternal(isPublic))");
     }
+
+    private static RtiApiProfile GetEmissionProfile(Version runtimeVersion) =>
+        IdlCompiler.GetProfileForRuntimeVersion(runtimeVersion) switch
+        {
+            IdlCompilerProfile.Rti731 => RtiApiProfile.Rtiddsgen431,
+            IdlCompilerProfile.Rti770 => RtiApiProfile.Rtiddsgen470,
+            _ => throw new ArgumentOutOfRangeException(nameof(runtimeVersion), runtimeVersion, "The RTI API profile is not supported.")
+        };
 }

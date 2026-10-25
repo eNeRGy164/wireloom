@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
     <IsRoslynComponent>true</IsRoslynComponent>
     <RootNamespace>Wireloom</RootNamespace>
     <PackageId>Wireloom.Dds.Generator</PackageId>
-    <Version>0.4.0</Version>
+    <Version>$(WireloomVersion)</Version>
     <Authors>Michaël Hompus</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
@@ -21,29 +21,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Using Include="System.Numerics" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="Wireloom.Dds.Generator.Tests" />
     <InternalsVisibleTo Include="Wireloom.Dds.Generator.CorpusCompliance" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations.Sources">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Meziantou.Polyfill">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <ProjectReference Include="../Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="$(OutputPath)$(AssemblyName).xml" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)Wireloom.Dds.Compiler.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)Wireloom.Dds.Compiler.xml" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="build/Wireloom.Dds.Generator.targets" Pack="true" PackagePath="build" />
     <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="../../docs/assets/wireloom-icon.png" Pack="true" PackagePath="" />

@@ -7,7 +7,7 @@ namespace Wireloom.Roslyn;
 /// <summary>Creates compiler inputs from Roslyn additional files and metadata.</summary>
 internal static class GeneratorInputFactory
 {
-    internal static IdlInput Create((AdditionalText File, AnalyzerConfigOptionsProvider Options) inputAndOptions, CancellationToken cancellationToken)
+    internal static GeneratorInput Create((AdditionalText File, AnalyzerConfigOptionsProvider Options) inputAndOptions, CancellationToken cancellationToken)
     {
         var input = inputAndOptions.File;
         var options = inputAndOptions.Options.GetOptions(input);
@@ -30,21 +30,20 @@ internal static class GeneratorInputFactory
         inputAndOptions.Options.GlobalOptions.TryGetValue("build_property.DdsIdlEnableEscapeChar", out var enableEscapeCharSetting);
         var (enableEscapeChar, invalidEnableEscapeCharValue) = ParseBooleanSetting(enableEscapeCharSetting);
 
-        return new IdlInput(
-            input.Path,
-            input.GetText(cancellationToken)?.ToString() ?? string.Empty,
-            ParseSequenceArrayMapping(sequenceArrayMapping),
-            generate: string.Equals(generate, "true", StringComparison.OrdinalIgnoreCase),
-            strict: string.Equals(strict, "true", StringComparison.OrdinalIgnoreCase),
-            defines: ParseSymbols(defines),
-            undefines: ParseSymbols(undefines),
-            includeDirectories: ParseIncludeDirectories(includeDirectories),
-            sequenceSize: ParsePositiveSize(sequenceSize, projectSequenceSize, 100),
-            stringSize: ParsePositiveSize(stringSize, projectStringSize, 255),
-            enableEscapeChar: enableEscapeChar)
-        {
-            InvalidEnableEscapeCharValue = invalidEnableEscapeCharValue
-        };
+        return new GeneratorInput(
+            new IdlInput(
+                input.Path,
+                input.GetText(cancellationToken)?.ToString() ?? string.Empty,
+                ParseSequenceArrayMapping(sequenceArrayMapping),
+                generate: string.Equals(generate, "true", StringComparison.OrdinalIgnoreCase),
+                strict: string.Equals(strict, "true", StringComparison.OrdinalIgnoreCase),
+                defines: ParseSymbols(defines),
+                undefines: ParseSymbols(undefines),
+                includeDirectories: ParseIncludeDirectories(includeDirectories),
+                sequenceSize: ParsePositiveSize(sequenceSize, projectSequenceSize, 100),
+                stringSize: ParsePositiveSize(stringSize, projectStringSize, 255),
+                enableEscapeChar: enableEscapeChar),
+            invalidEnableEscapeCharValue);
     }
 
     private static IdlSequenceArrayMapping ParseSequenceArrayMapping(string? value)
@@ -104,4 +103,11 @@ internal static class GeneratorInputFactory
 
         return [.. value!.Split(separators, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).Where(s => s.Length > 0)];
     }
+}
+
+internal sealed class GeneratorInput(IdlInput input, string? invalidEnableEscapeCharValue)
+{
+    internal IdlInput Input { get; } = input;
+
+    internal string? InvalidEnableEscapeCharValue { get; } = invalidEnableEscapeCharValue;
 }

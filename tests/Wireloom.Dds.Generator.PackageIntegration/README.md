@@ -17,7 +17,7 @@ $packageVersion = $package.BaseName -replace '^Wireloom\.Dds\.Generator\.', ''
 dotnet restore tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
   --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config `
   -p:WireloomDdsGeneratorPackageVersion=$packageVersion
-dotnet test tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
+dotnet run --project tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
   --no-restore --configuration Release
 ```
 

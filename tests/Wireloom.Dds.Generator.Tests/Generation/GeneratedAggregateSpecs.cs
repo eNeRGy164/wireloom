@@ -1,9 +1,8 @@
+using Wireloom.Dds.Generator.Tests;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Wireloom;
-using Wireloom.Dds.Generator.Tests;
 
-using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
+using static Wireloom.Compiler.Tests.CompilerTestSupport;
 
 namespace Wireloom.Generation.Tests;
 

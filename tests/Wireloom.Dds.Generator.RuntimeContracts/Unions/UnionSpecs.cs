@@ -103,7 +103,7 @@ public sealed class UnionSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((Choice?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());

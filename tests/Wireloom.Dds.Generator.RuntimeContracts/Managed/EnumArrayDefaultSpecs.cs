@@ -12,7 +12,7 @@ public sealed class EnumArrayDefaultSpecs
         var array = new ColorArray();
         var nullCopy = new ColorArray((ColorArray?)null);
         var sample = new Shape();
-        var scalarAlias = new ColorAlias((ColorAlias?)null);
+        var scalarAlias = new ColorAlias(null);
 
         // Act
         var typedefValues = array.Value;

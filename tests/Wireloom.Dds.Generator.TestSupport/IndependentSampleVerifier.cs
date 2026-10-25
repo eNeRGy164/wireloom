@@ -1,4 +1,3 @@
-#nullable enable annotations
 
 using System.Reflection;
 using System.Text.Json;

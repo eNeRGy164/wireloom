@@ -74,7 +74,7 @@ public sealed class SequenceCopySpecs
     public void SequenceTypedefCopiesOwnUnionElements()
     {
         // Arrange
-        var source = new Choices(new Sequence<Choice> { new Choice { child = ChildWithValue() } });
+        var source = new Choices(new Sequence<Choice> { new () { child = ChildWithValue() } });
 
         // Act
         var copy = new Choices(source);
@@ -197,5 +197,5 @@ public sealed class SequenceCopySpecs
         return child;
     }
 
-    private static Sequence<Child> ChildrenWithChild() => new() { ChildWithValue() };
+    private static Sequence<Child> ChildrenWithChild() => [ChildWithValue()];
 }

@@ -1,11 +1,14 @@
-#nullable enable annotations
 
 namespace Wireloom.Dds.Generator.WireCompatibility;
 
 /// <summary>Builds typed scalar fixtures without replacing constructor defaults through DynamicData.</summary>
+// ReSharper disable once PartialTypeWithSinglePart
+// The remaining partial declarations are compiled by the wire-compatibility project, which Qodana excludes.
 internal static partial class ManagedFixtures
 {
     /// <summary>Preserves the generated constructor defaults for the enum-array wire fixture.</summary>
+    // ReSharper disable once UnusedMember.Global
+    // Selected by the typed fixture dispatcher in ManagedFixtures.Create.
     internal static T CreateEnumArrayDefaultFixture<T>(string fixture)
     {
         if (fixture != "default")

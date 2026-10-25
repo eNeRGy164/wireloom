@@ -75,7 +75,7 @@ public sealed class FsCheckIdlCompilerFuzzingSpecs
     {
         try
         {
-            IdlCompiler.CompileSources(
+            Compiler.Tests.CompilerTestSupport.CompileSources(
                 [new IdlInput("fscheck.idl", source, strict: source.Length % 2 == 0)],
                 CancellationToken.None);
         }
@@ -269,7 +269,7 @@ public sealed class FsCheckIdlCompilerFuzzingSpecs
     {
         public override string Path { get; } = path;
 
-        public override SourceText? GetText(CancellationToken cancellationToken = default) => SourceText.From(text);
+        public override SourceText GetText(CancellationToken cancellationToken = default) => SourceText.From(text);
     }
 
     private sealed class TestAnalyzerConfigOptionsProvider(IReadOnlyDictionary<string, string> values) : AnalyzerConfigOptionsProvider

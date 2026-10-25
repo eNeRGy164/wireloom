@@ -20,7 +20,10 @@ public sealed class RecursiveStartupSpecs
             RecursiveStartupCases.Verify(childMode);
 
             // Assert
-            File.WriteAllText(Environment.GetEnvironmentVariable(EvidenceVariable)!, childMode);
+            await File.WriteAllTextAsync(
+                Environment.GetEnvironmentVariable(EvidenceVariable)!,
+                childMode,
+                TestContext.Current.CancellationToken);
             return;
         }
 
@@ -58,7 +61,7 @@ public sealed class RecursiveStartupSpecs
 
                 process.ExitCode.ShouldBe(0, diagnostics);
                 File.Exists(evidence).ShouldBeTrue("The child must execute the startup assertions.");
-                File.ReadAllText(evidence).ShouldBe(mode);
+                (await File.ReadAllTextAsync(evidence, TestContext.Current.CancellationToken)).ShouldBe(mode);
             }
             catch (OperationCanceledException) when (!TestContext.Current.CancellationToken.IsCancellationRequested)
             {

@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -162,7 +161,7 @@ public sealed class IncrementalGeneratorMeasurementSpecs(ITestOutputHelper outpu
             new TestAnalyzerConfigOptionsProvider(options),
             new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true));
 
-        return new Scenario(driver, compilation, root, included, unrelated, secondRoot, root.GetText()!.ToString());
+        return new Scenario(driver, compilation, root, included, unrelated, secondRoot, root.GetText().ToString());
     }
 
     private static (GeneratorDriver Driver, Measurement Measurement) Run(string name, GeneratorDriver driver, Compilation compilation)
@@ -224,7 +223,7 @@ public sealed class IncrementalGeneratorMeasurementSpecs(ITestOutputHelper outpu
     {
         public override string Path { get; } = path;
 
-        public override SourceText? GetText(CancellationToken cancellationToken = default) => SourceText.From(text);
+        public override SourceText GetText(CancellationToken cancellationToken = default) => SourceText.From(text);
     }
 
     private sealed class TestAnalyzerConfigOptionsProvider(IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> values) : AnalyzerConfigOptionsProvider

@@ -1,4 +1,3 @@
-#nullable enable annotations
 
 using System.Collections;
 using Omg.Types.Dynamic;
@@ -27,6 +26,8 @@ public static partial class IndependentSampleVerifier
     }
 
     /// <summary>Checks optional aggregate members against an independently populated fixture.</summary>
+    // ReSharper disable once UnusedMember.Global
+    // Called by the WireCompatibility project, which Qodana analyzes separately.
     public static void VerifyOptionalAggregateMemberFixture(object expectedSample, object actualSample, string context)
     {
         VerifySnapshots(
@@ -36,6 +37,8 @@ public static partial class IndependentSampleVerifier
     }
 
     /// <summary>Checks the complete finite recursive tree through public members.</summary>
+    // ReSharper disable once UnusedMember.Global
+    // Called by the WireCompatibility project, which Qodana analyzes separately.
     public static void VerifyOptionalRecursiveArrayFixture(object expectedSample, object actualSample, string context) =>
         VerifySnapshots(SnapshotRecursiveNode(expectedSample, depth: 0), SnapshotRecursiveNode(actualSample, depth: 0), context);
 
@@ -43,7 +46,7 @@ public static partial class IndependentSampleVerifier
     {
         if (depth > 2)
         {
-            throw new InvalidDataException("Recursive fixture exceeds its expected tree depth.");
+            throw new InvalidDataException($"Recursive fixture exceeds its expected tree depth at level {depth}.");
         }
 
         var type = sample.GetType();
@@ -116,6 +119,8 @@ public static partial class IndependentSampleVerifier
     }
 
     /// <summary>Checks optional narrow and wide string sequences for the named fixture.</summary>
+    // ReSharper disable once UnusedMember.Global
+    // Called by the WireCompatibility project, which Qodana analyzes separately.
     public static void VerifyOptionalStringSequenceFixture(object actualSample, string fixture)
     {
         var expected = new SortedDictionary<string, object?>(StringComparer.Ordinal)

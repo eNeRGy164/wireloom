@@ -1,4 +1,4 @@
-using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
+using static Wireloom.Compiler.Tests.CompilerTestSupport;
 
 namespace Wireloom.Generation.IdlDeclarations.Tests;
 

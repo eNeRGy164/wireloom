@@ -631,12 +631,30 @@ public sealed class CorpusComplianceSpecs
             _ => throw new InvalidOperationException($"Unsupported corpus RTI profile: {RequestedRtiProfile}")
         };
 
-        return IdlCompiler.CompileSourcesWithDiagnostics(
+        var compilerProfile = profile == RtiApiProfile.Rtiddsgen431
+            ? IdlCompilerProfile.Rti731
+            : IdlCompilerProfile.Rti770;
+        var result = IdlCompiler.Compile(
             CorpusRepository.BuildInputs(corpusCase).Select(input => new IdlInput(input.Path, input.Text, sequenceArrayMapping ?? corpusCase.SequenceArrayMapping,
                 input.Generate, input.Strict, input.Defines, input.Undefines, input.IncludeDirectories)).ToList(),
-            diagnostics,
-            TestContext.Current.CancellationToken,
-            profile);
+            compilerProfile,
+            TestContext.Current.CancellationToken);
+
+        if (diagnostics is not null)
+        {
+            foreach (var diagnostic in result.Diagnostics)
+            {
+                diagnostics.Add(diagnostic);
+            }
+        }
+
+        var fatal = result.Diagnostics.FirstOrDefault(d => d.Severity == IdlDiagnosticSeverity.Error && d.Id == "DDSG0001");
+        if (fatal is not null)
+        {
+            throw new IdlException(fatal.Input, fatal.Offset, fatal.Message);
+        }
+
+        return result.Documents.ToDictionary(s => s.HintName, StringComparer.Ordinal);
     }
 
     private static string RequestedRtiProfile => CorpusRepository.RtiProfile;
@@ -650,6 +668,7 @@ public sealed class CorpusComplianceSpecs
     private static IReadOnlyList<TypeShape> ReadSourceShapes(IEnumerable<string> sources, bool validateSyntax = true)
     {
         var shapes = new List<TypeShape>();
+
         foreach (var source in sources)
         {
             var tree = CSharpSyntaxTree.ParseText(source);
@@ -662,6 +681,7 @@ public sealed class CorpusComplianceSpecs
             foreach (var declaration in tree.GetRoot().DescendantNodes().OfType<BaseTypeDeclarationSyntax>())
             {
                 var name = GetQualifiedName(declaration);
+
                 if (IsSupportImplementation(declaration.Identifier.ValueText))
                 {
                     continue;
@@ -688,15 +708,14 @@ public sealed class CorpusComplianceSpecs
             }
         }
 
-        return shapes
+        return [.. shapes
             .GroupBy(shape => (shape.Name, shape.Kind))
             .Select(group => new TypeShape(
                 group.Key.Name,
                 group.Key.Kind,
                 group.SelectMany(shape => shape.Properties).Distinct().ToArray(),
                 group.SelectMany(shape => shape.EnumMembers).ToHashSet(StringComparer.Ordinal)))
-            .OrderBy(shape => shape.Name, StringComparer.Ordinal)
-            .ToArray();
+            .OrderBy(shape => shape.Name, StringComparer.Ordinal)];
     }
 
     private static string GetQualifiedName(BaseTypeDeclarationSyntax declaration)

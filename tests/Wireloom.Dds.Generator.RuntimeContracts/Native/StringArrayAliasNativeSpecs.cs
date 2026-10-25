@@ -27,7 +27,7 @@ public sealed class StringArrayAliasNativeSpecs
     public void ConvertsWideMatrix(bool keysOnly, bool allocatePointers, bool allocateMemory)
     {
         // Arrange
-        var source = new WideMatrix(new string[,] { { "世界", "Ω" } });
+        var source = new WideMatrix(new [,] { { "世界", "Ω" } });
 
         // Act
         var result = NativeSample.RoundTrip<WideMatrix, WideMatrixUnmanaged>(source, allocatePointers, allocateMemory, keysOnly);

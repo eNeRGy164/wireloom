@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj" />
     <ProjectReference Include="../../src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj" />
     <ProjectReference Include="../Wireloom.Dds.Generator.TestSupport/Wireloom.Dds.Generator.TestSupport.csproj" />
   </ItemGroup>
@@ -19,5 +20,6 @@
     <!-- Exercise the real typed wire-fixture builders without adding a peer project dependency. -->
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility/Fixtures/ManagedFixtures.Values.cs" Link="WireFixtures/ManagedFixtures.Values.cs" />
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility/Fixtures/FixtureException.cs" Link="WireFixtures/FixtureException.cs" />
+    <Compile Include="../Shared/CompilerTestSupport.cs" Link="Support/CompilerTestSupport.cs" />
   </ItemGroup>
 </Project>

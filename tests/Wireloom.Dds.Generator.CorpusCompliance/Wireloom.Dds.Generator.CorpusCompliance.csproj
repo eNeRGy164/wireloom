@@ -4,6 +4,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj" />
     <ProjectReference Include="../../src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj" />
   </ItemGroup>
 

@@ -17,7 +17,7 @@ internal static class CollectionSamples
             numbers = { 1, 2, 3 },
             children = { new Child(21, "child") },
             vector = [8, 9],
-            matrix = new int[,] { { 1, 2, 3 }, { 4, 5, 6 } },
+            matrix = new [,] { { 1, 2, 3 }, { 4, 5, 6 } },
             points = [new Child(41, "first"), new Child(42, "second")],
             texts = { "alpha", "beta" },
             wideTexts = { "世界", "Ω" }
@@ -32,7 +32,7 @@ internal static class CollectionSamples
             sample.optionalState = State.Ready;
             sample.optionalWideText = "世界";
             sample.optionalWideTexts = new Sequence<string> { "世界", "Ω" };
-            sample.optionalMatrix = new int[,] { { 1, 2, 3 }, { 4, 5, 6 } };
+            sample.optionalMatrix = new [,] { { 1, 2, 3 }, { 4, 5, 6 } };
         }
 
         return sample;

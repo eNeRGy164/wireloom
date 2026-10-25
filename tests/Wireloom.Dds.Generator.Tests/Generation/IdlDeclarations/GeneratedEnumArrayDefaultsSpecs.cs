@@ -3,7 +3,7 @@ using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Emission.Writers;
 
-using static Wireloom.Dds.Generator.Tests.CompilerTestSupport;
+using static Wireloom.Compiler.Tests.CompilerTestSupport;
 
 namespace Wireloom.Generation.IdlDeclarations.Tests;
 
@@ -28,12 +28,12 @@ public sealed class GeneratedEnumArrayDefaultsSpecs
             """);
 
         // Act
-        var oldProfile = IdlCompiler.CompileSourcesWithDiagnostics(
+        var oldProfile = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
             [input],
             null,
             TestContext.Current.CancellationToken,
             RtiApiProfile.Rtiddsgen431);
-        var currentProfile = IdlCompiler.CompileSourcesWithDiagnostics(
+        var currentProfile = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
             [input],
             null,
             TestContext.Current.CancellationToken,
@@ -45,7 +45,7 @@ public sealed class GeneratedEnumArrayDefaultsSpecs
         oldManagedType.ShouldContain("moreColors[dimension0] = Shade.WHITE;");
 
         var oldManagedAlias = oldProfile["EnumArrayDefaults.Shades.g.cs"].Source;
-        oldManagedAlias.Split("Value[dimension0, dimension1] = Shade.WHITE;", StringSplitOptions.None)
+        oldManagedAlias.Split("Value[dimension0, dimension1] = Shade.WHITE;")
             .Length.ShouldBe(3);
         oldManagedAlias.ShouldContain("if (other is null)");
 

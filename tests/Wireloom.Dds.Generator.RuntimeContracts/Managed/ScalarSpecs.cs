@@ -14,7 +14,7 @@ public sealed class ScalarSpecs
         var sample = new Scalars();
 
         // Act
-        var copy = new Scalars((Scalars?)null);
+        var copy = new Scalars(null);
 
         // Assert
         sample.defaultNumber.ShouldBe(42);
@@ -63,7 +63,7 @@ public sealed class ScalarSpecs
         copy.Equals(source).ShouldBeTrue();
         copy.Equals((object)source).ShouldBeTrue();
         copy.Equals(copy).ShouldBeTrue();
-        copy.Equals((Scalars?)null).ShouldBeFalse();
+        copy.Equals(null).ShouldBeFalse();
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());

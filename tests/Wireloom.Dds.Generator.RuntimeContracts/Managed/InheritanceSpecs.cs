@@ -26,7 +26,7 @@ public sealed class InheritanceSpecs
         copy.id++;
         copy.Equals(source).ShouldBeFalse();
         new Derived().text.ShouldBeEmpty();
-        new Derived((Derived?)null).note.ShouldBeNull();
+        new Derived(null).note.ShouldBeNull();
         source.ToString().ShouldBe(DerivedSupport.Instance.ToString(source));
     }
 
@@ -48,7 +48,7 @@ public sealed class InheritanceSpecs
         copy.text = "changed";
         copy.Equals(source).ShouldBeFalse();
         new DerivedValue().text.ShouldBeEmpty();
-        new DerivedValue((DerivedValue?)null).id.ShouldBe(0);
+        new DerivedValue(null).id.ShouldBe(0);
         source.ToString().ShouldBe(DerivedValueSupport.Instance.ToString(source));
     }
 }

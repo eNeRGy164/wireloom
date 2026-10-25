@@ -61,7 +61,7 @@ public sealed class CollectionAliasMemberSpecs
     {
         // Arrange
         var sequence = new Choice { numbers = new Numbers(new Sequence<int> { 17 }) };
-        var array = new Choice { vector = new Vector(new[] { 23, 29 }) };
+        var array = new Choice { vector = new Vector([23, 29]) };
         var holder = new RuntimeCollectionAliasMembers.Inner.Holder();
         holder.values.Value.Add(31);
 

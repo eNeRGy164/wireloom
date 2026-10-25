@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Wireloom.Compiler.Emission;
 
 namespace Wireloom.Roslyn;
 
@@ -9,7 +8,7 @@ internal static class RuntimeReferenceGuard
     internal const string MinimumSupportedRtiVersion = "7.3.1";
     private static readonly Version minimumSupportedVersion = Version.Parse(MinimumSupportedRtiVersion);
 
-    internal static bool TryGetProfile(Compilation compilation, out RtiApiProfile profile)
+    internal static bool TryGetProfile(Compilation compilation, out IdlCompilerProfile profile)
     {
         Version? runtimeVersion = null;
         foreach (var reference in compilation.References)
@@ -24,11 +23,11 @@ internal static class RuntimeReferenceGuard
 
         if (runtimeVersion is null || runtimeVersion < minimumSupportedVersion)
         {
-            profile = null!;
+            profile = default;
             return false;
         }
 
-        profile = RtiApiProfile.ForVersion(runtimeVersion);
+        profile = IdlCompiler.GetProfileForRuntimeVersion(runtimeVersion);
         return true;
     }
 }

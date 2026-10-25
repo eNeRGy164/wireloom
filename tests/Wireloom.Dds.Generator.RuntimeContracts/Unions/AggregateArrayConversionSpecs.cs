@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using RuntimeUnionArrays;
 using RuntimeUnionArrays.Implementation;
 
