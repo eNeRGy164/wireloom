@@ -95,10 +95,12 @@ public sealed class EnableEscapeCharSpecs
 
         // Act
         var generated = IdlCompiler.CompileSources([input], TestContext.Current.CancellationToken);
+        var generatedText = string.Join(Environment.NewLine, generated.Values.Select(document => document.Source));
         var sampleSource = generated["Sample.g.cs"].Source;
         var unionSource = generated["Choice.g.cs"].Source;
 
         // Assert
+        generatedText.ShouldContain("class @long");
         sampleSource.ShouldContain("public @long nested");
         sampleSource.ShouldContain("public @string textType");
         sampleSource.ShouldContain("public @long aliasedValue");
