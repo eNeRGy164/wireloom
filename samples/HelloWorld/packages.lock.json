@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "Rti.ConnextDds": {
+        "type": "Direct",
+        "requested": "[7.7.0, )",
+        "resolved": "7.7.0",
+        "contentHash": "1904NCJjqQAj8kTW374GuSDUXuCjol6XpeW+5kdhXObKNc7AGqqKEQdoPVVmmO2DuolNeYJOOnXgnlV987HJHg==",
+        "dependencies": {
+          "Rti.ConnextDds.Native": "7.7.0"
+        }
+      },
+      "Wireloom.Dds.Generator": {
+        "type": "Direct",
+        "requested": "[0.4.0, )",
+        "resolved": "0.4.0",
+        "contentHash": "PIzrpoU2v3+X6GiVT/sjdOvLD6v4778cLA140kDJUuzwmRgoYbMpE13URX92ixRdcPiMPPz3l5/huLLzJ8bn0Q=="
+      },
+      "Rti.ConnextDds.Native": {
+        "type": "Transitive",
+        "resolved": "7.7.0",
+        "contentHash": "7aqV99/lJWMk6Bmddb30CLMs0rvSdtPi9EiWotnmYbzUkKXIacguZcLhhOTySQaWgaAQC2slDkAPeQJ8Y3v3Nw=="
+      }
+    }
+  }
+}

@@ -175,7 +175,9 @@ accepted them against the referenced RTI runtime.
 
 Continue with the [Hello World publisher/subscriber tutorial](docs/guides/hello-world.md)
 to run two applications and exchange samples. It follows RTI's familiar C#
-getting-started flow, with generation supplied by the Wireloom package.
+getting-started flow, with generation supplied by the Wireloom package. For a
+ready-to-build repository project, see the [checked-in publisher/subscriber
+sample](samples/HelloWorld/README.md).
 
 ### Follow an IDL diagnostic into generated C\#
 

@@ -19,13 +19,13 @@ Wireloom quality
 
 ### Compatibility evidence
 
-| ID   | Scenario                          | Acceptance and evidence                                                                                                                                                                                                       |
-| :--- | :-------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Q-01 | Run the manifest corpus           | Compliance records every manifest case; retained oracle sources are compared for required API shape. Selected generated outputs compile against exact RTI APIs, while runtime and wire verification remain separate evidence. |
-| Q-09 | Select sequence-array mapping     | The default output remains RTI C# compatible; opt-in runtime tests preserve both layers on both LTS profiles. Packed consumers verify project defaults and file overrides. Dedicated C149 retains ordinary corpus sources.    |
-| Q-11 | Configure unbounded finite limits | Project defaults and file overrides produce matching generated bounds for sequence and string members, typedefs, unions, and included files; explicit IDL bounds remain authoritative. Invalid values fail before emission.   |
+| ID   | Scenario                          | Acceptance and evidence                                                                                                                                                                                                                     |
+| :--- | :-------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Q-01 | Run the manifest corpus           | Compliance records every manifest case; retained oracle sources are compared for required API shape. Selected generated outputs compile against exact RTI APIs, while runtime and wire verification remain separate evidence.               |
+| Q-09 | Select sequence-array mapping     | The default output remains RTI C# compatible; opt-in runtime tests preserve both layers on both LTS profiles. Packed consumers verify project defaults and file overrides. Dedicated C149 retains ordinary corpus sources.                  |
+| Q-11 | Configure unbounded finite limits | Project defaults and file overrides produce matching generated bounds for sequence and string members, typedefs, unions, and included files; explicit IDL bounds remain authoritative. Invalid values fail before emission.                 |
 | Q-12 | Normalize escaped IDL names       | The opt-in project setting normalizes declarations, references, macro expansions, and metadata, preserves string literals and source locations, permits escaped keywords in strict mode, and rejects normalized collisions before emission. |
-| Q-08 | Dispatch the licensed matrix      | Exact LTS package and container versions are paired; reports show all nine directed pairings and expected array-of-sequences failures for the selected target.                                                                |
+| Q-08 | Dispatch the licensed matrix      | Exact LTS package and container versions are paired; reports show all nine directed pairings and expected array-of-sequences failures for the selected target.                                                                              |
 
 Sixteen typed C163–C172 fixtures exercise all directed pairings among Wireloom
 C#, RTI C#, and RTI C++. C164 and C172 use wrappers around unchanged canonical
@@ -47,6 +47,7 @@ defines fixture and adaptation scope.
 | :--- | :-------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Q-03 | Consume the packed `.nupkg`             | Analyzer targets load and generated types compile without a project reference; the package suite links the runtime contracts and passes in a .NET 8-only compiler-host container. |
 | Q-07 | Change roots, includes, or other inputs | Roslyn reuses unaffected inputs; the baseline records tracked-step reasons and timings. Per-root output caching remains a follow-up.                                              |
+| Q-13 | Build the checked-in DDS sample         | CI restores released Wireloom.Dds.Generator 0.4.0 from NuGet.org in locked mode and builds the sample on Windows and Ubuntu without an RTI license; local licensed exchange steps are in the sample README. |
 
 ### Build safety
 
@@ -93,3 +94,7 @@ identifies executable coverage, applicable gaps, and the RTI C# or better
 expectation. Coveralls measures maintained generator source; generated fixture
 and test project code are excluded. Unresolved required contracts remain gaps
 rather than completed compatibility evidence.
+
+> [!NOTE]
+> Additional information: This architecture context is also summarized in [Architecture memory](../architecture-memory.md) and `.agents/architecture-memory.yaml` so implementation agents can use it efficiently in limited context windows.
+> The arc42 chapters, linked ADRs, and contracts remain the primary source documents. If the derived memory differs, update the source docs first and refresh the derived memory.

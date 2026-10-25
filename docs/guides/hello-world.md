@@ -7,6 +7,8 @@ build, and run a publisher and subscriber in separate terminals. Wireloom
 supplies the C# contracts during the normal .NET build.
 
 You will send ten messages, receive and print them, and let both processes exit.
+The [repository sample](../../samples/HelloWorld/README.md) contains the
+files for a ready-to-build project.
 One console application selects its role with `--pub` or `--sub`, as in RTI's
 example. The application uses RTI's C# APIs for all DDS operations.
 

@@ -24,7 +24,7 @@ per-file override.
 | Evidence repository        | Corpus IDL, retained oracle sources, and wire-compatibility peers | Supports source-shape and DDS wire verification, not production runtime |
 
 The Quality workflow continuously checks both exact RTI LTS packages on
-Windows 2025 and Ubuntu 24.04. Its eight runtime/package jobs combine RTI
+Windows 2025 and Ubuntu 26.04. Its eight runtime/package jobs combine RTI
 7.3.1 and 7.7.0 with consumer targets `net8.0` and `net10.0`; each packs a fresh
 analyzer and compiles the package consumer with C# 12. Two separate corpus
 jobs select the matching retained LTS oracles and verify applicability and
@@ -57,5 +57,14 @@ Adding another LTS release requires a profile-specific corpus export and an
 exact toolchain image, package, and generator version. Profile selection uses
 the assembly resolved by the consumer build.
 
+The checked-in samples/HelloWorld project consumes the released
+Wireloom.Dds.Generator 0.4.0 package from NuGet.org and builds on Ubuntu 26.04
+and Windows 2025. This compile-only CI check needs no RTI native library or
+license; the sample README documents the licensed local DDS exchange.
+
 Preview publication uses GitHub Packages. Validated release tags publish to
 NuGet.org with SBOM and provenance attestations.
+
+> [!NOTE]
+> Additional information: This architecture context is also summarized in [Architecture memory](../architecture-memory.md) and `.agents/architecture-memory.yaml` so implementation agents can use it efficiently in limited context windows.
+> The arc42 chapters, linked ADRs, and contracts remain the primary source documents. If the derived memory differs, update the source docs first and refresh the derived memory.

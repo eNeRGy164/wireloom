@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Wireloom</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Wireloom.Dds.Generator" PrivateAssets="all" />
+    <PackageReference Include="Rti.ConnextDds" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DdsIdl Include="hello_world.idl" />
+  </ItemGroup>
+</Project>
