@@ -595,6 +595,7 @@ contract, not as evidence that the annotation is harmless.
 | `DDSG0106` | An active `#warning` directive was encountered                       | Review the warning in the IDL or included file; preprocessing and generation continue                      |
 | `DDSG0107` | An active `#pragma message` directive was encountered                | Review the informational message in the IDL or included file; generation continues                         |
 | `DDSG0108` | An IDL name conflicts with a keyword or another name ignoring case   | Rename the identifier or exempt the default warning; strict validation rejects the declaration             |
+| `DDSG0109` | An escaped identifier normalizes to `TRUE` or `FALSE`                 | Rename it to avoid ambiguity with IDL boolean literals; Wireloom still resolves it as an identifier        |
 
 Diagnostics are owned by the generator and use the original IDL/include
 location where one is available. Review the table's typical actions before
@@ -608,13 +609,13 @@ dotnet_diagnostic.DDSG0101.severity = error
 ```
 
 The default severities are grouped by diagnostic family: `DDSG0001`–`DDSG0004`
-are errors, `DDSG0101`–`DDSG0106` and `DDSG0108` are warnings, and `DDSG0107`
+are errors, `DDSG0101`–`DDSG0106` and `DDSG0108`–`DDSG0109` are warnings, and `DDSG0107`
 is informational. Warnings do not all mean generation continues: `DDSG0102`
 reports an unsupported annotation use and is followed by a generation error.
 `DDSG0101`, `DDSG0103`,
-`DDSG0104`, `DDSG0105`, `DDSG0106`, and `DDSG0108` report cases where generation
-continues in default mode. The diagnostics table describes the action for each
-one.
+`DDSG0104`, `DDSG0105`, `DDSG0106`, `DDSG0108`, and `DDSG0109` report cases where
+generation continues in default mode. The diagnostics table describes the
+action for each one.
 
 Diagnostics point to the originating IDL file, including when the problem is
 inside an included file. For example, if `Contracts/Telemetry.idl` contains:

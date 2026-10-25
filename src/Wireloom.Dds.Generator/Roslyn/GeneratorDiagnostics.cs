@@ -18,6 +18,7 @@ internal static class GeneratorDiagnostics
     private static readonly DiagnosticDescriptor preprocessorWarning = new("DDSG0106", "Preprocessor warning", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
     private static readonly DiagnosticDescriptor preprocessorMessage = new("DDSG0107", "Preprocessor message", "{0}", "DDS Source Generator", DiagnosticSeverity.Info, true);
     private static readonly DiagnosticDescriptor identifierNamingWarning = new("DDSG0108", "IDL identifier violates naming rules", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
+    private static readonly DiagnosticDescriptor escapedBooleanIdentifierWarning = new("DDSG0109", "Escaped identifier matches a boolean literal", "{0}", "DDS Source Generator", DiagnosticSeverity.Warning, true);
 
     internal static void Report(SourceProductionContext production, IEnumerable<IdlDiagnostic> diagnostics)
     {
@@ -35,6 +36,7 @@ internal static class GeneratorDiagnostics
                 "DDSG0106" => preprocessorWarning,
                 "DDSG0107" => preprocessorMessage,
                 "DDSG0108" => identifierNamingWarning,
+                "DDSG0109" => escapedBooleanIdentifierWarning,
                 _ => unknownAnnotationWarning
             };
 

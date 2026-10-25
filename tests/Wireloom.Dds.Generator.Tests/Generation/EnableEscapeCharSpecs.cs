@@ -117,6 +117,8 @@ public sealed class EnableEscapeCharSpecs
         const string source = """
             const boolean _TRUE = FALSE;
             const boolean Alias = _TRUE;
+            const boolean _FALSE = TRUE;
+            const boolean FalseAlias = _FALSE;
             struct Sample {
                 @key(_TRUE) boolean escapedConstantKey;
                 @key(TRUE) boolean literalKey;
@@ -126,7 +128,8 @@ public sealed class EnableEscapeCharSpecs
         var input = new IdlInput("escaped-boolean-constant.idl", source, enableEscapeChar: true);
 
         // Act
-        var generated = IdlCompiler.CompileSources([input], TestContext.Current.CancellationToken);
+        var diagnostics = new List<IdlDiagnostic>();
+        var generated = IdlCompiler.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
         var generatedText = string.Join(Environment.NewLine, generated.Values.Select(document => document.Source));
         var plugin = generated.Values.Single(document => document.Source.Contains("new StructMember(\"escapedConstantKey\"", StringComparison.Ordinal)).Source;
         var alias = generated.Values.Single(document => document.Source.Contains("class Alias", StringComparison.Ordinal)).Source;
@@ -139,6 +142,13 @@ public sealed class EnableEscapeCharSpecs
         plugin.ShouldContain("new StructMember(\"literalKey\", dtf.GetPrimitiveType<bool>(), isKey: true, id: 1)");
         plugin.ShouldContain("isKeyed: true");
         plugin.ShouldContain("BoolValue = false");
+        var escapeWarnings = diagnostics.Where(diagnostic => diagnostic.Id == "DDSG0109").ToArray();
+        escapeWarnings.Where(diagnostic => diagnostic.Message.Contains("'_TRUE'", StringComparison.Ordinal))
+            .Select(diagnostic => diagnostic.Offset).ShouldBe(FindOccurrences(source, "_TRUE"));
+        escapeWarnings.ShouldAllBe(diagnostic => diagnostic.Message.Contains("preserves it as an identifier", StringComparison.Ordinal));
+        escapeWarnings.Count(diagnostic => diagnostic.Message.Contains("'_TRUE'", StringComparison.Ordinal)).ShouldBe(4);
+        escapeWarnings.Count(diagnostic => diagnostic.Message.Contains("'_FALSE'", StringComparison.Ordinal)).ShouldBe(2);
+        escapeWarnings.ShouldAllBe(diagnostic => source[diagnostic.Offset] == '_');
     }
 
     [Fact]
@@ -284,5 +294,19 @@ public sealed class EnableEscapeCharSpecs
 
         // Assert
         normalized.SourceOrigins.ShouldContain(origin => origin.SourceStart == 10);
+    }
+
+    private static int[] FindOccurrences(string source, string value)
+    {
+        var offsets = new List<int>();
+        var offset = source.IndexOf(value, StringComparison.Ordinal);
+
+        while (offset >= 0)
+        {
+            offsets.Add(offset);
+            offset = source.IndexOf(value, offset + value.Length, StringComparison.Ordinal);
+        }
+
+        return [.. offsets];
     }
 }

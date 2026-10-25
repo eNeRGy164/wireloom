@@ -6,7 +6,11 @@ namespace Wireloom.Compiler.FrontEnd.Preprocessing;
 internal static class IdlEscapeCharNormalizer
 {
     /// <summary>Removes one leading underscore from each identifier and preserves source origins.</summary>
-    internal static PreprocessedIdl Normalize(PreprocessedIdl input, IdlInput idlInput, CancellationToken cancellationToken)
+    internal static PreprocessedIdl Normalize(
+        PreprocessedIdl input,
+        IdlInput idlInput,
+        CancellationToken cancellationToken,
+        ICollection<IdlDiagnostic>? diagnostics = null)
     {
         var text = input.Text;
         var output = new StringBuilder(text.Length);
@@ -49,6 +53,16 @@ internal static class IdlEscapeCharNormalizer
                 if (text[index] == '_')
                 {
                     escapedIdentifierOffsets.Add(output.Length);
+                    var identifierName = text[(index + 1)..identifierEnd];
+                    if (identifierName is "TRUE" or "FALSE")
+                    {
+                        diagnostics?.Add(new IdlDiagnostic(
+                            "DDSG0109",
+                            idlInput,
+                            MapSourceOffset(index, input.SourceOrigins),
+                            $"Escaped identifier '_{identifierName}' normalizes to the IDL boolean literal '{identifierName}'. Wireloom preserves it as an identifier; use a different name to avoid this ambiguity."));
+                    }
+
                     AppendUnchanged(text, index + 1, identifierEnd, input.SourceOrigins, output, outputOrigins, cancellationToken, index);
                 }
                 else
