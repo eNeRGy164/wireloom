@@ -12,6 +12,7 @@
 | Constraint                                                                   | Rationale                                                                       |
 | :--------------------------------------------------------------------------- | :------------------------------------------------------------------------------ |
 | The generator targets `netstandard2.0`                                       | Roslyn analyzer compatibility boundary                                          |
+| The shared compiler targets `netstandard2.0` and references no Roslyn, MSBuild, or RTI assemblies | Repository hosts share one implementation; build-specific discovery remains in the adapter |
 | Repository projects default to .NET 10; SDK `10.0.400`                       | Repository and Qodana-compatible SDK policy                                     |
 | A resolved `Rti.ConnextDds` reference of at least 7.3.1 is required          | Lower versions report `DDSG0003`; assembly version selects an immutable profile |
 | 7.3.1 and 7.7.0 are the supported LTS profiles                               | Only the exact LTS versions are qualification targets                           |

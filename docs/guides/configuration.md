@@ -508,8 +508,10 @@ correspond to the build settings, with one important default difference:
 `IdlInput.generate` defaults to `true`; automatically tracked MSBuild includes
 have `Generate="false"`.
 
-This API is for tools referencing the compiler assembly directly. The normal
-analyzer package reference does not add it as an application runtime library.
+This API is for repository C# projects referencing the
+`Wireloom.Dds.Compiler` project. The normal analyzer package bundles the same
+compiler assembly beside the generator for analyzer loading; it does not add a
+compiler application runtime dependency.
 
 ```csharp
 using System.Collections.Generic;
@@ -536,23 +538,44 @@ var inputs = new List<IdlInput>
         generate: false)
 };
 
-var sources = IdlCompiler.CompileSources(inputs, CancellationToken.None);
+var profile = IdlCompiler.GetProfileForRuntimeVersion(new Version(7, 7, 0));
+var result = IdlCompiler.Compile(inputs, profile, CancellationToken.None);
+
+foreach (var diagnostic in result.Diagnostics)
+{
+    Console.WriteLine($"{diagnostic.Severity} {diagnostic.Id}: {diagnostic.Path}:{diagnostic.Offset}: {diagnostic.Message}");
+}
+
+if (result.Success)
+{
+    foreach (var document in result.Documents)
+    {
+        Console.WriteLine($"{document.HintName}: {document.Source.Length} characters");
+    }
+}
 ```
 
 `path` provides input identity and diagnostic/include locations; `text`
 provides the source. Supply included files as inputs too: an include directory
 searches the supplied inputs rather than loading arbitrary files from disk.
 `strict`, `defines`, `undefines`, and `includeDirectories` retain the same
-batch semantics. `sequenceArrayMapping` remains file-owned; omitting it selects
-`RtiCSharp`. Pass the caller's cancellation token instead of
-`CancellationToken.None` when the caller should be able to cancel compilation.
-Set `enableEscapeChar: true` on every generation root to enable leading-
-underscore normalization for the batch. Included inputs inherit this setting.
+batch semantics. Define, undefine, and include-directory lists are copied when
+the input is created, and the compiler snapshots the input collection at call
+entry. `sequenceArrayMapping` remains file-owned; omitting it selects
+`RtiCSharp`. Set `enableEscapeChar: true` on every generation root to enable
+leading-underscore normalization for the batch. Included inputs inherit this
+setting. Includes resolve only against supplied inputs; the compiler does not
+read from disk.
 
-The public programmatic compiler currently uses the 7.7.0 emission profile.
-Consumer builds using the Roslyn generator instead select a profile from
-their resolved runtime reference. The profile-selection implementation is
-internal; there is no public version-setting argument.
+Select `IdlCompilerProfile.Rti731` or `IdlCompilerProfile.Rti770` for each
+compile. `GetProfileForRuntimeVersion` maps supported runtime versions and
+throws when the version is below 7.3.1. `IdlCompilationResult.Success` is based
+on error diagnostics, so an empty document list can be either successful or a
+failure. `DDSG0001` and unsupported-profile `DDSG0004` errors return no
+documents; warnings and informational diagnostics can accompany documents.
+Diagnostics retain the input path, complete source text, and zero-based UTF-16
+offset. Cancellation and unexpected implementation exceptions propagate to
+the caller. The extraction is not evidence of browser execution.
 
 ## Fixed behavior and configurable limits
 

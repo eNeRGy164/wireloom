@@ -101,9 +101,13 @@ permitted, while names colliding after normalization fail before emission.
 ## 8.4 Dependency and supply-chain boundaries
 
 The consumer owns the RTI runtime reference. Roslyn compiler packages remain
-private build dependencies. Central package management, lock files, NuGet audit,
-pinned GitHub Actions, SBOM generation, and provenance attestation protect the
-package path.
+private build dependencies. The host-neutral compiler is a `netstandard2.0`
+project shared by repository C# hosts and has no Roslyn, MSBuild, or RTI
+references. It is built at the generator's version and bundled beside the
+adapter in the single published generator package; consumers do not receive it
+as an application runtime dependency. The compiler is not independently
+published. Central package management, lock files, NuGet audit, pinned GitHub
+Actions, SBOM generation, and provenance attestation protect the package path.
 
 ## 8.5 Test separation
 
@@ -117,10 +121,11 @@ support, runtime, or wire equivalence.
 The separate [runtime contract suite](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
 uses build-time generation and strongly typed calls to managed, native, and
 type-support APIs. Focused IDL fixtures and tests are grouped by responsibility.
-Windows and Linux validation complement maintained generator source coverage;
-generated fixture files and test project code are excluded from Coveralls.
+Windows and Linux validation complement maintained compiler and generator
+source coverage; generated fixture files and test project code are excluded
+from Coveralls.
 The packed-package suite links these runtime contracts and runs them against
-the published analyzer assets, including a .NET 8-only compiler-host container.
+the packed analyzer assets, including a .NET 8-only compiler-host container.
 Explicit skipped contracts and opt-in compile reproductions retain unresolved
 findings; they do not establish a complete API contract or wire compatibility.
 
@@ -329,3 +334,24 @@ Wireloom's regression and runtime tests establish its behavior independently.
 The existing `wchar` union-label syntax also accepts unprefixed character
 literals, as recorded by C113/C131. This is a legacy Wireloom extension;
 constant and default assignments still require matching narrow/wide types.
+
+## 8.9 Shared compiler API
+
+`Wireloom.Dds.Compiler` exposes an in-memory API for repository C# projects.
+Callers select `IdlCompilerProfile` explicitly and receive one
+`IdlCompilationResult` containing generated documents and diagnostics. A
+compilation can fail with an empty document list and source-located diagnostics;
+the core preserves diagnostics collected before the first fatal error. It
+observes cancellation and lets unexpected exceptions propagate. `IdlInput`
+copies its define, undefine, and include-directory lists, and compilation
+snapshots the input collection at entry. Inputs and includes are text supplied
+by the caller; the compiler does not access the filesystem. Existing root
+aggregation, path interpretation, and option ownership remain unchanged.
+
+The Roslyn adapter discovers the resolved RTI assembly version, maps that
+version to the corresponding profile, translates compiler diagnostics into
+Roslyn diagnostics, and adds generated documents to the consumer build. Core
+character and string literal formatting preserves the output of the previous
+Roslyn helper behavior. Direct API tests cover result/error cases, cancellation,
+input snapshots, profile mapping, and formatting parity. Corpus comparisons
+verify complete generated text for both maintained RTI profiles.

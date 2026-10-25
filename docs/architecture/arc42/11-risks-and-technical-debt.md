@@ -32,6 +32,17 @@ A fixed preprocessing ceiling can reject unusually generated but finite IDL.
 The exact limits are therefore published and should only be raised with
 adversarial evidence that preserves deterministic build safety.
 
+The extracted compiler adds three focused maintenance risks. The analyzer
+package must keep the compiler and generator at one version and load both
+assemblies on the minimum .NET 8 compiler host; packed-package tests exercise
+that path. Direct callers can expose path-resolution differences, so the
+compiler keeps the current path interpretation and receives include contents
+in memory. Replacing Roslyn's literal-formatting helpers could change source
+text, so UTF-16/keyword parity tests and full corpus comparisons cover both
+profiles. The extraction itself does not establish browser execution; browser
+work remains dependent on shared member-ID hashing in
+[#108](https://github.com/eNeRGy164/wireloom/issues/108).
+
 The incremental baseline is measurement evidence rather than a caching design.
 It records current tracked-step reuse, elapsed timings, and the fact that a
 changed root or include still invalidates the shared source-output batch.

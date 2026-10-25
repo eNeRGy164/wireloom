@@ -101,6 +101,19 @@ authoritative; this summary is a retrieval aid, not a replacement.
   no source, while 7.7.0 preserves it in DynamicType metadata. See [building
   blocks](arc42/05-building-block-view.md)
   and [runtime flow](arc42/06-runtime-view.md).
+- **Shared compiler API:** `Wireloom.Dds.Compiler` is the host-neutral,
+  non-packable `netstandard2.0` project shared by repository C# callers. Its
+  in-memory API requires an explicit RTI profile and returns one
+  `IdlCompilationResult` containing documents and diagnostics; errors may
+  return no documents with diagnostics. It snapshots input lists, preserves
+  current batch and path behavior, observes cancellation, and does not access
+  the filesystem. The Roslyn adapter discovers the resolved RTI version,
+  selects the profile, maps diagnostics, and adds source documents. The single
+  published generator package bundles both version-matched assemblies; the
+  compiler is not published separately or added as an application runtime
+  reference. See [ADR-001](adr/ADR-001-share-a-host-neutral-compiler-project.md),
+  [building blocks](arc42/05-building-block-view.md), and
+  [cross-cutting concepts](arc42/08-crosscutting-concepts.md#89-shared-compiler-api).
 - **IDL annotation and value binding:** The shared reader captures ordered balanced annotation applications and source spans;
   context parsers retain unresolved values until symbol binding.
   The catalog validates duplicate named keys for known applications and leaves unknown arguments opaque.
@@ -227,6 +240,7 @@ authoritative; this summary is a retrieval aid, not a replacement.
 | Consumer compiler host  | Roslyn 4.8.0 (`SDK 8.0.100`)                       | Minimum qualified SDK host                                                                                             |
 | Repository target       | `net10.0`                                          | Pinned SDK in `global.json`                                                                                            |
 | Generator target        | `netstandard2.0`                                   | Analyzer/source-generator package                                                                                      |
+| Compiler target        | `netstandard2.0`; non-packable          | Bundled beside the generator in the single published package; not an independently published package |
 | RTI package floor       | `7.3.1+`                                           | Reference eligibility only, not compatibility evidence                                                                 |
 | RTI profile range       | `7.3.1+`                                           | Nearest profile selected by assembly identity                                                                          |
 | Qualified RTI versions  | `7.3.1`, `7.7.0`                                   | Exact LTS version evidence only                                                                                        |
@@ -267,6 +281,12 @@ authoritative; this summary is a retrieval aid, not a replacement.
   values. Mutual recursive struct graphs remain unqualified. See [chapter 11](arc42/11-risks-and-technical-debt.md).
 - Compatibility beyond retained cases, interactive IDE behavior, and adapted
   RTI wire fixtures remains unqualified.
+- The analyzer package must keep its generator and adjacent compiler
+  assemblies at one version; package and minimum-host loading are covered by
+  integration tests. Direct callers depend on the current path interpretation,
+  and literal-formatting parity is guarded by tests. Browser execution remains
+  out of scope and depends on shared member-ID hashing in
+  [issue #108](https://github.com/eNeRGy164/wireloom/issues/108).
 
 ## Source map
 
@@ -277,4 +297,5 @@ authoritative; this summary is a retrieval aid, not a replacement.
 - [Runtime contract guide](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
 - [Wire compatibility runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
 - [Corpus inventory and evidence rules](../corpus/README.md)
+- [ADR-001: shared compiler project](adr/ADR-001-share-a-host-neutral-compiler-project.md)
 - [Machine-readable architecture memory](../../.agents/architecture-memory.yaml)

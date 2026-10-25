@@ -82,3 +82,4 @@ quality scenarios belong in [chapter 10](10-quality-requirements.md).
 | Wireloom maintainers                | Small compiler stages, clear diagnostics, and reviewable evidence   |
 | Compatibility reviewers             | Feature-level comparison with a named RTI oracle                    |
 | CI and package consumers            | Reproducible tests and a consumable analyzer package                |
+| Repository compiler hosts            | One in-memory compiler API with explicit RTI profile selection       |
