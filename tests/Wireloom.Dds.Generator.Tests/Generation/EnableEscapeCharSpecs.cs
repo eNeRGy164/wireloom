@@ -111,6 +111,37 @@ public sealed class EnableEscapeCharSpecs
     }
 
     [Fact]
+    public void ResolvesEscapedBooleanConstantReferencesBeforeBooleanLiterals()
+    {
+        // Arrange
+        const string source = """
+            const boolean _TRUE = FALSE;
+            const boolean Alias = _TRUE;
+            struct Sample {
+                @key(_TRUE) boolean escapedConstantKey;
+                @key(TRUE) boolean literalKey;
+                @default(_TRUE) boolean defaulted;
+            };
+            """;
+        var input = new IdlInput("escaped-boolean-constant.idl", source, enableEscapeChar: true);
+
+        // Act
+        var generated = IdlCompiler.CompileSources([input], TestContext.Current.CancellationToken);
+        var generatedText = string.Join(Environment.NewLine, generated.Values.Select(document => document.Source));
+        var plugin = generated.Values.Single(document => document.Source.Contains("new StructMember(\"escapedConstantKey\"", StringComparison.Ordinal)).Source;
+        var alias = generated.Values.Single(document => document.Source.Contains("class Alias", StringComparison.Ordinal)).Source;
+
+        // Assert
+        generatedText.ShouldContain("public const bool Value = false;");
+        alias.ShouldContain("public const bool Value = false;");
+        plugin.ShouldContain("new StructMember(\"escapedConstantKey\"");
+        plugin.ShouldNotContain("new StructMember(\"escapedConstantKey\", dtf.GetPrimitiveType<bool>(), isKey: true");
+        plugin.ShouldContain("new StructMember(\"literalKey\", dtf.GetPrimitiveType<bool>(), isKey: true, id: 1)");
+        plugin.ShouldContain("isKeyed: true");
+        plugin.ShouldContain("BoolValue = false");
+    }
+
+    [Fact]
     public void NormalizesPreprocessorExpandedIdentifiersAndLeavesStringLiteralsAlone()
     {
         // Arrange

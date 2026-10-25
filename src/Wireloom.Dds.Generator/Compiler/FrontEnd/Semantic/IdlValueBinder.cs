@@ -20,16 +20,16 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
             cancellationToken.ThrowIfCancellationRequested();
             deferred.Member.SetAnnotationFlags(
                 deferred.Annotations.KeyExpression is { } keyExpression
-                    ? resolver.ResolveBooleanAnnotation(deferred.Input, deferred.Offset, deferred.Namespace, keyExpression, "key")
+                    ? resolver.ResolveBooleanAnnotation(deferred.Input, deferred.Offset, deferred.Namespace, keyExpression, "key", deferred.Annotations.KeyExpressionWasEscaped)
                     : deferred.Annotations.IsKey,
                 deferred.Annotations.OptionalExpression is { } optionalExpression
-                    ? resolver.ResolveBooleanAnnotation(deferred.Input, deferred.Offset, deferred.Namespace, optionalExpression, "optional")
+                    ? resolver.ResolveBooleanAnnotation(deferred.Input, deferred.Offset, deferred.Namespace, optionalExpression, "optional", deferred.Annotations.OptionalExpressionWasEscaped)
                     : deferred.Annotations.IsOptional,
                 deferred.Annotations.ExternalExpression is { } externalExpression
-                    ? resolver.ResolveBooleanAnnotation(deferred.Input, deferred.Offset, deferred.Namespace, externalExpression, "external")
+                    ? resolver.ResolveBooleanAnnotation(deferred.Input, deferred.Offset, deferred.Namespace, externalExpression, "external", deferred.Annotations.ExternalExpressionWasEscaped)
                     : deferred.Annotations.IsExternal,
                 deferred.Annotations.MustUnderstandExpression is { } mustUnderstandExpression
-                    ? resolver.ResolveBooleanAnnotation(deferred.Input, deferred.Offset, deferred.Namespace, mustUnderstandExpression, "must_understand")
+                    ? resolver.ResolveBooleanAnnotation(deferred.Input, deferred.Offset, deferred.Namespace, mustUnderstandExpression, "must_understand", deferred.Annotations.MustUnderstandExpressionWasEscaped)
                     : deferred.Annotations.IsMustUnderstand);
 
             if (deferred.Annotations.MemberIdExpression is { } expression)
@@ -201,12 +201,12 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
 
             if (resolvedType is IdlType.Primitive { Name: "boolean" })
             {
-                if (string.Equals(declaration.Expression, "TRUE", StringComparison.OrdinalIgnoreCase))
+                if (!declaration.ExpressionWasEscaped && string.Equals(declaration.Expression, "TRUE", StringComparison.OrdinalIgnoreCase))
                 {
                     return new IdlScalarValue.Boolean(true);
                 }
 
-                if (string.Equals(declaration.Expression, "FALSE", StringComparison.OrdinalIgnoreCase))
+                if (!declaration.ExpressionWasEscaped && string.Equals(declaration.Expression, "FALSE", StringComparison.OrdinalIgnoreCase))
                 {
                     return new IdlScalarValue.Boolean(false);
                 }

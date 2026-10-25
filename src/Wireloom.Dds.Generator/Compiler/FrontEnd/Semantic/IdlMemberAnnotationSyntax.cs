@@ -12,6 +12,9 @@ internal sealed class IdlMemberAnnotationSyntax
     /// <summary>Gets or sets the unresolved boolean key argument.</summary>
     public string? KeyExpression { get; set; }
 
+    /// <summary>Gets or sets whether the key expression began with an escape character.</summary>
+    public bool KeyExpressionWasEscaped { get; set; }
+
     /// <summary>Gets or sets whether an optional annotation was declared.</summary>
     public bool HasOptional { get; set; }
 
@@ -20,6 +23,9 @@ internal sealed class IdlMemberAnnotationSyntax
 
     /// <summary>Gets or sets the unresolved boolean optional argument.</summary>
     public string? OptionalExpression { get; set; }
+
+    /// <summary>Gets or sets whether the optional expression began with an escape character.</summary>
+    public bool OptionalExpressionWasEscaped { get; set; }
 
     /// <summary>Gets or sets the unresolved member-ID expression.</summary>
     public string? MemberIdExpression { get; set; }
@@ -36,6 +42,9 @@ internal sealed class IdlMemberAnnotationSyntax
     /// <summary>Gets or sets the unresolved default expression.</summary>
     public string? DefaultExpression { get; set; }
 
+    /// <summary>Gets or sets whether the default expression began with an escape character.</summary>
+    public bool DefaultExpressionWasEscaped { get; set; }
+
     /// <summary>Gets or sets the declared unit text.</summary>
     public string? UnitExpression { get; set; }
 
@@ -48,6 +57,9 @@ internal sealed class IdlMemberAnnotationSyntax
     /// <summary>Gets or sets the unresolved boolean external argument.</summary>
     public string? ExternalExpression { get; set; }
 
+    /// <summary>Gets or sets whether the external expression began with an escape character.</summary>
+    public bool ExternalExpressionWasEscaped { get; set; }
+
     /// <summary>Gets or sets whether a must-understand annotation was declared.</summary>
     public bool HasMustUnderstand { get; set; }
 
@@ -56,4 +68,7 @@ internal sealed class IdlMemberAnnotationSyntax
 
     /// <summary>Gets or sets the unresolved boolean must-understand argument.</summary>
     public string? MustUnderstandExpression { get; set; }
+
+    /// <summary>Gets or sets whether the must-understand expression began with an escape character.</summary>
+    public bool MustUnderstandExpressionWasEscaped { get; set; }
 }

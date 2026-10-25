@@ -128,7 +128,12 @@ internal sealed class IdlValueResolver(IdlSymbolTable symbols)
             }
             else if (valueType is IdlType.Primitive { Name: "boolean" })
             {
-                defaultValue = new IdlScalarValue.Boolean(ParseBooleanDefault(input, offset, currentNamespace, defaultExpression));
+                defaultValue = new IdlScalarValue.Boolean(ParseBooleanDefault(
+                    input,
+                    offset,
+                    currentNamespace,
+                    defaultExpression,
+                    annotations.DefaultExpressionWasEscaped));
             }
             else if (valueType is IdlType.Primitive { Name: "char" or "wchar" } characterType)
             {
@@ -235,14 +240,14 @@ internal sealed class IdlValueResolver(IdlSymbolTable symbols)
         return value;
     }
 
-    private bool ParseBooleanDefault(IdlInput input, int offset, string? currentNamespace, string expression)
+    private bool ParseBooleanDefault(IdlInput input, int offset, string? currentNamespace, string expression, bool expressionWasEscaped = false)
     {
-        if (string.Equals(expression, "TRUE", StringComparison.OrdinalIgnoreCase))
+        if (!expressionWasEscaped && string.Equals(expression, "TRUE", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
 
-        if (string.Equals(expression, "FALSE", StringComparison.OrdinalIgnoreCase))
+        if (!expressionWasEscaped && string.Equals(expression, "FALSE", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
@@ -257,14 +262,14 @@ internal sealed class IdlValueResolver(IdlSymbolTable symbols)
     }
 
     /// <summary>Resolves a boolean annotation argument after the constant symbol graph is bound.</summary>
-    internal bool ResolveBooleanAnnotation(IdlInput input, int offset, string? currentNamespace, string expression, string annotationName)
+    internal bool ResolveBooleanAnnotation(IdlInput input, int offset, string? currentNamespace, string expression, string annotationName, bool expressionWasEscaped = false)
     {
-        if (string.Equals(expression, "TRUE", StringComparison.OrdinalIgnoreCase))
+        if (!expressionWasEscaped && string.Equals(expression, "TRUE", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
 
-        if (string.Equals(expression, "FALSE", StringComparison.OrdinalIgnoreCase))
+        if (!expressionWasEscaped && string.Equals(expression, "FALSE", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
