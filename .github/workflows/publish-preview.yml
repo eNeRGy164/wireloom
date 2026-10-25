@@ -52,7 +52,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v6.0.0
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 10.0.402
           cache: true
           cache-dependency-path: |
             global.json
@@ -130,7 +130,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v6.0.0
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 10.0.402
           cache: true
           cache-dependency-path: |
             global.json
