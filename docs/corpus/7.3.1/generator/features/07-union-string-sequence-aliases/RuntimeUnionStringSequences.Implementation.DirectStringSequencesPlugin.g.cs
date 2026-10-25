@@ -36,8 +36,8 @@ internal class DirectStringSequencesPlugin : InterpretedTypePlugin<DirectStringS
 
         var members = new[]
         {
-            new UnionMember("narrow", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateString(255), 3), new[] { 0 }, id: 1),
-            new UnionMember("wide", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(255), 3), new[] { 1 }, id: 2)
+            new UnionMember("narrow", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateString(255), 3), [0], id: 1),
+            new UnionMember("wide", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(255), 3), [1], id: 2)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<DirectStringSequencesUnmanaged>(

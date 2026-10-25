@@ -36,10 +36,10 @@ internal class StringSequenceAliasesPlugin : InterpretedTypePlugin<StringSequenc
 
         var members = new[]
         {
-            new UnionMember("narrow", NarrowTextsSupport.Instance.GetDynamicTypeInternal(isPublic), new[] { 0 }, id: 1),
-            new UnionMember("wide", WideTextsSupport.Instance.GetDynamicTypeInternal(isPublic), new[] { 1 }, id: 2),
-            new UnionMember("boundedNarrow", BoundedNarrowTextsSupport.Instance.GetDynamicTypeInternal(isPublic), new[] { 2 }, id: 3),
-            new UnionMember("boundedWide", BoundedWideTextsSupport.Instance.GetDynamicTypeInternal(isPublic), new[] { 3 }, id: 4)
+            new UnionMember("narrow", NarrowTextsSupport.Instance.GetDynamicTypeInternal(isPublic), [0], id: 1),
+            new UnionMember("wide", WideTextsSupport.Instance.GetDynamicTypeInternal(isPublic), [1], id: 2),
+            new UnionMember("boundedNarrow", BoundedNarrowTextsSupport.Instance.GetDynamicTypeInternal(isPublic), [2], id: 3),
+            new UnionMember("boundedWide", BoundedWideTextsSupport.Instance.GetDynamicTypeInternal(isPublic), [3], id: 4)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<StringSequenceAliasesUnmanaged>(

@@ -17,7 +17,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// Gets or sets the <c>values</c> member. Its maximum number of elements is <c>2</c>. Each nested sequence is limited to <c>3</c> elements. Each element's representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     [Bound(2)]
-    public NestedSequence values { get; set; } = new NestedSequence();
+    public NestedSequence values { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Sample"/> class.

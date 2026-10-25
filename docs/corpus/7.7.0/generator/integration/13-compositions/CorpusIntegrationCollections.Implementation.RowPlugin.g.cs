@@ -32,6 +32,6 @@ internal class RowPlugin : InterpretedTypePlugin<Row, RowUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<RowUnmanaged>(dtf, "Row", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), new uint[] { 2 }));
+        return tsf.CreateAliasWithAccessInfo<RowUnmanaged>(dtf, "Row", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), [2]));
     }
 }

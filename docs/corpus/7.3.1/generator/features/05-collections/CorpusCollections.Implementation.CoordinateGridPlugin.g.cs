@@ -33,6 +33,6 @@ internal class CoordinateGridPlugin : InterpretedTypePlugin<CoordinateGrid, Coor
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<CoordinateGridUnmanaged>(dtf, "CoordinateGrid", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), new uint[] { 2, 3 }));
+        return tsf.CreateAliasWithAccessInfo<CoordinateGridUnmanaged>(dtf, "CoordinateGrid", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), [2, 3]));
     }
 }

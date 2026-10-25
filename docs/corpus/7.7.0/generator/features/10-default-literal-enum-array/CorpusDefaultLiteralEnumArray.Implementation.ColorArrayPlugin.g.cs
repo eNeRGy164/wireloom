@@ -32,6 +32,6 @@ internal class ColorArrayPlugin : InterpretedTypePlugin<ColorArray, ColorArrayUn
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<ColorArrayUnmanaged>(dtf, "ColorArray", tsf.CreateArrayWithAccessInfo<global::CorpusDefaultLiteralEnumArray.Color>(dtf, ColorSupport.Instance.GetDynamicTypeInternal(isPublic), new uint[] { 5 }));
+        return tsf.CreateAliasWithAccessInfo<ColorArrayUnmanaged>(dtf, "ColorArray", tsf.CreateArrayWithAccessInfo<global::CorpusDefaultLiteralEnumArray.Color>(dtf, ColorSupport.Instance.GetDynamicTypeInternal(isPublic), [5]));
     }
 }

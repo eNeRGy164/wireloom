@@ -24,7 +24,7 @@ public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
     /// <summary>
     /// Gets or sets the <c>point</c> member.
     /// </summary>
-    public Nested.Point point { get; set; } = new Nested.Point();
+    public Nested.Point point { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KeywordRecord"/> class.

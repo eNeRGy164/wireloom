@@ -27,10 +27,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <exception cref="global::System.ArgumentOutOfRangeException">The assigned value is outside the inclusive range -32 through 31.</exception>
     public int value
     {
-        get
-        {
-            return _value;
-        }
+        get => _value;
         set
         {
             global::System.ArgumentOutOfRangeException.ThrowIfLessThan(value, -32);

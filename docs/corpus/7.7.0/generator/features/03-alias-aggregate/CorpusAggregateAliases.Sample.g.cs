@@ -14,7 +14,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Gets or sets the <c>point</c> member.
     /// </summary>
-    public Point point { get; set; } = new Point();
+    public Point point { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Sample"/> class.

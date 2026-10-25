@@ -36,9 +36,9 @@ internal class ChoicePlugin : InterpretedTypePlugin<Choice, ChoiceUnmanaged>
 
         var members = new[]
         {
-            new UnionMember("minimum", dtf.GetPrimitiveType<int>(), new[] { 0 }, id: 1),
-            new UnionMember("maximum", dtf.GetPrimitiveType<int>(), new[] { unchecked((int)4294967295) }, id: 2),
-            new UnionMember("fallback", dtf.GetPrimitiveType<int>(), new[] { UnionMember.DefaultLabel }, id: 3)
+            new UnionMember("minimum", dtf.GetPrimitiveType<int>(), [0], id: 1),
+            new UnionMember("maximum", dtf.GetPrimitiveType<int>(), [unchecked((int)4294967295)], id: 2),
+            new UnionMember("fallback", dtf.GetPrimitiveType<int>(), [UnionMember.DefaultLabel], id: 3)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<ChoiceUnmanaged>(

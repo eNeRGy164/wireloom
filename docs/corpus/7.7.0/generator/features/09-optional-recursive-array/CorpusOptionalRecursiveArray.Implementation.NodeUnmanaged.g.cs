@@ -36,7 +36,7 @@ public struct NodeUnmanaged : INativeTopicType<Node>
     {
         sample.value = value;
 
-        children.FromNative<Node, NodeUnmanaged>(out Node[] childrenTemporary_, keysOnly, dimensions: new[] { 2 });
+        children.FromNative<Node, NodeUnmanaged>(out Node[] childrenTemporary_, keysOnly, dimensions: [2]);
         sample.children = childrenTemporary_;
     }
 

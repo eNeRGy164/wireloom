@@ -17,7 +17,7 @@ public partial class Outer : global::System.IEquatable<Outer>
     /// Gets or sets the <c>identity</c> member. This member forms part of the DDS instance key.
     /// </summary>
     [Key]
-    public Inner identity { get; set; } = new Inner();
+    public Inner identity { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the <c>payload</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.

@@ -36,8 +36,8 @@ internal class EnumUnionPlugin : InterpretedTypePlugin<global::EnumUnion, EnumUn
 
         var members = new[]
         {
-            new UnionMember("selected", dtf.GetPrimitiveType<int>(), new[] { 1 }, id: 1),
-            new UnionMember("red", dtf.GetPrimitiveType<int>(), new[] { 0 }, id: 2)
+            new UnionMember("selected", dtf.GetPrimitiveType<int>(), [1], id: 1),
+            new UnionMember("red", dtf.GetPrimitiveType<int>(), [0], id: 2)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<EnumUnionUnmanaged>(

@@ -14,7 +14,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Gets or sets the <c>item</c> member.
     /// </summary>
-    public global::IncludedType item { get; set; } = new global::IncludedType();
+    public global::IncludedType item { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the <c>value</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.

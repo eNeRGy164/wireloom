@@ -51,7 +51,7 @@ public sealed class CorpusComplianceSpecs
         generated["CorpusArrayOfSequences.Sample.g.cs"].Source.ShouldContain("Sample_valuesSequence[] values");
         generated["CorpusArrayOfSequences.Sample.g.cs"].Source.ShouldContain("Sample_namesSequence[] names");
         generated["CorpusArrayOfSequences.Implementation.SamplePlugin.g.cs"].Source
-            .ShouldContain("tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), 100), new uint[] { 2 }");
+            .ShouldContain("tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), 100), [2]");
     }
 
     [Theory]
@@ -502,7 +502,7 @@ public sealed class CorpusComplianceSpecs
         sampleUnmanaged.ShouldContain("private NativeOptionalSeq values;");
         sampleUnmanaged.ShouldContain("private NativeUnmanagedOptionalArray items;");
         sampleUnmanaged.ShouldContain("values.FromNative(out Sequence<int> valuesTemporary_);");
-        sampleUnmanaged.ShouldContain("items.FromNative(out int[] itemsTemporary_, dimensions: new[] { 2 });");
+        sampleUnmanaged.ShouldContain("items.FromNative(out int[] itemsTemporary_, dimensions: [2]);");
         sampleUnmanaged.ShouldContain("values.ToNative((Sequence<int>)sample.values!, 4);");
         sampleUnmanaged.ShouldContain("items.ToNative(sample.items, 2);");
         sampleUnmanaged.ShouldContain("values.Destroy(optionalsOnly);");
@@ -590,9 +590,9 @@ public sealed class CorpusComplianceSpecs
         native.ShouldContain("children.FromNative<Node, NodeUnmanaged>");
         native.ShouldContain("children.ToNative<Node, NodeUnmanaged>");
         native.ShouldContain("children.Destroy<Node, NodeUnmanaged>(dimension: 2, optionalsOnly);");
-        native.ShouldContain("out Node[] childrenTemporary_, keysOnly, dimensions: new[] { 2 }");
+        native.ShouldContain("out Node[] childrenTemporary_, keysOnly, dimensions: [2]");
         native.ShouldContain("sample.children, keysOnly, dimension: 2");
-        native.ShouldContain("dimensions: new[] { 2 }");
+        native.ShouldContain("dimensions: [2]");
         native.ShouldNotContain("children.Initialize");
         var plugin = generated["CorpusOptionalRecursiveArray.Implementation.NodePlugin.g.cs"].Source;
         plugin.ShouldContain("CreateArrayWithAccessInfo<NodeUnmanaged>");
@@ -601,7 +601,7 @@ public sealed class CorpusComplianceSpecs
         oracle.ShouldContain("NodeSupport.Instance.GetDynamicTypeInternal(isPublic)");
         plugin.ShouldContain("NodeSupport.GetOrCreateInstanceImpl().GetDynamicTypeInternal(isPublic)");
         plugin.ShouldNotContain("NodeSupport.Instance.GetDynamicTypeInternal(isPublic)");
-        plugin.ShouldContain("new uint[] { 2 }");
+        plugin.ShouldContain("[2]");
         plugin.ShouldContain("isOptional: true, id: 1");
         if (rti731)
         {

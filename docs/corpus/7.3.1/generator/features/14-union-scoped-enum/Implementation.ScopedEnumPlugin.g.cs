@@ -36,8 +36,8 @@ internal class ScopedEnumPlugin : InterpretedTypePlugin<global::ScopedEnum, Scop
 
         var members = new[]
         {
-            new UnionMember("selected", dtf.GetPrimitiveType<int>(), new[] { 1 }, id: 1),
-            new UnionMember("first", dtf.GetPrimitiveType<int>(), new[] { 0 }, id: 2)
+            new UnionMember("selected", dtf.GetPrimitiveType<int>(), [1], id: 1),
+            new UnionMember("first", dtf.GetPrimitiveType<int>(), [0], id: 2)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<ScopedEnumUnmanaged>(

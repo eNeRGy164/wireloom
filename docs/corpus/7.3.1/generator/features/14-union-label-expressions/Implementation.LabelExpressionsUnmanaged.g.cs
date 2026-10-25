@@ -25,10 +25,6 @@ public struct LabelExpressionsUnmanaged : INativeTopicType<global::LabelExpressi
     /// <param name="optionalsOnly">Indicates whether only optional members should be released.</param>
     public void Destroy(bool optionalsOnly)
     {
-        if (optionalsOnly)
-        {
-            return;
-        }
     }
 
     /// <summary>

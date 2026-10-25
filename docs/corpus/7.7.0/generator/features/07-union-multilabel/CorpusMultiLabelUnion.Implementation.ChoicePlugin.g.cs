@@ -36,8 +36,8 @@ internal class ChoicePlugin : InterpretedTypePlugin<Choice, ChoiceUnmanaged>
 
         var members = new[]
         {
-            new UnionMember("number", dtf.GetPrimitiveType<int>(), new[] { 1, 5 }, id: 1),
-            new UnionMember("text", dtf.CreateString(255), new[] { 2 }, id: 2)
+            new UnionMember("number", dtf.GetPrimitiveType<int>(), [1, 5], id: 1),
+            new UnionMember("text", dtf.CreateString(255), [2], id: 2)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<ChoiceUnmanaged>(

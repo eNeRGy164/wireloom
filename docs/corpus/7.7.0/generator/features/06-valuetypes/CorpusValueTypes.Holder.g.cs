@@ -14,7 +14,7 @@ public partial class Holder : global::System.IEquatable<Holder>
     /// <summary>
     /// Gets or sets the <c>value</c> member.
     /// </summary>
-    public DerivedValue value { get; set; } = new DerivedValue();
+    public DerivedValue value { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Holder"/> class.

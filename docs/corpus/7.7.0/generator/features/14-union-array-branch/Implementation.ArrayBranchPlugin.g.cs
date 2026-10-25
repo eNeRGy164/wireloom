@@ -36,8 +36,8 @@ internal class ArrayBranchPlugin : InterpretedTypePlugin<global::ArrayBranch, Ar
 
         var members = new[]
         {
-            new UnionMember("values", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), new uint[] { 2, 3 }), new[] { 0 }, id: 1),
-            new UnionMember("scalar", dtf.GetPrimitiveType<int>(), new[] { 1 }, id: 2)
+            new UnionMember("values", tsf.CreateArrayWithAccessInfo<int>(dtf, dtf.GetPrimitiveType<int>(), [2, 3]), [0], id: 1),
+            new UnionMember("scalar", dtf.GetPrimitiveType<int>(), [1], id: 2)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<ArrayBranchUnmanaged>(

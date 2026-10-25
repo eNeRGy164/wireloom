@@ -17,7 +17,7 @@ public partial class TextAlias : global::System.IEquatable<TextAlias>
     /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.3.1 string and wide-string bounds</seealso>
     [Bound(8)]
-    public string Value { get; set; } = string.Empty;
+    public string Value { get; set; }
 
     /// <summary>
     /// Initializes the typedef value to its default value.
@@ -41,7 +41,7 @@ public partial class TextAlias : global::System.IEquatable<TextAlias>
     /// Initializes a copy of another typedef value.
     /// </summary>
     /// <param name="other">The typedef to copy.</param>
-    /// <remarks>When <paramref name="other"/> is null, the constructor keeps the declared default and property initializer. An aggregate value is copied through its generated copy constructor.</remarks>
+    /// <remarks>When <paramref name="other"/> is null, the constructor keeps the declared default. An aggregate value is copied through its generated copy constructor.</remarks>
     public TextAlias(TextAlias? other) : this()
     {
         if (other is not null)
