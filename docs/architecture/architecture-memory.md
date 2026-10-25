@@ -160,6 +160,13 @@ authoritative; this summary is a retrieval aid, not a replacement.
   Roslyn host and does not replace licensed wire evidence. See
   [deployment](arc42/07-deployment-view.md) and
   [verification scope](../guides/support-and-compatibility.md#continuous-lts-verification).
+- **Checked-in publisher/subscriber sample:** The repository example consumes
+  released Wireloom.Dds.Generator 0.4.0 from NuGet.org. Quality CI compiles it
+  on Ubuntu 26.04 and Windows 2025 without loading native DDS libraries or
+  requiring an RTI license; local DDS execution requires RTI native assets and
+  a valid license. See the [sample guide](../../samples/HelloWorld/README.md),
+  [deployment](arc42/07-deployment-view.md), and
+  [quality scenarios](arc42/10-quality-requirements.md).
 - **Local container tooling:** Docker Desktop runs pinned RTI oracle captures
   and Community Qodana; keep licenses outside the repository and mount them
   read-only for licensed wire runs. See the [LTS runbook](../corpus/LTS-PROFILES.md)
