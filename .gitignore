@@ -33,6 +33,7 @@ obj/
 
 # Stryker
 StrykerOutput/
+.stryker/
 
 # Qodana
 .qodana/
@@ -42,7 +43,7 @@ package-test-feed/
 coverage/
 
 # Local wire-compatibility run reports and sanitized logs
-/artifacts
+artifacts/
 tmp/
 
 # Capture/export run reports belong in artifacts, not retained corpus sources.

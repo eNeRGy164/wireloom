@@ -4,7 +4,8 @@ Wireloom fuzzes the public IDL compiler and Roslyn generator adapter with FsChec
 [`FsCheckIdlCompilerFuzzingSpecs`](../../tests/Wireloom.Dds.Generator.Tests/Fuzzing/FsCheckIdlCompilerFuzzingSpecs.cs).
 The property selects structured IDL strings derived from valid seeds and
 bounded insert/delete/replace mutations. The compiler property exercises the
-public `IdlCompiler.CompileSources` overload and `IdlInput` options. The
+public in-memory API through the test-only `CompilerTestSupport` adapter and
+`IdlInput` options. The
 generator property sends the same cases through the Roslyn adapter with
 build-style `Generate`, `Strict`, `Defines`, `Undefines`, and
 `IncludeDirectories` metadata. Each case must either compile or be rejected by
@@ -21,7 +22,7 @@ is intentionally not launched for every fuzz case.
 Run the CI-facing fuzzing pass with:
 
 ```powershell
-dotnet test tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
+dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
   --no-restore --configuration Release -- --filter-class Wireloom.Dds.Generator.Tests.FsCheckIdlCompilerFuzzingSpecs
 ```
 

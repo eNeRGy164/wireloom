@@ -12,7 +12,7 @@ counts are the authoritative invalidation evidence.
 Run the focused measurement with the repository SDK policy and existing test dependencies:
 
 ```powershell
-dotnet test tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
+dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
   --no-restore --configuration Release `
   -- `
   --filter-class Wireloom.Generation.Tests.IncrementalGeneratorMeasurementSpecs `

@@ -17,6 +17,7 @@ concurrency:
 env:
   DOTNET_NOLOGO: true
   TEST_PROJECT: tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj
+  COMPILER_TEST_PROJECT: tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj
   RUNTIME_TEST_PROJECT: tests/Wireloom.Dds.Generator.RuntimeContracts/Wireloom.Dds.Generator.RuntimeContracts.csproj
   CORPUS_TEST_PROJECT: tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj
   PACKAGE_PROJECT: src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
@@ -330,23 +331,38 @@ jobs:
       - name: Restore locked dependencies
         run: |
           dotnet restore $env:TEST_PROJECT --locked-mode
+          dotnet restore $env:COMPILER_TEST_PROJECT --locked-mode
         shell: pwsh
 
       - name: Test with coverage
         run: >-
-          dotnet test $env:TEST_PROJECT
+          dotnet run --project $env:TEST_PROJECT
           --no-restore
           --configuration Release
+          --
           --results-directory coverage
           --coverage
           --coverage-settings coverage.settings.xml
-          --coverage-output coverage.cobertura.xml
+          --coverage-output generator.cobertura.xml
+          --coverage-output-format cobertura
+        shell: pwsh
+
+      - name: Test compiler core with coverage
+        run: >-
+          dotnet run --project $env:COMPILER_TEST_PROJECT
+          --no-restore
+          --configuration Release
+          --
+          --results-directory coverage
+          --coverage
+          --coverage-settings coverage.settings.xml
+          --coverage-output compiler.cobertura.xml
           --coverage-output-format cobertura
         shell: pwsh
 
       - name: Run adversarial preprocessor review gate
         run: >-
-          dotnet run --project $env:TEST_PROJECT
+          dotnet run --project $env:COMPILER_TEST_PROJECT
           --no-build
           --configuration Release
           --
@@ -355,7 +371,7 @@ jobs:
 
       - name: Run IDL FsCheck fuzzing gate
         run: >-
-          dotnet test $env:TEST_PROJECT
+          dotnet run --project $env:TEST_PROJECT
           --no-build
           --configuration Release
           --
@@ -364,12 +380,12 @@ jobs:
         env:
           WIRELOOM_FSCHECK_TESTS: 10000
 
-      - name: Upload generator coverage to Coveralls
+      - name: Upload compiler and generator coverage to Coveralls
         uses: coverallsapp/github-action@v2.3.8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           format: cobertura
-          file: coverage/coverage.cobertura.xml
+          files: coverage/generator.cobertura.xml coverage/compiler.cobertura.xml
 
   qodana:
     name: Qodana community scan
@@ -387,12 +403,17 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+
       - name: Run Qodana community scan
         uses: JetBrains/qodana-action@v2026.2.2
         with:
           args: >-
             --image=jetbrains/qodana-cdnet:2026.2-privileged
-            --project=src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
+            --solution=Wireloom.slnx
             --configuration Release
             --fail-threshold 0
             --skip-pull=false

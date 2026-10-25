@@ -47,7 +47,7 @@ if (!$EvidenceDirectory) {
 $evidence = [IO.Path]::GetFullPath($EvidenceDirectory, $PSScriptRoot)
 if (Test-Path -LiteralPath $evidence) { throw 'EvidenceDirectory must be new to preserve earlier runs.' }
 New-Item -ItemType Directory -Force -Path $evidence | Out-Null
-$inputs = @('src/Wireloom.Dds.Generator', 'tests/Wireloom.Dds.Generator.CorpusCompliance',
+$inputs = @('src/Wireloom.Dds.Compiler', 'src/Wireloom.Dds.Generator', 'tests/Wireloom.Dds.Generator.CorpusCompliance',
     'docs/corpus/idl', 'docs/corpus/manifest.json', 'docs/corpus/scripts/Evidence.Common.ps1',
     'Export-CorpusGeneratorSources.ps1', 'global.json', 'Directory.Build.props',
     'Directory.Packages.props', 'tests/Directory.Build.props', 'NuGet.config')

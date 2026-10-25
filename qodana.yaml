@@ -9,9 +9,11 @@ include:
   - name: CheckDependencyLicenses
 
 dotnet:
-  project: src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
+  solution: Wireloom.slnx
 
 bootstrap: |
   set -eu
 
+  dotnet restore src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj --locked-mode
   dotnet restore src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --locked-mode
+  dotnet build src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj --no-restore --configuration Release
