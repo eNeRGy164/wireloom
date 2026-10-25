@@ -16,17 +16,18 @@ RTI runtime.
    references to `Generator`.
 3. The generator requires C# 12 or later and a resolved RTI runtime reference
    of at least 7.3.1. The Roslyn adapter reads the resolved assembly version
-   and compilation orchestration selects the matching immutable profile.
+   and maps it to a supported profile through the shared compiler API.
 4. `IdlCompiler` resolves the include graph and preprocesses input. If escape
    normalization is enabled, a token-aware pass removes one leading underscore
    from identifiers and composes source origins before parsing. The front end
    then binds normalized references and deferred bounds against the complete
    symbol graph and validates semantics using the batch policy.
-5. Emission planning applies profile-specific API policies; emitters render the
-   resolved plans and return generated C# documents to the central result.
-   Input that prevents safe managed output produces `DDSG0001` at its IDL
-   location. Deliberately ignored constructs and potentially lossy mappings
-   report diagnostics while generation continues; see the
+5. The adapter calls `IdlCompiler.Compile` with in-memory inputs and the
+   selected profile. The core snapshots the input list, preprocesses and
+   validates IDL, then returns one result containing documents and
+   diagnostics. Emission planning applies profile-specific API policies.
+   Deliberately ignored constructs and potentially lossy mappings report
+   diagnostics while generation continues; see the
    [diagnostic rules](08-crosscutting-concepts.md#82-diagnostics-and-source-locations).
 6. The consumer compiles generated types together with its hand-written code.
 
@@ -52,6 +53,17 @@ elements and 255 UTF-8 bytes or UTF-16 code units. Explicit IDL bounds override
 these effective limits. In `Idl` mode, planning
 creates sequence-element wrappers and array metadata without rewriting the
 semantic model. Other collections retain their existing emission paths.
+
+Repository C# callers use the same synchronous API with an explicit
+`IdlCompilerProfile` and supplied source text. The core resolves includes only
+from the provided input collection and does not read files. An empty document
+list with no error diagnostics is a successful compile; an empty document list
+with an error is a failed compile. Expected IDL failures return source-located
+`DDSG0001`; `DDSG0004` remains an error result with no documents. Warnings
+collected before the first fatal error remain in that result. Cancellation and
+unexpected exceptions propagate. The adapter converts input-configuration
+errors and presents diagnostics through Roslyn before adding successful
+documents.
 
 ## 6.2 Failure paths
 

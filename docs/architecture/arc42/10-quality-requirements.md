@@ -43,10 +43,10 @@ defines fixture and adaptation scope.
 
 ### Build-time developer experience
 
-| ID   | Scenario                                | Acceptance and evidence                                                                                                                                                                                     |
-| :--- | :-------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Q-03 | Consume the packed `.nupkg`             | Analyzer targets load and generated types compile without a project reference; the package suite links the runtime contracts and passes in a .NET 8-only compiler-host container.                           |
-| Q-07 | Change roots, includes, or other inputs | Roslyn reuses unaffected inputs; the baseline records tracked-step reasons and timings. Per-root output caching remains a follow-up.                                                                        |
+| ID   | Scenario                                | Acceptance and evidence                                                                                                                                                           |
+| :--- | :-------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q-03 | Consume the packed `.nupkg`             | Analyzer targets and the adjacent compiler assembly load and generated types compile without a project reference; the package suite links the runtime contracts and passes in a .NET 8-only compiler-host container. |
+| Q-07 | Change roots, includes, or other inputs | Roslyn reuses unaffected inputs; the baseline records tracked-step reasons and timings. Per-root output caching remains a follow-up.                                              |
 | Q-13 | Build the checked-in DDS sample         | CI restores released Wireloom.Dds.Generator 0.4.0 from NuGet.org in locked mode and builds the sample on Windows and Ubuntu without an RTI license; local licensed exchange steps are in the sample README. |
 
 ### Build safety
@@ -66,7 +66,7 @@ defines fixture and adaptation scope.
 
 | ID   | Scenario                  | Acceptance and evidence                                                                                                                                                                                        |
 | :--- | :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Q-04 | Change one compiler stage | Focused in-memory tests exercise that stage without running the full corpus; annotation syntax capture, known-name validation, binding, generated outputs, and diagnostics have separately traceable evidence. |
+| Q-04 | Change one compiler stage | Focused in-memory tests exercise the shared compiler without running the full corpus; its public result, explicit profile, source-located diagnostics, cancellation, input snapshots, formatting parity, annotation capture, binding, and generated outputs have separately traceable evidence. |
 
 ### Supply-chain integrity
 
@@ -91,9 +91,11 @@ repository SDK builds the package. A separate SDK 8 container restores, builds,
 and runs the fresh package consumer with no .NET 10 installation, qualifying
 the supported .NET 8 Roslyn host. Licensed wire checks remain separate. Its [coverage matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
 identifies executable coverage, applicable gaps, and the RTI C# or better
-expectation. Coveralls measures maintained generator source; generated fixture
-and test project code are excluded. Unresolved required contracts remain gaps
-rather than completed compatibility evidence.
+expectation. Coveralls measures maintained compiler and generator source;
+generated fixture and test project code are excluded. The extracted compiler's
+exact generated text is compared against the pre-extraction baseline for both
+RTI profiles. Unresolved required contracts remain gaps rather than completed
+compatibility evidence.
 
 > [!NOTE]
 > Additional information: This architecture context is also summarized in

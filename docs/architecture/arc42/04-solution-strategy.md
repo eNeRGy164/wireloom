@@ -20,15 +20,15 @@
    and potentially lossy mappings report diagnostics while generation continues;
    consumers must review those outcomes. See the
    [diagnostic rules](08-crosscutting-concepts.md#82-diagnostics-and-source-locations).
-5. **Select the RTI API profile from the resolved runtime reference.**
-   The Roslyn adapter reports missing or below-minimum references; compilation
-   orchestration selects one immutable profile and passes it to emission
-   planning. Parsing, binding, and semantic validation remain independent of
-   RTI. Versions 7.3.1 through below 7.7.0 select the 7.3.1 profile; 7.7.0 and
-   later select the 7.7.0 profile. Only exact 7.3.1 and 7.7.0 versions receive
-   qualification claims. Profile mapping does not qualify every version in a
-   mapped range. A feature becomes a compatibility claim only after relevant
-   source-shape, runtime, and interoperability evidence.
+5. **Select the RTI API profile at the host boundary.**
+   The Roslyn adapter reports missing or below-minimum references and maps the
+   resolved runtime version through the shared compiler API. Repository hosts
+   select a supported profile explicitly. Compilation orchestration passes
+   that profile to emission planning. Parsing, binding, and semantic
+   validation remain independent of RTI. Versions 7.3.1 through below 7.7.0
+   select the 7.3.1 profile; 7.7.0 and later select the 7.7.0 profile. Only
+   exact 7.3.1 and 7.7.0 versions receive qualification claims. Profile
+   mapping does not qualify every version in a mapped range.
 6. **Use IDL and DDS-XTypes to define language meaning.**
    Interpret supported constructs using the OMG specifications. Retained RTI
    output tests compatibility with a particular generator and runtime; it does
@@ -37,3 +37,9 @@
    Record RTI extensions, implementation limits, and interoperability evidence
    separately; a language feature does not need to reproduce an RTI generator
    defect. See [value semantics](08-crosscutting-concepts.md#88-annotation-constant-and-default-semantics).
+7. **Share one host-neutral compiler project.**
+   Repository C# hosts call the same `netstandard2.0` compiler with in-memory
+   inputs and receive documents and diagnostics together. The Roslyn adapter
+   keeps MSBuild parsing, runtime discovery, and IDE/build presentation. The
+   core has no Roslyn, MSBuild, or RTI references and is bundled beside the
+   adapter in the existing generator package.
