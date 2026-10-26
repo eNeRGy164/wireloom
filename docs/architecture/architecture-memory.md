@@ -178,7 +178,7 @@ authoritative; this summary is a retrieval aid, not a replacement.
   [deployment](arc42/07-deployment-view.md) and
   [verification scope](../guides/support-and-compatibility.md#continuous-lts-verification).
 - **Checked-in publisher/subscriber sample:** The repository example consumes
-  released Wireloom.Dds.Generator 0.4.0 from NuGet.org. Quality CI compiles it
+  released Wireloom.Dds.Generator 0.5.0 from NuGet.org. Quality CI compiles it
   on Ubuntu 26.04 and Windows 2025 without loading native DDS libraries or
   requiring an RTI license; local DDS execution requires RTI native assets and
   a valid license. See the [sample guide](../../samples/HelloWorld/README.md),

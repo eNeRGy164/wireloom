@@ -23,7 +23,7 @@ dotnet restore samples/HelloWorld/HelloWorld.csproj --locked-mode
 dotnet build samples/HelloWorld/HelloWorld.csproj --no-restore --configuration Release
 ```
 
-The project consumes the released Wireloom.Dds.Generator 0.4.0 package from
+The project consumes the released Wireloom.Dds.Generator 0.5.0 package from
 NuGet.org. Generated C# remains under the build output; hello_world.idl and
 Program.cs are maintained inputs.
 

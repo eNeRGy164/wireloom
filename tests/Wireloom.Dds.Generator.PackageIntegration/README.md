@@ -103,10 +103,10 @@ minimum consumer framework without adding a project:
 ```powershell
 dotnet restore tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
   --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config `
-  -p:WireloomDdsGeneratorPackageVersion=0.4.0 -p:WireloomConsumerTargetFramework=net8.0
+  -p:WireloomDdsGeneratorPackageVersion=0.5.0 -p:WireloomConsumerTargetFramework=net8.0
 dotnet run --project tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
   --no-restore --configuration Release `
-  -p:WireloomDdsGeneratorPackageVersion=0.4.0 -p:WireloomConsumerTargetFramework=net8.0 -p:LangVersion=12.0
+  -p:WireloomDdsGeneratorPackageVersion=0.5.0 -p:WireloomConsumerTargetFramework=net8.0 -p:LangVersion=12.0
 ```
 
 The Quality workflow also copies the package and the consumer fixture into an

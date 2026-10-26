@@ -75,8 +75,8 @@ the member is absent:
 ### Less tooling to install
 
 Generate C# from IDL using the SDK already building your application and a
-small generator package. The latest release, Wireloom 0.4.0, measured
-**175,113 bytes (about 175 kB)** when packed locally. The RTI runtime remains a
+small generator package. The latest release, Wireloom 0.5.0, measures
+**402,534 bytes (about 403 kB)** as the published NuGet package. The RTI runtime remains a
 NuGet dependency in either workflow; the package measurement covers generation
 tooling.
 
@@ -139,10 +139,10 @@ test does not establish DDS wire compatibility. For a released package, use its
 current source commit do not retroactively qualify every package release.
 
 - **Released-package sample build:** The Quality workflow clean-restores and
-  builds the `net10.0` Hello World sample with released Wireloom 0.4.0 on
+  builds the `net10.0` Hello World sample with released Wireloom 0.5.0 on
   Ubuntu 26.04 and Windows 2025. It does not load native DDS libraries or need
   an RTI license. See the [workflow](.github/workflows/quality.yml),
-  [0.4.0 release record](docs/releases/0.4.0.md), and
+  [0.5.0 release record](docs/releases/0.5.0.md), and
   [sample guide](samples/HelloWorld/README.md).
 - **Fresh package and diagnostics:** CI packs the source commit under test;
   package integration restores it and compiles and exercises generated C# for
@@ -202,7 +202,7 @@ Replace `WireloomQuickstart.csproj` with:
 
   <ItemGroup>
     <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
-    <PackageReference Include="Wireloom.Dds.Generator" Version="0.4.0" PrivateAssets="all" />
+    <PackageReference Include="Wireloom.Dds.Generator" Version="0.5.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

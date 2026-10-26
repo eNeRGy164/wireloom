@@ -7,7 +7,7 @@ the quality and release workflow results available for that source revision.
 
 | Package                                                              | Source tag                                                                                                         | Published  | Record                          |
 | :------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- | :--------- | :------------------------------ |
-| 0.5.0 (planned)                                                      | `v0.5.0` (source pending)                                                                                          | Pending    | [0.5.0 preparation](0.5.0.md)   |
+| [0.5.0](https://www.nuget.org/packages/Wireloom.Dds.Generator/0.5.0) | [`v0.5.0`](https://github.com/eNeRGy164/wireloom/releases/tag/v0.5.0) · `01f66fe07a9065751430c3b71bbc72a2a7a4ad0e` | 2026-10-26 | [0.5.0 qualification](0.5.0.md) |
 | [0.4.0](https://www.nuget.org/packages/Wireloom.Dds.Generator/0.4.0) | [`v0.4.0`](https://github.com/eNeRGy164/wireloom/releases/tag/v0.4.0) · `2f77e824ec6ad0a46ee4640b045e1835d023983f` | 2026-10-17 | [0.4.0 qualification](0.4.0.md) |
 | [0.3.0](https://www.nuget.org/packages/Wireloom.Dds.Generator/0.3.0) | [`v0.3.0`](https://github.com/eNeRGy164/wireloom/releases/tag/v0.3.0) · `71bdc406cd565b4bd9d441df470cafcd1c10b326` | 2026-10-05 | [0.3.0 qualification](0.3.0.md) |
 | [0.2.0](https://www.nuget.org/packages/Wireloom.Dds.Generator/0.2.0) | [`v0.2.0`](https://github.com/eNeRGy164/wireloom/releases/tag/v0.2.0) · `785e580d1cfff642fc426b43a22de3814f05a501` | 2026-09-27 | [0.2.0 qualification](0.2.0.md) |
@@ -19,7 +19,7 @@ Each record identifies the source tag and links to test evidence for that source
 revision. Workflow links point to GitHub Actions; artifact downloads may expire
 according to the workflow retention policy.
 
-All four GitHub releases are immutable and have no attached release assets.
+Published GitHub releases are immutable and have no attached release assets.
 Existing NuGet package pages and release descriptions cannot be changed to add
 links after publication. The current package README links to this stable index
 for future releases; the link in the repository README provides the index for

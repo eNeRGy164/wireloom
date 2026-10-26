@@ -13,9 +13,9 @@
       },
       "Wireloom.Dds.Generator": {
         "type": "Direct",
-        "requested": "[0.4.0, )",
-        "resolved": "0.4.0",
-        "contentHash": "PIzrpoU2v3+X6GiVT/sjdOvLD6v4778cLA140kDJUuzwmRgoYbMpE13URX92ixRdcPiMPPz3l5/huLLzJ8bn0Q=="
+        "requested": "[0.5.0, )",
+        "resolved": "0.5.0",
+        "contentHash": "o1qszaFIan5Pcura9negkl7XG8SKxPcEcJbq85QbsVDFLrZYOJ9NZkZwX/bs7UGge16gT+sRe9UbLZYHRWWatg=="
       },
       "Rti.ConnextDds.Native": {
         "type": "Transitive",

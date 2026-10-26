@@ -47,7 +47,7 @@ defines fixture and adaptation scope.
 | :--- | :-------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Q-03 | Consume the packed `.nupkg`             | Analyzer targets and the adjacent compiler assembly load and generated types compile without a project reference; the package suite links the runtime contracts and passes in a .NET 8-only compiler-host container. |
 | Q-07 | Change roots, includes, or other inputs | Roslyn reuses unaffected inputs; the baseline records tracked-step reasons and timings. Per-root output caching remains a follow-up.                                              |
-| Q-13 | Build the checked-in DDS sample         | CI restores released Wireloom.Dds.Generator 0.4.0 from NuGet.org in locked mode and builds the sample on Windows and Ubuntu without an RTI license; local licensed exchange steps are in the sample README. |
+| Q-13 | Build the checked-in DDS sample         | CI restores released Wireloom.Dds.Generator 0.5.0 from NuGet.org in locked mode and builds the sample on Windows and Ubuntu without an RTI license; local licensed exchange steps are in the sample README. |
 
 ### Build safety
 

@@ -45,7 +45,7 @@ prove DDS wire interoperability.
    </PropertyGroup>
    <ItemGroup>
      <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
-     <PackageReference Include="Wireloom.Dds.Generator" Version="0.4.0" PrivateAssets="all" />
+     <PackageReference Include="Wireloom.Dds.Generator" Version="0.5.0" PrivateAssets="all" />
      <DdsIdl Include="Contracts\Telemetry.idl" Defines="PRODUCT=Widget" />
    </ItemGroup>
    ```
