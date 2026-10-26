@@ -34,9 +34,7 @@ Replace `WireloomQuickStart.csproj` with:
 
   <ItemGroup>
     <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
-    <PackageReference Include="Wireloom.Dds.Generator"
-                      Version="0.4.0"
-                      PrivateAssets="all" />
+    <PackageReference Include="Wireloom.Dds.Generator" Version="0.5.0" PrivateAssets="all" />
     <DdsIdl Include="Telemetry.idl" />
   </ItemGroup>
 </Project>
@@ -99,9 +97,7 @@ and the [Hello World prerequisites](https://github.com/eNeRGy164/wireloom/blob/m
 ```xml
 <ItemGroup>
   <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
-  <PackageReference Include="Wireloom.Dds.Generator"
-                    Version="0.4.0"
-                    PrivateAssets="all" />
+  <PackageReference Include="Wireloom.Dds.Generator" Version="0.5.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -209,9 +205,10 @@ not need the generator package unless they also declare their own IDL roots.
 <!-- Contracts.csproj -->
 <ItemGroup>
   <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
-  <PackageReference Include="Wireloom.Dds.Generator"
-                    Version="0.4.0"
-                    PrivateAssets="all" />
+  <PackageReference Include="Wireloom.Dds.Generator" Version="0.5.0" PrivateAssets="all" />
+</ItemGroup>
+
+<ItemGroup>
   <DdsIdl Include="Contracts\Telemetry.idl" />
 </ItemGroup>
 ```
@@ -393,6 +390,7 @@ Configure the include directory and declare only the two roots:
 <PropertyGroup>
   <DdsIdlIncludeDirectories>$(MSBuildProjectDirectory)\Contracts\Shared</DdsIdlIncludeDirectories>
 </PropertyGroup>
+
 <ItemGroup>
   <DdsIdl Include="Contracts\Telemetry.idl" />
   <DdsIdl Include="Contracts\Commands.idl" />
@@ -422,6 +420,7 @@ the generated API, native storage, and wire type metadata:
 <PropertyGroup>
   <DdsIdlSequenceArrayMapping>Idl</DdsIdlSequenceArrayMapping>
 </PropertyGroup>
+
 <ItemGroup>
   <DdsIdl Include="Contracts/Telemetry.idl" />
   <DdsIdl Include="Contracts/Legacy.idl" SequenceArrayMapping="RtiCSharp" />
@@ -439,8 +438,7 @@ metadata or the project default. For example:
 
 ```xml
 <ItemGroup>
-  <AdditionalFiles Include="Contracts/Shared.idl"
-                   Generate="false" SequenceArrayMapping="Idl" />
+  <AdditionalFiles Include="Contracts/Shared.idl" Generate="false" SequenceArrayMapping="Idl" />
 </ItemGroup>
 ```
 
