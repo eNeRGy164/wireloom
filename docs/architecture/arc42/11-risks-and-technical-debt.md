@@ -39,8 +39,9 @@ that path. Direct callers can expose path-resolution differences, so the
 compiler keeps the current path interpretation and receives include contents
 in memory. Replacing Roslyn's literal-formatting helpers could change source
 text, so UTF-16/keyword parity tests and full corpus comparisons cover both
-profiles. The extraction itself does not establish browser execution; browser
-work remains dependent on shared member-ID hashing in
+profiles. The per-compilation MD5 boundary is now implemented, but that does
+not establish browser execution; browser work still needs a compatible
+provider and end-to-end qualification in
 [#108](https://github.com/eNeRGy164/wireloom/issues/108).
 
 The incremental baseline is measurement evidence rather than a caching design.

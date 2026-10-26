@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-25T20:11:16Z
+  generated_at: 2026-10-26T00:06:20Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -21,6 +21,7 @@ sources:
     - docs/architecture/arc42/12-glossary.md
   adr:
     - docs/architecture/adr/ADR-001-share-a-host-neutral-compiler-project.md
+    - docs/architecture/adr/ADR-002-inject-member-id-md5-per-compilation.md
   contracts:
     - docs/corpus/README.md
     - docs/corpus/FEATURE-COVERAGE.md
@@ -70,7 +71,7 @@ summary:
     sources:
       - docs/architecture/arc42/08-crosscutting-concepts.md
   decisions:
-    text: Roslyn hosting at the minimum .NET 8 C# 12 host, explicit roots, independent semantic modeling, project-wide root metadata, explicit parse-bind-validate phases, explicit runtime ownership, case-level evidence, separated compiler orchestration/resolution/emission, bounded preprocessing work, manually triggered wire evidence targeting exact RTI 7.3.1 or 7.7.0, preservation of declared alias metadata for optional aggregate members to match RTI, inclusion of warning-only Wireloom-positive cases, and union metadata normalization matching RTI C++ while preserving managed discriminator ranges are current decisions. RTI C# is the managed API baseline, with deliberate improvements allowed and separately evidenced. The wire matrix distinguishes Wireloom C#, RTI C#, and RTI C++ endpoints and exercises all directed pairings for ordinary cases; C149 records an explicit mode, peer scope, exclusion reasons, and matching source provenance as an ordinary corpus case; RTI-positive cases rejected by Wireloom remain visible as not implemented. Specification detection is separate from validation policy; case-insensitive collision detection does not normalize names or change binding.
+    text: Chapter 9 summarizes the decision history in a compact chronological table from September 25 through October 25, 2026; inherited policy dates are their first documentation dates, while ADR entries use their recorded dates and statuses. ADR-001 and ADR-002 are Accepted; ADR-002 was approved October 26, 2026. Roslyn hosting at the minimum .NET 8 C# 12 host, explicit roots, independent semantic modeling, project-wide root metadata, explicit parse-bind-validate phases, explicit runtime ownership, case-level evidence, separated compiler orchestration/resolution/emission, bounded preprocessing work, manually triggered wire evidence targeting exact RTI 7.3.1 or 7.7.0, preservation of declared alias metadata for optional aggregate members to match RTI, inclusion of warning-only Wireloom-positive cases, and union metadata normalization matching RTI C++ while preserving managed discriminator ranges are current decisions. RTI C# is the managed API baseline, with deliberate improvements allowed and separately evidenced. The wire matrix distinguishes Wireloom C#, RTI C#, and RTI C++ endpoints and exercises all directed pairings for ordinary cases; C149 records an explicit mode, peer scope, exclusion reasons, and matching source provenance as an ordinary corpus case; RTI-positive cases rejected by Wireloom remain visible as not implemented. Specification detection is separate from validation policy; case-insensitive collision detection does not normalize names or change binding.
     sources:
       - docs/architecture/arc42/09-architectural-decisions.md
   quality:
@@ -102,9 +103,14 @@ summary:
       - docs/architecture/arc42/10-quality-requirements.md
       - docs/testing/stryker.md
   compiler_risks:
-    text: Keep generator and compiler assembly versions aligned and verify analyzer loading in the minimum .NET 8 host. Preserve direct-caller path interpretation and formatting parity. The extraction does not prove browser execution; follow-on browser work depends on shared member-ID hashing in issue 108.
+    text: Keep generator and compiler assembly versions aligned and verify analyzer loading in the minimum .NET 8 host. Preserve direct-caller path interpretation and formatting parity. The extracted compiler has a per-compilation MD5 provider; browser execution still needs a compatible provider and end-to-end qualification in issue 108.
     sources:
       - docs/architecture/arc42/11-risks-and-technical-debt.md
+  member_id_hashing:
+    text: Accepted ADR-002 records the implemented required synchronous Func<byte[], byte[]> MD5 delegate supplied by each host per compilation. The native generator supplies BCL hashing; the compiler retains UTF-8, digest validation, byte ordering, and the 28-bit mask. Browser provider implementation and qualification remain outstanding.
+    sources:
+      - docs/architecture/adr/ADR-002-inject-member-id-md5-per-compilation.md
+
 defaults:
   repository:
     root_namespace:
