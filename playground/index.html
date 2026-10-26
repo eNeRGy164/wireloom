@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Wireloom Playground</title>
+  <link rel="icon" type="image/svg+xml" href="../docs/assets/wireloom-icon.svg">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="https://github.com/eNeRGy164/wireloom" aria-label="Wireloom on GitHub"><img src="../docs/assets/wireloom-icon.svg" width="40" height="40" alt=""><span>Wireloom<span class="brand-label">PLAYGROUND</span></span></a>
+    <div class="header-note"><span class="privacy-dot"></span> Your IDL stays on your device</div>
+    <div class="header-actions"><fieldset class="theme-toggle"><legend class="sr-only">Color theme</legend><label><input class="sr-only" type="radio" name="theme" value="light" checked><span>Light</span></label><label><input class="sr-only" type="radio" name="theme" value="dark"><span>Dark</span></label></fieldset><a class="docs-link" href="https://github.com/eNeRGy164/wireloom/tree/main/docs">Documentation ↗</a></div>
+  </header>
+  <main>
+    <section class="intro"><div><p class="eyebrow">FROM IDL TO C#</p><h1>See what your types can become.</h1><p>Edit an example. Explore the generated code. Bring it to your project.</p></div><span class="local-badge">LOCAL COMPILATION</span></section>
+    <div class="toolbar" aria-label="Workspace controls">
+      <div class="toolbar-group"><label for="example">Example</label><select id="example"></select><button id="load-example">Load example</button><button id="import">Open IDL…</button><input id="file" type="file" accept=".idl" hidden></div>
+      <div class="toolbar-group toolbar-settings"><div class="font-controls" role="group" aria-label="Editor font size"><span>Editor font</span><button id="font-decrease" aria-label="Decrease editor font size">−</button><button id="font-reset" title="Reset editor font size to 12 pixels" aria-label="Reset editor font size"><output id="font-size" aria-live="polite">12 px</output></button><button id="font-increase" aria-label="Increase editor font size">+</button></div><label for="profile">RTI profile</label><select id="profile"><option>7.7.0</option><option>7.3.1</option></select><button id="reset" class="quiet">Reset</button></div>
+    </div>
+    <p id="example-description" class="example-description"></p>
+    <div id="notice" class="notice" hidden><span id="notice-message" role="status"></span><button id="notice-dismiss" aria-label="Dismiss notification" title="Dismiss notification">×</button></div>
+    <div id="workbench" class="workbench">
+      <aside class="explorer" aria-label="File explorer">
+        <button id="explorer-toggle" class="explorer-toggle" aria-label="Toggle file explorer" aria-expanded="true" aria-controls="explorer-content" title="Hide file explorer"><span aria-hidden="true">☰</span><span class="explorer-title">FILES</span></button>
+        <div id="explorer-content"><h2>Source</h2><button id="source-file" class="source-file"><span class="file-icon file-icon-idl" aria-hidden="true"></span><span id="explorer-source-name">main.idl</span></button><h2>Generated <span id="explorer-count" class="count">0</span></h2><ul id="file-list" aria-label="Generated files"></ul><p id="explorer-empty">No generated files yet</p></div>
+      </aside>
+      <div id="explorer-splitter" class="splitter explorer-splitter" role="separator" tabindex="0" aria-label="Resize file explorer" aria-orientation="vertical" aria-valuemin="160" aria-valuemax="420" aria-valuenow="210" aria-valuetext="210 pixels"></div>
+    <div id="workspace" class="workspace">
+      <section class="pane input-pane" aria-label="IDL workspace">
+        <div class="pane-heading"><span><span class="panel-number">01</span> SOURCE</span><span class="language-label">IDL</span></div>
+        <div class="input-tab"><span class="file-icon file-icon-idl" aria-hidden="true"></span><span id="input-name">main.idl</span><span id="source-state">Loading recovery…</span></div>
+        <div id="source" class="editor"></div>
+        <div class="pane-footer"><span id="source-size"></span><span>UTF-8 · one input file</span></div>
+      </section>
+      <div id="splitter" class="splitter" role="separator" tabindex="0" aria-label="Resize source and output panes" aria-orientation="vertical" aria-valuemin="25" aria-valuemax="75" aria-valuenow="45"></div>
+      <section class="pane output-pane" aria-label="Generated output">
+        <div class="pane-heading output-heading"><span class="output-title" title="Generated code"><span class="panel-number">02</span> GENERATED CODE <span id="document-count" class="count">0</span></span><div class="output-controls"><span id="result-state" class="result-state">Waiting</span><button id="copy" disabled>Copy</button><button id="download" disabled>Download</button><button id="download-all" disabled>ZIP ↓</button></div></div>
+        <div id="output-tabs-strip" class="output-tabs-strip"><div id="output-tabs" class="output-tabs" role="tablist" aria-label="Open generated files"></div><div id="tab-scrollbar" class="tab-scrollbar" hidden><div id="tab-scroll-thumb" class="tab-scroll-thumb" role="scrollbar" tabindex="0" aria-label="Scroll generated file tabs" aria-controls="output-tabs" aria-orientation="horizontal" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"></div></div></div>
+        <div class="output-editor-wrap" id="generated-panel" role="tabpanel" aria-label="Generated C#"><div id="generated" class="editor"></div><div id="empty-output" class="empty-output"><span class="empty-symbol">{ }</span><h2>Your generated code lives here</h2><p>Start with an example or open an IDL file.<br>Generation runs entirely in your browser.</p></div></div>
+        <div class="pane-footer"><span id="result-summary" role="status">No output yet</span><span>Read-only C#</span></div>
+      </section>
+    </div>
+    </div>
+    <section class="diagnostics" aria-labelledby="diagnostics-heading"><div class="diagnostics-heading"><h2 id="diagnostics-heading">Diagnostics <span id="diagnostic-count" class="count">0</span></h2><span id="status" role="status">Starting compiler…</span><button id="retry" hidden>Restart compiler</button></div><ul id="diagnostics"></ul><p id="diagnostics-empty">Diagnostics will appear here after generation.</p></section>
+    <footer class="page-footer"><span id="version"></span><span>Source preview only. Generated code is not compiled against RTI here; runtime and DDS wire compatibility are not established.</span></footer>
+  </main>
+  <script type="module" src="/src/boot.ts"></script>
+</body>
+</html>
