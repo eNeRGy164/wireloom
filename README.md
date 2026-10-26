@@ -19,6 +19,11 @@ preprocessing, parsing, validation, and emission.
 The RTI Connext DDS runtime still provides serialization and DDS communication.
 Your application continues to use RTI's runtime, APIs, and configuration.
 
+Try the [browser Playground](https://energy164.github.io/wireloom/) to preview
+generated C# from a single IDL file. Compilation runs in your browser. See the
+[source and limitations](playground/README.md) for its scope; previews do not
+establish RTI compilation, runtime behavior, or DDS wire compatibility.
+
 ## Why Wireloom?
 
 - **Keep build images and developer machines lean.** Restore a small NuGet

@@ -1,0 +1,237 @@
+name: Publish Playground
+
+on:
+  workflow_run:
+    workflows: [Quality]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      quality_run_id:
+        description: Successful main push Quality run to deploy or roll back to (artifact must still exist)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playground-pages
+  cancel-in-progress: false
+
+jobs:
+  select:
+    name: Select trusted Quality run
+    if: >-
+      github.repository == 'eNeRGy164/wireloom' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      statuses: read
+    outputs:
+      publish: ${{ steps.source.outputs.publish }}
+      run_id: ${{ steps.source.outputs.run_id }}
+      revision: ${{ steps.source.outputs.revision }}
+    steps:
+      - name: Validate run provenance and Coveralls
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id || inputs.quality_run_id }}
+          EVENT_NAME: ${{ github.event_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$RUN_ID" =~ ^[0-9]+$ ]]
+          run=$(gh api "repos/$REPOSITORY/actions/runs/$RUN_ID")
+          jq -e --arg repository "$REPOSITORY" '
+            .path == ".github/workflows/quality.yml" and .name == "Quality" and
+            .head_repository.full_name == $repository and .head_branch == "main" and
+            .event == "push" and .status == "completed" and .conclusion == "success" and
+            (.head_sha | test("^[a-f0-9]{40}$"))' <<< "$run"
+          revision=$(jq -r .head_sha <<< "$run")
+          if [[ "$EVENT_NAME" == workflow_run ]]; then
+            current=$(gh api "repos/$REPOSITORY/git/ref/heads/main" --jq .object.sha)
+            if [[ "$revision" != "$current" ]]; then
+              echo 'Skipping a superseded Quality run.' >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+          fi
+          state=pending
+          for attempt in {1..24}; do
+            state=$(gh api "repos/$REPOSITORY/commits/$revision/status" \
+              --jq '[.statuses[] | select(.context == "coverage/coveralls (push)")][0].state // "pending"')
+            [[ "$state" == success ]] && break
+            [[ "$state" == failure || "$state" == error ]] && exit 1
+            sleep 5
+          done
+          [[ "$state" == success ]]
+          echo "publish=true" >> "$GITHUB_OUTPUT"
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+          echo "revision=$revision" >> "$GITHUB_OUTPUT"
+          echo "Selected Quality run $RUN_ID, source $revision." >> "$GITHUB_STEP_SUMMARY"
+
+  prepare:
+    name: Verify and package validated bytes
+    needs: select
+    if: needs.select.outputs.publish == 'true'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      pages: read
+    steps:
+      - name: Check out trusted verification scripts
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: playground/.node-version
+
+      - name: Download the selected Quality artifact
+        uses: actions/download-artifact@v8.0.2
+        with:
+          name: playground-pages
+          path: playground/dist-pages/
+          run-id: ${{ needs.select.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Verify source, file hashes, and configured Pages path
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          EXPECTED_SOURCE_SHA: ${{ needs.select.outputs.revision }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pages_url=$(gh api "repos/$REPOSITORY/pages" --jq .html_url)
+          export PAGES_URL="$pages_url"
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { verifyManifest } from './playground/scripts/pages-manifest.mjs';
+          const manifest = await verifyManifest('playground/dist-pages', process.env.EXPECTED_SOURCE_SHA);
+          assert.equal(new URL(process.env.PAGES_URL).pathname, manifest.base,
+            'Pages URL differs from the validated base; update PLAYGROUND_BASE_PATH and rebuild through Quality');
+          assert(!manifest.displayRevision.endsWith('-dirty'), 'Only clean CI builds can be deployed');
+          JS
+
+      - name: Package complete Pages artifact without rebuilding
+        uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: playground/dist-pages/
+          retention-days: 30
+
+  deploy:
+    name: Deploy GitHub Pages
+    needs: [select, prepare]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Reject superseded automatic publication
+        id: current
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_SHA: ${{ needs.select.outputs.revision }}
+          EVENT_NAME: ${{ github.event_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          current=$(gh api "repos/$REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          if [[ "$EVENT_NAME" == workflow_dispatch || "$SOURCE_SHA" == "$current" ]]; then
+            echo 'publish=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'Skipping publication because main advanced during preparation.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Publish validated artifact
+        id: deployment
+        if: steps.current.outputs.publish == 'true'
+        uses: actions/deploy-pages@v5.0.1
+
+      - name: Report publication
+        if: steps.current.outputs.publish == 'true'
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          SOURCE_SHA: ${{ needs.select.outputs.revision }}
+          QUALITY_RUN_ID: ${{ needs.select.outputs.run_id }}
+        run: |
+          echo "Published $SOURCE_SHA from Quality run $QUALITY_RUN_ID to $PAGE_URL." >> "$GITHUB_STEP_SUMMARY"
+
+  verify:
+    name: Verify public Playground
+    needs: [select, deploy]
+    if: needs.deploy.outputs.page_url != ''
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Check out trusted verification scripts
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: playground/.node-version
+          cache: npm
+          cache-dependency-path: playground/package-lock.json
+
+      - name: Set up pinned npm
+        run: npm install --global npm@12.2.0 --ignore-scripts
+
+      - name: Restore locked verification dependencies
+        run: npm ci --ignore-scripts
+        working-directory: playground
+
+      - name: Download expected deployment
+        uses: actions/download-artifact@v8.0.2
+        with:
+          name: playground-pages
+          path: playground/dist-pages/
+          run-id: ${{ needs.select.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Verify live assets and browser behavior
+        env:
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+          EXPECTED_SOURCE_SHA: ${{ needs.select.outputs.revision }}
+        working-directory: playground
+        run: |
+          npx playwright install --with-deps --only-shell chromium
+          npm run verify:pages -- "$PAGE_URL"
+
+      - name: Retain public-host evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: playground-public-verification
+          path: output/playwright/pages-smoke.json
+          if-no-files-found: warn
+          retention-days: 30

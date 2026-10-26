@@ -25,6 +25,16 @@ below states their impact and mitigation; reference-binding details follow it.
 
 ## 11.2 Technical debt
 
+The public Playground uses GitHub Pages. Its static host's response-header
+control is limited; verify MIME types, asset bytes, and actual HTTPS startup
+on every deployment instead of treating local evidence as public-host proof.
+A failed live check leaves the deployment requiring inspection or manual
+rollback to a retained successful Quality artifact. Retention is 30 days; an
+expired artifact requires a reviewed revert and a new validated build.
+A later custom hostname also requires a matching root-base build and changes
+the browser origin, so saved local workspaces do not migrate automatically.
+See [publication and recovery](../../guides/playground-deployment.md).
+
 | Item                                                      | Impact                                                               | Priority | Notes                                                                                                                                                                                                                               |
 | :-------------------------------------------------------- | :------------------------------------------------------------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | All inputs currently form one collected incremental batch | Unrelated roots may invalidate together and caching is less granular | Medium   | The [incremental generator baseline](../../performance/incremental-generator-baseline.md) confirms current reuse and shared source-output invalidation; introduce per-root graph caching only when further measurement justifies it |
@@ -43,8 +53,9 @@ text, so UTF-16/keyword parity tests and full corpus comparisons cover both
 profiles. The per-compilation MD5 boundary and a browser-compatible provider
 are implemented. Provider vectors pass under Node.js, and the maintained worker
 passed representative Edge parity, responsiveness, and failure-recovery checks
-for Stage 0. Cross-browser and release coverage remains open in issue
-[#110](https://github.com/eNeRGy164/wireloom/issues/110); the full Playground
+for Stage 0. The scoped cross-browser and release evidence from issue
+[#110](https://github.com/eNeRGy164/wireloom/issues/110) is recorded in the
+[qualification guide](../../testing/playground-qualification.md); the full Playground
 experience is implemented in Stage 1 of issue
 [#109](https://github.com/eNeRGy164/wireloom/issues/109).
 

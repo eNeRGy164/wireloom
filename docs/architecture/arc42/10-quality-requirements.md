@@ -100,6 +100,15 @@ exact generated text is compared against the pre-extraction baseline for both
 RTI profiles. Unresolved required contracts remain gaps rather than completed
 compatibility evidence.
 
+Pages adds a deployment acceptance check beyond local corpus qualification.
+Quality validates the configured-base candidate before retaining it. Public
+verification compares every served asset against that candidate and exercises
+the default sample on both profiles, visible diagnostics, copy/download/ZIP,
+reload, and the revision/preview footer. Publication requires successful main
+push Quality and Coveralls results; PR builds cannot publish. Local and public
+reports retain hashes, source SHA, URL, browser version, headers, and outcomes.
+See the [deployment runbook](../../guides/playground-deployment.md).
+
 > [!NOTE]
 > Additional information: This architecture context is also summarized in
 > [Architecture memory](../architecture-memory.md) and

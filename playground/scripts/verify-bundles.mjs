@@ -3,10 +3,12 @@ import { access, readFile, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
-const cases = [
-  { directory: "dist", base: "/" },
-  { directory: "dist-subpath", base: "/playground/" },
-];
+const cases = process.argv[2]
+  ? [{ directory: process.argv[2], base: process.argv[3] }]
+  : [
+      { directory: "dist", base: "/" },
+      { directory: "dist-subpath", base: "/playground/" },
+    ];
 
 for (const testCase of cases) {
   const output = resolve(root, testCase.directory);
