@@ -88,6 +88,14 @@ requirements](arc42/10-quality-requirements.md),
 [deployment](arc42/07-deployment-view.md), and the
 [frontend dependency review](dependency-intake/playground-frontend.md).
 
+Release-bundle qualification adds 76 exact native/worker corpus comparisons
+and 36 single-file UI comparisons per engine across both profiles, plus
+limits, responsiveness, stale-result rejection, and recovery. Quality CI
+retains Chromium reports with input/bundle hashes. The retained corpus remains
+the compatibility source of truth; preview checks do not compile against RTI
+or establish runtime/wire behavior. See the
+[qualification guide](../testing/playground-qualification.md).
+
 ## Defaults and decisions
 
 | Concern                | Default or decision                                  | State    | Source                    |

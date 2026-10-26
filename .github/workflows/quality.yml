@@ -427,6 +427,24 @@ jobs:
           npm run coverage:browser
         working-directory: playground
 
+      - name: Verify published Playground against native corpus expectations
+        run: npm run verify:release -- chromium
+        working-directory: playground
+
+      - name: Retain Playground qualification evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: playground-qualification
+          path: |
+            output/playwright/qualification-chromium.json
+            output/playwright/qualification-chromium.log
+            output/playwright/*-native-baseline.json
+            output/playwright/native-baseline.json
+            output/playwright/corpus-inputs.json
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Retain combined coverage reports
         uses: actions/upload-artifact@v7.0.2
         with:
