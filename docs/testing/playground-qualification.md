@@ -204,34 +204,46 @@ Windows-worktree Git metadata warning did not prevent analysis.
 
 The Chromium corpus run generated 512 documents in about 324 ms while a page
 task ran in about 31 ms; the raw report retains the exact timings. These are
-local observations with the scope described above. CI and Coveralls for the
-#110 branch remain separate gates; local results do not establish their pass.
+local observations with the scope described above. At the time, CI and
+Coveralls for #110 were pending; their later results are recorded below.
 
-## Refresh after the #109 P2 fixes
+## Refreshed evidence after the #109 P2 fixes
 
-The local candidate was refreshed onto #109 revision
-`a2d395dd4042b7c0c12e1737ce3f6edb8ef30a6c`, preserving its application fixes,
-direct client/recovery tests, standalone fuzzing project, and coverage gates.
-Chromium 156.0.8078.4 passed all **68 checks** against a fresh root/nested
-Release build. Both corpus-compliance profiles again passed **373 tests** with
-one intentional export-only skip each. Compiler tests passed **1,601/1,601**.
-All **50 Node tests** passed, including #109's active-restart and delayed-save
-regressions; their direct coverage measured **98.06% branches and 100% lines**.
-TypeScript, ESLint, Prettier, asset-path checks, and browser coverage passed.
+The browser host now includes #109's active-request restart and delayed-save
+fixes, direct client/recovery tests, standalone fuzzing project, and coverage
+gates. On merged revision
+`d3c2c8cf4a6a66c5a1ae8836fa87b3c0fb91be99`, I rebuilt the root and nested
+Release bundles and reran each browser matrix. Every report records that
+revision, a clean source status, and hashes for all 146 bundle files.
+
+| Browser/engine on Windows | Scope | Result |
+| :--- | :--- | :--- |
+| Chromium 156.0.8078.4 | All nine phases, 68 checks | Passed |
+| Edge 156.0.4314.42 | All nine phases, 68 checks | Passed |
+| Playwright Firefox 157.0 | Six scoped phases, 53 checks; import-based oversized input | Passed |
+| Playwright WebKit 27.2 | Six scoped phases, 53 checks; import-based oversized input; supplementary engine evidence | Passed |
+
+Both corpus-compliance profiles passed **373 tests**, each with one intentional
+export-only skip. Compiler tests passed **1,601/1,601**. All **50 Node tests**
+passed, including #109's active-restart and delayed-save regressions; direct
+coverage measured **98.06% branches and 100% lines**. TypeScript, ESLint,
+Prettier, asset-path checks, and browser coverage passed.
 
 | Refreshed coverage scope    | Branches             | Lines                |
 | :-------------------------- | :------------------- | :------------------- |
 | Compiler                    | 6,656/7,338 (90.71%) | 8,959/9,203 (97.35%) |
 | Node + first-party Chromium | 158/166 (95.18%)     | 1,528/1,645 (92.88%) |
 
-The other engines' full matrices above remain evidence from the earlier
-baseline. Preserve that distinction when qualifying a release candidate.
-The remaining native-paste, accessibility, Safari/macOS, and public-host gaps
-still apply, and CI/Coveralls must qualify the published #110 revision.
+These runs supersede the earlier browser matrix for this revision. Native
+multiline/oversized paste on Firefox and WebKit remains unqualified; their
+portable import and adapter-limit checks passed. Full accessibility review,
+Safari/macOS, and public-host startup remain separate release gaps. WebKit
+does not qualify Safari.
 
-The fresh Qodana scan on this updated baseline completed analysis but failed
-the zero-finding gate with six notes in `tests/Shared/CompilerTestSupport.cs`:
-three visibility findings, two unused-member findings, and one unused-return
-finding. That shared helper is unchanged by #110. Keep this gate open with
-the #109 baseline work; the earlier zero-finding result does not qualify this
-refreshed candidate. SARIF and logs remain under `.qodana/results/`.
+A full local Community Qodana scan completed analysis but reported six notes in
+the unchanged `tests/Shared/CompilerTestSupport.cs`: three visibility
+findings, two unused-member findings, and one unused-return finding. The PR
+Qodana check passed in pull-request mode with no new problems in changed files.
+The merged quality workflow and Coveralls also passed; Coveralls reported
+**98.074%** coverage. The local full-scan notes remain baseline findings, not
+new #110 findings. SARIF and logs remain under `.qodana/results/`.

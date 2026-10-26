@@ -137,7 +137,8 @@ summary:
       coverage at 95% branches and 98% lines, Chromium coverage, and focused
       C# adapter tests. Coveralls combines Playground and adapter Cobertura
       with compiler and generator reports; Community Qodana scans the .NET
-      solution. Remote PR Coveralls status is pending until CI reports it.
+      solution. The merged qualification PR passed CI and PR-mode Qodana;
+      Coveralls reported 98.074%.
       Release-bundle qualification adds 76 exact native/worker corpus
       comparisons and 36 single-file UI comparisons per engine on both profiles,
       with limits, responsiveness, stale-result rejection, and recovery checks.
