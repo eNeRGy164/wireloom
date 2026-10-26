@@ -2,6 +2,14 @@
 
 ## 12.1 Definitions
 
+- **Browser worker** — A dedicated module worker that hosts the .NET
+  WebAssembly compiler and its synchronous MD5 provider away from the page's
+  main thread.
+- **Browser compilation preview** — Generated Wireloom C# source and
+  diagnostics produced locally from IDL. It does not compile generated source
+  against RTI or establish runtime or wire compatibility.
+- **Workspace revision** — A monotonically increasing client identity for one
+  immutable source/profile snapshot, used to discard stale worker results.
 - **Annotation application** — One `@name` with an optional balanced argument
   list. The parser captures its source order, raw text, and location before
   known built-ins are interpreted; unknown applications stay opaque.

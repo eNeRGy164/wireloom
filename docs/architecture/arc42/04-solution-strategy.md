@@ -43,3 +43,16 @@
    keeps MSBuild parsing, runtime discovery, and IDE/build presentation. The
    core has no Roslyn, MSBuild, or RTI references and is bundled beside the
    adapter in the existing generator package.
+8. **Keep browser compilation in a dedicated worker.**
+   The Playground sends bounded, immutable workspace snapshots to a .NET 10
+   WebAssembly module worker, which loads the shared compiler and synchronous
+   MD5 provider. The TypeScript client retains only the running request and
+   newest pending request, and applies only results with a matching protocol,
+   worker generation, request ID, workspace revision, and profile. Worker
+   failure is visible and recoverable by replacing the worker; the application
+   has no main-thread compilation fallback. The maintained worker has passed
+   representative Edge acceptance on root and nested hosting; broader browser
+   and release qualification remains separate evidence work.
+   The single-file discovery UI layers Monaco models, lexical colors, local
+   source/profile recovery, and current-result exports over that boundary.
+   The compiler still owns all language meaning and generated text.

@@ -1,8 +1,8 @@
 # 6. Runtime view
 
-Wireloom has no long-running runtime process. Its primary runtime scenario is
-the consumer's build, followed later by the generated application's use of the
-RTI runtime.
+Wireloom has no long-running server process. Its runtime scenarios include the
+consumer's build, the browser Playground's local WebAssembly compilation, and
+the generated application's later use of the RTI runtime.
 
 ## 6.1 Consumer build and generation
 
@@ -134,3 +134,84 @@ retain mode, runtime, IDL hash, and actual generated-source hashes;
 missing or mismatched provenance prevents completed exchanges from qualifying.
 The focused live runs passed all 16 exchanges on each exact LTS release;
 these results qualify only the recorded fixtures and peer scope.
+
+## 6.4 Browser Playground compilation
+
+The TypeScript client submits an immutable JSON workspace snapshot containing
+protocol version, worker generation, monotonic request ID, workspace revision,
+profile, normalized virtual paths, source text, generation-root flags, and a
+reserved options object. It sends no host-machine file paths. The client keeps
+one running request and replaces any pending request with the newest snapshot.
+Text and profile changes make earlier responses stale.
+
+A dedicated module worker initializes the published .NET runtime once, binds
+the retained synchronous JavaScript MD5 provider in that worker, and reports
+readiness. The .NET adapter validates the profile, path collection, total
+UTF-8 input size, and output document/text caps, then calls
+`IdlCompiler.Compile` with the same shared compiler and profile behavior as
+native hosts. It returns every generated name and source with compiler
+diagnostics and request identity. Diagnostics preserve the core's UTF-16
+offset; the current core API does not provide a span length. Adapter and limit
+failures are host outcomes and do not create compiler diagnostic IDs.
+
+The page applies a response only when protocol version, worker generation,
+request ID, workspace revision, and profile match the request and current
+workspace. A synchronous compile cannot process cancellation on its busy
+worker event loop. The client therefore rejects stale results and replaces a
+timed-out or failed worker. A replacement reports startup failure and exposes
+an explicit retry action. No compiler runs on the main thread.
+
+Timeout errors remain visible only while their workspace request is current,
+even after replacing the worker generation. When a replacement becomes ready,
+it drains the newest queued snapshot. An idle worker failure clears previously
+shown output so stale documents are not presented as current.
+
+The current boundaries are 256 KiB of total UTF-8 source, 512 documents, and
+16 MiB of generated UTF-8 text. Startup and compilation watchdogs are 30
+seconds and 10 seconds. They constrain accepted work but do not provide a hard
+browser-memory quota. Eight deterministic state tests cover newest-pending
+retention, full response identity, worker replacement, startup failure,
+recovery, timeout identity, and queued-work draining.
+
+Stage 0 browser acceptance passed on Windows Edge 156.0.4314.42. The eight-case
+corpus matched exact document names, generated source, success state, and
+diagnostics for both RTI profiles at the site root and `/playground/` (32
+comparisons). Repeated compilation and profile switching passed. Fresh isolated
+context worker readiness took 149 ms at root and 159 ms under `/playground/`;
+reload readiness took 124 ms and 122 ms, respectively. Worker resources
+transferred 5,798,222 bytes per path (5,792,822 encoded bytes). A
+128-declaration case producing 512 documents compiled in 357.1 ms. During that
+run, a main-thread edit took 30.7 ms and the maximum observed heartbeat was
+16.5 ms.
+
+All five injected fault scenarios passed: missing-worker retry, MD5 provider
+error classification and retry, idle worker exception and replacement, the
+10-second watchdog rejecting stale work while retaining new pending input, and
+current-request timeout reporting followed by successful recompilation. Three
+additional validation groups passed: retry after a missing `dotnet.native`
+asset, UI rejection of oversized ASCII and UTF-8 input before posting, and
+worker reuse after malformed protocol/profile, aggregate-input-limit, and
+result-document-limit requests. The observed application requests were GETs to
+loopback; no outbound source-bearing request was observed.
+
+This is representative Edge evidence, not cross-browser or release
+qualification. Browser matrix coverage remains tracked by issue #110.
+
+The Stage 1 discovery UI now compiles edits after a 300 ms debounce and compiles
+example, import, profile, and restored-workspace changes immediately. Each
+change invalidates exports and diagnostic offsets before dispatch. Previous
+code remains visibly outdated while pending; current failures clear its models
+and tabs. Successful zero-document output is distinct from failure. Diagnostic
+navigation maps the compiler's UTF-16 offset through the exact input model;
+diagnostics without that source remain list-only.
+
+Imports read one UTF-8 IDL file into memory. Read, decode, extension, or size
+failure leaves the current workspace/result intact. Replacement over edits
+requires a deliberate confirmation. IndexedDB restore never overwrites edits
+made while storage is opening; serialized saves and deletion preserve reset
+ordering. Unavailable or invalid recovery data leaves editing usable and shows
+a recovery warning. Output is regenerated, never restored from storage.
+
+The [Stage 1 evidence](../../plans/109-browser-playground-stage1-evidence.md)
+records representative Edge flows, native download comparisons, recovery,
+limits, and worker failure tests. Broader release qualification remains #110.

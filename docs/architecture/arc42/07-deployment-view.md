@@ -2,7 +2,8 @@
 
 Wireloom is deployed as a NuGet analyzer/source-generator package rather than
 as a service. The generated application still deploys with the consumer's
-selected RTI Connext DDS runtime.
+selected RTI Connext DDS runtime. The browser Playground is a separate static
+deployment that carries a TypeScript client and .NET WebAssembly worker assets.
 
 Effective finite limits for unbounded IDL values are build-time MSBuild
 properties with per-file item metadata overrides. They are compiled into the
@@ -15,13 +16,13 @@ per-file override.
 
 ![Deployment view showing the developer or CI build host, NuGet feeds, generated application, RTI runtime, and compatibility evidence.](images/07/deployment-overview.png)
 
-| Node                       | Deployed material                                                 | Role                                                                    |
-| :------------------------- | :---------------------------------------------------------------- | :---------------------------------------------------------------------- |
-| Developer or CI build host | .NET 10 SDK, consumer project, IDL, Wireloom package, compiler project | Builds the shared core and adapter; runs generation and tests        |
-| NuGet feed                 | `Wireloom.Dds.Generator` package and dependencies                 | Supplies MSBuild targets, adapter, and bundled compiler assembly       |
-| Consumer output            | Application assembly plus generated source compiled into it       | Runs the DDS application                                                |
-| RTI runtime environment    | Application-selected `Rti.ConnextDds` libraries                   | Owns DDS communication and serialization                                |
-| Evidence repository        | Corpus IDL, retained oracle sources, and wire-compatibility peers | Supports source-shape and DDS wire verification, not production runtime |
+| Node                       | Deployed material                                                      | Role                                                                    |
+| :------------------------- | :--------------------------------------------------------------------- | :---------------------------------------------------------------------- |
+| Developer or CI build host | .NET 10 SDK, consumer project, IDL, Wireloom package, compiler project | Builds the shared core and adapter; runs generation and tests           |
+| NuGet feed                 | `Wireloom.Dds.Generator` package and dependencies                      | Supplies MSBuild targets, adapter, and bundled compiler assembly        |
+| Consumer output            | Application assembly plus generated source compiled into it            | Runs the DDS application                                                |
+| RTI runtime environment    | Application-selected `Rti.ConnextDds` libraries                        | Owns DDS communication and serialization                                |
+| Evidence repository        | Corpus IDL, retained oracle sources, and wire-compatibility peers      | Supports source-shape and DDS wire verification, not production runtime |
 
 The Quality workflow continuously checks both exact RTI LTS packages on
 Windows 2025 and Ubuntu 26.04. Its eight runtime/package jobs combine RTI
@@ -69,6 +70,54 @@ the sole published package and has no compiler package dependency. The
 consumer loads both assemblies through the analyzer package and does not gain
 an application runtime reference to the compiler. Repository project
 references also build and load the compiler beside the generator.
+
+## 7.2 Browser Playground deployment
+
+The non-packable `Wireloom.Playground.Browser` project publishes the shared
+compiler for `browser-wasm` using the pinned .NET 10.0.13 browser runtime. Its
+published `_framework` assets and worker entry are copied into the Vite static
+bundle. The npm project pins Node 26.7.0, npm 12.2.0, Vite 7.3.7, and
+TypeScript 6.0.3 in `package.json` and `package-lock.json`. Vite builds with a
+configurable base path so client chunks and the module worker can be served at
+the site root or under a nested path.
+
+The Quality workflow runs the pinned TypeScript compiler, strict ESLint,
+Prettier, Node tests with branch/line/function thresholds, and a production
+browser coverage run using Playwright's Chromium headless shell. Browser V8
+coverage is source-mapped to first-party client code and merged with Node
+coverage into Cobertura; a focused test run reports the linked C# adapter.
+Coveralls receives those reports with the existing compiler and generator
+reports. Community Qodana scans the .NET solution, including the browser
+adapter. The workflow also builds and checks the root and nested static bundles.
+
+Stage 1 adds locally bundled Monaco 0.57.0 and fflate 0.8.3. DOMPurify is
+overridden to patched 3.4.17 until Monaco's upstream pin is updated. The build
+emits upstream licenses/notices, an editor worker, a small bootstrap, and the
+editor application chunk. The latter is about 719 kB gzip and exceeds Vite's
+default chunk-size advisory; public-network loading remains release evidence
+work. The footer records the shared Wireloom version and Git revision,
+including a dirty-checkout suffix. Serve the complete `dist/` tree with its
+matching `dotnet/` assets; partial asset replacement is not supported.
+
+The current clean Release publish succeeds with interpreter assets and no
+AOT/native relinking. The .NET runtime tree contains 63 files totaling
+14,208,318 uncompressed bytes; the client bundle's `dotnet/` directory has 65
+files and 14,211,428 bytes including the worker and MD5 module. On Windows Edge
+156.0.4314.42, the worker resources transferred 5,798,222 bytes per hosting
+path (5,792,822 encoded bytes). Fresh isolated-context readiness measured 149
+ms at root and 159 ms at `/playground/`; reload readiness measured 124 ms and
+122 ms. A 128-declaration compile that emitted the 512-document cap took
+357.1 ms. The measured heartbeat maximum during that compile was 16.5 ms, and
+a main-thread edit took 30.7 ms. These timings describe one representative
+Edge host and are not cross-browser guarantees.
+
+The accepted deployment requires static assets and workers to be served from
+the same origin. In the observed Edge run, application requests were GETs to
+loopback and no outbound request carrying source was observed. This is scoped
+request evidence, not a general telemetry or privacy certification. Edge, Firefox,
+and Playwright WebKit runs cover representative client flows; Safari is not
+claimed. Supported-browser, accessibility, and public-network qualification
+remain pending in #110.
 
 Preview publication uses GitHub Packages. Validated release tags publish to
 NuGet.org with SBOM and provenance attestations.
