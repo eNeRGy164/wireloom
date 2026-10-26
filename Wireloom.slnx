@@ -8,6 +8,7 @@
     <Project Path="tests/Wireloom.Dds.Generator.RuntimeContracts/Wireloom.Dds.Generator.RuntimeContracts.csproj" />
     <Project Path="tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj" />
     <Project Path="tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj" />
+    <Project Path="tests/Wireloom.Dds.Generator.Fuzzing.Tests/Wireloom.Dds.Generator.Fuzzing.Tests.csproj" />
     <Project Path="tests/Wireloom.Dds.Generator.TestSupport/Wireloom.Dds.Generator.TestSupport.csproj" />
   </Folder>
 </Solution>

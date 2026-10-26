@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Wireloom.Dds.Generator.Tests" />
+    <InternalsVisibleTo Include="Wireloom.Dds.Generator.Fuzzing.Tests" />
     <InternalsVisibleTo Include="Wireloom.Dds.Compiler.Tests" />
     <InternalsVisibleTo Include="Wireloom.Dds.Generator.CorpusCompliance" />
   </ItemGroup>

@@ -17,6 +17,7 @@ concurrency:
 env:
   DOTNET_NOLOGO: true
   TEST_PROJECT: tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj
+  FUZZING_TEST_PROJECT: tests/Wireloom.Dds.Generator.Fuzzing.Tests/Wireloom.Dds.Generator.Fuzzing.Tests.csproj
   COMPILER_TEST_PROJECT: tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj
   RUNTIME_TEST_PROJECT: tests/Wireloom.Dds.Generator.RuntimeContracts/Wireloom.Dds.Generator.RuntimeContracts.csproj
   CORPUS_TEST_PROJECT: tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj
@@ -311,7 +312,7 @@ jobs:
     name: Test and upload coverage
     needs: [runtime-contracts, corpus-compliance, net8-package-consumer]
     runs-on: ubuntu-26.04
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - name: Check out repository
         uses: actions/checkout@v7.0.1
@@ -328,10 +329,25 @@ jobs:
             global.json
             **/packages*.lock.json
 
+      - name: Set up pinned Node
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: playground/.node-version
+          cache: npm
+          cache-dependency-path: playground/package-lock.json
+
+      - name: Set up pinned npm
+        run: npm install --global npm@12.2.0 --ignore-scripts
+
+      - name: Restore locked Playground dependencies
+        run: npm ci --ignore-scripts
+        working-directory: playground
+
       - name: Restore locked dependencies
         run: |
           dotnet restore $env:TEST_PROJECT --locked-mode
           dotnet restore $env:COMPILER_TEST_PROJECT --locked-mode
+          dotnet restore $env:FUZZING_TEST_PROJECT --locked-mode
         shell: pwsh
 
       - name: Test with coverage
@@ -360,6 +376,68 @@ jobs:
           --coverage-output-format cobertura
         shell: pwsh
 
+      - name: Enforce compiler branch and line coverage
+        run: |
+          [xml]$report = Get-Content -LiteralPath 'coverage/compiler.cobertura.xml'
+          $branchRate = [double]$report.coverage.GetAttribute('branch-rate')
+          $lineRate = [double]$report.coverage.GetAttribute('line-rate')
+          if ($branchRate -lt 0.90) {
+            throw "Compiler branch coverage $([math]::Round($branchRate * 100, 2))% is below 90%."
+          }
+          if ($lineRate -lt 0.95) {
+            throw "Compiler line coverage $([math]::Round($lineRate * 100, 2))% is below 95%."
+          }
+          Write-Host "Compiler coverage: $([math]::Round($branchRate * 100, 2))% branches, $([math]::Round($lineRate * 100, 2))% lines."
+        shell: pwsh
+
+      - name: Test Playground adapter with coverage
+        run: >-
+          dotnet run --project $env:COMPILER_TEST_PROJECT
+          --no-restore
+          --configuration Release
+          --
+          --results-directory coverage
+          --filter-class Wireloom.Compiler.Tests.Playground.PlaygroundCompilerAdapterSpecs
+          --coverage
+          --coverage-settings coverage.playground.settings.xml
+          --coverage-output playground.cobertura.xml
+          --coverage-output-format cobertura
+        shell: pwsh
+
+      - name: Check and test Playground client
+        run: |
+          npm run typecheck
+          npm run lint
+          npm run format:check
+          npm test
+          npm run coverage
+          npm audit --audit-level=low
+        working-directory: playground
+
+      - name: Build and verify Playground bundles
+        run: |
+          npm run build
+          npm run check:paths
+        working-directory: playground
+
+      - name: Measure browser coverage
+        run: |
+          npx playwright install --with-deps --only-shell chromium
+          npm run build:coverage
+          npm run coverage:browser
+        working-directory: playground
+
+      - name: Retain combined coverage reports
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: combined-coverage
+          path: |
+            coverage/*.cobertura.xml
+            playground/coverage/cobertura-coverage.xml
+            playground/coverage/browser-summary.json
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Run adversarial preprocessor review gate
         run: >-
           dotnet run --project $env:COMPILER_TEST_PROJECT
@@ -371,21 +449,20 @@ jobs:
 
       - name: Run IDL FsCheck fuzzing gate
         run: >-
-          dotnet run --project $env:TEST_PROJECT
-          --no-build
+          dotnet run --project $env:FUZZING_TEST_PROJECT
           --configuration Release
           --
-          --filter-class Wireloom.Dds.Generator.Tests.FsCheckIdlCompilerFuzzingSpecs
+          --filter-class Wireloom.Dds.Generator.Fuzzing.Tests.FsCheckIdlCompilerFuzzingSpecs
         shell: pwsh
         env:
           WIRELOOM_FSCHECK_TESTS: 10000
 
-      - name: Upload compiler and generator coverage to Coveralls
+      - name: Upload compiler, generator, and Playground coverage to Coveralls
         uses: coverallsapp/github-action@v2.3.8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           format: cobertura
-          files: coverage/generator.cobertura.xml coverage/compiler.cobertura.xml
+          files: coverage/generator.cobertura.xml coverage/compiler.cobertura.xml coverage/playground.cobertura.xml playground/coverage/cobertura-coverage.xml
 
   qodana:
     name: Qodana community scan
