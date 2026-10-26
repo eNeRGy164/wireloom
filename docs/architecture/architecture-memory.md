@@ -116,6 +116,8 @@ authoritative; this summary is a retrieval aid, not a replacement.
   reference. See [ADR-001](adr/ADR-001-share-a-host-neutral-compiler-project.md),
   [building blocks](arc42/05-building-block-view.md), and
   [cross-cutting concepts](arc42/08-crosscutting-concepts.md#89-shared-compiler-api).
+  The native and future browser host boundary is shown in the
+  [compiler host diagram](arc42/images/05/browser-compiler-hosts.puml).
 - **IDL annotation and value binding:** The shared reader captures ordered balanced annotation applications and source spans;
   context parsers retain unresolved values until symbol binding.
   The catalog validates duplicate named keys for known applications and leaves unknown arguments opaque.
