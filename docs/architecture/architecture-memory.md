@@ -116,8 +116,55 @@ authoritative; this summary is a retrieval aid, not a replacement.
   reference. See [ADR-001](adr/ADR-001-share-a-host-neutral-compiler-project.md),
   [building blocks](arc42/05-building-block-view.md), and
   [cross-cutting concepts](arc42/08-crosscutting-concepts.md#89-shared-compiler-api).
-  The native and future browser host boundary is shown in the
+  The native and browser host boundary is shown in the
   [compiler host diagram](arc42/images/05/browser-compiler-hosts.puml).
+- **Browser Playground boundary:** A non-packable .NET 10 `browser-wasm` host
+  calls the shared compiler from a dedicated module worker. The TypeScript/Vite
+  client sends a bounded collection-shaped snapshot with protocol, generation,
+  request, revision, and profile identity; it retains the running request and
+  newest pending snapshot and rejects stale responses. The worker supplies the
+  retained synchronous MD5 module; the core still owns UTF-8 hashing semantics
+  and compiler results. Root and nested-base static builds pass, and 36 Node
+  checks pass, including provider vectors, deterministic worker-state tests,
+  and workspace recovery. Strict ESLint and Prettier checks pass. Node coverage
+  gates at 95% branches, 98% lines, and 80% functions; the current report is
+  98.78%, 99.17%, and 81.25%, respectively.
+  Windows Edge 156.0.4314.42 passed 32 exact comparisons across eight cases,
+  two profiles, and both base paths, as well as repeated compilation, profile
+  switching, limits, and worker/provider/asset/watchdog recovery. Fresh worker
+  readiness was 149/159 ms (root/nested), and a 128-declaration compile that
+  emitted 512 documents took 357.1 ms with a 16.5 ms maximum heartbeat.
+  The Stage 1 UI now provides Monaco IDL/read-only C# models, tabs, system
+  stored Light/Dark themes, pane resizing, seven examples including a type/XML documentation
+  showcase, diagnostic navigation, and exact current
+  downloads/ZIP. Every document opens immediately; an independently resizable,
+  collapsible file explorer
+  keeps filenames on one line with horizontal scrolling. Shared font controls
+  default to 12 px, with an optional localStorage size preference.
+  First use resolves the system appearance to a saved Light/Dark choice;
+  subsequent system changes do not override it. Tabs retain full height with
+  an overlay scrollbar and wheel/drag/keyboard navigation. Notices are
+  floating and dismissible, auto-close after five seconds, and pause while
+  hovered/focused without changing workspace layout.
+  Versioned IndexedDB recovery serializes source/profile saves
+  and reset; invalid storage leaves editing usable. Edits debounce for 300 ms,
+  immediately invalidate exports/markers, and cannot accept stale results.
+  Fifteen UI/recovery/fault groups passed in representative Edge. Additional
+  Firefox 156 and Playwright WebKit 26.6 checks cover root/nested paths,
+  responsiveness, editor navigation, resizing, persistence, imports, failures,
+  and all example/profile outputs; this is not a Safari claim. The Chromium
+  production-browser run covers all 14 example/profile combinations and key
+  editing/export/recovery flows; its merged first-party report measures 93.47%
+  branch and 92.88% line coverage. Twenty-eight focused C# adapter cases pass with
+  96.875% branch and 98.2% line coverage. CI uploads browser and adapter
+  Cobertura alongside compiler/generator reports to Coveralls and scans the
+  .NET solution with Community Qodana; those remote PR checks remain pending.
+  Monaco 0.57.0 and fflate 0.8.3 are pinned, with DOMPurify overridden to
+  patched 3.4.17. CI downloads only Playwright's Chromium headless shell. Broader
+  accessibility and release qualification remain #110; ADR-003 stays Draft.
+  See [ADR-003 draft](adr/ADR-003-run-playground-compilation-in-a-browser-worker.md),
+  [runtime flow](arc42/06-runtime-view.md#64-browser-playground-compilation),
+  and [dependency intake](dependency-intake/playground-frontend.md).
 - **IDL annotation and value binding:** The shared reader captures ordered balanced annotation applications and source spans;
   context parsers retain unresolved values until symbol binding.
   The catalog validates duplicate named keys for known applications and leaves unknown arguments opaque.
@@ -238,20 +285,23 @@ authoritative; this summary is a retrieval aid, not a replacement.
 
 ## Repository defaults
 
-| Setting                 | Current value                                      | Qualification                                                                                                          |
-| :---------------------- | :------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
-| Consumer minimum        | `net8.0`, C# 12+                                   | Support policy applies                                                                                                 |
-| Consumer compiler host  | Roslyn 4.8.0 (`SDK 8.0.100`)                       | Minimum qualified SDK host                                                                                             |
-| Repository target       | `net10.0`                                          | Pinned SDK in `global.json`                                                                                            |
-| Generator target        | `netstandard2.0`                                   | Analyzer/source-generator package                                                                                      |
-| Compiler target        | `netstandard2.0`; non-packable          | Bundled beside the generator in the single published package; not an independently published package |
-| RTI package floor       | `7.3.1+`                                           | Reference eligibility only, not compatibility evidence                                                                 |
-| RTI profile range       | `7.3.1+`                                           | Nearest profile selected by assembly identity                                                                          |
-| Qualified RTI versions  | `7.3.1`, `7.7.0`                                   | Exact LTS version evidence only                                                                                        |
-| Test platform           | Microsoft.Testing.Platform, xUnit v3               | Runner filters follow `--`                                                                                             |
-| Sequence-array mapping  | `RtiCSharp`; opt-in `Idl` per project/file         | File ownership; runtime coverage on both LTS profiles; C149 Idl case passes 16 focused DDS exchanges per exact profile |
-| Unbounded finite limits | 100 sequence elements; 255 string bytes/code units | Project defaults with file-level overrides; explicit IDL bounds win; positive Int32 only                               |
-| Strict validation       | `false`; any root enables the batch                | DDSG0108 by default; strict failure before emission                                                                    |
+| Setting                 | Current value                                         | Qualification                                                                                                          |
+| :---------------------- | :---------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| Consumer minimum        | `net8.0`, C# 12+                                      | Support policy applies                                                                                                 |
+| Consumer compiler host  | Roslyn 4.8.0 (`SDK 8.0.100`)                          | Minimum qualified SDK host                                                                                             |
+| Repository target       | `net10.0`                                             | Pinned SDK in `global.json`                                                                                            |
+| Generator target        | `netstandard2.0`                                      | Analyzer/source-generator package                                                                                      |
+| Compiler target         | `netstandard2.0`; non-packable                        | Bundled beside the generator in the single published package; not an independently published package                   |
+| Browser toolchain       | Node 26.7.0, npm 12.2.0, TypeScript 6.0.3, Vite 7.3.7 | Exact client pins and npm lockfile; strict lint/format, Node and Chromium coverage run in Quality CI                   |
+| Browser host            | .NET 10.0.13, `browser-wasm`                          | Non-packable worker host; 14,208,318 bytes across 63 clean .NET asset files                                            |
+| Browser verification    | `@playwright/cli` 0.1.22                              | Temporary verification tooling; not an application dependency                                                          |
+| RTI package floor       | `7.3.1+`                                              | Reference eligibility only, not compatibility evidence                                                                 |
+| RTI profile range       | `7.3.1+`                                              | Nearest profile selected by assembly identity                                                                          |
+| Qualified RTI versions  | `7.3.1`, `7.7.0`                                      | Exact LTS version evidence only                                                                                        |
+| Test platform           | Microsoft.Testing.Platform, xUnit v3                  | Runner filters follow `--`                                                                                             |
+| Sequence-array mapping  | `RtiCSharp`; opt-in `Idl` per project/file            | File ownership; runtime coverage on both LTS profiles; C149 Idl case passes 16 focused DDS exchanges per exact profile |
+| Unbounded finite limits | 100 sequence elements; 255 string bytes/code units    | Project defaults with file-level overrides; explicit IDL bounds win; positive Int32 only                               |
+| Strict validation       | `false`; any root enables the batch                   | DDSG0108 by default; strict failure before emission                                                                    |
 
 ## Open risks
 
@@ -289,9 +339,13 @@ authoritative; this summary is a retrieval aid, not a replacement.
   assemblies at one version; package and minimum-host loading are covered by
   integration tests. Direct callers depend on the current path interpretation,
   and literal-formatting parity is guarded by tests. The per-compilation MD5
-  boundary is implemented; browser execution still needs a compatible
-  provider and end-to-end qualification in
-  [issue #108](https://github.com/eNeRGy164/wireloom/issues/108).
+  boundary and browser provider are implemented. Stage 0, Stage 1, and scoped
+  Firefox/WebKit verification pass; CI now includes strict client lint/format,
+  Node and source-mapped Chromium coverage, adapter coverage, Coveralls, and
+  Community Qodana. Remote PR results remain pending. Accessibility and broader
+  release coverage remain open under
+  [issue #110](https://github.com/eNeRGy164/wireloom/issues/110); #109 is ready
+  for review.
 
 ## Decision history
 
@@ -304,7 +358,17 @@ Accepted; ADR-002 was approved October 26, 2026.
 records the required synchronous MD5 delegate supplied per compilation. The
 boundary is implemented: the generator supplies BCL hashing, while the
 compiler retains UTF-8, digest validation, byte ordering, and masking. Browser
-provider implementation and qualification remain outstanding.
+provider implementation and its 21 retained Node checks are complete. The
+maintained worker now passes Stage 0 parity and recovery checks in Windows
+Edge. Cross-browser and broader release qualification remain open under
+[issue #110](https://github.com/eNeRGy164/wireloom/issues/110).
+
+[ADR-003 (Draft)](adr/ADR-003-run-playground-compilation-in-a-browser-worker.md)
+records the proposed dedicated-worker host and remains pending review. Clean
+locked Release and root/nested-base static checks pass. Stage 0 and Stage 1
+browser evidence includes Edge, Firefox, and Playwright WebKit; current pull
+request automation will add Chromium coverage and Community Qodana. Full
+accessibility and release qualification remain outstanding.
 
 ## Source map
 
@@ -317,4 +381,8 @@ provider implementation and qualification remain outstanding.
 - [Corpus inventory and evidence rules](../corpus/README.md)
 - [ADR-001: shared compiler project](adr/ADR-001-share-a-host-neutral-compiler-project.md)
 - [ADR-002 (Accepted): per-compilation MD5](adr/ADR-002-inject-member-id-md5-per-compilation.md)
+- [ADR-003 (Draft): browser worker host](adr/ADR-003-run-playground-compilation-in-a-browser-worker.md)
+- [Browser frontend dependency intake](dependency-intake/playground-frontend.md)
+- [Issue #109 stage 0 evidence](../plans/109-browser-playground-stage0-evidence.md)
+- [Issue #109 stage 1 evidence](../plans/109-browser-playground-stage1-evidence.md)
 - [Machine-readable architecture memory](../../.agents/architecture-memory.yaml)

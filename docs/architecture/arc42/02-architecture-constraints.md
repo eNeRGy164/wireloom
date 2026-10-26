@@ -2,26 +2,30 @@
 
 ## 2.1 Organizational constraints
 
-| Constraint                                             | Rationale                                                                           |
-| :----------------------------------------------------- | :---------------------------------------------------------------------------------- |
-| Feature claims require retained evidence               | The project distinguishes implemented source generation from verified compatibility |
-| RTI reference output retains provenance and notices    | Corpus captures identify their inputs and exact generator version                   |
+| Constraint                                          | Rationale                                                                           |
+| :-------------------------------------------------- | :---------------------------------------------------------------------------------- |
+| Feature claims require retained evidence            | The project distinguishes implemented source generation from verified compatibility |
+| RTI reference output retains provenance and notices | Corpus captures identify their inputs and exact generator version                   |
 
 ## 2.2 Technical constraints
 
-| Constraint                                                                   | Rationale                                                                       |
-| :--------------------------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| The generator targets `netstandard2.0`                                       | Roslyn analyzer compatibility boundary                                          |
-| The shared compiler targets `netstandard2.0` and references no Roslyn, MSBuild, or RTI assemblies | Repository hosts share one implementation; build-specific discovery remains in the adapter |
-| Repository projects default to .NET 10; SDK `10.0.400`                       | Repository and Qodana-compatible SDK policy                                     |
-| A resolved `Rti.ConnextDds` reference of at least 7.3.1 is required          | Lower versions report `DDSG0003`; assembly version selects an immutable profile |
-| 7.3.1 and 7.7.0 are the supported LTS profiles                               | Only the exact LTS versions are qualification targets                           |
-| Retained RTI oracle sources are organized by exact LTS version               | Each profile uses matching `Rti.ConnextDds` and `rtiddsgen` evidence            |
-| C# 12 or later is required by the generator host                             | Current emitted-source baseline                                                 |
-| Analyzer references Roslyn 4.8.0                                             | Keeps the package loadable by the first .NET 8 C# 12 SDK host                   |
-| Generation runs through Roslyn `AdditionalFiles` and MSBuild `DdsIdl` items  | Keeps the package inside the normal .NET build graph                            |
-| Preprocessing and strictness metadata is combined for one project-wide batch | Mapping overrides are file-owned; defines and includes remain batch-wide        |
-| Package versions, lock files, NuGet audit, and CI action pins are controlled | Reproducible and reviewable supply chain                                        |
+| Constraint                                                                                        | Rationale                                                                                                        |
+| :------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------- |
+| The generator targets `netstandard2.0`                                                            | Roslyn analyzer compatibility boundary                                                                           |
+| The shared compiler targets `netstandard2.0` and references no Roslyn, MSBuild, or RTI assemblies | Repository hosts share one implementation; build-specific discovery remains in the adapter                       |
+| Repository projects default to .NET 10; SDK `10.0.400`                                            | Repository and Qodana-compatible SDK policy                                                                      |
+| A resolved `Rti.ConnextDds` reference of at least 7.3.1 is required                               | Lower versions report `DDSG0003`; assembly version selects an immutable profile                                  |
+| 7.3.1 and 7.7.0 are the supported LTS profiles                                                    | Only the exact LTS versions are qualification targets                                                            |
+| Retained RTI oracle sources are organized by exact LTS version                                    | Each profile uses matching `Rti.ConnextDds` and `rtiddsgen` evidence                                             |
+| C# 12 or later is required by the generator host                                                  | Current emitted-source baseline                                                                                  |
+| Analyzer references Roslyn 4.8.0                                                                  | Keeps the package loadable by the first .NET 8 C# 12 SDK host                                                    |
+| Generation runs through Roslyn `AdditionalFiles` and MSBuild `DdsIdl` items                       | Keeps the package inside the normal .NET build graph                                                             |
+| Preprocessing and strictness metadata is combined for one project-wide batch                      | Mapping overrides are file-owned; defines and includes remain batch-wide                                         |
+| Package versions, lock files, NuGet audit, and CI action pins are controlled                      | Reproducible and reviewable supply chain                                                                         |
+| The browser host is non-packable `net10.0` `browser-wasm` and references the shared compiler      | Keep browser execution isolated from the Roslyn package and preserve one compiler implementation                 |
+| The browser client uses TypeScript and Vite with pinned Node/npm and a lockfile                   | Build a static client with reproducible developer tooling and no additional UI framework at the stage 0 boundary |
+| Browser compilation runs in a dedicated module worker with a synchronous MD5 provider             | Keep synchronous WebAssembly work off the page thread and preserve the shared compiler's hash contract           |
+| Browser source is processed locally and the static app has no DDS runtime role                    | Keep the visitor preview inside the browser boundary and avoid implying DDS operation or wire qualification      |
 
 Consumer support and repository defaults have separate scopes:
 

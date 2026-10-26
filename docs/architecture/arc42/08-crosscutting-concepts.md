@@ -353,7 +353,9 @@ provided UTF-8 bytes and returns a 16-byte digest; the compiler validates its
 length and applies the existing little-endian conversion and 28-bit mask. The
 Roslyn generator supplies `MD5.HashData`; the callback is scoped to that
 compilation and is used by both struct and union member-ID paths. This keeps
-hashing replaceable for a future browser host without changing parser behavior.
+hashing replaceable for browser hosts without changing parser behavior. The
+Playground adapter supplies the synchronous callback; published-browser
+execution and profile parity remain pending.
 
 The Roslyn adapter discovers the resolved RTI assembly version, maps that
 version to the corresponding profile, translates compiler diagnostics into
@@ -363,3 +365,56 @@ Roslyn helper behavior. Direct API tests cover result/error cases, cancellation,
 input snapshots, profile mapping, formatting parity, and the MD5 provider
 contract. Corpus comparisons verify complete generated text for both
 maintained RTI profiles.
+
+## 8.10 Browser worker protocol
+
+The Playground protocol is versioned and carries worker generation, request ID,
+workspace revision, explicit profile, and a collection of normalized virtual
+file paths with source and generation-root flags. Workspace snapshots are
+bounded before dispatch, and only the running request plus newest pending
+request are retained. The client applies a response only when all identity
+fields match both the dispatched request and current workspace. A failed or
+timed-out worker is terminated and replaced; synchronous work cannot be
+interrupted by posting cancellation to the same busy worker. Startup failures
+are explicit and retryable. The compiler remains the source of generated
+documents and diagnostic IDs, severities, messages, and UTF-16 offsets. The
+current diagnostic API exposes no length, so the adapter does not invent one.
+
+Deterministic Node tests cover newest-pending replacement, all response identity
+fields, stale results after worker replacement, and worker-start recovery. The
+maintained worker was also exercised in Windows Edge 156.0.4314.42: native
+parity passed for eight cases, two profiles, and root plus nested hosting (32
+comparisons); injected worker, provider, timeout, asset, and bounded-input
+failures recovered as expected. Startup, asset transfer, compile, and
+main-thread responsiveness measurements are recorded in
+[the runtime view](06-runtime-view.md#64-browser-playground-compilation).
+This result covers the representative Edge host; cross-browser and release
+qualification remain pending.
+
+## 8.11 Browser workspace and presentation
+
+Monaco supplies lexical IDL/C# colors, models, markers, and UTF-16 position
+mapping; it supplies no semantic IDL or C# service. The compiler remains the
+only authority on language validity and profile behavior. Source changes clear
+markers and diagnostic navigation immediately. Copy and download actions are
+enabled only for the current successful result with documents. Individual
+files and ZIP entries preserve original generated text; operating-system
+clipboard reads may normalize newlines.
+
+Workspace recovery uses the `wireloom-playground` IndexedDB database and a
+version-1 source/profile record. Validation rejects unknown versions rather
+than guessing a migration. Writes/deletion are ordered, and save callbacks
+carry a generation so old completions do not mislabel newer edits. No source
+is placed in URLs, telemetry, or network requests. All runtime/editor assets
+are bundled at the deployment base. A small bootstrap provides reload recovery
+if the editor chunk is missing; compiler asset failures expose worker restart.
+
+Editor font size is an optional localStorage preference (10–20 px, default
+12 px), separate from source/profile recovery. Unavailable preference storage
+does not prevent changing the font in either editor.
+Theme is a separate `wireloom-theme` localStorage preference with Light and
+Dark choices. On first use the bootstrap resolves the current system appearance
+to one of those choices and saves it. It applies the saved choice before the
+editor chunk loads and updates both page color scheme and Monaco. Later system
+or developer-tools preference changes do not override it. Preference storage
+failure leaves the current session's choice usable.

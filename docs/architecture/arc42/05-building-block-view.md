@@ -12,16 +12,18 @@ The generator and in-repository callers use the same non-packable compiler
 project. The generator package carries the compiler assembly for analyzer
 loading; compiler stages are expanded in the level-2 view.
 
-| Building block                 | Project                  | Responsibility                                                                                           | Main boundary                                 |
-| :----------------------------- | :----------------------- | :------------------------------------------------------------------------------------------------------- | :-------------------------------------------- |
-| Roslyn adapter                 | `Wireloom.Dds.Generator` | Discovers build inputs, maps runtime version, reports diagnostics, and adds documents                    | `Generator`, `GeneratorInputFactory`          |
-| Shared compiler API            | `Wireloom.Dds.Compiler`  | Accepts in-memory inputs, explicit profile, and per-call MD5 provider; returns documents and diagnostics | `IdlCompiler`, `IdlCompilationResult`         |
-| Input graph and preprocessor   | `Wireloom.Dds.Compiler`  | Resolves supplied roots and includes; applies preprocessing                                              | `IdlInputGraph`, `IdlPreprocessor`            |
-| Front end                      | `Wireloom.Dds.Compiler`  | Parses, binds, and validates IDL                                                                         | `Compiler/FrontEnd`                           |
-| Compilation orchestration      | `Wireloom.Dds.Compiler`  | Coordinates compilation and emission handoff                                                             | `IdlCompilation`, `CompilationContext`        |
-| Emission planning and emitters | `Wireloom.Dds.Compiler`  | Chooses generated API shapes and renders C# documents                                                    | `Emission/Model`, planning, emitters, writers |
-| MSBuild targets                | Generator package        | Pass IDL roots and metadata to the Roslyn adapter                                                        | Packed NuGet package                          |
-| Corpus and integration tests   | Existing test projects   | Verify acceptance, generated API shape, and package loading                                              | Separate test layers                          |
+| Building block                 | Project                       | Responsibility                                                                                                           | Main boundary                                 |
+| :----------------------------- | :---------------------------- | :----------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------- |
+| Roslyn adapter                 | `Wireloom.Dds.Generator`      | Discovers build inputs, maps runtime version, reports diagnostics, and adds documents                                    | `Generator`, `GeneratorInputFactory`          |
+| Shared compiler API            | `Wireloom.Dds.Compiler`       | Accepts in-memory inputs, explicit profile, and per-call MD5 provider; returns documents and diagnostics                 | `IdlCompiler`, `IdlCompilationResult`         |
+| Input graph and preprocessor   | `Wireloom.Dds.Compiler`       | Resolves supplied roots and includes; applies preprocessing                                                              | `IdlInputGraph`, `IdlPreprocessor`            |
+| Front end                      | `Wireloom.Dds.Compiler`       | Parses, binds, and validates IDL                                                                                         | `Compiler/FrontEnd`                           |
+| Compilation orchestration      | `Wireloom.Dds.Compiler`       | Coordinates compilation and emission handoff                                                                             | `IdlCompilation`, `CompilationContext`        |
+| Emission planning and emitters | `Wireloom.Dds.Compiler`       | Chooses generated API shapes and renders C# documents                                                                    | `Emission/Model`, planning, emitters, writers |
+| MSBuild targets                | Generator package             | Pass IDL roots and metadata to the Roslyn adapter                                                                        | Packed NuGet package                          |
+| Browser Playground client      | `playground/`                 | Captures workspace snapshots, retains newest pending work, rejects stale results, and presents documents and diagnostics | TypeScript/Vite static bundle                 |
+| Browser compiler host          | `Wireloom.Playground.Browser` | Validates the typed request, maps inputs and profile, supplies synchronous MD5, and serializes bounded results           | .NET 10 WebAssembly module worker             |
+| Corpus and integration tests   | Existing test projects        | Verify acceptance, generated API shape, and package loading                                                              | Separate test layers                          |
 
 The public core API is defined in
 [`IdlCompiler`](../../../src/Wireloom.Dds.Compiler/Api/IdlCompiler.cs),
@@ -35,6 +37,21 @@ ordering and masking. Its `netstandard2.0` project has no Roslyn, MSBuild, or
 RTI assembly reference. `Wireloom.Dds.Generator` keeps the build-host adapters
 and bundles the compiler DLL and XML documentation in the existing analyzer
 package.
+
+The non-packable `Wireloom.Playground.Browser` project references only the
+shared compiler and is published for `browser-wasm` on .NET 10. The TypeScript
+worker initializes .NET and registers the retained synchronous JavaScript MD5
+provider inside the worker. The JSON protocol carries a protocol version,
+worker generation, monotonic request ID, workspace revision, explicit profile,
+virtual-path file collection, root flags, and a reserved options object. The
+host validates normalized unique `/workspace/` paths and a 256 KiB total
+UTF-8 input cap before calling the compiler. The host caps responses at 512
+documents and 16 MiB of generated UTF-8 text. Compiler diagnostics carry the
+compiler-provided UTF-16 offset and no copied source text; the current core API
+does not expose diagnostic length. The static client is built with Vite and
+supports root and nested base paths. Representative published-worker behavior
+has been verified in Edge on Windows; other browser targets remain outside
+this Stage 0 qualification.
 
 ## 5.2 Level 2: Compiler and preprocessing
 
@@ -196,3 +213,25 @@ The generated-value contracts and their evidence are maintained in
 [chapter 8.6](08-crosscutting-concepts.md#86-rti-compatible-generated-value-semantics),
 the [runtime contract matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix),
 and the [corpus feature index](../../corpus/FEATURE-COVERAGE.md).
+
+## 5.5 Browser discovery client
+
+The single-file client opens every generated document in tabs and lists source
+and output in a collapsible explorer with single-line filenames and horizontal
+scrolling. Shared editor font controls default to 12 px. It uses Monaco models
+keyed by virtual file URI, an IDL
+lexical tokenizer, and read-only C# models. `CompilerClient` owns the existing
+bounded worker queue, request matching, and watchdogs; editor modules do not
+interpret IDL semantics. Generated-file selection and open tabs retain editor
+view state, and removed models are disposed. The page resolves the system's
+initial appearance to a stored Light/Dark choice, synchronized with Monaco.
+Pointer and keyboard controls resize the explorer independently from the
+source/output divider, which repartitions only the remaining editor area.
+
+The version-1 workspace has a file collection and explicit profile, while this
+UI exposes one root. `RecoveryStore` serializes IndexedDB writes and deletion
+so pending saves cannot resurrect a reset workspace. It validates recovered
+paths, schema, profile, and UTF-8 size, stores source/settings only, and
+regenerates output after restore. The download actions use the accepted
+compiler response's original names/text. Locally bundled `fflate` creates
+stored-entry ZIPs; Monaco and archive dependencies do not add a remote service.
