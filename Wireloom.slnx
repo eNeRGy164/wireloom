@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj" />
     <Project Path="src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj" />
+    <Project Path="src/Wireloom.Playground.Browser/Wireloom.Playground.Browser.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Wireloom.Dds.Generator.RuntimeContracts/Wireloom.Dds.Generator.RuntimeContracts.csproj" />

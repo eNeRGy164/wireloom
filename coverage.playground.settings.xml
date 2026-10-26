@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+  <IncludeTestAssembly>True</IncludeTestAssembly>
+  <CodeCoverage>
+    <ModulePaths>
+      <Include>
+        <ModulePath>.*Wireloom\.Dds\.Compiler\.Tests\.dll$</ModulePath>
+      </Include>
+    </ModulePaths>
+    <Sources>
+      <Include>
+        <Source>.*[\\/]src[\\/]Wireloom\.Playground\.Browser[\\/]PlaygroundCompilerAdapter\.cs$</Source>
+      </Include>
+    </Sources>
+  </CodeCoverage>
+</Configuration>
