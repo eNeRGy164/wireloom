@@ -1,0 +1,119 @@
+[
+  {
+    "id": "member-hash-unicode",
+    "expectedSuccess": {
+      "7.3.1": true,
+      "7.7.0": true
+    },
+    "files": [
+      {
+        "path": "/workspace/main.idl",
+        "source": "struct HashSample {\n    long color;\n    long shapesize;\n    @hashid(\"é\") long unicode;\n};\n",
+        "isGenerationRoot": true
+      }
+    ]
+  },
+  {
+    "id": "union-member-hash",
+    "expectedSuccess": {
+      "7.3.1": true,
+      "7.7.0": true
+    },
+    "files": [
+      {
+        "path": "/workspace/main.idl",
+        "source": "@autoid(HASH) union HashChoice switch(long) {\n    case 0: long color;\n    default: long shapesize;\n};\n",
+        "isGenerationRoot": true
+      }
+    ]
+  },
+  {
+    "id": "primitives-enum-aggregate-bounded-collections",
+    "expectedSuccess": {
+      "7.3.1": true,
+      "7.7.0": true
+    },
+    "files": [
+      {
+        "path": "/workspace/main.idl",
+        "source": "module Baseline {\n    enum Color { Red, Green, Blue };\n    struct Point { long x; long y; };\n    @appendable struct Palette {\n        Color color;\n        Point origin;\n        sequence<string<16>, 4> names;\n        long samples[3];\n    };\n};\n",
+        "isGenerationRoot": true
+      }
+    ]
+  },
+  {
+    "id": "inline-preprocessor-array-bound",
+    "expectedSuccess": {
+      "7.3.1": true,
+      "7.7.0": true
+    },
+    "files": [
+      {
+        "path": "/workspace/main.idl",
+        "source": "#define COUNT 3\nstruct DefinedArray { long values[COUNT]; };\n",
+        "isGenerationRoot": true
+      }
+    ]
+  },
+  {
+    "id": "included-nongenerated-type",
+    "expectedSuccess": {
+      "7.3.1": true,
+      "7.7.0": true
+    },
+    "files": [
+      {
+        "path": "/workspace/main.idl",
+        "source": "#include \"types.idl\"\nstruct Main { IncludedType value; };\n",
+        "isGenerationRoot": true
+      },
+      {
+        "path": "/workspace/types.idl",
+        "source": "struct IncludedType { long value; };\n",
+        "isGenerationRoot": false
+      }
+    ]
+  },
+  {
+    "id": "unknown-annotation-warning",
+    "expectedSuccess": {
+      "7.3.1": true,
+      "7.7.0": true
+    },
+    "files": [
+      {
+        "path": "/workspace/main.idl",
+        "source": "@Vendor::custom(payload=(1 + (2 * 3))) struct AnnotationSample { long value; };\n",
+        "isGenerationRoot": true
+      }
+    ]
+  },
+  {
+    "id": "syntax-error",
+    "expectedSuccess": {
+      "7.3.1": false,
+      "7.7.0": false
+    },
+    "files": [
+      {
+        "path": "/workspace/main.idl",
+        "source": "struct Broken { long value;\n",
+        "isGenerationRoot": true
+      }
+    ]
+  },
+  {
+    "id": "must-understand-profile-sensitive",
+    "expectedSuccess": {
+      "7.3.1": false,
+      "7.7.0": true
+    },
+    "files": [
+      {
+        "path": "/workspace/main.idl",
+        "source": "struct MustUnderstand { @must_understand long value; };\n",
+        "isGenerationRoot": true
+      }
+    ]
+  }
+]
