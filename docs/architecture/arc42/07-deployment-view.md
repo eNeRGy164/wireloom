@@ -58,7 +58,7 @@ exact toolchain image, package, and generator version. Profile selection uses
 the assembly resolved by the consumer build.
 
 The checked-in samples/HelloWorld project consumes the released
-Wireloom.Dds.Generator 0.4.0 package from NuGet.org and builds on Ubuntu 26.04
+Wireloom.Dds.Generator 0.5.0 package from NuGet.org and builds on Ubuntu 26.04
 and Windows 2025. This compile-only CI check needs no RTI native library or
 license; the sample README documents the licensed local DDS exchange.
 
