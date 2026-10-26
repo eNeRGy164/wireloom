@@ -6,8 +6,9 @@ merge a cleanup update with the actual release details.
 ## 1. Prepare and merge
 
 - Choose the planned SemVer and tag, such as `0.5.0` and `v0.5.0`. Set
-  `<Version>` in `src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj` to
-  the version without the `v` prefix.
+  `<WireloomVersion>` in `Directory.Build.props` to the version without the
+  `v` prefix. Both the generator and its bundled compiler assembly use this
+  shared version.
 - Update examples in `src/Wireloom.Dds.Generator/README.md`, which ships in the
   package. Add the predicted version to `docs/releases/README.md` and create
   `docs/releases/<version>.md` with the source SHA and release details pending.
