@@ -13,7 +13,7 @@ public sealed class IdlCompilerBoundarySpecs
         IReadOnlyList<IdlInput> inputs = Array.Empty<IdlInput>();
 
         // Act
-        var result = IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, TestContext.Current.CancellationToken);
+        var result = IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, CompilerTestSupport.ComputeMd5, TestContext.Current.CancellationToken);
 
         // Assert
         result.Success.ShouldBeTrue();
@@ -29,7 +29,7 @@ public sealed class IdlCompilerBoundarySpecs
         IReadOnlyList<IdlInput> inputs = [new("root.idl", source)];
 
         // Act
-        var result = IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, TestContext.Current.CancellationToken);
+        var result = IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, CompilerTestSupport.ComputeMd5, TestContext.Current.CancellationToken);
 
         // Assert
         result.Success.ShouldBeFalse();
@@ -50,7 +50,7 @@ public sealed class IdlCompilerBoundarySpecs
         IReadOnlyList<IdlInput> inputs = [new("sample.idl", "struct Sample { @must_understand long value; };")];
 
         // Act
-        var result = IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti731, TestContext.Current.CancellationToken);
+        var result = IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti731, CompilerTestSupport.ComputeMd5, TestContext.Current.CancellationToken);
 
         // Assert
         result.Success.ShouldBeFalse();
@@ -110,7 +110,7 @@ public sealed class IdlCompilerBoundarySpecs
 
         // Act
         var exception = Should.Throw<ArgumentNullException>(() =>
-            IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770));
+            IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, CompilerTestSupport.ComputeMd5));
 
         // Assert
         exception.ParamName.ShouldBe("inputs");
@@ -120,14 +120,110 @@ public sealed class IdlCompilerBoundarySpecs
     public void RejectsUnknownProfiles()
     {
         // Arrange
-        IReadOnlyList<IdlInput> inputs = Array.Empty<IdlInput>();
+        IReadOnlyList<IdlInput> inputs = [];
 
         // Act
         var exception = Should.Throw<ArgumentOutOfRangeException>(() =>
-            IdlCompiler.Compile(inputs, (IdlCompilerProfile)int.MaxValue));
+            IdlCompiler.Compile(inputs, (IdlCompilerProfile)int.MaxValue, CompilerTestSupport.ComputeMd5));
 
         // Assert
         exception.ParamName.ShouldBe("profile");
+    }
+
+    [Fact]
+    public void RequiresMd5ProviderEvenWhenThereAreNoHashIds()
+    {
+        // Arrange
+        IReadOnlyList<IdlInput> inputs = Array.Empty<IdlInput>();
+
+        // Act
+        var exception = Should.Throw<ArgumentNullException>(() =>
+            IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, null!));
+
+        // Assert
+        exception.ParamName.ShouldBe("computeMd5");
+    }
+
+    [Fact]
+    public void UsesTheInjectedMd5ProviderForMemberIds()
+    {
+        // Arrange
+        IReadOnlyList<IdlInput> inputs = [new("sample.idl", "struct Sample { @hashid(\"é\") long value; };")];
+        byte[]? received = null;
+
+        // Act
+        var result = IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, bytes =>
+        {
+            received = bytes;
+            var digest = new byte[16];
+            digest[0] = 0x34;
+            digest[1] = 0x12;
+            return digest;
+        }, TestContext.Current.CancellationToken);
+
+        // Assert
+        received.ShouldBe("é"u8.ToArray());
+        result.Success.ShouldBeTrue();
+        result.Documents.ShouldContain(document => document.Source.Contains("id: 4660", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RejectsAnInvalidMd5DigestWithoutReturningAnIdlDiagnostic()
+    {
+        // Arrange
+        IReadOnlyList<IdlInput> inputs = [new("sample.idl", "@autoid(HASH) struct Sample { long value; };")];
+
+        // Act
+        var exception = Should.Throw<InvalidOperationException>(() =>
+            IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, static _ => new byte[15]));
+
+        // Assert
+        exception.Message.ShouldContain("exactly 16");
+    }
+
+    [Fact]
+    public void RejectsANullMd5Digest()
+    {
+        // Arrange
+        IReadOnlyList<IdlInput> inputs = [new("sample.idl", "@autoid(HASH) struct Sample { long value; };")];
+
+        // Act
+        var exception = Should.Throw<InvalidOperationException>(() =>
+            IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, static _ => null!));
+
+        // Assert
+        exception.Message.ShouldContain("exactly 16");
+    }
+
+    [Fact]
+    public void WrapsProviderExceptionsSoTheyAreNotReportedAsIdlDiagnostics()
+    {
+        // Arrange
+        IReadOnlyList<IdlInput> inputs = [new("sample.idl", "@autoid(HASH) struct Sample { long value; };")];
+        var providerException = new IdlException(new IdlInput("provider.idl", string.Empty), 0, "provider failure");
+
+        // Act
+        var exception = Should.Throw<InvalidOperationException>(() =>
+            IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, _ => throw providerException));
+
+        // Assert
+        exception.InnerException.ShouldBeSameAs(providerException);
+    }
+
+    [Fact]
+    public void PropagatesCancellationFromTheMd5Provider()
+    {
+        // Arrange
+        IReadOnlyList<IdlInput> inputs = [new("sample.idl", "@autoid(HASH) struct Sample { long value; };")];
+        var cancellationToken = TestContext.Current.CancellationToken;
+
+        // Act
+        var exception = Should.Throw<OperationCanceledException>(() =>
+            IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770,
+                _ => throw new OperationCanceledException(cancellationToken), cancellationToken));
+
+        // Assert
+        exception.CancellationToken.ShouldBe(cancellationToken);
     }
 
     [Fact]
@@ -162,7 +258,7 @@ public sealed class IdlCompilerBoundarySpecs
 
         // Act
         var exception = Should.Throw<OperationCanceledException>(() =>
-            IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, source.Token));
+            IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, CompilerTestSupport.ComputeMd5, source.Token));
 
         // Assert
         exception.CancellationToken.ShouldBe(source.Token);

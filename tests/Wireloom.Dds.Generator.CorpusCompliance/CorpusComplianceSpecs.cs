@@ -638,6 +638,7 @@ public sealed class CorpusComplianceSpecs
             CorpusRepository.BuildInputs(corpusCase).Select(input => new IdlInput(input.Path, input.Text, sequenceArrayMapping ?? corpusCase.SequenceArrayMapping,
                 input.Generate, input.Strict, input.Defines, input.Undefines, input.IncludeDirectories)).ToList(),
             compilerProfile,
+            static bytes => System.Security.Cryptography.MD5.HashData(bytes),
             TestContext.Current.CancellationToken);
 
         if (diagnostics is not null)

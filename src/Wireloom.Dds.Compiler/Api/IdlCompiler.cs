@@ -31,17 +31,22 @@ public static class IdlCompiler
     /// <summary>Compiles inputs using an explicit RTI C# API profile.</summary>
     /// <param name="inputs">All in-memory IDL inputs, including generation roots and supplied includes.</param>
     /// <param name="profile">The RTI API profile targeted by emitted C#.</param>
+    /// <param name="computeMd5">A synchronous provider that returns the 16-byte MD5 digest of its input.</param>
     /// <param name="cancellationToken">A token that cancels compilation.</param>
     /// <returns>Generated documents and diagnostics from the compilation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="inputs"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="computeMd5"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="profile"/> is not supported.</exception>
+    /// <exception cref="InvalidOperationException">The provider fails or does not return a 16-byte digest.</exception>
     /// <exception cref="OperationCanceledException">Compilation was canceled.</exception>
     public static IdlCompilationResult Compile(
         IReadOnlyList<IdlInput> inputs,
         IdlCompilerProfile profile,
+        Func<byte[], byte[]> computeMd5,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(inputs);
+        ArgumentNullException.ThrowIfNull(computeMd5);
 
         if (!Enum.IsDefined(typeof(IdlCompilerProfile), profile))
         {
@@ -54,7 +59,7 @@ public static class IdlCompiler
 
         try
         {
-            var generated = new IdlCompilation(inputSnapshot, cancellationToken, ToEmissionProfile(profile)).Run(diagnostics);
+            var generated = new IdlCompilation(inputSnapshot, ToEmissionProfile(profile), computeMd5, cancellationToken).Run(diagnostics);
             var documents = generated.ToDictionary(source => source.HintName, StringComparer.Ordinal);
             return new IdlCompilationResult(documents.Values, diagnostics);
         }

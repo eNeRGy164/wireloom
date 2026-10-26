@@ -12,11 +12,12 @@ public sealed class ScalarIdentityAndExtensibilitySpecs
     public void NamedDiscriminatorLabelsKeepTheirScalarCategory(string type, string literal, string expectedLabel)
     {
         // Arrange
-        var input = Input("typed-labels.idl", $$"""
+        var input = Input("typed-labels.idl",
+            $$"""
             const {{type}} Selected = {{literal}};
             union Choice switch({{type}}) { case Selected: long value; default: long other; };
             """);
-        var parser = new IdlDeclarationParser(new Symbols.IdlSymbolTable(), CancellationToken.None);
+        var parser = new IdlDeclarationParser(new Symbols.IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
         parser.Parse(input.Text, input, baseOffset: 0, currentNamespace: null);
 
         // Act

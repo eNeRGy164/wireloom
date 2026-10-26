@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -53,7 +54,11 @@ public sealed class Generator : IIncrementalGenerator
                 return;
             }
 
-            var result = IdlCompiler.Compile(files.Select(file => file.Input).ToArray(), profile, production.CancellationToken);
+            var result = IdlCompiler.Compile(
+                files.Select(file => file.Input).ToArray(),
+                profile,
+                static bytes => MD5.HashData(bytes),
+                production.CancellationToken);
             GeneratorDiagnostics.Report(production, result.Diagnostics);
 
             if (!result.Success)

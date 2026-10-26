@@ -167,7 +167,7 @@ public sealed class AnnotationBindingEdgeCaseSpecs
         // Arrange
         const string source = "struct Sample { @hashid(\"abcd\") long direct; @hashid(\"ab\" \"cd\") long adjacent; };";
         var input = Input("adjacent-hashid-strings.idl", source);
-        var parser = new IdlDeclarationParser(new Symbols.IdlSymbolTable(), TestContext.Current.CancellationToken);
+        var parser = new IdlDeclarationParser(new Symbols.IdlSymbolTable(), TestContext.Current.CancellationToken, Compiler.Tests.CompilerTestSupport.ComputeMd5);
 
         // Act
         parser.Parse(source, input, 0, currentNamespace: null);
@@ -285,7 +285,7 @@ public sealed class AnnotationBindingEdgeCaseSpecs
     {
         // Arrange
         const string source = "struct Sample { @id(010) long octal; @id(10) long decimal; @id(0xA) long hexadecimal; };";
-        var parser = new IdlDeclarationParser(new Symbols.IdlSymbolTable(), TestContext.Current.CancellationToken);
+        var parser = new IdlDeclarationParser(new Symbols.IdlSymbolTable(), TestContext.Current.CancellationToken, Compiler.Tests.CompilerTestSupport.ComputeMd5);
 
         // Act
         parser.Parse(source, Input("member-id-integer-literals.idl", source), 0, currentNamespace: null);
@@ -311,7 +311,7 @@ public sealed class AnnotationBindingEdgeCaseSpecs
     {
         // Arrange
         var source = $"struct Sample {{ {annotation} long value; }};";
-        var parser = new IdlDeclarationParser(new Symbols.IdlSymbolTable(), TestContext.Current.CancellationToken);
+        var parser = new IdlDeclarationParser(new Symbols.IdlSymbolTable(), TestContext.Current.CancellationToken, Compiler.Tests.CompilerTestSupport.ComputeMd5);
 
         // Act
         parser.Parse(source, Input("decoded-unit-annotation.idl", source), 0, currentNamespace: null);

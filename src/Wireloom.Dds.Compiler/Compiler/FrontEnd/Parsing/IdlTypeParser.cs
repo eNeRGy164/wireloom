@@ -107,7 +107,7 @@ internal sealed class IdlTypeParser
                 : useHashIds && fieldAnnotations.MemberIdExpression is null ? field : null;
             if (memberId is null && memberIdHashSource is not null)
             {
-                memberId = IdlMemberIdHash.Compute(memberIdHashSource);
+                memberId = IdlMemberIdHash.Compute(memberIdHashSource, context.ComputeMd5);
             }
 
             var usesAutoIdHash = useHashIds && fieldAnnotations.MemberIdExpression is null

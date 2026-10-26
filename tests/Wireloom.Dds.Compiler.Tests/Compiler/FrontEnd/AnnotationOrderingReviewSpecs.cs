@@ -369,7 +369,7 @@ public sealed class AnnotationOrderingReviewSpecs
         // Arrange
         var input = Input("type-prefix-known-annotation.idl", "");
         var symbols = new IdlSymbolTable();
-        var context = new IdlParseContext(symbols, TestContext.Current.CancellationToken, diagnostics: null);
+        var context = new IdlParseContext(symbols, TestContext.Current.CancellationToken, Compiler.Tests.CompilerTestSupport.ComputeMd5, diagnostics: null);
 
         // Act
         var exception = Should.Throw<IdlException>(() => IdlTypeAnnotationPrefix.Read(
@@ -468,7 +468,7 @@ public sealed class AnnotationOrderingReviewSpecs
         const string source = "struct Sample { @Vendor::before(value=(1,2)) @key @Vendor::after(text=\"a,b\") long first, second; };";
         var input = Input("annotation-applications-retained.idl", source);
         var diagnostics = new List<IdlDiagnostic>();
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, diagnostics);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, Compiler.Tests.CompilerTestSupport.ComputeMd5, diagnostics);
 
         // Act
         parser.Parse(source, input, 0, currentNamespace: null);
@@ -487,7 +487,7 @@ public sealed class AnnotationOrderingReviewSpecs
         // Arrange
         const string source = "enum Status { @Vendor::enum(value=1) @value(7) Ready }; union Choice switch(long) { case 0: @Vendor::branch(text=\"x,y\") @optional long selected; };";
         var diagnostics = new List<IdlDiagnostic>();
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, diagnostics);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, Compiler.Tests.CompilerTestSupport.ComputeMd5, diagnostics);
 
         // Act
         parser.Parse(source, Input("annotation-targets-retained.idl", source), 0, currentNamespace: null);
@@ -506,7 +506,7 @@ public sealed class AnnotationOrderingReviewSpecs
         // Arrange
         const string source = "@final @Vendor::custom(value=(1 + 2)) struct Sample { long value; };";
         var diagnostics = new List<IdlDiagnostic>();
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, diagnostics);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, Compiler.Tests.CompilerTestSupport.ComputeMd5, diagnostics);
 
         // Act
         parser.Parse(source, Input("type-prefix-applications-retained.idl", source), 0, currentNamespace: null);
@@ -522,7 +522,7 @@ public sealed class AnnotationOrderingReviewSpecs
     {
         // Arrange
         const string source = "enum Status { @value(1 + 2) Ready };";
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, Compiler.Tests.CompilerTestSupport.ComputeMd5);
 
         // Act
         var exception = Should.Throw<IdlException>(() => parser.Parse(

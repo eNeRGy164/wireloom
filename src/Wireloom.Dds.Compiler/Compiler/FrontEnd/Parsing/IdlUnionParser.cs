@@ -189,7 +189,7 @@ internal sealed class IdlUnionParser
         if (useHashIds)
         {
             var metadata = new IdlMemberMetadata(
-                memberId: IdlMemberIdHash.Compute(branchName),
+                memberId: IdlMemberIdHash.Compute(branchName, context.ComputeMd5),
                 memberIdHashSource: branchName,
                 usesAutoIdHash: true);
             field = new IdlMember(field.Name, field.Type, metadata, field.SourceInput, field.SourceOffset);

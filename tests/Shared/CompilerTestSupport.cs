@@ -2,6 +2,8 @@ namespace Wireloom.Compiler.Tests;
 
 internal static class CompilerTestSupport
 {
+    public static byte[] ComputeMd5(byte[] value) => System.Security.Cryptography.MD5.HashData(value);
+
     public static IdlInput Input(string name, string content, bool generate = true) =>
         new(name, content, generate);
 
@@ -27,7 +29,7 @@ internal static class CompilerTestSupport
         var selectedProfile = profile == Emission.RtiApiProfile.Rtiddsgen431
             ? IdlCompilerProfile.Rti731
             : IdlCompilerProfile.Rti770;
-        var result = IdlCompiler.Compile(inputs, selectedProfile, cancellationToken);
+        var result = IdlCompiler.Compile(inputs, selectedProfile, ComputeMd5, cancellationToken);
         var fatal = result.Diagnostics.FirstOrDefault(diagnostic =>
             diagnostic is { Severity: IdlDiagnosticSeverity.Error, Id: "DDSG0001" });
         if (diagnostics is not null)

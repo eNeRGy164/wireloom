@@ -17,7 +17,7 @@ public sealed class IdlTypeResolutionSpecs
         bool expectedAutomaticHash)
     {
         // Arrange
-        var context = new IdlParseContext(new IdlSymbolTable(), CancellationToken.None, diagnostics: null);
+        var context = new IdlParseContext(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5, diagnostics: null);
         var input = new IdlInput("member.idl", definition);
 
         // Act
@@ -39,7 +39,7 @@ public sealed class IdlTypeResolutionSpecs
     {
         // Arrange
         const string definition = "@max(10) long value;";
-        var context = new IdlParseContext(new IdlSymbolTable(), CancellationToken.None, diagnostics: null);
+        var context = new IdlParseContext(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5, diagnostics: null);
         var input = new IdlInput("bound-member-metadata.idl", definition);
 
         // Act
@@ -65,7 +65,7 @@ public sealed class IdlTypeResolutionSpecs
     {
         // Arrange
         var input = Input("deferred-validation.idl", "struct Broken { long Destroy; };");
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
 
         // Act
         parser.Parse(input.Text, input, 0, currentNamespace: null);
@@ -83,7 +83,7 @@ public sealed class IdlTypeResolutionSpecs
         var first = Input("first.idl", "struct Duplicate { long value; };");
         var second = Input("second.idl", "struct Duplicate { long value; };");
         var third = Input("third.idl", "struct Other { long value; };");
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
         IReadOnlyList<SourceOriginSpan> firstOrigins = [new (0, first.Text.Length, 100, first.Text.Length)];
         IReadOnlyList<SourceOriginSpan> secondOrigins = [new (0, second.Text.Length, 200, second.Text.Length)];
         IReadOnlyList<SourceOriginSpan> thirdOrigins = [new (0, third.Text.Length, 300, third.Text.Length)];
@@ -110,7 +110,7 @@ public sealed class IdlTypeResolutionSpecs
             "first.idl",
             "struct Holder { @max(1) @default(2) Alias value; }; typedef long Alias;");
         var second = Input("second.idl", "struct Other { long value; };");
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
         IReadOnlyList<SourceOriginSpan> firstOrigins = [new (0, first.Text.Length, 100, first.Text.Length)];
         IReadOnlyList<SourceOriginSpan> secondOrigins = [new (0, second.Text.Length, 200, second.Text.Length)];
 
@@ -131,7 +131,7 @@ public sealed class IdlTypeResolutionSpecs
     {
         // Arrange
         IReadOnlyList<SourceOriginSpan> origins = [new (2, 3, 100, 3)];
-        var context = new IdlParseContext(new IdlSymbolTable(), CancellationToken.None, diagnostics: null);
+        var context = new IdlParseContext(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5, diagnostics: null);
         context.SetSourceOrigins(origins);
 
         // Act
@@ -606,7 +606,7 @@ public sealed class IdlTypeResolutionSpecs
         var input = Input(
             "inheritance-binding.idl",
             "struct Derived : Missing { long value; };");
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
         parser.Parse(input.Text, input, 0, currentNamespace: null);
 
         // Act
@@ -625,7 +625,7 @@ public sealed class IdlTypeResolutionSpecs
         var input = Input(
             "non-aggregate-base.idl",
             "enum Base { Value }; struct Derived : Base { long value; };");
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
         parser.Parse(input.Text, input, 0, currentNamespace: null);
 
         // Act
@@ -644,7 +644,7 @@ public sealed class IdlTypeResolutionSpecs
         var input = Input(
             "cyclic-inheritance.idl",
             "struct First : Second { long first; }; struct Second : First { long second; };");
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
         parser.Parse(input.Text, input, 0, currentNamespace: null);
 
         // Act
@@ -663,7 +663,7 @@ public sealed class IdlTypeResolutionSpecs
         var input = Input(
             "strict-inheritance.idl",
             "struct Base { @key long tenant; }; struct Derived : Base { @key long localId; };");
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
         parser.Parse(input.Text, input, 0, currentNamespace: null);
         parser.Bind();
 
@@ -683,7 +683,7 @@ public sealed class IdlTypeResolutionSpecs
         var input = Input(
             "transitive-inheritance-key.idl",
             "struct Base { @key long tenant; }; struct Middle : Base { long region; }; struct Leaf : Middle { @key long localId; };");
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
         parser.Parse(input.Text, input, 0, currentNamespace: null);
         parser.Bind();
 
@@ -703,7 +703,7 @@ public sealed class IdlTypeResolutionSpecs
         var input = Input(
             "strict-inheritance-without-key.idl",
             "struct Base { @key long tenant; }; struct Derived : Base { long localId; };");
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
         parser.Parse(input.Text, input, 0, currentNamespace: null);
         parser.Bind();
 

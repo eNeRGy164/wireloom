@@ -1395,6 +1395,7 @@ public sealed class GeneratorSpecs
         var compilerResult = IdlCompiler.Compile(
             [new IdlInput("sample.idl", source)],
             profile,
+            Compiler.Tests.CompilerTestSupport.ComputeMd5,
             TestContext.Current.CancellationToken);
         var adapterResult = Run(
             source,
