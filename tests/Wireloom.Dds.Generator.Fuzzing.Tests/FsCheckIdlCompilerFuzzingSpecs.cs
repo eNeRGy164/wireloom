@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Wireloom.Dds.Generator.Tests;
+namespace Wireloom.Dds.Generator.Fuzzing.Tests;
 
 public sealed class FsCheckIdlCompilerFuzzingSpecs
 {
@@ -75,9 +75,20 @@ public sealed class FsCheckIdlCompilerFuzzingSpecs
     {
         try
         {
-            Compiler.Tests.CompilerTestSupport.CompileSources(
+            var result = IdlCompiler.Compile(
                 [new IdlInput("fscheck.idl", source, strict: source.Length % 2 == 0)],
+                IdlCompilerProfile.Rti770,
+                System.Security.Cryptography.MD5.HashData,
                 CancellationToken.None);
+
+            var fatalDiagnostic = result.Diagnostics.FirstOrDefault(diagnostic =>
+                diagnostic is { Severity: IdlDiagnosticSeverity.Error, Id: "DDSG0001" });
+            if (fatalDiagnostic is not null)
+            {
+                throw new IdlException(fatalDiagnostic.Input, fatalDiagnostic.Offset, fatalDiagnostic.Message);
+            }
+
+            result.Documents.ShouldNotBeNull();
         }
         catch (IdlException)
         {

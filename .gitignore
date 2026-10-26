@@ -40,7 +40,14 @@ StrykerOutput/
 
 # project
 package-test-feed/
+/\.playwright-cli/
 coverage/
+playground/node_modules/
+playground/dist/
+playground/dist-subpath/
+playground/dist-coverage/
+playground/public/dotnet/
+output/playwright/
 
 # Local wire-compatibility run reports and sanitized logs
 artifacts/

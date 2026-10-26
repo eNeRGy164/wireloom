@@ -120,6 +120,8 @@ $qodanaCompilerTestsObj = Join-Path $PWD '.qodana\compiler-tests-obj'
 $qodanaCompilerTestsBin = Join-Path $PWD '.qodana\compiler-tests-bin'
 $qodanaGeneratorTestsObj = Join-Path $PWD '.qodana\generator-tests-obj'
 $qodanaGeneratorTestsBin = Join-Path $PWD '.qodana\generator-tests-bin'
+$qodanaFuzzingTestsObj = Join-Path $PWD '.qodana\fuzzing-tests-obj'
+$qodanaFuzzingTestsBin = Join-Path $PWD '.qodana\fuzzing-tests-bin'
 $qodanaRuntimeTestsObj = Join-Path $PWD '.qodana\runtime-tests-obj'
 $qodanaRuntimeTestsBin = Join-Path $PWD '.qodana\runtime-tests-bin'
 $qodanaTestSupportObj = Join-Path $PWD '.qodana\test-support-obj'
@@ -128,6 +130,7 @@ New-Item -ItemType Directory -Force -Path `
   $qodanaObj, $qodanaBin, $qodanaCompilerObj, $qodanaCompilerBin, `
   $qodanaCompilerTestsObj, $qodanaCompilerTestsBin, `
   $qodanaGeneratorTestsObj, $qodanaGeneratorTestsBin, `
+  $qodanaFuzzingTestsObj, $qodanaFuzzingTestsBin, `
   $qodanaRuntimeTestsObj, $qodanaRuntimeTestsBin, `
   $qodanaTestSupportObj, $qodanaTestSupportBin | Out-Null
 
@@ -142,6 +145,8 @@ docker run --rm `
   --volume "${qodanaCompilerTestsBin}:/data/project/tests/Wireloom.Dds.Compiler.Tests/bin" `
   --volume "${qodanaGeneratorTestsObj}:/data/project/tests/Wireloom.Dds.Generator.Tests/obj" `
   --volume "${qodanaGeneratorTestsBin}:/data/project/tests/Wireloom.Dds.Generator.Tests/bin" `
+  --volume "${qodanaFuzzingTestsObj}:/data/project/tests/Wireloom.Dds.Generator.Fuzzing.Tests/obj" `
+  --volume "${qodanaFuzzingTestsBin}:/data/project/tests/Wireloom.Dds.Generator.Fuzzing.Tests/bin" `
   --volume "${qodanaRuntimeTestsObj}:/data/project/tests/Wireloom.Dds.Generator.RuntimeContracts/obj" `
   --volume "${qodanaRuntimeTestsBin}:/data/project/tests/Wireloom.Dds.Generator.RuntimeContracts/bin" `
   --volume "${qodanaTestSupportObj}:/data/project/tests/Wireloom.Dds.Generator.TestSupport/obj" `
@@ -204,6 +209,7 @@ generator reports:
 ```shell
 dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
 dotnet restore tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj --locked-mode
+dotnet restore tests/Wireloom.Dds.Generator.Fuzzing.Tests/Wireloom.Dds.Generator.Fuzzing.Tests.csproj --locked-mode
 dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
   --no-restore `
   --configuration Release `
@@ -230,6 +236,19 @@ Each Cobertura report must contain both branch and line rates and a positive
 ```powershell
 [xml]$coverageReport = Get-Content -LiteralPath 'coverage\compiler.cobertura.xml'
 $coverageReport.coverage | Select-Object branch-rate, line-rate, branches-covered, branches-valid, lines-covered, lines-valid
+```
+
+The compiler report must meet 90% branch coverage and 95% line coverage. The
+fuzzing suite lives in its own test project and runs without instrumentation;
+its purpose is to find crashes and invalid generated code, not to contribute
+coverage:
+
+```shell
+dotnet run --project tests/Wireloom.Dds.Generator.Fuzzing.Tests/Wireloom.Dds.Generator.Fuzzing.Tests.csproj `
+  --no-restore `
+  --configuration Release `
+  -- `
+  --filter-class Wireloom.Dds.Generator.Fuzzing.Tests.FsCheckIdlCompilerFuzzingSpecs
 ```
 
 Coverage validation also requires the local coverage command to succeed and the

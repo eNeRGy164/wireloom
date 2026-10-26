@@ -1,7 +1,7 @@
 using Wireloom.Compiler.FrontEnd.Preprocessing;
 using Wireloom.Compiler.FrontEnd.Semantic;
 
-namespace Wireloom.Generation.Tests;
+namespace Wireloom.Compiler.Tests;
 
 /// <summary>Checks project-wide leading-underscore IDL name normalization.</summary>
 public sealed class EnableEscapeCharSpecs
@@ -13,7 +13,7 @@ public sealed class EnableEscapeCharSpecs
         var input = new IdlInput("legacy.idl", "module _Legacy { struct _Sample { long _event; }; };");
 
         // Act
-        var generated = Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken);
+        var generated = CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken);
 
         // Assert
         generated["_Legacy._Sample.g.cs"].Source.ShouldContain("namespace _Legacy");
@@ -48,7 +48,7 @@ public sealed class EnableEscapeCharSpecs
         var input = new IdlInput("escaped.idl", source, enableEscapeChar: true);
 
         // Act
-        var generated = Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken);
+        var generated = CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken);
 
         // Assert
         var generatedText = string.Join(Environment.NewLine, generated.Values.Select(generatedSource => generatedSource.Source));
@@ -61,7 +61,7 @@ public sealed class EnableEscapeCharSpecs
         generatedText.ShouldContain("class Choice");
         generatedText.ShouldContain("new int[2]");
         generated["Escaped.Implementation.RecordPlugin.g.cs"].Source.ShouldContain(
-            $"new StructMember(\"event\", dtf.GetPrimitiveType<int>(), id: {IdlMemberIdHash.Compute("event", Compiler.Tests.CompilerTestSupport.ComputeMd5)})");
+            $"new StructMember(\"event\", dtf.GetPrimitiveType<int>(), id: {IdlMemberIdHash.Compute("event", CompilerTestSupport.ComputeMd5)})");
         generated["Escaped.Implementation.RecordPlugin.g.cs"].Source.ShouldContain("new StructMember(\"value\"");
         generated["Escaped.Implementation.ChoicePlugin.g.cs"].Source.ShouldContain("new UnionMember(\"number\"");
     }
@@ -93,7 +93,7 @@ public sealed class EnableEscapeCharSpecs
         var input = new IdlInput("escaped-builtin-types.idl", source, enableEscapeChar: true);
 
         // Act
-        var generated = Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken);
+        var generated = CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken);
         var generatedText = string.Join(Environment.NewLine, generated.Values.Select(document => document.Source));
         var sampleSource = generated["Sample.g.cs"].Source;
         var unionSource = generated["Choice.g.cs"].Source;
@@ -128,7 +128,7 @@ public sealed class EnableEscapeCharSpecs
 
         // Act
         var diagnostics = new List<IdlDiagnostic>();
-        var generated = Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
+        var generated = CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
         var generatedText = string.Join(Environment.NewLine, generated.Values.Select(document => document.Source));
         var plugin = generated.Values.Single(document => document.Source.Contains("new StructMember(\"escapedConstantKey\"", StringComparison.Ordinal)).Source;
         var alias = generated.Values.Single(document => document.Source.Contains("class Alias", StringComparison.Ordinal)).Source;
@@ -169,7 +169,7 @@ public sealed class EnableEscapeCharSpecs
         var input = new IdlInput("macro-escaped.idl", source, enableEscapeChar: true);
 
         // Act
-        var generated = Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken);
+        var generated = CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken);
 
         // Assert
         var generatedText = string.Join(Environment.NewLine, generated.Values.Select(document => document.Source));
@@ -191,7 +191,7 @@ public sealed class EnableEscapeCharSpecs
             enableEscapeChar: true);
 
         // Act
-        var generated = Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken);
+        var generated = CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken);
 
         // Assert
         var generatedText = string.Join(Environment.NewLine, generated.Values.Select(document => document.Source));
@@ -208,7 +208,7 @@ public sealed class EnableEscapeCharSpecs
 
         // Act
         var exception = Should.Throw<IdlException>(() =>
-            Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken));
+            CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken));
 
         // Assert
         exception.Offset.ShouldBe(source.LastIndexOf("long ordinary", StringComparison.Ordinal));
@@ -225,7 +225,7 @@ public sealed class EnableEscapeCharSpecs
 
         // Act
         var exception = Should.Throw<IdlException>(() =>
-            Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken));
+            CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken));
 
         // Assert
         exception.Input.ShouldBe(input);
@@ -241,7 +241,7 @@ public sealed class EnableEscapeCharSpecs
 
         // Act
         var exception = Should.Throw<IdlException>(() =>
-            Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken));
+            CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken));
 
         // Assert
         exception.Offset.ShouldBe(source.IndexOf('_'));
@@ -260,7 +260,7 @@ public sealed class EnableEscapeCharSpecs
 
         // Act
         var exception = Should.Throw<IdlException>(() =>
-            Compiler.Tests.CompilerTestSupport.CompileSources(inputs, TestContext.Current.CancellationToken));
+            CompilerTestSupport.CompileSources(inputs, TestContext.Current.CancellationToken));
 
         // Assert
         exception.Message.ShouldContain("same value for every generation root");

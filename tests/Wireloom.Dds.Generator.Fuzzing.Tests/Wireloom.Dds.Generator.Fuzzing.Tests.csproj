@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Wireloom.Dds.Generator.Fuzzing.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj" />
+    <ProjectReference Include="../../src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj" />
+    <ProjectReference Include="../Wireloom.Dds.Generator.TestSupport/Wireloom.Dds.Generator.TestSupport.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" VersionOverride="4.14.0" PrivateAssets="all" />
+    <PackageReference Include="Rti.ConnextDds" />
+    <PackageReference Include="FsCheck" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

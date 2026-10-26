@@ -1,6 +1,6 @@
 using Wireloom.Compiler.Emission;
 
-namespace Wireloom.Generation.Tests;
+namespace Wireloom.Compiler.Tests;
 
 /// <summary>Protects opt-in array semantics and unchanged default generation.</summary>
 public sealed class SequenceArrayMappingSpecs
@@ -18,8 +18,8 @@ public sealed class SequenceArrayMappingSpecs
         var explicitInput = new IdlInput("sample.idl", source, IdlSequenceArrayMapping.RtiCSharp);
 
         // Act
-        var implicitSources = Compiler.Tests.CompilerTestSupport.CompileSources([implicitInput], TestContext.Current.CancellationToken);
-        var explicitSources = Compiler.Tests.CompilerTestSupport.CompileSources([explicitInput], TestContext.Current.CancellationToken);
+        var implicitSources = CompilerTestSupport.CompileSources([implicitInput], TestContext.Current.CancellationToken);
+        var explicitSources = CompilerTestSupport.CompileSources([explicitInput], TestContext.Current.CancellationToken);
 
         // Assert
         implicitSources.Count.ShouldBe(explicitSources.Count);
@@ -70,7 +70,7 @@ public sealed class SequenceArrayMappingSpecs
         }
 
         // Act
-        var sources = Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
+        var sources = CompilerTestSupport.CompileSourcesWithDiagnostics(
             [new IdlInput("sample.idl", source, IdlSequenceArrayMapping.Idl)], diagnostics,
             TestContext.Current.CancellationToken, profile);
 
@@ -124,7 +124,7 @@ public sealed class SequenceArrayMappingSpecs
         }
 
         // Act
-        var sources = Compiler.Tests.CompilerTestSupport.CompileSources(inputs, TestContext.Current.CancellationToken);
+        var sources = CompilerTestSupport.CompileSources(inputs, TestContext.Current.CancellationToken);
 
         // Assert
         sources["Enabled.g.cs"].Source.ShouldContain("Enabled_valuesSequence[] values");
@@ -144,7 +144,7 @@ public sealed class SequenceArrayMappingSpecs
             """;
 
         // Act
-        var sources = Compiler.Tests.CompilerTestSupport.CompileSources([new IdlInput("sample.idl", source, IdlSequenceArrayMapping.Idl)], TestContext.Current.CancellationToken);
+        var sources = CompilerTestSupport.CompileSources([new IdlInput("sample.idl", source, IdlSequenceArrayMapping.Idl)], TestContext.Current.CancellationToken);
 
         // Assert
         sources["Sample.g.cs"].Source.ShouldContain("Sample_valuesSequence__[] values");
@@ -159,7 +159,7 @@ public sealed class SequenceArrayMappingSpecs
         var input = new IdlInput("sample.idl", "struct Sample { long value; };", (IdlSequenceArrayMapping)42);
 
         // Act
-        var exception = Should.Throw<IdlException>(() => Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken));
+        var exception = Should.Throw<IdlException>(() => CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken));
 
         // Assert
         exception.Input.ShouldBeSameAs(input);
@@ -179,7 +179,7 @@ public sealed class SequenceArrayMappingSpecs
         var input = new IdlInput("recursive.idl", source, IdlSequenceArrayMapping.Idl);
 
         // Act
-        var exception = Should.Throw<IdlException>(() => Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken));
+        var exception = Should.Throw<IdlException>(() => CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken));
 
         // Assert
         exception.Input.ShouldBeSameAs(input);
@@ -199,7 +199,7 @@ public sealed class SequenceArrayMappingSpecs
             """;
 
         // Act
-        var sources = Compiler.Tests.CompilerTestSupport.CompileSources([new IdlInput("sample.idl", source, IdlSequenceArrayMapping.Idl)], TestContext.Current.CancellationToken);
+        var sources = CompilerTestSupport.CompileSources([new IdlInput("sample.idl", source, IdlSequenceArrayMapping.Idl)], TestContext.Current.CancellationToken);
 
         // Assert
         sources["Sample.g.cs"].Source.ShouldContain("Sample_valuesSequence[] values");
