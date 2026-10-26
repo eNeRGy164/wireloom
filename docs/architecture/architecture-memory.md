@@ -1,388 +1,140 @@
 # Architecture memory
 
-This is a compact, derived retrieval aid for implementation agents. The
-authoritative architecture lives in the [arc42 chapters](arc42/index.md),
-contracts, and support policy; edit those sources first, then refresh this file
-and [machine-readable memory](../../.agents/architecture-memory.yaml).
+This derived file is a compact retrieval aid. The [arc42 chapters](arc42/index.md), ADRs,
+contracts, support policy, and evidence are authoritative. Update those sources
+first, then refresh this file and the [machine-readable memory](../../.agents/architecture-memory.yaml).
 
-This summary reflects the current arc42 sources. Treat the source map below as
-authoritative; this summary is a retrieval aid, not a replacement.
+## System model
 
-## Agent summary
+Wireloom is a compile-time Roslyn source generator for RTI Connext IDL. It emits
+C# and build integration; it is not in the DDS runtime data path and does not
+provide RTI support. Repository projects target .NET 10. The generator adapter
+and shared compiler target netstandard2.0 for the minimum .NET 8 / C# 12 host
+with Roslyn 4.8.0. Consumers need RTI 7.3.1 or later; only RTI 7.3.1 and 7.7.0
+are qualified release profiles.
 
-- **Language authority:** OMG IDL and DDS-XTypes define supported construct
-  semantics; RTI captures establish tested compatibility rather than a language
-  ceiling. FINAL and APPENDABLE enum annotations accept both spellings.
-  See [strategy](arc42/04-solution-strategy.md) and
-  [value rules](arc42/08-crosscutting-concepts.md#88-annotation-constant-and-default-semantics).
+## Compiler flow and boundaries
 
-- **Value pipeline ownership:** Parsing records member annotation syntax and original
-  source offsets. `IdlValueBinder` sequences constants, bounds-dependent values,
-  typedef defaults, and member values; `IdlValueResolver` owns typed rules.
-  Constants and defaults share `IdlScalarValue` variants for integer, boolean,
-  character, floating-point, string, and enum values, retaining width and enum
-  identity. Numeric expression dispatch applies OMG semantics for supported
-  integral, `float`, and `double` contexts by reusing the existing integral and
-  floating evaluators. `IdlConstantExpressionEvaluator` retains each integer
-  operand's rank and signedness, promotes pairwise, and checks intermediate
-  results; `@id` uses this same path. Boolean, character, string, and enum values use dedicated
-  literal/name binders rather than a general-purpose expression tree. Structs, unions,
-  and enums share typed prefix parsing with duplicate extensibility checks.
-  String tokens are decoded individually before concatenation and final bound
-  checks. `ScalarValueEmissionPlan` shares managed/native defaults and annotation
-  values across members and typedefs. Union branches share one copy operation.
-  See [building blocks](arc42/05-building-block-view.md) and
-  [binding order](arc42/06-runtime-view.md#61-consumer-build-and-generation).
+The non-packable compiler accepts in-memory inputs and an explicit RTI profile,
+then returns generated documents and diagnostics. It has no Roslyn, MSBuild,
+RTI, or filesystem dependency. The Roslyn adapter discovers the resolved RTI
+version, selects a profile, translates diagnostics, and adds generated sources.
 
-- **Annotation parsing status:** `IdlSyntaxReader` captures ordered balanced applications and source offsets;
-  `IdlAnnotationCatalog` defines known parameter kinds/defaults, legal targets,
-  positional rules, repeat/conflict metadata, and support status. It validates
-  argument shapes while unknown applications remain opaque. Target readers
-  apply catalog definitions and preserve context-specific behavior. Public
-  compiler tests assert generated output and diagnostics for mixed known and
-  unknown applications across declaration, member, enum-literal, and union
-  targets. Catalog repeat/conflict validation covers declaration prefixes,
-  members, enum literals, and union branches. Local struct/union `@autoid` and
-  typedef `@default` applications are retained on semantic targets; typedef
-  expressions are evaluated during binding after target type resolution.
-  Module scope records retain module-level annotations and resolve the
-  member-ID policy inherited by nested declarations because member IDs are
-  assigned during declaration parsing.
-  `IdlTypeAnnotationPrefix` buffers unknown warnings until a matching type parser accepts the declaration.
-  Member boolean flags bind constant references after the symbol graph is available. Numeric expression dispatch
-  reuses integral and floating evaluators with OMG constant-expression semantics
-  in supported integral, `float`, and `double` contexts; floating expressions reject integer literal operands and integral
-  constant references. OMG integer literals and numeric operators are covered,
-  including octal literals and shift limits. Referenced integral constants
-  retain declared rank during expression promotion, including aliases; wide
-  literals do not truncate before operator evaluation. Boolean,
-  character, string, and enum values bind through their typed literal/name
-  rules. `long double` and fixed-point remain unsupported, with an extensible
-  internal scalar model.
-  Supported defaults use typed range comparisons; native conversion initializes
-  aggregate elements when activating union array branches.
+The pipeline preprocesses inputs, parses syntax, binds symbols and values,
+validates semantics, plans profile-specific output, and emits documents. Parsing
+retains annotation order and source spans. Binding resolves constants, defaults,
+bounds, enum identity, and member IDs. Semantic parsing and validation stay
+independent of RTI profiles; emission plans own profile-specific API shape and
+initialization.
 
-- **Motivation and goals:** The original RTI generation setup added about 2 GB
-  to C# Docker build images, required tools on developer machines, and depended
-  on environment-variable/MSBuild wiring that was difficult to reproduce.
-  Generated files also produced substantial analyzer noise as regular source
-  files. Preserve the resulting goals of small generation tooling, minimal
-  local setup, declarative repeatable builds, and generated C# that fits strict
-  tooling. These are product evaluation criteria as well as implementation
-  goals. See [introduction and goals](arc42/01-introduction-and-goals.md).
-- **Product boundary:** Wireloom is an independent compile-time Roslyn source
-  generator integrated through MSBuild. It generates C# and build integration;
-  it does not provide or replace the RTI runtime, DDS operation, or RTI support.
-  Support is best effort, with no official RTI relationship. See [context and
-  scope](arc42/03-context-and-scope.md).
-- **Qualified environment:** The generator targets `netstandard2.0`; consumers
-  need C# 12+ and an RTI runtime reference of at least 7.3.1. It references
-  Roslyn 4.8.0 so it loads in the first .NET 8 C# 12 SDK host. The resolved
-  assembly selects the 7.3.1 profile for versions below 7.7.0 and the 7.7.0
-  profile for 7.7.0 and later. Only exact 7.3.1 and 7.7.0 are qualification
-  targets; profile mapping does not qualify intermediate or later packages.
-  See
-  [constraints](arc42/02-architecture-constraints.md) and [support policy](../guides/support-and-compatibility.md).
-- **Compiler flow:** Explicit `DdsIdl` roots and project-wide metadata enter
-  through MSBuild/Roslyn. Finite unbounded-value limits default to 100 sequence
-  elements and 255 string bytes/code units; project properties set defaults and
-  file metadata can override them. Explicit IDL bounds win. Sequence-array mapping is independently file-owned:
-  the project default `DdsIdlSequenceArrayMapping=RtiCSharp` can be overridden
-  with `SequenceArrayMapping=Idl` on a declaring file, including shared includes.
-  The emission plan applies this mapping to direct sequence-array union branches
-  as well as class members.
-  The managed pipeline resolves includes, preprocesses,
-  parses, binds, validates, plans emission, and writes generated documents.
-  Input that prevents safe managed output fails with source-located diagnostics.
-  Deliberately ignored constructs and potentially lossy mappings report
-  diagnostics while generation continues; unsupported annotation uses report
-  `DDSG0102` before failing with `DDSG0001`. Target-profile incompatibilities
-  report `DDSG0004`; in particular, 7.3.1 rejects `@must_understand` and emits
-  no source, while 7.7.0 preserves it in DynamicType metadata. See [building
-  blocks](arc42/05-building-block-view.md)
-  and [runtime flow](arc42/06-runtime-view.md).
-- **Shared compiler API:** `Wireloom.Dds.Compiler` is the host-neutral,
-  non-packable `netstandard2.0` project shared by repository C# callers. Its
-  in-memory API requires an explicit RTI profile and returns one
-  `IdlCompilationResult` containing documents and diagnostics; errors may
-  return no documents with diagnostics. Each call requires a synchronous
-  MD5 delegate; the generator supplies `MD5.HashData`, and the compiler keeps
-  UTF-8 encoding, digest validation, byte ordering, and masking. It snapshots input lists, preserves
-  current batch and path behavior, observes cancellation, and does not access
-  the filesystem. The Roslyn adapter discovers the resolved RTI version,
-  selects the profile, maps diagnostics, and adds source documents. The single
-  published generator package bundles both version-matched assemblies; the
-  compiler is not published separately or added as an application runtime
-  reference. See [ADR-001](adr/ADR-001-share-a-host-neutral-compiler-project.md),
-  [building blocks](arc42/05-building-block-view.md), and
-  [cross-cutting concepts](arc42/08-crosscutting-concepts.md#89-shared-compiler-api).
-  The native and browser host boundary is shown in the
-  [compiler host diagram](arc42/images/05/browser-compiler-hosts.puml).
-- **Browser Playground boundary:** A non-packable .NET 10 `browser-wasm` host
-  calls the shared compiler from a dedicated module worker. The TypeScript/Vite
-  client sends a bounded collection-shaped snapshot with protocol, generation,
-  request, revision, and profile identity; it retains the running request and
-  newest pending snapshot and rejects stale responses. The worker supplies the
-  retained synchronous MD5 module; the core still owns UTF-8 hashing semantics
-  and compiler results. Root and nested-base static builds pass, and 36 Node
-  checks pass, including provider vectors, deterministic worker-state tests,
-  and workspace recovery. Strict ESLint and Prettier checks pass. Node coverage
-  gates at 95% branches, 98% lines, and 80% functions; the current report is
-  98.78%, 99.17%, and 81.25%, respectively.
-  Windows Edge 156.0.4314.42 passed 32 exact comparisons across eight cases,
-  two profiles, and both base paths, as well as repeated compilation, profile
-  switching, limits, and worker/provider/asset/watchdog recovery. Fresh worker
-  readiness was 149/159 ms (root/nested), and a 128-declaration compile that
-  emitted 512 documents took 357.1 ms with a 16.5 ms maximum heartbeat.
-  The Stage 1 UI now provides Monaco IDL/read-only C# models, tabs, system
-  stored Light/Dark themes, pane resizing, seven examples including a type/XML documentation
-  showcase, diagnostic navigation, and exact current
-  downloads/ZIP. Every document opens immediately; an independently resizable,
-  collapsible file explorer
-  keeps filenames on one line with horizontal scrolling. Shared font controls
-  default to 12 px, with an optional localStorage size preference.
-  First use resolves the system appearance to a saved Light/Dark choice;
-  subsequent system changes do not override it. Tabs retain full height with
-  an overlay scrollbar and wheel/drag/keyboard navigation. Notices are
-  floating and dismissible, auto-close after five seconds, and pause while
-  hovered/focused without changing workspace layout.
-  Versioned IndexedDB recovery serializes source/profile saves
-  and reset; invalid storage leaves editing usable. Edits debounce for 300 ms,
-  immediately invalidate exports/markers, and cannot accept stale results.
-  Fifteen UI/recovery/fault groups passed in representative Edge. Additional
-  Firefox 156 and Playwright WebKit 26.6 checks cover root/nested paths,
-  responsiveness, editor navigation, resizing, persistence, imports, failures,
-  and all example/profile outputs; this is not a Safari claim. The Chromium
-  production-browser run covers all 14 example/profile combinations and key
-  editing/export/recovery flows; its merged first-party report measures 93.47%
-  branch and 92.88% line coverage. Twenty-eight focused C# adapter cases pass with
-  96.875% branch and 98.2% line coverage. CI uploads browser and adapter
-  Cobertura alongside compiler/generator reports to Coveralls and scans the
-  .NET solution with Community Qodana; those remote PR checks remain pending.
-  Monaco 0.57.0 and fflate 0.8.3 are pinned, with DOMPurify overridden to
-  patched 3.4.17. CI downloads only Playwright's Chromium headless shell. Broader
-  accessibility and release qualification remain #110; ADR-003 stays Draft.
-  See [ADR-003 draft](adr/ADR-003-run-playground-compilation-in-a-browser-worker.md),
-  [runtime flow](arc42/06-runtime-view.md#64-browser-playground-compilation),
-  and [dependency intake](dependency-intake/playground-frontend.md).
-- **IDL annotation and value binding:** The shared reader captures ordered balanced annotation applications and source spans;
-  context parsers retain unresolved values until symbol binding.
-  The catalog validates duplicate named keys for known applications and leaves unknown arguments opaque.
-  Type-prefix parsing accepts unknown applications between supported annotations and reports each once after target selection.
-  Member boolean annotation constants bind after discrete constants, including forward and scoped references.
-  Shared syntax reading preserves quoted
-  delimiters. The binder resolves enum identities, chained constants, member
-  IDs, labels, string bounds, and type-aware defaults before emission. Explicit
-  member IDs override automatic hash IDs and resolve before duplicate checks.
-  Effective IDs continue sequentially after explicit IDs across inheritance;
-  hash IDs leave the sequential counter unchanged. Validation checks inherited
-  and local IDs together, and emission renders the bound IDs.
-  A local default overrides an annotated typedef default; the effective value
-  feeds managed initialization, native initialization, and DynamicType metadata.
-  C163–C172 record exact-profile generation outcomes for these forms. Their RTI
-  C# and C++ reference sources are retained with original notices; Wireloom C# output compiles
-  against both exact RTI API profiles. Sixteen typed fixtures cover directed
-  exchanges among all three peers on both profiles. C164 and
-  C172 use topic wrappers; RTI 7.3.1 reference generation stages byte-identical
-  include files. C171 defaults are `inherited=7`, `overridden=9`,
-  `text="alias"`, `ratio=1.5`, and `single=1.25`. When a compatible older
-  appendable writer omits the trailing members, the reader applies those
-  declared defaults; RTI 7.3.1 lacks the member-annotation API for this path.
-  Runtime
-  contracts check fractional and non-ASCII wide-string initialization on both
-  LTS profiles and exact annotation metadata on 7.7.0. RTI 7.7.0 DynamicData
-  clear restoration truncates fractional defaults and returns `??` for a
-  non-ASCII wide-string default; cleared integral, narrow-string, and
-  signed-zero defaults are covered separately.
-  See
-  [cross-cutting semantics](arc42/08-crosscutting-concepts.md#88-annotation-constant-and-default-semantics)
-  and [corpus coverage](../corpus/FEATURE-COVERAGE.md).
-- **Strict validation:** Defaults to `false`; any generating root enables it
-  for the batch. Pure rules evaluate source-mapped identifier facts, and a
-  separate policy chooses warning or failure. Interface bodies are parsed
-  without emitting types: exact keywords fail in all bodies, while ordinary
-  interfaces retain RTI acceptance for specification-only names and DDS
-  services apply the naming policy. Parameters have independent operation
-  scopes; constructed-type nesting is bounded at 64. See [building blocks](arc42/05-building-block-view.md)
-  and the [configuration reference](../guides/configuration.md#enable-strict-validation).
-- **RTI profile ownership:** `RuntimeReferenceGuard` reads the resolved RTI
-  assembly version and reports reference errors. `IdlCompilation` selects and
-  carries an immutable profile into emission planning. Semantic types and
-  `CompilationContext` remain RTI-independent; emitters render profile-aware
-  plans without version comparisons. Profile policies include DynamicType
-  names, annotation APIs, plugin masks, and union constructor defaults. The
-  7.3.1 profile uses legacy union discriminator selection; default setters
-  remain independent of constructor defaults. Profile-specific annotation
-  incompatibilities are diagnosed before emission. See the [building block
-  view](arc42/05-building-block-view.md).
-- **Continuous LTS verification:** Quality CI runs matching-oracle corpus
-  jobs for RTI 7.3.1 and 7.7.0, plus eight Windows/Ubuntu × RTI LTS ×
-  `net8.0`/`net10.0` runtime and fresh-package jobs. The repository SDK builds
-  the package; package consumers use C# 12. Dedicated SDK 8.0.100 containers
-  restore, build, and run the fresh package consumer with no .NET 10 SDK or
-  runtime for each RTI LTS package. This qualifies the minimum .NET 8 C# 12
-  Roslyn host and does not replace licensed wire evidence. See
-  [deployment](arc42/07-deployment-view.md) and
-  [verification scope](../guides/support-and-compatibility.md#continuous-lts-verification).
-- **Checked-in publisher/subscriber sample:** The repository example consumes
-  released Wireloom.Dds.Generator 0.5.0 from NuGet.org. Quality CI compiles it
-  on Ubuntu 26.04 and Windows 2025 without loading native DDS libraries or
-  requiring an RTI license; local DDS execution requires RTI native assets and
-  a valid license. See the [sample guide](../../samples/HelloWorld/README.md),
-  [deployment](arc42/07-deployment-view.md), and
-  [quality scenarios](arc42/10-quality-requirements.md).
-- **Local container tooling:** Docker Desktop runs pinned RTI oracle captures
-  and Community Qodana; keep licenses outside the repository and mount them
-  read-only for licensed wire runs. See the [LTS runbook](../corpus/LTS-PROFILES.md)
-  and [quality procedure](../CONTRIBUTING.md#quality-evidence).
-- **LTS evidence applicability:** Corpus oracle reads use the selected LTS
-  source directories and outcomes. Wire planning reports unavailable RTI
-  features separately as `notApplicableCases`; they add no exchanges, failures,
-  or Wireloom implementation gaps. C040 isolates hash IDs on both LTS versions;
-  C142 isolates `@must_understand`, which is N/A on 7.3.1. Wire evidence must
-  match the exact case inputs and RTI profile. New capture/export evidence retains
-  source identity, input/output hashes, tools, arguments, and outcomes; legacy
-  missing provenance stays unknown, and dirty-tree runs identify a base commit
-  rather than a clean tested revision. The [LTS runbook](../corpus/LTS-PROFILES.md)
-  owns reproduction. See [evidence vocabulary](arc42/08-crosscutting-concepts.md#81-evidence-vocabulary).
-- **Compatibility evidence:** Keep generated API shape, runtime behavior,
-  serialization, and DDS wire interoperability as separate claims. Corpus
-  oracles check required types, properties/types, and enum members, rather than
-  identical public APIs; runtime contracts execute generated APIs;
-  licensed wire evidence checks all nine directed pairings among Wireloom C#,
-  RTI C#, and RTI C++ for ordinary cases. C149 records its selected mode, peer
-  scope, exclusion reasons, and source hashes as a dedicated corpus case. Its
-  `Idl` mapping passes 16 / 16 focused Wireloom/C++ exchanges per exact LTS profile;
-  RTI C# is excluded because it describes the flattened type. The manual workflow runs both qualified LTS profiles,
-  with eight isolated shards per version and a separate report, summary, and
-  artifact for each. It runs in the trimmed .NET/RTI native image using
-  checked-in C++ peers without Java or `rtiddsgen`. Docker layers are cached
-  per RTI version; stable ccache keys include OS, RTI and compiler versions,
-  shard, and source-input hash, with compatible restore prefixes. GitHub's
-  branch cache scope still applies. See the
-  [deployment view](arc42/07-deployment-view.md) and
-  [wire runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
-  C147 passes all 18 directed exchanges per profile after
-  guarded RTI reference corrections; the retained RTI C# source records its
-  unmodified compilation failure. See the [corpus guide](../corpus/README.md),
-  [feature coverage](../corpus/FEATURE-COVERAGE.md), and [wire runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
-- **API policy:** RTI C# is a baseline, not an API ceiling. Deliberate API
-  differences and improvements need explicit evidence; an API-shape match does
-  not establish wire compatibility. See [decisions](arc42/09-architectural-decisions.md).
-- **High-risk contracts:** Preserve optional presence, union discriminator
-  ranges and RTI metadata representation, bounded collection semantics, and
-  alias behavior across managed/native/metadata emission. Enum arrays with
-  `@default_literal` initialize from that literal in both managed and native
-  output. Direct fixed-array union branches initialize each aggregate array
-  element, convert each element, and deep-copy aggregate values when copied;
-  direct sequence-array union branches follow the configured mapping. Clearing
-  DynamicData members restores integral and string defaults on 7.7.0. Floating
-  default restoration and DDS
-  deserialization with missing fields remain unverified. On 7.3.1 the member
-  annotation API is absent.
-  Check the detailed source and runtime evidence before modifying these
-  contracts.
+See the [building block view](arc42/05-building-block-view.md),
+[compiler runtime](arc42/06-runtime-view.md#61-consumer-build-and-generation),
+and [shared compiler API](arc42/08-crosscutting-concepts.md#89-shared-compiler-api).
 
-## Repository defaults
+## Compatibility and configuration
 
-| Setting                 | Current value                                         | Qualification                                                                                                          |
-| :---------------------- | :---------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
-| Consumer minimum        | `net8.0`, C# 12+                                      | Support policy applies                                                                                                 |
-| Consumer compiler host  | Roslyn 4.8.0 (`SDK 8.0.100`)                          | Minimum qualified SDK host                                                                                             |
-| Repository target       | `net10.0`                                             | Pinned SDK in `global.json`                                                                                            |
-| Generator target        | `netstandard2.0`                                      | Analyzer/source-generator package                                                                                      |
-| Compiler target         | `netstandard2.0`; non-packable                        | Bundled beside the generator in the single published package; not an independently published package                   |
-| Browser toolchain       | Node 26.7.0, npm 12.2.0, TypeScript 6.0.3, Vite 7.3.7 | Exact client pins and npm lockfile; strict lint/format, Node and Chromium coverage run in Quality CI                   |
-| Browser host            | .NET 10.0.13, `browser-wasm`                          | Non-packable worker host; 14,208,318 bytes across 63 clean .NET asset files                                            |
-| Browser verification    | `@playwright/cli` 0.1.22                              | Temporary verification tooling; not an application dependency                                                          |
-| RTI package floor       | `7.3.1+`                                              | Reference eligibility only, not compatibility evidence                                                                 |
-| RTI profile range       | `7.3.1+`                                              | Nearest profile selected by assembly identity                                                                          |
-| Qualified RTI versions  | `7.3.1`, `7.7.0`                                      | Exact LTS version evidence only                                                                                        |
-| Test platform           | Microsoft.Testing.Platform, xUnit v3                  | Runner filters follow `--`                                                                                             |
-| Sequence-array mapping  | `RtiCSharp`; opt-in `Idl` per project/file            | File ownership; runtime coverage on both LTS profiles; C149 Idl case passes 16 focused DDS exchanges per exact profile |
-| Unbounded finite limits | 100 sequence elements; 255 string bytes/code units    | Project defaults with file-level overrides; explicit IDL bounds win; positive Int32 only                               |
-| Strict validation       | `false`; any root enables the batch                   | DDSG0108 by default; strict failure before emission                                                                    |
+OMG IDL and DDS-XTypes define language semantics. RTI-generated output and wire
+runs provide versioned compatibility evidence, not a language ceiling. RTI C#
+is the managed API baseline; deliberate improvements need separate behavior and
+wire evidence. Exact profile qualification is limited to RTI 7.3.1 and 7.7.0.
+
+- Strict validation defaults to false. Any generation root enables it across
+  reachable inputs; strict failures stop the batch before emission.
+- DDSG0108 reports naming findings in permissive mode. Reserved keywords fail
+  in every interface body.
+- Sequence arrays default to RtiCSharp mapping; Idl can be selected per file.
+- Unbounded limits default to 100 sequence elements and 255 string bytes or
+  code units. Explicit IDL bounds take precedence.
+
+See [configuration](../guides/configuration.md),
+[diagnostics](arc42/08-crosscutting-concepts.md#82-diagnostics-and-source-locations),
+and [evidence vocabulary](arc42/08-crosscutting-concepts.md#81-evidence-vocabulary).
+
+## Browser Playground
+
+The desktop-first local Playground uses a TypeScript/Vite client and a
+non-packable .NET 10 browser-WASM host in a dedicated module worker. The worker
+runs the shared compiler and synchronous JavaScript MD5 provider. Versioned
+requests include worker, request, revision, profile, and file identity; the
+client keeps one active and the newest pending request, and rejects stale
+responses. The UI currently submits one generation root; the host accepts
+collection-shaped virtual files for future multi-file support.
+
+The UI provides Monaco IDL and read-only C# editors, examples, diagnostics,
+generated-file tabs, individual downloads, and ZIP export. Source is stored
+locally. Scoped Edge, Firefox, and Playwright WebKit checks are documented; a
+WebKit result does not qualify Safari. Chromium coverage maps to first-party
+code. Direct Node tests cover worker replacement and recovery-save ordering;
+their coverage is gated at 95% branches and 98% lines. ADR-003 is Accepted.
+Accessibility and broader release qualification remain tracked in issue #110.
+
+See [ADR-003](adr/ADR-003-run-playground-compilation-in-a-browser-worker.md),
+[browser runtime](arc42/06-runtime-view.md#64-browser-playground-compilation),
+Scoped Edge, Firefox, and Playwright WebKit checks were run; WebKit does not qualify Safari.
+
+## Packaging and quality
+
+The published package remains Wireloom.Dds.Generator. The shared compiler is
+bundled beside it at the same version and is not a separate package. The sample
+uses version 0.5.0 without native DDS libraries or an RTI license.
+
+Quality CI runs exact-profile corpus and package/runtime checks, Community
+Qodana, and Coveralls. Playground checks add strict TypeScript, ESLint,
+Prettier, direct Node and Chromium coverage, and focused C# adapter tests. The
+compiler suite requires 90% branch and 95% line coverage; its fuzz suite is
+separate and excluded from coverage. Coveralls receives browser and adapter
+Cobertura reports with compiler and generator reports. See [quality
+requirements](arc42/10-quality-requirements.md),
+[deployment](arc42/07-deployment-view.md), and the
+[frontend dependency review](dependency-intake/playground-frontend.md).
+
+## Defaults and decisions
+
+| Concern                | Default or decision                                  | State    | Source                    |
+| :--------------------- | :--------------------------------------------------- | :------- | :------------------------ |
+| SDK                    | .NET SDK 10.0.400, latestFeature roll-forward        | Explicit | global.json               |
+| Repository target      | net10.0                                              | Explicit | Chapter 2                 |
+| Root namespace         | Wireloom                                             | Detected | Repository files          |
+| Generator and compiler | netstandard2.0; compiler is bundled and non-packable | Explicit | Chapters 2 and 7; ADR-001 |
+| Consumer minimum       | .NET 8, C# 12, Roslyn 4.8.0                          | Explicit | Chapter 2                 |
+| RTI profiles           | 7.3.1 and 7.7.0 are qualified                        | Explicit | Support policy            |
+| Strict validation      | false; enabled batch-wide by any generation root     | Explicit | Chapter 8                 |
+| Sequence arrays        | RtiCSharp by default; Idl is a file-level option     | Explicit | Chapter 8                 |
+| Unit tests             | xUnit v3 on Microsoft.Testing.Platform               | Explicit | Repository conventions    |
+| Assertions             | Shouldly                                             | Detected | Repository files          |
+
+No provisional bootstrap defaults are currently recorded for this repository.
+ADR-001 (shared compiler), ADR-002 (per-compilation MD5), and ADR-003 (browser
+worker host) are Accepted. Michaël Hompus approved ADR-003 on October 26, 2026.
+See [chapter 9](arc42/09-architectural-decisions.md) for decision history.
 
 ## Open risks
 
-- RTI 7.3.1 generated code passes exact NuGet compilation and runtime-contract
-  tests; exact-version wire qualification remains outstanding. Intermediate
-  and later releases remain unqualified.
-- `05-array-of-sequences` retains the flattened RTI C# shape by default and its
-  recorded wire failures. Opt-in `Idl` mode plans arrays of sequence wrappers
-  with anonymous sequence metadata; it has runtime coverage on both profiles.
-  Recursive direct sequence arrays are rejected in this mode. The dedicated
-  retained C149 corpus case passes its 16 focused Wireloom/C++ DDS
-  exchanges per profile; broader qualification remains open. See chapters 5,
-  8, 9, 10, and 11.
-- The new `DDSG0108` warning may fail warnings-as-errors builds; exact reserved
-  keywords now fail in both modes. Enum literals follow the enclosing IDL
-  scope, including the documented stricter behavior than RTI between enums.
-- RTI 7.3.1 C# RPC transport output for C157/C159 fails compilation; preserve
-  the raw failure and track interface/RPC generation separately in
-  [issue #75](https://github.com/eNeRGy164/wireloom/issues/75).
-- Recursive sequence typedefs are unsupported by Wireloom and are rejected
-  before emission. Standard RTI C++11 `rtiddsgen -unboundedSupport` output for
-  self- and mutually recursive typedefs does not compile on RTI 7.3.1 / code
-  generator 4.3.1 or RTI 7.7.0 / code generator 4.7.0, so a C#-only metadata
-  workaround would not meet the interoperability requirement. The directly
-  self-recursive sequence member is supported across Wireloom C# and typed RTI
-  C++ on both LTS versions when participants use TypeObject v1
-  (`type_object_max_serialized_length=8192`, `SERVICE_REQUEST_CHANNEL` only).
-  RTI 7.7.0 default TypeObject v2 rejects the recursive SCC at registration.
-  RTI 7.3.1 C++ generation requires the documented module-qualification
-  correction. The bidirectional matrix fixture checks literal root/child/leaf
-  values. Mutual recursive struct graphs remain unqualified. See [chapter 11](arc42/11-risks-and-technical-debt.md).
-- Compatibility beyond retained cases, interactive IDE behavior, and adapted
-  RTI wire fixtures remains unqualified.
-- The analyzer package must keep its generator and adjacent compiler
-  assemblies at one version; package and minimum-host loading are covered by
-  integration tests. Direct callers depend on the current path interpretation,
-  and literal-formatting parity is guarded by tests. The per-compilation MD5
-  boundary and browser provider are implemented. Stage 0, Stage 1, and scoped
-  Firefox/WebKit verification pass; CI now includes strict client lint/format,
-  Node and source-mapped Chromium coverage, adapter coverage, Coveralls, and
-  Community Qodana. Remote PR results remain pending. Accessibility and broader
-  release coverage remain open under
-  [issue #110](https://github.com/eNeRGy164/wireloom/issues/110); #109 is ready
-  for review.
+- Compatibility beyond retained cases and exact RTI profiles remains
+  unqualified; wire checks require licensed RTI environments.
+- Recursive sequence typedefs are unsupported. Self-recursive sequence wire
+  checks require TypeObject v1; RTI 7.7.0 default TypeObject v2 rejects the
+  recursive SCC. Mutual recursive structs remain unqualified.
+- RTI 7.3.1 C# RPC output for C157/C159 fails compilation; see issue #75.
+- Browser support, accessibility, hosting, and release qualification remain
+  issue #110. Public publication is tracked separately.
+- Keep generator and bundled compiler assembly versions aligned. Preserve
+  direct-caller path behavior and source-formatting parity.
 
-## Decision history
-
-[Chapter 9](arc42/09-architectural-decisions.md) summarizes decisions in a compact timeline, oldest first.
-Inherited policy dates identify their first documentation in that chapter;
-ADR entries retain their recorded date and status. ADR-001 and ADR-002 are
-Accepted; ADR-002 was approved October 26, 2026.
-
-[ADR-002 (Accepted)](adr/ADR-002-inject-member-id-md5-per-compilation.md)
-records the required synchronous MD5 delegate supplied per compilation. The
-boundary is implemented: the generator supplies BCL hashing, while the
-compiler retains UTF-8, digest validation, byte ordering, and masking. Browser
-provider implementation and its 21 retained Node checks are complete. The
-maintained worker now passes Stage 0 parity and recovery checks in Windows
-Edge. Cross-browser and broader release qualification remain open under
-[issue #110](https://github.com/eNeRGy164/wireloom/issues/110).
-
-[ADR-003 (Draft)](adr/ADR-003-run-playground-compilation-in-a-browser-worker.md)
-records the proposed dedicated-worker host and remains pending review. Clean
-locked Release and root/nested-base static checks pass. Stage 0 and Stage 1
-browser evidence includes Edge, Firefox, and Playwright WebKit; current pull
-request automation will add Chromium coverage and Community Qodana. Full
-accessibility and release qualification remain outstanding.
+Details and reproduction instructions remain in
+[chapter 11](arc42/11-risks-and-technical-debt.md), the
+[support policy](../guides/support-and-compatibility.md), and the source map.
 
 ## Source map
 
-- [arc42 index and chapters](arc42/index.md)
-- [Corpus guide](../corpus/README.md) and [feature coverage](../corpus/FEATURE-COVERAGE.md)
-- [Support and compatibility policy](../guides/support-and-compatibility.md)
-- [Configuration reference](../guides/configuration.md)
-- [Runtime contract guide](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
+- [arc42 chapters](arc42/index.md)
+- [Corpus and feature coverage](../corpus/README.md)
+- [Support and compatibility](../guides/support-and-compatibility.md)
+- [Configuration](../guides/configuration.md)
+- [Runtime contract matrix](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
 - [Wire compatibility runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
-- [Corpus inventory and evidence rules](../corpus/README.md)
-- [ADR-001: shared compiler project](adr/ADR-001-share-a-host-neutral-compiler-project.md)
-- [ADR-002 (Accepted): per-compilation MD5](adr/ADR-002-inject-member-id-md5-per-compilation.md)
-- [ADR-003 (Draft): browser worker host](adr/ADR-003-run-playground-compilation-in-a-browser-worker.md)
-- [Browser frontend dependency intake](dependency-intake/playground-frontend.md)
-- [Issue #109 stage 0 evidence](../plans/109-browser-playground-stage0-evidence.md)
-- [Issue #109 stage 1 evidence](../plans/109-browser-playground-stage1-evidence.md)
+- [ADR-001: shared compiler](adr/ADR-001-share-a-host-neutral-compiler-project.md)
+- [ADR-002: per-compilation MD5](adr/ADR-002-inject-member-id-md5-per-compilation.md)
+- [ADR-003: browser worker host](adr/ADR-003-run-playground-compilation-in-a-browser-worker.md)
+- [Browser dependency review](dependency-intake/playground-frontend.md)
 - [Machine-readable architecture memory](../../.agents/architecture-memory.yaml)

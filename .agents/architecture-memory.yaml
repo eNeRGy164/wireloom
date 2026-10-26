@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-26T14:26:59Z
+  generated_at: 2026-10-26T16:06:41Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -35,63 +35,142 @@ sources:
     - docs/performance/incremental-generator-baseline.md
     - docs/testing/sequence-array-mapping.md
     - docs/architecture/dependency-intake/playground-frontend.md
-    - docs/plans/109-browser-playground-stage0-evidence.md
-    - docs/plans/109-browser-playground-stage1-evidence.md
+    - CONTRIBUTING.md
+    - .github/workflows/quality.yml
   defaults:
     - skill: dotnet-bootstrap
       resource: attachments/dotnet-defaults.yaml
       status: standard
 summary:
   goals:
-    text: Keep Connext IDL generation inside the .NET build and advance compatibility through evidence-backed cases.
+    text: >-
+      Keep Connext IDL generation in the .NET build and extend compatibility
+      through evidence-backed language and runtime cases.
     sources:
       - docs/architecture/arc42/01-introduction-and-goals.md
   constraints:
-    text: Repository projects default to net10.0. The Roslyn adapter targets netstandard2.0 and references Roslyn 4.8.0, so it loads in the first .NET 8 C# 12 SDK host. The shared non-packable compiler core also targets netstandard2.0 and has no Roslyn, MSBuild, or RTI dependencies. Consumer applications support .NET 8 and higher with C# 12+. An explicit RTI runtime reference of at least 7.3.1 is required. The adapter maps the resolved RTI assembly to a compiler profile; only exact 7.3.1 and 7.7.0 LTS versions are qualification targets.
+    text: >-
+      Repository projects target net10.0. The Roslyn adapter and shared,
+      non-packable compiler target netstandard2.0 for the .NET 8, C# 12 host
+      with Roslyn 4.8.0. Consumers require RTI 7.3.1 or later; exact
+      qualification targets are 7.3.1 and 7.7.0.
     sources:
       - docs/architecture/arc42/02-architecture-constraints.md
   context:
-    text: Wireloom is a compile-time component between a consumer project and generated C#; it is not in the DDS data path.
+    text: >-
+      Wireloom is a compile-time generator between consumer projects and
+      generated C#; it is outside the DDS runtime data path and does not provide
+      RTI support.
     sources:
       - docs/architecture/arc42/03-context-and-scope.md
   strategy:
-    text: OMG IDL and DDS-XTypes define supported language semantics; RTI captures establish tested compatibility rather than a language ceiling. A host-neutral compiler core accepts in-memory inputs and an explicit RTI profile, and returns generated documents and diagnostics together. The Roslyn adapter discovers the runtime version, selects the profile, translates diagnostics, and adds sources. The managed pipeline retains explicit roots, batch-wide preprocessing/strictness metadata, file-owned mapping, independent semantic modeling, and source-located diagnostics; parsing and validation remain RTI-independent.
+    text: >-
+      OMG IDL and DDS-XTypes define language semantics; RTI captures provide
+      versioned compatibility evidence. A host-neutral in-memory compiler
+      accepts an explicit profile and returns documents with diagnostics. The
+      Roslyn adapter resolves the RTI version and owns diagnostics and source
+      registration. The pipeline separates preprocessing, parsing, binding,
+      validation, profile-specific planning, and emission.
     sources:
       - docs/architecture/arc42/04-solution-strategy.md
   building_blocks:
-    text: IdlScalarValue gives constants and defaults mutually exclusive integer, boolean, character, floating-point, string, and enumeration variants, preserving width and enum identity. Integer expressions consume only integer values. IdlTypeAnnotationPrefix buffers unknown applications between type-prefix annotations and reports them only after a matching declaration parser accepts the target. IdlValueBinder owns queued constant, typedef, and member value binding; IdlValueResolver applies typed default, boolean member-flag, and range rules. Member boolean annotation constants bind after discrete constants, including forward and scoped references. Parsing captures annotation syntax and original offsets without speculative evaluation. IdlStringLiteralDecoder decodes tokens before concatenating values and checking final bounds. ScalarValueEmissionPlan supplies shared managed/native defaults and annotation values, and union branches share one copy operation. The Roslyn adapter selects an immutable RTI API profile from the resolved assembly version. The input graph and preprocessor feed a target-independent parse-bind-validate front end; compilation orchestration passes validated declarations and the profile to emission planning. Plans own profile- and IDL-shape-specific API, native storage, metadata, and initialization choices. SequenceArrayEmissionPlan reserves deterministic wrappers for opt-in Idl direct sequence arrays on class fields and union branches without mutating the semantic model; inherited class fields share the projection and enclosing metadata contains anonymous sequences. Emitters render plans, and a central result boundary checks duplicate hint names. Generated-value behavior and detailed evidence are maintained in chapter 8.6, the runtime contract matrix, and the corpus feature index. Parsers capture source-mapped identifier facts; pure identifier rules and derived-key detection produce typed findings. A separate validation policy owns ignore/warn/fail decisions; Roslyn owns diagnostic presentation. Emission and RTI profiles have no strictness dependency. IdlInterfaceIdentifierParser tokenizes body declarations and captures their service/operation scope facts without creating emission types. IdlSyntaxReader captures ordered balanced annotation applications and source offsets; IdlAnnotationCatalog defines known and recognized-unsupported names, parameter kinds/defaults, targets, positional rules, repeat/conflict metadata, and support status while leaving unknown arguments opaque. Readers consume ordered raw applications with mapped source spans; public composition tests assert generated API/metadata and diagnostics across targets. Semantic models retain effective values and unresolved expressions, while comma-separated members continue applying effective metadata only to the final declarator for compatibility. Catalog repeat/conflict validation covers declaration prefixes, members, enum literals, and union branches. Local struct/union @autoid and typedef @default applications are retained on semantic targets; typedef expressions are evaluated during binding after target type resolution. Module scope declarations retain module-level annotations and resolve the member-ID policy inherited by nested declarations because member IDs are assigned during declaration parsing. Typed expression dispatch reuses integral and floating evaluators with OMG numeric semantics; boolean, character, string, and enum values bind as typed literals or names. Integer parsing supports decimal, octal, and hexadecimal literals plus OMG numeric operators and shift limits. Referenced integral constants preserve declared rank during expression promotion, including aliases. Long double and fixed-point remain unsupported; the internal scalar model is extensible. Shared syntax reading preserves quoted delimiters; binding resolves chained constants, enum identity, member IDs, bounds, labels, and typed defaults against the symbol graph. Emission plans carry effective defaults; default aggregate union-array branches initialize and deep-copy each element.
+    text: >-
+      The compiler core owns virtual inputs, IDL syntax, symbols, semantic
+      validation, diagnostics, and generated documents without Roslyn, MSBuild,
+      RTI, or filesystem dependencies. The adapter owns Roslyn integration and
+      profile discovery. Parsing preserves annotation order and source spans;
+      binding resolves constants, defaults, bounds, enum identity, and member
+      IDs. Validation is profile-independent. Emission plans own profile- and
+      IDL-shape-specific API, storage, metadata, and initialization. Detailed
+      feature behavior is maintained in chapter 8, contracts, and corpus
+      coverage.
     sources:
       - docs/architecture/arc42/05-building-block-view.md
   runtime:
-    text: Generation occurs during consumer compilation; the manual wire workflow targets exact RTI Connext 7.3.1 and 7.7.0. Whole cases are balanced by exchange count across eight isolated shard runners per profile; a report job verifies matching plans and exact coverage, rejecting any not-run exchange before regenerating combined evidence. Each fixture runs across all nine directed pairings of Wireloom C#, RTI-generated C#, and RTI-generated C++. Readers verify fixture payloads while lifecycle notifications are counted separately. Discriminator verification normalizes RTI signed storage to the declared width; character fixtures use typed assignments and independent expected values. Present optional wide-string sequence fixtures use DynamicData and RTI C API setters in the C++ peer; absent, empty, and narrow-only controls use typed peers. Optional aggregate values are included and aggregate DynamicType metadata preserves declared aliases. Recursive array exchanges disable TypeObject/TypeCode propagation and use scoped managed/C++ peer initialization adaptations. C147 applies guarded namespace qualification to RTI C# scratch code and alias-tag TypeCode references to RTI C++ scratch code; all 18 directed exchanges pass on each exact profile while the retained raw RTI C# output records its compilation failure. Full profile wire qualification remains pending. The wchar union uses a manually constructed RTI C++ DynamicType; FlatData uses standard C++ mapping, not RTI's FlatData-specific C++ layout. Strict naming violations fail the complete batch before emission; permissive naming findings report DDSG0108 and continue. Any generating root enables strictness for all reachable inputs.
+    text: >-
+      Generation runs during consumer compilation. Strict validation is
+      permissive by default and becomes batch-wide when any root enables it;
+      diagnostics retain source locations. Corpus and wire evidence is scoped
+      to exact RTI profiles and recorded inputs. Wire fixtures compare directed
+      exchanges among Wireloom C#, RTI C#, and RTI C++ where qualified.
     sources:
       - docs/architecture/arc42/06-runtime-view.md
   deployment:
-    text: 'The analyzer is delivered as a NuGet package. The repository sample consumes released Wireloom.Dds.Generator 0.5.0 from NuGet.org and builds in CI on Ubuntu 26.04 and Windows 2025 without an RTI license; its README covers the locally licensed DDS exchange. Quality CI checks both LTS corpus profiles and eight Windows/Ubuntu, RTI 7.3.1/7.7.0, net8.0/net10.0 runtime and fresh-package combinations. Separate Ubuntu SDK 8.0.100 container jobs restore, compile, and run the freshly packed consumer without a .NET 10 installation, qualifying the minimum C# 12 Roslyn host against both LTS packages. Manual wire evidence runs both qualified RTI LTS versions as a matrix, with eight isolated shards per version (up to 16 jobs total) and separate report jobs, summaries, and artifacts. The trimmed .NET/RTI native image uses checked-in C++ peers and no Java or rtiddsgen. Builds use version-scoped cached images; shard zero per version exports its shared Docker build cache. Ccache uses stable OS, RTI, compiler, shard, and source-input keys with compatible restore prefixes; GitHub branch cache scope remains in force. Each shard receives a runtime-scoped license file; the .NET-only artifact merge jobs have no RTI secret. The checked-in publisher/subscriber sample builds against released Wireloom.Dds.Generator 0.5.0 from NuGet.org on Ubuntu 26.04 and Windows 2025 without loading native DDS libraries or requiring an RTI license. The non-packable compiler assembly is bundled beside the generator at the shared version and is not a separate package or consumer application reference. Add other releases only with a matching toolchain and compatible generator target. The Quality workflow also runs exact-pinned TypeScript type, lint, format, and Node coverage checks plus production-browser coverage in Playwright Chromium headless shell. V8 browser results are source-mapped to first-party code and merged into a Cobertura report; focused adapter tests emit C# Cobertura. Coveralls receives generator, compiler, adapter, and Playground reports; Community Qodana scans the .NET solution. Root and nested static bundles are both built and checked.'
+    text: >-
+      Wireloom.Dds.Generator is the sole published analyzer package. The
+      non-packable compiler is bundled beside the adapter at the same version.
+      CI checks exact-profile corpus, package and runtime behavior, the minimum
+      compiler host, Community Qodana, and Coveralls. The local Playground uses
+      a non-packable .NET 10 browser-WASM host in a module worker with a
+      TypeScript/Vite client. Quality CI includes strict client checks and
+      source-mapped Chromium plus C# adapter coverage. The standalone fuzzing
+      project runs without coverage instrumentation.
     sources:
       - docs/architecture/arc42/07-deployment-view.md
   cross_cutting:
-    text: FINAL and APPENDABLE enums accept shorthand and full-form annotations; MUTABLE enums are invalid under DDS-XTypes. Every wide-string literal token requires the L prefix. Range validation compares boolean and character defaults using their ordering representation without admitting those values into integer expressions. Native conversion initializes aggregate elements when activating union array branches. Legacy unprefixed wchar union literals remain an explicit Wireloom extension. Corpus oracle reads use the selected LTS capture. Generated RTI reference sources are retained with original notices and provenance and are not relicensed under the repository MIT License. Wire planning records unavailable RTI features as notApplicableCases, excluded from exchanges, compatibility failures, and Wireloom implementation gaps. C040 isolates hash IDs on both LTS versions; C142 isolates must-understand, which is N/A on 7.3. Wire evidence must match the exact case inputs and RTI profile. New capture/export evidence retains source identity, input/output hashes, tool versions, arguments, and outcomes; legacy missing provenance stays unknown. The LTS runbook owns reproduction. Annotation applications distinguish absence from explicit false; bare auto-ID means HASH, module policy is scoped to its block, and local settings do not leak to siblings or included top-level declarations. A member default overrides the nearest annotated typedef, with the effective typed value shared by managed/native initialization and DynamicType metadata. Enum constants and their aliases retain identity; shared evaluation handles symbolic and scoped union labels and detects evaluated duplicates. Explicit member-ID expressions resolve after constants and before duplicate-ID validation, overriding automatic hash IDs. Effective IDs continue after explicit or sequential IDs across inheritance; hash IDs do not advance the sequential counter. Validation checks inherited and local IDs together, and emission renders the bound IDs. C163-C172 record generation evidence for these features, with RTI C# and C++ reference sources retained with original notices and Wireloom C# compiled against each profile. Sixteen typed fixtures cover directed exchanges among Wireloom C#, RTI C#, and RTI C++ on both profiles. C164/C172 use topic wrappers around unchanged canonical IDL; RTI 7.3.1 C# generation stages byte-identical include files. C171 defaults are inherited=7, overridden=9, text="alias", ratio=1.5, and single=1.25; a compatible sparse appendable writer causes the reader to apply defaults to omitted trailing members on RTI 7.7.0. RTI 7.3.1 lacks the member-annotation API used for that metadata path. Runtime contracts check fractional and non-ASCII wide-string initialization on both LTS profiles and exact annotation metadata on 7.7.0. RTI 7.7.0 DynamicData clear restoration truncates fractional defaults and returns ?? for a non-ASCII wide-string default; cleared integral, narrow-string, and signed-zero defaults are covered separately. Evidence vocabulary, deterministic inputs and invalidation, explicit compiler stages, diagnostics, test separation, deterministic preprocessing limits, and supply-chain controls apply across the system. Build-time generated runtime fixtures execute typed managed, native, and support APIs on Windows and Linux, including enum-array defaults, default aggregate-array union initialization and copying, and direct and typedef-backed string-sequence union branches. The packed-package suite links the runtime contracts and runs against the package assets, including the SDK 8 compiler host. Coveralls measures maintained compiler and generator source; generated fixtures and test project code are excluded. The behavior matrix keeps unresolved contracts visible. RTI C# is a baseline, not an API ceiling; improvements supported by RTI C++ evidence require separate wire verification. Direct sequence arrays default to RtiCSharp flattening; DdsIdlSequenceArrayMapping sets a project default and SequenceArrayMapping overrides it per declaring file, including tracked includes. Idl mode has typed runtime tests on both LTS profiles; direct sequence-array union branches share the configured mapping. Invalid modes and recursive direct arrays are rejected before emission, and dedicated C149 passes all 16 focused Wireloom/C++ DDS exchanges per exact profile. Strict defaults to false and applies batch-wide when any generating root enables it. Naming violations warn with DDSG0108 by default and fail before emission in strict mode; exact reserved keywords fail in every interface body. Ordinary interface bodies retain RTI acceptance for specification-only names; DDS-service bodies apply naming policy to operations, parameters, attributes, and nested declarations. Operation parameters have independent scopes. Body types are not emitted or bound, and constructed-type nesting is limited to 64. The configuration reference owns detailed scope rules and RTI differences. Binding and generated names remain unchanged.
+    text: >-
+      Effective IDL annotations, typed defaults, bounds, and member IDs are
+      resolved during binding and shared by output paths. Sequence-array
+      mapping defaults to RtiCSharp and may be overridden per declaring file.
+      Preprocessing and strictness are batch-wide; mapping is file-owned.
+      Deterministic inputs, source mapping, diagnostics, package provenance,
+      and exact-profile evidence are cross-cutting requirements. See chapter 8
+      and the configuration guide for detailed rules.
     sources:
       - docs/architecture/arc42/08-crosscutting-concepts.md
   decisions:
-    text: Chapter 9 summarizes the decision history in a compact chronological table from September 25 through October 26, 2026; inherited policy dates are their first documentation dates, while ADR entries use their recorded dates and statuses. ADR-001 and ADR-002 are Accepted, and ADR-003 is Draft pending review. ADR-002 was approved October 26, 2026. Roslyn hosting at the minimum .NET 8 C# 12 host, explicit roots, independent semantic modeling, project-wide root metadata, explicit parse-bind-validate phases, explicit runtime ownership, case-level evidence, separated compiler orchestration/resolution/emission, bounded preprocessing work, manually triggered wire evidence targeting exact RTI 7.3.1 or 7.7.0, preservation of declared alias metadata for optional aggregate members to match RTI, inclusion of warning-only Wireloom-positive cases, and union metadata normalization matching RTI C++ while preserving managed discriminator ranges are current decisions. RTI C# is the managed API baseline, with deliberate improvements allowed and separately evidenced. The wire matrix distinguishes Wireloom C#, RTI C#, and RTI C++ endpoints and exercises all directed pairings for ordinary cases; C149 records an explicit mode, peer scope, exclusion reasons, and matching source provenance as an ordinary corpus case; RTI-positive cases rejected by Wireloom remain visible as not implemented. Specification detection is separate from validation policy; case-insensitive collision detection does not normalize names or change binding.
+    text: >-
+      ADR-001 (shared compiler), ADR-002 (per-compilation MD5 provider), and
+      ADR-003 (browser worker host) are Accepted. ADR-003 was approved by
+      Michaël Hompus on 2026-10-26. Chapter 9 is the decision history and
+      authoritative status index.
     sources:
       - docs/architecture/arc42/09-architectural-decisions.md
   quality:
-    text: 'Compatibility shape, diagnostics, package integration, maintainability, incremental build evidence, wire compatibility across Wireloom-positive cases and separate exact 7.3.1 and 7.7.0 three-peer fixture matrices, and supply-chain integrity are the primary quality goals. Continuous Quality CI runs matching-profile corpus checks plus Windows/Ubuntu runtime and fresh-package tests for both LTS packages on net8.0 and net10.0, and a .NET 8.0.100-only container runs the broad packed consumer suite for each LTS package. The runtime contract matrix separately records generated API behavior, compile-blocked inputs, and skipped contracts without establishing wire compatibility. Retained RTI C# oracle sources and typed runtime fixtures cover unbounded typedef behavior. Generated wire reports contain per-fixture and per-pairing outcomes. C149 is a dedicated Idl case with retained profile-specific sources and hashes; RTI C# is explicitly excluded because its direct-form binding flattens this type. Completed evidence without matching mode/runtime/input/generated-source provenance is rejected. C150-C162 retain paired default/strict inputs and actual C#/C++ RTI captures on both profiles. C163-C172 add ten exact-profile annotation, declarator, union, expression-bound, enum-constant, and typed-default cases; RTI C# and C++ sources and capture hashes are retained, and Wireloom C# outputs compile against each profile. Sixteen typed fixtures cover directed exchanges among Wireloom C#, RTI C#, and RTI C++ on both LTS versions. C171''s default and explicit-value fixtures cover both profiles; its focused omitted-field exchange runs on 7.7.0. Runtime contracts verify typed initialization on both profiles and record RTI 7.7.0 fractional/wide-string DynamicData clear limitations alongside supported clear defaults. Unit and packed-consumer checks verify warning versus no-output error behavior, including the minimum SDK 8 host. The sample build consumes Wireloom.Dds.Generator 0.5.0 and runs on Windows 2025 and Ubuntu 26.04 without an RTI license; its documented local exchange requires licensed RTI native assets. Playground quality adds strict ESLint/Prettier, 36 Node tests with 95% branch/98% line/80% function thresholds, source-mapped Chromium browser coverage, and 28 focused C# adapter tests. Coveralls includes the browser and adapter reports with generator/compiler reports; Community Qodana scans the .NET solution. Remote PR check results are pending.'
+    text: >-
+      Quality evidence covers exact RTI profiles, corpus and wire behavior,
+      package integration, minimum-host loading, maintained C# source, and
+      supply-chain controls. Compiler unit coverage is gated at 90% branches
+      and 95% lines; fuzzing runs in a separate uninstrumented project.
+      Playground checks add strict TypeScript, ESLint, Prettier, direct Node
+      coverage at 95% branches and 98% lines, Chromium coverage, and focused
+      C# adapter tests. Coveralls combines Playground and adapter Cobertura
+      with compiler and generator reports; Community Qodana scans the .NET
+      solution. Remote PR Coveralls status is pending until CI reports it.
     sources:
       - docs/architecture/arc42/10-quality-requirements.md
   risks:
-    text: 'Recursive sequence typedefs are unsupported and rejected before emission because standard RTI C++11 rtiddsgen 4.3.1 (7.3.1) and 4.7.0 (7.7.0) output does not compile. Direct self-recursive sequence wire exchanges pass bidirectionally between Wireloom C# and typed RTI C++ on both LTS versions with TypeObject v1 (8192-byte type-object limit, SERVICE_REQUEST_CHANNEL only); RTI 7.3.1 generated C++ needs the documented module-qualification correction. RTI 7.7.0 default TypeObject v2 rejects recursive SCC registration. Mutual recursive struct graphs and recursive array TypeCode initialization remain unqualified. Other known risks: coarse per-root invalidation, fixed-limit compatibility, coverage outside retained cases, licensed exact-version wire environments, sequence-array C# shape mismatch, present optional wide-string typed C++ serialization, manual wchar-union DynamicType, C# recursive-array singleton, DDSG0108 warnings-as-errors, and RTI 7.3.1 invalid C# RPC output for C157/C159 tracked in issue 75. Escape-character normalization can change generated names and implicit hash member IDs when enabled; normalized-name collisions are rejected.'
+    text: >-
+      Recursive sequence typedefs remain unsupported; recursive graphs and
+      several RTI-specific or optional-type cases remain unqualified. RTI
+      7.3.1 C# RPC output for C157/C159 fails compilation (issue 75). Browser
+      accessibility, supported-version policy, hosting, and release
+      qualification remain in issue 110. Keep adapter and bundled compiler
+      versions aligned and preserve direct-caller path and formatting behavior.
     sources:
       - docs/architecture/arc42/11-risks-and-technical-debt.md
   glossary:
-    text: Connext IDL, annotation application, constant expression, DdsIdl root, included IDL, compiler core, Roslyn adapter, compilation result, compiler profile, type-specific support, RTI oracle, wire compatibility, wire compatibility matrix, and Docker Desktop container workflows have project-specific meanings. Strict validation is the batch-wide semantic naming and derived-key policy; it is separate from warning promotion, C# escaping, and sequence-array mapping.
+    text: >-
+      Project-specific terms include Connext IDL, annotation application,
+      DdsIdl root, compiler core, Roslyn adapter, compiler profile, RTI oracle,
+      wire compatibility, and strict validation. Strict validation is distinct
+      from warning promotion, C# escaping, and sequence-array mapping.
     sources:
       - docs/architecture/arc42/12-glossary.md
   browser_playground:
-    text: 'The non-packable net10.0 browser-wasm host calls the shared compiler in a dedicated module worker. The TypeScript/Vite client sends bounded collection-shaped requests and checks protocol, worker generation, request ID, workspace revision, and profile before accepting results. Thirty-six Node tests, strict lint/format, locked Release publish, and root/nested static bundle checks pass. Node coverage is 98.78% branches, 99.17% lines, and 81.25% functions. Windows Edge 156.0.4314.42 passed 32 exact comparisons across eight cases, both RTI profiles, root/nested hosting, repeat compilation, and profile switching. Stage 1 provides Monaco IDL/read-only C# editing, seven examples, diagnostic navigation, immediate output tabs, resizable explorer and panes, exact downloads/ZIP, single UTF-8 import, and versioned IndexedDB recovery. Fifteen UI/recovery/fault groups passed in Edge. Additional Firefox 156 and Playwright WebKit 26.6 checks pass across root/nested hosting, responsiveness, editing, storage, recovery, failures, and all example/profile outputs; WebKit is not Safari. Chromium browser coverage exercises all 14 example/profile combinations plus editor, export, theme, resize, import, recovery, and failure flows; merged first-party coverage is 93.47% branches and 92.88% lines. Twenty-eight C# adapter tests pass at 96.875% branch and 98.2% line coverage. Quality CI uploads browser and adapter Cobertura with generator/compiler reports to Coveralls and runs Community Qodana over the .NET solution; remote PR results are pending. ADR-003 remains Draft. Accessibility and broader release qualification remain issue 110.'
+    text: >-
+      The desktop-first local Playground runs the shared compiler in a dedicated
+      .NET 10 browser-WASM module worker. Versioned requests carry worker,
+      request, revision, profile, and file identity; the client accepts only
+      current responses and keeps one active plus the newest pending request.
+      The host supports collection-shaped virtual files; the current UI uses
+      one generation root. Stage 1 provides Monaco editing, examples,
+      diagnostics, generated-file browsing, single and ZIP downloads, local
+      persistence, resizing, and recovery. Scoped Edge, Firefox, and Playwright
+      WebKit checks pass; WebKit does not qualify Safari. Direct Node tests
+      cover worker replacement and recovery-save ordering; Chromium coverage
+      is mapped to first-party code. ADR-003 is Accepted. Issue 110 tracks
+      broader accessibility and release qualification.
     sources:
       - docs/architecture/arc42/04-solution-strategy.md
       - docs/architecture/adr/ADR-003-run-playground-compilation-in-a-browser-worker.md
@@ -102,32 +181,6 @@ summary:
       - docs/architecture/arc42/10-quality-requirements.md
       - docs/architecture/arc42/11-risks-and-technical-debt.md
       - docs/architecture/dependency-intake/playground-frontend.md
-      - docs/plans/109-browser-playground-stage0-evidence.md
-      - docs/plans/109-browser-playground-stage1-evidence.md
-  compiler_api:
-    text: Wireloom.Dds.Compiler is a shared, non-packable netstandard2.0 project for repository C# callers. Its in-memory Compile API requires an explicit IdlCompilerProfile and returns one IdlCompilationResult with generated documents and diagnostics; errors can return no documents. IdlInput snapshots define, undefine, and include-directory collections, while Compile snapshots the input collection. The API observes cancellation, preserves source-located diagnostics, and uses supplied root/include text without filesystem access.
-    sources:
-      - docs/architecture/adr/ADR-001-share-a-host-neutral-compiler-project.md
-      - docs/architecture/arc42/05-building-block-view.md
-      - docs/architecture/arc42/08-crosscutting-concepts.md
-  compiler_delivery:
-    text: The Roslyn adapter discovers the resolved RTI assembly and maps its version to the public compiler profile. The existing single Wireloom.Dds.Generator package bundles the compiler beside the adapter at the shared version; it adds no compiler package or application runtime dependency. Analyzer package and project-reference consumers exercise dependency loading.
-    sources:
-      - docs/architecture/adr/ADR-001-share-a-host-neutral-compiler-project.md
-      - docs/architecture/arc42/07-deployment-view.md
-  compiler_quality:
-    text: Exact generated documents were compared to the pre-extraction baseline for RTI 7.3.1 and 7.7.0. Separate compiler and generator unit-test projects cover result/error cases, source locations, cancellation, snapshots, profile mapping, and Roslyn-formatting parity. Qodana and Stryker use the committed Wireloom.slnx, which includes both maintained projects and the repository unit-test projects. Coveralls and local branch coverage include both maintained assemblies.
-    sources:
-      - docs/architecture/arc42/10-quality-requirements.md
-      - docs/testing/stryker.md
-  compiler_risks:
-    text: Keep generator and compiler assembly versions aligned and verify analyzer loading in the minimum .NET 8 host. Preserve direct-caller path interpretation and formatting parity. The extracted compiler has a required per-compilation MD5 provider. The Playground provider passes retained Node vectors and representative Edge Stage 0 parity, responsiveness, and recovery checks; broader browser/release qualification remains open in issue 110.
-    sources:
-      - docs/architecture/arc42/11-risks-and-technical-debt.md
-  member_id_hashing:
-    text: Accepted ADR-002 records the implemented required synchronous Func<byte[], byte[]> MD5 delegate supplied by each host per compilation. The native generator supplies BCL hashing and the Playground supplies a synchronous JavaScript MD5 provider. The compiler retains UTF-8, digest validation, byte ordering, and the 28-bit mask. Node vectors and Edge Stage 0 native/browser parity pass; other browser/release coverage remains open in issue 110.
-    sources:
-      - docs/architecture/adr/ADR-002-inject-member-id-md5-per-compilation.md
 
 defaults:
   repository:

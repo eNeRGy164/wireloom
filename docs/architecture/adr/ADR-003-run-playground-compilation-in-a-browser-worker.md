@@ -1,8 +1,8 @@
 # ADR-003 Run Playground compilation in a browser worker
 
 - **Date:** 2026-10-26
-- **Status:** Draft
-- **Approved by:** Pending review
+- **Status:** Accepted
+- **Approved by:** Michaël Hompus
 
 ## Context
 
@@ -25,7 +25,7 @@ generator package must remain unchanged.
 
 **Host the shared compiler in a dedicated .NET 10 WebAssembly module worker behind a typed TypeScript/Vite client.**
 
-The non-packable browser project references `Wireloom.Dds.Compiler`; the
+The browser project references `Wireloom.Dds.Compiler`; the
 worker initializes .NET and the synchronous JavaScript MD5 provider in the
 worker scope. The client sends bounded immutable workspace snapshots and
 rejects responses unless protocol version, worker generation, request ID,
@@ -35,12 +35,6 @@ the collection-shaped protocol accepts multiple virtual files for incremental
 multi-file UI support. Vite builds the static client with a configurable base
 path, and the published .NET runtime files are copied into the generated
 client asset directory. There is no main-thread compilation fallback.
-
-Stage 0 and Stage 1 behavior has been implemented and verified in Windows
-Edge. Scoped Firefox and Playwright WebKit runs exercise the same key flows;
-WebKit is not Safari qualification. These results do not establish full
-accessibility, supported-browser, or public-release qualification, which
-remain in #110.
 
 ## Consequences
 
