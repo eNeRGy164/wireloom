@@ -6,6 +6,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj" />
     <Compile Include="../Shared/CompilerTestSupport.cs" Link="Support/CompilerTestSupport.cs" />
+    <Compile Include="../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs" Link="Playground/PlaygroundCompilerAdapter.cs" />
   </ItemGroup>
 
   <ItemGroup>
