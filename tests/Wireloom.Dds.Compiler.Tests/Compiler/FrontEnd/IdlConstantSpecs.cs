@@ -672,7 +672,7 @@ public sealed class IdlConstantSpecs
     {
         // Arrange
         var input = Input("missing-array-dimensions.idl", string.Empty);
-        var context = new IdlParseContext(new IdlSymbolTable(), CancellationToken.None, diagnostics: null);
+        var context = new IdlParseContext(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5, diagnostics: null);
 
         // Act
         var exception = Should.Throw<IdlException>(() => context.TypeParser.ParseDimensions(input, 0, string.Empty, currentNamespace: null));
@@ -960,7 +960,7 @@ public sealed class IdlConstantSpecs
 
         // Act
         var documents = CompileSources(input);
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
         parser.Parse(input.Text, input, baseOffset: 0, currentNamespace: null);
         parser.Bind();
         parser.Validate(strict: false);

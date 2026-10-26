@@ -163,7 +163,7 @@ public sealed class AnnotationValueSpecs
                 @must_understand(value={{literal}}) long understood;
             };
             """);
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
 
         // Act
         parser.Parse(input.Text, input, baseOffset: 0, currentNamespace: null);

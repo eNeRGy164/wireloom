@@ -61,7 +61,7 @@ public sealed class EnableEscapeCharSpecs
         generatedText.ShouldContain("class Choice");
         generatedText.ShouldContain("new int[2]");
         generated["Escaped.Implementation.RecordPlugin.g.cs"].Source.ShouldContain(
-            $"new StructMember(\"event\", dtf.GetPrimitiveType<int>(), id: {IdlMemberIdHash.Compute("event")})");
+            $"new StructMember(\"event\", dtf.GetPrimitiveType<int>(), id: {IdlMemberIdHash.Compute("event", Compiler.Tests.CompilerTestSupport.ComputeMd5)})");
         generated["Escaped.Implementation.RecordPlugin.g.cs"].Source.ShouldContain("new StructMember(\"value\"");
         generated["Escaped.Implementation.ChoicePlugin.g.cs"].Source.ShouldContain("new UnionMember(\"number\"");
     }

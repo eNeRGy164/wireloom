@@ -18,7 +18,8 @@ if (Directory.Exists(output) && Directory.EnumerateFileSystemEntries(output).Any
 }
 
 var inputs = args.Skip(1).Select(path => new IdlInput(Path.GetFullPath(path), File.ReadAllText(path))).ToList();
-var result = IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770, CancellationToken.None);
+var result = IdlCompiler.Compile(inputs, IdlCompilerProfile.Rti770,
+    static bytes => System.Security.Cryptography.MD5.HashData(bytes), CancellationToken.None);
 if (!result.Success)
 {
     throw new InvalidOperationException(string.Join(Environment.NewLine, result.Diagnostics.Select(diagnostic => diagnostic.Message)));

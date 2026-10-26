@@ -17,9 +17,13 @@ internal sealed class IdlDeclarationParser
     private readonly IdlEnumDeclarationParser enumParser;
 
     /// <summary>Initializes a declaration parser with symbol and diagnostic services.</summary>
-    internal IdlDeclarationParser(IdlSymbolTable symbols, CancellationToken cancellationToken, ICollection<IdlDiagnostic>? diagnostics = null)
+    internal IdlDeclarationParser(
+        IdlSymbolTable symbols,
+        CancellationToken cancellationToken,
+        Func<byte[], byte[]> computeMd5,
+        ICollection<IdlDiagnostic>? diagnostics = null)
     {
-        context = new IdlParseContext(symbols, cancellationToken, diagnostics);
+        context = new IdlParseContext(symbols, cancellationToken, computeMd5, diagnostics);
         constantParser = new IdlConstantParser(context);
         typedefParser = new IdlTypedefParser(context);
         unionParser = new IdlUnionParser(context);

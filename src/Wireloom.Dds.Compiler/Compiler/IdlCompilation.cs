@@ -6,7 +6,7 @@ using Wireloom.Compiler.FrontEnd.Symbols;
 namespace Wireloom.Compiler;
 
 /// <summary>Coordinates input traversal, declaration parsing, and emission.</summary>
-internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, CancellationToken cancellationToken, RtiApiProfile profile)
+internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, RtiApiProfile profile, Func<byte[], byte[]> computeMd5, CancellationToken cancellationToken)
 {
     public IReadOnlyList<GeneratedIdlSource> Run(ICollection<IdlDiagnostic>? diagnostics = null)
     {
@@ -35,7 +35,7 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, Cancellatio
         var enableEscapeChar = escapeSettings.FirstOrDefault();
         var symbols = new IdlSymbolTable();
         var graph = new IdlInputGraph(files, roots.SelectMany(input => input.Defines), roots.SelectMany(input => input.Undefines), roots.SelectMany(input => input.IncludeDirectories), cancellationToken, enableEscapeChar);
-        var parser = new IdlDeclarationParser(symbols, cancellationToken, diagnostics);
+        var parser = new IdlDeclarationParser(symbols, cancellationToken, computeMd5, diagnostics);
         var result = new EmissionResult();
         var compilation = new CompilationContext(symbols);
 

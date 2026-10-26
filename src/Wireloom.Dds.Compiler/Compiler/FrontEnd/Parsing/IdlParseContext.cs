@@ -7,13 +7,18 @@ namespace Wireloom.Compiler.FrontEnd.Parsing;
 /// <summary>Provides the shared state and services used while parsing one IDL compilation.</summary>
 internal sealed class IdlParseContext
 {
-    internal IdlParseContext(IdlSymbolTable symbols, CancellationToken cancellationToken, ICollection<IdlDiagnostic>? diagnostics)
+    internal IdlParseContext(
+        IdlSymbolTable symbols,
+        CancellationToken cancellationToken,
+        Func<byte[], byte[]> computeMd5,
+        ICollection<IdlDiagnostic>? diagnostics)
     {
         Symbols = symbols;
         TypeBinder = new IdlTypeBinder(symbols);
         InheritanceBinder = new IdlInheritanceBinder(symbols);
         Validator = new IdlSemanticValidator(symbols);
         CancellationToken = cancellationToken;
+        ComputeMd5 = computeMd5;
         Diagnostics = diagnostics;
         TypeParser = new IdlTypeParser(this);
         ValueBinder = new IdlValueBinder(symbols, cancellationToken);
@@ -39,6 +44,9 @@ internal sealed class IdlParseContext
     private List<IdlIdentifierOccurrence> Identifiers { get; } = [];
 
     internal CancellationToken CancellationToken { get; }
+
+    /// <summary>Gets the host-provided MD5 implementation for this compilation.</summary>
+    internal Func<byte[], byte[]> ComputeMd5 { get; }
 
     internal ICollection<IdlDiagnostic>? Diagnostics { get; }
 
