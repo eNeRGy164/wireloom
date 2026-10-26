@@ -10,6 +10,13 @@ For the retained-corpus matrix, reproducible release verification command,
 single-file/include limits, and evidence boundaries, see
 [Playground qualification](../docs/testing/playground-qualification.md).
 
+The public [Playground](https://energy164.github.io/wireloom/) is hosted on
+GitHub Pages. Pull requests build and verify a deployment candidate without
+changing the public site. Successful Quality runs from pushes to `main` can
+publish their validated artifact. See the
+[deployment runbook](../docs/guides/playground-deployment.md) for setup,
+publication gates, live verification, rollback, and custom domains.
+
 ## Prerequisites
 
 - .NET SDK selected by the repository `global.json` (10.0.400 feature band).

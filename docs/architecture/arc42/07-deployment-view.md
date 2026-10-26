@@ -116,8 +116,32 @@ the same origin. In the observed Edge run, application requests were GETs to
 loopback and no outbound request carrying source was observed. This is scoped
 request evidence, not a general telemetry or privacy certification. Edge, Firefox,
 and Playwright WebKit runs cover representative client flows; Safari is not
-claimed. Supported-browser, accessibility, and public-network qualification
-remain pending in #110.
+claimed. Browser qualification and its limits are recorded in the
+[qualification scope](../../testing/playground-qualification.md). Public-network
+evidence comes from the deployment checks below.
+
+GitHub Pages is the selected public host. Quality builds a separate
+`dist-pages/` candidate at `/wireloom/` by default, with an optional
+`PLAYGROUND_BASE_PATH` repository variable for a later custom hostname.
+PR builds validate and retain this candidate without publishing. The publication
+workflow accepts only successful push Quality runs from this repository's
+`main`, waits for Coveralls, and promotes the exact artifact after checking
+its full revision, base path, and complete file inventory with SHA-256 hashes.
+Qodana and other Quality jobs must also have passed. Automatic publication
+rejects superseded revisions; serialized manual runs can redeploy a retained
+successful artifact for rollback. Only the deploy job receives Pages write
+and OIDC permissions, within the `github-pages` environment restricted to main.
+
+After deployment, isolated Chromium checks the HTTPS host's complete asset
+bytes, WASM/module MIME types, sample generation, diagnostics, footer, copy,
+downloads, ZIP, and reload. Reports record the actual deployed URL and source
+revision. A failure marks publication verification unsuccessful and requires
+inspection or the documented rollback; it is not a successful public-host
+qualification. GitHub's deployment revision is the publishing workflow's
+revision; `deployment.json` identifies the artifact's source, including manual
+rollback. All runtime assets remain same-origin static downloads. See the
+[deployment runbook](../../guides/playground-deployment.md) and
+[action intake](../dependency-intake/playground-pages-actions.md).
 
 Preview publication uses GitHub Packages. Validated release tags publish to
 NuGet.org with SBOM and provenance attestations.

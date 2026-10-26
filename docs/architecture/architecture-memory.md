@@ -52,7 +52,7 @@ and [evidence vocabulary](arc42/08-crosscutting-concepts.md#81-evidence-vocabula
 
 ## Browser Playground
 
-The desktop-first local Playground uses a TypeScript/Vite client and a
+The desktop-first Playground uses a TypeScript/Vite client and a
 non-packable .NET 10 browser-WASM host in a dedicated module worker. The worker
 runs the shared compiler and synchronous JavaScript MD5 provider. Versioned
 requests include worker, request, revision, profile, and file identity; the
@@ -66,11 +66,21 @@ locally. Scoped Edge, Firefox, and Playwright WebKit checks are documented; a
 WebKit result does not qualify Safari. Chromium coverage maps to first-party
 code. Direct Node tests cover worker replacement and recovery-save ordering;
 their coverage is gated at 95% branches and 98% lines. ADR-003 is Accepted.
-Accessibility and broader release qualification remain tracked in issue #110.
+Generation qualification and its limits are recorded with issue #110's evidence.
+
+GitHub Pages hosts the static bundle. Quality validates a separate configured-base
+candidate on PRs and main. Publication accepts successful main push Quality
+runs and Coveralls results, verifies the exact artifact inventory and source
+SHA, and deploys without rebuilding. Only the environment-restricted deploy job
+has Pages write/OIDC permissions. Superseded automatic runs are rejected;
+manual runs can roll back to retained successful candidates. Public HTTPS
+checks verify assets, MIME types, sample/profile generation, diagnostics,
+exports, revision/scope, and reload. See the
+[deployment runbook](../guides/playground-deployment.md).
 
 See [ADR-003](adr/ADR-003-run-playground-compilation-in-a-browser-worker.md),
 [browser runtime](arc42/06-runtime-view.md#64-browser-playground-compilation),
-Scoped Edge, Firefox, and Playwright WebKit checks were run; WebKit does not qualify Safari.
+and [qualification scope](../testing/playground-qualification.md).
 
 ## Packaging and quality
 
@@ -124,8 +134,10 @@ See [chapter 9](arc42/09-architectural-decisions.md) for decision history.
   checks require TypeObject v1; RTI 7.7.0 default TypeObject v2 rejects the
   recursive SCC. Mutual recursive structs remain unqualified.
 - RTI 7.3.1 C# RPC output for C157/C159 fails compilation; see issue #75.
-- Browser support, accessibility, hosting, and release qualification remain
-  issue #110. Public publication is tracked separately.
+- Browser qualification remains scoped to the recorded evidence. Pages hosting
+  is tracked in issue #111; live verification must pass for each deployment.
+  Failed checks require inspection/manual rollback within artifact retention.
+  A custom hostname changes both the base path and browser storage origin.
 - Keep generator and bundled compiler assembly versions aligned. Preserve
   direct-caller path behavior and source-formatting parity.
 

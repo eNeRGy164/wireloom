@@ -45,6 +45,7 @@ coverage/
 playground/node_modules/
 playground/dist/
 playground/dist-subpath/
+playground/dist-pages/
 playground/dist-coverage/
 playground/public/dotnet/
 output/playwright/

@@ -431,6 +431,23 @@ jobs:
         run: npm run verify:release -- chromium
         working-directory: playground
 
+      - name: Build and verify Pages deployment candidate
+        run: |
+          npm run build:pages
+          npm run verify:pages
+        working-directory: playground
+        env:
+          PLAYGROUND_BASE_PATH: ${{ vars.PLAYGROUND_BASE_PATH || '/wireloom/' }}
+          EXPECTED_SOURCE_SHA: ${{ github.sha }}
+
+      - name: Retain validated Pages candidate
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: playground-pages
+          path: playground/dist-pages/
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Retain Playground qualification evidence
         if: always()
         uses: actions/upload-artifact@v7.0.2
@@ -442,6 +459,7 @@ jobs:
             output/playwright/*-native-baseline.json
             output/playwright/native-baseline.json
             output/playwright/corpus-inputs.json
+            output/playwright/pages-smoke.json
           if-no-files-found: warn
           retention-days: 14
 
