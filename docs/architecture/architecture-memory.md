@@ -105,7 +105,9 @@ authoritative; this summary is a retrieval aid, not a replacement.
   non-packable `netstandard2.0` project shared by repository C# callers. Its
   in-memory API requires an explicit RTI profile and returns one
   `IdlCompilationResult` containing documents and diagnostics; errors may
-  return no documents with diagnostics. It snapshots input lists, preserves
+  return no documents with diagnostics. Each call requires a synchronous
+  MD5 delegate; the generator supplies `MD5.HashData`, and the compiler keeps
+  UTF-8 encoding, digest validation, byte ordering, and masking. It snapshots input lists, preserves
   current batch and path behavior, observes cancellation, and does not access
   the filesystem. The Roslyn adapter discovers the resolved RTI version,
   selects the profile, maps diagnostics, and adds source documents. The single
@@ -284,9 +286,23 @@ authoritative; this summary is a retrieval aid, not a replacement.
 - The analyzer package must keep its generator and adjacent compiler
   assemblies at one version; package and minimum-host loading are covered by
   integration tests. Direct callers depend on the current path interpretation,
-  and literal-formatting parity is guarded by tests. Browser execution remains
-  out of scope and depends on shared member-ID hashing in
+  and literal-formatting parity is guarded by tests. The per-compilation MD5
+  boundary is implemented; browser execution still needs a compatible
+  provider and end-to-end qualification in
   [issue #108](https://github.com/eNeRGy164/wireloom/issues/108).
+
+## Decision history
+
+[Chapter 9](arc42/09-architectural-decisions.md) summarizes decisions in a compact timeline, oldest first.
+Inherited policy dates identify their first documentation in that chapter;
+ADR entries retain their recorded date and status. ADR-001 and ADR-002 are
+Accepted; ADR-002 was approved October 26, 2026.
+
+[ADR-002 (Accepted)](adr/ADR-002-inject-member-id-md5-per-compilation.md)
+records the required synchronous MD5 delegate supplied per compilation. The
+boundary is implemented: the generator supplies BCL hashing, while the
+compiler retains UTF-8, digest validation, byte ordering, and masking. Browser
+provider implementation and qualification remain outstanding.
 
 ## Source map
 
@@ -298,4 +314,5 @@ authoritative; this summary is a retrieval aid, not a replacement.
 - [Wire compatibility runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
 - [Corpus inventory and evidence rules](../corpus/README.md)
 - [ADR-001: shared compiler project](adr/ADR-001-share-a-host-neutral-compiler-project.md)
+- [ADR-002 (Accepted): per-compilation MD5](adr/ADR-002-inject-member-id-md5-per-compilation.md)
 - [Machine-readable architecture memory](../../.agents/architecture-memory.yaml)

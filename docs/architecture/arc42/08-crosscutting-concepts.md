@@ -348,10 +348,18 @@ snapshots the input collection at entry. Inputs and includes are text supplied
 by the caller; the compiler does not access the filesystem. Existing root
 aggregation, path interpretation, and option ownership remain unchanged.
 
+Each compile call requires a synchronous MD5 delegate. The host hashes the
+provided UTF-8 bytes and returns a 16-byte digest; the compiler validates its
+length and applies the existing little-endian conversion and 28-bit mask. The
+Roslyn generator supplies `MD5.HashData`; the callback is scoped to that
+compilation and is used by both struct and union member-ID paths. This keeps
+hashing replaceable for a future browser host without changing parser behavior.
+
 The Roslyn adapter discovers the resolved RTI assembly version, maps that
 version to the corresponding profile, translates compiler diagnostics into
 Roslyn diagnostics, and adds generated documents to the consumer build. Core
 character and string literal formatting preserves the output of the previous
 Roslyn helper behavior. Direct API tests cover result/error cases, cancellation,
-input snapshots, profile mapping, and formatting parity. Corpus comparisons
-verify complete generated text for both maintained RTI profiles.
+input snapshots, profile mapping, formatting parity, and the MD5 provider
+contract. Corpus comparisons verify complete generated text for both
+maintained RTI profiles.

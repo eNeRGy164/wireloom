@@ -22,10 +22,10 @@ RTI runtime.
    from identifiers and composes source origins before parsing. The front end
    then binds normalized references and deferred bounds against the complete
    symbol graph and validates semantics using the batch policy.
-5. The adapter calls `IdlCompiler.Compile` with in-memory inputs and the
-   selected profile. The core snapshots the input list, preprocesses and
-   validates IDL, then returns one result containing documents and
-   diagnostics. Emission planning applies profile-specific API policies.
+5. The adapter calls `IdlCompiler.Compile` with in-memory inputs, the selected
+   profile, and its MD5 provider. The core snapshots the input list,
+   preprocesses and validates IDL, then returns one result containing
+   documents and diagnostics. Emission planning applies profile-specific API policies.
    Deliberately ignored constructs and potentially lossy mappings report
    diagnostics while generation continues; see the
    [diagnostic rules](08-crosscutting-concepts.md#82-diagnostics-and-source-locations).

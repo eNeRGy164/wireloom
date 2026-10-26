@@ -15,7 +15,7 @@ serialization, and representation negotiation.
 | [6. Runtime view](06-runtime-view.md)                          | current | Build-time generation flow and failures                              |
 | [7. Deployment view](07-deployment-view.md)                    | current | Consumer, CI, package, and runtime nodes                             |
 | [8. Cross-cutting concepts](08-crosscutting-concepts.md)       | current | Evidence, diagnostics, determinism, and supply chain                 |
-| [9. Architectural decisions](09-architectural-decisions.md)    | current | Decisions embodied by the implementation                             |
+| [9. Architectural decisions](09-architectural-decisions.md)    | current | Decision timeline, rationale, status, and ADR links                  |
 | [10. Quality requirements](10-quality-requirements.md)         | current | Measurable quality scenarios                                         |
 | [11. Risks and technical debt](11-risks-and-technical-debt.md) | current | Known limitations and follow-up work                                 |
 | [12. Glossary](12-glossary.md)                                 | current | Project terminology                                                  |
