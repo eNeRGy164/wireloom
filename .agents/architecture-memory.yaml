@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-26T16:06:41Z
+  generated_at: 2026-10-26T16:33:22Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -35,6 +35,7 @@ sources:
     - docs/performance/incremental-generator-baseline.md
     - docs/testing/sequence-array-mapping.md
     - docs/architecture/dependency-intake/playground-frontend.md
+    - docs/testing/playground-qualification.md
     - CONTRIBUTING.md
     - .github/workflows/quality.yml
   defaults:
@@ -137,6 +138,12 @@ summary:
       C# adapter tests. Coveralls combines Playground and adapter Cobertura
       with compiler and generator reports; Community Qodana scans the .NET
       solution. Remote PR Coveralls status is pending until CI reports it.
+      Release-bundle qualification adds 76 exact native/worker corpus
+      comparisons and 36 single-file UI comparisons per engine on both profiles,
+      with limits, responsiveness, stale-result rejection, and recovery checks.
+      Quality CI retains Chromium reports with input and bundle hashes. The
+      retained corpus remains authoritative; previews do not establish RTI
+      compilation, runtime behavior, or DDS wire compatibility.
     sources:
       - docs/architecture/arc42/10-quality-requirements.md
   risks:
@@ -181,6 +188,7 @@ summary:
       - docs/architecture/arc42/10-quality-requirements.md
       - docs/architecture/arc42/11-risks-and-technical-debt.md
       - docs/architecture/dependency-intake/playground-frontend.md
+      - docs/testing/playground-qualification.md
 
 defaults:
   repository:

@@ -6,6 +6,10 @@ maintained worker boundary. The non-packable .NET host is in
 The host and client share the `Wireloom.Dds.Compiler`; no main-thread compiler
 or fallback provider exists.
 
+For the retained-corpus matrix, reproducible release verification command,
+single-file/include limits, and evidence boundaries, see
+[Playground qualification](../docs/testing/playground-qualification.md).
+
 ## Prerequisites
 
 - .NET SDK selected by the repository `global.json` (10.0.400 feature band).
@@ -99,28 +103,14 @@ pending work, complete response identity, stale responses, replacement,
 startup recovery, timeout identity across worker replacement, and draining
 queued work when a replacement becomes ready.
 Seven workspace tests cover UTF-8 boundaries, exact recovery, and rejected
-schema/path/profile/input data (36 Node tests total). The Node coverage gate
-requires 95% branches, 98% lines, and 80% functions across the protocol,
-workspace, and MD5 modules. The Chromium coverage run also exercises all seven
-examples against both RTI profiles and checks key editing, storage, export,
-resize, theme, failure, and recovery flows. The combined first-party report
-currently measures 93.47% branch and 92.88% line coverage.
+schema/path/profile/input data. Direct compiler-client and recovery-saver
+tests cover active restarts, request failures, and outdated save confirmations.
 
-Stage 0 browser verification passed on Windows Edge 156.0.4314.42: 32 exact
-native/browser comparisons across both profiles and root/nested hosting,
-repeated compilation, profile switching, responsiveness, startup/provider
-failures, real watchdog replacement, and input/result limits. The existing
-square SVG is used for the page logo and favicon at both base paths. Broader
-browser/release qualification remains #110.
-See the [evidence record](../docs/plans/109-browser-playground-stage0-evidence.md).
-
-The [Stage 1 evidence](../docs/plans/109-browser-playground-stage1-evidence.md)
-records the implemented UI and scoped Edge checks. Monaco and ZIP packages
+The [qualification guide](../docs/testing/playground-qualification.md)
+records UI, native-output, recovery, and browser checks. Monaco and ZIP packages
 are pinned and audited; the production build includes upstream licenses in
 `third-party-notices.txt`. The footer records the Wireloom version and Git
-revision, with a `-dirty` suffix for a modified checkout. The editor chunk is
-larger than Vite's default advisory threshold; public-network loading and
-broader desktop compatibility remain #110 checks.
+revision, with a `-dirty` suffix for a modified checkout.
 
 ## Reproduce browser verification
 

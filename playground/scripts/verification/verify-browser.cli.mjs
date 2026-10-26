@@ -36,18 +36,28 @@ async (page) => {
   };
   let importSequence = 0;
   const fillSource = async (app, source) => {
-    // Native clipboard automation is Chromium-specific. Other engines exercise
-    // the public UTF-8 import path without mocking editor internals.
-    if (browser.browserType().name() !== "chromium") {
+    // Firefox's automated multiline insertText duplicates text in Monaco.
+    // Preserve exact multiline probes through import. Single-line edits and
+    // oversized-input probes still exercise the real editor on every engine.
+    if (browser.browserType().name() !== "chromium" && /[\r\n]/.test(source)) {
       const name = `verification-${++importSequence}.idl`;
       await app.locator("#file").setInputFiles({ name, mimeType: "text/plain", buffer: Buffer.from(source, "utf8") });
       await app.waitForFunction((name) => document.querySelector("#input-name").textContent === name, name);
       return;
     }
     await app.locator("#source").click({ position: { x: 150, y: 45 } });
-    await app.keyboard.press("ControlOrMeta+a");
+    // Windows WebKit advertises a Macintosh user agent. Monaco therefore
+    // expects Command+A even though Playwright's host shortcut maps to Ctrl+A.
+    const selectAll = await app.evaluate(() => (navigator.userAgent.includes("Macintosh") ? "Meta+a" : "Control+a"));
+    await app.keyboard.press(selectAll);
     await app.keyboard.press("Backspace");
     if (source) {
+      // Importing oversized text would exercise a different limit policy that
+      // deliberately preserves the previous result, so use editor input here.
+      if (browser.browserType().name() !== "chromium") {
+        await app.keyboard.insertText(source);
+        return;
+      }
       await app.context().grantPermissions(["clipboard-read", "clipboard-write"]);
       await app.evaluate((source) => navigator.clipboard.writeText(source), source);
       await app.keyboard.press("ControlOrMeta+v");
@@ -59,9 +69,9 @@ async (page) => {
       timeout: 15_000,
     });
   };
-  const hashCase = input.cases.find((value) => value.id.includes("hash") && value.files[0].source.includes("color"));
+  const hashCase = input.cases.find((value) => value.id.includes("hash") && value.files.length === 1);
 
-  if (input.phase === "parity") {
+  if (["parity", "corpus"].includes(input.phase)) {
     for (const url of [input.root, input.nested]) {
       await check(`published parity and assets: ${url}`, async () => {
         const { app, context, startupMs } = await open(url);
@@ -142,13 +152,26 @@ async (page) => {
                   const documents = [...response.documents].sort((a, b) =>
                     a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
                   );
-                  const actual = { success: response.success, documents, diagnostics: response.diagnostics };
+                  const diagnostics = [...response.diagnostics].sort(
+                    (a, b) =>
+                      (a.filePath < b.filePath ? -1 : a.filePath > b.filePath ? 1 : 0) ||
+                      a.startOffset - b.startOffset ||
+                      (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+                  );
+                  const actual = { success: response.success, documents, diagnostics };
                   const expectedResult = {
                     success: baseline.success,
                     documents: baseline.documents,
                     diagnostics: baseline.diagnostics,
                   };
-                  const passed = JSON.stringify(actual) === JSON.stringify(expectedResult);
+                  const passed =
+                    response.kind === "compiler" &&
+                    response.workerGeneration === request.workerGeneration &&
+                    response.requestId === request.requestId &&
+                    response.workspaceRevision === request.workspaceRevision &&
+                    response.profile === request.profile &&
+                    (response.success || documents.length === 0) &&
+                    JSON.stringify(actual) === JSON.stringify(expectedResult);
                   results.push({
                     caseId: fixture.id,
                     profile: baseline.profile,
@@ -306,6 +329,7 @@ async (page) => {
     await check("provider failure is a host error and later compilation recovers", async () => {
       const context = await browser.newContext();
       const app = await context.newPage();
+      app.on("dialog", (dialog) => dialog.accept());
       try {
         await app.route("**/dotnet/md5.mjs", (route) =>
           route.fulfill({
@@ -381,14 +405,25 @@ async (page) => {
         await app.waitForTimeout(350);
         await fillSource(app, "struct NewestRequest { long value; };");
         const editMs = Date.now() - started;
-        await app.waitForFunction(
-          () =>
-            [...document.querySelectorAll("#file-list button")].some((value) =>
-              value.textContent.includes("NewestRequest"),
-            ),
-          null,
-          { timeout: 20_000 },
-        );
+        await app
+          .waitForFunction(
+            () =>
+              [...document.querySelectorAll("#file-list button")].some((value) =>
+                value.textContent.includes("NewestRequest"),
+              ),
+            null,
+            { timeout: 20_000 },
+          )
+          .catch(async (error) => {
+            const state = await app.evaluate(() => ({
+              state: document.querySelector("#result-state")?.textContent,
+              status: document.querySelector("#status")?.textContent,
+              diagnostics: document.querySelector("#diagnostics")?.textContent,
+              hostError: document.querySelector("#diagnostics-empty")?.textContent,
+              names: [...document.querySelectorAll("#file-list button")].map((value) => value.textContent),
+            }));
+            throw new Error(`${error}; ${JSON.stringify(state)}`);
+          });
         const names = await app.locator("#file-list button").allTextContents();
         assert(
           starts.length >= 1 && !names.some((name) => name.includes("OldRequest")),
@@ -454,43 +489,74 @@ async (page) => {
         await context.close();
       }
     });
-    await check("UI rejects oversized ASCII and UTF-8 before posting, then recovers", async () => {
-      const { app, context } = await open(input.root);
-      try {
-        await app.evaluate(() => {
-          globalThis.__verificationPosts = 0;
-          const original = Worker.prototype.postMessage;
-          Worker.prototype.postMessage = function (...args) {
-            globalThis.__verificationPosts++;
-            return original.apply(this, args);
+    const chromiumInput = browser.browserType().name() === "chromium";
+    await check(
+      chromiumInput
+        ? "UI rejects oversized ASCII and UTF-8 edits before posting, then recovers"
+        : "UI rejects oversized ASCII and UTF-8 imports while preserving current output",
+      async () => {
+        const { app, context } = await open(input.root);
+        try {
+          await app.evaluate(() => {
+            globalThis.__verificationPosts = 0;
+            const original = Worker.prototype.postMessage;
+            Worker.prototype.postMessage = function (...args) {
+              globalThis.__verificationPosts++;
+              return original.apply(this, args);
+            };
+          });
+          await compileUi(app, hashCase.files[0].source);
+          const before = await app.evaluate(() => globalThis.__verificationPosts);
+          if (!chromiumInput) {
+            const names = await app.locator("#file-list button").allTextContents();
+            for (const source of ["x".repeat(262_145), "é".repeat(131_073)]) {
+              await app
+                .locator("#file")
+                .setInputFiles({ name: "oversized.idl", mimeType: "text/plain", buffer: Buffer.from(source, "utf8") });
+              await app.waitForFunction(() =>
+                document.querySelector("#notice")?.textContent.includes("Could not open IDL"),
+              );
+              assert(
+                JSON.stringify(await app.locator("#file-list button").allTextContents()) === JSON.stringify(names),
+                "Rejected import changed generated output",
+              );
+              assert(!(await app.locator("#download-all").isDisabled()), "Rejected import invalidated valid output");
+            }
+            assert(
+              (await app.evaluate(() => globalThis.__verificationPosts)) === before,
+              "Oversized import reached the worker",
+            );
+            return {
+              rejectedImports: 2,
+              retainedDocuments: names.length,
+              oversizedEditorPaste: "not qualified on this engine",
+            };
+          }
+          for (const source of ["x".repeat(262_145), "é".repeat(131_073)]) {
+            await fillSource(app, source);
+            await app.waitForFunction(() =>
+              document.querySelector("#diagnostics-empty")?.textContent.includes("256 KiB"),
+            );
+            assert(
+              (await app.locator("#diagnostics-empty").textContent()).includes("256 KiB"),
+              "Oversized input was not explained",
+            );
+            assert((await app.locator("#file-list button").count()) === 0, "Oversized input retained output");
+          }
+          const after = await app.evaluate(() => globalThis.__verificationPosts);
+          assert(after === before, "Oversized input reached the worker");
+          await compileUi(app, hashCase.files[0].source);
+          return {
+            rejectedInputs: 2,
+            workerRequestsBefore: before,
+            workerRequestsAfterRejected: after,
+            recoveredDocuments: await app.locator("#file-list button").count(),
           };
-        });
-        await compileUi(app, hashCase.files[0].source);
-        const before = await app.evaluate(() => globalThis.__verificationPosts);
-        for (const source of ["x".repeat(262_145), "é".repeat(131_073)]) {
-          await fillSource(app, source);
-          await app.waitForFunction(() =>
-            document.querySelector("#diagnostics-empty")?.textContent.includes("256 KiB"),
-          );
-          assert(
-            (await app.locator("#diagnostics-empty").textContent()).includes("256 KiB"),
-            "Oversized input was not explained",
-          );
-          assert((await app.locator("#file-list button").count()) === 0, "Oversized input retained output");
+        } finally {
+          await context.close();
         }
-        const after = await app.evaluate(() => globalThis.__verificationPosts);
-        assert(after === before, "Oversized input reached the worker");
-        await compileUi(app, hashCase.files[0].source);
-        return {
-          rejectedInputs: 2,
-          workerRequestsBefore: before,
-          workerRequestsAfterRejected: after,
-          recoveredDocuments: await app.locator("#file-list button").count(),
-        };
-      } finally {
-        await context.close();
-      }
-    });
+      },
+    );
     await check("adapter guards and result cap preserve a usable worker", async () => {
       const { app, context } = await open(input.root);
       try {
