@@ -6,21 +6,25 @@ export interface WorkspaceFile {
 }
 
 export interface FileOptions {
-  sequenceArrayMapping: "RtiCSharp" | "Idl";
-  sequenceSize: number;
-  stringSize: number;
+  defines: string[];
+  undefines: string[];
+  strict: boolean;
+  /** Optional declaring-file overrides for the project sequence and string size defaults. */
+  sequenceArrayMapping?: "RtiCSharp" | "Idl";
+  sequenceSize?: number;
+  stringSize?: number;
 }
 
 export interface WorkspaceOptions {
-  defines: string[];
-  undefines: string[];
+  sequenceArrayMapping: "RtiCSharp" | "Idl";
+  sequenceSize: number;
+  stringSize: number;
   includeDirectories: string[];
-  strict: boolean;
   enableEscapeChar: boolean;
 }
 
 export interface CompileRequest {
-  protocolVersion: 2;
+  protocolVersion: 3;
   workerGeneration: number;
   requestId: number;
   workspaceRevision: number;

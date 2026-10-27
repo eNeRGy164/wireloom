@@ -89,8 +89,14 @@ async (page) => {
               requestId: 1,
               workspaceRevision: 1,
               profile,
-              files: [{ path, source, isGenerationRoot: true }],
-              options: { defines: [], undefines: [], includeDirectories: [], strict: false, enableEscapeChar: false },
+              files: [{ path, source, isGenerationRoot: true, options: { defines: [], undefines: [], strict: false } }],
+              options: {
+                sequenceArrayMapping: "RtiCSharp",
+                sequenceSize: 100,
+                stringSize: 255,
+                includeDirectories: [],
+                enableEscapeChar: false,
+              },
             });
           });
         } finally {
@@ -833,12 +839,11 @@ async (page) => {
 
   if (input.phase === "ui-faults") {
     await check("missing editor chunk offers reload without losing recovery", async () => {
-      const context = await browser.newContext();
-      const app = await context.newPage();
+      const { app, context } = await open();
 
       try {
         await app.route("**/assets/main-*.js", (route) => route.abort());
-        await app.goto(input.root);
+        await app.reload();
         await app.getByRole("button", { name: "Reload playground" }).waitFor({ state: "visible" });
         await app.unroute("**/assets/main-*.js");
         await app.getByRole("button", { name: "Reload playground" }).click();
@@ -850,12 +855,11 @@ async (page) => {
       }
     });
     await check("missing runtime asset is retryable without losing editor source", async () => {
-      const context = await browser.newContext();
-      const app = await context.newPage();
+      const { app, context } = await open();
 
       try {
         await app.route("**/dotnet.native*.js", (route) => route.abort());
-        await app.goto(input.root);
+        await app.reload();
         await app.locator("#retry").waitFor({ state: "visible", timeout: 35_000 });
         await app.unroute("**/dotnet.native*.js");
         await app.locator("#retry").click();

@@ -203,6 +203,35 @@ test("startup errors stop the worker and are reported once", async (t) => {
   assert.equal(timers.size, 0);
 });
 
+test("startup errors without a message use the fallback explanation", async (t) => {
+  // Arrange
+  installFakeTimers(t);
+  const workers = [];
+  const failures = [];
+  const client = new CompilerClient(
+    {
+      current: () => ({ revision: 0, profile: "7.7.0" }),
+      status: () => {},
+      result: () => {},
+      failure: (message) => failures.push(message),
+    },
+    () => {
+      const worker = new FakeWorker();
+      workers.push(worker);
+      return worker;
+    },
+  );
+  const starting = client.start();
+
+  // Act
+  workers[0].onerror({ message: "" });
+  await starting;
+
+  // Assert
+  assert.deepEqual(failures, ["Compiler worker stopped. Restart to continue."]);
+  assert.equal(workers[0].terminated, true);
+});
+
 test("startup timeout reports failure and terminates the worker", async (t) => {
   // Arrange
   const timers = installFakeTimers(t);
@@ -364,4 +393,40 @@ test("a request queued before startup is sent when the worker becomes ready", as
   // Assert
   assert.equal(workers[0].posted.length, 1);
   assert.equal(workers[0].posted[0].workspaceRevision, 1);
+});
+
+test("drains a request queued while another request is in flight", async (t) => {
+  // Arrange
+  installFakeTimers(t);
+  const workers = [];
+  const results = [];
+  const client = new CompilerClient(
+    {
+      current: () => ({ revision: 2, profile: "7.7.0" }),
+      status: () => {},
+      result: (response) => results.push(response.workspaceRevision),
+      failure: (message) => assert.fail(message),
+    },
+    () => {
+      const worker = new FakeWorker();
+      workers.push(worker);
+      return worker;
+    },
+  );
+  const starting = client.start();
+  workers[0].ready();
+  await starting;
+  client.enqueue(snapshot(1));
+  client.enqueue(snapshot(2));
+
+  // Act
+  workers[0].respond(workers[0].posted[0]);
+  await nextTurn();
+
+  // Assert
+  assert.equal(workers[0].posted.length, 2);
+  assert.equal(workers[0].posted[1].workspaceRevision, 2);
+  workers[0].respond(workers[0].posted[1]);
+  await nextTurn();
+  assert.deepEqual(results, [2]);
 });

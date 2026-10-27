@@ -13,9 +13,11 @@ async (page) => {
 
   try {
     await app.goto(input.root);
-    await app.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Current", null, {
-      timeout: 40_000,
-    });
+    await app.waitForFunction(
+      () => ["Current", "Empty"].includes(document.querySelector("#result-state")?.textContent),
+      null,
+      { timeout: 40_000 },
+    );
     await app.evaluate(() => {
       window.__exports = [];
       const original = URL.createObjectURL;
@@ -36,10 +38,6 @@ async (page) => {
 
       try {
         await app.locator("#reset").click();
-        await app.waitForFunction(() => document.querySelector("#result-state").textContent === "Current");
-        await app.locator('#source-tree [data-path="/workspace/main.idl"]').click({ button: "right" });
-        await app.getByRole("menuitem", { name: "Delete", exact: true }).click();
-        await app.getByRole("dialog").getByRole("button", { name: "Delete", exact: true }).click();
         await app.waitForFunction(() => document.querySelector("#result-state").textContent === "Empty");
         await app.locator("#profile").selectOption(expected.profile);
         await app.waitForFunction(() =>

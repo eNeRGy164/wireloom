@@ -17,9 +17,15 @@ async (page) => {
     app.on("dialog", (dialog) => dialog.accept());
     try {
       await app.goto(input.root);
-      await app.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Current", null, {
-        timeout: 40_000,
-      });
+      await app.waitForFunction(
+        () => ["Current", "Empty"].includes(document.querySelector("#result-state")?.textContent),
+        null,
+        { timeout: 40_000 },
+      );
+      if ((await app.locator("#result-state").textContent()) === "Empty") {
+        await app.locator("#empty-load-example").click();
+        await app.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Current");
+      }
       report.checks.push({ name, passed: true, details: await action(app, context) });
     } catch (error) {
       report.passed = false;
@@ -158,8 +164,8 @@ async (page) => {
     await app.locator("#diagnostics button").first().click();
     assert(await app.evaluate(() => !!document.activeElement?.closest("#source")), "Diagnostic did not focus source");
     await app.locator("#reset").click();
-    await wait(app);
-    assert((await app.locator("#result-state").textContent()) === "Current", "Reset did not recover");
+    await app.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Empty");
+    assert((await app.locator("#result-state").textContent()) === "Empty", "Reset did not clear the workspace");
     return {
       import: true,
       restoredSourceAndProfile: true,
