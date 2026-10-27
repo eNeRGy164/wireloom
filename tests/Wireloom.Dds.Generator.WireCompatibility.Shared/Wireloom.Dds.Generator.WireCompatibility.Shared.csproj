@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Wireloom.Dds.Generator.WireCompatibility</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Remove="Shouldly;Xunit" />
+  </ItemGroup>
+
+</Project>

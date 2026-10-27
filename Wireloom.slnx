@@ -5,6 +5,9 @@
     <Project Path="src/Wireloom.Playground.Browser/Wireloom.Playground.Browser.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Wireloom.Dds.Generator.WireCompatibility.Shared/Wireloom.Dds.Generator.WireCompatibility.Shared.csproj" />
+    <Project Path="tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj" />
+    <Project Path="tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/Wireloom.Dds.Generator.WireCompatibility.Verifier.csproj" />
     <Project Path="tests/Wireloom.Dds.Generator.RuntimeContracts/Wireloom.Dds.Generator.RuntimeContracts.csproj" />
     <Project Path="tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj" />
     <Project Path="tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj" />

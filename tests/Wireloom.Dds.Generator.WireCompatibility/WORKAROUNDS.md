@@ -85,7 +85,7 @@ this.sample.FromNative(sample.sample, keysOnly: false);
 this.sample.ToNative(sample.sample, keysOnly: false);
 ```
 
-The patch changes only those receivers. See [reference build](scripts/run-matrix.cs).
+The patch changes only those receivers. See [reference build](../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/ManagedPeerBuilder.cs).
 
 <a id="numeric-character-unions"></a>
 <a id="w003"></a>
@@ -113,14 +113,14 @@ case (char)255:
 Apply the guarded C# correction after generation and before compilation:
 
 ```sh
-dotnet matrix-tools.dll adapt-rti-characters csharp 07-union-char-numeric <generated-csharp-dir>
-dotnet matrix-tools.dll adapt-rti-characters csharp 07-union-char-numeric-255 <generated-csharp-dir>
+dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/Wireloom.Dds.Generator.WireCompatibility.Verifier.csproj --configuration Release -- adapt-rti-characters csharp 07-union-char-numeric <generated-csharp-dir>
+dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/Wireloom.Dds.Generator.WireCompatibility.Verifier.csproj --configuration Release -- adapt-rti-characters csharp 07-union-char-numeric-255 <generated-csharp-dir>
 ```
 
 The command also applies the separate [fallback discriminator](#character-fallback-discriminator)
 and [label metadata](#character-label-metadata) corrections. Unexpected generated
 source stops the build. See [maintainer commands](README.md#maintainer-checks)
-and [patch utility](scripts/matrix-tools.cs).
+and [patch utility](../Wireloom.Dds.Generator.WireCompatibility.Verifier/VerifierCommandApplication.cs).
 
 <a id="character-fallback-discriminator"></a>
 <a id="w004"></a>
@@ -148,7 +148,7 @@ sample.Setfallback(fallback, NativeChar.FromUtf8(_d));
 Use the generated setter that accepts the incoming discriminator. The public
 fallback property remains available for normal application assignments. The
 [C# character patch command](#numeric-character-unions) applies this correction.
-See [patch utility](scripts/matrix-tools.cs).
+See [patch utility](../Wireloom.Dds.Generator.WireCompatibility.Verifier/VerifierCommandApplication.cs).
 
 <a id="character-label-metadata"></a>
 <a id="w005"></a>
@@ -182,11 +182,11 @@ The [C# character patch command](#numeric-character-unions) normalizes C# metada
 apply the C++ metadata correction separately:
 
 ```sh
-dotnet matrix-tools.dll adapt-rti-characters cpp 07-union-char-numeric-255 <generated-cpp-dir>
+dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/Wireloom.Dds.Generator.WireCompatibility.Verifier.csproj --configuration Release -- adapt-rti-characters cpp 07-union-char-numeric-255 <generated-cpp-dir>
 ```
 
 The C++ binding also needs the independent [unsigned-char compiler setting](#unsigned-character-compilation).
-See [patch utility](scripts/matrix-tools.cs).
+See [patch utility](../Wireloom.Dds.Generator.WireCompatibility.Verifier/VerifierCommandApplication.cs).
 
 <a id="unsigned-character-compilation"></a>
 <a id="w006"></a>
@@ -299,7 +299,7 @@ rti::topic::dynamic_type< ::CorpusOptionalRecursiveArray::Node>::get(&node).nati
 Patch scratch generated code before compilation. RTI `7.3.1` also needs the
 independent [type-name qualification](#recursive-aggregate-qualification)
 correction. Generation requires [recursive-type support](#recursive-type-generation).
-See [scratch C++ corrections](scripts/run-matrix.cs).
+See [scratch C++ corrections](../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/NativePeerSources.cs).
 
 <a id="recursive-writer-memory"></a>
 <a id="w010"></a>
@@ -362,7 +362,7 @@ rtiddsgen -language C++11 -unboundedSupport -d generated docs/corpus/idl/feature
 The harness passes this option through each case's `rtiCppCodegenOptions`.
 Generation with this flag does not correct generated TypeCode references;
 RTI `7.3.1` also needs [type-name qualification](#recursive-aggregate-qualification).
-See [reference build](scripts/run-matrix.cs).
+See [reference build](../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/NativePeerSources.cs).
 
 <a id="recursive-aggregate-qualification"></a>
 <a id="w012"></a>
@@ -390,7 +390,7 @@ rti::topic::dynamic_type< ::CorpusOptionalRecursiveArray::Node>
 
 Unqualified names fail C++ compilation. Qualify them in scratch generated output.
 This does not replace the [visited-node traversal correction](#recursive-array-typecode-traversal)
-for C134. See [reference build](scripts/run-matrix.cs).
+for C134. See [reference build](../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/NativePeerSources.cs).
 
 <a id="wide-character-union-reference"></a>
 <a id="w013"></a>
@@ -469,7 +469,7 @@ sed '/@language_binding(FLAT_DATA)/d' "$idl_path" > "$native_dir/idl.idl"
 This preserves the canonical extensibility and XCDR2 sample shape while selecting
 ordinary C++ mapping. It is a reference-model deviation, not a FlatData fix.
 The canonical IDL and C# inputs are unchanged; FlatData C++ layout is unqualified.
-See [IDL adaptation](scripts/run-matrix.cs).
+See [IDL adaptation](../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/NativePeerSources.cs).
 
 <a id="wstring-alias-typecode-tags"></a>
 <a id="w015"></a>
@@ -517,7 +517,7 @@ to record that the unmodified C# output fails compilation with `CS0400` and
 
 With both guarded corrections, the C147 matrix exercises all nine directed
 pairings among Wireloom C#, RTI C#, and RTI C++ for empty and exact-boundary
-values. See [the guarded edits](scripts/run-matrix.cs) and [C147's corpus
+values. See [the guarded edits](../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/NativePeerSources.cs) and [C147's corpus
 row](../../../docs/corpus/FEATURE-COVERAGE.md).
 
 <a id="unsigned-32-bit-union-labels"></a>

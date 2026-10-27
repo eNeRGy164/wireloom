@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Wireloom.Dds.Generator.WireCompatibility.Verifier</RootNamespace>
+    <IsTestProject>false</IsTestProject>
+    <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
+    <NoWarn>$(NoWarn);CS7022;IL2026;IL3050</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Wireloom.Dds.Generator.WireCompatibility.Shared/Wireloom.Dds.Generator.WireCompatibility.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Planning/CorpusCaseDiscovery.cs" Link="MatrixTools/Planning/CorpusCaseDiscovery.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Planning/CaseMetadata.cs" Link="MatrixTools/Planning/CaseMetadata.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/CaseDescriptor.cs" Link="MatrixTools/Peers/CaseDescriptor.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/WireloomTypeDiscovery.cs" Link="MatrixTools/Peers/WireloomTypeDiscovery.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/RtiCharacterReferenceAdapter.cs" Link="MatrixTools/Peers/RtiCharacterReferenceAdapter.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Infrastructure/CaseRegistry.cs" Link="MatrixTools/Infrastructure/CaseRegistry.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Planning/CorpusCaseCatalog.cs" Link="MatrixTools/Planning/CorpusCaseCatalog.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Planning/PeerPairingPolicy.cs" Link="MatrixTools/Planning/PeerPairingPolicy.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Infrastructure/IdlSourceResolver.cs" Link="MatrixTools/Infrastructure/IdlSourceResolver.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Evidence/GenerationProvenance.cs" Link="MatrixTools/Evidence/GenerationProvenance.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Evidence/GenerationProvenanceBuilder.cs" Link="MatrixTools/Evidence/GenerationProvenanceBuilder.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Evidence/GenerationProvenanceWriter.cs" Link="MatrixTools/Evidence/GenerationProvenanceWriter.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/ReportRequest.cs" Link="MatrixTools/Reporting/ReportRequest.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/WireReportRenderer.cs" Link="MatrixTools/Reporting/WireReportRenderer.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/ReportEvidenceBuilder.cs" Link="MatrixTools/Reporting/ReportEvidenceBuilder.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/ReportEndpointPolicy.cs" Link="MatrixTools/Reporting/ReportEndpointPolicy.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/ReportProvenance.cs" Link="MatrixTools/Reporting/ReportProvenance.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/ReportProblemReader.cs" Link="MatrixTools/Reporting/ReportProblemReader.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/ReportJsonWriter.cs" Link="MatrixTools/Reporting/ReportJsonWriter.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/MarkdownReportWriter.cs" Link="MatrixTools/Reporting/MarkdownReportWriter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />
+    <PackageReference Include="JetBrains.Annotations.Sources">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="JetBrains.Annotations.PublicAPIAttribute" Alias="PublicAPI" />
+    <Using Include="Wireloom.Dds.Generator.WireCompatibility.Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Remove="Shouldly;Xunit" />
+  </ItemGroup>
+
+</Project>

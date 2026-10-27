@@ -61,8 +61,8 @@
   <ItemGroup>
     <!-- The RTI control probe is a nested project. Do not compile its sources or generated obj files here. -->
     <Compile Remove="RtiOracleProbe/**/*.cs" />
-    <!-- File-based matrix utilities are invoked separately, not compiled into the peer. -->
-    <Compile Remove="scripts/*.cs" />
+    <!-- These remain directly invokable file-based tools, not peer-project source files. -->
+    <Compile Remove="scripts/**/*.cs" />
   </ItemGroup>
 
   <ItemGroup>
