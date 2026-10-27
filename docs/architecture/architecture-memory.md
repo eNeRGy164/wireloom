@@ -52,22 +52,16 @@ and [evidence vocabulary](arc42/08-crosscutting-concepts.md#81-evidence-vocabula
 
 ## Wire compatibility harness
 
-The C# file-based matrix runner owns RTI environment setup, per-case source
-staging, bounded managed and native build queues, and report finalization.
-One bootstrap Wireloom build prepares shared project references; remaining
-managed peers build concurrently with isolated intermediate, generated-source,
-and output paths. Independent native peers use a second bounded build queue.
-Each shard finishes peer builds before one C# scheduler draws from the complete
-exchange plan. It starts each reader before its writer and leases a unique
-active DDS domain to each concurrent exchange, bounded to 16 by default. Peer
-subprocesses disable RTI Monitoring Library 2.0 because the matrix does not
-consume its telemetry participant. The mounted NuGet cache is used by restore
-and per-case builds. Whole-case shards remain the outer build and evidence
-partition. The report merger rejects incomplete, duplicate, or inconsistent
-evidence. See the
-[wire runbook](../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
-and [runtime view](arc42/06-runtime-view.md#63-wire-compatibility-evidence).
-
+The non-packable Runner plans and executes whole-case shards in the licensed
+wire container. Shared defines the scenario and peer contracts. The Verifier
+checks shard/report integrity and hosts the command interface used by CI for
+catalog operations and report merging. Runner stages pass typed plans and
+build outcomes; retained JSON, TSV, and logs support recovery and evidence.
+The scheduler runs bounded, reader-first exchanges on unique DDS domains and
+disables unused RTI Monitoring Library telemetry. See the
+[building block view](arc42/05-building-block-view.md#56-wire-compatibility-harness),
+[runtime view](arc42/06-runtime-view.md#63-wire-compatibility-evidence),
+and [wire runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
 ## Browser Playground
 
 The desktop-first Playground uses a TypeScript/Vite client and a

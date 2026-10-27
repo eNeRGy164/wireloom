@@ -254,27 +254,22 @@ Monaco and archive dependencies do not add a remote service.
 
 ## 5.6 Wire compatibility harness
 
-The C# file-based matrix runner initializes the RTI environment, stages
-case-specific sources, and owns the peer build and report lifecycle. Its
-fixture catalog and deterministic scenario planner are included by `matrix-tools.cs`;
-the planner combines the corpus manifest, profile exclusions, fixture names,
-and directed peer pairings into one complete plan before execution. One
-Wireloom case build first compiles shared compiler, generator, and test-support
-references. The remaining case-specific Wireloom peers build concurrently in
-isolated intermediate, generated-source, and output directories, reusing those
-shared references. RTI C# setup and CMake configuration follow for each case;
-`wire-case-build-runner.cs` then builds independent native C++ peers with a
-bounded number of concurrent CMake processes. All selected peers are ready
-before wire exchange execution begins. Whole-case shards remain the outer
-partition for independent work and evidence.
+The wire harness uses three non-packable projects with separate responsibilities:
 
-`wire-case-build-runner.cs` owns the bounded case build queues, and
-`wire-exchange-runner.cs` schedules all built cases in the shard through one
-bounded exchange queue. Every active exchange leases a distinct DDS domain ID
-and topic, starts its reader, waits for `READY`, then starts its writer. The
-default queue size is 16. The runner requires both peer processes to exit
-successfully and emit their expected `PASS` status. Peer processes disable RTI
-Monitoring Library 2.0 so its background observability participant does not
-compete for local discovery ports. The report and shard verifier reject
-missing, duplicate, inconsistent, or unrun planned exchanges. The native RTI
-C++ peer receives the leased domain ID as a command-line argument.
+| Project | Responsibility |
+| :--- | :--- |
+| `Wireloom.Dds.Generator.WireCompatibility.Runner` | Plan a shard, prepare managed and native peers, run exchanges, and write per-shard evidence. |
+| `Wireloom.Dds.Generator.WireCompatibility.Shared` | Define the scenario-row and peer-pairing contracts used across applications. |
+| `Wireloom.Dds.Generator.WireCompatibility.Verifier` | Check shard/report integrity and host the catalog, adaptation, reporting, and merge commands. |
+
+`Program` composes the Runner; `MatrixRunner` owns its lifecycle. Planning
+produces a typed `MatrixPlan`, preparation returns peer build outcomes, and the
+reporter receives the final run outcome, including partial results after
+failures. Planning, peer preparation, exchange execution, and reporting are
+kept in distinct components.
+
+The Runner builds selected peers before scheduling exchanges. The Verifier
+runs without an RTI license; its checks invoke the Verifier command interface
+as child processes, and CI uses its merge command to produce the combined
+report. TSV and JSON remain at process and evidence boundaries; domain rules
+and typed handoffs stay in C#.
