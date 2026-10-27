@@ -53,6 +53,7 @@
    has no main-thread compilation fallback. The maintained worker has passed
    representative Edge acceptance on root and nested hosting; broader browser
    and release qualification remains separate evidence work.
-   The single-file discovery UI layers Monaco models, lexical colors, local
-   source/profile recovery, and current-result exports over that boundary.
+   The workspace UI layers a virtual tree, per-file Monaco models and undo,
+   compiler settings, local workspace recovery, and current-result exports
+   over that boundary.
    The compiler still owns all language meaning and generated text.

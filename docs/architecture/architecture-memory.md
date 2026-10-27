@@ -57,12 +57,29 @@ non-packable .NET 10 browser-WASM host in a dedicated module worker. The worker
 runs the shared compiler and synchronous JavaScript MD5 provider. Versioned
 requests include worker, request, revision, profile, and file identity; the
 client keeps one active and the newest pending request, and rejects stale
-responses. The UI currently submits one generation root; the host accepts
-collection-shaped virtual files for future multi-file support.
+responses. Protocol v2 is owned by the .NET adapter DTOs, with a TypeScript
+mirror checked in Quality. All Roots compile together with Include-only files
+available through includes. Workspace and declaring-file settings follow
+compiler scope; include folders are searched alphabetically.
 
 The UI provides Monaco IDL and read-only C# editors, examples, diagnostics,
 generated-file tabs, individual downloads, and ZIP export. Source is stored
-locally. Scoped Edge, Firefox, and Playwright WebKit checks are documented; a
+locally. The virtual Source tree supports explicit empty folders and atomic
+imports, with stable per-file models preserving undo through tab switches and
+moves. Recovery v2 migrates v1 source/profile records. Rootless and empty
+workspaces clear output without compilation. Configured folders follow moves;
+source include text stays unchanged. See the
+[workspace guide and contract](../guides/playground-workspaces.md).
+Source and Generated groups collapse independently with a blank line between
+them; Explorer actions appear
+on Source-group hover/focus. Folders expand by default and retain manual collapse
+during edits. File menus change roles; folder menus configure include search. Source ZIP
+saves the live tree, empty folders, and settings independently of generation.
+Escape cancels dialogs, and Properties uses role/mapping toggles.
+Active IDL Copy/Download works independently of compilation. Operation failures
+use themed red Error notices with alert semantics.
+Workspace checks pass in Chromium, Firefox, and WebKit; #119 CI and Coveralls
+remain pending. Scoped Edge, Firefox, and Playwright WebKit checks are documented; a
 WebKit result does not qualify Safari. Chromium coverage maps to first-party
 code. Direct Node tests cover worker replacement and recovery-save ordering;
 their coverage is gated at 95% branches and 98% lines. ADR-003 is Accepted.
@@ -97,6 +114,9 @@ Cobertura reports with compiler and generator reports. See [quality
 requirements](arc42/10-quality-requirements.md),
 [deployment](arc42/07-deployment-view.md), and the
 [frontend dependency review](dependency-intake/playground-frontend.md).
+
+Browser workspace quality scenarios require atomic changes, preserved editor
+undo, and exact local recovery.
 
 Release-bundle qualification adds 76 exact native/worker corpus comparisons
 and 36 single-file UI comparisons per engine across both profiles, plus
@@ -151,6 +171,7 @@ Details and reproduction instructions remain in
 - [Corpus and feature coverage](../corpus/README.md)
 - [Support and compatibility](../guides/support-and-compatibility.md)
 - [Configuration](../guides/configuration.md)
+- [Playground workspaces and contract](../guides/playground-workspaces.md)
 - [Runtime contract matrix](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
 - [Wire compatibility runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
 - [ADR-001: shared compiler](adr/ADR-001-share-a-host-neutral-compiler-project.md)

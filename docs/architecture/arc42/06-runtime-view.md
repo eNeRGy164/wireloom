@@ -139,10 +139,10 @@ these results qualify only the recorded fixtures and peer scope.
 
 The TypeScript client submits an immutable JSON workspace snapshot containing
 protocol version, worker generation, monotonic request ID, workspace revision,
-profile, normalized virtual paths, source text, generation-root flags, and a
-reserved options object. It sends no host-machine file paths. The client keeps
+profile, normalized virtual paths, source text, generation-root flags,
+file-owned mapping/size settings, and batch-wide preprocessing settings. It sends no host-machine file paths. The client keeps
 one running request and replaces any pending request with the newest snapshot.
-Text and profile changes make earlier responses stale.
+Source, path, role, settings, and profile changes make earlier responses stale.
 
 A dedicated module worker initializes the published .NET runtime once, binds
 the retained synchronous JavaScript MD5 provider in that worker, and reports
@@ -205,13 +205,27 @@ and tabs. Successful zero-document output is distinct from failure. Diagnostic
 navigation maps the compiler's UTF-16 offset through the exact input model;
 diagnostics without that source remain list-only.
 
-Imports read one UTF-8 IDL file into memory. Read, decode, extension, or size
-failure leaves the current workspace/result intact. Replacement over edits
-requires a deliberate confirmation. IndexedDB restore never overwrites edits
-made while storage is opening; serialized saves and deletion preserve reset
-ordering. Unavailable or invalid recovery data leaves editing usable and shows
-a recovery warning. Output is regenerated, never restored from storage.
+Imports read multiple UTF-8 files by basename into the selected virtual folder.
+Per-file Replace/Skip/Rename choices are staged; Cancel, decode errors, invalid
+paths, and bounds failures leave the workspace/result intact. Folder and file
+moves preserve source text and stable editor identities, while configured
+include-folder paths follow folder moves. Tree navigation, context menus, and
+Move to provide keyboard alternatives to drag/drop.
 
-The [Stage 1 evidence](../../plans/109-browser-playground-stage1-evidence.md)
-records representative Edge flows, native download comparisons, recovery,
-limits, and worker failure tests. Broader release qualification remains #110.
+All Roots compile as one batch; Include-only files participate through includes.
+Quoted includes search locally before configured folders; angle includes search
+configured folders only, in ordinal alphabetical order. Each source keeps its
+own Monaco model and undo history. Diagnostics select the matching source tab.
+Empty workspaces do not dispatch; files without a Root produce a workspace
+error without a source location and clear generated output.
+
+IndexedDB v2 recovery stores files, explicit folders, roles, settings, profile,
+and active source identity. Valid v1 records migrate without changing source
+or profile. Restore never overwrites edits made while storage is opening;
+serialized saves and deletion preserve reset ordering. Unavailable or invalid
+recovery leaves editing usable. Output is regenerated from source snapshots.
+See the [workspace guide](../../guides/playground-workspaces.md).
+
+The [qualification guide](../../testing/playground-qualification.md) records
+representative Edge flows, native download comparisons, recovery, limits,
+worker failures, and the #119 workspace verification scope.

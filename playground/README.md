@@ -1,13 +1,13 @@
 # Browser Playground
 
-This folder contains the single-file discovery client, its checks, and the
+This folder contains the multi-file workspace client, its checks, and the
 maintained worker boundary. The non-packable .NET host is in
 [`../src/Wireloom.Playground.Browser/`](../src/Wireloom.Playground.Browser/).
 The host and client share the `Wireloom.Dds.Compiler`; no main-thread compiler
 or fallback provider exists.
 
 For the retained-corpus matrix, reproducible release verification command,
-single-file/include limits, and evidence boundaries, see
+workspace behavior, compiler settings, and evidence boundaries, see
 [Playground qualification](../docs/testing/playground-qualification.md).
 
 The public [Playground](https://energy164.github.io/wireloom/) is hosted on
@@ -63,14 +63,33 @@ building. To serve a nested-base build, use a static server that mounts the
 
 ## Scope and current evidence
 
-The client provides Monaco IDL editing and read-only C# output, resizable
-panes, file tabs, seven examples, both RTI profiles, clickable diagnostics,
-single-file UTF-8 import, and versioned IndexedDB recovery. Edits debounce for
-300 ms; examples, imports, restored source, and profile changes generate
-automatically. The toolbar has no manual Generate action. Loading an example
-or importing over edits asks before replacing
-source. Reset deletes the previous recovery record and creates the default
-workspace. Recovery stores source and profile; reload recompiles them.
+The client provides a virtual Source Explorer with files and explicit folders,
+source tabs with per-file undo history, and read-only generated C# output.
+Source and Generated groups fold independently; larger chevrons and Explorer
+actions shown on Source-group hover/focus follow familiar VS Code controls.
+Folders expand by default, preserving manual collapse during edits. A blank
+line separates the Generated group.
+Create, rename, move, delete, and import multiple files through familiar tree
+controls and context menus. Imports use basenames in the selected folder and
+resolve collisions atomically. Empty folders survive reload. File context menus switch Root/Include-only;
+folder menus add/remove the selected folder from include search. File menus contain no folder actions. New files are
+Roots by default; Properties can mark them Include-only and set declaring-file
+mapping and size options. Workspace Settings controls batch preprocessing,
+include folders, strictness, and escaped identifiers. Includes use the shared
+compiler's rules; configured folders are searched alphabetically.
+
+Edits debounce for 300 ms; examples, imports, recovery, settings, and profile
+changes compile automatically. Both RTI profiles and nine examples are
+available, including two multi-file examples. Version-2 IndexedDB recovery
+preserves files, folders, roles, options, active file, and profile and migrates
+existing v1 single-file records. Empty and no-Root workspaces clear output. The Source ZIP button saves all
+current files, empty folders, and workspace settings independently of compiler
+success. Escape cancels all dialogs; Properties uses two-option role/mapping
+toggles.
+The IDL editor also offers Copy and Download for the active source, regardless
+of compilation success; both are disabled when the workspace is empty.
+See the [workspace guide and v2 contract](../docs/guides/playground-workspaces.md)
+for operations, limits, settings scope, error behavior, and exports.
 
 Every successful document opens immediately in tabs and is listed in the
 collapsible file explorer, using natural filename order (case-insensitive,
@@ -87,6 +106,7 @@ explorer has its own pointer/keyboard divider; the editor divider changes only
 the source/output ratio within the remaining editor area. Notices float at the
 bottom right without affecting layout, close after five seconds, and pause
 their timer while hovered or focused. They can also be dismissed explicitly.
+Failures show a red Error notice with alert semantics in both themes.
 Restored custom source has no persistent restore-description row.
 IDL and C# files have local SVG icons in the explorer and tabs. Side gutters
 shrink to 12 px at window widths up to 1280 px and 8 px up to 850 px.
@@ -96,21 +116,21 @@ localStorage. Both the page and Monaco apply the saved choice before the editor
 chunk loads; later system or developer-tools preference changes do not switch
 the appearance. Preference storage failure leaves the switch usable for the
 current session.
-Copy and individual downloads use
+Generated Copy and individual downloads use
 the compiler's original text; all-document downloads use a stored-entry ZIP.
 Windows clipboard reads may normalize newlines. Pending edits mark previous
 output outdated and disable exports; current failures clear documents and
 diagnostic navigation. Empty successful results have no downloadable files.
-Input remains collection-shaped internally, with normalized virtual paths
-and generation-root metadata, while this UI exposes one input file.
+Workspace snapshots use normalized virtual paths, root flags, and compiler
+settings. No host filesystem paths or source-bearing requests leave the device.
 
 The synchronous MD5 provider and its 21 Node tests are retained from commit
 `f995a3f3`. Eight additional deterministic worker-state tests cover bounded
 pending work, complete response identity, stale responses, replacement,
 startup recovery, timeout identity across worker replacement, and draining
 queued work when a replacement becomes ready.
-Seven workspace tests cover UTF-8 boundaries, exact recovery, and rejected
-schema/path/profile/input data. Direct compiler-client and recovery-saver
+Workspace tests cover aggregate UTF-8 bounds, v1 migration, explicit folders,
+paths, atomic operations, settings, and rejected recovery data. Direct compiler-client and recovery-saver
 tests cover active restarts, request failures, and outdated save confirmations.
 
 The [qualification guide](../docs/testing/playground-qualification.md)
@@ -159,7 +179,7 @@ into 512 documents while a main-thread heartbeat and DOM task run. These operati
 temporary browser contexts against the published bundle. Generated runners,
 baselines, screenshots, and reports belong in ignored `output/playwright/`.
 After exporting the native baseline, the preparation script also accepts
-`ui`, `recovery`, and `ui-faults`. Run each through the same pinned CLI command
+`ui`, `workspace`, `recovery`, and `ui-faults`. Run each through the same pinned CLI command
 with `output/playwright/run-<phase>.mjs`. `ui` checks examples, exact native
 downloads/ZIP, clipboard API input, empty/failure states, diagnostic focus,
 themes, and resizing. `recovery` checks import, replacement, reload, reset,
@@ -188,5 +208,5 @@ inheritance, unions, and value types. Start with the generated
 `Showcase.CollectionTypes.g.cs`, and `Showcase.RangesAndDefaults.g.cs`.
 Comments distinguish explicit IDL bounds from the effective defaults of
 100 sequence elements and 255 string bytes/code units. The UI verification
-compares all seven examples with native output on both profiles; native
+compares all nine examples with native output on both profiles; native
 example baselines are generated directly from the visitor-facing sources.

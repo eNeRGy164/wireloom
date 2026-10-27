@@ -25,6 +25,13 @@ below states their impact and mitigation; reference-binding details follow it.
 
 ## 11.2 Technical debt
 
+Browser multi-file pickers expose basenames, not original source hierarchy.
+Workspace import therefore uses the selected virtual folder.
+Virtual paths and tree depth/counts are bounded.
+Renames preserve source text, so relative include directives may need explicit
+user edits. Local recovery remains tied to the browser origin and cannot
+write back to imported host files.
+
 The public Playground uses GitHub Pages. Its static host's response-header
 control is limited; verify MIME types, asset bytes, and actual HTTPS startup
 on every deployment instead of treating local evidence as public-host proof.
@@ -84,7 +91,7 @@ Direct self-recursive sequence members pass bidirectional typed Wireloom C# /
 RTI C++ wire checks on both LTS versions with TypeObject v1. RTI 7.7.0's default
 TypeObject v2 profile rejects recursive strongly connected components at
 registration. RTI 7.3.1 generated C++ needs the documented module-qualification
-correction. The [direct-recursion matrix fixture](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#direct-recursive-sequence-matrix-fixture)
+correction. The [direct-recursion matrix fixture](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#direct-recursive-sequence-matrix-fixture)
 records the tested peer setup and exchange. Mutual recursive struct graphs and
 recursive array TypeCode initialization remain unqualified. See RTI's
 [7.7.0 migration guidance](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/migration_guide/770/general770.html#recursive-type-support)

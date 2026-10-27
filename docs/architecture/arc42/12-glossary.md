@@ -2,17 +2,15 @@
 
 ## 12.1 Definitions
 
-- **Browser worker** — A dedicated module worker that hosts the .NET
-  WebAssembly compiler and its synchronous MD5 provider away from the page's
-  main thread.
-- **Browser compilation preview** — Generated Wireloom C# source and
-  diagnostics produced locally from IDL. It does not compile generated source
-  against RTI or establish runtime or wire compatibility.
-- **Workspace revision** — A monotonically increasing client identity for one
-  immutable source/profile snapshot, used to discard stale worker results.
 - **Annotation application** — One `@name` with an optional balanced argument
   list. The parser captures its source order, raw text, and location before
   known built-ins are interpreted; unknown applications stay opaque.
+- **Browser compilation preview** — Generated Wireloom C# source and
+  diagnostics produced locally from IDL. It does not compile generated source
+  against RTI or establish runtime or wire compatibility.
+- **Browser worker** — A dedicated module worker that hosts the .NET
+  WebAssembly compiler and its synchronous MD5 provider away from the page's
+  main thread.
 - **Compatibility corpus** — The manifest, IDL fixtures, oracle sources, and
   status index used for feature-level verification.
 - **Compilation result** — One `IdlCompilationResult` containing generated
@@ -29,11 +27,11 @@
 - **Constant expression** — An IDL `const_expr` evaluated after referenced
   symbols are available. Supported operators and type rules follow OMG IDL;
   RTI output serves as compatibility evidence.
+- **DdsIdl root** — An explicit MSBuild item that starts generation and owns a
+  reachable include closure.
 - **DDS-XTypes (XTypes)** — The DDS type system for describing data types and
   their compatibility and evolution rules. See RTI's
   [Extensible Types Guide](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/extensible_types_guide/RTI_ConnextDDS_CoreLibraries_ExtensibleTypes_Guide.pdf).
-- **DdsIdl root** — An explicit MSBuild item that starts generation and owns a
-  reachable include closure.
 - **Docker Desktop** — The local container runtime used to run pinned RTI
   capture images and the Linux-based Qodana image. See the local
   [quality procedure](../../../CONTRIBUTING.md#quality-evidence).
@@ -58,6 +56,9 @@
   Roslyn generator.
 - **Included IDL** — An IDL file reached through `#include`; it is tracked as an
   input but is not independently generated as a root.
+- **Include-only (Playground)** — A virtual source available through includes,
+  without independently starting generation. Its declaring-file options remain
+  effective for its declarations.
 - **Optional presence** — Whether an optional member is absent or present.
   A present member can contain a default or empty value, so presence is
   separate from the member's value. See the
@@ -66,6 +67,8 @@
   repository to inspect code and report maintainability issues. See the
   [Qodana documentation](https://www.jetbrains.com/help/qodana/about-qodana.html)
   and the local [quality procedure](../../../CONTRIBUTING.md#quality-evidence).
+- **Root (Playground)** — A virtual source file that starts generation in the
+  complete workspace batch. New files default to this role.
 - **Roslyn adapter** — The source generator that discovers the runtime version,
   selects a compiler profile, translates diagnostics, and adds generated
   documents to the consumer compilation.
@@ -95,6 +98,8 @@
   [Extensible Types Guide](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/extensible_types_guide/RTI_ConnextDDS_CoreLibraries_ExtensibleTypes_Guide.pdf).
 - **Type-specific support** — Generated `TypeSupport`, plugin, metadata, and
   conversion surfaces consumed by the RTI runtime for a data type.
+- **Virtual workspace** — Browser-owned files and explicit folders under
+  `/workspace/`, independent of host filesystem paths or file handles.
 - **Wire compatibility** — The ability of generated types to exchange DDS
   samples correctly under a defined runtime and representation profile.
 - **Wire compatibility matrix** — The manually dispatched set of DDS
@@ -103,6 +108,8 @@
 - **Wire fixture** — A deterministic, complete sample variant for one corpus
   case. Each fixture is exchanged independently and receives its own result
   entry across the configured language pairings.
+- **Workspace revision** — A monotonically increasing client identity for one
+  immutable source/profile snapshot, used to discard stale worker results.
 - **XCDR2** — The second-generation XCDR data representation used to encode
   DDS samples. It is a wire representation, separate from the type metadata
   used to describe a sample's structure. See the RTI
