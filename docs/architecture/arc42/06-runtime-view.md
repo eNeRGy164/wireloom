@@ -104,7 +104,8 @@ profile wire qualification remains pending.
 The C# fixture catalog supplies profile-aware fixture names. The C# planner
 expands the manifest and exclusion registry into a deterministic full directed
 exchange plan, then assigns complete cases to the existing outer shards. The
-coordinator builds one Wireloom case to prepare shared project references, then
+C# matrix runner initializes the RTI environment and owns case preparation,
+oracle staging, and report finalization. It builds one Wireloom case to prepare shared project references, then
 uses isolated intermediate paths to build the remaining managed peers in a
 bounded C# queue. It prepares RTI C# peers and native build inputs per case,
 then uses a second bounded C# queue to compile independent C++ peers. The

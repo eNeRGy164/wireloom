@@ -254,9 +254,9 @@ Monaco and archive dependencies do not add a remote service.
 
 ## 5.6 Wire compatibility harness
 
-The wire harness uses Bash for RTI environment setup and case-specific source
-staging; C# tools own planning and bounded build/exchange queues. Its fixture
-catalog and deterministic scenario planner are included by `matrix-tools.cs`;
+The C# file-based matrix runner initializes the RTI environment, stages
+case-specific sources, and owns the peer build and report lifecycle. Its
+fixture catalog and deterministic scenario planner are included by `matrix-tools.cs`;
 the planner combines the corpus manifest, profile exclusions, fixture names,
 and directed peer pairings into one complete plan before execution. One
 Wireloom case build first compiles shared compiler, generator, and test-support

@@ -1716,7 +1716,7 @@ internal sealed record ScenarioRow(
     string Status,
     string Fixture)
 {
-    /// <summary>Reads the stable tab-separated interchange format used by run-matrix.sh.</summary>
+    /// <summary>Reads the stable tab-separated interchange format used by the wire matrix runner.</summary>
     internal static ScenarioRow Parse(string line)
     {
         var fields = line.Split('\t');

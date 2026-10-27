@@ -83,7 +83,7 @@ inside the matching RTI helper container:
 export WIRE_COMPATIBILITY_RTI_VERSION=7.7.0 # Or 7.3.1
 export WIRE_COMPATIBILITY_CASE_FILTER=06-aggregates
 export WIRE_COMPATIBILITY_OUTPUT_DIR=/workspace/artifacts/recursive-sequence-matrix-$WIRE_COMPATIBILITY_RTI_VERSION
-bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.sh
+dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.cs
 ```
 
 The fixture scopes its directed exchanges to Wireloom C# and typed RTI C++;
@@ -145,9 +145,8 @@ docker run --rm --user 0:0 --workdir /workspace \
   --env "WIRE_COMPATIBILITY_RTI_VERSION=$version" \
   --env "WIRE_COMPATIBILITY_OUTPUT_DIR=/workspace/${run_dir#"$PWD/"}" \
   --entrypoint bash "wireloom-wire-$version:repro" -lc \
-  'eval "$(rtienv -l "$RTI_LICENSE_FILE")";
-   dotnet --info > "$WIRE_COMPATIBILITY_OUTPUT_DIR/dotnet-info.txt";
-   bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.sh' || status=$?
+  'dotnet --info > "$WIRE_COMPATIBILITY_OUTPUT_DIR/dotnet-info.txt";
+   dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.cs' || status=$?
 date -u +%FT%TZ > "$run_dir/completed-at.txt"
 printf '%s\n' "$status" > "$run_dir/exit-code.txt"
 # Keep the entire run directory, including failed/partial results and logs.
@@ -445,7 +444,7 @@ To run only the dedicated case inside the licensed helper container:
 ```bash
 export WIRE_COMPATIBILITY_CASE_FILTER=05-array-of-sequences-idl
 export WIRE_COMPATIBILITY_RTI_VERSION=7.7.0 # Repeat with 7.3.1.
-bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.sh
+dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.cs
 ```
 
 ## Maintainer checks
@@ -458,19 +457,16 @@ dotnet build tests/Wireloom.Dds.Generator.WireCompatibility/scripts/matrix-tools
 dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-shards.cs -- tmp/shard-tools/matrix-tools.dll
 ```
 
-On Linux, also run:
+Also run the C# harness checks without an RTI license:
 
-```bash
-bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-harness.sh
+```powershell
+dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-harness.cs
 ```
 
 `verify-shards.cs` compares sharded and unsharded report output and exercises
-invalid or incomplete shard sets. `verify-harness.sh` checks that unexpected
-setup errors keep their exit status while handled peer failures remain
-reportable outcomes. It also checks that a wrapper's generated files are not
-mistaken for an included IDL's files when their basenames match, while incomplete
-or duplicated dependency output remains visible to the guards. The GitHub
-report job runs these checks before merging.
+invalid or incomplete shard sets. `verify-harness.cs` checks finalization
+outcomes and profile-specific fixture selection without RTI peers or a license.
+The GitHub report job runs both checks before combining shard evidence.
 
 ### Concurrent DDS-domain spike
 
@@ -532,8 +528,11 @@ The complete unsharded 7.7.0 rerun with the parallel build queues completed in
 12m03s: 1,549 of 1,555 exchanges passed, with the same six known failures and no
 unrun exchanges. This is a full correctness run, not a proxy for the eight-shard
 workflow critical path: peer setup spans all 91 cases in one container. The
-shard measurements above are the relevant local comparison, while the combined
-GitHub workflow still needs a dispatch to confirm the five-minute target.
+shard measurements above are the relevant local comparison. The previous
+Bash runner completed GitHub Actions run
+[#51 in 4m 23s](https://github.com/eNeRGy164/wireloom/actions/runs/40441553061);
+the C# runner translation still needs a full workflow run to confirm that
+timing with the new entrypoint.
 
 The previous GitHub run (40254314909) identifies the shard critical path more
 precisely. Its slowest 7.3.1 shard (index 6) took 9m34s end to end, with 7m16s
@@ -547,17 +546,18 @@ The scheduler was then raised to 16 exchanges. Under a four-CPU Docker limit,
 7.3.1 shard 6 took 2m13s at concurrency eight and 2m03s at concurrency 16,
 with the same 194 passes and four known failures. The 7.7.0 shard 6 took 1m56s
 at concurrency 16 with all 198 exchanges passing. These local runs exclude
-GitHub job startup, image/cache restoration, teardown, and report-job time; the
-overall five-minute workflow target still needs confirmation from a dispatched
-workflow.
+GitHub job startup, image/cache restoration, teardown, and report-job time.
 
 ## Code map
 
-- `scripts/run-matrix.sh` prepares peers and invokes the C# exchange scheduler.
+- `scripts/run-matrix.cs` initializes RTI environment variables, stages selected
+  oracle sources, orchestrates peer builds, finalizes reports, and invokes the
+  C# exchange scheduler.
 - `scripts/wire-case-build-runner.cs` builds case-specific managed and native peers with bounded concurrency.
 - `scripts/matrix-tools.cs` owns fixtures, creates plans, and builds reports.
 - `scripts/wire-exchange-runner.cs` runs bounded, domain-isolated peer exchanges.
 - `scripts/verify-shards.cs` rejects incomplete, duplicated, or misassigned evidence.
+- `scripts/verify-harness.cs` checks run finalization and fixture selection without an RTI installation.
 - `FixtureCatalog.cs` and `Fixtures/` define managed fixture values.
 - `Native/main.cpp.in` implements the DynamicData C++ peer;
   `Native/typed-fixture-peer.hpp.in` supports typed C++ fixtures.
