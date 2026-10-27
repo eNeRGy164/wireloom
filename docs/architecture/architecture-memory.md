@@ -57,16 +57,18 @@ non-packable .NET 10 browser-WASM host in a dedicated module worker. The worker
 runs the shared compiler and synchronous JavaScript MD5 provider. Versioned
 requests include worker, request, revision, profile, and file identity; the
 client keeps one active and the newest pending request, and rejects stale
-responses. Protocol v2 is owned by the .NET adapter DTOs, with a TypeScript
+responses. Protocol v3 is owned by the .NET adapter DTOs, with a TypeScript
 mirror checked in Quality. All Roots compile together with Include-only files
-available through includes. Workspace and declaring-file settings follow
-compiler scope; include folders are searched alphabetically.
+available through includes. Root properties carry Defines, Undefines, and
+Strict; workspace properties carry sequence mapping/size defaults, escape
+handling, and include folders. File-level sequence and string size preferences
+override project defaults until reset. Include folders are searched alphabetically.
 
 The UI provides Monaco IDL and read-only C# editors, examples, diagnostics,
 generated-file tabs, individual downloads, and ZIP export. Source is stored
 locally. The virtual Source tree supports explicit empty folders and atomic
 imports, with stable per-file models preserving undo through tab switches and
-moves. Recovery v2 migrates v1 source/profile records. Rootless and empty
+moves. Recovery stores v3 workspace records and reports unsupported formats. Rootless and empty
 workspaces clear output without compilation. Configured folders follow moves;
 source include text stays unchanged. See the
 [workspace guide and contract](../guides/playground-workspaces.md).
@@ -82,7 +84,9 @@ Workspace checks pass in Chromium, Firefox, and WebKit; #119 CI and Coveralls
 remain pending. Scoped Edge, Firefox, and Playwright WebKit checks are documented; a
 WebKit result does not qualify Safari. Chromium coverage maps to first-party
 code. Direct Node tests cover worker replacement and recovery-save ordering;
-their coverage is gated at 95% branches and 98% lines. ADR-003 is Accepted.
+their coverage is gated at 98% branches and 99% lines. Combined source-mapped
+Chromium coverage includes browser-only UI paths and is tracked separately.
+ADR-003 is Accepted.
 Generation qualification and its limits are recorded with issue #110's evidence.
 
 GitHub Pages hosts the static bundle. Quality validates a separate configured-base

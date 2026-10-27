@@ -219,9 +219,9 @@ own Monaco model and undo history. Diagnostics select the matching source tab.
 Empty workspaces do not dispatch; files without a Root produce a workspace
 error without a source location and clear generated output.
 
-IndexedDB v2 recovery stores files, explicit folders, roles, settings, profile,
-and active source identity. Valid v1 records migrate without changing source
-or profile. Restore never overwrites edits made while storage is opening;
+IndexedDB v3 recovery stores files, explicit folders, roles, settings, profile,
+and active source identity. Unsupported workspace record versions report a
+recovery error. Restore never overwrites edits made while storage is opening;
 serialized saves and deletion preserve reset ordering. Unavailable or invalid
 recovery leaves editing usable. Output is regenerated from source snapshots.
 See the [workspace guide](../../guides/playground-workspaces.md).

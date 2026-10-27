@@ -55,9 +55,16 @@ try {
   await cdp.send("Profiler.enable");
   await cdp.send("Profiler.startPreciseCoverage", { callCount: false, detailed: true });
   await page.goto(`${origin}/`);
-  await page.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Current", null, {
-    timeout: 40_000,
-  });
+  await page.waitForFunction(
+    () => ["Current", "Empty"].includes(document.querySelector("#result-state")?.textContent),
+    null,
+    { timeout: 40_000 },
+  );
+  if ((await page.locator("#result-state").textContent()) === "Empty") {
+    await page.locator("#example").selectOption("hello");
+    await page.locator("#load-example").click();
+    await waitForCurrent(page, "initial Hello, Wireloom example");
+  }
 
   const combinations = [];
   for (const example of examples) {
@@ -66,11 +73,25 @@ try {
       await waitForTerminal(page);
       await page.locator("#example").selectOption(example.id);
       await page.locator("#load-example").click();
-      await page.waitForFunction(
-        () => ["Current", "Failed"].includes(document.querySelector("#result-state")?.textContent),
-        null,
-        { timeout: 15_000 },
-      );
+      const workspace = example.workspace?.();
+      const rootSource = workspace?.files.find((file) => file.isGenerationRoot)?.source ?? example.source;
+      await page.waitForFunction(async (source) => {
+        const database = await new Promise((resolve, reject) => {
+          const request = indexedDB.open("wireloom-playground", 1);
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+        try {
+          return await new Promise((resolve, reject) => {
+            const request = database.transaction("workspace").objectStore("workspace").get("current");
+            request.onsuccess = () => resolve(request.result?.files.some((file) => file.source === source));
+            request.onerror = () => reject(request.error);
+          });
+        } finally {
+          database.close();
+        }
+      }, rootSource);
+      await waitForTerminal(page);
       const shouldSucceed = example.id !== "unsupported" && !(example.id === "profiles" && profile === "7.3.1");
       assert.equal(
         (await page.locator("#result-state").textContent()) === "Current",
@@ -237,7 +258,11 @@ try {
   await page.locator("#diagnostics button").first().click();
   assert.equal(await page.evaluate(() => !!document.activeElement?.closest("#source")), true);
   await page.locator("#reset").click();
-  await waitForCurrent(page);
+  await page.waitForFunction(
+    () => ["Current", "Empty"].includes(document.querySelector("#result-state")?.textContent),
+    null,
+    { timeout: 30_000 },
+  );
   assert.deepEqual(pageErrors, [], "The production Playground raised uncaught page errors.");
 
   // Run the workspace scenarios with coverage attached to each isolated page.
@@ -258,6 +283,10 @@ try {
   const workspaceInput = {
     phase: "workspace",
     root: `${origin}/`,
+    examples: examples.map((example) => ({
+      id: example.id,
+      source: example.workspace?.().files.find((file) => file.isGenerationRoot)?.source ?? example.source,
+    })),
     exampleExpected: JSON.parse(
       await readFile(resolve(root, "output/playwright/example-native-baseline.json"), "utf8"),
     ),
