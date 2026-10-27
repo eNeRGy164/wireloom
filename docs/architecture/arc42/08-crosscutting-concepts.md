@@ -370,7 +370,11 @@ maintained RTI profiles.
 
 The Playground protocol is versioned and carries worker generation, request ID,
 workspace revision, explicit profile, and a collection of normalized virtual
-file paths with source and generation-root flags. Workspace snapshots are
+file paths with source, generation-root flags, and file-owned settings. Protocol
+v2 uses the .NET adapter DTOs as its canonical contract, checked against the
+TypeScript mirror in Quality. Client and worker ship atomically without a
+cross-release compatibility window. Workspace settings are batch-wide; explicit
+folders and stable editor IDs stay in the client/recovery model. Workspace snapshots are
 bounded before dispatch, and only the running request plus newest pending
 request are retained. The client applies a response only when all identity
 fields match both the dispatched request and current workspace. A failed or
@@ -393,17 +397,42 @@ qualification remain pending.
 
 ## 8.11 Browser workspace and presentation
 
+The existing Source/Generated workbench presents a virtual `/workspace/` tree,
+source tabs on the left, and generated C# on the right. Source and Generated
+headers collapse independently, with a blank line above Generated. Source
+actions appear on Source-group hover/focus. Folders expand by default while
+manual collapse survives edits. File context actions switch generation roles;
+folder menus configure include search. Properties uses role/mapping toggles,
+and Escape cancels dialogs. Active IDL can be copied/downloaded even on compile
+failure; operation errors use red Error notices with alert semantics. Stable file identities
+preserve editor undo through tab switches and moves. Import uses basenames in
+the selected folder, resolving all conflicts before atomic apply. Paths are
+normalized and unique; file/folder collisions and traversal fail before state
+changes. Renames do not rewrite source includes. Empty folders persist and
+configured include folders follow moves. Batch and declaring-file settings
+follow the [compiler configuration scopes](../../guides/configuration.md).
+
+Workspace bounds are 512 files, 512 explicit folders, and 256 KiB aggregate
+UTF-8 source; paths allow 1,024 code units and 32 levels. Settings lists allow
+128 entries of 1,024 characters each. The adapter independently checks the
+compile-boundary bounds. See the [v2 contract](../../guides/playground-workspaces.md#worker-contract-v2).
+
 Monaco supplies lexical IDL/C# colors, models, markers, and UTF-16 position
 mapping; it supplies no semantic IDL or C# service. The compiler remains the
 only authority on language validity and profile behavior. Source changes clear
-markers and diagnostic navigation immediately. Copy and download actions are
+markers and diagnostic navigation immediately. Generated copy/download actions are
 enabled only for the current successful result with documents. Individual
 files and ZIP entries preserve original generated text; operating-system
-clipboard reads may normalize newlines.
+clipboard reads may normalize newlines. Source backup is independent: the
+Source ZIP preserves current text, virtual folders including empty ones, and
+workspace settings in `workspace.json`, with source entries under `workspace/`.
+This export also works with invalid or empty compiler input.
 
 Workspace recovery uses the `wireloom-playground` IndexedDB database and a
-version-1 source/profile record. Validation rejects unknown versions rather
-than guessing a migration. Writes/deletion are ordered, and save callbacks
+version-2 workspace record with files, explicit folders (including empty
+folders), roles, file and workspace settings, profile, and active source ID.
+Valid v1 records migrate with exact source/profile and default compiler settings;
+unknown or malformed versions fail explicitly. Writes/deletion are ordered, and save callbacks
 carry a generation so old completions do not mislabel newer edits. No source
 is placed in URLs, telemetry, or network requests. All runtime/editor assets
 are bundled at the deployment base. A small bootstrap provides reload recovery

@@ -43,7 +43,10 @@ shared compiler and is published for `browser-wasm` on .NET 10. The TypeScript
 worker initializes .NET and registers the retained synchronous JavaScript MD5
 provider inside the worker. The JSON protocol carries a protocol version,
 worker generation, monotonic request ID, workspace revision, explicit profile,
-virtual-path file collection, root flags, and a reserved options object. The
+virtual-path file collection, root flags, file-owned settings, and batch settings.
+The .NET adapter DTOs own protocol v2; TypeScript mirrors them and adapter tests
+check parity in Quality. The client owns the explicit folder tree, stable
+source/editor identities, atomic import/move operations, and v2 local recovery. The
 host validates normalized unique `/workspace/` paths and a 256 KiB total
 UTF-8 input cap before calling the compiler. The host caps responses at 512
 documents and 16 MiB of generated UTF-8 text. Compiler diagnostics carry the
@@ -216,11 +219,19 @@ and the [corpus feature index](../../corpus/FEATURE-COVERAGE.md).
 
 ## 5.5 Browser discovery client
 
-The single-file client opens every generated document in tabs and lists source
-and output in a collapsible explorer with single-line filenames and horizontal
-scrolling. Shared editor font controls default to 12 px. It uses Monaco models
-keyed by virtual file URI, an IDL
-lexical tokenizer, and read-only C# models. `CompilerClient` owns the existing
+The workspace client opens source files in left-editor tabs and generated
+documents in right-editor tabs. Source and Generated groups have independent
+collapsible headers in the Explorer; Source is an explicit virtual folder tree with compact
+New File, New Folder, Collapse Folders, and More Actions icon controls shown
+on Source-group hover or keyboard focus. Folders expand by default; manual
+collapse survives workspace edits. File context actions update roles, and
+folder actions configure include search through immutable workspace operations.
+The source editor copies/downloads active IDL independently of compilation.
+Operation failures use themed red Error notices with alert semantics. Shared
+editor font controls default to 12 px. It uses stable file identities for
+Monaco source models, an IDL lexical
+tokenizer, and read-only C# models. Tab switches and virtual moves preserve
+source undo history and selections. `CompilerClient` owns the existing
 bounded worker queue, request matching, and watchdogs; editor modules do not
 interpret IDL semantics. Generated-file selection and open tabs retain editor
 view state, and removed models are disposed. The page resolves the system's
@@ -228,10 +239,15 @@ initial appearance to a stored Light/Dark choice, synchronized with Monaco.
 Pointer and keyboard controls resize the explorer independently from the
 source/output divider, which repartitions only the remaining editor area.
 
-The version-1 workspace has a file collection and explicit profile, while this
-UI exposes one root. `RecoveryStore` serializes IndexedDB writes and deletion
+The version-2 workspace stores files, explicit folders including empty ones,
+Root/Include-only roles, declaring-file settings, batch settings, profile, and
+active source ID. All Roots compile as one immutable batch. Valid v1 records
+migrate without changing source or profile. `RecoveryStore` serializes
+IndexedDB writes and deletion
 so pending saves cannot resurrect a reset workspace. It validates recovered
 paths, schema, profile, and UTF-8 size, stores source/settings only, and
-regenerates output after restore. The download actions use the accepted
+regenerates output after restore. Generated download actions use the accepted
 compiler response's original names/text. Locally bundled `fflate` creates
-stored-entry ZIPs; Monaco and archive dependencies do not add a remote service.
+stored-entry ZIPs. The Source ZIP action independently archives current text,
+explicit folders, and a workspace metadata record even when compilation fails.
+Monaco and archive dependencies do not add a remote service.

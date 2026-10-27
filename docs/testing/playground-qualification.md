@@ -1,8 +1,6 @@
 # Playground generation qualification
 
-This is the first-release verification scope for [#110](https://github.com/eNeRGy164/wireloom/issues/110),
-using the Playground implementation from [#123](https://github.com/eNeRGy164/wireloom/pull/123).
-It checks the built browser worker and the single-file UI against native
+Qualification checks the built browser worker and workspace UI against native
 shared-compiler results for both RTI profiles. It does not qualify generated
 code compilation, RTI runtime behavior, or DDS interoperability.
 
@@ -33,19 +31,15 @@ isolated browser contexts and does not use a visitor's recovery data.
 
 The optional second argument after the browser is a comma-separated phase
 list, for example `npm run verify:release -- firefox corpus,corpus-ui`.
-Chromium and Edge default to all nine phases. Firefox and WebKit default to
-`parity,corpus,corpus-ui,desktop,faults,limits`; native clipboard assertions and
+Chromium and Edge default to all ten phases. Firefox and WebKit default to
+`parity,corpus,corpus-ui,desktop,workspace,faults,limits`; native clipboard assertions and
 the detailed Chromium UI/recovery suite are excluded. Other engines still
 exercise editor input, imports, recovery, failure clearing, watchdog
 replacement, stale results, and import/adapter limits through their portable
-phases. Multiline inputs use exact UTF-8 import outside Chromium: Playwright's
-multiline `insertText` duplicated text in Monaco under Firefox 157.0. The
-oversized editor-insertion probe also stalled in that automation path. Native
-multiline/oversized paste remains unqualified on Firefox and WebKit; their
-passing report explicitly records import-based limit scope.
-The keyboard helper also follows Monaco's Macintosh user-agent binding:
-Windows WebKit requires Command+A for source replacement despite reporting
-`navigator.platform` as `Win32`.
+phases. Outside Chromium, multiline inputs and oversized-input checks use
+UTF-8 import. Native multiline/oversized paste remains unqualified on Firefox
+and WebKit; their reports record the import-based limit scope. Keyboard helpers
+follow Monaco's user-agent bindings, including Command+A on Windows WebKit.
 
 The command exits unsuccessfully if any selected check fails, a phase throws,
 or no checks run. Check `passed: true` in
@@ -107,21 +101,38 @@ mean every input declaration was emitted. The separate UI phase exercises
 actual browser downloads, clipboard input, and ZIP contents; corpus export
 checks intercept download blobs to avoid hundreds of saves.
 
-## Single-file boundary
+## Workspace boundary
 
-The UI imports and edits one `.idl` file. It cannot load its include closure or
-set defines, include directories, strictness, mapping, or effective bound
-overrides. An unresolved include produces a visible compiler diagnostic, clears
-previous output, and disables exports. Multi-file editing and folder import
-remain [#119](https://github.com/eNeRGy164/wireloom/issues/119) and
-[#120](https://github.com/eNeRGy164/wireloom/issues/120).
+The Source Explorer supports multiple virtual files, explicit folders, Root and
+Include-only roles, Workspace Settings, and declaring-file Properties. The
+worker compiles all Roots together with their supplied includes. Import uses
+basenames in the selected virtual folder.
+See the [workspace guide and canonical v2 contract](../guides/playground-workspaces.md).
 
-The `14-autoid-scope` worker comparison supplies its retained include as an
-include-only file. The root is remapped to `/workspace/14-autoid-scope.idl` and
-the include to `/workspace/includes/autoid-hash-include.idl`, preserving the
-root's include spelling and every source byte. This is adapter evidence only;
-it is excluded from the UI matrix. The missing-include variant checks the
-actual single-file limitation in both the worker and UI.
+The retained `14-autoid-scope` worker comparison supplies its unchanged include
+closure. That case remains excluded from the 36-case corpus UI selection;
+separate multi-file examples exercise includes through the actual UI on both
+profiles and compare every generated source byte against native results. The
+missing-include variant continues to check source-located failure behavior.
+
+The workspace phase checks all import conflict choices and atomic Cancel,
+selected-folder basenames, empty folder recovery, keyboard tree/context actions,
+menu/drag moves, undo through tab switches and renames, configured-folder moves
+without source rewriting, cross-file diagnostics, no-Root and empty workspaces,
+and migration of exact v1 source/profile data to recovery v2.
+
+Presentation checks cover independent Source/Generated group disclosure,
+Source-scoped hover/focus controls, default folder expansion with preserved
+manual collapse, distinct file/folder context menus, and error alerts in both
+themes. Dialog checks cover Escape cancellation and keyboard-operated role
+and mapping toggles.
+
+IDL Copy/Download checks preserve exact UTF-8/CRLF text, follow the selected
+tab, work with invalid source, and are disabled without an active file. Source
+ZIP checks preserve the live source tree, empty folders, roles, and settings
+independently of compilation. A source named `workspace.json` must not collide
+with the archive's metadata. Failed moves leave the workspace unchanged;
+clipboard failures show an error alert.
 
 ## Interaction and failure checks
 
@@ -137,7 +148,7 @@ input before dispatch. Other engines check oversized imports while preserving
 current output. All engines check invalid worker requests, the 512-document
 cap, no partial output, and subsequent recovery. The detailed Chromium UI
 suite also checks rejected imports: invalid
-UTF-8, wrong extensions, and oversized files preserve the current successful
+UTF-8, invalid virtual names, and oversized files preserve the current successful
 workspace. Editing beyond the limit invalidates previous output. Cancellation
 means rejecting stale results or terminating/replacing a worker; a synchronous
 compilation is not interrupted by a queued cancellation message.
@@ -164,86 +175,75 @@ assessed separately. Local cold/warm startup measurements are not Internet
 latency measurements. Publication and host verification remain
 [#111](https://github.com/eNeRGy164/wireloom/issues/111).
 
-## Initial local evidence: October 26, 2026
+## Client quality checks
 
-The Release bundle was built on Windows with SDK 10.0.402, .NET runtime
-10.0.13, Node 26.7.0, and npm 12.2.0, from the #109 baseline
-`7b3de71ac2bbb114491dea3bf32333345d12234d` plus the #110 verification changes.
-The baseline and bundle hashes are retained in the local reports described
-above. These runs precede the P2 fixes being handled in #109 for active-request
-restart and delayed save confirmations. Refresh qualification against that
-updated implementation before release; this record does not close #110.
+From `playground/`, run:
 
-| Browser/engine on Windows | Scope                                                                                     | Result |
-| :------------------------ | :---------------------------------------------------------------------------------------- | :----- |
-| Chromium 156.0.8078.4     | All nine phases, 68 checks                                                                | Passed |
-| Edge 156.0.4314.42        | All nine phases, 68 checks                                                                | Passed |
-| Playwright Firefox 157.0  | Six scoped phases, 53 checks; import-based oversized input                                | Passed |
-| Playwright WebKit 27.2    | Six scoped phases, 53 checks; import-based oversized input; supplementary engine evidence | Passed |
+```shell
+npm run typecheck
+npm run lint
+npm run format:check
+npm test
+npm run coverage
+npm run build:coverage
+npm run coverage:browser
+npm audit --audit-level=low
+npm run build:pages
+npm run verify:pages
+```
 
-Every listed engine passed 76 corpus worker comparisons and 36 corpus UI
-comparisons. The synthetic eight-case worker baseline and all seven UI
-examples also passed under both profiles. The exclusive-run guard was checked
-by starting a second invocation: it failed without changing the previous
-Chromium report. Root and nested Release asset checks passed with 65 .NET host
-assets per bundle.
+The Pages smoke check serves the local deployment candidate; public-host
+verification requires the deployed HTTPS URL. Compiler/adapter tests, their
+coverage reports, and Community Qodana use the repository's
+[quality procedure](../../CONTRIBUTING.md#quality-evidence).
 
-Compiler tests passed **1,576/1,576**, including the separately measured
-**28/28** browser-adapter tests. Each RTI corpus-compliance profile passed
-**373 tests**, with one intentional export-only skip. The client passed strict
-TypeScript, ESLint, Prettier, **36 Node tests**, and the coverage gate. The
-dependency audit reported zero vulnerabilities. Fresh Community Qodana exited
-successfully with **zero findings** and a successful SARIF invocation. Its
-Windows-worktree Git metadata warning did not prevent analysis.
+## Current local results
+
+The qualification reports identify the source revision and uncommitted status,
+input and bundle hashes, tool versions, and verification scope. These results
+cover the workspace implementation on baseline
+`dd005af444aa20d41dd7230549f8b7c8ad016ed0`, verified October 27, 2026.
+
+| Check                                | Scope and result                                                    |
+| :----------------------------------- | :------------------------------------------------------------------ |
+| Release solution and browser publish | Passed; zero solution build warnings/errors                         |
+| Compiler unit tests                  | 1,611 passed                                                        |
+| Browser adapter tests                | 38 passed, including .NET/TypeScript contract parity                |
+| Node unit and Pages tests            | 62 passed                                                           |
+| Chromium 156.0.8078.4                | All ten phases and 85 checks passed                                 |
+| Firefox 157.0                        | All 17 workspace checks passed                                      |
+| Playwright WebKit 27.2               | All 17 workspace checks passed; supplementary engine evidence       |
+| TypeScript, ESLint, Prettier         | Passed                                                              |
+| Root/nested assets                   | Passed; 65 .NET assets per bundle                                   |
+| Local Pages candidate                | Build and all eight smoke checks passed                             |
+| Community Qodana                     | Completed with zero SARIF findings; C# sources unchanged since scan |
+| Dependency audit                     | Zero vulnerabilities at the low-severity threshold                  |
 
 | Coverage scope              | Branches             | Lines                |
 | :-------------------------- | :------------------- | :------------------- |
-| Compiler                    | 6,496/7,338 (88.53%) | 8,775/9,203 (95.35%) |
-| Browser adapter             | 64/66 (96.97%)       | 110/111 (99.10%)     |
-| Node + first-party Chromium | 86/92 (93.47%)       | 1,443/1,557 (92.67%) |
+| Compiler                    | 6,658/7,338 (90.73%) | 8,959/9,203 (97.35%) |
+| Browser adapter             | 110/114 (96.49%)     | 154/158 (97.47%)     |
+| Direct Node unit scope      | 278/280 (99.28%)     | 689/689 (100%)       |
+| Node + first-party Chromium | 88.82%               | 93.51%               |
+| Source archive unit scope   | 100%                 | 100%                 |
 
-The Chromium corpus run generated 512 documents in about 324 ms while a page
-task ran in about 31 ms; the raw report retains the exact timings. These are
-local observations with the scope described above. At the time, CI and
-Coveralls for #110 were pending; their later results are recorded below.
+CI and Coveralls for these changes remain pending. The local results do not
+establish deployment or public-host qualification. Folder-hierarchy import is
+outside this scope and tracked in [#120](https://github.com/eNeRGy164/wireloom/issues/120).
 
-## Refreshed evidence after the #109 P2 fixes
+## Evidence artifacts
 
-The browser host now includes #109's active-request restart and delayed-save
-fixes, direct client/recovery tests, standalone fuzzing project, and coverage
-gates. On merged revision
-`d3c2c8cf4a6a66c5a1ae8836fa87b3c0fb91be99`, I rebuilt the root and nested
-Release bundles and reran each browser matrix. Every report records that
-revision, a clean source status, and hashes for all 146 bundle files.
+| Artifact                                         | Contents                                        |
+| :----------------------------------------------- | :---------------------------------------------- |
+| `output/playwright/qualification-chromium.json`  | Full ten-phase Chromium qualification           |
+| `output/playwright/qualification-firefox.json`   | Firefox workspace checks                        |
+| `output/playwright/qualification-webkit.json`    | WebKit workspace checks                         |
+| `output/playwright/pages-smoke.json`             | Local Pages candidate smoke checks              |
+| `playground/coverage/unit/coverage-summary.json` | Direct Node coverage                            |
+| `playground/coverage/browser-summary.json`       | Combined Node and first-party Chromium coverage |
+| `coverage/compiler.cobertura.xml`                | Compiler coverage                               |
+| `coverage/playground.cobertura.xml`              | Browser adapter coverage                        |
+| `.qodana/results/qodana.sarif.json`              | Community Qodana findings                       |
 
-| Browser/engine on Windows | Scope | Result |
-| :--- | :--- | :--- |
-| Chromium 156.0.8078.4 | All nine phases, 68 checks | Passed |
-| Edge 156.0.4314.42 | All nine phases, 68 checks | Passed |
-| Playwright Firefox 157.0 | Six scoped phases, 53 checks; import-based oversized input | Passed |
-| Playwright WebKit 27.2 | Six scoped phases, 53 checks; import-based oversized input; supplementary engine evidence | Passed |
-
-Both corpus-compliance profiles passed **373 tests**, each with one intentional
-export-only skip. Compiler tests passed **1,601/1,601**. All **50 Node tests**
-passed, including #109's active-restart and delayed-save regressions; direct
-coverage measured **98.06% branches and 100% lines**. TypeScript, ESLint,
-Prettier, asset-path checks, and browser coverage passed.
-
-| Refreshed coverage scope    | Branches             | Lines                |
-| :-------------------------- | :------------------- | :------------------- |
-| Compiler                    | 6,656/7,338 (90.71%) | 8,959/9,203 (97.35%) |
-| Node + first-party Chromium | 158/166 (95.18%)     | 1,528/1,645 (92.88%) |
-
-These runs supersede the earlier browser matrix for this revision. Native
-multiline/oversized paste on Firefox and WebKit remains unqualified; their
-portable import and adapter-limit checks passed. Full accessibility review,
-Safari/macOS, and public-host startup remain separate release gaps. WebKit
-does not qualify Safari.
-
-A full local Community Qodana scan completed analysis but reported six notes in
-the unchanged `tests/Shared/CompilerTestSupport.cs`: three visibility
-findings, two unused-member findings, and one unused-return finding. The PR
-Qodana check passed in pull-request mode with no new problems in changed files.
-The merged quality workflow and Coveralls also passed; Coveralls reported
-**98.074%** coverage. The local full-scan notes remain baseline findings, not
-new #110 findings. SARIF and logs remain under `.qodana/results/`.
+Reports are ignored local artifacts. Retain the matching reports with the
+release candidate; their source and bundle hashes determine applicability.
