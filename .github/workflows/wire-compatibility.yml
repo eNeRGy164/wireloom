@@ -67,7 +67,7 @@ jobs:
           image="wireloom-wire-${WIRE_COMPATIBILITY_RTI_VERSION}:local"
           version="$(docker run --rm --entrypoint g++ "$image" -dumpfullversion -dumpversion)"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          source_hash="${{ hashFiles('tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile.wire', 'tests/Wireloom.Dds.Generator.WireCompatibility/Native/**', 'tests/Wireloom.Dds.Generator.WireCompatibility/scripts/**', 'docs/corpus/manifest.json', 'docs/corpus/**/rtiddsgen/wire-oracles.json', 'docs/corpus/**/rtiddsgen/cpp/**') }}"
+          source_hash="${{ hashFiles('tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile.wire', 'tests/Wireloom.Dds.Generator.WireCompatibility/Native/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Shared/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Runner/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/**', 'docs/corpus/manifest.json', 'docs/corpus/**/rtiddsgen/wire-oracles.json', 'docs/corpus/**/rtiddsgen/cpp/**') }}"
           echo "source_hash=$source_hash" >> "$GITHUB_OUTPUT"
 
       - name: Prepare persistent build caches
@@ -127,7 +127,7 @@ jobs:
             --env WIRE_COMPATIBILITY_SHARD_COUNT="$WIRE_COMPATIBILITY_SHARD_COUNT" \
             --entrypoint dotnet \
             "wireloom-wire-$WIRE_COMPATIBILITY_RTI_VERSION:local" \
-            run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.cs
+            run --project tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj --configuration Release
 
       - name: Save C++ compiler outputs
         if: always() && steps.ccache-cache.outcome == 'success' && steps.ccache-cache.outputs.cache-hit != 'true'
@@ -192,23 +192,20 @@ jobs:
           pattern: wire-compatibility-rti-${{ matrix.rti_version }}-shard-*
           path: artifacts/wire-shards
 
-      - name: Build matrix reporting utility
-        run: >-
-          dotnet build tests/Wireloom.Dds.Generator.WireCompatibility/scripts/matrix-tools.cs
-          --output "$RUNNER_TEMP/matrix-tools" --verbosity quiet
-
       - name: Verify shard partitioning and merge integrity
         run: >-
-          dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-shards.cs --
-          "$RUNNER_TEMP/matrix-tools/matrix-tools.dll"
+          dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/Wireloom.Dds.Generator.WireCompatibility.Verifier.csproj
+          --configuration Release
 
       - name: Verify harness setup failures remain failures
-        run: dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-harness.cs
+        run: >-
+          dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj
+          --configuration Release -- --verify-harness
 
       - name: Validate and combine all exchanges
         run: >-
-          dotnet "$RUNNER_TEMP/matrix-tools/matrix-tools.dll"
-          merge-shards ${{ matrix.rti_version }} 8 artifacts/wire-shards artifacts/wire-compatibility-rti-${{ matrix.rti_version }}
+          dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/Wireloom.Dds.Generator.WireCompatibility.Verifier.csproj
+          --configuration Release -- merge-shards ${{ matrix.rti_version }} 8 artifacts/wire-shards artifacts/wire-compatibility-rti-${{ matrix.rti_version }}
           tests/Wireloom.Dds.Generator.WireCompatibility/wire-case-exclusions-${{ matrix.rti_version }}.json
 
       - name: Publish combined wire matrix summary

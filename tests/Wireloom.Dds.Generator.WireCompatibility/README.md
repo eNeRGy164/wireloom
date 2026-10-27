@@ -83,7 +83,7 @@ inside the matching RTI helper container:
 export WIRE_COMPATIBILITY_RTI_VERSION=7.7.0 # Or 7.3.1
 export WIRE_COMPATIBILITY_CASE_FILTER=06-aggregates
 export WIRE_COMPATIBILITY_OUTPUT_DIR=/workspace/artifacts/recursive-sequence-matrix-$WIRE_COMPATIBILITY_RTI_VERSION
-dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.cs
+dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj --configuration Release
 ```
 
 The fixture scopes its directed exchanges to Wireloom C# and typed RTI C++;
@@ -146,7 +146,7 @@ docker run --rm --user 0:0 --workdir /workspace \
   --env "WIRE_COMPATIBILITY_OUTPUT_DIR=/workspace/${run_dir#"$PWD/"}" \
   --entrypoint bash "wireloom-wire-$version:repro" -lc \
   'dotnet --info > "$WIRE_COMPATIBILITY_OUTPUT_DIR/dotnet-info.txt";
-   dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.cs' || status=$?
+   dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj --configuration Release' || status=$?
 date -u +%FT%TZ > "$run_dir/completed-at.txt"
 printf '%s\n' "$status" > "$run_dir/exit-code.txt"
 # Keep the entire run directory, including failed/partial results and logs.
@@ -198,15 +198,38 @@ exchange failures.
 The report merger checks that shards share the same plan and RTI version and
 that their exchanges are complete, unique, and assigned to the correct shard.
 Missing, duplicated, misassigned, inconsistent, or not-run exchanges prevent a
-complete report. Peer setup failures are recorded and preserve a nonzero
+complete report. Fatal setup and worker failures preserve a nonzero
 workflow result even when partial reports are available.
 
-The C# matrix utility owns fixture selection and creates the complete directed
-exchange plan before builds begin. The case catalog is maintained in
-`scripts/WireCompatibilityCaseCatalog.cs`; `matrix-tools.cs` includes it and
-the planner from `scripts/WireCompatibilityScenarioPlanner.cs` using the pinned
-.NET 10 SDK, without another project or package dependency. The coordinator
-builds one Wireloom case first to warm shared project references, then builds
+Planning passes selected case IDs, scenario records, and expected counts in
+memory. Build requests and outcomes also stay in memory. Only these planning
+files are retained:
+
+| Artifact | Consumer and purpose |
+| :--- | :--- |
+| `plan.json` | The shard merger verifies the shared whole-case assignment and complete set of expected exchange keys. |
+| `shard.json` | The shard merger verifies profile, shard index/count, and expected exchange count. |
+| `scenarios.tsv` | One canonical file in the output directory, updated by the exchange scheduler and read by reporting and shard merging. |
+
+`selected-cases.txt`, the duplicate scratch `scenarios.tsv`, and the managed
+and native build request/result TSVs are removed. Managed and native builds
+run directly through bounded in-process scheduling.
+
+`logs/<case>-generation.json` also remains as retained evidence. The report
+renderer validates it and the shard merger carries it into combined results.
+The runner creates it directly from a typed provenance record, with no
+intermediate evidence file, and clears old provenance at run initialization.
+
+The matrix entry point is a normal .NET 10 project and runs with
+`dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj --configuration Release`.
+The Runner owns planning, peer builds, exchange scheduling, and reporting.
+The Verifier project hosts the standalone catalog, report, and shard commands
+and runs the black-box shard checks after matrix jobs finish.
+
+The runner's `ScenarioPlanBuilder` creates the complete directed exchange plan
+in-process before builds begin. It compiles the shared fixture catalog from
+`../Wireloom.Dds.Generator.WireCompatibility.Runner/Planning/WireCompatibilityCaseCatalog.cs`. The coordinator builds one Wireloom
+case first to warm shared project references, then builds
 the remaining case peers concurrently. Each case has its own intermediate,
 generated-source, and output directories; package restore assets and project
 references are shared read-only. `WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY`
@@ -433,6 +456,10 @@ report. This does not qualify Java, Python, typedef-based C# peers, or all
 possible sequence-array shapes.
 
 The runner rebuilds each case into a separate generated-source directory.
+`GenerationProvenanceRecorder` captures evidence in-process through the shared
+builder and writer. Native preparation, capture, and report validation share
+wrapper selection through `IdlSourceResolver`; capture and validation also
+share its transitive-include traversal.
 `logs/<case>-generation.json` records the selected mode, IDL, exact runtime,
 and SHA-256 hashes of the IDL and generated source files. C149 scenarios retain
 this provenance in `results.json`, including after shard merging.
@@ -444,7 +471,7 @@ To run only the dedicated case inside the licensed helper container:
 ```bash
 export WIRE_COMPATIBILITY_CASE_FILTER=05-array-of-sequences-idl
 export WIRE_COMPATIBILITY_RTI_VERSION=7.7.0 # Repeat with 7.3.1.
-dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.cs
+dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj --configuration Release
 ```
 
 ## Maintainer checks
@@ -453,53 +480,21 @@ These checks validate shard planning, artifact merging, and harness exit
 behavior without an RTI license:
 
 ```powershell
-dotnet build tests/Wireloom.Dds.Generator.WireCompatibility/scripts/matrix-tools.cs --output tmp/shard-tools
-dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-shards.cs -- tmp/shard-tools/matrix-tools.dll
+dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/Wireloom.Dds.Generator.WireCompatibility.Verifier.csproj --configuration Release
 ```
 
 Also run the C# harness checks without an RTI license:
 
 ```powershell
-dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-harness.cs
+dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj --configuration Release -- --verify-harness
 ```
 
-`verify-shards.cs` compares sharded and unsharded report output and exercises
-invalid or incomplete shard sets. `verify-harness.cs` checks finalization
-outcomes and profile-specific fixture selection without RTI peers or a license.
+The Verifier project compares sharded and unsharded report output and exercises
+invalid or incomplete shard sets. The Runner harness checks finalization,
+partial-report recovery, stale-artifact isolation, handled native build
+failures, and profile-specific fixture selection without RTI peers or a
+license.
 The GitHub report job runs both checks before combining shard evidence.
-
-### Concurrent DDS-domain spike
-
-The experimental `scripts/concurrent-domain-spike.cs` compares two managed
-exchanges sequentially and concurrently. Each pair uses one topic, distinct DDS
-domains, and fixtures that make the reader validate the payload received on its
-domain. The expanded Docker run used RTI 7.7.0 C# reference peers:
-
-| Case | Exchange fixtures | Sequential | Concurrent | Speedup |
-| --- | --- | ---: | ---: | ---: |
-| `01-boundaries` | `non-default` / `non-default` | 3.329 s | 1.050 s | 3.17× |
-| `04-strings` | `string-empty` / `string-boundary` | 3.026 s | 0.977 s | 3.09× |
-| `05-collections` | `sequence-empty` / `sequence-single` | 3.285 s | 1.590 s | 2.06× |
-| `07-unions` | `union-number` / `union-text` | 2.497 s | 1.178 s | 2.12× |
-
-Each exchange passed. Across these four single runs, elapsed time summed to
-12.137 seconds sequentially and 4.795 seconds concurrently (2.53×). Treat this
-as a smoke-level comparison rather than a stable benchmark: there was no warmup
-or repeated trial, and each row includes process startup, discovery, and a
-one-sample exchange. The selected RTI C# peer sources compiled with zero
-warnings and errors. These results demonstrate domain isolation across
-primitive, string, sequence, and union payloads, but do not qualify Wireloom
-serialization, native C++, sustained throughput, or the complete matrix.
-
-The aggregate case was not counted. The recursive-sequence fixture overflowed
-during RTI plugin initialization, and the inherited `Derived` fixture did not
-match the RTI type's member layout. That case needs an aggregate-specific
-fixture setup before it can provide useful evidence. A separate Wireloom peer
-build also hit duplicate generated definitions before DDS startup.
-
-The production harness now uses bounded domain scheduling for every planned
-exchange. The smoke results above do not replace a full licensed run of both
-profiles and do not qualify the complete matrix.
 
 ### Full-matrix throughput validation
 
@@ -550,16 +545,206 @@ GitHub job startup, image/cache restoration, teardown, and report-job time.
 
 ## Code map
 
-- `scripts/run-matrix.cs` initializes RTI environment variables, stages selected
-  oracle sources, orchestrates peer builds, finalizes reports, and invokes the
-  C# exchange scheduler.
-- `scripts/wire-case-build-runner.cs` builds case-specific managed and native peers with bounded concurrency.
-- `scripts/matrix-tools.cs` owns fixtures, creates plans, and builds reports.
-- `scripts/wire-exchange-runner.cs` runs bounded, domain-isolated peer exchanges.
-- `scripts/verify-shards.cs` rejects incomplete, duplicated, or misassigned evidence.
-- `scripts/verify-harness.cs` checks run finalization and fixture selection without an RTI installation.
+The sibling [runner project](../Wireloom.Dds.Generator.WireCompatibility.Runner/)
+uses explicit component ownership and typed handoffs:
+
+| Files | Responsibility |
+| :--- | :--- |
+| `Program.cs`, `MatrixRunner.cs` | Compose dependencies and own the application lifecycle. |
+| `MatrixOptions.cs`, `Infrastructure/MatrixWorkspace.cs` | Capture settings once and own per-run/per-case paths. |
+| `Planning/CorpusCaseDiscovery.cs`, `Planning/MatrixPlanner.cs`, `Planning/MatrixPlan.cs` | Read eligible cases directly from JSON, select a shard, and retain its expected scenario count. |
+| `Planning/CorpusCaseCatalog.cs`, `Planning/CaseMetadata.cs` | Share one lazy manifest snapshot across managed/native preparation and decode typed build fields, also used by the standalone field command. |
+| `Planning/ScenarioPlanBuilder.cs`, `Planning/ScenarioPlan.cs` | Expand fixtures and directed pairings into typed scenarios and deterministic whole-case shard assignments. |
+| `Planning/WireCompatibilityCaseCatalog.cs` | Supply ordered profile-qualified fixture names directly to planning and managed validation. |
+| `Planning/PeerPairingPolicy.cs` | Share ordered peers, profile exclusions, and directed fixture pairings with standalone commands and report validation. |
+| `Planning/PlanArtifactWriter.cs` | Write retained plan/shard metadata and one canonical scenario file for execution and reporting. |
+| `Evidence/` | Capture typed generation provenance and write the retained per-case hash evidence directly. |
+| `Infrastructure/IdlSourceResolver.cs` | Share oracle-wrapper selection and transitive include traversal with native preparation and report validation. |
+| `Peers/PeerPreparation.cs`, `Peers/PeerBuild.cs` | Carry case metadata, peer availability, build outcomes, and artifacts between stages. |
+
+The [shared library](../Wireloom.Dds.Generator.WireCompatibility.Shared/)
+owns the scenario TSV contract and peer labels/pairings consumed by the Runner
+and [Verifier](../Wireloom.Dds.Generator.WireCompatibility.Verifier/).
+The Verifier project retains the black-box shard/report checks that previously
+ran from a file-based verifier entry point.
+
+The Verifier is organized by lifecycle and verification responsibility:
+
+| Files | Responsibility |
+| :--- | :--- |
+| `Program.cs`, `VerifierApplication.cs`, `VerifierCommandApplication.cs` | Provide the entry point, dispatch standalone commands, and compose verification stages. |
+| `VerifierWorkspace.cs`, `Verification/VerificationContext.cs` | Own temporary output and share verifier-command invocation, paths, and check accounting. |
+| `Verification/CaseSelectionVerification.cs`, `Verification/ShardScenarioBuilder.cs` | Validate profile selection and build representative partitioned scenario evidence. |
+| `Verification/ShardReportVerification.cs`, `Verification/MergedReportBuilder.cs` | Coordinate shard merging and baseline report creation. |
+| `Verification/ReportProvenanceVerification.cs`, `Verification/ReportLifecycleVerification.cs`, `Verification/ReportPresentationVerification.cs` | Validate report evidence, failure states, sparse plans, and output presentation. |
+| `Verification/ShardIntegrityVerification.cs`, `Verification/RtiCharacterReferenceVerification.cs` | Validate shard completeness, malformed inputs, and guarded reference adaptations. |
+| `Peers/WireloomTypeDiscovery.cs`, `Peers/CaseDescriptor.cs` | Return generated managed/native type names and canonical IDL directly to preparation, preserving wrapper and required-root rules. |
+| `Infrastructure/CaseRegistry.cs` | Retain the standalone discovery JSON contract without runtime registry files. |
+| `Peers/ManagedPeerBuilder.cs`, `Peers/NativePeerBuilder.cs` | Restore, bootstrap, configure, and compile managed/native peers. |
+| `Peers/RtiTypeDiscovery.cs` | Share captured RTI C# root selection between in-process managed preparation and the standalone discovery command. |
+| `Peers/WireOracleCatalog.cs` | Share profile-specific oracle selection between managed/native preparation and the standalone command using one lazy manifest snapshot per run. |
+| `Peers/NativePeerSources.cs`, `Peers/NativePeerProfile.cs` | Stage checked-in native oracles and apply guarded corrections and fixture flags. |
+| `Execution/ExchangeRunner.cs` | Run pending exchanges through the in-process bounded scheduler. |
+| `Reporting/` | Finalize current-run evidence after success or failure and decide the workflow status. |
+| `Peers/PeerBuildFiles.cs`, `Infrastructure/ProcessRunner.cs`, `Infrastructure/WorkflowLog.cs` | Write compilation evidence, run subprocesses, and emit workflow output. |
+| `Verification/` | Exercise planning, fixture selection, pairing rules, provenance, failure/recovery behavior, and in-process build paths without RTI. |
+
+Planning returns `MatrixPlan` with its typed `ScenarioPlan`; preparation
+returns `PeerPreparationResult`.
+`PeerPairingPolicy` resolves profile exclusions and fixture overrides once
+during planning. Preparation uses `MatrixPlan.RequiresPeer` to check the actual
+selected fixture exchanges for an RTI C# endpoint. This removes the per-case
+`case-profile-pairings` subprocess and stdout parsing. No pairing handoff file
+is needed. The standalone `case-pairings` command and report validation share
+the runner's policy, preserving ordered output.
+Managed fixture validation calls `WireCompatibilityCaseCatalog.FixturesFor`
+directly, removing its `case-fixtures` subprocess and stdout parsing. It keeps
+the existing `14-` case scope and validates ordered fixtures in compile-only
+runs too, without requiring an exchange plan. No fixture-name handoff file is
+needed; per-peer fixture-validation logs remain execution evidence. The
+standalone command continues to use the same catalog.
+`CorpusCaseCatalog` supplies managed IDL/mapping inputs and native IDL
+adaptation entries directly. One lazy manifest snapshot is shared across those
+builders for the invocation, removing per-case `case-field` subprocesses and
+stdout parsing. `CaseMetadata` also decodes all five standalone fields,
+preserving defaults and ordered definitions/options/adaptations. No field
+handoff file is needed; managed build requests remain typed in memory.
+RTI managed type discovery scans the staged capture directly through
+`RtiTypeDiscovery`. It preserves Wireloom basename precedence, case-specific
+root preferences, and ordinal fallbacks. Missing support or source-read
+failures keep the RTI peer unavailable and report the discovery reason. The
+runner no longer launches `discover-rti` or writes/reparses `rti-oracle.json`;
+that registry was only an intermediate handoff. Its selection implementation
+is shared with report validation.
+`WireOracleCatalog` supplies managed/native capture paths directly, removing
+`case-wire-oracle-source` subprocesses and stdout parsing. Captured/adjusted
+entries keep their configured path, explicit other modes suppress fallback,
+and absent entries may use an existing conventional language-specific
+directory. One profile-manifest snapshot is shared for the run; fallback
+directory existence is checked on lookup. No oracle-path handoff file is
+needed. `wire-oracles.json` remains policy input and per-peer selection logs
+remain evidence. Both builders now operate independently of `MatrixTools`.
+`WireloomTypeDiscovery` now returns `CaseDescriptor` directly from the selected
+case metadata and generated TypeSupport sources. Preparation no longer calls
+`discover-cases` followed by `case-info`, writes/reparses `case.json`, or
+depends on `MatrixTools`. Shared IDL grouping, wrapper aliases, namespaces,
+required-root validation, and ordinal root selection are preserved. RTI-only
+controls keep their existing descriptor path. Standalone discovery still
+applies exact-profile exclusions and `CaseRegistry` preserves its JSON output
+schema.
+Case discovery reads the manifest and profile exclusion registry in-process;
+it preserves case order, implementation exclusions, applicability exclusions,
+and RTI-only controls. The license-free harness compares discovery with the
+existing utility on both exact profiles and exercises synthetic exclusions.
+The application hands both to reporting in a `MatrixRunOutcome`, including
+after a fatal error. Case metadata stays in named records until it reaches a
+process boundary. Managed-build, native-build, and exchange concurrency remain
+controlled by the existing environment variables.
+
+The fixture assets and worker utilities remain in this directory:
+
+- The Runner builds case-specific managed and native peers with bounded concurrency.
+- `VerifierCommandApplication.cs` provides standalone catalog commands and CI shard merge operations inside the Verifier application, sharing implementation with the Runner where applicable.
+- The Runner application executes bounded, domain-isolated peer exchanges in-process.
+- The Verifier project rejects incomplete, duplicated, or misassigned evidence.
+- The Runner's `--verify-harness` mode checks run finalization and fixture selection without an RTI installation.
 - `FixtureCatalog.cs` and `Fixtures/` define managed fixture values.
 - `Native/main.cpp.in` implements the DynamicData C++ peer;
   `Native/typed-fixture-peer.hpp.in` supports typed C++ fixtures.
 - `Native/peer-qos.hpp` shares reliable-writer timing across both native paths.
 - `RtiOracleProbe/` contains focused RTI C# API probes outside the wire matrix.
+
+### Runner structure validation (2026-10-27)
+
+The component refactor was checked against the saved application from before
+the refactor using the existing RTI 7.7.0 wire container with four CPUs. The
+selection was `01-primitives`, `05-array-of-sequences-idl`, `06-aggregates`,
+`07-union-wchar-label`, `09-optional-aggregate-member`, and `14-enum-constant`.
+All 75 scenario rows were identical: 73 passed, two failed, and none were left
+unrun. Both versions reported the same two `direct-recursive-sequence`
+failures. Their endpoint logs show successful exits and `PASS` lines; the
+existing scheduler prefix check expects a trailing space that the native
+recursive peer does not emit. This remains a separate scheduler follow-up.
+
+The RTI 7.3.1 compile-only path compiled all three selected native peers:
+`07-union-char-numeric-255`, `09-optional-recursive-array`, and
+`14-enum-constant`. Release builds and the license-free harness also passed,
+including in-process native build failure handling, report recovery, renderer failure,
+stale-artifact isolation, and profile-specific fixture selection. Local
+reports and the comparison inputs are under
+`artifacts/wire-runner-architecture-7.7.0/`. This focused comparison does not
+replace a complete profile matrix run.
+
+The subsequent in-process planning migration was compared with saved outputs
+from the original planner for every shard on both profiles: eight shards,
+90 cases, and 1,560 exchanges on 7.3.1; eight shards, 91 cases, and 1,555
+exchanges on 7.7.0. Plan/shard JSON, scenario rows, and selected case order
+matched in all 16 comparisons. The existing shard verifier passed 1,386
+checks on 7.3.1 and 1,387 on 7.7.0. Comparison inputs and artifacts are under
+`artifacts/wire-planning-migration/`.
+
+The provenance migration preserved all 181 saved evidence documents byte for
+byte: 90 eligible cases on 7.3.1 and 91 on 7.7.0. Eight provenance artifacts
+from actual Docker builds also matched the original method byte for byte.
+The focused selection was `01-primitives`, `05-array-of-sequences-idl`,
+`14-autoid-scope`, and `14-enum-constant`, covering canonical, mapping, wrapper,
+and transitive-include evidence. All 43 exchanges passed on 7.7.0. On 7.3.1,
+38 passed and five failed because the captured enum-constant RTI C# control
+contains duplicate declarations. Repeating the run with the original
+provenance step produced identical scenario rows. This control-source issue
+remains a separate follow-up. Both profile report/shard verifiers passed,
+including their missing and tampered provenance checks. Evidence is under
+`artifacts/wire-provenance-migration/`.
+
+The pairing migration preserved all 812 ordered queries from the original
+commands, covering every positive case, profile-aware fixture, and versionless
+query. All 181 eligible case/profile combinations retained the same RTI C#
+build requirement when derived from the typed scenario plan. All 16 original
+shard plans still matched, and report/shard verification passed 1,386 checks
+on 7.3.1 and 1,387 on 7.7.0. The license-free harness also covers directed
+overrides, profile exclusions, invalid rules, and peers unused by every
+fixture. Comparison inputs and results are under
+`artifacts/wire-pairings-migration/`.
+
+The fixture lookup migration preserved all 182 original command queries across
+91 positive cases and both profiles, including the order of all 359 returned
+fixture names. Release build and license-free harness checks passed, covering
+default and named fixtures, RTI-only controls, and sparse typed-default profile
+isolation. Comparison inputs and results are under
+`artifacts/wire-fixtures-migration/`.
+
+The case-field migration compared all five fields for all 91 positive cases:
+455 original command outputs matched both the new typed metadata and the
+standalone adapter byte for byte. Release build and license-free harness checks
+passed, including defaults, ordered lists, ordinal identity, per-run snapshot
+isolation, and native IDL adaptation staging on both profiles. The report/shard
+verifiers passed 1,386 checks on 7.3.1 and 1,387 on 7.7.0. Evidence is under
+`artifacts/wire-fields-migration/`.
+
+The RTI discovery migration matched 566 queries across 176 selected checked-in
+C# captures on both profiles. Queries covered the RTI-only `-` root and every
+available topic basename; selected types and standalone JSON matched the
+original method byte for byte. Release build and license-free harness checks
+passed, including all case preferences, nested sources, duplicate candidates,
+ordinal ties, missing support, and handled builder failure without a registry
+handoff. The report/shard verifiers passed 1,386 checks on 7.3.1 and 1,387 on
+7.7.0. Evidence is under `artifacts/wire-rti-discovery-migration/`.
+
+The oracle-selection migration preserved all 364 managed/native queries across
+91 positive cases and both profiles: 355 selected paths and nine unavailable
+selections. Standalone output matched the original byte for byte. Release build
+and license-free harness checks passed, including explicit-mode suppression,
+conventional fallback, per-peer selection, and per-run/profile snapshots.
+Metadata staging and RTI discovery checks now run before any helper utility is
+built. Both report/shard verifiers passed: 1,386 checks on 7.3.1 and 1,387 on
+7.7.0. Evidence is under `artifacts/wire-oracle-selection-migration/`.
+
+The combined discovery/info migration matched 276 discovery queries and 345
+case-info lookups against the original commands using both profiles' retained
+generator sources and a saved 7.7.0 full-run source tree. All 255 successful
+discovery results retained byte-identical registry JSON and info text; the 21
+existing rejection cases retained their errors. Release build and license-free
+harness checks passed, including shared IDL inputs, namespaces, all required
+roots, wrapper aliases, missing support, and registry/info compatibility. Both
+report/shard verifiers passed: 1,386 checks on 7.3.1 and 1,387 on 7.7.0.
+Evidence is under `artifacts/wire-case-discovery-migration/`.

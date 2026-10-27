@@ -1,5 +1,5 @@
 // This template is the native reference peer for Wireloom's C# generator.
-// run-matrix.cs substitutes the RTI-generated IDL basename and fully qualified
+// NativePeerSources.cs substitutes the RTI-generated IDL basename and fully qualified
 // C++ type, then builds the result with matching Connext C++ libraries.
 // Existing DynamicData fixtures share a transport peer; case-specific typed
 // fixtures use generated members directly. Both are harness construction paths.
@@ -26,7 +26,7 @@
 #include "@IDL_BASE@Plugin.hpp"
 #else
 // rtiddsgen cannot parse this corpus union's wchar labels. For this single
-// case, run-matrix.cs selects DynamicData and this equivalent RTI type model.
+// case, NativePeerProfile.cs selects DynamicData and this equivalent RTI type model.
 #include <dds/core/xtypes/MemberType.hpp>
 #include <dds/core/xtypes/PrimitiveTypes.hpp>
 #include <dds/core/xtypes/UnionType.hpp>

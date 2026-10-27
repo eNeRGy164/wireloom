@@ -87,9 +87,8 @@ jobs:
 
       - name: Verify matrix applicability and shard reports
         run: |
-          dotnet build tests/Wireloom.Dds.Generator.WireCompatibility/scripts/matrix-tools.cs --output "$RUNNER_TEMP/matrix-tools"
-          dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-shards.cs -- "$RUNNER_TEMP/matrix-tools/matrix-tools.dll"
-          bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-harness.sh
+          dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/Wireloom.Dds.Generator.WireCompatibility.Verifier.csproj --configuration Release
+          dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj --configuration Release -- --verify-harness
         env:
           WIRE_COMPATIBILITY_RTI_VERSION: ${{ matrix.rti_version }}
 

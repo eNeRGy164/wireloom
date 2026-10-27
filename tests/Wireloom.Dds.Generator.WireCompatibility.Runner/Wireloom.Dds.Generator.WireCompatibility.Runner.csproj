@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Wireloom.Dds.Generator.WireCompatibility.Runner</RootNamespace>
+    <IsTestProject>false</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);CS7022;IL2026;IL3050</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />
+    <PackageReference Include="JetBrains.Annotations.Sources">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Wireloom.Dds.Generator.WireCompatibility.Shared/Wireloom.Dds.Generator.WireCompatibility.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="JetBrains.Annotations.PublicAPIAttribute" Alias="PublicAPI" />
+    <Using Include="Wireloom.Dds.Generator.WireCompatibility.Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Remove="Shouldly;Xunit" />
+  </ItemGroup>
+
+</Project>
