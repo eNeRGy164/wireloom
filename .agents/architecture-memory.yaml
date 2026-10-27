@@ -94,7 +94,7 @@ summary:
       bounded C# workers build remaining managed peers with isolated
       intermediate, generated-source, and output paths. A second bounded C#
       queue compiles independent native peers before one shard-wide exchange
-      scheduler runs. Bash retains RTI setup and per-case source staging.
+      scheduler runs. A C# file-based matrix runner initializes RTI environment variables, stages per-case sources, and finalizes reports.
     sources:
       - docs/architecture/arc42/05-building-block-view.md
   runtime:

@@ -54,10 +54,12 @@ still applies. The
 [wire compatibility runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#case-shards-and-combined-reports)
 owns shard execution, image/cache handling, artifact contents, and report
 assembly details. Each shard builds its selected case peers before execution.
-The runner first builds shared Wireloom project references, then builds the
-case-specific managed peers with up to four concurrent .NET builds. Native
-peers are configured per case and compiled with up to two active CMake builds,
-each using two compiler jobs. `WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY` and
+The C# matrix runner initializes the RTI environment, stages the checked-in
+oracle sources, and owns report finalization. It first builds shared Wireloom
+project references, then builds the case-specific managed peers with up to
+four concurrent .NET builds. Native peers are configured per case and compiled
+with up to two active CMake builds, each using two compiler jobs.
+`WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY` and
 `WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY` control these bounds. The C# runner
 then schedules up to 16 independent exchanges across all built cases in
 that shard by default, with a unique active DDS domain per exchange;

@@ -125,12 +125,9 @@ jobs:
             --env WIRE_COMPATIBILITY_OUTPUT_DIR="$WIRE_COMPATIBILITY_OUTPUT_DIR" \
             --env WIRE_COMPATIBILITY_SHARD_INDEX="$WIRE_COMPATIBILITY_SHARD_INDEX" \
             --env WIRE_COMPATIBILITY_SHARD_COUNT="$WIRE_COMPATIBILITY_SHARD_COUNT" \
-            --entrypoint bash \
+            --entrypoint dotnet \
             "wireloom-wire-$WIRE_COMPATIBILITY_RTI_VERSION:local" \
-            -lc '
-              eval "$(rtienv -l "$RTI_LICENSE_FILE")"
-              bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.sh
-            '
+            run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/run-matrix.cs
 
       - name: Save C++ compiler outputs
         if: always() && steps.ccache-cache.outcome == 'success' && steps.ccache-cache.outputs.cache-hit != 'true'
@@ -206,7 +203,7 @@ jobs:
           "$RUNNER_TEMP/matrix-tools/matrix-tools.dll"
 
       - name: Verify harness setup failures remain failures
-        run: bash tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-harness.sh
+        run: dotnet run --file tests/Wireloom.Dds.Generator.WireCompatibility/scripts/verify-harness.cs
 
       - name: Validate and combine all exchanges
         run: >-
