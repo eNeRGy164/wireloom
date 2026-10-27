@@ -75,13 +75,13 @@ async (page) => {
             worker.onmessage = ({ data }) =>
               data.type === "result" ? resolve(data.response) : reject(new Error(data.message));
             worker.postMessage({
-              protocolVersion: 1,
+              protocolVersion: 2,
               workerGeneration: 1,
               requestId: 1,
               workspaceRevision: 1,
               profile,
               files: [{ path, source, isGenerationRoot: true }],
-              options: {},
+              options: { defines: [], undefines: [], includeDirectories: [], strict: false, enableEscapeChar: false },
             });
           });
         } finally {
@@ -394,11 +394,11 @@ async (page) => {
               await app.locator("#example").selectOption(example.id);
               await app.locator("#load-example").click();
               await wait(app);
-              const expected = await direct(app, example.source, profile);
               const baseline = input.exampleExpected.find(
                 (value) => value.caseId === `example-${example.id}` && value.profile === profile,
               );
               assert(baseline, `Missing native example baseline: ${example.id}/${profile}`);
+              const expected = baseline;
               const documents = [...expected.documents].sort((a, b) =>
                 a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
               );
@@ -582,10 +582,11 @@ async (page) => {
         try {
           for (const eol of ["\n", "\r\n"]) {
             await app.locator("#file").setInputFiles({
-              name: "unicode.idl",
+              name: "main.idl",
               mimeType: "text/plain",
               buffer: Buffer.from(`// é 😀${eol}struct Broken { long value;${eol}`),
             });
+            await app.getByRole("dialog").getByRole("button", { name: "Replace", exact: true }).click();
             await wait(app);
             const diagnostic = app.locator("#diagnostics button").first();
             assert((await diagnostic.count()) > 0, "Source diagnostic was not navigable");
@@ -645,15 +646,14 @@ async (page) => {
           const stored = await saved(app);
           assert(
             stored.profile === "7.3.1" &&
-              stored.files[0].source === source &&
-              stored.files[0].path === "/workspace/imported.idl",
+              stored.files.some((file) => file.source === source && file.path === "/workspace/imported.idl"),
             "Recovery record differs",
           );
           await app.reload();
           await wait(app);
           assert(
             (await app.locator("#profile").inputValue()) === "7.3.1" &&
-              (await app.locator("#input-name").textContent()) === "imported.idl",
+              (await app.locator("#source-tabs [aria-selected=true]").textContent()) === "imported.idl",
             "Reload did not restore",
           );
           assert(
@@ -675,16 +675,17 @@ async (page) => {
           app.on("dialog", (dialog) => dialog.dismiss());
           await app.locator("#load-example").click();
           assert(
-            (await app.locator("#input-name").textContent()) === "imported.idl",
+            (await app.locator("#source-tabs [aria-selected=true]").textContent()) === "imported.idl",
             "Canceled example replaced source",
           );
           await app.locator("#file").setInputFiles({
-            name: "canceled.idl",
+            name: "imported.idl",
             mimeType: "text/plain",
             buffer: Buffer.from("struct Cancelled { long x; };"),
           });
+          await app.getByRole("dialog").getByRole("button", { name: "Cancel", exact: true }).click();
           assert(
-            (await app.locator("#input-name").textContent()) === "imported.idl",
+            (await app.locator("#source-tabs [aria-selected=true]").textContent()) === "imported.idl",
             "Canceled import replaced source",
           );
           app.removeAllListeners("dialog");
@@ -707,19 +708,19 @@ async (page) => {
       },
     );
     await check(
-      "invalid UTF-8, wrong extension, and oversized imports leave successful workspace untouched",
+      "invalid UTF-8, invalid virtual names, and oversized imports leave successful workspace untouched",
       async () => {
         const { app, context } = await open();
         try {
           const names = await app.locator("#file-list button").allTextContents();
           for (const file of [
             { name: "invalid.idl", mimeType: "text/plain", buffer: Buffer.from([0xc3, 0x28]) },
-            { name: "invalid.txt", mimeType: "text/plain", buffer: Buffer.from("wrong") },
+            { name: "invalid\u0001.idl", mimeType: "text/plain", buffer: Buffer.from("wrong") },
             { name: "large.idl", mimeType: "text/plain", buffer: Buffer.alloc(262145, 97) },
           ]) {
             await app.locator("#file").setInputFiles(file);
             await app.waitForFunction(() =>
-              document.querySelector("#notice").textContent.includes("Could not open IDL"),
+              document.querySelector("#notice").textContent.includes("Could not import files"),
             );
             assert(
               JSON.stringify(await app.locator("#file-list button").allTextContents()) === JSON.stringify(names),
@@ -733,6 +734,7 @@ async (page) => {
         }
       },
     );
+
     await check("unavailable, failed-write, and invalid/older recovery data leave editing usable", async () => {
       const outcomes = [];
       for (const mode of ["unavailable", "quota", "older"]) {
@@ -750,6 +752,7 @@ async (page) => {
               };
           }, mode);
         });
+
         try {
           if (mode === "older") {
             await app.evaluate(async () => {
@@ -767,9 +770,11 @@ async (page) => {
             await app.reload();
             await wait(app);
           }
+
           await app.waitForFunction(() =>
             document.querySelector("#notice").textContent.toLowerCase().includes("recovery is unavailable"),
           );
+
           await edit(app, "struct StorageStillWorks { long value; };");
           assert(
             await app
@@ -778,11 +783,13 @@ async (page) => {
               .then((text) => text.includes("StorageStillWorks")),
             "Storage failure prevented generation",
           );
+
           if (mode === "older") {
             await app.locator("#reset").click();
             await wait(app);
             await app.waitForFunction(() => document.querySelector("#source-state").textContent === "Saved locally");
           }
+
           outcomes.push(mode);
         } finally {
           await context.close();
@@ -791,10 +798,12 @@ async (page) => {
       return { modes: outcomes };
     });
   }
+
   if (input.phase === "ui-faults") {
     await check("missing editor chunk offers reload without losing recovery", async () => {
       const context = await browser.newContext();
       const app = await context.newPage();
+
       try {
         await app.route("**/assets/main-*.js", (route) => route.abort());
         await app.goto(input.root);
@@ -811,6 +820,7 @@ async (page) => {
     await check("missing runtime asset is retryable without losing editor source", async () => {
       const context = await browser.newContext();
       const app = await context.newPage();
+
       try {
         await app.route("**/dotnet.native*.js", (route) => route.abort());
         await app.goto(input.root);
@@ -824,6 +834,7 @@ async (page) => {
         await context.close();
       }
     });
+
     await check("busy compiler keeps newest edit/profile, clears stale exports, and replaces on watchdog", async () => {
       const { app, context } = await open();
       try {
@@ -853,5 +864,6 @@ async (page) => {
       }
     });
   }
+
   return report;
 };
