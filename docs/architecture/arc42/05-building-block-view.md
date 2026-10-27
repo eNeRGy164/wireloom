@@ -46,7 +46,7 @@ worker generation, monotonic request ID, workspace revision, explicit profile,
 virtual-path file collection, root flags, file-owned settings, and batch settings.
 The .NET adapter DTOs own protocol v2; TypeScript mirrors them and adapter tests
 check parity in Quality. The client owns the explicit folder tree, stable
-source/editor identities, atomic import/move operations, and v2 local recovery. The
+source/editor identities, atomic import/move operations, and v3 local recovery. The
 host validates normalized unique `/workspace/` paths and a 256 KiB total
 UTF-8 input cap before calling the compiler. The host caps responses at 512
 documents and 16 MiB of generated UTF-8 text. Compiler diagnostics carry the
@@ -239,10 +239,10 @@ initial appearance to a stored Light/Dark choice, synchronized with Monaco.
 Pointer and keyboard controls resize the explorer independently from the
 source/output divider, which repartitions only the remaining editor area.
 
-The version-2 workspace stores files, explicit folders including empty ones,
+The version-3 workspace stores files, explicit folders including empty ones,
 Root/Include-only roles, declaring-file settings, batch settings, profile, and
-active source ID. All Roots compile as one immutable batch. Valid v1 records
-migrate without changing source or profile. `RecoveryStore` serializes
+active source ID. All Roots compile as one immutable batch. Unsupported or
+malformed records report a recovery error. `RecoveryStore` serializes
 IndexedDB writes and deletion
 so pending saves cannot resurrect a reset workspace. It validates recovered
 paths, schema, profile, and UTF-8 size, stores source/settings only, and

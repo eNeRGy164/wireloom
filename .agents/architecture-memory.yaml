@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-27T00:58:47Z
+  generated_at: 2026-10-27T11:08:41Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -145,8 +145,10 @@ summary:
       Browser workspace quality scenarios require atomic changes, preserved
       editor undo, and exact local recovery.
       Playground checks add strict TypeScript, ESLint, Prettier, direct Node
-      coverage at 95% branches and 98% lines, Chromium coverage, and focused
-      C# adapter tests. Coveralls combines Playground and adapter Cobertura
+      coverage at 98% branches and 99% lines, Chromium coverage, and focused
+      C# adapter tests. Combined source-mapped Chromium coverage includes
+      browser-only UI paths and is tracked separately from the direct Node gate.
+      Coveralls combines Playground and adapter Cobertura
       with compiler and generator reports; Community Qodana scans the .NET
       solution. Current local results and pending remote gates are recorded
       in the qualification guide.
@@ -187,12 +189,14 @@ summary:
       .NET 10 browser-WASM module worker. Versioned requests carry worker,
       request, revision, profile, and file identity; the client accepts only
       current responses and keeps one active plus the newest pending request.
-      Protocol v2 is owned by .NET adapter DTOs with a TypeScript mirror
+      Protocol v3 is owned by .NET adapter DTOs with a TypeScript mirror
       checked in Quality. The UI provides an explicit virtual folder tree,
       stable per-file Monaco models, atomic multi-file import, root roles,
-      workspace and declaring-file settings, cross-file diagnostics, generated
-      browsing and exports. Recovery v2 migrates v1 source/profile records
-      and persists empty folders. All Roots compile together; rootless/empty
+      root Defines/Undefines/Strict settings, workspace sequence defaults,
+      file-level sequence/string size overrides, escape handling, and include
+      folders, cross-file diagnostics, generated
+      browsing and exports. Recovery stores v3 workspace records and persists
+      empty folders. All Roots compile together; rootless/empty
       workspaces clear output without dispatch. Include folders are searched
       alphabetically and follow virtual moves; source text stays unchanged.
       Source and Generated groups collapse independently with spacing between

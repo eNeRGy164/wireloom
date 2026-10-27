@@ -73,22 +73,25 @@ Create, rename, move, delete, and import multiple files through familiar tree
 controls and context menus. Imports use basenames in the selected folder and
 resolve collisions atomically. Empty folders survive reload. File context menus switch Root/Include-only;
 folder menus add/remove the selected folder from include search. File menus contain no folder actions. New files are
-Roots by default; Properties can mark them Include-only and set declaring-file
-mapping and size options. Workspace Settings controls batch preprocessing,
-include folders, strictness, and escaped identifiers. Includes use the shared
-compiler's rules; configured folders are searched alphabetically.
+Roots by default; file properties can mark them Include-only. Root Properties
+sets root defines, undefines, and strict validation. Workspace Settings sets
+project sequence mapping and size defaults, escape-character handling, and
+include folders. Includes use the shared compiler's rules; configured folders
+are searched alphabetically.
 
 Edits debounce for 300 ms; examples, imports, recovery, settings, and profile
 changes compile automatically. Both RTI profiles and nine examples are
-available, including two multi-file examples. Version-2 IndexedDB recovery
-preserves files, folders, roles, options, active file, and profile and migrates
-existing v1 single-file records. Empty and no-Root workspaces clear output. The Source ZIP button saves all
-current files, empty folders, and workspace settings independently of compiler
-success. Escape cancels all dialogs; Properties uses two-option role/mapping
-toggles.
+available, including two multi-file examples. Version-3 IndexedDB recovery
+preserves files, folders, roles, options, active file, and profile. Unsupported
+or malformed workspace records report a recovery error and leave editing
+available. Empty and no-Root workspaces clear output. The
+Source ZIP button saves current files, empty folders, workspace settings, and a
+matching `Wireloom.csproj` independently of compiler success. Escape cancels all
+dialogs; file properties are available from a source tab's context menu and use
+a two-option role toggle.
 The IDL editor also offers Copy and Download for the active source, regardless
 of compilation success; both are disabled when the workspace is empty.
-See the [workspace guide and v2 contract](../docs/guides/playground-workspaces.md)
+See the [workspace guide and v3 contract](../docs/guides/playground-workspaces.md)
 for operations, limits, settings scope, error behavior, and exports.
 
 Every successful document opens immediately in tabs and is listed in the
@@ -129,7 +132,7 @@ The synchronous MD5 provider and its 21 Node tests are retained from commit
 pending work, complete response identity, stale responses, replacement,
 startup recovery, timeout identity across worker replacement, and draining
 queued work when a replacement becomes ready.
-Workspace tests cover aggregate UTF-8 bounds, v1 migration, explicit folders,
+Workspace tests cover aggregate UTF-8 bounds, current-schema recovery, explicit folders,
 paths, atomic operations, settings, and rejected recovery data. Direct compiler-client and recovery-saver
 tests cover active restarts, request failures, and outdated save confirmations.
 

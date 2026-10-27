@@ -429,10 +429,9 @@ workspace settings in `workspace.json`, with source entries under `workspace/`.
 This export also works with invalid or empty compiler input.
 
 Workspace recovery uses the `wireloom-playground` IndexedDB database and a
-version-2 workspace record with files, explicit folders (including empty
+version-3 workspace record with files, explicit folders (including empty
 folders), roles, file and workspace settings, profile, and active source ID.
-Valid v1 records migrate with exact source/profile and default compiler settings;
-unknown or malformed versions fail explicitly. Writes/deletion are ordered, and save callbacks
+Unknown or malformed versions fail explicitly. Writes/deletion are ordered, and save callbacks
 carry a generation so old completions do not mislabel newer edits. No source
 is placed in URLs, telemetry, or network requests. All runtime/editor assets
 are bundled at the deployment base. A small bootstrap provides reload recovery

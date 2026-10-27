@@ -41,12 +41,21 @@ or **Include-only** directly. In **Properties**, the two-option role toggle sele
 to make it available through includes without starting generation itself. All
 Roots compile together in one batch under the selected RTI profile. With files
 but no Roots, the workspace reports “Mark at least one file as Root” and clears
-generated output. An empty workspace waits for a new or imported file.
+generated output. A fresh or reset workspace is empty; its editor offers
+shortcuts to create a blank IDL file or load the **Hello, Wireloom** example.
 
-**Workspace Settings** configures defines, undefines, include folders, strict
-validation, and escape-character handling for the complete batch. Enter one
-definition (`NAME` or `NAME=value`) or undefinition per line. Undefines apply
-after defines. Each Root starts with the compiler's initial macro environment.
+Root **Properties** configures defines, undefines, and strict validation for
+that `DdsIdl` root. Enter one definition (`NAME` or `NAME=value`) or
+undefinition per line. Undefines apply after defines. Each Root starts with
+the compiler's initial macro environment.
+
+**Workspace Settings** configures project defaults for sequence-array mapping,
+unbounded sequence size, and unbounded string size. It also configures
+escape-character handling for the batch and include folders. Defaults are
+`RtiCSharp`, 100, and 255. File Properties shows these effective project
+values by default. Changing a file's sequence or string size saves a file-level
+preference that remains in effect when project defaults change; **Use project
+setting** clears that override.
 
 Quoted includes search the including file's folder first, then configured
 include folders. Angle includes search configured folders only. No folders
@@ -55,11 +64,7 @@ include search. File menus contain only file actions, including the role toggle
 and Properties. Selected include folders are searched in ordinal
 alphabetical order, so the first matching folder takes precedence.
 
-File **Properties** uses an **RTI C# / IDL** toggle for sequence-array mapping
-and number fields for effective unbounded
-sequence/string sizes for declarations in that file, including Include-only
-files. Defaults are `RtiCSharp`, 100, and 255. These settings do not flow from a
-Root into declarations in an included file. See the
+See the
 [compiler configuration guide](configuration.md#settings-at-a-glance).
 
 The **Workspace: Root and includes** and **Workspace: preprocessor settings**
@@ -81,8 +86,10 @@ source, including unfinished or invalid IDL. They are disabled when no source
 file is open. Download uses the virtual basename and preserves the source text.
 
 The Source pane's **ZIP** button saves `wireloom-sources.zip`, including current
-source text under `workspace/`, explicit empty folders, and a `workspace.json`
-record containing source, profile, roles, and settings. Source backup remains
+source text under `workspace/`, a `Wireloom.csproj` preview in that folder,
+explicit empty folders, and a `workspace.json` record containing source, profile,
+roles, and settings. The project preview uses paths relative to `workspace/` and
+reflects the current generator settings. Source backup remains
 available for unfinished, oversized, rootless, and empty workspaces; it does
 not depend on successful compilation. Downloading does not change imported
 host files.
@@ -90,26 +97,25 @@ host files.
 Failed operations use a red notice with an **Error** label and alert semantics
 in both themes. Notices can be dismissed; hovering or focusing pauses their timer.
 
-The existing `wireloom-playground` IndexedDB database stores a version-2
+The existing `wireloom-playground` IndexedDB database stores a version-3
 workspace record: file identities, paths, sources, file settings, roles,
-explicit folders, active file, workspace settings, and profile. A valid version-1
-single-file record migrates with its exact source, virtual basename, and profile,
-as a Root with default settings. Unknown or malformed versions report a
-recovery error and leave editing available. Reload regenerates output.
+explicit folders, active file, workspace settings, and profile. Version 3 is the
+current format. Older, unknown, or malformed records report a recovery error
+and leave editing available. Reload regenerates output.
 
-## Worker contract v2
+## Worker contract v3
 
 The canonical contract is the .NET adapter DTOs in
 [`PlaygroundCompilerAdapter.cs`](../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs).
 [`protocol.ts`](../../playground/src/protocol.ts) mirrors their field names and
 types. Adapter tests in Quality verify parity. The client and worker ship in
 one static release, so no cross-release protocol compatibility window is
-supported. Version-1 compile requests are rejected; recovery migration is a
-separate concern.
+supported. Version-1 compile requests are rejected. Workspace records use the
+current version-3 format without schema migration.
 
 ```json
 {
-  "protocolVersion": 2,
+  "protocolVersion": 3,
   "workerGeneration": 1,
   "requestId": 1,
   "workspaceRevision": 1,
@@ -120,26 +126,28 @@ separate concern.
       "source": "struct Sample { long value; };",
       "isGenerationRoot": true,
       "options": {
-        "sequenceArrayMapping": "RtiCSharp",
-        "sequenceSize": 100,
-        "stringSize": 255
+        "defines": [],
+        "undefines": [],
+        "strict": false
       }
     }
   ],
   "options": {
-    "defines": [],
-    "undefines": [],
+    "sequenceArrayMapping": "RtiCSharp",
+    "sequenceSize": 100,
+    "stringSize": 255,
     "includeDirectories": [],
-    "strict": false,
     "enableEscapeChar": false
   }
 }
 ```
 
-File options may be omitted to select defaults. Workspace settings use the
-complete shape above. Recovery-only file IDs, explicit folders, and active
-selection are not sent to the compiler. The adapter uses only supplied text
-and virtual paths; it never opens a host file.
+Root file options carry `Defines`, `Undefines`, and `Strict`, matching
+`DdsIdl` item metadata. Workspace settings carry project sequence defaults,
+escape-character behavior, and include directories. File options may be
+omitted to select root defaults. Recovery-only file IDs, explicit folders,
+and active selection are not sent to the compiler. The adapter uses only
+supplied text and virtual paths; it never opens a host file.
 
 | Input            | Limit or rule                                                                                        |
 | :--------------- | :--------------------------------------------------------------------------------------------------- |
