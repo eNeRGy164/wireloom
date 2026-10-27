@@ -1,9 +1,11 @@
 import * as monaco from "monaco-editor/editor/editor.api.js";
+import "monaco-editor/editor/contrib/folding/browser/folding.js";
 import "monaco-editor/languages/definitions/csharp/register.js";
 import EditorWorker from "monaco-editor/editor/editor.worker.js?worker";
 import type { Diagnostic } from "./protocol";
 import type { SourceFile } from "./workspace";
 import { onThemeChange } from "./theme";
+import { xmlCommentEnd } from "./xml-comment";
 
 self.MonacoEnvironment = { getWorker: () => new EditorWorker() };
 monaco.languages.register({ id: "idl" });
@@ -71,6 +73,7 @@ monaco.languages.setMonarchTokensProvider("idl", {
 });
 monaco.languages.setLanguageConfiguration("idl", {
   comments: { lineComment: "//", blockComment: ["/*", "*/"] },
+  wordPattern: /[A-Za-z_][\w]*/g,
   brackets: [
     ["{", "}"],
     ["[", "]"],
@@ -81,6 +84,71 @@ monaco.languages.setLanguageConfiguration("idl", {
     { open: "(", close: ")" },
     { open: '"', close: '"' },
   ],
+});
+
+monaco.languages.register({ id: "xml" });
+monaco.languages.setMonarchTokensProvider("xml", {
+  tokenizer: {
+    root: [
+      [/<!--/, "comment", "@comment"],
+      [/<\?/, "metatag", "@processing"],
+      [/<\/?[A-Za-z_][\w:.-]*/, "tag"],
+      [/\b[A-Za-z_][\w:.-]*(?=\s*=)/, "attribute.name"],
+      [/\/?\s*>/, "delimiter"],
+      [/=/, "delimiter"],
+      [/["'][^"']*["']/, "string"],
+    ],
+    comment: [
+      [xmlCommentEnd, "comment", "@pop"],
+      [/./, "comment"],
+    ],
+    processing: [
+      [/\?>/, "metatag", "@pop"],
+      [/./, "metatag"],
+    ],
+  },
+});
+
+monaco.languages.registerFoldingRangeProvider("idl", {
+  provideFoldingRanges(model) {
+    const ranges: monaco.languages.FoldingRange[] = [];
+    const openLines: number[] = [];
+    let blockComment = false;
+    let quote = "";
+
+    for (let lineNumber = 1; lineNumber <= model.getLineCount(); lineNumber++) {
+      const line = model.getLineContent(lineNumber);
+      for (let index = 0; index < line.length; index++) {
+        const character = line[index];
+        const next = line[index + 1];
+        if (blockComment) {
+          if (character === "*" && next === "/") {
+            blockComment = false;
+            index++;
+          }
+          continue;
+        }
+        if (quote) {
+          if (character === "\\") index++;
+          else if (character === quote) quote = "";
+          continue;
+        }
+        if (character === "/" && next === "/") break;
+        if (character === "/" && next === "*") {
+          blockComment = true;
+          index++;
+        } else if (character === '"' || character === "'") quote = character;
+        else if (character === "{") openLines.push(lineNumber);
+        else if (character === "}" && openLines.length) {
+          const start = openLines.pop()!;
+          if (lineNumber > start) ranges.push({ start, end: lineNumber });
+        }
+      }
+      if (quote) quote = "";
+    }
+
+    return ranges.sort((left, right) => left.start - right.start || right.end - left.end);
+  },
 });
 
 const common: monaco.editor.IStandaloneEditorConstructionOptions = {
@@ -94,6 +162,9 @@ const common: monaco.editor.IStandaloneEditorConstructionOptions = {
   renderLineHighlight: "gutter",
   tabSize: 4,
   wordWrap: "off",
+  glyphMargin: true,
+  folding: true,
+  showFoldingControls: "always",
   fixedOverflowWidgets: true,
 };
 
@@ -116,7 +187,53 @@ export class Editors {
       domReadOnly: true,
       ariaLabel: "Generated C# editor",
     });
+    input.addEventListener(
+      "keydown",
+      (event) => {
+        const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+        if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+        if (isMac ? !event.altKey || event.ctrlKey : !event.ctrlKey || event.altKey) return;
+        event.preventDefault();
+        event.stopPropagation();
+        this.moveByWord(event.key === "ArrowLeft" ? -1 : 1, event.shiftKey);
+      },
+      true,
+    );
     onThemeChange((theme) => monaco.editor.setTheme(theme === "dark" ? "vs-dark" : "vs"));
+  }
+
+  private moveByWord(direction: -1 | 1, extend: boolean) {
+    const model = this.input.getModel();
+    const selection = this.input.getSelection();
+    if (!model || !selection) return;
+    const text = model.getValue();
+    const activeOffset = model.getOffsetAt(selection.getPosition());
+    let offset = activeOffset;
+    if (!extend && !selection.isEmpty()) {
+      offset = model.getOffsetAt(direction < 0 ? selection.getStartPosition() : selection.getEndPosition());
+    }
+    const isWord = (character: string | undefined) => character !== undefined && /[A-Za-z0-9_]/.test(character);
+    if (direction < 0) {
+      if (offset > 0) offset--;
+      while (offset > 0 && !isWord(text[offset])) offset--;
+      while (offset > 0 && isWord(text[offset - 1])) offset--;
+    } else {
+      while (offset < text.length && isWord(text[offset])) offset++;
+      while (offset < text.length && !isWord(text[offset])) offset++;
+    }
+    const destination = model.getPositionAt(offset);
+    if (!extend) this.input.setPosition(destination);
+    else {
+      const anchor = selection.isEmpty()
+        ? selection.getPosition()
+        : selection.getDirection() === monaco.SelectionDirection.LTR
+          ? selection.getStartPosition()
+          : selection.getEndPosition();
+      this.input.setSelection(
+        new monaco.Selection(anchor.lineNumber, anchor.column, destination.lineNumber, destination.column),
+      );
+    }
+    this.input.revealPositionInCenter(destination);
   }
 
   get source() {
@@ -221,7 +338,7 @@ export class Editors {
         doc.name,
         monaco.editor.createModel(
           doc.source,
-          "csharp",
+          doc.name.toLowerCase().endsWith(".csproj") ? "xml" : "csharp",
           monaco.Uri.parse(`inmemory://generated/${encodeURIComponent(doc.name)}`),
         ),
       );
@@ -232,5 +349,10 @@ export class Editors {
     this.active = name;
     this.output.setModel(this.outputs.get(name) ?? null);
     this.output.restoreViewState(this.views.get(name) ?? null);
+  }
+
+  updateOutput(name: string, source: string) {
+    const model = this.outputs.get(name);
+    if (model && model.getValue(monaco.editor.EndOfLinePreference.TextDefined) !== source) model.setValue(source);
   }
 }

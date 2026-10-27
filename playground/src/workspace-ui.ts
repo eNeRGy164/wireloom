@@ -18,18 +18,21 @@ import { askPath, choose, settingsDialog } from "./workspace-dialogs";
 interface Callbacks {
   current(): { workspace: Workspace; activeId?: string; revision: number };
   change(workspace: Workspace, activeId?: string): void;
-  select(id: string): void;
+  select(id?: string): void;
   notice(message: string, kind?: "info" | "error"): void;
 }
 
 /** Presents the virtual source tree; the compiler receives only immutable snapshots. */
 export class SourceWorkbench {
-  private selected = workspaceRoot;
+  private selected: string | undefined = workspaceRoot;
+  private focusedPath = workspaceRoot;
   private expanded = new Set([workspaceRoot]);
   private knownFolders = new Set<string>();
   private menu?: HTMLElement;
   private draggedPath?: string;
   private importTicket = 0;
+  private openFiles = new Set<string>();
+  private knownFiles = new Set<string>();
 
   constructor(
     private tree: HTMLElement,
@@ -38,19 +41,25 @@ export class SourceWorkbench {
   ) {
     document.getElementById("new-file")!.addEventListener("click", () => void this.create(false));
     document.getElementById("new-folder")!.addEventListener("click", () => void this.create(true));
-    document.getElementById("collapse-folders")!.addEventListener("click", () => {
-      this.expanded = new Set([workspaceRoot]);
-      this.selected = workspaceRoot;
-      this.render();
-    });
     document
       .getElementById("source-actions")!
       .addEventListener("click", (event) => this.contextMenu(event as MouseEvent));
     document.getElementById("workspace-settings")!.addEventListener("click", () => void this.settings());
-    document
-      .getElementById("file-properties")!
-      .addEventListener("click", () => void this.settings(this.callbacks.current().activeId));
+    this.tabs.addEventListener("contextmenu", (event) => this.tabStripMenu(event as MouseEvent));
     this.tree.addEventListener("keydown", (event) => this.navigate(event));
+    const explorerContent = document.getElementById("explorer-content")!;
+    explorerContent.addEventListener("click", (event) => {
+      if (!this.isExplorerBlankTarget(event.target)) return;
+      this.selected = undefined;
+      this.render();
+    });
+    explorerContent.addEventListener("contextmenu", (event) => {
+      if (!this.isExplorerBlankTarget(event.target)) return;
+      event.preventDefault();
+      this.selected = undefined;
+      this.render();
+      this.contextMenu(event);
+    });
     document.addEventListener("pointerdown", (event) => {
       if (this.menu && !this.menu.contains(event.target as Node)) this.closeMenu();
     });
@@ -58,17 +67,40 @@ export class SourceWorkbench {
 
   private destination() {
     const { workspace } = this.callbacks.current();
-    return workspace.files.some((file) => file.path === this.selected) ? parentPath(this.selected) : this.selected;
+    const selected = this.selected ?? workspaceRoot;
+    return workspace.files.some((file) => file.path === selected) ? parentPath(selected) : selected;
+  }
+
+  private isExplorerBlankTarget(target: EventTarget | null) {
+    return !(target instanceof Element) || !target.closest(".source-tree-item, button, input, select, a");
+  }
+
+  private relativePath(path: string) {
+    return path === workspaceRoot ? "" : path.slice(workspaceRoot.length + 1);
+  }
+
+  private resolveRelativePath(path: string) {
+    const value = path.trim();
+    if (!value || value === ".") return workspaceRoot;
+    if (value.startsWith("/")) throw new Error("Enter a path relative to the workspace root.");
+    const fullPath = `${workspaceRoot}/${value}`;
+    validatePath(fullPath, true);
+    return fullPath;
   }
 
   render() {
     const { workspace, activeId } = this.callbacks.current();
+    const currentFiles = new Set(workspace.files.map((file) => file.id));
+    for (const id of currentFiles) if (!this.knownFiles.has(id)) this.openFiles.add(id);
+    for (const id of this.openFiles) if (!currentFiles.has(id)) this.openFiles.delete(id);
+    this.knownFiles = currentFiles;
+    if (activeId) this.openFiles.add(activeId);
     const folders = new Set([workspaceRoot, ...workspace.folders]);
     for (const folder of folders) if (!this.knownFolders.has(folder)) this.expanded.add(folder);
     for (const folder of this.expanded) if (!folders.has(folder)) this.expanded.delete(folder);
     this.knownFolders = folders;
     const focused = this.tree.contains(document.activeElement);
-    if (!hasPath(workspace, this.selected)) this.selected = workspaceRoot;
+    if (this.selected && !hasPath(workspace, this.selected)) this.selected = workspaceRoot;
     const paths = [workspaceRoot, ...workspace.folders, ...workspace.files.map((file) => file.path)];
     const nodes: HTMLElement[] = [];
     const visit = (path: string, level: number) => {
@@ -80,8 +112,9 @@ export class SourceWorkbench {
       row.setAttribute("aria-level", String(level));
       row.setAttribute("aria-selected", String(path === this.selected));
       if (!file) row.setAttribute("aria-expanded", String(this.expanded.has(path)));
-      row.tabIndex = path === this.selected ? 0 : -1;
+      row.tabIndex = path === this.focusedPath ? 0 : -1;
       row.addEventListener("focus", () => {
+        this.focusedPath = path;
         this.selected = path;
         for (const item of this.tree.querySelectorAll<HTMLElement>('[role="treeitem"]')) {
           item.tabIndex = item === row ? 0 : -1;
@@ -108,6 +141,7 @@ export class SourceWorkbench {
         row.append(badge);
       }
       row.addEventListener("click", () => {
+        this.focusedPath = path;
         this.selected = path;
         if (file) this.callbacks.select(file.id);
         else {
@@ -119,6 +153,7 @@ export class SourceWorkbench {
       });
       row.addEventListener("contextmenu", (event) => {
         event.preventDefault();
+        this.focusedPath = path;
         this.selected = path;
         this.render();
         this.contextMenu(event);
@@ -159,13 +194,34 @@ export class SourceWorkbench {
         children.forEach((child) => visit(child, level + 1));
       }
     };
-    visit(workspaceRoot, 1);
+    const rootChildren = paths.filter((path) => path !== workspaceRoot && parentPath(path) === workspaceRoot);
+    rootChildren.sort(
+      (a, b) =>
+        Number(workspace.folders.includes(b)) - Number(workspace.folders.includes(a)) || (a < b ? -1 : a > b ? 1 : 0),
+    );
+    rootChildren.forEach((path) => visit(path, 1));
+    if (this.selected && !nodes.some((row) => row.dataset.path === this.selected) && nodes[0]) {
+      this.selected = nodes[0].dataset.path!;
+    }
+    if (!nodes.some((row) => row.dataset.path === this.focusedPath) && nodes[0]) {
+      this.focusedPath = nodes[0].dataset.path!;
+    }
+    for (const row of nodes) {
+      const selected = row.dataset.path === this.selected;
+      row.tabIndex = row.dataset.path === this.focusedPath ? 0 : -1;
+      row.setAttribute("aria-selected", String(selected));
+    }
     this.tree.replaceChildren(...nodes);
     if (focused) this.focusSelected();
+    const openFiles = workspace.files.filter((file) => this.openFiles.has(file.id));
     this.tabs.replaceChildren(
-      ...workspace.files.map((file, index) => {
+      ...openFiles.map((file, index) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "editor-tab";
+        wrapper.setAttribute("role", "presentation");
         const tab = document.createElement("button");
         tab.id = `source-tab-${index}`;
+        tab.className = "editor-tab-label";
         tab.textContent = file.path.split("/").pop()!;
         tab.title = file.path;
         const icon = document.createElement("span");
@@ -178,6 +234,17 @@ export class SourceWorkbench {
         tab.tabIndex = file.id === activeId ? 0 : -1;
         if (file.id === activeId) document.getElementById("source-panel")!.setAttribute("aria-labelledby", tab.id);
         tab.addEventListener("click", () => this.selectFile(file.id));
+        tab.addEventListener("contextmenu", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          this.tabMenu(event, file.id);
+        });
+        tab.addEventListener("auxclick", (event) => {
+          if (event.button !== 1) return;
+          event.preventDefault();
+          event.stopPropagation();
+          this.closeFile(file.id);
+        });
         tab.addEventListener("keydown", (event) => {
           const direction = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
           if (!direction && event.key !== "Home" && event.key !== "End") return;
@@ -186,27 +253,52 @@ export class SourceWorkbench {
             event.key === "Home"
               ? 0
               : event.key === "End"
-                ? workspace.files.length - 1
-                : (index + direction + workspace.files.length) % workspace.files.length;
-          this.selectFile(workspace.files[next].id);
+                ? openFiles.length - 1
+                : (index + direction + openFiles.length) % openFiles.length;
+          this.selectFile(openFiles[next].id);
           this.tabs.querySelector<HTMLButtonElement>('[aria-selected="true"]')?.focus();
         });
-        return tab;
+        const close = document.createElement("button");
+        close.type = "button";
+        close.className = "editor-tab-close";
+        close.textContent = "×";
+        close.title = `Close ${file.path.split("/").pop()}`;
+        close.setAttribute("aria-label", `Close ${file.path.split("/").pop()}`);
+        close.addEventListener("click", (event) => {
+          event.stopPropagation();
+          this.closeFile(file.id);
+        });
+        close.addEventListener("contextmenu", (event) => event.stopPropagation());
+        wrapper.append(tab, close);
+        return wrapper;
       }),
     );
-    for (const id of ["file-properties", "copy-source", "download-source-file"])
+    for (const id of ["copy-source", "download-source-file"])
       (document.getElementById(id) as HTMLButtonElement).disabled = !activeId;
-    document.getElementById("empty-source")!.hidden = workspace.files.length > 0;
-    if (!workspace.files.length) document.getElementById("source-panel")!.removeAttribute("aria-labelledby");
+    const empty = document.getElementById("empty-source")!;
+    empty.hidden = this.openFiles.size > 0;
+    empty.querySelector("h2")!.textContent = workspace.files.length
+      ? "No source file is open"
+      : "Your workspace is empty";
+    empty.querySelector("p")!.textContent = workspace.files.length
+      ? "Choose a file in the Explorer to open it."
+      : 'Create or import IDL files, or load the "Hello, Wireloom" example.';
+    empty
+      .querySelectorAll("button")
+      .forEach((button) => ((button as HTMLButtonElement).hidden = workspace.files.length > 0));
+    if (!this.openFiles.size) document.getElementById("source-panel")!.removeAttribute("aria-labelledby");
+    const rootCount = workspace.files.filter((file) => file.isGenerationRoot).length;
     document.getElementById("source-count")!.textContent =
-      `${workspace.files.length} files · ${workspace.files.filter((file) => file.isGenerationRoot).length} Roots`;
+      `${workspace.files.length} files · ${rootCount} ${rootCount === 1 ? "Root" : "Roots"}`;
   }
 
   selectFile(id: string) {
     const file = this.callbacks.current().workspace.files.find((file) => file.id === id);
     if (!file) return;
     this.revealSourceGroup();
+    this.openFiles.add(id);
     this.selected = file.path;
+    this.focusedPath = file.path;
     let path = parentPath(file.path);
     while (path.startsWith(workspaceRoot)) {
       this.expanded.add(path);
@@ -214,6 +306,83 @@ export class SourceWorkbench {
     }
     this.callbacks.select(id);
     this.tabs.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+
+  private closeFile(id: string) {
+    const { workspace, activeId } = this.callbacks.current();
+    const open = workspace.files.filter((file) => this.openFiles.has(file.id));
+    const index = open.findIndex((file) => file.id === id);
+    this.openFiles.delete(id);
+    if (activeId === id) {
+      const next = open[index + 1] ?? open[index - 1];
+      this.callbacks.select(next?.id);
+      this.tabs.querySelector<HTMLButtonElement>('[aria-selected="true"]')?.focus();
+    } else this.render();
+  }
+
+  private closeAllFiles() {
+    if (!this.openFiles.size) return;
+    this.openFiles.clear();
+    this.callbacks.select(undefined);
+  }
+
+  private tabStripMenu(event: MouseEvent) {
+    event.preventDefault();
+    this.closeMenu();
+    const menu = document.createElement("div");
+    menu.className = "source-context-menu";
+    menu.setAttribute("role", "menu");
+    menu.setAttribute("aria-label", "Source tab actions");
+    const closeAll = document.createElement("button");
+    closeAll.type = "button";
+    closeAll.textContent = "Close All";
+    closeAll.setAttribute("role", "menuitem");
+    closeAll.disabled = !this.openFiles.size;
+    closeAll.addEventListener("click", () => {
+      this.closeMenu();
+      this.closeAllFiles();
+    });
+    menu.append(closeAll);
+    menu.addEventListener("keydown", (keyEvent) => {
+      if (keyEvent.key !== "Escape") return;
+      keyEvent.preventDefault();
+      this.closeMenu();
+    });
+    document.body.append(menu);
+    menu.style.left = `${Math.max(8, Math.min(event.clientX, window.innerWidth - menu.offsetWidth - 8))}px`;
+    menu.style.top = `${Math.max(8, Math.min(event.clientY, window.innerHeight - menu.offsetHeight - 8))}px`;
+    this.menu = menu;
+    closeAll.focus();
+  }
+
+  private tabMenu(event: MouseEvent, id: string) {
+    this.closeMenu();
+    const file = this.callbacks.current().workspace.files.find((item) => item.id === id);
+    if (!file) return;
+    const menu = document.createElement("div");
+    menu.className = "source-context-menu";
+    menu.setAttribute("role", "menu");
+    menu.setAttribute("aria-label", `Actions for ${file.path}`);
+    for (const [label, action] of [
+      ["Properties…", () => void this.settings(file.id)],
+      ["Close", () => this.closeFile(file.id)],
+      ["Close All", () => this.closeAllFiles()],
+    ] as const) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = label;
+      button.setAttribute("role", "menuitem");
+      button.addEventListener("click", () => {
+        this.closeMenu();
+        action();
+      });
+      menu.append(button);
+    }
+    document.body.append(menu);
+    menu.style.left = `${Math.max(8, Math.min(event.clientX, window.innerWidth - menu.offsetWidth - 8))}px`;
+    menu.style.top = `${Math.max(8, Math.min(event.clientY, window.innerHeight - menu.offsetHeight - 8))}px`;
+    this.menu = menu;
+    menu.querySelector("button")?.focus();
   }
 
   private focusSelected() {
@@ -229,7 +398,7 @@ export class SourceWorkbench {
       return;
     }
     const rows = [...this.tree.querySelectorAll<HTMLElement>('[role="treeitem"]')];
-    const index = rows.findIndex((row) => row.dataset.path === this.selected);
+    const index = rows.findIndex((row) => row.dataset.path === this.focusedPath);
     let target = index;
     if (event.key === "ArrowDown") target = Math.min(rows.length - 1, index + 1);
     else if (event.key === "ArrowUp") target = Math.max(0, index - 1);
@@ -237,21 +406,24 @@ export class SourceWorkbench {
     else if (event.key === "End") target = rows.length - 1;
     else if (event.key === "ArrowRight") {
       if (rows[index]?.getAttribute("aria-expanded") === "false") {
-        this.expanded.add(this.selected);
+        this.expanded.add(this.focusedPath);
         this.render();
       } else if (rows[index]?.hasAttribute("aria-expanded")) target = Math.min(rows.length - 1, index + 1);
     } else if (event.key === "ArrowLeft") {
-      if (this.expanded.has(this.selected)) {
-        this.expanded.delete(this.selected);
+      if (this.expanded.has(this.focusedPath)) {
+        this.expanded.delete(this.focusedPath);
         this.render();
-      } else target = rows.findIndex((row) => row.dataset.path === parentPath(this.selected));
+      } else target = rows.findIndex((row) => row.dataset.path === parentPath(this.focusedPath));
     } else if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       rows[index]?.click();
       return;
     } else return;
     event.preventDefault();
-    if (target >= 0) this.selected = rows[target].dataset.path!;
+    if (target >= 0) {
+      this.focusedPath = rows[target].dataset.path!;
+      this.selected = this.focusedPath;
+    }
     this.render();
     this.focusSelected();
   }
@@ -291,9 +463,10 @@ export class SourceWorkbench {
     const menu = document.createElement("div");
     menu.className = "source-context-menu";
     menu.setAttribute("role", "menu");
-    menu.setAttribute("aria-label", `Actions for ${this.selected}`);
+    const selected = this.selected ?? workspaceRoot;
+    menu.setAttribute("aria-label", `Actions for ${selected}`);
     const { workspace } = this.callbacks.current();
-    const file = workspace.files.find((file) => file.path === this.selected);
+    const file = workspace.files.find((file) => file.path === selected);
     const actions: [string, () => void][] = [];
     if (!file)
       actions.push(
@@ -301,14 +474,14 @@ export class SourceWorkbench {
         ["New Folder…", () => void this.create(true)],
         ["Import Files…", () => document.getElementById("import")!.click()],
       );
-    if (this.selected !== workspaceRoot)
+    if (selected !== workspaceRoot)
       actions.push(
         ["Rename…", () => void this.rename()],
-        ["Move to…", () => void this.move(this.selected)],
+        ["Move to…", () => void this.move(selected)],
         ["Delete", () => void this.delete()],
       );
     if (!file) {
-      const folder = this.selected;
+      const folder = selected;
       const included = workspace.options.includeDirectories.includes(folder);
       actions.push([
         `${included ? "Remove Folder from" : "Add Folder to"} Include Folders`,
@@ -367,6 +540,7 @@ export class SourceWorkbench {
       const { workspace } = this.callbacks.current();
       const next = folder ? addFolder(workspace, path) : putFile(workspace, path, "");
       this.selected = path;
+      this.focusedPath = path;
       this.expanded.add(destination);
       this.revealSourceGroup();
       this.callbacks.change(next, next.files.find((file) => file.path === path)?.id);
@@ -377,6 +551,7 @@ export class SourceWorkbench {
 
   private async rename() {
     const path = this.selected;
+    if (!path || path === workspaceRoot) return;
     const name = await askPath("Rename", "New name", path.split("/").pop()!);
     if (name !== undefined) {
       if (name.includes("/")) {
@@ -389,16 +564,21 @@ export class SourceWorkbench {
 
   private async move(path: string, destination?: string) {
     const { workspace, revision } = this.callbacks.current();
-    destination ??= await askPath("Move to", "Destination folder (virtual path)", this.destination()).then((folder) =>
-      folder === undefined ? undefined : `${folder}/${path.split("/").pop()}`,
-    );
-    if (destination === undefined) return;
     try {
+      destination ??= await askPath(
+        "Move to",
+        "Destination folder (relative to workspace; leave blank for root)",
+        this.relativePath(this.destination()),
+        false,
+      ).then((folder) =>
+        folder === undefined ? undefined : `${this.resolveRelativePath(folder)}/${path.split("/").pop()}`,
+      );
+      if (destination === undefined) return;
       let replace = false;
       while (hasPath(workspace, destination) && destination !== path) {
         const choice = await choose(
           "Path conflict",
-          `${destination} already exists. Replacing a folder removes its contents.`,
+          `${this.relativePath(destination)} already exists. Replacing a folder removes its contents.`,
           ["Replace", "Rename"],
         );
         if (!choice) return;
@@ -406,13 +586,19 @@ export class SourceWorkbench {
           replace = true;
           break;
         }
-        destination = await askPath("Rename destination", "Full destination path", destination);
-        if (destination === undefined) return;
+        const renamed = await askPath(
+          "Rename destination",
+          "Full destination path relative to workspace",
+          this.relativePath(destination),
+        );
+        if (renamed === undefined) return;
+        destination = this.resolveRelativePath(renamed);
       }
       if (revision !== this.callbacks.current().revision)
         throw new Error("The workspace changed while the dialog was open. Try the move again.");
       const next = moveEntry(workspace, path, destination, replace);
       this.selected = destination;
+      this.focusedPath = destination;
       this.expanded.add(parentPath(destination));
       this.callbacks.change(next);
     } catch (error) {
@@ -422,13 +608,17 @@ export class SourceWorkbench {
 
   private async delete() {
     const path = this.selected;
+    if (!path || path === workspaceRoot) return;
     const { workspace, revision } = this.callbacks.current();
     const nonempty =
       workspace.files.some((file) => file.path !== path && isWithin(file.path, path)) ||
       workspace.folders.some((folder) => folder !== path && isWithin(folder, path));
-    const choice = await choose("Delete", nonempty ? `Delete ${path} and all its contents?` : `Delete ${path}?`, [
+    const displayPath = this.relativePath(path);
+    const choice = await choose(
       "Delete",
-    ]);
+      nonempty ? `Delete ${displayPath} and all its contents?` : `Delete ${displayPath}?`,
+      ["Delete"],
+    );
     if (!choice) return;
     try {
       if (revision !== this.callbacks.current().revision) throw new Error("The workspace changed. Try deleting again.");

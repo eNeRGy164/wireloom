@@ -5,6 +5,7 @@ import { CompilerClient } from "./compiler-client";
 import { examples } from "./examples";
 import {
   RecoveryStore,
+  createEmptyWorkspace,
   createWorkspace,
   sourceBytes,
   validateWorkspace,
@@ -15,12 +16,13 @@ import {
 import { SourceWorkbench } from "./workspace-ui";
 import { sourceArchive } from "./source-archive";
 import { RecoverySaver } from "./recovery-saver";
+import { escapeMsbuild } from "./msbuild-escape";
 import "./style.css";
 
 const element = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const fileNameOrder = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
-function fileIcon(language: "idl" | "csharp") {
+function fileIcon(language: "idl" | "csharp" | "csproj") {
   const icon = document.createElement("span");
   icon.className = `file-icon file-icon-${language}`;
   icon.setAttribute("aria-hidden", "true");
@@ -31,8 +33,8 @@ const profile = element<HTMLSelectElement>("profile");
 const examplePicker = element<HTMLSelectElement>("example");
 const recovery = new RecoveryStore();
 
-let workspace = createWorkspace(examples[0].source);
-let activeSource = workspace.files[0]?.id;
+let workspace = createEmptyWorkspace();
+let activeSource: string | undefined = workspace.files[0]?.id;
 const editors = new Editors(element("source"), element("generated"));
 
 let revision = 0;
@@ -40,6 +42,7 @@ let debounce = 0;
 let latestDocuments: Document[] = [];
 let activeDocument: string | undefined;
 let openDocuments: string[] = [];
+const closedDocuments = new Set<string>();
 let exportable = false;
 let replacing = false;
 let recoveryAvailable = false;
@@ -197,8 +200,6 @@ function describeExample() {
 
 examplePicker.addEventListener("change", describeExample);
 
-describeExample();
-
 const noticeBox = element("notice");
 
 let noticeTimer: number | undefined;
@@ -241,8 +242,11 @@ noticeBox.addEventListener("focusout", () => queueMicrotask(resumeNotice));
 element("notice-dismiss").addEventListener("click", () => notice(""));
 
 function exportControls() {
-  const disabled = !exportable || !latestDocuments.length;
-  for (const id of ["copy", "download", "download-all"]) element<HTMLButtonElement>(id).disabled = disabled;
+  const activeAvailable = exportable && Boolean(activeDocument);
+  element<HTMLButtonElement>("copy").disabled = !activeAvailable;
+  element<HTMLButtonElement>("download").disabled = !activeAvailable;
+  element<HTMLButtonElement>("download-all").disabled = !exportable || !latestDocuments.length;
+  element<HTMLButtonElement>("download-source").disabled = workspace.files.length === 0;
 }
 
 function clearDiagnostics() {
@@ -266,9 +270,11 @@ function invalidate() {
 }
 
 function clearDocuments(message: string) {
+  closeGeneratedFileMenu();
   element("generated-panel").removeAttribute("aria-labelledby");
   latestDocuments = [];
   openDocuments = [];
+  closedDocuments.clear();
   activeDocument = undefined;
   exportable = false;
   editors.setOutputs([]);
@@ -321,6 +327,8 @@ function showDiagnostic(diagnostic: Diagnostic) {
 }
 
 function selectDocument(name: string) {
+  closedDocuments.delete(name);
+  if (!openDocuments.includes(name)) openDocuments.push(name);
   activeDocument = name;
   editors.select(name);
 
@@ -330,19 +338,25 @@ function selectDocument(name: string) {
   }
 
   renderTabs();
+  element("empty-output").hidden = openDocuments.length > 0;
   element("output-tabs")
     .querySelector('[aria-selected="true"]')
     ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  exportControls();
 }
 
 function renderTabs() {
   element("output-tabs").replaceChildren(
     ...openDocuments.map((name, index) => {
       const tab = document.createElement("button");
+      const wrapper = document.createElement("div");
+      wrapper.className = "editor-tab";
+      wrapper.setAttribute("role", "presentation");
       tab.id = `generated-tab-${index}`;
+      tab.className = "editor-tab-label";
       tab.textContent = name;
       tab.title = name;
-      tab.prepend(fileIcon("csharp"));
+      tab.prepend(fileIcon(name === "Wireloom.csproj" ? "csproj" : "csharp"));
       tab.setAttribute("role", "tab");
       tab.setAttribute("aria-selected", String(name === activeDocument));
       tab.setAttribute("aria-controls", "generated-panel");
@@ -351,6 +365,17 @@ function renderTabs() {
       tab.addEventListener("click", () => {
         selectDocument(name);
         element("output-tabs").querySelector<HTMLButtonElement>('[aria-selected="true"]')!.focus();
+      });
+      tab.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        showGeneratedTabMenu(event, name);
+      });
+      tab.addEventListener("auxclick", (event) => {
+        if (event.button !== 1) return;
+        event.preventDefault();
+        event.stopPropagation();
+        closeDocument(name);
       });
       tab.addEventListener("keydown", (event) => {
         const direction = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
@@ -365,11 +390,215 @@ function renderTabs() {
         selectDocument(openDocuments[next]);
         element("output-tabs").querySelector<HTMLButtonElement>('[aria-selected="true"]')!.focus();
       });
-      return tab;
+      const close = document.createElement("button");
+      close.type = "button";
+      close.className = "editor-tab-close";
+      close.textContent = "×";
+      close.title = `Close ${name}`;
+      close.setAttribute("aria-label", `Close ${name}`);
+      close.addEventListener("click", (event) => {
+        event.stopPropagation();
+        closeDocument(name);
+      });
+      wrapper.append(tab, close);
+      return wrapper;
     }),
   );
 
   updateTabScrollbar();
+}
+
+function closeDocument(name: string) {
+  const index = openDocuments.indexOf(name);
+  if (index < 0) return;
+  openDocuments = openDocuments.filter((item) => item !== name);
+  closedDocuments.add(name);
+  if (activeDocument === name) {
+    const next = openDocuments[index] ?? openDocuments[index - 1];
+    if (next) {
+      selectDocument(next);
+      element("output-tabs").querySelector<HTMLButtonElement>('[aria-selected="true"]')?.focus();
+    } else {
+      activeDocument = undefined;
+      editors.select("");
+      element("generated-panel").removeAttribute("aria-labelledby");
+      for (const button of element("file-list").querySelectorAll("button")) button.removeAttribute("aria-current");
+      renderTabs();
+    }
+  } else renderTabs();
+  element("empty-output").hidden = openDocuments.length > 0;
+  exportControls();
+}
+
+function closeAllDocuments() {
+  if (!openDocuments.length) return;
+  for (const name of openDocuments) closedDocuments.add(name);
+  openDocuments = [];
+  activeDocument = undefined;
+  editors.select("");
+  element("generated-panel").removeAttribute("aria-labelledby");
+  for (const button of element("file-list").querySelectorAll("button")) button.removeAttribute("aria-current");
+  renderTabs();
+  element("empty-output").hidden = false;
+  exportControls();
+}
+
+let generatedFileMenu: HTMLElement | undefined;
+
+function closeGeneratedFileMenu() {
+  generatedFileMenu?.remove();
+  generatedFileMenu = undefined;
+  document.removeEventListener("pointerdown", dismissGeneratedFileMenu);
+  document.removeEventListener("keydown", dismissGeneratedFileMenuOnEscape);
+}
+
+function dismissGeneratedFileMenu(event: Event) {
+  if (generatedFileMenu && !generatedFileMenu.contains(event.target as Node)) closeGeneratedFileMenu();
+}
+
+function dismissGeneratedFileMenuOnEscape(event: KeyboardEvent) {
+  if (event.key === "Escape") closeGeneratedFileMenu();
+}
+
+function showGeneratedFileMenu(event: MouseEvent, name: string) {
+  event.preventDefault();
+  closeGeneratedFileMenu();
+  const menu = document.createElement("div");
+  menu.className = "source-context-menu";
+  menu.setAttribute("role", "menu");
+  menu.setAttribute("aria-label", `Actions for ${name}`);
+  const isOpen = openDocuments.includes(name);
+  const action = document.createElement("button");
+  action.type = "button";
+  action.textContent = isOpen ? "Close" : "Open";
+  action.setAttribute("role", "menuitem");
+  action.addEventListener("click", () => {
+    closeGeneratedFileMenu();
+    if (isOpen) closeDocument(name);
+    else selectDocument(name);
+  });
+  menu.append(action);
+  menu.addEventListener("keydown", (keyEvent) => {
+    if (keyEvent.key === "Escape") {
+      keyEvent.preventDefault();
+      closeGeneratedFileMenu();
+    } else if (keyEvent.key === "Enter" || keyEvent.key === " ") action.click();
+  });
+  document.body.append(menu);
+  menu.style.left = `${Math.max(8, Math.min(event.clientX, window.innerWidth - menu.offsetWidth - 8))}px`;
+  menu.style.top = `${Math.max(8, Math.min(event.clientY, window.innerHeight - menu.offsetHeight - 8))}px`;
+  generatedFileMenu = menu;
+  document.addEventListener("pointerdown", dismissGeneratedFileMenu);
+  document.addEventListener("keydown", dismissGeneratedFileMenuOnEscape);
+  action.focus();
+}
+
+function showGeneratedTabMenu(event: MouseEvent, name: string) {
+  closeGeneratedFileMenu();
+  const menu = document.createElement("div");
+  menu.className = "source-context-menu";
+  menu.setAttribute("role", "menu");
+  menu.setAttribute("aria-label", `Actions for ${name}`);
+  const actions: [string, () => void][] = [
+    ["Close", () => closeDocument(name)],
+    ["Close All", closeAllDocuments],
+  ];
+  for (const [label, action] of actions) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.setAttribute("role", "menuitem");
+    button.addEventListener("click", () => {
+      closeGeneratedFileMenu();
+      action();
+    });
+    menu.append(button);
+  }
+  menu.addEventListener("keydown", (keyEvent) => {
+    if (keyEvent.key === "Escape") {
+      keyEvent.preventDefault();
+      closeGeneratedFileMenu();
+    }
+  });
+  document.body.append(menu);
+  menu.style.left = `${Math.max(8, Math.min(event.clientX, window.innerWidth - menu.offsetWidth - 8))}px`;
+  menu.style.top = `${Math.max(8, Math.min(event.clientY, window.innerHeight - menu.offsetHeight - 8))}px`;
+  generatedFileMenu = menu;
+  document.addEventListener("pointerdown", dismissGeneratedFileMenu);
+  document.addEventListener("keydown", dismissGeneratedFileMenuOnEscape);
+  menu.querySelector<HTMLButtonElement>("button")?.focus();
+}
+
+function xml(value: string) {
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+}
+
+function projectPreview() {
+  const relative = (path: string) => (path === "/workspace" ? "." : path.slice("/workspace/".length));
+  const projectSettings = new Map<string, string>();
+  const files = workspace.files;
+  if (workspace.options.sequenceArrayMapping !== "RtiCSharp")
+    projectSettings.set("DdsIdlSequenceArrayMapping", workspace.options.sequenceArrayMapping);
+  if (workspace.options.sequenceSize !== 100)
+    projectSettings.set("DdsIdlSequenceSize", String(workspace.options.sequenceSize));
+  if (workspace.options.stringSize !== 255)
+    projectSettings.set("DdsIdlStringSize", String(workspace.options.stringSize));
+  if (workspace.options.enableEscapeChar) projectSettings.set("DdsIdlEnableEscapeChar", "true");
+  if (workspace.options.includeDirectories.length)
+    projectSettings.set(
+      "DdsIdlIncludeDirectories",
+      workspace.options.includeDirectories.map((path) => escapeMsbuild(relative(path))).join(";"),
+    );
+
+  const metadata = (file: Workspace["files"][number]) => {
+    const settings: [string, string][] = [];
+    if (file.isGenerationRoot && file.options.strict) settings.push(["Strict", "true"]);
+    if (file.isGenerationRoot && file.options.defines.length)
+      settings.push(["Defines", file.options.defines.join(";")]);
+    if (file.isGenerationRoot && file.options.undefines.length)
+      settings.push(["Undefines", file.options.undefines.join(";")]);
+    if (
+      file.options.sequenceArrayMapping &&
+      file.options.sequenceArrayMapping !== workspace.options.sequenceArrayMapping
+    )
+      settings.push(["SequenceArrayMapping", file.options.sequenceArrayMapping]);
+    if (file.options.sequenceSize !== undefined && file.options.sequenceSize !== workspace.options.sequenceSize)
+      settings.push(["SequenceSize", String(file.options.sequenceSize)]);
+    if (file.options.stringSize !== undefined && file.options.stringSize !== workspace.options.stringSize)
+      settings.push(["StringSize", String(file.options.stringSize)]);
+    return settings.map(([key, value]) => `      <${key}>${xml(value)}</${key}>`).join("\n");
+  };
+  const item = (tag: "DdsIdl" | "AdditionalFiles", file: Workspace["files"][number]) => {
+    const inner = metadata(file);
+    const opening = `    <${tag} Include="${xml(escapeMsbuild(relative(file.path)))}"`;
+    return inner ? `${opening}>\n${inner}\n    </${tag}>` : `${opening} />`;
+  };
+  const roots = files.filter((file) => file.isGenerationRoot).map((file) => item("DdsIdl", file));
+  // The generator discovers ordinary include-only .idl files under the project root
+  // and configured include directories. Explicit items are only needed for metadata.
+  const additionalFiles = files
+    .filter((file) => !file.isGenerationRoot && metadata(file))
+    .map((file) => item("AdditionalFiles", file));
+  const projectProperties = [...projectSettings].map(([key, value]) => `    <${key}>${xml(value)}</${key}>`);
+  const rootGroup = roots.length
+    ? `\n\n  <ItemGroup Label="Generation roots">\n${roots.join("\n")}\n  </ItemGroup>`
+    : "";
+  const additionalGroup = additionalFiles.length
+    ? `\n\n  <ItemGroup Label="Additional files">\n${additionalFiles.join("\n")}\n  </ItemGroup>`
+    : "";
+  return `<!-- Preview based on the current Playground workspace. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>${projectProperties.length ? `\n${projectProperties.join("\n")}` : ""}
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Rti.ConnextDds" Version="${workspace.profile}" />
+    <PackageReference Include="Wireloom.Dds.Generator" Version="${__WIRELOOM_VERSION__}" PrivateAssets="all" />
+  </ItemGroup>${rootGroup}${additionalGroup}
+</Project>`;
 }
 
 function applyResult(response: CompileResponse) {
@@ -399,31 +628,38 @@ function applyResult(response: CompileResponse) {
   const previousActive = activeDocument;
 
   latestDocuments = response.documents;
-  editors.setOutputs(latestDocuments);
-
-  openDocuments = latestDocuments.map((doc) => doc.name);
+  const preview = { name: "Wireloom.csproj", source: projectPreview() };
+  editors.setOutputs([...latestDocuments, preview]);
+  const previewWasOpen = openDocuments.includes(preview.name) && !closedDocuments.has(preview.name);
+  openDocuments = [
+    ...latestDocuments.filter((doc) => !closedDocuments.has(doc.name)).map((doc) => doc.name),
+    ...(previewWasOpen ? [preview.name] : []),
+  ];
 
   const explorerDocuments = [...latestDocuments].sort((left, right) => fileNameOrder.compare(left.name, right.name));
 
+  closeGeneratedFileMenu();
   element("file-list").replaceChildren(
-    ...explorerDocuments.map((doc) => {
+    ...[...explorerDocuments, preview].map((doc) => {
       const item = document.createElement("li");
       const button = document.createElement("button");
       button.textContent = doc.name;
-      button.prepend(fileIcon("csharp"));
+      button.prepend(fileIcon(doc.name.endsWith(".csproj") ? "csproj" : "csharp"));
       button.title = doc.name;
       button.dataset.name = doc.name;
+      button.setAttribute("aria-haspopup", "menu");
       button.addEventListener("click", () => selectDocument(doc.name));
+      button.addEventListener("contextmenu", (event) => showGeneratedFileMenu(event, doc.name));
       item.append(button);
       return item;
     }),
   );
 
-  element("explorer-count").textContent = String(latestDocuments.length);
-  element("explorer-empty").hidden = latestDocuments.length > 0;
+  element("explorer-count").textContent = String(latestDocuments.length + 1);
+  element("explorer-empty").hidden = true;
 
-  if (latestDocuments.length)
-    selectDocument(latestDocuments.some((d) => d.name === previousActive) ? previousActive! : latestDocuments[0].name);
+  if (openDocuments.length)
+    selectDocument(openDocuments.includes(previousActive ?? "") ? previousActive! : openDocuments[0]);
   else {
     activeDocument = undefined;
     element("output-tabs").replaceChildren();
@@ -431,7 +667,7 @@ function applyResult(response: CompileResponse) {
   }
 
   element("document-count").textContent = String(latestDocuments.length);
-  element("empty-output").hidden = latestDocuments.length > 0;
+  element("empty-output").hidden = openDocuments.length > 0;
   element("result-state").textContent = "Current";
   element("result-state").dataset.state = "success";
   element("result-summary").textContent = latestDocuments.length
@@ -468,7 +704,7 @@ function syncSources() {
   sourceWorkbench.render();
 }
 
-function selectSource(id: string) {
+function selectSource(id?: string) {
   activeSource = id;
   workspace.activeFileId = id;
   syncSources();
@@ -516,6 +752,7 @@ function changed() {
   edited = true;
   element("source-size").textContent = `${sourceBytes(workspace).toLocaleString()} bytes`;
   invalidate();
+  editors.updateOutput("Wireloom.csproj", projectPreview());
   save();
   clearTimeout(debounce);
   if (!workspace.files.length || !workspace.files.some((file) => file.isGenerationRoot)) compile();
@@ -559,6 +796,7 @@ element("load-example").addEventListener("click", () => {
     return;
   sourceWorkbench.cancelImport();
   const example = examples.find((e) => e.id === examplePicker.value)!;
+  describeExample();
   const next = createWorkspace(example.source, workspace.profile);
   if ("workspace" in example && example.workspace) {
     const multi = example.workspace();
@@ -585,8 +823,8 @@ element("reset").addEventListener("click", async () => {
   invalidate();
   const clearing = recovery.clear();
   examplePicker.value = "hello";
-  describeExample();
-  replaceWorkspace(createWorkspace(examples[0].source));
+  element("example-description").textContent = "";
+  replaceWorkspace(createEmptyWorkspace());
   try {
     await clearing;
     recoveryAvailable = true;
@@ -599,8 +837,19 @@ element("reset").addEventListener("click", async () => {
   }
 });
 
+element("empty-load-example").addEventListener("click", () => {
+  examplePicker.value = "hello";
+  describeExample();
+  element("load-example").click();
+});
+
+element("empty-create-file").addEventListener("click", () => element("new-file").click());
+
 function active() {
-  return exportable ? latestDocuments.find((doc) => doc.name === activeDocument) : undefined;
+  if (!exportable) return undefined;
+  return activeDocument === "Wireloom.csproj"
+    ? { name: "Wireloom.csproj", source: projectPreview() }
+    : latestDocuments.find((doc) => doc.name === activeDocument);
 }
 
 function download(name: string, data: BlobPart, type: string) {
@@ -645,7 +894,7 @@ element("download-source-file").addEventListener("click", () => {
 });
 
 element("download-source").addEventListener("click", () => {
-  download("wireloom-sources.zip", sourceArchive(structuredClone(workspace)), "application/zip");
+  download("wireloom-sources.zip", sourceArchive(structuredClone(workspace), projectPreview()), "application/zip");
 });
 
 element("download-all").addEventListener("click", () => {

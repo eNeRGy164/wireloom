@@ -149,9 +149,14 @@ try {
   page.on("requestfailed", (request) => errors.push(`${request.url()}: ${request.failure()?.errorText}`));
   const current = () => page.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Current");
 
-  await check("cold sample load, revision, and preview scope", async () => {
+  await check("cold empty workspace loads Hello on request and reports its revision", async () => {
     const started = Date.now();
     await page.goto(url.href);
+    await page.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Empty");
+    assert(await page.locator("#empty-source").isVisible(), "The fresh workspace should offer a blank start");
+    assert.equal(await page.locator("#example-description").textContent(), "");
+    assert.equal(await page.locator("#document-count").textContent(), "0");
+    await page.locator("#empty-load-example").click();
     await current();
     assert((await page.locator("#status").textContent()).includes("Compiler ready"));
     assert.equal(await page.locator("#example").inputValue(), "hello");

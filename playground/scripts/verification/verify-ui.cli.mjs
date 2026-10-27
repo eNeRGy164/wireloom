@@ -13,21 +13,30 @@ async (page) => {
       report.checks.push({ name, passed: false, error: String(error) });
     }
   };
-  const open = async (url = input.root, setup) => {
+  const open = async (url = input.root, setup, loadExampleForEmptyWorkspace = true) => {
     const context = await browser.newContext({ viewport: { width: 1440, height: 1080 }, acceptDownloads: true });
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     const app = await context.newPage();
     app.on("dialog", (dialog) => dialog.accept());
     if (setup) await setup(context, app);
     await app.goto(url);
-    await app.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Current", null, {
-      timeout: 40_000,
-    });
+    await app.waitForFunction(
+      () => ["Current", "Failed", "Empty"].includes(document.querySelector("#result-state")?.textContent),
+      null,
+      { timeout: 40_000 },
+    );
+    if (loadExampleForEmptyWorkspace && (await app.locator("#result-state").textContent()) === "Empty") {
+      await app.locator("#example").selectOption("hello");
+      await app.locator("#load-example").click();
+      await app.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Current", null, {
+        timeout: 40_000,
+      });
+    }
     return { app, context };
   };
   const wait = (app) =>
     app.waitForFunction(
-      () => ["Current", "Failed"].includes(document.querySelector("#result-state")?.textContent),
+      () => ["Current", "Failed", "Empty"].includes(document.querySelector("#result-state")?.textContent),
       null,
       { timeout: 15_000 },
     );
@@ -75,7 +84,7 @@ async (page) => {
             worker.onmessage = ({ data }) =>
               data.type === "result" ? resolve(data.response) : reject(new Error(data.message));
             worker.postMessage({
-              protocolVersion: 2,
+              protocolVersion: 3,
               workerGeneration: 1,
               requestId: 1,
               workspaceRevision: 1,
@@ -224,7 +233,9 @@ async (page) => {
       async () => {
         const { app, context } = await open();
         try {
-          const files = await app.locator("#file-list button").allTextContents();
+          const files = (await app.locator("#file-list button").allTextContents()).filter(
+            (name) => !name.endsWith(".csproj"),
+          );
           assert(
             files.length === 4 && (await app.locator("#output-tabs [role=tab]").count()) === 4,
             "Initial output hid unopened files",
@@ -272,6 +283,10 @@ async (page) => {
           );
           await app.locator(".toolbar").hover();
           await app.waitForFunction(() => getComputedStyle(document.querySelector("#tab-scrollbar")).opacity === "0");
+          const tabHeight = await app
+            .locator("#output-tabs button")
+            .first()
+            .evaluate((node) => node.getBoundingClientRect().height);
           await app.locator("#output-tabs").evaluate((node) => {
             node.scrollLeft = 0;
           });
@@ -283,12 +298,13 @@ async (page) => {
             "Scrollbar track was not transparent",
           );
           assert(
-            await app.evaluate(
-              () =>
-                document.querySelector("#output-tabs button").getBoundingClientRect().height ===
-                document.querySelector("#output-tabs-strip").getBoundingClientRect().height,
-            ),
-            "Scrollbar consumed tab height",
+            Math.abs(
+              (await app
+                .locator("#output-tabs button")
+                .first()
+                .evaluate((node) => node.getBoundingClientRect().height)) - tabHeight,
+            ) < 0.5,
+            "Scrollbar changed tab height",
           );
           const pageY = await app.evaluate(() => scrollY);
           await app.mouse.wheel(0, 180);
@@ -456,7 +472,7 @@ async (page) => {
           "Files were not all opened immediately",
         );
         assert(
-          (await app.locator("#file-list button").count()) === expected.length,
+          (await app.locator('#file-list button:not([data-name$=".csproj"])').count()) === expected.length,
           "Explorer omitted generated files",
         );
         await app.evaluate(() => {
@@ -694,9 +710,13 @@ async (page) => {
           await wait(app);
           await app.waitForFunction(() => document.querySelector("#source-state").textContent === "Saved locally");
           const reset = await saved(app);
+          assert(reset.profile === "7.7.0" && reset.files.length === 0, "Reset retained previous workspace");
           assert(
-            reset.profile === "7.7.0" && reset.files[0].source === input.examples[0].source,
-            "Reset retained previous workspace",
+            (await app.locator("#result-state").textContent()) === "Empty" &&
+              (await app.locator("#example-description").textContent()) === "" &&
+              (await app.locator("#download-source").isDisabled()) &&
+              (await app.locator("#empty-source").isVisible()),
+            "Reset did not restore the empty workspace view",
           );
           await app.reload();
           await wait(app);
@@ -738,20 +758,24 @@ async (page) => {
     await check("unavailable, failed-write, and invalid/older recovery data leave editing usable", async () => {
       const outcomes = [];
       for (const mode of ["unavailable", "quota", "older"]) {
-        const { app, context } = await open(input.root, async (context) => {
-          await context.addInitScript((mode) => {
-            if (mode === "unavailable")
-              Object.defineProperty(window, "indexedDB", {
-                get() {
-                  throw new Error("Storage disabled for verification");
-                },
-              });
-            if (mode === "quota")
-              IDBObjectStore.prototype.put = function () {
-                throw new DOMException("Verification quota", "QuotaExceededError");
-              };
-          }, mode);
-        });
+        const { app, context } = await open(
+          input.root,
+          async (context) => {
+            await context.addInitScript((mode) => {
+              if (mode === "unavailable")
+                Object.defineProperty(window, "indexedDB", {
+                  get() {
+                    throw new Error("Storage disabled for verification");
+                  },
+                });
+              if (mode === "quota")
+                IDBObjectStore.prototype.put = function () {
+                  throw new DOMException("Verification quota", "QuotaExceededError");
+                };
+            }, mode);
+          },
+          false,
+        );
 
         try {
           if (mode === "older") {
@@ -762,7 +786,7 @@ async (page) => {
               });
               await new Promise((resolve) => {
                 const transaction = db.transaction("workspace", "readwrite");
-                transaction.objectStore("workspace").put({ version: 0 }, "current");
+                transaction.objectStore("workspace").put({ version: 2 }, "current");
                 transaction.oncomplete = resolve;
               });
               db.close();
@@ -771,9 +795,17 @@ async (page) => {
             await wait(app);
           }
 
-          await app.waitForFunction(() =>
-            document.querySelector("#notice").textContent.toLowerCase().includes("recovery is unavailable"),
-          );
+          try {
+            await app.waitForFunction(() => {
+              const notice = document.querySelector("#notice-message")?.textContent.toLowerCase() ?? "";
+              return notice.includes("recovery is unavailable") || notice.includes("unsupported format");
+            });
+          } catch (error) {
+            throw new Error(`Recovery mode ${mode} did not report an unavailable store: ${error}`);
+          }
+
+          await app.locator("#empty-load-example").click();
+          await app.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Current");
 
           await edit(app, "struct StorageStillWorks { long value; };");
           assert(

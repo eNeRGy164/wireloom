@@ -192,8 +192,9 @@ struct HashSample {
   {
     id: "unsupported",
     title: "Explore a diagnostic",
-    description: "Recursive sequence typedefs are unsupported. Follow the diagnostic back to the IDL.",
-    source: `struct Node;
+    description: "A pragma message adds an informational diagnostic alongside the unsupported recursive sequence.",
+    source: `#pragma message("Exploring diagnostics in the Playground")
+struct Node;
 typedef sequence<Node> Children;
 struct Node { long value; Children children; };
 `,
@@ -222,7 +223,7 @@ struct Node { long value; Children children; };
     id: "workspace-preprocessor",
     title: "Workspace: preprocessor settings",
     description:
-      "Workspace Settings defines FEATURE and removes DISABLED. An angle include searches the selected virtual include folder.",
+      "The root properties define FEATURE and remove DISABLED. Workspace Settings selects the angle-include search folder.",
     source:
       "#include <types.idl>\n#if defined(FEATURE) && !defined(DISABLED)\nstruct Enabled { Config::Value value; };\n#endif\n",
     workspace: () => {
@@ -236,8 +237,8 @@ struct Node { long value; Children children; };
       );
       shared.isGenerationRoot = false;
       value.files.push(shared);
-      value.options.defines = ["FEATURE=1", "DISABLED=1"];
-      value.options.undefines = ["DISABLED"];
+      value.files[0].options.defines = ["FEATURE=1", "DISABLED=1"];
+      value.files[0].options.undefines = ["DISABLED"];
       value.options.includeDirectories = ["/workspace/config"];
       return value;
     },
