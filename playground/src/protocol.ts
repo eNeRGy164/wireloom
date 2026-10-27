@@ -2,16 +2,31 @@ export interface WorkspaceFile {
   path: string;
   source: string;
   isGenerationRoot: boolean;
+  options?: FileOptions;
+}
+
+export interface FileOptions {
+  sequenceArrayMapping: "RtiCSharp" | "Idl";
+  sequenceSize: number;
+  stringSize: number;
+}
+
+export interface WorkspaceOptions {
+  defines: string[];
+  undefines: string[];
+  includeDirectories: string[];
+  strict: boolean;
+  enableEscapeChar: boolean;
 }
 
 export interface CompileRequest {
-  protocolVersion: 1;
+  protocolVersion: 2;
   workerGeneration: number;
   requestId: number;
   workspaceRevision: number;
   profile: "7.3.1" | "7.7.0";
   files: WorkspaceFile[];
-  options: Record<string, never>;
+  options: WorkspaceOptions;
 }
 
 export interface Diagnostic {

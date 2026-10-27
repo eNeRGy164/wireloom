@@ -3,7 +3,17 @@ import type { CompileResponse, Diagnostic, Document } from "./protocol";
 import { Editors } from "./editors";
 import { CompilerClient } from "./compiler-client";
 import { examples } from "./examples";
-import { RecoveryStore, sourceFits, type Workspace, type Profile } from "./workspace";
+import {
+  RecoveryStore,
+  createWorkspace,
+  sourceBytes,
+  validateWorkspace,
+  maxSourceBytes,
+  type Workspace,
+  type Profile,
+} from "./workspace";
+import { SourceWorkbench } from "./workspace-ui";
+import { sourceArchive } from "./source-archive";
 import { RecoverySaver } from "./recovery-saver";
 import "./style.css";
 
@@ -21,18 +31,9 @@ const profile = element<HTMLSelectElement>("profile");
 const examplePicker = element<HTMLSelectElement>("example");
 const recovery = new RecoveryStore();
 
-let workspace: Workspace = {
-  version: 1,
-  profile: "7.7.0",
-  files: [{ path: "/workspace/main.idl", source: examples[0].source, isGenerationRoot: true }],
-};
-
-const editors = new Editors(
-  element("source"),
-  element("generated"),
-  workspace.files[0].path,
-  workspace.files[0].source,
-);
+let workspace = createWorkspace(examples[0].source);
+let activeSource = workspace.files[0]?.id;
+const editors = new Editors(element("source"), element("generated"));
 
 let revision = 0;
 let debounce = 0;
@@ -43,7 +44,6 @@ let exportable = false;
 let replacing = false;
 let recoveryAvailable = false;
 let edited = false;
-let importTicket = 0;
 let fontSize = 12;
 
 const recoverySaver = new RecoverySaver<Workspace>({
@@ -55,7 +55,7 @@ const recoverySaver = new RecoverySaver<Workspace>({
   },
   unavailable: () => {
     recoveryAvailable = false;
-    notice("Local recovery is unavailable. You can keep editing; save your IDL before leaving.");
+    notice("Local recovery is unavailable. You can keep editing; save your IDL before leaving.", "error");
   },
 });
 
@@ -93,7 +93,16 @@ element("explorer-toggle").addEventListener("click", () => {
   element("workbench").classList.toggle("explorer-collapsed", !expanded);
   element("explorer-splitter").tabIndex = expanded ? 0 : -1;
 });
-element("source-file").addEventListener("click", () => editors.input.focus());
+
+for (const group of ["source", "generated"]) {
+  const toggle = element(`${group}-group-toggle`);
+  const content = element(`${group}-group-content`);
+  toggle.addEventListener("click", () => {
+    const expanded = toggle.getAttribute("aria-expanded") !== "true";
+    toggle.setAttribute("aria-expanded", String(expanded));
+    content.hidden = !expanded;
+  });
+}
 
 const tabs = element("output-tabs");
 const tabThumb = element("tab-scroll-thumb");
@@ -210,10 +219,13 @@ function resumeNotice() {
   noticeTimer = window.setTimeout(() => notice(""), noticeRemainingMs);
 }
 
-function notice(message: string) {
+function notice(message: string, kind: "info" | "error" = "info") {
   clearTimeout(noticeTimer);
   noticeTimer = undefined;
-  element("notice-message").textContent = message;
+  noticeBox.dataset.kind = kind;
+  element("notice-kind").hidden = kind !== "error";
+  element("notice-message").setAttribute("role", kind === "error" ? "alert" : "status");
+  element("notice-message").textContent = kind === "error" ? message.replace(/^Error:\s*/, "") : message;
   noticeBox.hidden = !message;
   if (message) {
     noticeRemainingMs = 5000;
@@ -282,7 +294,8 @@ function failure(message: string) {
 
 function showDiagnostic(diagnostic: Diagnostic) {
   const row = document.createElement("li");
-  const canNavigate = diagnostic.filePath === workspace.files[0].path && diagnostic.startOffset >= 0;
+  const file = workspace.files.find((file) => file.path === diagnostic.filePath);
+  const canNavigate = file !== undefined && diagnostic.startOffset >= 0;
   const control = document.createElement(canNavigate ? "button" : "span");
   const severity = diagnostic.severity.toLowerCase();
 
@@ -290,11 +303,14 @@ function showDiagnostic(diagnostic: Diagnostic) {
   control.textContent = `${diagnostic.severity} · ${diagnostic.id} — ${diagnostic.message}`;
 
   if (canNavigate) {
-    const position = editors.positionAt(diagnostic.startOffset);
-    control.textContent += ` (${workspace.files[0].path.split("/").pop()}:${position.lineNumber}:${position.column})`;
+    const position = editors.positionAt(diagnostic.startOffset, diagnostic.filePath ?? undefined);
+    control.textContent += ` (${file!.path.slice("/workspace/".length)}:${position.lineNumber}:${position.column})`;
     (control as HTMLButtonElement).type = "button";
     control.title = "Go to source location";
-    control.addEventListener("click", () => editors.navigate(diagnostic));
+    control.addEventListener("click", () => {
+      sourceWorkbench.selectFile(file!.id);
+      editors.navigate(diagnostic);
+    });
   } else if (diagnostic.filePath) {
     control.textContent += ` (${diagnostic.filePath})`;
   }
@@ -370,7 +386,7 @@ function applyResult(response: CompileResponse) {
     : "Generation failed.";
   element("diagnostic-count").textContent = String(response.diagnostics.length);
 
-  editors.markers(response.diagnostics, workspace.files[0].path);
+  editors.markers(response.diagnostics);
 
   response.diagnostics.forEach(showDiagnostic);
   if (!response.success) {
@@ -438,39 +454,81 @@ const compiler = new CompilerClient({
   failure,
 });
 
+const sourceWorkbench = new SourceWorkbench(element("source-tree"), element("source-tabs"), {
+  current: () => ({ workspace, activeId: activeSource, revision }),
+  change: (next, selected) => replaceWorkspace(next, selected, true),
+  select: selectSource,
+  notice,
+});
+
+function syncSources() {
+  replacing = true;
+  editors.syncSources(workspace.files, activeSource);
+  replacing = false;
+  sourceWorkbench.render();
+}
+
+function selectSource(id: string) {
+  activeSource = id;
+  workspace.activeFileId = id;
+  syncSources();
+  save();
+}
+
 function compile() {
   clearTimeout(debounce);
-  if (!sourceFits(workspace.files[0].source)) {
-    failure("IDL exceeds the 256 KiB UTF-8 limit. Reduce the source to continue.");
+  if (sourceBytes(workspace) > maxSourceBytes) {
+    failure("Workspace IDL exceeds the 256 KiB UTF-8 limit. Reduce the source to continue.");
+    return;
+  }
+  if (!workspace.files.length) {
+    clearDiagnostics();
+    clearDocuments("Empty workspace · create or import a file");
+    element("result-state").textContent = "Empty";
+    element("result-state").dataset.state = "pending";
+    element("diagnostics-empty").textContent = "Create or import a source file to begin.";
+    return;
+  }
+  if (!workspace.files.some((file) => file.isGenerationRoot)) {
+    failure("Mark at least one file as Root");
     return;
   }
   invalidate();
   compiler.enqueue({
     workspaceRevision: revision,
     profile: workspace.profile,
-    files: structuredClone(workspace.files),
-    options: {},
+    files: workspace.files.map((file) => ({
+      path: file.path,
+      source: file.source,
+      isGenerationRoot: file.isGenerationRoot,
+      options: structuredClone(file.options),
+    })),
+    options: structuredClone(workspace.options),
   });
 }
 
 function save() {
-  recoverySaver.save(workspace, recoveryAvailable, sourceFits(workspace.files[0].source));
+  recoverySaver.save(workspace, recoveryAvailable, sourceBytes(workspace) <= maxSourceBytes);
 }
 
 function changed() {
   revision++;
   edited = true;
-  workspace.files[0].source = editors.source;
-  element("source-size").textContent =
-    `${new TextEncoder().encode(workspace.files[0].source).byteLength.toLocaleString()} bytes`;
+  element("source-size").textContent = `${sourceBytes(workspace).toLocaleString()} bytes`;
   invalidate();
   save();
   clearTimeout(debounce);
-  debounce = window.setTimeout(compile, 300);
+  if (!workspace.files.length || !workspace.files.some((file) => file.isGenerationRoot)) compile();
+  else debounce = window.setTimeout(compile, 300);
 }
 
 editors.input.onDidChangeModelContent(() => {
-  if (!replacing) changed();
+  if (replacing) return;
+  const file = workspace.files.find((file) => file.id === activeSource);
+  if (file) {
+    file.source = editors.source;
+    changed();
+  }
 });
 
 profile.addEventListener("change", () => {
@@ -485,64 +543,50 @@ element("retry").addEventListener("click", () => {
   compile();
 });
 
-function replaceSource(path: string, source: string, isEdited = false) {
-  replacing = true;
-  workspace.files = [{ path, source, isGenerationRoot: true }];
-  editors.setSource(path, source);
-  replacing = false;
-  element("input-name").textContent = path.split("/").pop()!;
-  element("explorer-source-name").textContent = path.split("/").pop()!;
+function replaceWorkspace(next: Workspace, selected = activeSource, isEdited = false) {
+  workspace = next;
+  activeSource = workspace.files.some((file) => file.id === selected) ? selected : workspace.files[0]?.id;
+  workspace.activeFileId = activeSource;
+  profile.value = workspace.profile;
+  syncSources();
   changed();
   edited = isEdited;
   compile();
 }
 
 element("load-example").addEventListener("click", () => {
-  if (edited && !confirm("Replace the current IDL with this example? Your current source will be replaced.")) return;
-  importTicket++;
-  replaceSource("/workspace/main.idl", examples.find((e) => e.id === examplePicker.value)!.source);
+  if (edited && !confirm("Replace the current workspace with this example? Your current sources will be replaced."))
+    return;
+  sourceWorkbench.cancelImport();
+  const example = examples.find((e) => e.id === examplePicker.value)!;
+  const next = createWorkspace(example.source, workspace.profile);
+  if ("workspace" in example && example.workspace) {
+    const multi = example.workspace();
+    multi.profile = workspace.profile;
+    replaceWorkspace(validateWorkspace(multi));
+  } else replaceWorkspace(next);
   notice("");
 });
 
 element("import").addEventListener("click", () => element<HTMLInputElement>("file").click());
-element<HTMLInputElement>("file").addEventListener("change", async (event) => {
+element<HTMLInputElement>("file").addEventListener("change", (event) => {
   const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
+  const files = [...(input.files ?? [])];
   input.value = "";
-  if (!file) return;
-  const ticket = ++importTicket;
-  const importedAtRevision = revision;
-  try {
-    if (!/^[^/\\\x00-\x1f]+\.idl$/i.test(file.name)) throw new Error("Choose an .idl file.");
-    if (file.size > 256 * 1024) throw new Error("The file exceeds the 256 KiB UTF-8 limit.");
-    const source = new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer());
-    if (!sourceFits(source)) throw new Error("The file exceeds the 256 KiB UTF-8 limit.");
-    if (ticket !== importTicket) return;
-    if ((edited || revision !== importedAtRevision) && !confirm("Replace the current IDL with the imported file?"))
-      return;
-    replaceSource(`/workspace/${file.name}`, source, true);
-    element("example-description").textContent =
-      `Imported ${file.name}. Changes remain in this browser; the original file is unchanged.`;
-    notice("");
-  } catch (error) {
-    if (ticket === importTicket) notice(`Could not open IDL. ${String(error)} Your workspace is unchanged.`);
-  }
+  void sourceWorkbench.import(files);
 });
 
 element("reset").addEventListener("click", async () => {
-  if (!confirm("Reset the workspace and remove its saved source and profile?")) return;
-  importTicket++;
+  if (!confirm("Reset the workspace and remove its saved files, folders, profile, and settings?")) return;
+  sourceWorkbench.cancelImport();
   revision++;
   recoverySaver.invalidate();
   clearTimeout(debounce);
   invalidate();
-  // Queue deletion before creating the default source. New edits queue after this deletion.
   const clearing = recovery.clear();
-  workspace.profile = "7.7.0";
-  profile.value = workspace.profile;
   examplePicker.value = "hello";
   describeExample();
-  replaceSource("/workspace/main.idl", examples[0].source);
+  replaceWorkspace(createWorkspace(examples[0].source));
   try {
     await clearing;
     recoveryAvailable = true;
@@ -551,7 +595,7 @@ element("reset").addEventListener("click", async () => {
   } catch {
     recoveryAvailable = false;
     element("source-state").textContent = "Recovery unavailable";
-    notice("The saved workspace could not be cleared. Local recovery is unavailable.");
+    notice("The saved workspace could not be cleared. Local recovery is unavailable.", "error");
   }
 });
 
@@ -575,13 +619,33 @@ element("copy").addEventListener("click", async () => {
     await navigator.clipboard.writeText(doc.source);
     notice(`Copied ${doc.name}.`);
   } catch {
-    notice("Clipboard access is unavailable. Select code in the output editor to copy it.");
+    notice("Clipboard access is unavailable. Select code in the output editor to copy it.", "error");
   }
 });
 
 element("download").addEventListener("click", () => {
   const doc = active();
   if (doc) download(doc.name, doc.source, "text/plain;charset=utf-8");
+});
+
+element("copy-source").addEventListener("click", async () => {
+  const file = workspace.files.find((file) => file.id === activeSource);
+  if (!file) return;
+  try {
+    await navigator.clipboard.writeText(file.source);
+    notice(`Copied ${file.path.split("/").pop()}.`);
+  } catch {
+    notice("Clipboard access is unavailable. Select code in the IDL editor to copy it.", "error");
+  }
+});
+
+element("download-source-file").addEventListener("click", () => {
+  const file = workspace.files.find((file) => file.id === activeSource);
+  if (file) download(file.path.split("/").pop()!, file.source, "text/plain;charset=utf-8");
+});
+
+element("download-source").addEventListener("click", () => {
+  download("wireloom-sources.zip", sourceArchive(structuredClone(workspace)), "application/zip");
 });
 
 element("download-all").addEventListener("click", () => {
@@ -674,8 +738,9 @@ async function initialize() {
     if (restored && before === revision) {
       workspace = restored;
       profile.value = workspace.profile;
-      replaceSource(workspace.files[0].path, workspace.files[0].source, true);
-      const example = examples.find((value) => value.source === workspace.files[0].source);
+      replaceWorkspace(workspace, workspace.activeFileId ?? workspace.files[0]?.id, true);
+      const example =
+        workspace.files.length === 1 ? examples.find((value) => value.source === workspace.files[0].source) : undefined;
       if (example) {
         examplePicker.value = example.id;
         describeExample();
@@ -684,14 +749,14 @@ async function initialize() {
     }
   } catch (error) {
     element("source-state").textContent = "Recovery unavailable";
-    notice(`Local recovery is unavailable: ${String(error)} You can still edit and generate.`);
+    notice(`Local recovery is unavailable: ${String(error)} You can still edit and generate.`, "error");
   } finally {
     save();
-    element("source-size").textContent =
-      `${new TextEncoder().encode(workspace.files[0].source).byteLength.toLocaleString()} bytes`;
+    element("source-size").textContent = `${sourceBytes(workspace).toLocaleString()} bytes`;
     void compiler.start();
     compile();
   }
 }
 
+syncSources();
 void initialize();
