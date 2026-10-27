@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-27T11:08:41Z
+  generated_at: 2026-10-27T23:08:07Z
   arc42_home: docs/architecture/arc42
   human_memory_path: docs/architecture/architecture-memory.md
 sources:
@@ -81,58 +81,17 @@ summary:
       - docs/architecture/arc42/04-solution-strategy.md
   building_blocks:
     text: >-
-      The compiler core owns virtual inputs, IDL syntax, symbols, semantic
-      validation, diagnostics, and generated documents without Roslyn, MSBuild,
-      RTI, or filesystem dependencies. The adapter owns Roslyn integration and
-      profile discovery. Parsing preserves annotation order and source spans;
-      binding resolves constants, defaults, bounds, enum identity, and member
-      IDs. Validation is profile-independent. Emission plans own profile- and
-      IDL-shape-specific API, storage, metadata, and initialization. Detailed
-      feature behavior is maintained in chapter 8, contracts, and corpus
-      coverage. The wire harness has a C# fixture catalog and deterministic
-      planner. One bootstrap Wireloom build prepares shared project references;
-      bounded C# workers build remaining managed peers with isolated
-      intermediate, generated-source, and output paths. A second bounded C#
-      queue compiles independent native peers before one shard-wide exchange
-      scheduler runs. A C# file-based matrix runner initializes RTI environment variables, stages per-case sources, and finalizes reports.
+      The compiler core owns IDL parsing, binding, validation, diagnostics, and generated documents; the Roslyn adapter integrates that core with consumer builds. The wire harness has three non-packable projects: Runner plans shards, builds peers, schedules exchanges, and writes evidence; Shared defines contracts; Verifier checks and merges reports. Typed records connect application stages; JSON and TSV remain at command and evidence boundaries.
     sources:
       - docs/architecture/arc42/05-building-block-view.md
   runtime:
     text: >-
-      Generation runs during consumer compilation. Strict validation is
-      permissive by default and becomes batch-wide when any root enables it;
-      diagnostics retain source locations. Corpus and wire evidence is scoped
-      to exact RTI profiles and recorded inputs. Wire fixtures compare directed
-      exchanges among Wireloom C#, RTI C#, and RTI C++ where qualified. The
-      scheduler starts readers before writers and leases a unique active DDS
-      domain per exchange across the shard; RTI Monitoring Library 2.0 is
-      disabled in peer processes. Reports reject incomplete or duplicated
-      scenarios.
+      Consumer compilation invokes generation through the analyzer. Wire shards plan whole cases, build selected managed and native peers, and run bounded reader-first exchanges on unique active DDS domains. Peer processes disable RTI Monitoring Library 2.0. The license-free Verifier rejects missing, duplicate, or inconsistent shard evidence before producing the combined report.
     sources:
       - docs/architecture/arc42/06-runtime-view.md
   deployment:
     text: >-
-      Wireloom.Dds.Generator is the sole published analyzer package. The
-      non-packable compiler is bundled beside the adapter at the same version.
-      CI checks exact-profile corpus, package and runtime behavior, the minimum
-      compiler host, Community Qodana, and Coveralls. The Playground uses
-      a non-packable .NET 10 browser-WASM host in a module worker with a
-      TypeScript/Vite client. Quality CI includes strict client checks and
-      source-mapped Chromium plus C# adapter coverage. The standalone fuzzing
-      project runs without coverage instrumentation. GitHub Pages publication
-      promotes a hash-verified candidate from successful main push Quality and
-      Coveralls results without rebuilding. PRs only validate. Pages write and
-      OIDC permissions are isolated to the main-restricted environment. Stale
-      automatic runs are rejected; retained candidates support manual rollback.
-      Licensed wire runs restore packages into the mounted NuGet cache, build
-      one bootstrap managed peer, then run bounded case-specific managed and
-      native build queues before domain-isolated exchanges across the whole
-      shard. Managed peers use isolated intermediate and output paths while
-      sharing bootstrapped references. Native builds run at most two cases at
-      once with two compiler jobs each; exchanges remain bounded to 16.
-      Peer processes disable RTI Monitoring Library 2.0 because its telemetry
-      participant is unused and can contend for local discovery ports.
-      Whole-case shards remain the build-isolation boundary.
+      Wireloom publishes one analyzer package with its compiler assembly. CI qualifies exact RTI profiles. Licensed Docker jobs run the C# Runner; a separate license-free job uses the Verifier to validate and combine shard artifacts. The wire runbook records concurrency, container, and artifact details.
     sources:
       - docs/architecture/arc42/07-deployment-view.md
   cross_cutting:

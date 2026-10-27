@@ -93,64 +93,26 @@ documents.
 
 ## 6.3 Wire compatibility evidence
 
-The manually dispatched matrix compares Wireloom-generated C#, RTI-generated
-C#, and RTI-generated C++ across all nine directed peer pairings for selected
-Wireloom-positive corpus fixtures. A pass requires valid samples and complete
-payload comparison; successful discovery alone is insufficient. C147 passes
-all 18 directed exchanges on each exact profile. The 7.3.1 package integration
-build and runtime-contract suite pass against its exact NuGet package; full
-profile wire qualification remains pending.
+The manually dispatched workflow runs eight whole-case shards for each
+qualified RTI profile. Each shard runs the Runner in the matching Docker
+container: it creates a deterministic plan, builds selected managed and native
+peers, then schedules exchanges with a unique DDS domain per active pair. The
+scheduler starts readers before writers and is bounded to 16 exchanges by
+default. Peer processes disable RTI Monitoring Library 2.0 because its
+observability participant is not used by the matrix.
 
-The C# fixture catalog supplies profile-aware fixture names. The C# planner
-expands the manifest and exclusion registry into a deterministic full directed
-exchange plan, then assigns complete cases to the existing outer shards. The
-C# matrix runner initializes the RTI environment and owns case preparation,
-oracle staging, and report finalization. It builds one Wireloom case to prepare shared project references, then
-uses isolated intermediate paths to build the remaining managed peers in a
-bounded C# queue. It prepares RTI C# peers and native build inputs per case,
-then uses a second bounded C# queue to compile independent C++ peers. The
-exchange scheduler starts after all selected peer builds finish and feeds
-runnable exchanges from every built case in the shard through one bounded
-queue, set to 16 exchanges by default. Each exchange uses its own DDS domain
-and topic, starts the reader first, waits for `READY`, then starts the writer.
-It checks both peer exit codes and `PASS` lines and records the leased
-domain/topic in its log. Every peer process disables RTI Monitoring Library
-2.0 so the background observability participant does not contend for local
-discovery ports. Case build failures remain visible in the build evidence;
-exchanges without a runnable native peer remain not run, so incomplete evidence
-cannot become a complete report. The report and shard verifier require every
-planned scenario exactly once. Setup failures fail the workflow. The [wire
-compatibility runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#case-shards-and-combined-reports)
-documents planning, scheduling, artifact validation, failure handling, and
-local operations.
+Each Runner invocation writes its plan, shard metadata, scenario outcomes, and
+sanitized logs, including partial evidence on failure. After shard jobs finish,
+the report job downloads their artifacts and runs the Verifier. The Verifier
+checks assignment, completeness, uniqueness, and report consistency; its merge
+command writes the combined report and evidence. Report assembly needs no RTI
+license.
 
-Wire validation requires a valid sample and complete fixture comparison;
-discovery or lifecycle-only traffic is not a pass. The runbook documents reader
-handling, verifier normalization, and fixture-specific peer behavior.
-
-Known limits remain visible in the evidence: `05-array-of-sequences` has
-expected Wireloom C# interoperability failures because its managed shape does
-not preserve the IDL array; selected optional wide-string and recursive-array
-cases use documented peer/QoS adaptations for RTI 7.7.0 limitations; and the
-FlatData fixture validates standard C++ mapping, not RTI's FlatData-specific
-layout. These adaptations do not establish unadapted interoperability. The
-[wire compatibility runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
-owns fixture setup, peer construction, shard execution, artifacts, and report
-details. The separate [runtime contract suite](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
-covers generated API and serialization behavior without establishing the wire
-matrix results.
-
-The shared corpus declares `05-array-of-sequences-idl` as a dedicated C149
-case. Its separately named IDL has the same declarations as C018 and selects
-the `Idl` mapping. It separately plans four directed pairings between Wireloom C# and RTI C++, with four payload
-fixtures per exact LTS profile. RTI C# is explicitly excluded because its
-direct-form binding describes the flattened type; reports show the exclusion
-reason and N/A cells. The default C018 matrix remains unchanged. Case results
-retain mode, runtime, IDL hash, and actual generated-source hashes;
-missing or mismatched provenance prevents completed exchanges from qualifying.
-The focused live runs passed all 16 exchanges on each exact LTS release;
-these results qualify only the recorded fixtures and peer scope.
-
+Peer and exchange failures remain visible in the report. Setup and evidence
+finalization failures fail the job. Missing, duplicate, inconsistent, or
+unrun scenarios cannot produce a complete report. See the
+[wire compatibility runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#case-shards-and-combined-reports)
+for artifact and failure details.
 ## 6.4 Browser Playground compilation
 
 The TypeScript client submits an immutable JSON workspace snapshot containing

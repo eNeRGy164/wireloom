@@ -38,42 +38,7 @@ repository SDK remains selected by `global.json` when producing the package.
 See
 [continuous LTS verification](../../guides/support-and-compatibility.md#continuous-lts-verification).
 
-The manually triggered wire-compatibility workflow runs both qualified LTS
-profiles as a version matrix. Each version has eight isolated case-shard jobs
-(up to eight probes per version) and its own report job, workflow summary, and
-combined evidence artifact. Each profile uses a trimmed .NET SDK image with
-the matching RTI native runtime/development libraries; C++ peer source is
-checked into the corpus, so wire execution does not install Java or invoke
-`rtiddsgen`. RTI license access is limited to peer-execution jobs; report
-assembly runs without that secret. Docker build layers use a version-scoped
-GitHub Actions cache. C++ compiler outputs use a persistent cache keyed by the
-runner OS, RTI and `g++` versions, shard, and hash of the container, native
-runner, scripts, and corpus oracle inputs. Restore prefixes allow reuse across
-compatible input changes and older cache keys. GitHub's branch cache scope
-still applies. The
-[wire compatibility runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#case-shards-and-combined-reports)
-owns shard execution, image/cache handling, artifact contents, and report
-assembly details. Each shard builds its selected case peers before execution.
-The C# matrix runner initializes the RTI environment, stages the checked-in
-oracle sources, and owns report finalization. It first builds shared Wireloom
-project references, then builds the case-specific managed peers with up to
-four concurrent .NET builds. Native peers are configured per case and compiled
-with up to two active CMake builds, each using two compiler jobs.
-`WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY` and
-`WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY` control these bounds. The C# runner
-then schedules up to 16 independent exchanges across all built cases in
-that shard by default, with a unique active DDS domain per exchange;
-`WIRE_COMPATIBILITY_MAX_CONCURRENCY` controls that bound. The shard uses the
-NuGet cache mounted at `NUGET_PACKAGES`. RTI Monitoring Library 2.0 is disabled
-in peer subprocesses with
-`RTI_MONITORING2_ENABLE=false`; the matrix does not use its telemetry
-participant. Each case peer uses isolated intermediate, generated-source, and
-output paths while sharing the bootstrapped references and restored package
-cache. Case shards remain isolated build and evidence partitions.
-Adding another LTS release requires a profile-specific corpus export and an
-exact toolchain image, package, and generator version. Profile selection uses
-the assembly resolved by the consumer build.
-
+The manually triggered workflow runs eight whole-case shards for each qualified RTI profile. Licensed Docker jobs invoke the C# Runner to build selected peers and schedule domain-isolated exchanges; peer processes disable the unused RTI Monitoring Library. A license-free Verifier job checks shard evidence and produces the combined report. Build concurrency, exchange concurrency, container images, artifacts, and failure handling are documented in the [wire compatibility runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#case-shards-and-combined-reports).
 The checked-in samples/HelloWorld project consumes the released
 Wireloom.Dds.Generator 0.5.0 package from NuGet.org and builds on Ubuntu 26.04
 and Windows 2025. This compile-only CI check needs no RTI native library or
