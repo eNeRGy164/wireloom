@@ -9,9 +9,15 @@ const cases = examples.map((example) => ({
     "7.3.1": !["profiles", "unsupported"].includes(example.id),
     "7.7.0": example.id !== "unsupported",
   },
-  files: [{ path: "/workspace/main.idl", source: example.source, isGenerationRoot: true }],
+  files: example.workspace?.().files ?? [
+    { path: "/workspace/main.idl", source: example.source, isGenerationRoot: true },
+  ],
+  options: example.workspace?.().options,
 }));
+
 const output = resolve(import.meta.dirname, "../../../output/playwright/example-cases.json");
+
 await mkdir(dirname(output), { recursive: true });
 await writeFile(output, JSON.stringify(cases, null, 2));
+
 console.log(output);

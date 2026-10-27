@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { spawn, execFileSync } from "node:child_process";
 import { readFile, writeFile, mkdir, readdir, open, unlink } from "node:fs/promises";
 import { resolve, relative } from "node:path";
+import { pathToFileURL } from "node:url";
 import { chromium, firefox, webkit } from "playwright";
 
 const root = resolve(import.meta.dirname, "../../..");
@@ -19,8 +20,8 @@ assert(["chromium", "msedge", "firefox", "webkit"].includes(engine), "Choose chr
 const phases = (
   process.argv[3] ??
   (engine === "chromium" || engine === "msedge"
-    ? "parity,corpus,corpus-ui,desktop,ui,recovery,ui-faults,faults,limits"
-    : "parity,corpus,corpus-ui,desktop,faults,limits")
+    ? "parity,corpus,corpus-ui,desktop,workspace,ui,recovery,ui-faults,faults,limits"
+    : "parity,corpus,corpus-ui,desktop,workspace,faults,limits")
 ).split(",");
 
 const started = new Date().toISOString();
@@ -182,9 +183,11 @@ try {
     });
 
     const source = await readFile(resolve(output, `run-${phase}.mjs`), "utf8");
-    const { default: verify } = await import(
-      `data:text/javascript;base64,${Buffer.from(`export default ${source}`).toString("base64")}`
-    );
+    const modulePath = resolve(output, `run-${phase}-module.mjs`);
+
+    await writeFile(modulePath, `export default ${source}`);
+
+    const { default: verify } = await import(pathToFileURL(modulePath).href);
 
     let deadline;
     let result;

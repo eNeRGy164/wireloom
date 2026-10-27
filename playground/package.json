@@ -13,7 +13,7 @@
     "format:check": "prettier --check \"src/**/*.{ts,mjs}\" \"scripts/**/*.mjs\" \"*.mjs\" vite.config.ts",
     "build": "node scripts/clean-wasm.mjs && dotnet publish ../src/Wireloom.Playground.Browser/Wireloom.Playground.Browser.csproj --configuration Release -p:RestoreLockedMode=true && node scripts/copy-wasm.mjs && vite build",
     "test": "node --test src/*.test.mjs scripts/pages-manifest.test.mjs",
-    "coverage": "c8 --all --include src/md5.mjs --include src/worker-state.mjs --include src/workspace.ts --include src/compiler-client.ts --include src/recovery-saver.ts --reports-dir coverage/unit --reporter=text --reporter=json --reporter=json-summary --check-coverage --branches 95 --lines 98 --functions 80 node --test src/*.test.mjs",
+    "coverage": "c8 --all --include src/md5.mjs --include src/worker-state.mjs --include src/workspace.ts --include src/source-archive.ts --include src/compiler-client.ts --include src/recovery-saver.ts --reports-dir coverage/unit --reporter=text --reporter=json --reporter=json-summary --check-coverage --branches 95 --lines 98 --functions 80 node --test src/*.test.mjs",
     "build:coverage": "vite build --sourcemap hidden --outDir dist-coverage",
     "coverage:browser": "node scripts/browser-coverage.mjs",
     "test:md5": "node --test src/md5.test.mjs",

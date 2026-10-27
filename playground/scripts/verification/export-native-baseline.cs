@@ -30,7 +30,13 @@ foreach (var testCase in cases)
     }
 
     var files = testCase.Files
-        .Select(file => new IdlInput(file.Path, file.Source, file.IsGenerationRoot))
+        .Select(file => new IdlInput(file.Path, file.Source,
+            file.Options?.SequenceArrayMapping == "Idl" ? IdlSequenceArrayMapping.Idl : IdlSequenceArrayMapping.RtiCSharp,
+            generate: file.IsGenerationRoot, strict: testCase.Options?.Strict ?? false,
+            defines: testCase.Options?.Defines, undefines: testCase.Options?.Undefines,
+            includeDirectories: testCase.Options?.IncludeDirectories?.Order(StringComparer.Ordinal).ToArray(),
+            sequenceSize: file.Options?.SequenceSize ?? 100, stringSize: file.Options?.StringSize ?? 255,
+            enableEscapeChar: testCase.Options?.EnableEscapeChar ?? false))
         .ToArray();
 
     if (files.Length == 0 || !files.Any(file => file.Generate))
@@ -95,16 +101,33 @@ Console.WriteLine($"Exported {baseline.Count} native baselines for {seenCaseIds.
 /// <param name="Path">The normalized virtual input path.</param>
 /// <param name="Source">The complete IDL source.</param>
 /// <param name="IsGenerationRoot">Whether this file is a generation root.</param>
-internal sealed record CaseFile(string Path, string Source, bool IsGenerationRoot);
+/// <param name="Options">Optional declaring-file settings.</param>
+internal sealed record CaseFile(string Path, string Source, bool IsGenerationRoot, CaseFileOptions? Options = null);
+
+/// <summary>Declaring-file settings for a native verification fixture.</summary>
+/// <param name="SequenceArrayMapping">The direct sequence-array mapping.</param>
+/// <param name="SequenceSize">The effective unbounded sequence size.</param>
+/// <param name="StringSize">The effective unbounded string size.</param>
+internal sealed record CaseFileOptions(string SequenceArrayMapping = "RtiCSharp", int SequenceSize = 100, int StringSize = 255);
+
+/// <summary>Batch settings for a native verification fixture.</summary>
+/// <param name="Defines">External definitions.</param>
+/// <param name="Undefines">Symbols removed after definitions.</param>
+/// <param name="IncludeDirectories">Virtual include search directories.</param>
+/// <param name="Strict">Batch strictness.</param>
+/// <param name="EnableEscapeChar">Batch escaped-identifier setting.</param>
+internal sealed record CaseOptions(string[] Defines, string[] Undefines, string[] IncludeDirectories, bool Strict, bool EnableEscapeChar);
 
 /// <summary>Describes one browser-shaped input case and expected native outcomes.</summary>
 /// <param name="Id">The stable verification case identifier.</param>
 /// <param name="ExpectedSuccess">Expected success by RTI profile name.</param>
 /// <param name="Files">All roots and include-only files in this workspace.</param>
+/// <param name="Options">Optional batch settings.</param>
 internal sealed record CaseDefinition(
     string Id,
     IReadOnlyDictionary<string, bool> ExpectedSuccess,
-    CaseFile[] Files);
+    CaseFile[] Files,
+    CaseOptions? Options = null);
 
 /// <summary>Contains the compiler result for one case and profile.</summary>
 /// <param name="CaseId">The source case identifier.</param>

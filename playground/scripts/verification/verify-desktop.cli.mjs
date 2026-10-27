@@ -34,11 +34,14 @@ async (page) => {
       null,
       { timeout: 15_000 },
     );
-  let importSequence = 0;
   const importSource = async (app, source) => {
-    const name = `desktop-${++importSequence}.idl`;
+    const name = await app.locator("#source-tabs [aria-selected=true]").textContent();
     await app.locator("#file").setInputFiles({ name, mimeType: "text/plain", buffer: Buffer.from(source, "utf8") });
-    await app.waitForFunction((name) => document.querySelector("#input-name").textContent === name, name);
+    await app.getByRole("dialog").getByRole("button", { name: "Replace", exact: true }).click();
+    await app.waitForFunction(
+      (name) => document.querySelector("#source-tabs [aria-selected=true]").textContent === name,
+      name,
+    );
     await wait(app);
   };
   await check("all example/profile combinations match native generated names and text", async (app) => {

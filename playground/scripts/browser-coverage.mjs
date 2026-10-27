@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
-import { spawn } from "node:child_process";
+import { spawn, execFileSync } from "node:child_process";
 import { isAbsolute, relative, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { chromium } from "playwright";
 import v8ToIstanbul from "v8-to-istanbul";
 import coverage from "istanbul-lib-coverage";
@@ -103,7 +104,9 @@ try {
     mimeType: "text/plain",
     buffer: Buffer.from("// café\r\nstruct Coverage { long value; };\r\n", "utf8"),
   });
-  await page.waitForFunction(() => document.querySelector("#input-name")?.textContent === "coverage.idl");
+  await page.waitForFunction(
+    () => document.querySelector("#source-tabs [aria-selected=true]")?.textContent === "coverage.idl",
+  );
   await waitForCurrent(page);
   await page.reload();
   await waitForCurrent(page);
@@ -112,7 +115,9 @@ try {
     mimeType: "text/plain",
     buffer: Buffer.from("struct Broken { long value;\n"),
   });
-  await page.waitForFunction(() => document.querySelector("#input-name")?.textContent === "broken.idl");
+  await page.waitForFunction(
+    () => document.querySelector("#source-tabs [aria-selected=true]")?.textContent === "broken.idl",
+  );
   await page.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Failed");
   assert.equal(await page.locator("#output-tabs [role=tab]").count(), 0);
   await page.locator("#diagnostics button").first().click();
@@ -121,7 +126,60 @@ try {
   await waitForCurrent(page);
   assert.deepEqual(pageErrors, [], "The production Playground raised uncaught page errors.");
 
+  // Run the workspace scenarios with coverage attached to each isolated page.
+  execFileSync(process.execPath, ["playground/scripts/verification/prepare-example-cases.mjs"], { cwd: root });
+  execFileSync(
+    "dotnet",
+    [
+      "run",
+      "--file",
+      "playground/scripts/verification/export-native-baseline.cs",
+      "--",
+      "output/playwright/example-cases.json",
+      "output/playwright/example-native-baseline.json",
+    ],
+    { cwd: root },
+  );
+  const template = await readFile(resolve(root, "playground/scripts/verification/verify-workspace.cli.mjs"), "utf8");
+  const workspaceInput = {
+    phase: "workspace",
+    root: `${origin}/`,
+    exampleExpected: JSON.parse(
+      await readFile(resolve(root, "output/playwright/example-native-baseline.json"), "utf8"),
+    ),
+  };
+  const modulePath = resolve(outputDir, "workspace-coverage.mjs");
+  await writeFile(
+    modulePath,
+    `export default ${template.replace("__WIRELOOM_INPUT__", JSON.stringify(workspaceInput))}`,
+  );
+  const { default: verifyWorkspace } = await import(pathToFileURL(modulePath).href);
+  const sessions = new Map();
+  const workspaceScripts = [];
+  const previousDirectory = process.cwd();
+  process.chdir(root);
+  let workspaceResult;
+  try {
+    workspaceResult = await verifyWorkspace(page, {
+      start: async (app) => {
+        const session = await app.context().newCDPSession(app);
+        await session.send("Profiler.enable");
+        await session.send("Profiler.startPreciseCoverage", { callCount: false, detailed: true });
+        sessions.set(app, session);
+      },
+      finish: async (app) => {
+        const session = sessions.get(app);
+        workspaceScripts.push(...(await session.send("Profiler.takePreciseCoverage")).result);
+        await session.send("Profiler.stopPreciseCoverage");
+        await session.detach();
+      },
+    });
+  } finally {
+    process.chdir(previousDirectory);
+  }
+  assert(workspaceResult.passed, JSON.stringify(workspaceResult.checks.filter((check) => !check.passed)));
   const raw = await cdp.send("Profiler.takePreciseCoverage");
+  raw.result.push(...workspaceScripts);
   await cdp.send("Profiler.stopPreciseCoverage");
   await cdp.detach();
   await context.close();
