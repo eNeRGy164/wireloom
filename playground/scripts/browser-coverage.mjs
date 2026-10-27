@@ -51,6 +51,7 @@ try {
   const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(String(error)));
   const cdp = await context.newCDPSession(page);
+  const primaryScripts = [];
   await cdp.send("Profiler.enable");
   await cdp.send("Profiler.startPreciseCoverage", { callCount: false, detailed: true });
   await page.goto(`${origin}/`);
@@ -89,15 +90,128 @@ try {
   await page.keyboard.press("ArrowLeft");
   await page.locator("#font-decrease").click();
   await page.locator(".theme-toggle label").filter({ hasText: "Dark" }).click();
-  await page.locator("#output-tabs [role=tab]").first().focus();
+  const firstGeneratedTab = page.locator("#output-tabs [role=tab]").first();
+  await firstGeneratedTab.focus();
+  const firstGeneratedName = await firstGeneratedTab.textContent();
+  await page.keyboard.press("ArrowRight");
+  assert.notEqual(
+    await page.locator('#output-tabs [role="tab"][aria-selected="true"]').textContent(),
+    firstGeneratedName,
+    "ArrowRight did not move focus to another generated tab.",
+  );
+  await page.locator("#output-tabs [role=tab]").first().click();
   await page.keyboard.press("End");
   await page.keyboard.press("Home");
-  await page.locator("#explorer-toggle").click();
-  await page.locator("#explorer-toggle").click();
+  const explorerToggle = page.locator("#explorer-toggle");
+  await explorerToggle.click();
+  assert.equal(await explorerToggle.getAttribute("aria-expanded"), "false");
+  await explorerToggle.click();
+  assert.equal(await explorerToggle.getAttribute("aria-expanded"), "true");
   await page.setViewportSize({ width: 800, height: 1080 });
   await page.setViewportSize({ width: 1440, height: 1080 });
   await page.locator("#copy").click();
   await page.locator("#notice-dismiss").click();
+
+  // Exercise generated-tab scrolling with enough output tabs to overflow the strip.
+  await page.locator("#example").selectOption("types");
+  await page.locator("#load-example").click();
+  await waitForCurrent(page, "type showcase before generated-tab scrollbar checks");
+  await page.setViewportSize({ width: 800, height: 1080 });
+  const tabs = page.locator("#output-tabs");
+  const strip = page.locator("#output-tabs-strip");
+  const thumb = page.locator("#tab-scroll-thumb");
+  assert.equal(await page.locator("#tab-scrollbar").isVisible(), true, "Generated tabs did not overflow the strip.");
+  await tabs.evaluate((node) => (node.scrollLeft = 0));
+  await thumb.hover();
+  const thumbBounds = await thumb.boundingBox();
+  assert(thumbBounds, "Generated-tab scrollbar thumb has no visible bounds.");
+  await page.mouse.move(thumbBounds.x + 2, thumbBounds.y + 2);
+  await page.mouse.down();
+  assert((await strip.getAttribute("class")).includes("dragging"), "Pointer down did not start tab dragging.");
+  await page.mouse.move(thumbBounds.x + 24, thumbBounds.y + 2);
+  await page.mouse.up();
+  assert(!(await strip.getAttribute("class")).includes("dragging"), "Pointer up did not stop tab dragging.");
+  assert((await tabs.evaluate((node) => node.scrollLeft)) > 0, "Dragging the generated-tab thumb did not scroll tabs.");
+  await thumb.focus();
+  await page.keyboard.press("End");
+  await page.waitForFunction(() => {
+    const thumb = document.querySelector("#tab-scroll-thumb");
+    return thumb.getAttribute("aria-valuenow") === thumb.getAttribute("aria-valuemax");
+  });
+  assert.equal(await thumb.getAttribute("aria-valuenow"), await thumb.getAttribute("aria-valuemax"));
+  await page.keyboard.press("Home");
+  await page.waitForFunction(() => document.querySelector("#tab-scroll-thumb").getAttribute("aria-valuenow") === "0");
+  assert.equal(await thumb.getAttribute("aria-valuenow"), "0");
+  await page.keyboard.press("PageDown");
+  await page.waitForFunction(
+    () => Number(document.querySelector("#tab-scroll-thumb").getAttribute("aria-valuenow")) > 0,
+  );
+  assert(Number(await thumb.getAttribute("aria-valuenow")) > 0, "PageDown did not scroll the tab strip.");
+  await page.keyboard.press("PageUp");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowLeft");
+  await page.keyboard.press("x");
+  await strip.evaluate((node) => {
+    const tabs = document.querySelector("#output-tabs");
+    const before = tabs.scrollLeft;
+    const event = new WheelEvent("wheel", { deltaY: 120, bubbles: true, cancelable: true });
+    node.dispatchEvent(event);
+    if (!event.defaultPrevented) throw new Error("Unmodified wheel input was not consumed by the generated-tab strip.");
+    if (tabs.scrollLeft <= before) throw new Error("Unmodified wheel input did not scroll generated tabs.");
+  });
+  await strip.evaluate((node) => {
+    node.dispatchEvent(new WheelEvent("wheel", { deltaY: 120, ctrlKey: true, bubbles: true, cancelable: true }));
+    node.dispatchEvent(new WheelEvent("wheel", { deltaY: 0, bubbles: true, cancelable: true }));
+    node.dispatchEvent(
+      new WheelEvent("wheel", { deltaY: 1, deltaMode: WheelEvent.DOM_DELTA_LINE, bubbles: true, cancelable: true }),
+    );
+    node.dispatchEvent(
+      new WheelEvent("wheel", { deltaY: 1, deltaMode: WheelEvent.DOM_DELTA_PAGE, bubbles: true, cancelable: true }),
+    );
+    node.dispatchEvent(new WheelEvent("wheel", { deltaX: 120, deltaY: 1, bubbles: true, cancelable: true }));
+  });
+
+  // Both the menu-local and document-level Escape handlers must dismiss generated-file menus.
+  await page.locator("#file-list button").first().click({ button: "right" });
+  await page.keyboard.press("Escape");
+  assert.equal(await page.locator('[role="menu"]').count(), 0, "Escape did not close a generated-file menu.");
+  await page.locator("#file-list button").first().click({ button: "right" });
+  await page.evaluate(() => document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true })));
+  assert.equal(
+    await page.locator('[role="menu"]').count(),
+    0,
+    "Outside pointer input did not close a generated-file menu.",
+  );
+  await page.locator("#output-tabs [role=tab]").first().click({ button: "right" });
+  await page.keyboard.press("Escape");
+  assert.equal(await page.locator('[role="menu"]').count(), 0, "Menu-local Escape did not close a generated-tab menu.");
+  await page.locator("#output-tabs [role=tab]").first().click({ button: "right" });
+  await page.evaluate(() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+  assert.equal(await page.locator('[role="menu"]').count(), 0, "Document Escape did not close a generated-tab menu.");
+  primaryScripts.push(...(await cdp.send("Profiler.takePreciseCoverage")).result);
+  await cdp.send("Profiler.startPreciseCoverage", { callCount: false, detailed: true });
+  await page.setViewportSize({ width: 1440, height: 1080 });
+  await page.locator("#reset").click();
+  await page.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Empty");
+
+  await page.locator("#file").setInputFiles({
+    name: "coverage.idl",
+    mimeType: "text/plain",
+    buffer: Buffer.from("// café\r\nstruct Coverage { long value; };\r\n", "utf8"),
+  });
+  await page.waitForFunction(
+    () => document.querySelector("#source-tabs [aria-selected=true]")?.textContent === "coverage.idl",
+  );
+  await waitForCurrent(page);
+
+  await page.locator('[data-path="/workspace/coverage.idl"]').click({ button: "right" });
+  await page.getByRole("menuitem", { name: "Mark as Include-only" }).click();
+  await page.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Failed");
+  assert.match(await page.locator("#diagnostics-empty").textContent(), /Mark at least one file as Root/);
+  primaryScripts.push(...(await cdp.send("Profiler.takePreciseCoverage")).result);
+  await cdp.send("Profiler.startPreciseCoverage", { callCount: false, detailed: true });
+  await page.locator("#reset").click();
+  await page.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Empty");
 
   await page.locator("#file").setInputFiles({
     name: "coverage.idl",
@@ -179,7 +293,7 @@ try {
   }
   assert(workspaceResult.passed, JSON.stringify(workspaceResult.checks.filter((check) => !check.passed)));
   const raw = await cdp.send("Profiler.takePreciseCoverage");
-  raw.result.push(...workspaceScripts);
+  raw.result.push(...primaryScripts, ...workspaceScripts);
   await cdp.send("Profiler.stopPreciseCoverage");
   await cdp.detach();
   await context.close();

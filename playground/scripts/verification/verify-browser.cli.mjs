@@ -161,7 +161,7 @@ async (page) => {
                 for (const baseline of expected) {
                   const fixture = cases.find((value) => value.id === baseline.caseId);
                   const request = {
-                    protocolVersion: 2,
+                    protocolVersion: 3,
                     workerGeneration: 1,
                     requestId: ++requestId,
                     workspaceRevision: requestId,
@@ -220,7 +220,7 @@ async (page) => {
                 const fixture = cases[0];
                 for (let index = 0; index < 2; index++) {
                   const { response } = await wait({
-                    protocolVersion: 2,
+                    protocolVersion: 3,
                     workerGeneration: 1,
                     requestId: ++requestId,
                     workspaceRevision: requestId,
@@ -315,7 +315,7 @@ async (page) => {
                 event.data.type === "result" ? resolve(event.data.response) : reject(new Error(event.data.message));
               };
               worker.postMessage({
-                protocolVersion: 2,
+                protocolVersion: 3,
                 workerGeneration: 1,
                 requestId: 1,
                 workspaceRevision: 1,
@@ -380,11 +380,12 @@ async (page) => {
       const context = await browser.newContext();
       const app = await context.newPage();
       app.on("dialog", (dialog) => dialog.accept());
+      const faultSource = "@autoid(HASH) struct ProviderFailure { long InjectedProviderFailureMember; };";
       try {
         await app.route("**/dotnet/md5.mjs", (route) =>
           route.fulfill({
             contentType: "text/javascript",
-            body: 'import { computeMd5 as original } from "./md5.mjs?original"; let calls = 0; export function computeMd5(bytes) { if (calls++ === 0) throw new Error("Injected MD5 provider failure"); return original(bytes); }',
+            body: 'import { computeMd5 as original } from "./md5.mjs?original"; let failed = false; export function computeMd5(bytes) { if (!failed && new TextDecoder().decode(bytes) === "InjectedProviderFailureMember") { failed = true; throw new Error("Injected MD5 provider failure"); } return original(bytes); }',
           }),
         );
 
@@ -395,7 +396,7 @@ async (page) => {
           { timeout: 35_000 },
         );
 
-        await fillSource(app, hashCase.files[0].source);
+        await fillSource(app, faultSource);
         await app.waitForFunction(
           () => document.querySelector("#diagnostics-empty")?.textContent.includes("provider"),
           null,
@@ -409,7 +410,7 @@ async (page) => {
           "Provider fault was misclassified or retained output",
         );
 
-        await compileUi(app, hashCase.files[0].source);
+        await compileUi(app, faultSource);
 
         return { failure, recoveredDocuments: await app.locator("#file-list button").count() };
       } finally {
@@ -644,7 +645,7 @@ async (page) => {
               };
 
               worker.postMessage({
-                protocolVersion: 2,
+                protocolVersion: 3,
                 workerGeneration: 1,
                 requestId: ++requestId,
                 workspaceRevision: requestId,
