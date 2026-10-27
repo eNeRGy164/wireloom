@@ -1,16 +1,21 @@
+#!/usr/bin/env dotnet
 // File-based utility for the wire-compatibility matrix. Requires the .NET 10 SDK.
 #:property NoWarn=CS7022%3BIL2026%3BIL3050
 #:property RestorePackagesWithLockFile=false
+#:include WireCompatibilityCaseCatalog.cs
+#:include WireCompatibilityScenarioPlanner.cs
 using ReportFields = System.Collections.Generic.Dictionary<string, object?>;
 using PeerPair = (string Writer, string Reader);
 using FixtureKey = (string CaseId, string Fixture);
 using System.Security.Cryptography;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
+using Wireloom.Dds.Generator.WireCompatibility;
 
-const string usage = "Usage: matrix-tools.cs <repository-root|list-cases|list-rti-only-cases|case-field|case-pairings|case-profile-pairings|case-wire-oracle-source|case-info|json-field|discover-cases|discover-rti|generation-provenance|includes|includes-recursive|partition-shard|merge-shards|render-report|adapt-rti-characters> ...";
+const string usage = "Usage: matrix-tools.cs <repository-root|list-cases|list-rti-only-cases|case-fixtures|create-plan|case-field|case-pairings|case-profile-pairings|case-wire-oracle-source|case-info|json-field|discover-cases|discover-rti|generation-provenance|includes|includes-recursive|partition-shard|merge-shards|render-report|adapt-rti-characters> ...";
 var jsonOptions = new JsonSerializerOptions
 {
     WriteIndented = true,
@@ -57,6 +62,18 @@ try
 
             break;
         }
+        case "case-fixtures":
+        {
+            RequireArgs(3);
+            foreach (var fixture in FixturesForCase(args[1], args[2]))
+            {
+                Console.WriteLine(fixture);
+            }
+            break;
+        }
+        case "create-plan":
+            CreatePlan(args);
+            break;
         case "case-field":
         {
             RequireArgs(4);
@@ -221,6 +238,20 @@ void RequireArgs(int count)
 JsonNode ReadJson(string path)
 {
     return JsonNode.Parse(File.ReadAllText(path))!;
+}
+
+/// <summary>Returns the named payload variants owned by a corpus case and RTI profile.</summary>
+string[] FixturesForCase(string caseId, string version) => WireCompatibilityCaseCatalog.FixturesFor(caseId, version).ToArray();
+
+/// <summary>Creates the full deterministic exchange set, then assigns whole cases to the requested shard.</summary>
+void CreatePlan(string[] commandArgs)
+{
+    RequireArgs(8);
+    WireCompatibilityScenarioPlanner.CreatePlan(
+        commandArgs[1], commandArgs[2], commandArgs[3], commandArgs[4],
+        int.Parse(commandArgs[5], CultureInfo.InvariantCulture),
+        int.Parse(commandArgs[6], CultureInfo.InvariantCulture),
+        commandArgs[7]);
 }
 
 /// <summary>Gets the peers available for the selected RTI profile.</summary>

@@ -55,9 +55,9 @@ static bool matches(const Recursive& actual)
 
 int main(int argc, char** argv)
 {
-    if (argc != 6) {
+    if (argc != 6 && argc != 7) {
         std::cerr << "usage: wire-peer-recursive-sequence <writer|reader> <topic> "
-            "<timeout-seconds> <case> <fixture>\n";
+            "<timeout-seconds> <case> <fixture> [domain-id]\n";
         return 2;
     }
 
@@ -67,6 +67,7 @@ int main(int argc, char** argv)
         const int timeout_seconds = std::stoi(argv[3]);
         const std::string case_id(argv[4]);
         const std::string fixture(argv[5]);
+        const int domain_id = argc == 7 ? std::stoi(argv[6]) : 0;
         if (case_id != "06-aggregates" || fixture != "direct-recursive-sequence") {
             throw std::runtime_error("Unexpected recursive-sequence matrix fixture.");
         }
@@ -81,7 +82,7 @@ int main(int argc, char** argv)
             rti::core::policy::DiscoveryConfigBuiltinChannelKindMask::service_request());
         participant_qos << discovery;
 
-        dds::domain::DomainParticipant participant(0, participant_qos);
+        dds::domain::DomainParticipant participant(domain_id, participant_qos);
         dds::topic::Topic<Recursive> topic(participant, topic_name);
         if (role == "writer") {
             dds::pub::Publisher publisher(participant);

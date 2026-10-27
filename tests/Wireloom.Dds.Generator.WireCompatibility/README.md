@@ -172,10 +172,14 @@ Useful runner settings:
 | `WIRE_COMPATIBILITY_SHARD_INDEX`      | Zero-based shard to execute. Set together with shard count.                       | `0`                            |
 | `WIRE_COMPATIBILITY_SHARD_COUNT`      | Number of deterministic shards. Use the same count and case filter across shards. | `1`                            |
 | `WIRE_COMPATIBILITY_CPP_COMPILE_ONLY` | Compile C++ peers without starting DDS exchanges when set to `1`.                 | `0`                            |
+| `WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY` | Maximum concurrent case-specific Wireloom C# builds.                         | `4`                            |
+| `WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY`   | Maximum concurrent native C++ builds; each build uses two compiler jobs.     | `2`                            |
+| `WIRE_COMPATIBILITY_MAX_CONCURRENCY`  | Maximum independent exchanges active across all built cases in a shard.            | `16`                           |
 
 Each shard needs its own working copy and output directory when run locally in
-parallel because peer builds share project `obj` and `bin` paths. The selected
-case set must contain at least as many cases as the shard count.
+parallel. Case-specific managed outputs are isolated, but restore assets and
+the bootstrap build use shared project paths. The selected case set must
+contain at least as many cases as the shard count.
 
 ## Read the results
 
@@ -197,6 +201,44 @@ that their exchanges are complete, unique, and assigned to the correct shard.
 Missing, duplicated, misassigned, inconsistent, or not-run exchanges prevent a
 complete report. Peer setup failures are recorded and preserve a nonzero
 workflow result even when partial reports are available.
+
+The C# matrix utility owns fixture selection and creates the complete directed
+exchange plan before builds begin. The case catalog is maintained in
+`scripts/WireCompatibilityCaseCatalog.cs`; `matrix-tools.cs` includes it and
+the planner from `scripts/WireCompatibilityScenarioPlanner.cs` using the pinned
+.NET 10 SDK, without another project or package dependency. The coordinator
+builds one Wireloom case first to warm shared project references, then builds
+the remaining case peers concurrently. Each case has its own intermediate,
+generated-source, and output directories; package restore assets and project
+references are shared read-only. `WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY`
+controls this queue. RTI C# setup and CMake configuration then prepare each
+case, after which a bounded C# process queue builds native peers concurrently;
+each CMake build uses two compiler jobs and
+`WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY` controls the number of active
+cases. The shared NuGet cache mounted by CI is used through `NUGET_PACKAGES`.
+
+One C# exchange runner then draws from every built case in the shard, up to
+`WIRE_COMPATIBILITY_MAX_CONCURRENCY` exchanges at once (16 by default). Each active
+writer/reader pair leases one DDS domain ID from 20 upward; IDs are unique among
+active exchanges and returned after both peers exit. The runner records the
+domain ID and topic in the sanitized exchange log, checks both process exit
+codes and `PASS` output, and continues after handled peer failures. Existing
+case shards remain the outer build partition so independent case builds do not
+share their scratch paths.
+
+The runner starts each peer process with `RTI_MONITORING2_ENABLE=false`. RTI
+Monitoring Library 2.0 is otherwise eligible for automatic activation in these
+shared-library applications; its dedicated observability participant is not
+used by the matrix and can contend for local discovery ports. This setting
+disables the telemetry participant without disabling the peers' DDS
+communication transports.
+
+The four harness responsibilities are kept explicit: the catalog owns fixture
+values and profile exceptions; the planner owns deterministic pairings and
+whole-case shard assignment; the scheduler owns bounded reader-before-writer
+execution and domain leases; the evidence verifier owns completeness,
+uniqueness, profile, and report checks. The report verifier is shared with the
+existing shard merger, so scheduling changes do not weaken evidence rules.
 
 ## Fixtures and peer setup
 
@@ -430,10 +472,92 @@ mistaken for an included IDL's files when their basenames match, while incomplet
 or duplicated dependency output remains visible to the guards. The GitHub
 report job runs these checks before merging.
 
+### Concurrent DDS-domain spike
+
+The experimental `scripts/concurrent-domain-spike.cs` compares two managed
+exchanges sequentially and concurrently. Each pair uses one topic, distinct DDS
+domains, and fixtures that make the reader validate the payload received on its
+domain. The expanded Docker run used RTI 7.7.0 C# reference peers:
+
+| Case | Exchange fixtures | Sequential | Concurrent | Speedup |
+| --- | --- | ---: | ---: | ---: |
+| `01-boundaries` | `non-default` / `non-default` | 3.329 s | 1.050 s | 3.17× |
+| `04-strings` | `string-empty` / `string-boundary` | 3.026 s | 0.977 s | 3.09× |
+| `05-collections` | `sequence-empty` / `sequence-single` | 3.285 s | 1.590 s | 2.06× |
+| `07-unions` | `union-number` / `union-text` | 2.497 s | 1.178 s | 2.12× |
+
+Each exchange passed. Across these four single runs, elapsed time summed to
+12.137 seconds sequentially and 4.795 seconds concurrently (2.53×). Treat this
+as a smoke-level comparison rather than a stable benchmark: there was no warmup
+or repeated trial, and each row includes process startup, discovery, and a
+one-sample exchange. The selected RTI C# peer sources compiled with zero
+warnings and errors. These results demonstrate domain isolation across
+primitive, string, sequence, and union payloads, but do not qualify Wireloom
+serialization, native C++, sustained throughput, or the complete matrix.
+
+The aggregate case was not counted. The recursive-sequence fixture overflowed
+during RTI plugin initialization, and the inherited `Derived` fixture did not
+match the RTI type's member layout. That case needs an aggregate-specific
+fixture setup before it can provide useful evidence. A separate Wireloom peer
+build also hit duplicate generated definitions before DDS startup.
+
+The production harness now uses bounded domain scheduling for every planned
+exchange. The smoke results above do not replace a full licensed run of both
+profiles and do not qualify the complete matrix.
+
+### Full-matrix throughput validation
+
+On 2026-10-27, the complete RTI 7.7.0 matrix ran on the pinned Docker image
+with eight domain-isolated exchanges active per scheduler. All 1,555 exchanges
+were recorded: 1,549 passed and the same six known interoperability failures
+remained. Elapsed time was 11m45s after sharing project references, compared
+with 13m17s at concurrency eight without reference reuse and 18m35s in the
+preceding single-shard run at concurrency four. Representative shard 0/8 runs
+passed all 198 exchanges in 2m00s before reference reuse and 1m46s afterward.
+A 7.3.1 shard 0/8 run completed in 1m37s with 191 exchanges recorded: 181
+passed, 10 failed, and none were unrun. These are single-host measurements; the
+combined GitHub workflow time still depends on runner startup, image/cache
+state, and scheduling and needs confirmation on a dispatched workflow.
+
+With the bounded C# and native build queues enabled, a fresh 7.7.0 shard 0/8
+completed all 198 exchanges in 108 seconds; a fresh 7.3.1 shard 0/8 completed
+191 exchanges in 102 seconds, with the same 181 passes and 10 known failures.
+The 7.7.0 shard's 10 non-bootstrap Wireloom peer builds each took 2.1–3.1
+seconds while four builds ran concurrently. A four-case 7.7.0 smoke run passed
+54/54 exchanges in 51 seconds. These timings include local container execution
+with the NuGet cache mounted; the full combined GitHub workflow has not yet been
+measured on this implementation.
+
+The complete unsharded 7.7.0 rerun with the parallel build queues completed in
+12m03s: 1,549 of 1,555 exchanges passed, with the same six known failures and no
+unrun exchanges. This is a full correctness run, not a proxy for the eight-shard
+workflow critical path: peer setup spans all 91 cases in one container. The
+shard measurements above are the relevant local comparison, while the combined
+GitHub workflow still needs a dispatch to confirm the five-minute target.
+
+The previous GitHub run (40254314909) identifies the shard critical path more
+precisely. Its slowest 7.3.1 shard (index 6) took 9m34s end to end, with 7m16s
+inside the matrix runner; its slowest 7.7.0 shard (index 6) took 8m58s end to
+end, with 6m25s inside the runner. Replaying those same shard assignments with
+the initial concurrency-eight setting took 2m12s for 7.3.1 (194 exchanges, 4
+known failures) and 2m00s for 7.7.0 (198/198 passed). These local runs confirm
+the heavy shard cases no longer have the old serial-build cost.
+
+The scheduler was then raised to 16 exchanges. Under a four-CPU Docker limit,
+7.3.1 shard 6 took 2m13s at concurrency eight and 2m03s at concurrency 16,
+with the same 194 passes and four known failures. The 7.7.0 shard 6 took 1m56s
+at concurrency 16 with all 198 exchanges passing. These local runs exclude
+GitHub job startup, image/cache restoration, teardown, and report-job time; the
+overall five-minute workflow target still needs confirmation from a dispatched
+workflow.
+
 ## Code map
 
-- `scripts/run-matrix.sh` builds peers, starts exchanges, and records outcomes.
-- `scripts/matrix-tools.cs` discovers cases, plans shards, and builds reports.
+- `scripts/run-matrix.sh` prepares peers and invokes the C# exchange scheduler.
+- `scripts/wire-case-build-runner.cs` builds case-specific managed and native peers with bounded concurrency.
+- `scripts/matrix-tools.cs` owns fixtures, creates plans, and builds reports.
+- `scripts/wire-exchange-runner.cs` runs bounded, domain-isolated peer exchanges.
+- `scripts/verify-shards.cs` rejects incomplete, duplicated, or misassigned evidence.
 - `FixtureCatalog.cs` and `Fixtures/` define managed fixture values.
 - `Native/main.cpp.in` implements the DynamicData C++ peer;
   `Native/typed-fixture-peer.hpp.in` supports typed C++ fixtures.

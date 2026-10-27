@@ -9,6 +9,7 @@ internal sealed record PeerOptions(
     string TopicName,
     string RuntimeVersion,
     string Fixture,
+    int DomainId,
     PeerRole Role,
     bool FixtureOnly)
 {
@@ -40,6 +41,7 @@ internal sealed record PeerOptions(
             values["topic"],
             values["runtime-version"],
             values.GetValueOrDefault("fixture", "default"),
+            int.Parse(values.GetValueOrDefault("domain-id", "0"), System.Globalization.CultureInfo.InvariantCulture),
             role,
             bool.Parse(values.GetValueOrDefault("fixture-only", "false")));
     }

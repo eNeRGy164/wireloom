@@ -18,6 +18,10 @@
     <DdsIdlIncludeDirectories>$(MSBuildProjectDirectory)\..\..\docs\corpus\idl;$(MSBuildProjectDirectory)\..\..\docs\corpus\idl\includes</DdsIdlIncludeDirectories>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(WireCompatibilityIsolatedIntermediateOutputPath)' == 'true'">
+    <DefaultItemExcludesInProjectFolder>$(DefaultItemExcludesInProjectFolder);obj/**</DefaultItemExcludesInProjectFolder>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '05-array-of-sequences-idl'">
     <WireCompatibilityIdl>$(MSBuildProjectDirectory)/../../docs/corpus/idl/features/05-array-of-sequences.idl</WireCompatibilityIdl>
     <DdsIdlSequenceArrayMapping>Idl</DdsIdlSequenceArrayMapping>
@@ -65,11 +69,14 @@
     <!-- The compiler is a runtime dependency of the generator when both are project-reference analyzers. -->
     <ProjectReference Include="..\..\src\Wireloom.Dds.Compiler\Wireloom.Dds.Compiler.csproj"
                       OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="false" />
+                      ReferenceOutputAssembly="false"
+                      GlobalPropertiesToRemove="OutputPath;BaseIntermediateOutputPath;MSBuildProjectExtensionsPath;WireCompatibilityIsolatedIntermediateOutputPath" />
     <ProjectReference Include="..\..\src\Wireloom.Dds.Generator\Wireloom.Dds.Generator.csproj"
                       OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\Wireloom.Dds.Generator.TestSupport\Wireloom.Dds.Generator.TestSupport.csproj" />
+                      ReferenceOutputAssembly="false"
+                      GlobalPropertiesToRemove="OutputPath;BaseIntermediateOutputPath;MSBuildProjectExtensionsPath;WireCompatibilityIsolatedIntermediateOutputPath" />
+    <ProjectReference Include="..\Wireloom.Dds.Generator.TestSupport\Wireloom.Dds.Generator.TestSupport.csproj"
+                      GlobalPropertiesToRemove="OutputPath;BaseIntermediateOutputPath;MSBuildProjectExtensionsPath;WireCompatibilityIsolatedIntermediateOutputPath" />
     <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />
     <PackageReference Include="Rti.ConnextDds" Version="$(WireCompatibilityRtiVersion)" />
   </ItemGroup>

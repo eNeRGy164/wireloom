@@ -11,6 +11,8 @@ readonly project="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/Wire
 readonly native_template="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/Native"
 readonly rti_csharp_project="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/RtiOracleProbe/RtiOracleProbe.csproj"
 readonly matrix_tools="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/scripts/matrix-tools.cs"
+readonly exchange_runner="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/scripts/wire-exchange-runner.cs"
+readonly case_build_runner="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/scripts/wire-case-build-runner.cs"
 readonly manifest="$repo_root/docs/corpus/manifest.json"
 readonly rti_version="${WIRE_COMPATIBILITY_RTI_VERSION:-7.7.0}"
 readonly wire_oracle_manifest="$repo_root/docs/corpus/$rti_version/rtiddsgen/wire-oracles.json"
@@ -19,29 +21,15 @@ readonly timeout_seconds=20
 readonly cpp_compile_only="${WIRE_COMPATIBILITY_CPP_COMPILE_ONLY:-0}"
 readonly output_dir="${WIRE_COMPATIBILITY_OUTPUT_DIR:-$repo_root/artifacts/wire-compatibility}"
 readonly scratch="${RUNNER_TEMP:-/tmp}/wireloom-wire-compatibility"
-readonly cases_tsv="$scratch/cases.tsv"
 readonly scenarios_tsv="$scratch/scenarios.tsv"
+readonly case_builds_tsv="$scratch/case-builds.tsv"
+readonly case_build_queue_tsv="$scratch/case-build-queue.tsv"
+readonly case_build_results_tsv="$scratch/case-build-results.tsv"
+readonly managed_build_queue_tsv="$scratch/managed-build-queue.tsv"
+readonly managed_build_results_tsv="$scratch/managed-build-results.tsv"
 readonly cpp_compilation_tsv="$scratch/cpp-compilation.tsv"
+readonly nuget_packages="${NUGET_PACKAGES:-$scratch/nuget-packages}"
 workflow_group_open=0
-readonly non_default_fixture_cases=(
-    01-boundaries 01-full-widths
-    02-names-constants 02-scopes 02-constant-expressions 02-formatting 02-multiple
-    03-alias-aggregate 03-alias-collections
-    04-strings 04-boundaries 04-unbounded-string-aliases 04-string-alias-chains
-    05-unbounded-sequence-aliases
-    05-collections 05-shapes 06-aggregates
-    06-alias-composition
-    07-unions 07-union-enum 07-union-multilabel 07-union-short
-    07-union-char 07-union-char-numeric 07-union-char-numeric-255 07-union-scoped 07-union-boolean 07-union-aliases 07-union-wchar-label
-    07-union-string-sequence-aliases 07-union-string-sequence-bounded-direct
-    08-keys 08-key-nested 08-key-inherited 08-key-boundaries 08-key-union
-    09-extensibility 09-default 09-id-gaps 09-evolution-optional
-    09-optional-collections 09-autoid-hash 09-must-understand 09-defaults-ranges
-    10-annotations 10-annotations-extended 10-annotations-rti 10-flat-data-binding
-    09-data-representation 09-allowed-data-representation
-    11-preprocessing 11-conditionals 11-macros 11-macro-operators
-    11-preprocessor-advanced 11-include-search 11-comments
-)
 expected_scenario_count=0
 completed_scenario_count=0
 passed_scenario_count=0
@@ -85,137 +73,6 @@ workflow_annotation() {
     fi
 }
 
-# Return fixture names instead of a yes/no fixture flag. Keeping each variant
-# in a separate process exchange makes a missing branch or sequence shape easy
-# to identify in the uploaded results.
-fixtures_for_case() {
-    case "$1" in
-        05-array-of-sequences-idl)
-            printf '%s\n' sequence-empty sequence-unequal sequence-mixed-empty sequence-boundary
-            ;;
-        03-enums-aliases)
-            printf '%s\n' default enum-alternate
-            ;;
-        02-scopes|02-constant-expressions|05-collections)
-            printf '%s\n' sequence-empty sequence-single non-default
-            ;;
-        04-strings)
-            printf '%s\n' string-empty string-boundary non-default
-            ;;
-        04-unbounded-string-aliases)
-            printf '%s\n' string-empty string-boundary
-            ;;
-        04-string-alias-chains)
-            printf '%s\n' string-empty string-boundary
-            ;;
-        05-unbounded-sequence-aliases)
-            printf '%s\n' sequence-empty sequence-multiple
-            ;;
-        06-aggregates)
-            printf '%s\n' non-default direct-recursive-sequence
-            ;;
-        04-boundaries)
-            printf '%s\n' string-boundary non-default
-            ;;
-        03-alias-collections)
-            printf '%s\n' sequence-empty sequence-single non-default
-            ;;
-        09-evolution-optional)
-            printf '%s\n' optional-absent optional-value-only optional-text-only optional-present
-            ;;
-        09-optional-collections)
-            printf '%s\n' optional-absent optional-empty optional-single optional-multiple
-            ;;
-        09-optional-recursive-array)
-            printf '%s\n' optional-absent optional-present optional-nested
-            ;;
-        09-optional-aggregate-member)
-            printf '%s\n' optional-absent optional-present
-            ;;
-        09-optional-string-sequences)
-            printf '%s\n' optional-absent optional-narrow-only optional-wide-only optional-empty optional-multiple
-            ;;
-        07-unions)
-            printf '%s\n' union-number union-text union-default
-            ;;
-        07-union-enum)
-            printf '%s\n' union-number union-text union-payload
-            ;;
-        07-union-multilabel)
-            printf '%s\n' union-number union-text
-            ;;
-        07-union-short)
-            printf '%s\n' union-number union-text union-default
-            ;;
-        07-union-char|07-union-wchar-label)
-            printf '%s\n' union-number union-text union-default
-            ;;
-        07-union-boolean)
-            printf '%s\n' union-enabled union-disabled
-            ;;
-        07-union-octet|07-union-short-boundaries|07-union-long|07-union-ushort|07-union-ulong|07-union-int8|07-union-uint8|07-union-int16|07-union-uint16|07-union-int32|07-union-uint32|07-union-char-boundaries)
-            printf '%s\n' union-minimum union-maximum union-default
-            ;;
-        07-union-scoped)
-            printf '%s\n' union-payload sequence-empty sequence-single
-            ;;
-        07-union-aliases)
-            printf '%s\n' union-zero union-ten
-            ;;
-        07-union-char-numeric)
-            printf '%s\n' union-127 union-default
-            ;;
-        07-union-char-numeric-255)
-            printf '%s\n' union-255 union-default
-            ;;
-        10-resolve-name-wstring-aliases)
-            printf '%s\n' string-empty string-boundary
-            ;;
-        07-union-string-sequence-aliases)
-            printf '%s\n' union-direct-narrow union-direct-wide union-alias-narrow union-alias-wide union-bounded-narrow union-bounded-wide
-            ;;
-        07-union-string-sequence-bounded-direct)
-            printf '%s\n' union-narrow-empty union-narrow-multiple union-wide-empty union-wide-multiple
-            ;;
-        14-extensibility-full|14-member-declarators)
-            printf '%s\n' non-default
-            ;;
-        14-autoid-scope)
-            printf '%s\n' scope-nested
-            ;;
-        14-annotation-arguments)
-            printf '%s\n' default non-default
-            ;;
-        14-union-label-expressions)
-            printf '%s\n' symbolic arithmetic hexadecimal
-            ;;
-        14-union-scoped-enum)
-            printf '%s\n' enum-selected enum-first
-            ;;
-        14-union-array-branch)
-            printf '%s\n' array-branch scalar-branch
-            ;;
-        14-string-expression-bound)
-            printf '%s\n' string-boundary
-            ;;
-        14-typed-defaults)
-            printf '%s\n' default non-default
-            if [[ "${rti_version:-}" == "7.7.0" ]]; then
-                printf '%s\n' sparse-omitted
-            fi
-            ;;
-        14-enum-constant)
-            printf '%s\n' constant-and-label
-            ;;
-        *)
-            if [[ " ${non_default_fixture_cases[*]} " == *" $1 "* ]]; then
-                printf '%s\n' non-default
-            else
-                printf '%s\n' default
-            fi
-            ;;
-    esac
-}
 
 if [[ "$rti_version" != "7.3.1" && "$rti_version" != "7.7.0" ]]; then
     echo "The wire runner supports exact RTI 7.3.1 and 7.7.0 only." >&2
@@ -238,8 +95,13 @@ fi
 rm -rf "$scratch"
 mkdir -p "$scratch" "$output_dir/logs"
 rm -f "$output_dir/logs"/*.log
-: > "$cases_tsv"
+SECONDS=0
 : > "$scenarios_tsv"
+: > "$case_builds_tsv"
+: > "$case_build_queue_tsv"
+: > "$case_build_results_tsv"
+: > "$managed_build_queue_tsv"
+: > "$managed_build_results_tsv"
 printf 'case_id\tstatus\tdetail\n' > "$cpp_compilation_tsv"
 printf '{"rtiVersion":"%s","scenarios":[]}' "$rti_version" > "$output_dir/results.json"
 
@@ -389,6 +251,14 @@ if ! dotnet build "$matrix_tools" --output "$scratch" --verbosity quiet; then
     echo "Failed to build the .NET matrix utility." >&2
     exit 2
 fi
+if [[ "$cpp_compile_only" != "1" ]] && ! dotnet build "$exchange_runner" --output "$scratch" --verbosity quiet; then
+    echo "Failed to build the C# wire exchange runner." >&2
+    exit 2
+fi
+if ! dotnet build "$case_build_runner" --output "$scratch" --verbosity quiet; then
+    echo "Failed to build the C# native peer build runner." >&2
+    exit 2
+fi
 
 if ! matrix_tool list-cases "$manifest" "$exclusions" > "$scratch/case-ids.txt"; then
     echo "Failed to discover wire-testable cases from the corpus manifest and exclusion registry." >&2
@@ -416,57 +286,9 @@ if [[ -n "${WIRE_COMPATIBILITY_CASE_FILTER:-}" ]]; then
     case_ids=("${requested_cases[@]}")
 fi
 if [[ "$cpp_compile_only" != "1" ]]; then
-    for case_id in "${case_ids[@]}"; do
-        mapfile -t case_fixtures < <(fixtures_for_case "$case_id")
-        if [[ -n "${rti_only_cases[$case_id]:-}" ]]; then
-            case_scenario_count=0
-            for fixture in "${case_fixtures[@]}"; do
-                mapfile -t case_pairings_for_fixture < <(case_pairings "$case_id" "$fixture")
-                for pairing in "${case_pairings_for_fixture[@]}"; do
-                    writer_peer="${pairing%%|*}"
-                    reader_peer="${pairing#*|}"
-                    if [[ "$writer_peer" != "Wireloom C#" && "$reader_peer" != "Wireloom C#" ]]; then
-                        case_scenario_count=$((case_scenario_count + 1))
-                    fi
-                done
-            done
-            expected_scenario_count=$((expected_scenario_count + case_scenario_count))
-        else
-            case_scenario_count=0
-            for fixture in "${case_fixtures[@]}"; do
-                mapfile -t case_pairings_for_fixture < <(case_pairings "$case_id" "$fixture")
-                case_scenario_count=$((case_scenario_count + ${#case_pairings_for_fixture[@]}))
-            done
-            expected_scenario_count=$((expected_scenario_count + case_scenario_count))
-        fi
-    done
-
-    printf 'RTI Connext %s: %d cases, %d scenario exchanges planned.\n' \
-        "$rti_version" "${#case_ids[@]}" "$expected_scenario_count"
-
-    # Seed every selected fixture/pairing before building. If restore, generation,
-    # or native compilation exits early, the final report still names every
-    # exchange that was selected but did not run.
-    for case_id in "${case_ids[@]}"; do
-        mapfile -t case_fixtures < <(fixtures_for_case "$case_id")
-        for fixture in "${case_fixtures[@]}"; do
-            mapfile -t case_pairings_for_fixture < <(case_pairings "$case_id" "$fixture")
-            for pairing in "${case_pairings_for_fixture[@]}"; do
-                writer_peer="${pairing%%|*}"
-                reader_peer="${pairing#*|}"
-                if [[ -n "${rti_only_cases[$case_id]:-}" ]] \
-                    && [[ "$writer_peer" == "Wireloom C#" || "$reader_peer" == "Wireloom C#" ]]; then
-                    continue
-                fi
-                printf '%s\t\t\t\t%s\t%s\t%s\t%s\tNOT_RUN\t%s\n' \
-                    "$case_id" "$writer_peer" "$rti_version" \
-                    "$reader_peer" "$rti_version" "$fixture" >> "$scenarios_tsv"
-            done
-        done
-    done
-
-    matrix_tool partition-shard "$rti_version" "${WIRE_COMPATIBILITY_SHARD_INDEX:-0}" \
-        "${WIRE_COMPATIBILITY_SHARD_COUNT:-1}" "$scenarios_tsv" "$output_dir"
+    matrix_tool create-plan "$manifest" "$exclusions" "$rti_version" \
+        "${WIRE_COMPATIBILITY_CASE_FILTER:--}" \
+        "${WIRE_COMPATIBILITY_SHARD_INDEX:-0}" "${WIRE_COMPATIBILITY_SHARD_COUNT:-1}" "$output_dir"
     cp "$output_dir/scenarios.tsv" "$scenarios_tsv"
     mapfile -t case_ids < "$output_dir/selected-cases.txt"
     expected_scenario_count=$(wc -l < "$scenarios_tsv")
@@ -480,42 +302,6 @@ fi
 
 end_workflow_group
 
-record_scenario() {
-    local case_id="$1"
-    local wireloom_type="$2"
-    local rti_csharp_type="$3"
-    local cpp_type="$4"
-    local writer="$5"
-    local reader="$6"
-    local status="$7"
-    local fixture="$8"
-    local updated_scenarios="$scenarios_tsv.updated"
-    if ! awk -F '\t' -v case_id="$case_id" -v wireloom_type="$wireloom_type" \
-        -v rti_csharp_type="$rti_csharp_type" -v cpp_type="$cpp_type" \
-        -v writer="$writer" -v reader="$reader" \
-        -v version="$rti_version" -v status="$status" -v fixture="$fixture" \
-        'BEGIN { OFS = "\t" } {
-            if ($1 == case_id && $5 == writer && $7 == reader && $10 == fixture) {
-                $2 = wireloom_type
-                $3 = rti_csharp_type
-                $4 = cpp_type
-                $6 = version
-                $8 = version
-                $9 = status
-                updated++
-            }
-            print
-        } END { if (updated != 1) exit 3 }' \
-        "$scenarios_tsv" > "$updated_scenarios"; then
-        rm -f "$updated_scenarios"
-        echo "Could not update the seeded scenario for $case_id [$fixture] $writer -> $reader." >&2
-        return 1
-    fi
-    mv "$updated_scenarios" "$scenarios_tsv"
-}
-
-# Wrapper and included IDL can share a basename. The root-generated pair
-# belongs to the wrapper and must not count as output for that dependency.
 find_rti_csharp_include_files() {
     local generated_dir="$1"
     local root_idl="$2"
@@ -541,30 +327,6 @@ run_tool() {
     return 1
 }
 
-start_peer() {
-    local peer="$1"
-    local role="$2"
-    local topic="$3"
-    local case_id="$4"
-    local wireloom_type="$5"
-    local rti_type="$6"
-    local fixture="$7"
-    if [[ "$peer" == "Wireloom C#" ]]; then
-        timeout "$((timeout_seconds + 5))" dotnet "$cs_peer" \
-            --case "$case_id" --type "$wireloom_type" --topic "$topic" \
-            --runtime-version "$rti_version" --role "$role" --fixture "$fixture"
-    elif [[ "$peer" == "RTI C#" ]]; then
-        timeout "$((timeout_seconds + 5))" dotnet "$rti_cs_peer" \
-            --case "$case_id" --type "$rti_type" --topic "$topic" \
-            --runtime-version "$rti_version" --role "$role" --fixture "$fixture"
-    elif [[ "$case_id" == "06-aggregates" && "$fixture" == "direct-recursive-sequence" ]]; then
-        timeout "$((timeout_seconds + 5))" "$case_dir/native/build/wire-peer-recursive-sequence" \
-            "$role" "$topic" "$timeout_seconds" "$case_id" "$fixture"
-    else
-        timeout "$((timeout_seconds + 5))" "$cpp_peer" "$role" "$topic" "$timeout_seconds" "$case_id" "$fixture"
-    fi
-}
-
 verify_managed_fixture() {
     local peer_label="$1"
     local peer_dll="$2"
@@ -582,173 +344,19 @@ verify_managed_fixture() {
     printf '%s fixture verified: %s\n' "$peer_label" "$fixture"
 }
 
-peer_id() {
-    case "$1" in
-        'Wireloom C#')
-            printf 'wireloom-cs'
-            ;;
-        'RTI C#')
-            printf 'rti-cs'
-            ;;
-        'RTI C++')
-            printf 'rti-cpp'
-            ;;
-        *)
-            return 2
-            ;;
-    esac
-}
-
-run_scenario() {
-    local case_id="$1"
-    local wireloom_type="$2"
-    local rti_type="$3"
-    local cpp_type="$4"
-    local fixture="$5"
-    local writer_peer="$6"
-    local reader_peer="$7"
-    local writer_id
-    local reader_id
-    writer_id="$(peer_id "$writer_peer")"
-    reader_id="$(peer_id "$reader_peer")"
-    local topic="wl_${case_id//-/_}_${fixture//-/_}_${writer_id}_${reader_id}_$RANDOM$RANDOM"
-    local label="${case_id}-${fixture}-${writer_id}-${reader_id}"
-    local reader_log="$scratch/${label}-reader.log"
-    local writer_log="$scratch/${label}-writer.log"
-    local reader_pid
-    local reader_ready=0
-    local reader_status=0
-    local writer_status=0
-
-    if [[ "$case_id" == "06-aggregates" && "$fixture" == "direct-recursive-sequence" ]]; then
-        wireloom_type="CorpusAggregates.Recursive"
-        rti_type="CorpusAggregates.Recursive"
-        cpp_type="::CorpusAggregates::Recursive"
-    fi
-
-    scenario_index=$((scenario_index + 1))
-    printf 'WIRE_MATRIX_PROGRESS started=%d/%d completed=%d/%d passed=%d failed=%d elapsed=%ss current=%s [%s] %s -> %s\n' \
-        "$scenario_index" "$expected_scenario_count" \
-        "$completed_scenario_count" "$expected_scenario_count" \
-        "$passed_scenario_count" "$failed_scenario_count" "$SECONDS" \
-        "$case_id" "$fixture" "$writer_peer" "$reader_peer"
-
-    if [[ "$rti_cs_available" -eq 0 \
-        && ( "$writer_peer" == "RTI C#" || "$reader_peer" == "RTI C#" ) ]]; then
-        printf 'FAIL_DETAIL %s\n' "$rti_cs_failure_reason" \
-            > "$output_dir/logs/${label}.log"
-        record_scenario "$case_id" "$wireloom_type" "$rti_type" "$cpp_type" \
-            "$writer_peer" "$reader_peer" FAIL "$fixture" || return 1
-        completed_scenario_count=$((completed_scenario_count + 1))
-        failed_scenario_count=$((failed_scenario_count + 1))
-        progress_percent=$((completed_scenario_count * 100 / expected_scenario_count))
-        printf 'WIRE_MATRIX_PROGRESS completed=%d/%d percent=%d%% passed=%d failed=%d elapsed=%ss latest=FAIL %s [%s] %s -> %s\n' \
-            "$completed_scenario_count" "$expected_scenario_count" "$progress_percent" \
-            "$passed_scenario_count" "$failed_scenario_count" "$SECONDS" \
-            "$case_id" "$fixture" "$writer_peer" "$reader_peer"
-        return 0
-    fi
-
-    if [[ "${wireloom_cs_available:-1}" -eq 0 \
-        && ( "$writer_peer" == "Wireloom C#" || "$reader_peer" == "Wireloom C#" ) ]]; then
-        printf 'FAIL_DETAIL %s\n' "$wireloom_cs_failure_reason" \
-            > "$output_dir/logs/${label}.log"
-        record_scenario "$case_id" "$wireloom_type" "$rti_type" "$cpp_type" \
-            "$writer_peer" "$reader_peer" FAIL "$fixture" || return 1
-        completed_scenario_count=$((completed_scenario_count + 1))
-        failed_scenario_count=$((failed_scenario_count + 1))
-        progress_percent=$((completed_scenario_count * 100 / expected_scenario_count))
-        printf 'WIRE_MATRIX_PROGRESS completed=%d/%d percent=%d%% passed=%d failed=%d elapsed=%ss latest=FAIL %s [%s] %s -> %s\n' \
-            "$completed_scenario_count" "$expected_scenario_count" "$progress_percent" \
-            "$passed_scenario_count" "$failed_scenario_count" "$SECONDS" \
-            "$case_id" "$fixture" "$writer_peer" "$reader_peer"
-        return 0
-    fi
-
-    # Start the reader first and wait until it has created its DDS entities.
-    # This avoids losing the writer's single sample before discovery completes.
-    start_peer "$reader_peer" reader "$topic" "$case_id" "$wireloom_type" "$rti_type" "$fixture" > "$reader_log" 2>&1 &
-    reader_pid=$!
-
-    for _ in $(seq 1 "$((timeout_seconds * 10))"); do
-        if grep -q '^READY ' "$reader_log"; then
-            reader_ready=1
-            break
-        fi
-        if ! kill -0 "$reader_pid" 2>/dev/null; then
-            reader_status=1
-            break
-        fi
-        sleep 0.1
-    done
-
-    if [[ "$reader_status" -eq 0 && "$reader_ready" -eq 1 ]]; then
-        if start_peer "$writer_peer" writer "$topic" "$case_id" "$wireloom_type" "$rti_type" "$fixture" > "$writer_log" 2>&1; then
-            :
-        else
-            writer_status=$?
-        fi
-    else
-        printf 'FAIL ReaderReadiness Reader did not become ready for %s fixture %s\n' \
-            "$case_id" "$fixture" > "$writer_log"
-        writer_status=1
-    fi
-
-    if wait "$reader_pid"; then
-        :
-    else
-        reader_status=$?
-    fi
-
-    local status=PASS
-    if [[ "$writer_status" -ne 0 || "$reader_status" -ne 0 ]]; then
-        status=FAIL
-    fi
-
-    for endpoint_log in "$writer_log" "$reader_log"; do
-        if [[ -f "$endpoint_log" ]]; then
-            grep -E '^(READY|PASS|RECEIVED|SENT|FAIL|FAIL_DETAIL|WRITER_MATCHED|OPTIONAL_FIXTURE|READER_STATS|EXPECTED_SAMPLE|ACTUAL_SAMPLE)( |$)' "$endpoint_log" \
-                >> "$output_dir/logs/${label}.log" || true
-            grep -Ei 'not assignable|type consistency|typeobject|type object|incompatible|data representation|qos policy|representation' "$endpoint_log" \
-                | sed 's/^/RTI_DIAGNOSTIC /' >> "$output_dir/logs/${label}.log" || true
-        fi
-    done
-
-    # Keep child exit codes in the sanitized log. This distinguishes a timeout
-    # from native crashes such as SIGSEGV (139), even if the child emitted no
-    # structured FAIL line before terminating.
-    printf 'ENDPOINT_STATUS writer_peer=%s writer_exit_code=%s reader_peer=%s reader_exit_code=%s\n' \
-        "$writer_id" "$writer_status" "$reader_id" "$reader_status" \
-        >> "$output_dir/logs/${label}.log"
-
-    record_scenario "$case_id" "$wireloom_type" "$rti_type" "$cpp_type" \
-        "$writer_peer" "$reader_peer" "$status" "$fixture" || return 1
-    completed_scenario_count=$((completed_scenario_count + 1))
-    if [[ "$status" == PASS ]]; then
-        passed_scenario_count=$((passed_scenario_count + 1))
-    else
-        failed_scenario_count=$((failed_scenario_count + 1))
-    fi
-    progress_percent=$((completed_scenario_count * 100 / expected_scenario_count))
-    printf 'WIRE_MATRIX_PROGRESS completed=%d/%d percent=%d%% passed=%d failed=%d elapsed=%ss latest=%s %s [%s] %s -> %s\n' \
-        "$completed_scenario_count" "$expected_scenario_count" "$progress_percent" \
-        "$passed_scenario_count" "$failed_scenario_count" "$SECONDS" \
-        "$status" "$case_id" "$fixture" "$writer_peer" "$reader_peer"
-    printf '%s %s [%s] %s -> %s\n' "$status" "$case_id" "$fixture" "$writer_peer" "$reader_peer"
-    [[ "$status" == PASS ]]
-}
-
 # Restore: the package graph is constant across cases; restore it once before the
 # case-specific builds so the full matrix does not repeat the same restore.
 dotnet restore "$project" \
     -p:WireCompatibilityRtiVersion="$rti_version" \
     -p:RtiConnextDdsVersion="$rti_version" \
+    -p:RestorePackagesPath="$nuget_packages" \
     --locked-mode \
     --verbosity quiet
 if [[ "$cpp_compile_only" != "1" ]]; then
     dotnet restore "$rti_csharp_project" \
         -p:WireCompatibilityRtiVersion="$rti_version" \
         -p:RtiConnextDdsVersion="$rti_version" \
+        -p:RestorePackagesPath="$nuget_packages" \
         --locked-mode \
         --verbosity quiet
 fi
@@ -756,16 +364,104 @@ fi
 # Unexpected setup errors must fail the job even after peer execution starts.
 # Handled peer failures are recorded as FAIL rows and allow the matrix to continue.
 overall_status=0
-scenario_index=0
-SECONDS=0
 case_index=0
+declare -A managed_build_status=()
+declare -A managed_build_detail=()
+bootstrap_case=""
+for candidate_case in "${case_ids[@]}"; do
+    if [[ -z "${rti_only_cases[$candidate_case]:-}" ]]; then
+        bootstrap_case="$candidate_case"
+        break
+    fi
+done
+
+if [[ -n "$bootstrap_case" ]]; then
+    case_dir="$scratch/$bootstrap_case"
+    wireloom_output_dir="$case_dir/wireloom-bin"
+    generated_root="$case_dir/wireloom-generated"
+    mkdir -p "$wireloom_output_dir"
+    case_idl="$(matrix_tool case-field "$manifest" "$bootstrap_case" idl)"
+    sequence_array_mapping="$(matrix_tool case-field "$manifest" "$bootstrap_case" sequence-array-mapping)"
+    bootstrap_args=(
+        --no-restore --configuration Release -t:Rebuild
+        -p:WireCompatibilityCase="$bootstrap_case"
+        -p:WireCompatibilityRtiVersion="$rti_version"
+        -p:RtiConnextDdsVersion="$rti_version"
+        -p:RestorePackagesPath="$nuget_packages"
+        "-p:OutputPath=$wireloom_output_dir/"
+        "-p:WireCompatibilityIdl=$repo_root/docs/corpus/$case_idl"
+        "-p:DdsIdlSequenceArrayMapping=$sequence_array_mapping"
+        "-p:WireCompatibilityGeneratedOutputPath=$generated_root"
+        --verbosity quiet
+    )
+    if [[ "$bootstrap_case" == "05-array-of-sequences" ]]; then
+        bootstrap_args+=( -p:WarningsNotAsErrors=DDSG0105 )
+    fi
+    bootstrap_log="$case_dir/wireloom-csharp-build.log"
+    mkdir -p "$case_dir"
+    if dotnet build "$project" "${bootstrap_args[@]}" > "$bootstrap_log" 2>&1; then
+        managed_build_status["$bootstrap_case"]="compiled"
+        managed_build_detail["$bootstrap_case"]="$wireloom_output_dir"
+    else
+        managed_build_status["$bootstrap_case"]="build-failed"
+        managed_build_detail["$bootstrap_case"]="$bootstrap_log"
+        overall_status=1
+    fi
+
+    for case_id in "${case_ids[@]}"; do
+        if [[ -n "${rti_only_cases[$case_id]:-}" || "$case_id" == "$bootstrap_case" ]]; then
+            continue
+        fi
+        case_dir="$scratch/$case_id"
+        case_idl="$(matrix_tool case-field "$manifest" "$case_id" idl)"
+        sequence_array_mapping="$(matrix_tool case-field "$manifest" "$case_id" sequence-array-mapping)"
+        generated_root="$case_dir/wireloom-generated"
+        wireloom_output_dir="$case_dir/wireloom-bin"
+        intermediate_output_dir="$case_dir/wireloom-obj"
+        mkdir -p "$wireloom_output_dir" "$intermediate_output_dir"
+        warning_override="-"
+        if [[ "$case_id" == "05-array-of-sequences" ]]; then
+            warning_override="DDSG0105"
+        fi
+        printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+            "$case_id" "$repo_root/docs/corpus/$case_idl" "${sequence_array_mapping:--}" \
+            "$wireloom_output_dir" "$generated_root" "$intermediate_output_dir" \
+            "$case_dir/wireloom-csharp-build.log" "$warning_override" \
+            >> "$managed_build_queue_tsv"
+    done
+fi
+
+if [[ -s "$managed_build_queue_tsv" ]]; then
+    managed_runner_status=0
+    dotnet "$scratch/wire-case-build-runner.dll" managed \
+        --builds "$managed_build_queue_tsv" \
+        --results "$managed_build_results_tsv" \
+        --project "$project" \
+        --rti-version "$rti_version" \
+        --restore-packages "$nuget_packages" \
+        --project-extensions "$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/obj" \
+        --max-concurrency "${WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY:-4}" || managed_runner_status=$?
+    if [[ "$managed_runner_status" -gt 1 ]]; then
+        echo "The C# managed peer build runner failed with exit code $managed_runner_status." >&2
+        exit "$managed_runner_status"
+    fi
+    while IFS=$'\t' read -r case_id build_status build_detail build_elapsed; do
+        managed_build_status["$case_id"]="$build_status"
+        managed_build_detail["$case_id"]="$build_detail"
+        if [[ "$build_status" != "compiled" ]]; then
+            overall_status=1
+        fi
+    done < "$managed_build_results_tsv"
+    if [[ "$managed_runner_status" -ne 0 ]]; then
+        overall_status=1
+    fi
+fi
+echo "WIRE_MATRIX_PHASE managed-peer-build queued=$(wc -l < "$managed_build_queue_tsv") concurrency=${WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY:-4} elapsed=${SECONDS}s"
+
 for case_id in "${case_ids[@]}"; do
     case_index=$((case_index + 1))
     start_workflow_group "Case $case_index/${#case_ids[@]}: $case_id"
-    build_phase='csharp-build'
-    if [[ "$cpp_compile_only" == "1" ]]; then
-        build_phase='cpp-compile'
-    fi
+    build_phase='peer-prepare'
 
     printf 'WIRE_MATRIX_CASE %d/%d case=%s phase=%s completed-scenarios=%d/%d elapsed=%ss\n' \
         "$case_index" "${#case_ids[@]}" "$case_id" \
@@ -773,7 +469,9 @@ for case_id in "${case_ids[@]}"; do
         "$completed_scenario_count" "$expected_scenario_count" "$SECONDS"
     case_dir="$scratch/$case_id"
     native_dir="$case_dir/native"
-    mkdir -p "$native_dir"
+    wireloom_output_dir="$case_dir/wireloom-bin"
+    cs_peer="$wireloom_output_dir/WireCompatibility.${case_id}.dll"
+    mkdir -p "$native_dir" "$wireloom_output_dir"
     wireloom_cs_available=1
     wireloom_cs_failure_reason="Wireloom C# build failed for $case_id"
     mapfile -t case_pairings_for_case < <(case_pairings "$case_id")
@@ -782,46 +480,33 @@ for case_id in "${case_ids[@]}"; do
         rti_csharp_required=1
     fi
     rti_cs_available=0
-    rti_type_name=""
+    rti_type_name="-"
+    rti_cs_failure_reason="RTI C# peer is not required for $case_id"
+    rti_cs_peer="$case_dir/rti-bin/WireCompatibility.RtiOracleProbe.dll"
 
     # Build Wireloom's C# output against the selected RTI runtime. The resulting
     # generated type name is discovered from Wireloom's emitted TypeSupport.
     if [[ -n "${rti_only_cases[$case_id]:-}" ]]; then
-        type_name=""
+        type_name="-"
         cpp_type="CorpusOptionalAggregate::Holder"
         idl_relative="idl/features/09-optional-aggregate-member.idl"
         case_defines=()
     else
-        build_args=(
-            --no-restore --configuration Release
-            -t:Rebuild
-            -p:WireCompatibilityCase="$case_id"
-            -p:WireCompatibilityRtiVersion="$rti_version"
-            -p:RtiConnextDdsVersion="$rti_version"
-            --verbosity quiet
-        )
-        case_idl="$(matrix_tool case-field "$manifest" "$case_id" idl)"
-        sequence_array_mapping="$(matrix_tool case-field "$manifest" "$case_id" sequence-array-mapping)"
         generated_root="$case_dir/wireloom-generated"
-        build_args+=( "-p:WireCompatibilityIdl=$repo_root/docs/corpus/$case_idl" "-p:DdsIdlSequenceArrayMapping=$sequence_array_mapping" )
-        build_args+=( "-p:WireCompatibilityGeneratedOutputPath=$generated_root" )
-        if [[ "$case_id" == "05-array-of-sequences" ]]; then
-            # Preserve DDSG0105 as a warning in this known-limitation case while
-            # keeping the repository's warnings-as-errors policy for all others.
-            build_args+=( -p:WarningsNotAsErrors=DDSG0105 )
-        fi
         wireloom_build_log="$case_dir/wireloom-csharp-build.log"
-        if ! dotnet build "$project" "${build_args[@]}" > "$wireloom_build_log" 2>&1; then
+        if [[ "${managed_build_status[$case_id]:-build-failed}" != "compiled" ]]; then
             wireloom_cs_available=0
-            overall_status=1
+            build_detail="${managed_build_detail[$case_id]:-$wireloom_build_log}"
             compiler_error="$(sed -n 's/.*: error \(CS[0-9]*: .*\) \[.*$/\1/p' "$wireloom_build_log" | head -n 1 || true)"
             if [[ -n "$compiler_error" ]]; then
                 wireloom_cs_failure_reason+="; $compiler_error"
             fi
-            echo "$wireloom_cs_failure_reason; pairings requiring this peer will be marked failed." >&2
-            grep -Ei 'error|warning|failed|exception' "$wireloom_build_log" | head -n 30 >&2 || true
-        elif [[ "$cpp_compile_only" == "1" ]]; then
-            tail -n 8 "$wireloom_build_log"
+            echo "$wireloom_cs_failure_reason; see $build_detail; pairings requiring this peer will be marked failed." >&2
+            grep -Ei 'error|warning|failed|exception' "$build_detail" | head -n 30 >&2 || true
+        else
+            if [[ "$cpp_compile_only" == "1" ]]; then
+                tail -n 8 "$wireloom_build_log"
+            fi
         fi
 
         if [[ "$wireloom_cs_available" == "1" ]]; then
@@ -840,8 +525,6 @@ for case_id in "${case_ids[@]}"; do
     fi
     mapfile -t rti_cpp_codegen_options < <(matrix_tool case-field "$manifest" "$case_id" rti-cpp-codegen-options)
     mapfile -t rti_cpp_idl_adaptations < <(matrix_tool case-field "$manifest" "$case_id" rti-cpp-idl-adaptations)
-    cs_peer="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/bin/Release/net10.0/WireCompatibility.${case_id}.dll"
-
     define_args=()
     for define in "${case_defines[@]}"; do
         [[ -z "$define" ]] && continue
@@ -895,6 +578,7 @@ for case_id in "${case_ids[@]}"; do
                 -p:WireCompatibilityCase="$case_id" \
                 -p:BaseIntermediateOutputPath="$case_dir/rti-obj/" \
                 -p:MSBuildProjectExtensionsPath="$repo_root/tests/Wireloom.Dds.Generator.WireCompatibility/RtiOracleProbe/obj/" \
+                -p:RestorePackagesPath="$nuget_packages" \
                 -p:OutputPath="$case_dir/rti-bin/" > "$rti_build_log" 2>&1; then
                 rti_cs_available=1
                 echo "RTI-generated C# peer compiled: $rti_type_name"
@@ -1045,6 +729,9 @@ for case_id in "${case_ids[@]}"; do
     cp "$native_template/typed-fixture-peer.hpp.in" "$native_dir/typed-fixture-peer.hpp"
     cp "$native_template/peer-qos.hpp" "$native_dir/peer-qos.hpp"
 
+    [[ -n "$type_name" ]] || type_name="-"
+    [[ -n "$rti_type_name" ]] || rti_type_name="-"
+
     cp "$native_template/CMakeLists.txt" "$native_dir/CMakeLists.txt"
     if ! run_tool "CMake configure for $case_id" "$case_dir/cmake-configure.log" \
         cmake -S "$native_dir" -B "$native_dir/build" \
@@ -1055,20 +742,15 @@ for case_id in "${case_ids[@]}"; do
         end_workflow_group
         continue
     fi
-    if ! run_tool "C++ build for $case_id" "$case_dir/cmake-build.log" \
-        cmake --build "$native_dir/build" --parallel 2; then
-        overall_status=1
-        echo "RTI C++ peer failed to compile for $case_id; see $case_dir/cmake-build.log." >&2
-        printf '%s\tcompile-failed\tsee %s\n' "$case_id" "$case_dir/cmake-build.log" >> "$cpp_compilation_tsv"
-        end_workflow_group
-        continue
-    fi
-    printf '%s\tcompiled\t%s\n' "$case_id" "$native_dir/build/wire-peer" >> "$cpp_compilation_tsv"
-    cpp_peer="$native_dir/build/wire-peer"
-    printf '%s\t%s\t%s\n' "$case_id" "$type_name" "$cpp_type" >> "$cases_tsv"
+    printf '%s\t%s\t%s\t%s\n' "$case_id" "$native_dir/build" \
+        "$case_dir/cmake-build.log" "$native_dir/build/wire-peer" >> "$case_build_queue_tsv"
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+        "$case_id" "$type_name" "$rti_type_name" "$cpp_type" "$case_dir" "$cs_peer" "$rti_cs_peer" \
+        "$wireloom_cs_available" "$wireloom_cs_failure_reason" "$rti_cs_available" "$rti_cs_failure_reason" \
+        > "$case_dir/build-metadata.tsv"
 
     if [[ "$case_id" == 14-* ]]; then
-        mapfile -t case_fixtures < <(fixtures_for_case "$case_id")
+        mapfile -t case_fixtures < <(matrix_tool case-fixtures "$case_id" "$rti_version")
         for fixture in "${case_fixtures[@]}"; do
             verify_managed_fixture "wireloom-cs" "$cs_peer" "$type_name" "$case_id" "$fixture" || true
             if [[ "${rti_cs_available:-0}" == "1" ]]; then
@@ -1077,34 +759,74 @@ for case_id in "${case_ids[@]}"; do
         done
     fi
 
-    if [[ "$cpp_compile_only" == "1" ]]; then
-        echo "RTI C++ peer compiled: $case_id"
-        end_workflow_group
-        continue
-    fi
-
-    # Run the same directed pairings used when seeding the plan. A
-    # failed pairing is recorded but does not stop later cases from running.
-    mapfile -t case_fixtures < <(fixtures_for_case "$case_id")
-    for fixture in "${case_fixtures[@]}"; do
-        mapfile -t case_pairings_for_fixture < <(case_pairings "$case_id" "$fixture")
-        for pairing in "${case_pairings_for_fixture[@]}"; do
-            writer_peer="${pairing%%|*}"
-            reader_peer="${pairing#*|}"
-            if [[ -n "${rti_only_cases[$case_id]:-}" ]] \
-                && [[ "$writer_peer" == "Wireloom C#" || "$reader_peer" == "Wireloom C#" ]]; then
-                continue
-            fi
-
-            if ! run_scenario "$case_id" "$type_name" "$rti_type_name" "$cpp_type" \
-                "$fixture" "$writer_peer" "$reader_peer"; then
-                overall_status=1
-            fi
-        done
-    done
     end_workflow_group
 done
 
+if [[ -s "$case_build_queue_tsv" ]]; then
+    start_workflow_group "Build native peers concurrently"
+    echo "WIRE_MATRIX_PHASE native-peer-build queued=$(wc -l < "$case_build_queue_tsv") concurrency=${WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY:-2} elapsed=${SECONDS}s"
+    build_runner_status=0
+    dotnet "$scratch/wire-case-build-runner.dll" \
+        --builds "$case_build_queue_tsv" \
+        --results "$case_build_results_tsv" \
+        --max-concurrency "${WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY:-2}" \
+        --jobs-per-build 2 || build_runner_status=$?
+    if [[ "$build_runner_status" -gt 1 ]]; then
+        echo "The C# native peer build runner failed with exit code $build_runner_status." >&2
+        exit "$build_runner_status"
+    fi
+    while IFS=$'\t' read -r case_id build_status build_detail build_elapsed; do
+        case_dir="$scratch/$case_id"
+        native_dir="$case_dir/native"
+        if [[ "$build_status" == "compiled" ]]; then
+            IFS=$'\t' read -r _ type_name rti_type_name cpp_type case_dir cs_peer rti_cs_peer \
+                wireloom_cs_available wireloom_cs_failure_reason rti_cs_available rti_cs_failure_reason \
+                < "$case_dir/build-metadata.tsv"
+            cpp_peer="$native_dir/build/wire-peer"
+            printf '%s\tcompiled\t%s\n' "$case_id" "$cpp_peer" >> "$cpp_compilation_tsv"
+            printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+                "$case_id" "$type_name" "$rti_type_name" "$cpp_type" "$case_dir" "$cs_peer" "$rti_cs_peer" "$cpp_peer" \
+                "$wireloom_cs_available" "$wireloom_cs_failure_reason" "$rti_cs_available" "$rti_cs_failure_reason" \
+                >> "$case_builds_tsv"
+            if [[ "$cpp_compile_only" == "1" ]]; then
+                echo "RTI C++ peer compiled: $case_id (${build_elapsed}s)"
+            fi
+        else
+            overall_status=1
+            printf '%s\tcompile-failed\tsee %s\n' "$case_id" "$build_detail" >> "$cpp_compilation_tsv"
+            echo "RTI C++ peer failed to compile for $case_id; see $build_detail." >&2
+            grep -Ei 'error|warning|failed|exception' "$build_detail" | head -n 30 >&2 || true
+        fi
+    done < "$case_build_results_tsv"
+    if [[ "$build_runner_status" -ne 0 ]]; then
+        overall_status=1
+    fi
+    end_workflow_group
+fi
+echo "WIRE_MATRIX_PHASE peer-preparation elapsed=${SECONDS}s wireloom-cases=${#case_ids[@]} native-peers=$(awk -F '\t' '$2 == "compiled" { count++ } END { print count + 0 }' "$cpp_compilation_tsv")"
+
+if [[ "$cpp_compile_only" != "1" && -s "$case_builds_tsv" ]]; then
+    echo "WIRE_MATRIX_PHASE exchange-run built-cases=$(wc -l < "$case_builds_tsv") planned-exchanges=$expected_scenario_count elapsed=${SECONDS}s"
+    runner_status=0
+    dotnet "$scratch/wire-exchange-runner.dll" \
+        --scenarios "$scenarios_tsv" \
+        --case-builds "$case_builds_tsv" \
+        --rti-version "$rti_version" \
+        --output-directory "$output_dir" \
+        --scratch "$scratch" \
+        --timeout-seconds "$timeout_seconds" \
+        --max-concurrency "${WIRE_COMPATIBILITY_MAX_CONCURRENCY:-16}" || runner_status=$?
+    if [[ "$runner_status" -eq 1 ]]; then
+        overall_status=1
+    elif [[ "$runner_status" -ne 0 ]]; then
+        echo "The C# exchange runner failed with exit code $runner_status." >&2
+        exit "$runner_status"
+    fi
+fi
+
+passed_scenario_count=$(awk -F '\t' '$9 == "PASS" { count++ } END { print count + 0 }' "$scenarios_tsv")
+failed_scenario_count=$(awk -F '\t' '$9 == "FAIL" { count++ } END { print count + 0 }' "$scenarios_tsv")
+completed_scenario_count=$((passed_scenario_count + failed_scenario_count))
 actual_scenario_count=$(wc -l < "$scenarios_tsv")
 if [[ "$actual_scenario_count" -ne "$expected_scenario_count" ]]; then
     echo "Expected $expected_scenario_count scenarios but recorded $actual_scenario_count." >&2
@@ -1112,7 +834,7 @@ if [[ "$actual_scenario_count" -ne "$expected_scenario_count" ]]; then
 fi
 
 if [[ "$overall_status" -ne 0 ]]; then
-    echo "Matrix completed with scenario or peer-build issues; see the generated report." >&2
+    echo "Matrix completed with scenario or peer-build issues in ${SECONDS}s; see the generated report." >&2
 else
-    echo "Matrix completed without scenario or peer-build issues."
+    echo "Matrix completed without scenario or peer-build issues in ${SECONDS}s."
 fi

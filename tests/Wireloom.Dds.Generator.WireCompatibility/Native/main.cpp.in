@@ -55,8 +55,8 @@ static bool is_union_boundary_case(const std::string &case_id)
 
 int main(int argc, char **argv)
 {
-    if (argc != 6) {
-        std::cerr << "usage: wire-peer <writer|reader> <topic> <timeout-seconds> <case> <fixture>\n";
+    if (argc != 6 && argc != 7) {
+        std::cerr << "usage: wire-peer <writer|reader> <topic> <timeout-seconds> <case> <fixture> [domain-id]\n";
         return 2;
     }
 
@@ -67,11 +67,12 @@ int main(int argc, char **argv)
         const int timeout_seconds = std::stoi(argv[3]);
         const std::string case_id(argv[4]);
         const std::string fixture(argv[5]);
+        const int domain_id = argc == 7 ? std::stoi(argv[6]) : 0;
 #ifdef WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE
         auto recursive_qos = dds::domain::DomainParticipant::default_participant_qos();
         recursive_qos.policy<rti::core::policy::DomainParticipantResourceLimits>()
             .type_object_max_serialized_length(0).type_code_max_serialized_length(0);
-        dds::domain::DomainParticipant recursive_participant(0, recursive_qos);
+        dds::domain::DomainParticipant recursive_participant(domain_id, recursive_qos);
         return run_typed_fixture_peer(
             recursive_participant, role, topic_name, timeout_seconds, case_id, fixture);
 #endif
@@ -120,7 +121,7 @@ int main(int argc, char **argv)
         }
 #endif
 #endif
-        dds::domain::DomainParticipant participant(0);
+        dds::domain::DomainParticipant participant(domain_id);
 #if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS)
         if (case_id == "09-optional-string-sequences"
             || case_id == "04-strings" || case_id == "04-boundaries"

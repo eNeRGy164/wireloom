@@ -3,8 +3,11 @@
 set -euo pipefail
 
 runner="$(dirname "$0")/run-matrix.sh"
+matrix_tools="$(dirname "$0")/matrix-tools.cs"
 scratch="$(mktemp -d)"
-trap 'rm -f "$scratch"/*; rmdir "$scratch"' EXIT
+trap 'rm -rf -- "$scratch"' EXIT
+
+dotnet build "$matrix_tools" --output "$scratch/matrix-tools" --verbosity quiet
 
 # Load only the production EXIT handler; do not provision RTI or launch peers.
 sed -n '/^finish_run() {/,/^trap finish_run EXIT/p' "$runner" | sed '$d' > "$scratch/finish-run.sh"
@@ -52,8 +55,10 @@ check_finalization handled-peer-failure 0 0 0
 check_finalization report-generation-failure 7 1 1
 echo 'Harness finalization passed: 3 checks, no RTI license required.'
 
-# Arrange: load the production fixture selector without provisioning RTI.
-source <(sed -n '/^fixtures_for_case() {/,/^}/p' "$runner")
+# Arrange: load the production C# fixture catalog without provisioning RTI.
+fixtures_for_case() {
+    dotnet "$scratch/matrix-tools/matrix-tools.dll" case-fixtures "$1" "$rti_version"
+}
 rti_version=7.3.1
 
 # Act / Assert: the dedicated IDL case must retain every sequence-shape fixture.

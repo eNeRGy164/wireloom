@@ -89,7 +89,12 @@ summary:
       IDs. Validation is profile-independent. Emission plans own profile- and
       IDL-shape-specific API, storage, metadata, and initialization. Detailed
       feature behavior is maintained in chapter 8, contracts, and corpus
-      coverage.
+      coverage. The wire harness has a C# fixture catalog and deterministic
+      planner. One bootstrap Wireloom build prepares shared project references;
+      bounded C# workers build remaining managed peers with isolated
+      intermediate, generated-source, and output paths. A second bounded C#
+      queue compiles independent native peers before one shard-wide exchange
+      scheduler runs. Bash retains RTI setup and per-case source staging.
     sources:
       - docs/architecture/arc42/05-building-block-view.md
   runtime:
@@ -98,7 +103,11 @@ summary:
       permissive by default and becomes batch-wide when any root enables it;
       diagnostics retain source locations. Corpus and wire evidence is scoped
       to exact RTI profiles and recorded inputs. Wire fixtures compare directed
-      exchanges among Wireloom C#, RTI C#, and RTI C++ where qualified.
+      exchanges among Wireloom C#, RTI C#, and RTI C++ where qualified. The
+      scheduler starts readers before writers and leases a unique active DDS
+      domain per exchange across the shard; RTI Monitoring Library 2.0 is
+      disabled in peer processes. Reports reject incomplete or duplicated
+      scenarios.
     sources:
       - docs/architecture/arc42/06-runtime-view.md
   deployment:
@@ -115,6 +124,15 @@ summary:
       Coveralls results without rebuilding. PRs only validate. Pages write and
       OIDC permissions are isolated to the main-restricted environment. Stale
       automatic runs are rejected; retained candidates support manual rollback.
+      Licensed wire runs restore packages into the mounted NuGet cache, build
+      one bootstrap managed peer, then run bounded case-specific managed and
+      native build queues before domain-isolated exchanges across the whole
+      shard. Managed peers use isolated intermediate and output paths while
+      sharing bootstrapped references. Native builds run at most two cases at
+      once with two compiler jobs each; exchanges remain bounded to 16.
+      Peer processes disable RTI Monitoring Library 2.0 because its telemetry
+      participant is unused and can contend for local discovery ports.
+      Whole-case shards remain the build-isolation boundary.
     sources:
       - docs/architecture/arc42/07-deployment-view.md
   cross_cutting:
@@ -124,8 +142,10 @@ summary:
       mapping defaults to RtiCSharp and may be overridden per declaring file.
       Preprocessing and strictness are batch-wide; mapping is file-owned.
       Deterministic inputs, source mapping, diagnostics, package provenance,
-      and exact-profile evidence are cross-cutting requirements. See chapter 8
-      and the configuration guide for detailed rules.
+      and exact-profile evidence are cross-cutting requirements. Wire evidence
+      is complete only when every planned exchange is present exactly once and
+      consistent with its profile. See chapter 8 and the configuration guide
+      for detailed rules.
     sources:
       - docs/architecture/arc42/08-crosscutting-concepts.md
   decisions:

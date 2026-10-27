@@ -53,7 +53,21 @@ compatible input changes and older cache keys. GitHub's branch cache scope
 still applies. The
 [wire compatibility runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#case-shards-and-combined-reports)
 owns shard execution, image/cache handling, artifact contents, and report
-assembly details.
+assembly details. Each shard builds its selected case peers before execution.
+The runner first builds shared Wireloom project references, then builds the
+case-specific managed peers with up to four concurrent .NET builds. Native
+peers are configured per case and compiled with up to two active CMake builds,
+each using two compiler jobs. `WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY` and
+`WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY` control these bounds. The C# runner
+then schedules up to 16 independent exchanges across all built cases in
+that shard by default, with a unique active DDS domain per exchange;
+`WIRE_COMPATIBILITY_MAX_CONCURRENCY` controls that bound. The shard uses the
+NuGet cache mounted at `NUGET_PACKAGES`. RTI Monitoring Library 2.0 is disabled
+in peer subprocesses with
+`RTI_MONITORING2_ENABLE=false`; the matrix does not use its telemetry
+participant. Each case peer uses isolated intermediate, generated-source, and
+output paths while sharing the bootstrapped references and restored package
+cache. Case shards remain isolated build and evidence partitions.
 Adding another LTS release requires a profile-specific corpus export and an
 exact toolchain image, package, and generator version. Profile selection uses
 the assembly resolved by the consumer build.
