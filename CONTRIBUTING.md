@@ -116,6 +116,8 @@ $qodanaObj = Join-Path $PWD '.qodana\obj'
 $qodanaBin = Join-Path $PWD '.qodana\bin'
 $qodanaCompilerObj = Join-Path $PWD '.qodana\compiler-obj'
 $qodanaCompilerBin = Join-Path $PWD '.qodana\compiler-bin'
+$qodanaBrowserObj = Join-Path $PWD '.qodana\browser-obj'
+$qodanaBrowserBin = Join-Path $PWD '.qodana\browser-bin'
 $qodanaCompilerTestsObj = Join-Path $PWD '.qodana\compiler-tests-obj'
 $qodanaCompilerTestsBin = Join-Path $PWD '.qodana\compiler-tests-bin'
 $qodanaGeneratorTestsObj = Join-Path $PWD '.qodana\generator-tests-obj'
@@ -128,6 +130,7 @@ $qodanaTestSupportObj = Join-Path $PWD '.qodana\test-support-obj'
 $qodanaTestSupportBin = Join-Path $PWD '.qodana\test-support-bin'
 New-Item -ItemType Directory -Force -Path `
   $qodanaObj, $qodanaBin, $qodanaCompilerObj, $qodanaCompilerBin, `
+  $qodanaBrowserObj, $qodanaBrowserBin, `
   $qodanaCompilerTestsObj, $qodanaCompilerTestsBin, `
   $qodanaGeneratorTestsObj, $qodanaGeneratorTestsBin, `
   $qodanaFuzzingTestsObj, $qodanaFuzzingTestsBin, `
@@ -141,6 +144,8 @@ docker run --rm `
   --volume "${qodanaBin}:/data/project/src/Wireloom.Dds.Generator/bin" `
   --volume "${qodanaCompilerObj}:/data/project/src/Wireloom.Dds.Compiler/obj" `
   --volume "${qodanaCompilerBin}:/data/project/src/Wireloom.Dds.Compiler/bin" `
+  --volume "${qodanaBrowserObj}:/data/project/src/Wireloom.Playground.Browser/obj" `
+  --volume "${qodanaBrowserBin}:/data/project/src/Wireloom.Playground.Browser/bin" `
   --volume "${qodanaCompilerTestsObj}:/data/project/tests/Wireloom.Dds.Compiler.Tests/obj" `
   --volume "${qodanaCompilerTestsBin}:/data/project/tests/Wireloom.Dds.Compiler.Tests/bin" `
   --volume "${qodanaGeneratorTestsObj}:/data/project/tests/Wireloom.Dds.Generator.Tests/obj" `
