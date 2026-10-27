@@ -201,6 +201,8 @@ function describeExample() {
 examplePicker.addEventListener("change", describeExample);
 
 const noticeBox = element("notice");
+const noticeAction = element<HTMLButtonElement>("notice-action");
+let runNoticeAction: (() => void) | undefined;
 
 let noticeTimer: number | undefined;
 let noticeRemainingMs = 5000;
@@ -220,19 +222,24 @@ function resumeNotice() {
   noticeTimer = window.setTimeout(() => notice(""), noticeRemainingMs);
 }
 
-function notice(message: string, kind: "info" | "error" = "info") {
+function notice(message: string, kind: "info" | "error" = "info", action?: { label: string; run: () => void }) {
   clearTimeout(noticeTimer);
   noticeTimer = undefined;
   noticeBox.dataset.kind = kind;
   element("notice-kind").hidden = kind !== "error";
   element("notice-message").setAttribute("role", kind === "error" ? "alert" : "status");
   element("notice-message").textContent = kind === "error" ? message.replace(/^Error:\s*/, "") : message;
+  noticeAction.hidden = !action;
+  noticeAction.textContent = action?.label ?? "";
+  runNoticeAction = action?.run;
   noticeBox.hidden = !message;
   if (message) {
     noticeRemainingMs = 5000;
     resumeNotice();
   }
 }
+
+noticeAction.addEventListener("click", () => runNoticeAction?.());
 
 noticeBox.addEventListener("pointerenter", pauseNotice);
 noticeBox.addEventListener("pointerleave", resumeNotice);
@@ -747,6 +754,20 @@ function save() {
   recoverySaver.save(workspace, recoveryAvailable, sourceBytes(workspace) <= maxSourceBytes);
 }
 
+async function clearSavedRecovery() {
+  recoverySaver.invalidate();
+  try {
+    await recovery.clear();
+    recoveryAvailable = true;
+    save();
+    notice("Saved data cleared. Local recovery is ready.");
+  } catch (error) {
+    recoveryAvailable = false;
+    element("source-state").textContent = "Recovery unavailable";
+    notice(`Saved data could not be cleared: ${String(error)}`, "error");
+  }
+}
+
 function changed() {
   revision++;
   edited = true;
@@ -998,7 +1019,13 @@ async function initialize() {
     }
   } catch (error) {
     element("source-state").textContent = "Recovery unavailable";
-    notice(`Local recovery is unavailable: ${String(error)} You can still edit and generate.`, "error");
+    const canClearSavedData =
+      error instanceof Error && /unsupported format|exceeds the 512 file\/folder limits/.test(error.message);
+    notice(
+      `Local recovery is unavailable: ${String(error)} You can still edit and generate.`,
+      "error",
+      canClearSavedData ? { label: "Clear saved data", run: clearSavedRecovery } : undefined,
+    );
   } finally {
     save();
     element("source-size").textContent = `${sourceBytes(workspace).toLocaleString()} bytes`;

@@ -60,6 +60,8 @@ h1 { margin: 0; font-size: clamp(24px, 2.6vw, 34px); font-weight: 650; letter-sp
 #notice-message { flex: 1; }
 .notice[data-kind="error"] { border-color: #cc4054; border-left-width: 4px; background: #fff0f2; color: #812231; }
 #notice-kind { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; padding-top: 2px; }
+#notice-action { min-height: 26px; padding: 2px 5px; border-color: transparent; background: transparent; color: var(--accent); font-size: 11px; text-decoration: underline; }
+#notice-action:hover:not(:disabled) { background: transparent; color: var(--heading); }
 #notice-dismiss { min-height: 26px; padding: 0 7px; font-size: 18px; border-color: transparent; background: transparent; }
 .workspace { --input-width: 45%; display: grid; grid-template-columns: minmax(0, var(--input-width)) 9px minmax(0, 1fr); min-height: 490px; height: clamp(490px, 57vh, 850px); }
 .pane { display: flex; min-width: 0; flex-direction: column; overflow: hidden; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); box-shadow: 0 2px 5px #142c3804; }

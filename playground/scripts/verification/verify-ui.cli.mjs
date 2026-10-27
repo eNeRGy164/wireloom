@@ -810,8 +810,22 @@ async (page) => {
             throw new Error(`Recovery mode ${mode} did not report an unavailable store: ${error}`);
           }
 
+          if (mode === "older") {
+            const clearSavedData = app.getByRole("button", { name: "Clear saved data", exact: true });
+            assert(await clearSavedData.isVisible(), "Unsupported saved data had no in-app clear action");
+            await clearSavedData.click();
+            await app.waitForFunction(() => document.querySelector("#source-state").textContent === "Saved locally");
+          }
+
           await app.locator("#empty-load-example").click();
           await app.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Current");
+          if (mode === "older") {
+            await app.waitForFunction(() => document.querySelector("#source-state").textContent === "Saved locally");
+            assert(
+              (await saved(app)).files.some((file) => file.source.includes("module Hello")),
+              "Loading an example after clearing old data did not persist the new workspace",
+            );
+          }
 
           await edit(app, "struct StorageStillWorks { long value; };");
           assert(
