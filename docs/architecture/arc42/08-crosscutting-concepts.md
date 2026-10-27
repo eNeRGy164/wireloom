@@ -129,6 +129,17 @@ the packed analyzer assets, including a .NET 8-only compiler-host container.
 Explicit skipped contracts and opt-in compile reproductions retain unresolved
 findings; they do not establish a complete API contract or wire compatibility.
 
+The licensed wire matrix keeps its fixture catalog, complete directed scenario
+plan, bounded scheduler, and evidence checks in C#. Bash handles RTI environment
+setup and per-case source staging. It builds all selected case peers before
+starting exchanges; one C# scheduler then draws from the full shard plan. Each
+shard defaults to 16 concurrent exchanges with distinct active DDS domains;
+readers report ready before writers start. RTI Monitoring Library 2.0 is
+disabled in each peer because the matrix does not consume its telemetry and the
+library creates a background discovery participant. Reports retain each
+exchange result and reject missing, duplicate, or unrun plan rows. Whole-case
+shards remain the build and evidence partition.
+
 ## 8.6 RTI-compatible generated value semantics
 
 The generated API and native plugin are compatibility artifacts. The goal is

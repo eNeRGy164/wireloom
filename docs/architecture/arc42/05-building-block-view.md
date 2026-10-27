@@ -23,7 +23,7 @@ loading; compiler stages are expanded in the level-2 view.
 | MSBuild targets                | Generator package             | Pass IDL roots and metadata to the Roslyn adapter                                                                        | Packed NuGet package                          |
 | Browser Playground client      | `playground/`                 | Captures workspace snapshots, retains newest pending work, rejects stale results, and presents documents and diagnostics | TypeScript/Vite static bundle                 |
 | Browser compiler host          | `Wireloom.Playground.Browser` | Validates the typed request, maps inputs and profile, supplies synchronous MD5, and serializes bounded results           | .NET 10 WebAssembly module worker             |
-| Corpus and integration tests   | Existing test projects        | Verify acceptance, generated API shape, and package loading                                                              | Separate test layers                          |
+| Corpus and integration tests   | Existing test projects        | Verify acceptance, generated API shape, package loading, and exact-profile wire evidence                                  | Separate test layers and the C# wire harness   |
 
 The public core API is defined in
 [`IdlCompiler`](../../../src/Wireloom.Dds.Compiler/Api/IdlCompiler.cs),
@@ -251,3 +251,30 @@ compiler response's original names/text. Locally bundled `fflate` creates
 stored-entry ZIPs. The Source ZIP action independently archives current text,
 explicit folders, and a workspace metadata record even when compilation fails.
 Monaco and archive dependencies do not add a remote service.
+
+## 5.6 Wire compatibility harness
+
+The wire harness uses Bash for RTI environment setup and case-specific source
+staging; C# tools own planning and bounded build/exchange queues. Its fixture
+catalog and deterministic scenario planner are included by `matrix-tools.cs`;
+the planner combines the corpus manifest, profile exclusions, fixture names,
+and directed peer pairings into one complete plan before execution. One
+Wireloom case build first compiles shared compiler, generator, and test-support
+references. The remaining case-specific Wireloom peers build concurrently in
+isolated intermediate, generated-source, and output directories, reusing those
+shared references. RTI C# setup and CMake configuration follow for each case;
+`wire-case-build-runner.cs` then builds independent native C++ peers with a
+bounded number of concurrent CMake processes. All selected peers are ready
+before wire exchange execution begins. Whole-case shards remain the outer
+partition for independent work and evidence.
+
+`wire-case-build-runner.cs` owns the bounded case build queues, and
+`wire-exchange-runner.cs` schedules all built cases in the shard through one
+bounded exchange queue. Every active exchange leases a distinct DDS domain ID
+and topic, starts its reader, waits for `READY`, then starts its writer. The
+default queue size is 16. The runner requires both peer processes to exit
+successfully and emit their expected `PASS` status. Peer processes disable RTI
+Monitoring Library 2.0 so its background observability participant does not
+compete for local discovery ports. The report and shard verifier reject
+missing, duplicate, inconsistent, or unrun planned exchanges. The native RTI
+C++ peer receives the leased domain ID as a command-line argument.

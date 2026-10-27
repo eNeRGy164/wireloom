@@ -83,7 +83,7 @@ internal static class TypedPeer
             });
         }
 
-        using var participant = DomainParticipantFactory.Instance.CreateParticipant(domainId: 0, participantQos);
+        using var participant = DomainParticipantFactory.Instance.CreateParticipant(options.DomainId, participantQos);
         using var topic = participant.CreateTopic<T>(options.TopicName);
 
         if (options.Role == PeerRole.Writer)

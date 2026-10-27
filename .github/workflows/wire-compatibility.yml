@@ -33,6 +33,9 @@ jobs:
       WIRE_COMPATIBILITY_OUTPUT_DIR: artifacts/wire-compatibility-rti-${{ matrix.rti_version }}
       WIRE_COMPATIBILITY_SHARD_INDEX: ${{ matrix.shard }}
       WIRE_COMPATIBILITY_SHARD_COUNT: 8
+      WIRE_COMPATIBILITY_MAX_CONCURRENCY: 16
+      WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY: 4
+      WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY: 2
     steps:
       - name: Check out repository
         uses: actions/checkout@v7.0.1

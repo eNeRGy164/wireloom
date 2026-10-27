@@ -50,6 +50,24 @@ See [configuration](../guides/configuration.md),
 [diagnostics](arc42/08-crosscutting-concepts.md#82-diagnostics-and-source-locations),
 and [evidence vocabulary](arc42/08-crosscutting-concepts.md#81-evidence-vocabulary).
 
+## Wire compatibility harness
+
+The harness uses C# for fixture cataloging, deterministic planning, bounded
+case builds and exchange scheduling, and evidence checks. Bash handles RTI
+environment setup and per-case source staging. One bootstrap Wireloom build
+prepares shared project references; remaining managed peers build concurrently
+with isolated intermediate, generated-source, and output paths. Independent
+native peers use a second bounded build queue. Each shard finishes peer builds
+before one C# scheduler draws from the complete exchange plan. It starts each
+reader before its writer and leases a unique active DDS domain to each
+concurrent exchange, bounded to 16 by default. Peer subprocesses disable RTI
+Monitoring Library 2.0 because the matrix does not consume its telemetry
+participant. The mounted NuGet cache is used by restore and per-case builds.
+Whole-case shards remain the outer build and evidence partition. The report
+merger rejects incomplete, duplicate, or inconsistent evidence. See the
+[wire runbook](../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
+and [runtime view](arc42/06-runtime-view.md#63-wire-compatibility-evidence).
+
 ## Browser Playground
 
 The desktop-first Playground uses a TypeScript/Vite client and a

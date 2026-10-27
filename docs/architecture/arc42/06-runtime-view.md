@@ -101,12 +101,27 @@ all 18 directed exchanges on each exact profile. The 7.3.1 package integration
 build and runtime-contract suite pass against its exact NuGet package; full
 profile wire qualification remains pending.
 
-The manual wire workflow runs independent peer exchanges for selected corpus
-cases. A combined report is published only when the selected work has complete,
-consistent evidence; setup failures fail the workflow. The [wire compatibility
-runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#case-shards-and-combined-reports)
-documents shard planning, artifact validation, failure handling, and local
-operations.
+The C# fixture catalog supplies profile-aware fixture names. The C# planner
+expands the manifest and exclusion registry into a deterministic full directed
+exchange plan, then assigns complete cases to the existing outer shards. The
+coordinator builds one Wireloom case to prepare shared project references, then
+uses isolated intermediate paths to build the remaining managed peers in a
+bounded C# queue. It prepares RTI C# peers and native build inputs per case,
+then uses a second bounded C# queue to compile independent C++ peers. The
+exchange scheduler starts after all selected peer builds finish and feeds
+runnable exchanges from every built case in the shard through one bounded
+queue, set to 16 exchanges by default. Each exchange uses its own DDS domain
+and topic, starts the reader first, waits for `READY`, then starts the writer.
+It checks both peer exit codes and `PASS` lines and records the leased
+domain/topic in its log. Every peer process disables RTI Monitoring Library
+2.0 so the background observability participant does not contend for local
+discovery ports. Case build failures remain visible in the build evidence;
+exchanges without a runnable native peer remain not run, so incomplete evidence
+cannot become a complete report. The report and shard verifier require every
+planned scenario exactly once. Setup failures fail the workflow. The [wire
+compatibility runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#case-shards-and-combined-reports)
+documents planning, scheduling, artifact validation, failure handling, and
+local operations.
 
 Wire validation requires a valid sample and complete fixture comparison;
 discovery or lifecycle-only traffic is not a pass. The runbook documents reader
