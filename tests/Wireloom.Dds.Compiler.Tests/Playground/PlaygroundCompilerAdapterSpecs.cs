@@ -209,7 +209,7 @@ public sealed class PlaygroundCompilerAdapterSpecs
     public void ReturnsALimitResponseWhenDocumentCountExceeds512()
     {
         // Arrange
-        var request = new CompileRequest(2, 1, 1, 1, "7.7.0", [], new WorkspaceOptions());
+        var request = new CompileRequest(3, 1, 1, 1, "7.7.0", [], new WorkspaceOptions());
         var tooMany = Enumerable.Range(0, 513).Select(index => new DocumentDto($"{index}.cs", "x")).ToArray();
         var diagnostics = Array.Empty<DiagnosticDto>();
 
@@ -225,7 +225,7 @@ public sealed class PlaygroundCompilerAdapterSpecs
     public void ReturnsALimitResponseWhenGeneratedOutputExceeds16MiB()
     {
         // Arrange
-        var request = new CompileRequest(2, 1, 1, 1, "7.7.0", [], new WorkspaceOptions());
+        var request = new CompileRequest(3, 1, 1, 1, "7.7.0", [], new WorkspaceOptions());
         var tooLarge = new[] { new DocumentDto("large.cs", new string('x', 16 * 1024 * 1024 + 1)) };
         var diagnostics = Array.Empty<DiagnosticDto>();
 
@@ -262,19 +262,19 @@ public sealed class PlaygroundCompilerAdapterSpecs
         const string shared = "module Shared { struct _Value { string name; sequence<long> values; }; };";
         var options = new WorkspaceOptions
         {
-            Defines = ["FEATURE=1", "DISABLED=1"],
-            Undefines = ["DISABLED"],
+            SequenceArrayMapping = "Idl",
+            SequenceSize = 12,
+            StringSize = 42,
             IncludeDirectories = ["/workspace/z", "/workspace/a"],
             EnableEscapeChar = true,
-            Strict = true,
         };
-        var request = new CompileRequest(2, 1, 1, 1, profile,
-            [new WorkspaceFile("/workspace/main.idl", root, true),
-             new WorkspaceFile("/workspace/a/types.idl", shared, false, new FileOptions { SequenceArrayMapping = "Idl", SequenceSize = 12, StringSize = 42 }),
+        var request = new CompileRequest(3, 1, 1, 1, profile,
+            [new WorkspaceFile("/workspace/main.idl", root, true, new FileOptions { Defines = ["FEATURE=1", "DISABLED=1"], Undefines = ["DISABLED"], Strict = true }),
+             new WorkspaceFile("/workspace/a/types.idl", shared, false),
              new WorkspaceFile("/workspace/z/types.idl", "invalid IDL", false)], options);
         var expected = IdlCompiler.Compile(
-            [new IdlInput("/workspace/main.idl", root, generate: true, strict: true,
-                defines: options.Defines, undefines: options.Undefines, includeDirectories: ["/workspace/a", "/workspace/z"], enableEscapeChar: true),
+            [new IdlInput("/workspace/main.idl", root, IdlSequenceArrayMapping.Idl, generate: true, strict: true,
+                defines: ["FEATURE=1", "DISABLED=1"], undefines: ["DISABLED"], includeDirectories: ["/workspace/a", "/workspace/z"], sequenceSize: 12, stringSize: 42, enableEscapeChar: true),
              new IdlInput("/workspace/a/types.idl", shared, IdlSequenceArrayMapping.Idl, generate: false, sequenceSize: 12, stringSize: 42, enableEscapeChar: true),
              new IdlInput("/workspace/z/types.idl", "invalid IDL", generate: false, enableEscapeChar: true)],
             profile == "7.3.1" ? IdlCompilerProfile.Rti731 : IdlCompilerProfile.Rti770, MD5.HashData, TestContext.Current.CancellationToken);
@@ -300,7 +300,7 @@ public sealed class PlaygroundCompilerAdapterSpecs
         // Arrange
         var request = RequestObject("");
         var file = File("/workspace/main.idl", "", true);
-        file["options"] = new Dictionary<string, object> { ["sequenceArrayMapping"] = "RtiCSharp", ["sequenceSize"] = 100, ["stringSize"] = 255, [name] = value };
+        file["options"] = new Dictionary<string, object> { ["defines"] = Array.Empty<string>(), ["undefines"] = Array.Empty<string>(), ["strict"] = false, ["sequenceArrayMapping"] = "RtiCSharp", ["sequenceSize"] = 100, ["stringSize"] = 255, [name] = value };
         request["files"] = new[] { file };
 
         // Act and Assert
@@ -310,20 +310,39 @@ public sealed class PlaygroundCompilerAdapterSpecs
     [Theory]
     [InlineData("defines")]
     [InlineData("undefines")]
+    public void RejectsNullFileSettingLists(string name)
+    {
+        // Arrange
+        var request = RequestObject("");
+        var file = File("/workspace/main.idl", "", true);
+        file["options"] = new Dictionary<string, object?>
+        {
+            ["defines"] = Array.Empty<string>(),
+            ["undefines"] = Array.Empty<string>(),
+            ["strict"] = false,
+            [name] = null,
+        };
+        request["files"] = new[] { file };
+
+        // Act and Assert
+        Should.Throw<ArgumentException>(() => Compile(request));
+    }
+
+    [Theory]
     [InlineData("includeDirectories")]
     public void RejectsNullAndOversizedSettingLists(string name)
     {
         // Arrange
         var request = RequestObject("");
-        request["options"] = new Dictionary<string, object?> { ["defines"] = Array.Empty<string>(), ["undefines"] = Array.Empty<string>(), ["includeDirectories"] = Array.Empty<string>(), [name] = null };
+        request["options"] = new Dictionary<string, object?> { ["includeDirectories"] = Array.Empty<string>(), [name] = null };
 
         // Act and Assert
         Should.Throw<ArgumentException>(() => Compile(request));
-        request["options"] = new Dictionary<string, object?> { ["defines"] = Array.Empty<string>(), ["undefines"] = Array.Empty<string>(), ["includeDirectories"] = Array.Empty<string>(), [name] = Enumerable.Repeat("SYMBOL", 129).ToArray() };
+        request["options"] = new Dictionary<string, object?> { ["includeDirectories"] = Array.Empty<string>(), [name] = Enumerable.Repeat("SYMBOL", 129).ToArray() };
         Should.Throw<ArgumentException>(() => Compile(request));
-        request["options"] = new Dictionary<string, object?> { ["defines"] = Array.Empty<string>(), ["undefines"] = Array.Empty<string>(), ["includeDirectories"] = Array.Empty<string>(), [name] = new[] { new string('a', 1025) } };
+        request["options"] = new Dictionary<string, object?> { ["includeDirectories"] = Array.Empty<string>(), [name] = new[] { new string('a', 1025) } };
         Should.Throw<ArgumentException>(() => Compile(request));
-        request["options"] = new Dictionary<string, object?> { ["defines"] = Array.Empty<string>(), ["undefines"] = Array.Empty<string>(), ["includeDirectories"] = Array.Empty<string>(), [name] = new[] { "bad\nentry" } };
+        request["options"] = new Dictionary<string, object?> { ["includeDirectories"] = Array.Empty<string>(), [name] = new[] { "bad\nentry" } };
         Should.Throw<ArgumentException>(() => Compile(request));
     }
 
@@ -358,6 +377,9 @@ public sealed class PlaygroundCompilerAdapterSpecs
             ["CompileRequest.ProtocolVersion"] = acceptedResponse.RootElement.GetProperty("protocolVersion").GetRawText(),
             ["CompileRequest.Profile"] = "\"7.3.1\" | \"7.7.0\"",
             ["FileOptions.SequenceArrayMapping"] = "\"RtiCSharp\" | \"Idl\"",
+            ["FileOptions.SequenceSize"] = "number",
+            ["FileOptions.StringSize"] = "number",
+            ["WorkspaceOptions.SequenceArrayMapping"] = "\"RtiCSharp\" | \"Idl\"",
             ["CompileResponse.Kind"] = "\"compiler\" | \"limit\"",
         };
 
@@ -379,7 +401,9 @@ public sealed class PlaygroundCompilerAdapterSpecs
                 }
 
                 fields.ShouldContainKey(key);
-                fields[key].Optional.ShouldBe(type == typeof(WorkspaceFile) && property.Name == "Options", $"{name}.{key} optionality");
+                var optional = type == typeof(WorkspaceFile) && property.Name == "Options" ||
+                               type == typeof(FileOptions) && property.Name is "SequenceArrayMapping" or "SequenceSize" or "StringSize";
+                fields[key].Optional.ShouldBe(optional, $"{name}.{key} optionality");
                 Regex.Replace(fields[key].Type, @"\s+", "").ShouldBe(Regex.Replace(expected, @"\s+", ""), $"{name}.{key}");
             }
         }
@@ -426,7 +450,7 @@ public sealed class PlaygroundCompilerAdapterSpecs
     {
         return new Dictionary<string, object?>
         {
-            ["protocolVersion"] = 2,
+            ["protocolVersion"] = 3,
             ["workerGeneration"] = 2,
             ["requestId"] = 4,
             ["workspaceRevision"] = 8,

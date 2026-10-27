@@ -32,8 +32,9 @@ foreach (var testCase in cases)
     var files = testCase.Files
         .Select(file => new IdlInput(file.Path, file.Source,
             file.Options?.SequenceArrayMapping == "Idl" ? IdlSequenceArrayMapping.Idl : IdlSequenceArrayMapping.RtiCSharp,
-            generate: file.IsGenerationRoot, strict: testCase.Options?.Strict ?? false,
-            defines: testCase.Options?.Defines, undefines: testCase.Options?.Undefines,
+            generate: file.IsGenerationRoot, strict: file.IsGenerationRoot && (file.Options?.Strict ?? false),
+            defines: file.IsGenerationRoot ? file.Options?.Defines : [],
+            undefines: file.IsGenerationRoot ? file.Options?.Undefines : [],
             includeDirectories: testCase.Options?.IncludeDirectories?.Order(StringComparer.Ordinal).ToArray(),
             sequenceSize: file.Options?.SequenceSize ?? 100, stringSize: file.Options?.StringSize ?? 255,
             enableEscapeChar: testCase.Options?.EnableEscapeChar ?? false))
@@ -108,7 +109,13 @@ internal sealed record CaseFile(string Path, string Source, bool IsGenerationRoo
 /// <param name="SequenceArrayMapping">The direct sequence-array mapping.</param>
 /// <param name="SequenceSize">The effective unbounded sequence size.</param>
 /// <param name="StringSize">The effective unbounded string size.</param>
-internal sealed record CaseFileOptions(string SequenceArrayMapping = "RtiCSharp", int SequenceSize = 100, int StringSize = 255);
+internal sealed record CaseFileOptions(
+    string? SequenceArrayMapping = null,
+    int? SequenceSize = null,
+    int? StringSize = null,
+    string[]? Defines = null,
+    string[]? Undefines = null,
+    bool Strict = false);
 
 /// <summary>Batch settings for a native verification fixture.</summary>
 /// <param name="Defines">External definitions.</param>
@@ -116,7 +123,12 @@ internal sealed record CaseFileOptions(string SequenceArrayMapping = "RtiCSharp"
 /// <param name="IncludeDirectories">Virtual include search directories.</param>
 /// <param name="Strict">Batch strictness.</param>
 /// <param name="EnableEscapeChar">Batch escaped-identifier setting.</param>
-internal sealed record CaseOptions(string[] Defines, string[] Undefines, string[] IncludeDirectories, bool Strict, bool EnableEscapeChar);
+internal sealed record CaseOptions(
+    string[] IncludeDirectories,
+    string SequenceArrayMapping,
+    int SequenceSize,
+    int StringSize,
+    bool EnableEscapeChar);
 
 /// <summary>Describes one browser-shaped input case and expected native outcomes.</summary>
 /// <param name="Id">The stable verification case identifier.</param>

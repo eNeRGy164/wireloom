@@ -22,6 +22,15 @@ async (page) => {
     }
   };
 
+  const ensureSourceFile = async (app) => {
+    if ((await app.locator("#source-tabs [role=tab]").count()) > 0) return;
+
+    await app.locator("#empty-load-example").click();
+    await app.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Current", null, {
+      timeout: 15_000,
+    });
+  };
+
   const open = async (url) => {
     const context = await browser.newContext();
     if (browser.browserType().name() === "chromium")
@@ -36,10 +45,12 @@ async (page) => {
     await app.waitForFunction(() => document.querySelector("#status")?.textContent.includes("Compiler ready"), null, {
       timeout: 35_000,
     });
+    await ensureSourceFile(app);
     return { app, context, startupMs: Date.now() - started };
   };
 
   const fillSource = async (app, source) => {
+    await ensureSourceFile(app);
     // Firefox's automated multiline insertText duplicates text in Monaco.
     // Preserve exact multiline probes through import. Single-line edits and
     // oversized-input probes still exercise the real editor on every engine.
@@ -130,6 +141,16 @@ async (page) => {
             async ({ cases, expected }) => {
               const base = new URL(".", location.href);
               const worker = new Worker(new URL("dotnet/worker.mjs", base), { type: "module" });
+              const defaultFileOptions = { defines: [], undefines: [], strict: false };
+              const defaultWorkspaceOptions = {
+                sequenceArrayMapping: "RtiCSharp",
+                sequenceSize: 100,
+                stringSize: 255,
+                includeDirectories: [],
+                enableEscapeChar: false,
+              };
+              const withDefaultFileOptions = (files) =>
+                files.map((file) => ({ ...file, options: file.options ?? defaultFileOptions }));
               const wait = (request) =>
                 new Promise((resolve, reject) => {
                   const timer = setTimeout(() => {
@@ -166,14 +187,8 @@ async (page) => {
                     requestId: ++requestId,
                     workspaceRevision: requestId,
                     profile: baseline.profile,
-                    files: fixture.files,
-                    options: {
-                      defines: [],
-                      undefines: [],
-                      includeDirectories: [],
-                      strict: false,
-                      enableEscapeChar: false,
-                    },
+                    files: withDefaultFileOptions(fixture.files),
+                    options: defaultWorkspaceOptions,
                   };
                   const started = performance.now();
                   const { response } = await wait(request);
@@ -225,14 +240,8 @@ async (page) => {
                     requestId: ++requestId,
                     workspaceRevision: requestId,
                     profile: "7.7.0",
-                    files: fixture.files,
-                    options: {
-                      defines: [],
-                      undefines: [],
-                      includeDirectories: [],
-                      strict: false,
-                      enableEscapeChar: false,
-                    },
+                    files: withDefaultFileOptions(fixture.files),
+                    options: defaultWorkspaceOptions,
                   });
                   if (!response.success) throw new Error("Repeated compilation failed");
                 }
@@ -256,11 +265,18 @@ async (page) => {
 
           await compileUi(app, hashCase.files[0].source);
           await app.locator("#profile").selectOption("7.3.1");
-          await app.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Current");
+          await app.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Outdated");
+          await app.waitForFunction(() =>
+            ["Current", "Failed"].includes(document.querySelector("#result-state")?.textContent),
+          );
 
           const profileSwitchDocuments = await app.locator("#file-list button").allTextContents();
+          const generatedDocumentCount = await app.locator('#file-list button:not([data-name$=".csproj"])').count();
 
-          assert(profileSwitchDocuments.length === 4, "Profile switch did not render every sample document");
+          assert(
+            (await app.locator("#result-state").textContent()) === "Current" && generatedDocumentCount === 4,
+            `Profile switch did not render every sample document: ${profileSwitchDocuments.join(", ")}`,
+          );
 
           return {
             startupMs,
@@ -320,8 +336,21 @@ async (page) => {
                 requestId: 1,
                 workspaceRevision: 1,
                 profile: "7.7.0",
-                files: [{ path: "/workspace/load.idl", source, isGenerationRoot: true }],
-                options: { defines: [], undefines: [], includeDirectories: [], strict: false, enableEscapeChar: false },
+                files: [
+                  {
+                    path: "/workspace/load.idl",
+                    source,
+                    isGenerationRoot: true,
+                    options: { defines: [], undefines: [], strict: false },
+                  },
+                ],
+                options: {
+                  sequenceArrayMapping: "RtiCSharp",
+                  sequenceSize: 100,
+                  stringSize: 255,
+                  includeDirectories: [],
+                  enableEscapeChar: false,
+                },
               });
             });
 
@@ -650,8 +679,17 @@ async (page) => {
                 requestId: ++requestId,
                 workspaceRevision: requestId,
                 profile: "7.7.0",
-                files: fixture.files,
-                options: { defines: [], undefines: [], includeDirectories: [], strict: false, enableEscapeChar: false },
+                files: fixture.files.map((file) => ({
+                  ...file,
+                  options: file.options ?? { defines: [], undefines: [], strict: false },
+                })),
+                options: {
+                  sequenceArrayMapping: "RtiCSharp",
+                  sequenceSize: 100,
+                  stringSize: 255,
+                  includeDirectories: [],
+                  enableEscapeChar: false,
+                },
                 ...extra,
               });
             });
@@ -661,7 +699,15 @@ async (page) => {
             for (const extra of [
               { protocolVersion: 0 },
               { profile: "unsupported" },
-              { files: [{ ...fixture.files[0], source: "é".repeat(131_073) }] },
+              {
+                files: [
+                  {
+                    ...fixture.files[0],
+                    source: "é".repeat(131_073),
+                    options: { defines: [], undefines: [], strict: false },
+                  },
+                ],
+              },
             ]) {
               const result = await send(extra);
               if (result.type !== "error") throw new Error("Invalid request produced compiler output");
@@ -671,7 +717,14 @@ async (page) => {
               "\n",
             );
             const { response } = await send({
-              files: [{ path: "/workspace/capped.idl", source, isGenerationRoot: true }],
+              files: [
+                {
+                  path: "/workspace/capped.idl",
+                  source,
+                  isGenerationRoot: true,
+                  options: { defines: [], undefines: [], strict: false },
+                },
+              ],
             });
             if (response.kind !== "limit" || response.success || response.documents.length !== 0)
               throw new Error("Document limit did not reject the complete result");

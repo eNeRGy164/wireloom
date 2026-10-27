@@ -8,7 +8,7 @@ namespace Wireloom;
 internal static class PlaygroundCompilerAdapter
 {
     /// <summary>The worker protocol shipped atomically with this adapter.</summary>
-    private const int ProtocolVersion = 2;
+    private const int ProtocolVersion = 3;
     private const int MaxSourceBytes = 256 * 1024;
     private const int MaxDocuments = 512;
     private const int MaxGeneratedBytes = 16 * 1024 * 1024;
@@ -75,27 +75,35 @@ internal static class PlaygroundCompilerAdapter
             }
 
             var options = file.Options ?? new FileOptions();
-            if (options.SequenceSize <= 0 || options.StringSize <= 0
-                || options.SequenceArrayMapping is not ("RtiCSharp" or "Idl"))
+            var mapping = options.SequenceArrayMapping ?? request.Options.SequenceArrayMapping;
+            var sequenceSize = options.SequenceSize ?? request.Options.SequenceSize;
+            var stringSize = options.StringSize ?? request.Options.StringSize;
+            var defines = options.Defines;
+            var undefines = options.Undefines;
+            if (sequenceSize <= 0 || stringSize <= 0
+                || mapping is not ("RtiCSharp" or "Idl")
+                || defines is null || undefines is null
+                || defines.Length > 128 || undefines.Length > 128
+                || defines.Any(InvalidSetting) || undefines.Any(InvalidSetting))
             {
-                throw new ArgumentException("File settings require a known mapping and positive 32-bit sizes.", nameof(requestJson));
+                throw new ArgumentException("File settings are invalid.", nameof(requestJson));
             }
 
             files[index] = new IdlInput(
                 file.Path,
                 file.Source,
-                options.SequenceArrayMapping switch
+                mapping switch
                 {
                     "Idl" => IdlSequenceArrayMapping.Idl,
                     _ => IdlSequenceArrayMapping.RtiCSharp,
                 },
                 generate: file.IsGenerationRoot,
-                strict: request.Options.Strict,
-                defines: request.Options.Defines,
-                undefines: request.Options.Undefines,
+                strict: file.IsGenerationRoot && options.Strict,
+                defines: file.IsGenerationRoot ? defines : [],
+                undefines: file.IsGenerationRoot ? undefines : [],
                 includeDirectories: includeDirectories,
-                sequenceSize: options.SequenceSize,
-                stringSize: options.StringSize,
+                sequenceSize: sequenceSize,
+                stringSize: stringSize,
                 enableEscapeChar: request.Options.EnableEscapeChar);
         }
 
@@ -149,7 +157,7 @@ internal static class PlaygroundCompilerAdapter
 
     private static void ValidateOptions(WorkspaceOptions options)
     {
-        foreach (var list in new[] { options.Defines, options.Undefines, options.IncludeDirectories })
+        foreach (var list in new[] { options.IncludeDirectories })
         {
             if (list is null || list.Length > 128
                 || list.Any(entry => string.IsNullOrEmpty(entry) || entry.Length > 1024 || entry.Any(char.IsControl)))
@@ -162,7 +170,16 @@ internal static class PlaygroundCompilerAdapter
         {
             throw new ArgumentException("Include folders must be normalized virtual workspace paths.");
         }
+
+        if (options.SequenceArrayMapping is not ("RtiCSharp" or "Idl")
+            || options.SequenceSize <= 0 || options.StringSize <= 0)
+        {
+            throw new ArgumentException("Workspace sequence settings require a known mapping and positive 32-bit sizes.");
+        }
     }
+
+    private static bool InvalidSetting(string? entry) =>
+        string.IsNullOrEmpty(entry) || entry.Length > 1024 || entry.Any(char.IsControl);
 
     /// <summary>Applies result bounds and serializes compiler documents and diagnostics.</summary>
     /// <param name="request">The immutable request that produced the result.</param>
@@ -196,7 +213,7 @@ internal static class PlaygroundCompilerAdapter
 /// <param name="WorkspaceRevision">The immutable workspace revision.</param>
 /// <param name="Profile">The selected RTI API profile.</param>
 /// <param name="Files">The virtual workspace file collection.</param>
-/// <param name="Options">The batch-wide compiler settings.</param>
+/// <param name="Options">The project defaults and batch-wide compiler settings.</param>
 internal sealed record CompileRequest(
     int ProtocolVersion,
     int WorkerGeneration,
@@ -210,39 +227,48 @@ internal sealed record CompileRequest(
 /// <param name="Path">The normalized virtual path under `/workspace/`.</param>
 /// <param name="Source">The complete IDL source text.</param>
 /// <param name="IsGenerationRoot">Whether this file starts generation.</param>
-/// <param name="Options">The declaring file's mapping and size settings, or defaults when omitted.</param>
+/// <param name="Options">The file's root settings and optional declaring-file overrides.</param>
 internal sealed record WorkspaceFile(string Path, string Source, bool IsGenerationRoot, FileOptions? Options = null);
 
-/// <summary>Configures preprocessing and validation uniformly for the generation batch.</summary>
+/// <summary>Configures project sequence defaults and batch-wide compiler settings.</summary>
 internal sealed record WorkspaceOptions
 {
-    /// <summary>Gets the external preprocessor definitions.</summary>
-    public string[] Defines { get; init; } = [];
+    /// <summary>Gets the project default direct sequence-array mapping, RtiCSharp or Idl.</summary>
+    public string SequenceArrayMapping { get; init; } = "RtiCSharp";
 
-    /// <summary>Gets symbols removed after applying external definitions.</summary>
-    public string[] Undefines { get; init; } = [];
+    /// <summary>Gets the project default unbounded sequence size.</summary>
+    public int SequenceSize { get; init; } = 100;
+
+    /// <summary>Gets the project default unbounded string size.</summary>
+    public int StringSize { get; init; } = 255;
 
     /// <summary>Gets normalized virtual include folders, searched in ordinal alphabetical order.</summary>
     public string[] IncludeDirectories { get; init; } = [];
-
-    /// <summary>Gets whether strict validation is enabled for all roots.</summary>
-    public bool Strict { get; init; }
 
     /// <summary>Gets whether leading underscores escape identifiers across the batch.</summary>
     public bool EnableEscapeChar { get; init; }
 }
 
-/// <summary>Configures mapping and effective unbounded sizes for one declaring file.</summary>
+/// <summary>Configures DdsIdl root metadata and optional declaring-file overrides.</summary>
 internal sealed record FileOptions
 {
-    /// <summary>Gets the direct sequence-array mapping, RtiCSharp or Idl.</summary>
-    public string SequenceArrayMapping { get; init; } = "RtiCSharp";
+    /// <summary>Gets external preprocessor definitions applied for this root.</summary>
+    public string[]? Defines { get; init; } = [];
 
-    /// <summary>Gets the effective unbounded sequence size.</summary>
-    public int SequenceSize { get; init; } = 100;
+    /// <summary>Gets symbols removed after applying definitions for this root.</summary>
+    public string[]? Undefines { get; init; } = [];
 
-    /// <summary>Gets the effective unbounded string size.</summary>
-    public int StringSize { get; init; } = 255;
+    /// <summary>Gets whether strict validation is enabled for this root.</summary>
+    public bool Strict { get; init; }
+
+    /// <summary>Gets an optional legacy direct sequence-array mapping override.</summary>
+    public string? SequenceArrayMapping { get; init; }
+
+    /// <summary>Gets an optional legacy unbounded sequence size override.</summary>
+    public int? SequenceSize { get; init; }
+
+    /// <summary>Gets an optional legacy unbounded string size override.</summary>
+    public int? StringSize { get; init; }
 }
 
 /// <summary>Describes one generated C# document.</summary>

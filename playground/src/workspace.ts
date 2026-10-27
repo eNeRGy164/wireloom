@@ -15,7 +15,7 @@ export interface SourceFile extends WorkspaceFile {
 }
 
 export interface Workspace {
-  version: 2;
+  version: 3;
   files: SourceFile[];
   folders: string[];
   profile: Profile;
@@ -24,7 +24,13 @@ export interface Workspace {
 }
 
 export function defaultOptions(): WorkspaceOptions {
-  return { defines: [], undefines: [], includeDirectories: [], strict: false, enableEscapeChar: false };
+  return {
+    sequenceArrayMapping: "RtiCSharp",
+    sequenceSize: 100,
+    stringSize: 255,
+    includeDirectories: [],
+    enableEscapeChar: false,
+  };
 }
 
 export function createFile(path: string, source = ""): SourceFile {
@@ -33,14 +39,24 @@ export function createFile(path: string, source = ""): SourceFile {
     path,
     source,
     isGenerationRoot: true,
-    options: { sequenceArrayMapping: "RtiCSharp", sequenceSize: 100, stringSize: 255 },
+    options: { defines: [], undefines: [], strict: false },
   };
 }
 
 export function createWorkspace(source = "", profile: Profile = "7.7.0"): Workspace {
   return {
-    version: 2,
+    version: 3,
     files: [createFile(`${workspaceRoot}/main.idl`, source)],
+    folders: [],
+    profile,
+    options: defaultOptions(),
+  };
+}
+
+export function createEmptyWorkspace(profile: Profile = "7.7.0"): Workspace {
+  return {
+    version: 3,
+    files: [],
     folders: [],
     profile,
     options: defaultOptions(),
@@ -82,9 +98,14 @@ export function validatePath(value: unknown, allowRoot = false): asserts value i
 
 export function validateOptions(value: unknown): WorkspaceOptions {
   const item = value as WorkspaceOptions | null;
-  if (!item || typeof item.strict !== "boolean" || typeof item.enableEscapeChar !== "boolean")
+  if (
+    !item ||
+    typeof item.enableEscapeChar !== "boolean" ||
+    !["RtiCSharp", "Idl"].includes(item.sequenceArrayMapping) ||
+    ![item.sequenceSize, item.stringSize].every((size) => Number.isInteger(size) && size > 0 && size <= 2147483647)
+  )
     throw new Error("Workspace settings are invalid.");
-  for (const list of [item.defines, item.undefines, item.includeDirectories]) {
+  for (const list of [item.includeDirectories]) {
     if (
       !Array.isArray(list) ||
       list.length > 128 ||
@@ -97,48 +118,37 @@ export function validateOptions(value: unknown): WorkspaceOptions {
   for (const folder of item.includeDirectories) validatePath(folder, true);
   return {
     ...item,
-    defines: [...item.defines],
-    undefines: [...item.undefines],
     includeDirectories: [...new Set(item.includeDirectories)].sort(),
   };
 }
 
 function validateFileOptions(value: unknown): asserts value is FileOptions {
   const item = value as FileOptions | null;
+  if (!item || typeof item.strict !== "boolean") throw new Error("File settings are invalid.");
+  for (const list of [item.defines, item.undefines]) {
+    if (
+      !Array.isArray(list) ||
+      list.length > 128 ||
+      list.some(
+        (entry) => typeof entry !== "string" || !entry || entry.length > 1024 || /[\x00-\x1f\x7f-\x9f]/.test(entry),
+      )
+    )
+      throw new Error("Each settings list supports at most 128 non-empty entries of 1,024 characters.");
+  }
   if (
-    !item ||
-    !["RtiCSharp", "Idl"].includes(item.sequenceArrayMapping) ||
-    ![item.sequenceSize, item.stringSize].every((size) => Number.isInteger(size) && size > 0 && size <= 2147483647)
+    (item.sequenceArrayMapping !== undefined && !["RtiCSharp", "Idl"].includes(item.sequenceArrayMapping)) ||
+    [item.sequenceSize, item.stringSize].some(
+      (size) => size !== undefined && (!Number.isInteger(size) || size <= 0 || size > 2147483647),
+    )
   )
     throw new Error("File settings require a known mapping and positive 32-bit sizes.");
 }
 
 export function validateWorkspace(value: unknown): Workspace {
-  const legacy = value as { version?: number; files?: WorkspaceFile[]; profile?: Profile } | null;
-  if (legacy?.version === 1) {
-    if (!Array.isArray(legacy.files) || legacy.files.length !== 1)
-      throw new Error("Saved workspace has an unsupported format.");
-    const file = legacy.files[0];
-    if (
-      !file ||
-      typeof file.path !== "string" ||
-      !/^\/workspace\/[^/\\\x00-\x1f]+\.idl$/i.test(file.path) ||
-      typeof file.source !== "string" ||
-      file.isGenerationRoot !== true
-    )
-      throw new Error("Saved workspace contains invalid IDL.");
-    value = {
-      version: 2,
-      files: [{ ...createFile(file.path, file.source) }],
-      folders: [],
-      profile: legacy.profile,
-      options: defaultOptions(),
-    };
-  }
   const item = value as Workspace | null;
   if (
     !item ||
-    item.version !== 2 ||
+    item.version !== 3 ||
     !["7.3.1", "7.7.0"].includes(item.profile) ||
     !Array.isArray(item.files) ||
     item.files.length > maxFiles ||

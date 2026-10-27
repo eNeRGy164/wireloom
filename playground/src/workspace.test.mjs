@@ -11,6 +11,7 @@ import {
   sourceFits,
   validateWorkspace,
   createWorkspace,
+  createEmptyWorkspace,
   createFile,
   defaultOptions,
   validateOptions,
@@ -28,11 +29,19 @@ import {
 import { indexedDB } from "fake-indexeddb";
 
 const saved = (source) => ({
-  version: 1,
-
+  version: 3,
   profile: "7.3.1",
-
-  files: [{ path: "/workspace/imported.idl", source, isGenerationRoot: true }],
+  files: [
+    {
+      id: "saved-file",
+      path: "/workspace/imported.idl",
+      source,
+      isGenerationRoot: true,
+      options: { defines: [], undefines: [], strict: false },
+    },
+  ],
+  folders: [],
+  options: defaultOptions(),
 });
 
 test("workspace limits count UTF-8 bytes and accept the exact boundary", () => {
@@ -52,7 +61,7 @@ test("recovery preserves the selected profile, file identity, and exact source",
 
   const restored = validateWorkspace(original);
 
-  assert.equal(restored.version, 2);
+  assert.equal(restored.version, 3);
 
   assert.equal(restored.profile, original.profile);
 
@@ -67,19 +76,32 @@ test("recovery preserves the selected profile, file identity, and exact source",
   assert.equal(restored.files[0].source, source);
 });
 
-test("recovery rejects older schemas, unsupported profiles, multiple files, and oversized data", () => {
+test("empty workspace creation keeps the profile and starts without files or folders", () => {
+  assert.deepEqual(createEmptyWorkspace(), {
+    version: 3,
+    files: [],
+    folders: [],
+    profile: "7.7.0",
+    options: defaultOptions(),
+  });
+  assert.equal(createEmptyWorkspace("7.3.1").profile, "7.3.1");
+});
+
+test("recovery rejects unsupported schemas, profiles, malformed workspace collections, and oversized data", () => {
   for (const value of [
     null,
 
     {},
 
-    { ...saved(""), version: 0 },
+    { ...saved(""), version: 1 },
+
+    { ...saved(""), version: 2 },
+
+    { ...saved(""), version: 4 },
 
     { ...saved(""), profile: "unknown" },
 
-    { ...saved(""), files: [] },
-
-    { ...saved(""), files: [saved("").files[0], saved("").files[0]] },
+    { ...saved(""), files: null },
 
     saved("é".repeat(131073)),
   ]) {
@@ -87,7 +109,7 @@ test("recovery rejects older schemas, unsupported profiles, multiple files, and 
   }
 });
 
-test("recovery rejects host paths, traversal, malformed source, and non-root inputs", () => {
+test("recovery rejects host paths, traversal, and malformed source", () => {
   for (const path of [
     "C:\\input.idl",
 
@@ -98,8 +120,6 @@ test("recovery rejects host paths, traversal, malformed source, and non-root inp
     "/workspace/bad\0.idl",
 
     "/other/main.idl",
-
-    "/workspace/main.txt",
   ]) {
     assert.throws(() => validateWorkspace({ ...saved(""), files: [{ ...saved("").files[0], path }] }));
   }
@@ -107,8 +127,6 @@ test("recovery rejects host paths, traversal, malformed source, and non-root inp
   assert.throws(() =>
     validateWorkspace({ ...saved(""), files: [{ path: "/workspace/main.idl", source: 5, isGenerationRoot: true }] }),
   );
-
-  assert.throws(() => validateWorkspace({ ...saved(""), files: [{ ...saved("").files[0], isGenerationRoot: false }] }));
 });
 
 test("IndexedDB creates an empty store, persists cloned source and profile, and serializes reset", async () => {
@@ -204,7 +222,7 @@ test("IndexedDB restores invalid stored data as a storage error", async () => {
   }
 });
 
-test("v2 recovery supports empty and rootless workspaces, nested files, and empty folders", () => {
+test("v3 recovery supports empty and rootless workspaces, nested files, and empty folders", () => {
   let workspace = createWorkspace("struct Main { long x; };");
 
   workspace = addFolder(workspace, "/workspace/includes");
@@ -271,7 +289,7 @@ test("workspace validation rejects malformed identities, settings, collisions, a
 
   for (const mutation of [
     (w) => {
-      w.version = 3;
+      w.version = 4;
     },
     (w) => {
       w.profile = "unknown";
@@ -340,22 +358,26 @@ test("workspace validation rejects malformed identities, settings, collisions, a
       w.files[0].options = null;
     },
     (w) => {
-      w.files[0].options.sequenceArrayMapping = "bad";
+      w.files[0].options.strict = "yes";
     },
-
+    (w) => {
+      w.files[0].options.defines = null;
+    },
+    (w) => {
+      w.files[0].options.undefines = ["bad\nentry"];
+    },
+    (w) => {
+      w.files[0].options.sequenceArrayMapping = "unsupported";
+    },
     (w) => {
       w.files[0].options.sequenceSize = 0;
-    },
-    (w) => {
-      w.files[0].options.stringSize = 1.5;
-    },
-
-    (w) => {
-      w.files[0].options.stringSize = 2147483648;
     },
 
     (w) => {
       w.options.includeDirectories = ["/workspace/missing"];
+    },
+    (w) => {
+      w.options.sequenceSize = 0;
     },
 
     (w) => {
@@ -380,14 +402,19 @@ test("workspace options use alphabetical include precedence and reject malformed
 
   assert.deepEqual(options.includeDirectories, ["/workspace", "/workspace/a", "/workspace/z"]);
 
-  options.defines.push("CHANGED");
+  options.sequenceSize = 101;
 
-  assert.deepEqual(input.defines, []);
+  assert.equal(input.sequenceSize, 100);
 
-  for (const invalid of [null, {}, { ...defaultOptions(), strict: 1 }, { ...defaultOptions(), enableEscapeChar: 1 }])
+  for (const invalid of [
+    null,
+    {},
+    { ...defaultOptions(), sequenceArrayMapping: "bad" },
+    { ...defaultOptions(), enableEscapeChar: 1 },
+  ])
     assert.throws(() => validateOptions(invalid));
 
-  for (const key of ["defines", "undefines", "includeDirectories"]) {
+  for (const key of ["includeDirectories"]) {
     for (const value of [null, [1], [""], ["a\nb"], ["a".repeat(1025)], Array(129).fill("a")])
       assert.throws(() => validateOptions({ ...defaultOptions(), [key]: value }));
   }
