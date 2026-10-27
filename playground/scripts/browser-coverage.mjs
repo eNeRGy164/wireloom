@@ -243,8 +243,52 @@ try {
     () => document.querySelector("#source-tabs [aria-selected=true]")?.textContent === "coverage.idl",
   );
   await waitForCurrent(page);
+  await page.evaluate(async () => {
+    const database = await new Promise((resolve, reject) => {
+      const request = indexedDB.open("wireloom-playground", 1);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    await new Promise((resolve, reject) => {
+      const transaction = database.transaction("workspace", "readwrite");
+      transaction.objectStore("workspace").put({ version: 2 }, "current");
+      transaction.oncomplete = resolve;
+      transaction.onerror = () => reject(transaction.error);
+    });
+    database.close();
+  });
+  primaryScripts.push(...(await cdp.send("Profiler.takePreciseCoverage")).result);
+  await cdp.send("Profiler.startPreciseCoverage", { callCount: false, detailed: true });
   await page.reload();
-  await waitForCurrent(page);
+  await page.locator("#notice-action").waitFor({ state: "visible" });
+  await page.locator("#notice-action").click();
+  await page.waitForFunction(() => document.querySelector("#source-state")?.textContent === "Saved locally");
+  await page.locator("#empty-load-example").click();
+  await waitForCurrent(page, "example after clearing an unsupported recovery record");
+  await page.waitForFunction(() => document.querySelector("#source-state")?.textContent === "Saved locally");
+  assert(
+    await page.evaluate(async () => {
+      const database = await new Promise((resolve, reject) => {
+        const request = indexedDB.open("wireloom-playground", 1);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      try {
+        return await new Promise((resolve, reject) => {
+          const request = database.transaction("workspace").objectStore("workspace").get("current");
+          request.onsuccess = () => resolve(request.result?.files.some((file) => file.source.includes("module Hello")));
+          request.onerror = () => reject(request.error);
+        });
+      } finally {
+        database.close();
+      }
+    }),
+    "Loading an example after clearing unsupported recovery data was not persisted.",
+  );
+  primaryScripts.push(...(await cdp.send("Profiler.takePreciseCoverage")).result);
+  await cdp.send("Profiler.startPreciseCoverage", { callCount: false, detailed: true });
+  await page.reload();
+  await waitForCurrent(page, "restored example after clearing unsupported recovery data");
   await page.locator("#file").setInputFiles({
     name: "broken.idl",
     mimeType: "text/plain",
