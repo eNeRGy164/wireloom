@@ -7,7 +7,8 @@ namespace Wireloom;
 /// <summary>Adapts immutable browser workspace snapshots to the shared compiler.</summary>
 internal static class PlaygroundCompilerAdapter
 {
-    private const int ProtocolVersion = 1;
+    /// <summary>The worker protocol shipped atomically with this adapter.</summary>
+    private const int ProtocolVersion = 2;
     private const int MaxSourceBytes = 256 * 1024;
     private const int MaxDocuments = 512;
     private const int MaxGeneratedBytes = 16 * 1024 * 1024;
@@ -40,23 +41,24 @@ internal static class PlaygroundCompilerAdapter
             throw new ArgumentException("Workspace options cannot be null.", nameof(requestJson));
         }
 
+        ValidateOptions(request.Options);
+        var includeDirectories = request.Options.IncludeDirectories
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
         var totalSourceBytes = 0;
         var files = new IdlInput[request.Files.Length];
         var seenPaths = new HashSet<string>(StringComparer.Ordinal);
         for (var index = 0; index < request.Files.Length; index++)
         {
             var file = request.Files[index];
-            if (file is null
-                || string.IsNullOrWhiteSpace(file.Path)
-                || !file.Path.StartsWith("/workspace/", StringComparison.Ordinal)
-                || file.Path.Contains('\\'))
+            if (file is null || !ValidPath(file.Path))
             {
                 throw new ArgumentException("File paths must be rooted under /workspace/.", nameof(requestJson));
             }
 
-            var relativePath = file.Path["/workspace/".Length..];
-            var pathSegments = relativePath.Split('/');
-            if (pathSegments.Any(segment => segment is "" or "." or "..") || !seenPaths.Add(file.Path))
+            if (!seenPaths.Add(file.Path))
             {
                 throw new ArgumentException("Workspace paths must be normalized and unique.", nameof(requestJson));
             }
@@ -69,13 +71,40 @@ internal static class PlaygroundCompilerAdapter
             totalSourceBytes += Encoding.UTF8.GetByteCount(file.Source);
             if (totalSourceBytes > MaxSourceBytes)
             {
-                throw new ArgumentException("Workspace input exceeds the 256 KiB stage 0 limit.", nameof(requestJson));
+                throw new ArgumentException("Workspace input exceeds the 256 KiB UTF-8 limit.", nameof(requestJson));
             }
 
-            files[index] = new IdlInput(file.Path, file.Source, generate: file.IsGenerationRoot);
+            var options = file.Options ?? new FileOptions();
+            if (options.SequenceSize <= 0 || options.StringSize <= 0
+                || options.SequenceArrayMapping is not ("RtiCSharp" or "Idl"))
+            {
+                throw new ArgumentException("File settings require a known mapping and positive 32-bit sizes.", nameof(requestJson));
+            }
+
+            files[index] = new IdlInput(
+                file.Path,
+                file.Source,
+                options.SequenceArrayMapping switch
+                {
+                    "Idl" => IdlSequenceArrayMapping.Idl,
+                    _ => IdlSequenceArrayMapping.RtiCSharp,
+                },
+                generate: file.IsGenerationRoot,
+                strict: request.Options.Strict,
+                defines: request.Options.Defines,
+                undefines: request.Options.Undefines,
+                includeDirectories: includeDirectories,
+                sequenceSize: options.SequenceSize,
+                stringSize: options.StringSize,
+                enableEscapeChar: request.Options.EnableEscapeChar);
         }
 
-        if (!request.Files.Any(file => file is not null && file.IsGenerationRoot))
+        if (seenPaths.Any(path => seenPaths.Any(other => other.StartsWith(path + "/", StringComparison.Ordinal))))
+        {
+            throw new ArgumentException("A file cannot also be a virtual folder.", nameof(requestJson));
+        }
+
+        if (!files.Any(file => file.Generate))
         {
             throw new ArgumentException("Workspace must include a generation root.", nameof(requestJson));
         }
@@ -99,6 +128,40 @@ internal static class PlaygroundCompilerAdapter
             .ToArray();
 
         return SerializeResult(request, result.Success, documents, diagnostics);
+    }
+
+    private static bool ValidPath(string? path, bool allowRoot = false)
+    {
+        if (allowRoot && path == "/workspace")
+        {
+            return true;
+        }
+
+        if (path is null || !path.StartsWith("/workspace/", StringComparison.Ordinal)
+            || path.Length > 1024 || path.Any(character => character == '\\' || char.IsControl(character)))
+        {
+            return false;
+        }
+
+        var segments = path["/workspace/".Length..].Split('/');
+        return segments.Length <= 32 && segments.All(segment => segment is not ("" or "." or "..") && segment.Trim() == segment);
+    }
+
+    private static void ValidateOptions(WorkspaceOptions options)
+    {
+        foreach (var list in new[] { options.Defines, options.Undefines, options.IncludeDirectories })
+        {
+            if (list is null || list.Length > 128
+                || list.Any(entry => string.IsNullOrEmpty(entry) || entry.Length > 1024 || entry.Any(char.IsControl)))
+            {
+                throw new ArgumentException("Each settings list supports at most 128 non-empty entries of 1,024 characters.");
+            }
+        }
+
+        if (options.IncludeDirectories.Any(path => !ValidPath(path, allowRoot: true)))
+        {
+            throw new ArgumentException("Include folders must be normalized virtual workspace paths.");
+        }
     }
 
     /// <summary>Applies result bounds and serializes compiler documents and diagnostics.</summary>
@@ -133,7 +196,7 @@ internal static class PlaygroundCompilerAdapter
 /// <param name="WorkspaceRevision">The immutable workspace revision.</param>
 /// <param name="Profile">The selected RTI API profile.</param>
 /// <param name="Files">The virtual workspace file collection.</param>
-/// <param name="Options">The reserved workspace compiler-options shape.</param>
+/// <param name="Options">The batch-wide compiler settings.</param>
 internal sealed record CompileRequest(
     int ProtocolVersion,
     int WorkerGeneration,
@@ -147,10 +210,40 @@ internal sealed record CompileRequest(
 /// <param name="Path">The normalized virtual path under `/workspace/`.</param>
 /// <param name="Source">The complete IDL source text.</param>
 /// <param name="IsGenerationRoot">Whether this file starts generation.</param>
-internal sealed record WorkspaceFile(string Path, string Source, bool IsGenerationRoot);
+/// <param name="Options">The declaring file's mapping and size settings, or defaults when omitted.</param>
+internal sealed record WorkspaceFile(string Path, string Source, bool IsGenerationRoot, FileOptions? Options = null);
 
-/// <summary>Reserves a protocol location for future compiler controls.</summary>
-internal sealed record WorkspaceOptions;
+/// <summary>Configures preprocessing and validation uniformly for the generation batch.</summary>
+internal sealed record WorkspaceOptions
+{
+    /// <summary>Gets the external preprocessor definitions.</summary>
+    public string[] Defines { get; init; } = [];
+
+    /// <summary>Gets symbols removed after applying external definitions.</summary>
+    public string[] Undefines { get; init; } = [];
+
+    /// <summary>Gets normalized virtual include folders, searched in ordinal alphabetical order.</summary>
+    public string[] IncludeDirectories { get; init; } = [];
+
+    /// <summary>Gets whether strict validation is enabled for all roots.</summary>
+    public bool Strict { get; init; }
+
+    /// <summary>Gets whether leading underscores escape identifiers across the batch.</summary>
+    public bool EnableEscapeChar { get; init; }
+}
+
+/// <summary>Configures mapping and effective unbounded sizes for one declaring file.</summary>
+internal sealed record FileOptions
+{
+    /// <summary>Gets the direct sequence-array mapping, RtiCSharp or Idl.</summary>
+    public string SequenceArrayMapping { get; init; } = "RtiCSharp";
+
+    /// <summary>Gets the effective unbounded sequence size.</summary>
+    public int SequenceSize { get; init; } = 100;
+
+    /// <summary>Gets the effective unbounded string size.</summary>
+    public int StringSize { get; init; } = 255;
+}
 
 /// <summary>Describes one generated C# document.</summary>
 /// <param name="Name">The compiler-provided document name.</param>

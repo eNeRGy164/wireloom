@@ -5,12 +5,20 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj" />
-    <Compile Include="../Shared/CompilerTestSupport.cs" Link="Support/CompilerTestSupport.cs" />
-    <Compile Include="../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs" Link="Playground/PlaygroundCompilerAdapter.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" VersionOverride="4.14.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" PrivateAssets="all" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../Shared/CompilerTestSupport.cs" Link="Support/CompilerTestSupport.cs" />
+    <Compile Include="../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs" Link="Playground/PlaygroundCompilerAdapter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../playground/src/protocol.ts" Link="Playground/protocol.ts" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

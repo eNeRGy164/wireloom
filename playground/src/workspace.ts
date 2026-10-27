@@ -1,42 +1,253 @@
-import type { CompileRequest, WorkspaceFile } from "./protocol";
+import type { CompileRequest, FileOptions, WorkspaceFile, WorkspaceOptions } from "./protocol";
 
+export const workspaceRoot = "/workspace";
 export const maxSourceBytes = 256 * 1024;
+export const maxFiles = 512;
+export const maxFolders = 512;
+export const maxPathLength = 1024;
+export const maxPathDepth = 32;
 export type Profile = CompileRequest["profile"];
+
+/** Stable identities keep editor models and undo history through virtual moves. */
+export interface SourceFile extends WorkspaceFile {
+  id: string;
+  options: FileOptions;
+}
+
 export interface Workspace {
-  version: 1;
-  files: WorkspaceFile[];
+  version: 2;
+  files: SourceFile[];
+  folders: string[];
   profile: Profile;
+  options: WorkspaceOptions;
+  activeFileId?: string;
+}
+
+export function defaultOptions(): WorkspaceOptions {
+  return { defines: [], undefines: [], includeDirectories: [], strict: false, enableEscapeChar: false };
+}
+
+export function createFile(path: string, source = ""): SourceFile {
+  return {
+    id: crypto.randomUUID(),
+    path,
+    source,
+    isGenerationRoot: true,
+    options: { sequenceArrayMapping: "RtiCSharp", sequenceSize: 100, stringSize: 255 },
+  };
+}
+
+export function createWorkspace(source = "", profile: Profile = "7.7.0"): Workspace {
+  return {
+    version: 2,
+    files: [createFile(`${workspaceRoot}/main.idl`, source)],
+    folders: [],
+    profile,
+    options: defaultOptions(),
+  };
 }
 
 export function sourceFits(source: string): boolean {
   return source.length <= maxSourceBytes && new TextEncoder().encode(source).byteLength <= maxSourceBytes;
 }
 
-export function validateWorkspace(value: unknown): Workspace {
-  const item = value as Partial<Workspace> | null;
+export function sourceBytes(workspace: Workspace): number {
+  return workspace.files.reduce((total, file) => total + new TextEncoder().encode(file.source).byteLength, 0);
+}
+
+export function parentPath(path: string): string {
+  return path.slice(0, path.lastIndexOf("/"));
+}
+
+export function isWithin(path: string, folder: string): boolean {
+  return path === folder || path.startsWith(`${folder}/`);
+}
+
+export function validatePath(value: unknown, allowRoot = false): asserts value is string {
+  if (allowRoot && value === workspaceRoot) return;
+  if (
+    typeof value !== "string" ||
+    !value.startsWith(`${workspaceRoot}/`) ||
+    value.length > maxPathLength ||
+    /[\\\x00-\x1f\x7f-\x9f]/.test(value)
+  )
+    throw new Error("Use a virtual path under /workspace/ (at most 1,024 characters).");
+  const parts = value.slice(workspaceRoot.length + 1).split("/");
+  if (
+    parts.length > maxPathDepth ||
+    parts.some((part) => !part || part === "." || part === ".." || part.trim() !== part)
+  )
+    throw new Error("Paths must be normalized, with at most 32 levels and no empty, dot, or padded names.");
+}
+
+export function validateOptions(value: unknown): WorkspaceOptions {
+  const item = value as WorkspaceOptions | null;
+  if (!item || typeof item.strict !== "boolean" || typeof item.enableEscapeChar !== "boolean")
+    throw new Error("Workspace settings are invalid.");
+  for (const list of [item.defines, item.undefines, item.includeDirectories]) {
+    if (
+      !Array.isArray(list) ||
+      list.length > 128 ||
+      list.some(
+        (entry) => typeof entry !== "string" || !entry || entry.length > 1024 || /[\x00-\x1f\x7f-\x9f]/.test(entry),
+      )
+    )
+      throw new Error("Each settings list supports at most 128 non-empty entries of 1,024 characters.");
+  }
+  for (const folder of item.includeDirectories) validatePath(folder, true);
+  return {
+    ...item,
+    defines: [...item.defines],
+    undefines: [...item.undefines],
+    includeDirectories: [...new Set(item.includeDirectories)].sort(),
+  };
+}
+
+function validateFileOptions(value: unknown): asserts value is FileOptions {
+  const item = value as FileOptions | null;
   if (
     !item ||
-    item.version !== 1 ||
-    !["7.3.1", "7.7.0"].includes(item.profile ?? "") ||
-    !Array.isArray(item.files) ||
-    item.files.length !== 1
+    !["RtiCSharp", "Idl"].includes(item.sequenceArrayMapping) ||
+    ![item.sequenceSize, item.stringSize].every((size) => Number.isInteger(size) && size > 0 && size <= 2147483647)
   )
-    throw new Error("Saved workspace has an unsupported format.");
+    throw new Error("File settings require a known mapping and positive 32-bit sizes.");
+}
 
-  const file = item.files[0];
-
-  if (
-    !file ||
-    typeof file.path !== "string" ||
-    !/^\/workspace\/[^/\\\x00-\x1f]+\.idl$/i.test(file.path) ||
-    typeof file.source !== "string" ||
-    file.isGenerationRoot !== true ||
-    !sourceFits(file.source)
-  ) {
-    throw new Error("Saved workspace contains invalid or oversized IDL.");
+export function validateWorkspace(value: unknown): Workspace {
+  const legacy = value as { version?: number; files?: WorkspaceFile[]; profile?: Profile } | null;
+  if (legacy?.version === 1) {
+    if (!Array.isArray(legacy.files) || legacy.files.length !== 1)
+      throw new Error("Saved workspace has an unsupported format.");
+    const file = legacy.files[0];
+    if (
+      !file ||
+      typeof file.path !== "string" ||
+      !/^\/workspace\/[^/\\\x00-\x1f]+\.idl$/i.test(file.path) ||
+      typeof file.source !== "string" ||
+      file.isGenerationRoot !== true
+    )
+      throw new Error("Saved workspace contains invalid IDL.");
+    value = {
+      version: 2,
+      files: [{ ...createFile(file.path, file.source) }],
+      folders: [],
+      profile: legacy.profile,
+      options: defaultOptions(),
+    };
   }
+  const item = value as Workspace | null;
+  if (
+    !item ||
+    item.version !== 2 ||
+    !["7.3.1", "7.7.0"].includes(item.profile) ||
+    !Array.isArray(item.files) ||
+    item.files.length > maxFiles ||
+    !Array.isArray(item.folders) ||
+    item.folders.length > maxFolders
+  )
+    throw new Error("Saved workspace has an unsupported format or exceeds the 512 file/folder limits.");
+  const paths = new Set<string>();
+  const ids = new Set<string>();
+  for (const path of item.folders) {
+    validatePath(path);
+    if (paths.has(path)) throw new Error("Workspace paths must be unique.");
+    paths.add(path);
+  }
+  for (const file of item.files) {
+    if (
+      !file ||
+      typeof file.source !== "string" ||
+      typeof file.isGenerationRoot !== "boolean" ||
+      typeof file.id !== "string" ||
+      !file.id ||
+      file.id.length > 128 ||
+      ids.has(file.id)
+    )
+      throw new Error("Workspace file identity or source is invalid.");
+    validatePath(file.path);
+    if (paths.has(file.path)) throw new Error("Workspace paths must be unique.");
+    paths.add(file.path);
+    ids.add(file.id);
+    validateFileOptions(file.options);
+  }
+  if (item.activeFileId !== undefined && !ids.has(item.activeFileId))
+    throw new Error("The active file must exist in the workspace.");
+  const folders = new Set(item.folders);
+  for (const path of paths) {
+    if (parentPath(path) !== workspaceRoot && !folders.has(parentPath(path)))
+      throw new Error("Every parent folder must exist.");
+  }
+  if (sourceBytes(item) > maxSourceBytes) throw new Error("Workspace input exceeds the 256 KiB UTF-8 limit.");
+  const options = validateOptions(item.options);
+  if (options.includeDirectories.some((path) => path !== workspaceRoot && !folders.has(path)))
+    throw new Error("Select existing virtual include folders.");
+  return structuredClone({ ...item, options });
+}
 
-  return { version: 1, profile: item.profile!, files: [{ ...file }] };
+/** Apply a complete edit only after all paths, options, and resource bounds validate. */
+function edit(workspace: Workspace, action: (draft: Workspace) => void): Workspace {
+  const draft = structuredClone(workspace);
+  action(draft);
+  return validateWorkspace(draft);
+}
+
+export function hasPath(workspace: Workspace, path: string): boolean {
+  return (
+    path === workspaceRoot || workspace.folders.includes(path) || workspace.files.some((file) => file.path === path)
+  );
+}
+
+export function addFolder(workspace: Workspace, path: string): Workspace {
+  return edit(workspace, (draft) => {
+    if (hasPath(draft, path)) throw new Error("The destination already exists.");
+    draft.folders.push(path);
+  });
+}
+
+export function putFile(workspace: Workspace, path: string, source: string, replace = false): Workspace {
+  return edit(workspace, (draft) => {
+    const existing = draft.files.find((file) => file.path === path);
+    if (existing && replace) existing.source = source;
+    else {
+      if (hasPath(draft, path)) throw new Error("The destination already exists.");
+      draft.files.push(createFile(path, source));
+    }
+  });
+}
+
+function remove(draft: Workspace, path: string) {
+  draft.files = draft.files.filter((file) => !isWithin(file.path, path));
+  draft.folders = draft.folders.filter((folder) => !isWithin(folder, path));
+  draft.options.includeDirectories = draft.options.includeDirectories.filter((folder) => !isWithin(folder, path));
+  if (!draft.files.some((file) => file.id === draft.activeFileId)) delete draft.activeFileId;
+}
+
+export function deleteEntry(workspace: Workspace, path: string): Workspace {
+  validatePath(path);
+  return edit(workspace, (draft) => remove(draft, path));
+}
+
+export function moveEntry(workspace: Workspace, path: string, destination: string, replace = false): Workspace {
+  validatePath(path);
+  validatePath(destination);
+  if (path === destination) return structuredClone(workspace);
+  if (!hasPath(workspace, path) || isWithin(destination, path) || isWithin(path, destination))
+    throw new Error("Choose a destination outside the moved item and its parents.");
+  const parent = parentPath(destination);
+  if (parent !== workspaceRoot && !workspace.folders.includes(parent))
+    throw new Error("Destination folder does not exist.");
+  return edit(workspace, (draft) => {
+    if (hasPath(draft, destination)) {
+      if (!replace) throw new Error("The destination already exists.");
+      remove(draft, destination);
+    }
+    const moved = (value: string) => (isWithin(value, path) ? destination + value.slice(path.length) : value);
+    draft.files.forEach((file) => {
+      file.path = moved(file.path);
+    });
+    draft.folders = draft.folders.map(moved);
+    draft.options.includeDirectories = draft.options.includeDirectories.map(moved);
+  });
 }
 
 /** Serial operations prevent an older save from overwriting reset or newer edits. */

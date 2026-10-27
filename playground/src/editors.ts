@@ -2,6 +2,7 @@ import * as monaco from "monaco-editor/editor/editor.api.js";
 import "monaco-editor/languages/definitions/csharp/register.js";
 import EditorWorker from "monaco-editor/editor/editor.worker.js?worker";
 import type { Diagnostic } from "./protocol";
+import type { SourceFile } from "./workspace";
 import { onThemeChange } from "./theme";
 
 self.MonacoEnvironment = { getWorker: () => new EditorWorker() };
@@ -99,14 +100,15 @@ const common: monaco.editor.IStandaloneEditorConstructionOptions = {
 export class Editors {
   readonly input: monaco.editor.IStandaloneCodeEditor;
   readonly output: monaco.editor.IStandaloneCodeEditor;
-  private inputModel: monaco.editor.ITextModel;
+  private inputs = new Map<string, { path: string; model: monaco.editor.ITextModel }>();
+  private inputViews = new Map<string, monaco.editor.ICodeEditorViewState | null>();
+  private activeInput?: string;
   private outputs = new Map<string, monaco.editor.ITextModel>();
   private views = new Map<string, monaco.editor.ICodeEditorViewState | null>();
   private active?: string;
 
-  constructor(input: HTMLElement, output: HTMLElement, path: string, source: string) {
-    this.inputModel = monaco.editor.createModel(source, "idl", monaco.Uri.file(path));
-    this.input = monaco.editor.create(input, { ...common, model: this.inputModel, ariaLabel: "IDL source editor" });
+  constructor(input: HTMLElement, output: HTMLElement) {
+    this.input = monaco.editor.create(input, { ...common, model: null, ariaLabel: "IDL source editor" });
     this.output = monaco.editor.create(output, {
       ...common,
       model: null,
@@ -118,7 +120,7 @@ export class Editors {
   }
 
   get source() {
-    return this.inputModel.getValue(monaco.editor.EndOfLinePreference.TextDefined);
+    return this.input.getModel()?.getValue(monaco.editor.EndOfLinePreference.TextDefined) ?? "";
   }
 
   setFontSize(fontSize: number) {
@@ -127,51 +129,82 @@ export class Editors {
     this.output.updateOptions(options);
   }
 
-  setSource(path: string, source: string) {
-    const old = this.inputModel;
+  syncSources(files: SourceFile[], activeId?: string) {
+    if (this.activeInput) this.inputViews.set(this.activeInput, this.input.saveViewState());
     this.input.setModel(null);
-    old.dispose();
-    this.inputModel = monaco.editor.createModel(source, "idl", monaco.Uri.file(path));
-    this.input.setModel(this.inputModel);
+    for (const [id, entry] of this.inputs) {
+      if (!files.some((file) => file.id === id)) {
+        entry.model.dispose();
+        this.inputs.delete(id);
+        this.inputViews.delete(id);
+      }
+    }
+    for (const file of files) {
+      let entry = this.inputs.get(file.id);
+      if (!entry) {
+        entry = {
+          path: file.path,
+          model: monaco.editor.createModel(
+            file.source,
+            "idl",
+            monaco.Uri.parse(`inmemory://source/${encodeURIComponent(file.id)}`),
+          ),
+        };
+        this.inputs.set(file.id, entry);
+      } else if (entry.model.getValue(monaco.editor.EndOfLinePreference.TextDefined) !== file.source) {
+        entry.model.setValue(file.source);
+      }
+      entry.path = file.path;
+    }
+    this.activeInput = activeId;
+    this.input.setModel(activeId ? (this.inputs.get(activeId)?.model ?? null) : null);
+    this.input.restoreViewState(activeId ? (this.inputViews.get(activeId) ?? null) : null);
   }
 
-  positionAt(offset: number) {
-    return this.inputModel.getPositionAt(offset);
+  positionAt(offset: number, path?: string) {
+    const model = path ? [...this.inputs.values()].find((entry) => entry.path === path)?.model : this.input.getModel();
+    return model?.getPositionAt(offset) ?? { lineNumber: 1, column: 1 };
   }
 
   clearMarkers() {
-    monaco.editor.setModelMarkers(this.inputModel, "wireloom", []);
+    for (const { model } of this.inputs.values()) monaco.editor.setModelMarkers(model, "wireloom", []);
   }
 
-  markers(diagnostics: Diagnostic[], path: string) {
-    monaco.editor.setModelMarkers(
-      this.inputModel,
-      "wireloom",
-      diagnostics
-        .filter((d) => d.filePath === path && d.startOffset >= 0)
-        .map((d) => {
-          const start = this.inputModel.getPositionAt(d.startOffset);
-          const end = this.inputModel.getPositionAt(d.startOffset + Math.max(1, d.length));
-          return {
-            startLineNumber: start.lineNumber,
-            startColumn: start.column,
-            endLineNumber: end.lineNumber,
-            endColumn: end.column,
-            message: `${d.id}: ${d.message}`,
-            severity:
-              d.severity.toLowerCase() === "error"
-                ? monaco.MarkerSeverity.Error
-                : d.severity.toLowerCase() === "warning"
-                  ? monaco.MarkerSeverity.Warning
-                  : monaco.MarkerSeverity.Info,
-          };
-        }),
-    );
+  markers(diagnostics: Diagnostic[]) {
+    for (const { path, model } of this.inputs.values()) {
+      monaco.editor.setModelMarkers(
+        model,
+        "wireloom",
+        diagnostics
+          .filter((d) => d.filePath === path && d.startOffset >= 0)
+          .map((d) => {
+            const start = model.getPositionAt(d.startOffset);
+            const end = model.getPositionAt(d.startOffset + Math.max(1, d.length));
+            return {
+              startLineNumber: start.lineNumber,
+              startColumn: start.column,
+              endLineNumber: end.lineNumber,
+              endColumn: end.column,
+              message: `${d.id}: ${d.message}`,
+              severity:
+                d.severity.toLowerCase() === "error"
+                  ? monaco.MarkerSeverity.Error
+                  : d.severity.toLowerCase() === "warning"
+                    ? monaco.MarkerSeverity.Warning
+                    : monaco.MarkerSeverity.Info,
+            };
+          }),
+      );
+    }
   }
 
   navigate(diagnostic: Diagnostic) {
-    const start = this.inputModel.getPositionAt(diagnostic.startOffset);
-    const end = this.inputModel.getPositionAt(diagnostic.startOffset + Math.max(1, diagnostic.length));
+    const model = this.input.getModel();
+    if (!model) return;
+
+    const start = model.getPositionAt(diagnostic.startOffset);
+    const end = model.getPositionAt(diagnostic.startOffset + Math.max(1, diagnostic.length));
+
     this.input.setSelection(new monaco.Range(start.lineNumber, start.column, end.lineNumber, end.column));
     this.input.revealPositionInCenter(start);
     this.input.focus();

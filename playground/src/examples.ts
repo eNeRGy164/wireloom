@@ -1,3 +1,5 @@
+import { createFile, createWorkspace } from "./workspace.ts";
+
 export const examples = [
   {
     id: "hello",
@@ -195,5 +197,49 @@ struct HashSample {
 typedef sequence<Node> Children;
 struct Node { long value; Children children; };
 `,
+  },
+  {
+    id: "workspace-includes",
+    title: "Workspace: Root and includes",
+    description:
+      "A Root includes a shared type using a relative virtual path. Inspect each file's generation role in Properties.",
+    source: '#include "shared/types.idl"\nmodule Example { struct Reading { Shared::Point position; }; };\n',
+    workspace: () => {
+      const value = createWorkspace(
+        '#include "shared/types.idl"\nmodule Example { struct Reading { Shared::Point position; }; };\n',
+      );
+      value.folders = ["/workspace/shared"];
+      const shared = createFile(
+        "/workspace/shared/types.idl",
+        "#pragma once\nmodule Shared { struct Point { long x; long y; }; };\n",
+      );
+      shared.isGenerationRoot = false;
+      value.files.push(shared);
+      return value;
+    },
+  },
+  {
+    id: "workspace-preprocessor",
+    title: "Workspace: preprocessor settings",
+    description:
+      "Workspace Settings defines FEATURE and removes DISABLED. An angle include searches the selected virtual include folder.",
+    source:
+      "#include <types.idl>\n#if defined(FEATURE) && !defined(DISABLED)\nstruct Enabled { Config::Value value; };\n#endif\n",
+    workspace: () => {
+      const value = createWorkspace(
+        "#include <types.idl>\n#if defined(FEATURE) && !defined(DISABLED)\nstruct Enabled { Config::Value value; };\n#endif\n",
+      );
+      value.folders = ["/workspace/config"];
+      const shared = createFile(
+        "/workspace/config/types.idl",
+        "#pragma once\nmodule Config { struct Value { long count; }; };\n",
+      );
+      shared.isGenerationRoot = false;
+      value.files.push(shared);
+      value.options.defines = ["FEATURE=1", "DISABLED=1"];
+      value.options.undefines = ["DISABLED"];
+      value.options.includeDirectories = ["/workspace/config"];
+      return value;
+    },
   },
 ];

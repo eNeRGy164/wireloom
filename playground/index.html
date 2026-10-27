@@ -16,23 +16,37 @@
   <main>
     <section class="intro"><div><p class="eyebrow">FROM IDL TO C#</p><h1>See what your types can become.</h1><p>Edit an example. Explore the generated code. Bring it to your project.</p></div><span class="local-badge">LOCAL COMPILATION</span></section>
     <div class="toolbar" aria-label="Workspace controls">
-      <div class="toolbar-group"><label for="example">Example</label><select id="example"></select><button id="load-example">Load example</button><button id="import">Open IDL…</button><input id="file" type="file" accept=".idl" hidden></div>
-      <div class="toolbar-group toolbar-settings"><div class="font-controls" role="group" aria-label="Editor font size"><span>Editor font</span><button id="font-decrease" aria-label="Decrease editor font size">−</button><button id="font-reset" title="Reset editor font size to 12 pixels" aria-label="Reset editor font size"><output id="font-size" aria-live="polite">12 px</output></button><button id="font-increase" aria-label="Increase editor font size">+</button></div><label for="profile">RTI profile</label><select id="profile"><option>7.7.0</option><option>7.3.1</option></select><button id="reset" class="quiet">Reset</button></div>
+      <div class="toolbar-group"><label for="example">Example</label><select id="example"></select><button id="load-example">Load example</button><button id="import">Import Files…</button><input id="file" type="file" multiple hidden></div>
+      <div class="toolbar-group toolbar-settings"><div class="font-controls" role="group" aria-label="Editor font size"><span>Editor font</span><button id="font-decrease" aria-label="Decrease editor font size">−</button><button id="font-reset" title="Reset editor font size to 12 pixels" aria-label="Reset editor font size"><output id="font-size" aria-live="polite">12 px</output></button><button id="font-increase" aria-label="Increase editor font size">+</button></div><label for="profile">RTI profile</label><select id="profile"><option>7.7.0</option><option>7.3.1</option></select><button id="workspace-settings">Workspace Settings</button><button id="reset" class="quiet">Reset</button></div>
     </div>
     <p id="example-description" class="example-description"></p>
-    <div id="notice" class="notice" hidden><span id="notice-message" role="status"></span><button id="notice-dismiss" aria-label="Dismiss notification" title="Dismiss notification">×</button></div>
+    <div id="notice" class="notice" hidden><strong id="notice-kind" hidden aria-hidden="true">Error</strong><span id="notice-message" role="status"></span><button id="notice-dismiss" aria-label="Dismiss notification" title="Dismiss notification">×</button></div>
     <div id="workbench" class="workbench">
       <aside class="explorer" aria-label="File explorer">
-        <button id="explorer-toggle" class="explorer-toggle" aria-label="Toggle file explorer" aria-expanded="true" aria-controls="explorer-content" title="Hide file explorer"><span aria-hidden="true">☰</span><span class="explorer-title">FILES</span></button>
-        <div id="explorer-content"><h2>Source</h2><button id="source-file" class="source-file"><span class="file-icon file-icon-idl" aria-hidden="true"></span><span id="explorer-source-name">main.idl</span></button><h2>Generated <span id="explorer-count" class="count">0</span></h2><ul id="file-list" aria-label="Generated files"></ul><p id="explorer-empty">No generated files yet</p></div>
+        <button id="explorer-toggle" class="explorer-toggle" aria-label="Toggle file explorer" aria-expanded="true" aria-controls="explorer-content" title="Hide file explorer"><span aria-hidden="true">☰</span><span class="explorer-title">Explorer</span></button>
+        <div id="explorer-content">
+          <section id="source-explorer-panel" class="explorer-group" aria-labelledby="source-group-heading">
+            <div class="explorer-group-header"><h2 id="source-group-heading"><button id="source-group-toggle" class="explorer-group-toggle" aria-expanded="true" aria-controls="source-group-content"><span class="explorer-chevron" aria-hidden="true"></span>Source</button></h2><div class="source-tools" role="group" aria-label="Source Explorer actions">
+          <button id="new-file" title="New File…" aria-label="New File"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 14.5h4m-4 0v-13h6l3 3v3m-3-6v3h3M12 9v6m-3-3h6"/></svg></button>
+          <button id="new-folder" title="New Folder…" aria-label="New Folder"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 4.5h13v3m-13-3v9h6m-6-9v-2h5l2 2M12 9v6m-3-3h6"/></svg></button>
+          <button id="collapse-folders" title="Collapse Folders" aria-label="Collapse Folders"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 1.5h10v10h-10zm-3 3v10h10m-5-8h6"/></svg></button>
+          <button id="source-actions" title="More Actions…" aria-label="Source actions" aria-haspopup="menu"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1"/><circle cx="8" cy="8" r="1"/><circle cx="13" cy="8" r="1"/></svg></button>
+        </div></div>
+            <div id="source-group-content"><div id="source-tree" role="tree" aria-label="Source files and folders"></div></div>
+          </section>
+          <section class="explorer-group" aria-labelledby="generated-group-heading">
+            <div class="explorer-group-header"><h2 id="generated-group-heading"><button id="generated-group-toggle" class="explorer-group-toggle" aria-expanded="true" aria-controls="generated-group-content"><span class="explorer-chevron" aria-hidden="true"></span>Generated <span id="explorer-count" class="count">0</span></button></h2></div>
+            <div id="generated-group-content"><ul id="file-list" aria-label="Generated files"></ul><p id="explorer-empty">No generated files yet</p></div>
+          </section>
+        </div>
       </aside>
       <div id="explorer-splitter" class="splitter explorer-splitter" role="separator" tabindex="0" aria-label="Resize file explorer" aria-orientation="vertical" aria-valuemin="160" aria-valuemax="420" aria-valuenow="210" aria-valuetext="210 pixels"></div>
     <div id="workspace" class="workspace">
       <section class="pane input-pane" aria-label="IDL workspace">
-        <div class="pane-heading"><span><span class="panel-number">01</span> SOURCE</span><span class="language-label">IDL</span></div>
-        <div class="input-tab"><span class="file-icon file-icon-idl" aria-hidden="true"></span><span id="input-name">main.idl</span><span id="source-state">Loading recovery…</span></div>
-        <div id="source" class="editor"></div>
-        <div class="pane-footer"><span id="source-size"></span><span>UTF-8 · one input file</span></div>
+        <div class="pane-heading source-heading"><span><span class="panel-number">01</span> SOURCE</span><div class="source-controls"><span class="language-label">IDL</span><button id="copy-source" disabled aria-label="Copy current IDL file">Copy</button><button id="download-source-file" disabled aria-label="Download current IDL file">Download</button><button id="download-source" title="Save source files, folders, and workspace settings" aria-label="Download source workspace as ZIP">ZIP ↓</button></div></div>
+        <div class="source-tab-strip"><div id="source-tabs" class="output-tabs" role="tablist" aria-label="Source files"></div><button id="file-properties">Properties</button></div>
+        <div class="source-editor-wrap" id="source-panel" role="tabpanel" aria-label="IDL source"><div id="source" class="editor"></div><div id="empty-source" class="empty-output" hidden><h2>Your workspace is empty</h2><p>Create a file or import files to begin.</p></div></div>
+        <div class="pane-footer"><span id="source-size"></span><span id="source-count"></span><span id="source-state">Loading recovery…</span></div>
       </section>
       <div id="splitter" class="splitter" role="separator" tabindex="0" aria-label="Resize source and output panes" aria-orientation="vertical" aria-valuemin="25" aria-valuemax="75" aria-valuenow="45"></div>
       <section class="pane output-pane" aria-label="Generated output">
