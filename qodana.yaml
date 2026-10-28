@@ -4,6 +4,15 @@ linter: qodana-cdnet
 
 profile:
   name: qodana.recommended
+  inspections:
+    - group: ALL
+      ignore:
+        - "docs/**"
+        - "**/F_*.g.cs"
+        - "**/M_*.g.cs"
+        - "**/P_*.g.cs"
+        - "**/T_*.g.cs"
+        - "**/PolyfillExtensions.g.cs"
 
 include:
   - name: CheckDependencyLicenses
