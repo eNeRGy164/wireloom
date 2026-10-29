@@ -65,3 +65,10 @@ Both processes print a completion count and exit successfully when the exchange 
 
 The build-only CI job runs on Windows and Ubuntu without starting the DDS processes or requiring an RTI license.
 Run both roles locally with RTI's native assets and a valid license to check end-to-end communication.
+
+For the step-by-step `net8.0` consumer version and an explanation of the DDS
+flow, see [Hello World with Wireloom](../../docs/guides/hello-world.md).
+This repository project uses `net10.0` and the producer SDK selected by
+`global.json`.
+
+[Documentation](../../docs/README.md)

@@ -6,26 +6,6 @@ store generated values. It does not establish RTI wire compatibility for every
 IDL shape; use the [wire compatibility evidence](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
 for tested cross-language exchanges.
 
-The generated API profile follows the resolved RTI package version. RTI 7.3.1
-through versions below 7.7.0 use the 7.3.1 API profile; 7.7.0 and later use
-the 7.7.0 profile. DynamicType octet names, annotation metadata, and union
-constructor initialization can therefore differ between generated outputs.
-Regenerate and review contracts when changing across the 7.7.0 boundary.
-For union constructors, 7.7.0 uses the discriminator type's XTypes default.
-The 7.3.1 profile uses an unused primitive discriminator when a default branch
-exists; enum unions with a default branch use the first declared enum value,
-independently of explicit case labels or `@default_literal`. This also applies
-to default-only unions and aliased enum discriminators. Unions without a default
-branch use the first declared case label. Default-branch setters continue to
-select an unused discriminator.
-
-For enum arrays, a declared `@default_literal` initializes every element in
-Wireloom's managed and native arrays. This includes typedef arrays, enum alias
-chains, and multidimensional member arrays. C148 and
-[`EnumArrayDefaultSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Managed/EnumArrayDefaultSpecs.cs)
-cover these defaults; the native path is checked by
-[`EnumArrayDefaultNativeSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Native/EnumArrayDefaultNativeSpecs.cs).
-
 ## Initialize values
 
 Required sequences start empty, required arrays are allocated, and required
@@ -115,6 +95,28 @@ generated object is used as a key in a dictionary or set, mutating it after
 insertion can change its hash code and make lookup behavior surprising. Prefer
 immutable key data or remove and reinsert the object after changing it.
 
+## Profile-specific defaults
+
+The generated API profile follows the resolved RTI package version. RTI 7.3.1
+through versions below 7.7.0 use the 7.3.1 API profile; 7.7.0 and later use
+the 7.7.0 profile. DynamicType octet names, annotation metadata, and union
+constructor initialization can therefore differ between generated outputs.
+Regenerate and review contracts when changing across the 7.7.0 boundary.
+For union constructors, 7.7.0 uses the discriminator type's XTypes default.
+The 7.3.1 profile uses an unused primitive discriminator when a default branch
+exists; enum unions with a default branch use the first declared enum value,
+independently of explicit case labels or `@default_literal`. This also applies
+to default-only unions and aliased enum discriminators. Unions without a default
+branch use the first declared case label. Default-branch setters continue to
+select an unused discriminator.
+
+For enum arrays, a declared `@default_literal` initializes every element in
+Wireloom's managed and native arrays. This includes typedef arrays, enum alias
+chains, and multidimensional member arrays. C148 and
+[`EnumArrayDefaultSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Managed/EnumArrayDefaultSpecs.cs)
+cover these defaults; the native path is checked by
+[`EnumArrayDefaultNativeSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Native/EnumArrayDefaultNativeSpecs.cs).
+
 ## Maintainer reference: generated storage contracts
 
 These are current emitter contracts for the covered shapes. Review their
@@ -172,3 +174,5 @@ imply that RTI C# has identical generated source, that every RTI API has the
 same ownership semantics, or that a given shape has been proven interoperable
 on the DDS wire. The runtime test README links each behavior to its test and
 lists gaps in coverage.
+
+[Documentation](../README.md) · [Handwritten partial extensions](developer-workflow.md#extend-a-generated-type)

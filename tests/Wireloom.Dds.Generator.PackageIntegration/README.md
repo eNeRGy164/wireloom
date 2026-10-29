@@ -9,17 +9,21 @@ restoring and testing this project:
 
 ```powershell
 dotnet restore src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --locked-mode
+$packageVersion = "0.0.0-local.$(Get-Date -Format yyyyMMddHHmmss)"
 dotnet pack src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj `
-  --no-restore --configuration Release --output package-test-feed
-$package = Get-ChildItem package-test-feed -Filter 'Wireloom.Dds.Generator.*.nupkg' |
-  Sort-Object LastWriteTime -Descending | Select-Object -First 1
-$packageVersion = $package.BaseName -replace '^Wireloom\.Dds\.Generator\.', ''
+  --no-restore --configuration Release --output package-test-feed `
+  -p:PackageVersion=$packageVersion
 dotnet restore tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
   --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config `
   -p:WireloomDdsGeneratorPackageVersion=$packageVersion
 dotnet run --project tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj `
-  --no-restore --configuration Release
+  --no-restore --configuration Release `
+  -p:WireloomDdsGeneratorPackageVersion=$packageVersion -p:LangVersion=12.0
 ```
+
+The unique local package version prevents a prior global/test-cache copy from
+standing in for the artifact just packed. Keep that same version on restore,
+run, and negative-build verification.
 
 The Quality workflow tests a fresh package across RTI 7.3.1/7.7.0 and
 `net8.0`/`net10.0` on Windows and Ubuntu. This project also links the complete

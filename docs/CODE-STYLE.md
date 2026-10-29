@@ -7,6 +7,14 @@ suggestion and this guide disagree, this guide describes the intended review
 standard; update the configuration when the convention should become
 enforceable.
 
+## Language scope
+
+The C# rules below apply to maintained .NET code. Playground TypeScript and
+JavaScript follow the checked-in [ESLint](../playground/eslint.config.mjs) and
+[Prettier](../playground/.prettierrc.json) configuration. Run `npm run typecheck`,
+`npm run lint`, and `npm run format:check` from `playground/`; apply the same
+readability and responsibility-boundary principles when reviewing that code.
+
 ## Readability first
 
 - Prefer clear, vertically readable code over minimizing lines of code.
@@ -85,6 +93,15 @@ enforceable.
   readable; generated output is validated by its shape and compatibility tests.
 
 ## Enforcement and review
+
+The `AnalyzerReleases.Shipped.md` and `AnalyzerReleases.Unshipped.md` files use
+Roslyn's release-tracking grammar even though their extension is `.md`. Use
+semicolon comments for descriptive titles and preserve the prescribed release,
+rule, and table headers exactly. General Markdown table formatting can break
+that grammar. They are excluded from prose linting in `.markdownlint-cli2.yaml`
+and from automatic formatting in `.prettierignore`.
+Validate edits with a non-incremental generator build; an up-to-date build can
+otherwise skip the analyzer that checks the file format.
 
 The editor configuration currently enforces or guides braces, indentation,
 line breaks, file-scoped namespaces, primary constructors, modern C# patterns,

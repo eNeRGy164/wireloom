@@ -46,8 +46,12 @@ shortcuts to create a blank IDL file or load the **Hello, Wireloom** example.
 
 Root **Properties** configures defines, undefines, and strict validation for
 that `DdsIdl` root. Enter one definition (`NAME` or `NAME=value`) or
-undefinition per line. Undefines apply after defines. Each Root starts with
-the compiler's initial macro environment.
+undefinition per line. Settings from all Roots configure one generation batch:
+defines are combined, undefines apply afterward, and any Root enabling strict
+validation enables it for the whole batch. Each Root starts with the same
+initial macro environment; in-file macro changes do not carry to another Root.
+Use separate projects/builds for variants that need independent external
+symbols or strictness.
 
 **Workspace Settings** configures project defaults for sequence-array mapping,
 unbounded sequence size, and unbounded string size. It also configures
@@ -119,68 +123,17 @@ editor chunk loads and updates both page color scheme and Monaco. Later system
 or developer-tools preference changes do not override it. Preference storage
 failure leaves the current session's choice usable.
 
+## Workspace limits
+
+The workspace accepts at most 512 source files, 512 explicit folders, and
+256 KiB of total UTF-8 source for compilation. Generated output is limited to
+512 documents and 16 MiB of UTF-8 text. Source ZIP remains available when
+compilation is ineligible. See the [protocol limits](../reference/playground-protocol.md)
+for path/settings validation and host rejection rules.
+
 ## Worker contract v3
 
-The canonical contract is the .NET adapter DTOs in
-[`PlaygroundCompilerAdapter.cs`](../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs).
-[`protocol.ts`](../../playground/src/protocol.ts) mirrors their field names and
-types. Adapter tests in Quality verify parity. The client and worker ship in
-one static release, so no cross-release protocol compatibility window is
-supported. Version-1 compile requests are rejected. Workspace records use the
-current version-3 format without schema migration.
-
-```json
-{
-  "protocolVersion": 3,
-  "workerGeneration": 1,
-  "requestId": 1,
-  "workspaceRevision": 1,
-  "profile": "7.7.0",
-  "files": [
-    {
-      "path": "/workspace/main.idl",
-      "source": "struct Sample { long value; };",
-      "isGenerationRoot": true,
-      "options": {
-        "defines": [],
-        "undefines": [],
-        "strict": false
-      }
-    }
-  ],
-  "options": {
-    "sequenceArrayMapping": "RtiCSharp",
-    "sequenceSize": 100,
-    "stringSize": 255,
-    "includeDirectories": [],
-    "enableEscapeChar": false
-  }
-}
-```
-
-Root file options carry `Defines`, `Undefines`, and `Strict`, matching
-`DdsIdl` item metadata. Workspace settings carry project sequence defaults,
-escape-character behavior, and include directories. File options may be
-omitted to select root defaults. Recovery-only file IDs, explicit folders,
-and active selection are not sent to the compiler. The adapter uses only
-supplied text and virtual paths; it never opens a host file.
-
-| Input            | Limit or rule                                                                                        |
-| :--------------- | :--------------------------------------------------------------------------------------------------- |
-| Files            | 512, with 256 KiB total UTF-8 source                                                                 |
-| Explicit folders | 512 in the client/recovery model                                                                     |
-| Virtual path     | 1,024 UTF-16 code units, at most 32 levels below `/workspace/`                                       |
-| Path segments    | Non-empty; no dot/traversal, backslash, control characters, or surrounding whitespace                |
-| Paths            | Unique; files cannot also be parent folders                                                          |
-| Settings         | At most 128 entries per list, each non-empty and at most 1,024 characters without control characters |
-| Effective sizes  | Positive 32-bit integers                                                                             |
-| Generated output | 512 documents and 16 MiB UTF-8 text                                                                  |
-
-Client validation preserves the existing workspace when an operation fails.
-The adapter independently rejects invalid identity/version/profile, paths,
-settings, source bounds, or a request without a Root. Host errors are explicit
-worker errors; they do not invent compiler diagnostic IDs or source locations.
-Compiler errors preserve original diagnostic paths and offsets. Generated-output
-limits return a `limit` response with no partial documents. Complete response
-identity must match the dispatched snapshot and current workspace before the
-client applies it.
+The browser client and compiler worker ship together. Their request/response
+schema, validation limits, and failure categories are documented in the
+[maintainer protocol reference](../reference/playground-protocol.md). Source
+ZIP and local recovery remain user operations described above.

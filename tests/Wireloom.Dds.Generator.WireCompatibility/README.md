@@ -163,17 +163,17 @@ capture does not imply that a licensed exchange ran.
 
 Useful runner settings:
 
-| Variable                              | Purpose                                                                           | Default                        |
-| ------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------ |
-| `WIRE_COMPATIBILITY_RTI_VERSION`      | Selects the exact RTI NuGet package, exclusions, and toolchain expectation.       | `7.7.0`                        |
-| `WIRE_COMPATIBILITY_OUTPUT_DIR`       | Directory for scenario reports, logs, and shard metadata.                         | `artifacts/wire-compatibility` |
-| `WIRE_COMPATIBILITY_CASE_FILTER`      | Comma-separated corpus case IDs for a focused run.                                | All eligible cases             |
-| `WIRE_COMPATIBILITY_SHARD_INDEX`      | Zero-based shard to execute. Set together with shard count.                       | `0`                            |
-| `WIRE_COMPATIBILITY_SHARD_COUNT`      | Number of deterministic shards. Use the same count and case filter across shards. | `1`                            |
-| `WIRE_COMPATIBILITY_CPP_COMPILE_ONLY` | Compile C++ peers without starting DDS exchanges when set to `1`.                 | `0`                            |
-| `WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY` | Maximum concurrent case-specific Wireloom C# builds.                         | `4`                            |
-| `WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY`   | Maximum concurrent native C++ builds; each build uses two compiler jobs.     | `2`                            |
-| `WIRE_COMPATIBILITY_MAX_CONCURRENCY`  | Maximum independent exchanges active across all built cases in a shard.            | `16`                           |
+| Variable                                      | Purpose                                                                           | Default                        |
+| --------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------ |
+| `WIRE_COMPATIBILITY_RTI_VERSION`              | Selects the exact RTI NuGet package, exclusions, and toolchain expectation.       | `7.7.0`                        |
+| `WIRE_COMPATIBILITY_OUTPUT_DIR`               | Directory for scenario reports, logs, and shard metadata.                         | `artifacts/wire-compatibility` |
+| `WIRE_COMPATIBILITY_CASE_FILTER`              | Comma-separated corpus case IDs for a focused run.                                | All eligible cases             |
+| `WIRE_COMPATIBILITY_SHARD_INDEX`              | Zero-based shard to execute. Set together with shard count.                       | `0`                            |
+| `WIRE_COMPATIBILITY_SHARD_COUNT`              | Number of deterministic shards. Use the same count and case filter across shards. | `1`                            |
+| `WIRE_COMPATIBILITY_CPP_COMPILE_ONLY`         | Compile C++ peers without starting DDS exchanges when set to `1`.                 | `0`                            |
+| `WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY` | Maximum concurrent case-specific Wireloom C# builds.                              | `4`                            |
+| `WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY`   | Maximum concurrent native C++ builds; each build uses two compiler jobs.          | `2`                            |
+| `WIRE_COMPATIBILITY_MAX_CONCURRENCY`          | Maximum independent exchanges active across all built cases in a shard.           | `16`                           |
 
 Each shard needs its own working copy and output directory when run locally in
 parallel. Case-specific managed outputs are isolated, but restore assets and
@@ -205,10 +205,10 @@ Planning passes selected case IDs, scenario records, and expected counts in
 memory. Build requests and outcomes also stay in memory. Only these planning
 files are retained:
 
-| Artifact | Consumer and purpose |
-| :--- | :--- |
-| `plan.json` | The shard merger verifies the shared whole-case assignment and complete set of expected exchange keys. |
-| `shard.json` | The shard merger verifies profile, shard index/count, and expected exchange count. |
+| Artifact        | Consumer and purpose                                                                                                   |
+| :-------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| `plan.json`     | The shard merger verifies the shared whole-case assignment and complete set of expected exchange keys.                 |
+| `shard.json`    | The shard merger verifies profile, shard index/count, and expected exchange count.                                     |
 | `scenarios.tsv` | One canonical file in the output directory, updated by the exchange scheduler and read by reporting and shard merging. |
 
 `selected-cases.txt`, the duplicate scratch `scenarios.tsv`, and the managed
@@ -220,259 +220,80 @@ renderer validates it and the shard merger carries it into combined results.
 The runner creates it directly from a typed provenance record, with no
 intermediate evidence file, and clears old provenance at run initialization.
 
-The matrix entry point is a normal .NET 10 project and runs with
-`dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj --configuration Release`.
-The Runner owns planning, peer builds, exchange scheduling, and reporting.
-The Verifier project hosts the standalone catalog, report, and shard commands
-and runs the black-box shard checks after matrix jobs finish.
-
-The runner's `ScenarioPlanBuilder` creates the complete directed exchange plan
-in-process before builds begin. It compiles the shared fixture catalog from
-`../Wireloom.Dds.Generator.WireCompatibility.Runner/Planning/WireCompatibilityCaseCatalog.cs`. The coordinator builds one Wireloom
-case first to warm shared project references, then builds
-the remaining case peers concurrently. Each case has its own intermediate,
-generated-source, and output directories; package restore assets and project
-references are shared read-only. `WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY`
-controls this queue. RTI C# setup and CMake configuration then prepare each
-case, after which a bounded C# process queue builds native peers concurrently;
-each CMake build uses two compiler jobs and
-`WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY` controls the number of active
-cases. The shared NuGet cache mounted by CI is used through `NUGET_PACKAGES`.
-
-One C# exchange runner then draws from every built case in the shard, up to
-`WIRE_COMPATIBILITY_MAX_CONCURRENCY` exchanges at once (16 by default). Each active
-writer/reader pair leases one DDS domain ID from 20 upward; IDs are unique among
-active exchanges and returned after both peers exit. The runner records the
-domain ID and topic in the sanitized exchange log, checks both process exit
-codes and `PASS` output, and continues after handled peer failures. Existing
-case shards remain the outer build partition so independent case builds do not
-share their scratch paths.
-
-The runner starts each peer process with `RTI_MONITORING2_ENABLE=false`. RTI
-Monitoring Library 2.0 is otherwise eligible for automatic activation in these
-shared-library applications; its dedicated observability participant is not
-used by the matrix and can contend for local discovery ports. This setting
-disables the telemetry participant without disabling the peers' DDS
-communication transports.
-
-The four harness responsibilities are kept explicit: the catalog owns fixture
-values and profile exceptions; the planner owns deterministic pairings and
-whole-case shard assignment; the scheduler owns bounded reader-before-writer
-execution and domain leases; the evidence verifier owns completeness,
-uniqueness, profile, and report checks. The report verifier is shared with the
-existing shard merger, so scheduling changes do not weaken evidence rules.
+For planning, scheduling, and component ownership, see the
+[harness reference](../../docs/testing/wire-harness.md).
 
 ## Fixtures and peer setup
 
+The [fixture reference](../../docs/testing/wire-fixtures.md) owns construction,
+expected values, reference selection, and runtime-specific setup. The
+[workaround catalog](WORKAROUNDS.md) explains exceptional peer adaptations.
+
+<a id="reliable-writer-timing"></a>
+
 ### Reliable-writer timing
 
-All managed and native writers use explicit 50 ms `heartbeat_period`,
-`fast_heartbeat_period`, and `late_joiner_heartbeat_period` settings with
-`max_heartbeat_retries` set to 600, retaining a 30-second inactivity window.
-RTI 7.3.1 defaults to 3-second heartbeat periods; RTI changed these defaults
-to 200 ms in [7.6.0](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/release_notes/whats_new/whats_new_in_760.html#updated-default-heartbeat-periods-for-faster-repairs-of-lost-samples).
-Explicit settings keep one-sample acknowledgment waits comparable across the
-two LTS profiles. Writers still wait for reliable acknowledgments, and readers
-still verify the complete payload before an exchange can pass.
+See [reliable-writer timing](../../docs/testing/wire-fixtures.md#reliable-writer-timing).
+
+<a id="case-specific-fixture-construction"></a>
 
 ### Case-specific fixture construction
 
-Use case-specific typed sample construction and independent value checks for
-new or revised wire cases. Share participant/writer/reader lifetime, matching,
-timeouts, and report capture. Keep member assignments, optional presence, collection
-contents, and union selection in the case's fixture code. Avoid reflection or
-string paths where generated member access can make a wrong mapping fail compilation.
-Exercise each builder and its independent verifier before starting DDS participants.
-A fixture should fail with the case and member identified, rather than becoming
-a reader-readiness timeout or an apparent vendor compatibility failure.
+See [case-specific fixture construction](../../docs/testing/wire-fixtures.md#case-specific-fixture-construction).
 
-The existing harness still has a generic DynamicData fixture path. It is a test
-convenience, not an independent oracle for generated defaults or a prerequisite
-for using generated types. A fixture-building failure must be investigated as
-a harness/API-path problem before it is attributed to DDS interoperability.
-
-Managed case helpers are in `Fixtures/ManagedFixtures.*.cs`; C++ case-specific
-construction is in `Native/typed-fixture-peer.hpp.in`. Typed sample construction
-and topic wrappers are normal test setup and do not produce adaptation markers.
-The [workaround guide](WORKAROUNDS.md) covers changes beyond that baseline.
+<a id="annotation-and-value-binding-cases"></a>
 
 ### Annotation and value-binding cases
 
-C163–C172 use typed fixtures in `ManagedFixtures.IdlGaps.cs` and the C++ peer.
-Their sixteen fixtures produce 144 directed exchanges per exact RTI profile.
-They exercise explicit values, constructor defaults, all declared branches in
-the added unions, every fixed-array element, and exact-boundary strings.
-C164 and C172 use distinctly named topic wrappers that include unchanged
-canonical IDL and combine its declarations into one sample. Generation
-provenance records the canonical inputs and wrapper/dependency hashes.
+See [annotation and value-binding cases](../../docs/testing/wire-fixtures.md#annotation-and-value-binding-cases).
 
-For C164, the runner reuses RTI C# outputs only when one source and one plugin
-with the exact expected names share a directory and contain the expected IDL
-types. It preserves them with hashes. If RTI emits two copies, it removes a
-nested copy only when both generated files match the expected paths and are
-byte-identical, preserving both raw files first. RTI C++ dependency traversal
-is recursive: the runner reuses the unique RTI 7.7.0 outputs at their exact
-relative paths, or stages the RTI 7.3.1 generated headers at those paths after
-byte comparison. It keeps generated and staged copies with hashes. Scenario
-endpoint metadata reports these harness adaptations.
-
-For RTI 7.3.1 C#, `rtiddsgen` resolves these canonical includes by short
-basename beside the wrapper. The runner supplies byte-identical wrapper,
-canonical, and C164 dependency copies from an isolated scratch tree, then keeps
-the staged inputs and source/staged hashes in the evidence. The canonical IDL
-files in the snapshot remain unchanged.
-
-The C171 type declares `inherited=7`, `overridden=9`, `text="alias"`,
-`ratio=1.5`, and `single=1.25`. Its focused sparse case uses an older appendable
-C++ DynamicData writer type containing only member ID 0 (`inherited`) and sends
-`inherited=17101`. The full Wireloom C# reader supplies the declared defaults
-for the four absent trailing members. This sparse schema is compatible through
-RTI 7.7.0's member-annotation path; RTI 7.3.1 does not expose that metadata API.
-
-The in-memory `ClearMember` probe is a separate runtime-contract check. On
-RTI 7.7.0 it restores integral, narrow-string, and signed-zero defaults, but
-fractional defaults are truncated and non-ASCII wide-string defaults are
-returned as `??`. A separate runtime metadata check confirms the exact
-fractional and wide-string annotation values on 7.7.0, and managed/native
-initialization is checked on both profiles; the clear behavior is retained as
-a profile limitation.
+<a id="dynamicdata-fixture-api-limits"></a>
 
 ### DynamicData fixture API limits
 
-These observations concern the fixture-building API, not the tested typed wire path:
+See [dynamicdata fixture api limits](../../docs/testing/wire-fixtures.md#dynamicdata-fixture-api-limits).
 
-- RTI `7.3.1` DynamicData exposes IDL `int8` as `Uint8`; negative `sbyte` assignment
-  fails. Scalar fixtures assign generated members directly and readers check all values.
-- RTI `7.3.1` DynamicData does not carry the member-default annotation used by C042.
-  The fixture uses the generated constructor, assigns `value` and `ranged`, and leaves
-  `color` untouched. The reader independently requires `BLUE` (`2`); setting it explicitly
-  would hide a constructor-default defect.
-- The tested C++ libraries do not link `DynamicData::value<std::wstring>` on either LTS.
-  String and collection cases construct generated typed samples; this is ordinary C++
-  usage and leaves their serializer and IDL unchanged.
-
-The negative `int8` union discriminator issue [CORE-14660](#rti-731-negative-int8-union-discriminator)
-affects the actual wire/serializer path; the report shows its observed failures.
+<a id="recursive-fixture-metadata"></a>
 
 ### Recursive fixture metadata
 
-RTI explicitly rejects public `TypeSupport.DynamicType` access for recursive types
-with `NotSupportedException`; see the [documented C# limitation](https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/manuals/connext_dds_professional/release_notes/known_issues/known_issues_with_dynamic_data.html).
-Constructing a finite typed tree avoids that unsupported API and is normal fixture
-setup. Absent, present, and nested fixtures still require independent checks of every node.
-Generated plugin initialization, TypeCode traversal, discovery limits, and writer memory
-are separate adjustments documented in the workaround guide.
+See [recursive fixture metadata](../../docs/testing/wire-fixtures.md#recursive-fixture-metadata).
+
+<a id="reference-generation-settings"></a>
 
 ### Reference generation settings
 
-RTI C# and C++ peers are selected from the checked-in corpus and copied into
-scratch build directories. Wire execution does not invoke `rtiddsgen`. Wrapper
-specific peers and known corrections have dedicated corpus folders with input
-and generated-source hashes. Some cases record reference generation settings
-in `docs/corpus/manifest.json`:
+See [reference generation settings](../../docs/testing/wire-fixtures.md#reference-generation-settings).
 
-- `rtiCppCodegenOptions` records options used to capture that case's RTI C++
-  oracle. Any documented qualification, such as RTI's experimental
-  recursive-structure support, is copied into scenario evidence.
-- `rtiCppIdlAdaptations` records changes used only when capturing the RTI C++
-  oracle. They do not change the corpus IDL or Wireloom inputs.
-
-The exclusion registries `wire-case-exclusions-7.3.1.json` and
-`wire-case-exclusions-7.7.0.json` record cases that are not applicable to each
-RTI profile. They do not classify exchange failures.
+<a id="numeric-character-union-expected-values"></a>
 
 ### Numeric character-union expected values
 
-Both managed and C++ peers require the same discriminator and selected payload:
+See [numeric character-union expected values](../../docs/testing/wire-fixtures.md#numeric-character-union-expected-values).
 
-| Case                        | Fixture         | Discriminator | Selected member | Payload |
-| --------------------------- | --------------- | ------------: | --------------- | ------: |
-| `07-union-char-numeric`     | `union-127`     | 127           | `value`         | 13701   |
-| `07-union-char-numeric-255` | `union-255`     | 255           | `value`         | 13702   |
-| Both cases                  | `union-default` | 65 (`'A'`)    | `fallback`      | 13703   |
-
-The C++ default fixture explicitly selects 65 after assigning its fallback value;
-its generated constructor otherwise retains 0. Readers check these fixed values
-independently of fixture construction and generated equality. Selecting the fixture's
-discriminator is ordinary sample construction.
+<a id="reproducible-rti-character-binding-workarounds"></a>
 
 ### Reproducible RTI character-binding workarounds
 
-See [numeric character unions](WORKAROUNDS.md#numeric-character-unions) for the
-failing generated code, guarded post-generation commands, compiler settings,
-and exact discriminator/payload checks.
+See [reproducible rti character-binding workarounds](../../docs/testing/wire-fixtures.md#reproducible-rti-character-binding-workarounds).
+
+<a id="recursive-array-writer-memory"></a>
 
 ### Recursive-array writer memory
 
-For `09-optional-recursive-array`, all three peers set the writer property
-`dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size`
-to `4096` bytes on both LTS versions. RTI 7.3.1 otherwise attempts to
-preallocate about 64 GiB from the recursive type's maximum serialized size,
-preventing writer creation before any sample is sent. The threshold controls
-fast-pool allocation; it does not cap serialized sample size, and larger
-samples can allocate separately. Reader QoS and fixture values are unchanged.
+See [recursive-array writer memory](../../docs/testing/wire-fixtures.md#recursive-array-writer-memory).
 
-JSON endpoint adaptations and the Markdown Adaptations column disclose this
-case-specific writer policy alongside the existing recursive metadata
-adaptations. This harness configuration does not modify generated bindings.
+<a id="rti-731-negative-int8-union-discriminator"></a>
 
 ### RTI 7.3.1 negative int8 union discriminator
 
-`07-union-int8` remains valid positive IDL. Its `union-minimum` fixture uses
-`-128` and has eight failing pairings on RTI 7.3.1. RTI stores the negative
-discriminator as an unsigned
-value, causing managed DynamicData branch lookup failures and interpreted C#
-serializer payload loss. RTI documents this as
-[CORE-14660, fixed in 7.6.0](https://community.rti.com/static/documentation/connext-dds/7.7.0.1/doc/manuals/connext_dds_professional/release_notes/whats_fixed/760/fixes_dynamic_data.html).
-The observed failures are documented in
-[wire run 39131568513](https://github.com/eNeRGy164/wireloom/actions/runs/39131568513)
-at revision `3e9450f2` and focused serializer probes against both the unchanged
-RTI oracle and Wireloom output.
+See [rti 7.3.1 negative int8 union discriminator](../../docs/testing/wire-fixtures.md#rti-731-negative-int8-union-discriminator).
 
-The observed failures apply only to `union-minimum` and the affected pairings.
-This runtime defect does not make the feature not applicable.
+<a id="idl-sequence-array-corpus-case"></a>
 
-## IDL sequence-array corpus case
+### IDL sequence-array corpus case
 
-`05-array-of-sequences-idl` uses a separately named IDL file with the same
-declarations as C018 and `DdsIdlSequenceArrayMapping=Idl`. It is an ordinary
-corpus case, so default C018 generation and results remain unchanged. Wireloom
-C# and unmodified RTI C++ run all four directed pairings
-for each fixture:
-
-| Fixture                | Values checked                                                                                         |
-| ---------------------- | ------------------------------------------------------------------------------------------------------ |
-| `sequence-empty`       | Both array positions hold empty numeric and string sequences.                                          |
-| `sequence-unequal`     | Numeric lengths are two/one; string lengths are one/two, with distinct payloads.                       |
-| `sequence-mixed-empty` | An empty numeric sequence precedes a populated one; a populated string sequence precedes an empty one. |
-| `sequence-boundary`    | Signed numeric limits, a 16-character string, an empty string, and the string sequence bound of three. |
-
-The managed reader checks every position and sequence against literal expected
-values without generated equality. The typed C++ reader compares the complete
-independently populated generated sample. Each profile plans 16 exchanges.
-The direct-form RTI C# peer is explicitly excluded because it flattens the
-array-of-sequences type; its five pairings show N/A with the reason in the
-report. This does not qualify Java, Python, typedef-based C# peers, or all
-possible sequence-array shapes.
-
-The runner rebuilds each case into a separate generated-source directory.
-`GenerationProvenanceRecorder` captures evidence in-process through the shared
-builder and writer. Native preparation, capture, and report validation share
-wrapper selection through `IdlSourceResolver`; capture and validation also
-share its transitive-include traversal.
-`logs/<case>-generation.json` records the selected mode, IDL, exact runtime,
-and SHA-256 hashes of the IDL and generated source files. C149 scenarios retain
-this provenance in `results.json`, including after shard merging.
-Missing or mismatched provenance prevents completed exchanges from being
-published as valid evidence.
-
-To run only the dedicated case inside the licensed helper container:
-
-```bash
-export WIRE_COMPATIBILITY_CASE_FILTER=05-array-of-sequences-idl
-export WIRE_COMPATIBILITY_RTI_VERSION=7.7.0 # Repeat with 7.3.1.
-dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj --configuration Release
-```
+See [idl sequence-array corpus case](../../docs/testing/wire-fixtures.md#idl-sequence-array-corpus-case).
 
 ## Maintainer checks
 
@@ -498,253 +319,16 @@ The GitHub report job runs both checks before combining shard evidence.
 
 ### Full-matrix throughput validation
 
-On 2026-10-27, the complete RTI 7.7.0 matrix ran on the pinned Docker image
-with eight domain-isolated exchanges active per scheduler. All 1,555 exchanges
-were recorded: 1,549 passed and the same six known interoperability failures
-remained. Elapsed time was 11m45s after sharing project references, compared
-with 13m17s at concurrency eight without reference reuse and 18m35s in the
-preceding single-shard run at concurrency four. Representative shard 0/8 runs
-passed all 198 exchanges in 2m00s before reference reuse and 1m46s afterward.
-A 7.3.1 shard 0/8 run completed in 1m37s with 191 exchanges recorded: 181
-passed, 10 failed, and none were unrun. These are single-host measurements; the
-combined GitHub workflow time still depends on runner startup, image/cache
-state, and scheduling and needs confirmation on a dispatched workflow.
-
-With the bounded C# and native build queues enabled, a fresh 7.7.0 shard 0/8
-completed all 198 exchanges in 108 seconds; a fresh 7.3.1 shard 0/8 completed
-191 exchanges in 102 seconds, with the same 181 passes and 10 known failures.
-The 7.7.0 shard's 10 non-bootstrap Wireloom peer builds each took 2.1–3.1
-seconds while four builds ran concurrently. A four-case 7.7.0 smoke run passed
-54/54 exchanges in 51 seconds. These timings include local container execution
-with the NuGet cache mounted; the full combined GitHub workflow has not yet been
-measured on this implementation.
-
-The complete unsharded 7.7.0 rerun with the parallel build queues completed in
-12m03s: 1,549 of 1,555 exchanges passed, with the same six known failures and no
-unrun exchanges. This is a full correctness run, not a proxy for the eight-shard
-workflow critical path: peer setup spans all 91 cases in one container. The
-shard measurements above are the relevant local comparison. The previous
-Bash runner completed GitHub Actions run
-[#51 in 4m 23s](https://github.com/eNeRGy164/wireloom/actions/runs/40441553061);
-the C# runner translation still needs a full workflow run to confirm that
-timing with the new entrypoint.
-
-The previous GitHub run (40254314909) identifies the shard critical path more
-precisely. Its slowest 7.3.1 shard (index 6) took 9m34s end to end, with 7m16s
-inside the matrix runner; its slowest 7.7.0 shard (index 6) took 8m58s end to
-end, with 6m25s inside the runner. Replaying those same shard assignments with
-the initial concurrency-eight setting took 2m12s for 7.3.1 (194 exchanges, 4
-known failures) and 2m00s for 7.7.0 (198/198 passed). These local runs confirm
-the heavy shard cases no longer have the old serial-build cost.
-
-The scheduler was then raised to 16 exchanges. Under a four-CPU Docker limit,
-7.3.1 shard 6 took 2m13s at concurrency eight and 2m03s at concurrency 16,
-with the same 194 passes and four known failures. The 7.7.0 shard 6 took 1m56s
-at concurrency 16 with all 198 exchanges passing. These local runs exclude
-GitHub job startup, image/cache restoration, teardown, and report-job time.
+The [October 27 measurements](../../docs/testing/evidence/wire-runner-2026-10-27.md#full-matrix-throughput-validation)
+are historical single-host observations, not acceptance budgets.
 
 ## Code map
 
-The sibling [runner project](../Wireloom.Dds.Generator.WireCompatibility.Runner/)
-uses explicit component ownership and typed handoffs:
-
-| Files | Responsibility |
-| :--- | :--- |
-| `Program.cs`, `MatrixRunner.cs` | Compose dependencies and own the application lifecycle. |
-| `MatrixOptions.cs`, `Infrastructure/MatrixWorkspace.cs` | Capture settings once and own per-run/per-case paths. |
-| `Planning/CorpusCaseDiscovery.cs`, `Planning/MatrixPlanner.cs`, `Planning/MatrixPlan.cs` | Read eligible cases directly from JSON, select a shard, and retain its expected scenario count. |
-| `Planning/CorpusCaseCatalog.cs`, `Planning/CaseMetadata.cs` | Share one lazy manifest snapshot across managed/native preparation and decode typed build fields, also used by the standalone field command. |
-| `Planning/ScenarioPlanBuilder.cs`, `Planning/ScenarioPlan.cs` | Expand fixtures and directed pairings into typed scenarios and deterministic whole-case shard assignments. |
-| `Planning/WireCompatibilityCaseCatalog.cs` | Supply ordered profile-qualified fixture names directly to planning and managed validation. |
-| `Planning/PeerPairingPolicy.cs` | Share ordered peers, profile exclusions, and directed fixture pairings with standalone commands and report validation. |
-| `Planning/PlanArtifactWriter.cs` | Write retained plan/shard metadata and one canonical scenario file for execution and reporting. |
-| `Evidence/` | Capture typed generation provenance and write the retained per-case hash evidence directly. |
-| `Infrastructure/IdlSourceResolver.cs` | Share oracle-wrapper selection and transitive include traversal with native preparation and report validation. |
-| `Peers/PeerPreparation.cs`, `Peers/PeerBuild.cs` | Carry case metadata, peer availability, build outcomes, and artifacts between stages. |
-
-The [shared library](../Wireloom.Dds.Generator.WireCompatibility.Shared/)
-owns the scenario TSV contract and peer labels/pairings consumed by the Runner
-and [Verifier](../Wireloom.Dds.Generator.WireCompatibility.Verifier/).
-The Verifier project retains the black-box shard/report checks that previously
-ran from a file-based verifier entry point.
-
-The Verifier is organized by lifecycle and verification responsibility:
-
-| Files | Responsibility |
-| :--- | :--- |
-| `Program.cs`, `VerifierApplication.cs`, `VerifierCommandApplication.cs` | Provide the entry point, dispatch standalone commands, and compose verification stages. |
-| `VerifierWorkspace.cs`, `Verification/VerificationContext.cs` | Own temporary output and share verifier-command invocation, paths, and check accounting. |
-| `Verification/CaseSelectionVerification.cs`, `Verification/ShardScenarioBuilder.cs` | Validate profile selection and build representative partitioned scenario evidence. |
-| `Verification/ShardReportVerification.cs`, `Verification/MergedReportBuilder.cs` | Coordinate shard merging and baseline report creation. |
-| `Verification/ReportProvenanceVerification.cs`, `Verification/ReportLifecycleVerification.cs`, `Verification/ReportPresentationVerification.cs` | Validate report evidence, failure states, sparse plans, and output presentation. |
-| `Verification/ShardIntegrityVerification.cs`, `Verification/RtiCharacterReferenceVerification.cs` | Validate shard completeness, malformed inputs, and guarded reference adaptations. |
-| `Peers/WireloomTypeDiscovery.cs`, `Peers/CaseDescriptor.cs` | Return generated managed/native type names and canonical IDL directly to preparation, preserving wrapper and required-root rules. |
-| `Infrastructure/CaseRegistry.cs` | Retain the standalone discovery JSON contract without runtime registry files. |
-| `Peers/ManagedPeerBuilder.cs`, `Peers/NativePeerBuilder.cs` | Restore, bootstrap, configure, and compile managed/native peers. |
-| `Peers/RtiTypeDiscovery.cs` | Share captured RTI C# root selection between in-process managed preparation and the standalone discovery command. |
-| `Peers/WireOracleCatalog.cs` | Share profile-specific oracle selection between managed/native preparation and the standalone command using one lazy manifest snapshot per run. |
-| `Peers/NativePeerSources.cs`, `Peers/NativePeerProfile.cs` | Stage checked-in native oracles and apply guarded corrections and fixture flags. |
-| `Execution/ExchangeRunner.cs` | Run pending exchanges through the in-process bounded scheduler. |
-| `Reporting/` | Finalize current-run evidence after success or failure and decide the workflow status. |
-| `Peers/PeerBuildFiles.cs`, `Infrastructure/ProcessRunner.cs`, `Infrastructure/WorkflowLog.cs` | Write compilation evidence, run subprocesses, and emit workflow output. |
-| `Verification/` | Exercise planning, fixture selection, pairing rules, provenance, failure/recovery behavior, and in-process build paths without RTI. |
-
-Planning returns `MatrixPlan` with its typed `ScenarioPlan`; preparation
-returns `PeerPreparationResult`.
-`PeerPairingPolicy` resolves profile exclusions and fixture overrides once
-during planning. Preparation uses `MatrixPlan.RequiresPeer` to check the actual
-selected fixture exchanges for an RTI C# endpoint. This removes the per-case
-`case-profile-pairings` subprocess and stdout parsing. No pairing handoff file
-is needed. The standalone `case-pairings` command and report validation share
-the runner's policy, preserving ordered output.
-Managed fixture validation calls `WireCompatibilityCaseCatalog.FixturesFor`
-directly, removing its `case-fixtures` subprocess and stdout parsing. It keeps
-the existing `14-` case scope and validates ordered fixtures in compile-only
-runs too, without requiring an exchange plan. No fixture-name handoff file is
-needed; per-peer fixture-validation logs remain execution evidence. The
-standalone command continues to use the same catalog.
-`CorpusCaseCatalog` supplies managed IDL/mapping inputs and native IDL
-adaptation entries directly. One lazy manifest snapshot is shared across those
-builders for the invocation, removing per-case `case-field` subprocesses and
-stdout parsing. `CaseMetadata` also decodes all five standalone fields,
-preserving defaults and ordered definitions/options/adaptations. No field
-handoff file is needed; managed build requests remain typed in memory.
-RTI managed type discovery scans the staged capture directly through
-`RtiTypeDiscovery`. It preserves Wireloom basename precedence, case-specific
-root preferences, and ordinal fallbacks. Missing support or source-read
-failures keep the RTI peer unavailable and report the discovery reason. The
-runner no longer launches `discover-rti` or writes/reparses `rti-oracle.json`;
-that registry was only an intermediate handoff. Its selection implementation
-is shared with report validation.
-`WireOracleCatalog` supplies managed/native capture paths directly, removing
-`case-wire-oracle-source` subprocesses and stdout parsing. Captured/adjusted
-entries keep their configured path, explicit other modes suppress fallback,
-and absent entries may use an existing conventional language-specific
-directory. One profile-manifest snapshot is shared for the run; fallback
-directory existence is checked on lookup. No oracle-path handoff file is
-needed. `wire-oracles.json` remains policy input and per-peer selection logs
-remain evidence. Both builders now operate independently of `MatrixTools`.
-`WireloomTypeDiscovery` now returns `CaseDescriptor` directly from the selected
-case metadata and generated TypeSupport sources. Preparation no longer calls
-`discover-cases` followed by `case-info`, writes/reparses `case.json`, or
-depends on `MatrixTools`. Shared IDL grouping, wrapper aliases, namespaces,
-required-root validation, and ordinal root selection are preserved. RTI-only
-controls keep their existing descriptor path. Standalone discovery still
-applies exact-profile exclusions and `CaseRegistry` preserves its JSON output
-schema.
-Case discovery reads the manifest and profile exclusion registry in-process;
-it preserves case order, implementation exclusions, applicability exclusions,
-and RTI-only controls. The license-free harness compares discovery with the
-existing utility on both exact profiles and exercises synthetic exclusions.
-The application hands both to reporting in a `MatrixRunOutcome`, including
-after a fatal error. Case metadata stays in named records until it reaches a
-process boundary. Managed-build, native-build, and exchange concurrency remain
-controlled by the existing environment variables.
-
-The fixture assets and worker utilities remain in this directory:
-
-- The Runner builds case-specific managed and native peers with bounded concurrency.
-- `VerifierCommandApplication.cs` provides standalone catalog commands and CI shard merge operations inside the Verifier application, sharing implementation with the Runner where applicable.
-- The Runner application executes bounded, domain-isolated peer exchanges in-process.
-- The Verifier project rejects incomplete, duplicated, or misassigned evidence.
-- The Runner's `--verify-harness` mode checks run finalization and fixture selection without an RTI installation.
-- `FixtureCatalog.cs` and `Fixtures/` define managed fixture values.
-- `Native/main.cpp.in` implements the DynamicData C++ peer;
-  `Native/typed-fixture-peer.hpp.in` supports typed C++ fixtures.
-- `Native/peer-qos.hpp` shares reliable-writer timing across both native paths.
-- `RtiOracleProbe/` contains focused RTI C# API probes outside the wire matrix.
+The [harness reference](../../docs/testing/wire-harness.md) describes the Runner,
+Verifier, shared report contract, and fixture assets. These are qualification
+tools outside the Wireloom product. Their migration comparisons are retained
+in the [dated validation record](../../docs/testing/evidence/wire-runner-2026-10-27.md).
 
 ### Runner structure validation (2026-10-27)
 
-The component refactor was checked against the saved application from before
-the refactor using the existing RTI 7.7.0 wire container with four CPUs. The
-selection was `01-primitives`, `05-array-of-sequences-idl`, `06-aggregates`,
-`07-union-wchar-label`, `09-optional-aggregate-member`, and `14-enum-constant`.
-All 75 scenario rows were identical: 73 passed, two failed, and none were left
-unrun. Both versions reported the same two `direct-recursive-sequence`
-failures. Their endpoint logs show successful exits and `PASS` lines; the
-existing scheduler prefix check expects a trailing space that the native
-recursive peer does not emit. This remains a separate scheduler follow-up.
-
-The RTI 7.3.1 compile-only path compiled all three selected native peers:
-`07-union-char-numeric-255`, `09-optional-recursive-array`, and
-`14-enum-constant`. Release builds and the license-free harness also passed,
-including in-process native build failure handling, report recovery, renderer failure,
-stale-artifact isolation, and profile-specific fixture selection. Local
-reports and the comparison inputs are under
-`artifacts/wire-runner-architecture-7.7.0/`. This focused comparison does not
-replace a complete profile matrix run.
-
-The subsequent in-process planning migration was compared with saved outputs
-from the original planner for every shard on both profiles: eight shards,
-90 cases, and 1,560 exchanges on 7.3.1; eight shards, 91 cases, and 1,555
-exchanges on 7.7.0. Plan/shard JSON, scenario rows, and selected case order
-matched in all 16 comparisons. The existing shard verifier passed 1,386
-checks on 7.3.1 and 1,387 on 7.7.0. Comparison inputs and artifacts are under
-`artifacts/wire-planning-migration/`.
-
-The provenance migration preserved all 181 saved evidence documents byte for
-byte: 90 eligible cases on 7.3.1 and 91 on 7.7.0. Eight provenance artifacts
-from actual Docker builds also matched the original method byte for byte.
-The focused selection was `01-primitives`, `05-array-of-sequences-idl`,
-`14-autoid-scope`, and `14-enum-constant`, covering canonical, mapping, wrapper,
-and transitive-include evidence. All 43 exchanges passed on 7.7.0. On 7.3.1,
-38 passed and five failed because the captured enum-constant RTI C# control
-contains duplicate declarations. Repeating the run with the original
-provenance step produced identical scenario rows. This control-source issue
-remains a separate follow-up. Both profile report/shard verifiers passed,
-including their missing and tampered provenance checks. Evidence is under
-`artifacts/wire-provenance-migration/`.
-
-The pairing migration preserved all 812 ordered queries from the original
-commands, covering every positive case, profile-aware fixture, and versionless
-query. All 181 eligible case/profile combinations retained the same RTI C#
-build requirement when derived from the typed scenario plan. All 16 original
-shard plans still matched, and report/shard verification passed 1,386 checks
-on 7.3.1 and 1,387 on 7.7.0. The license-free harness also covers directed
-overrides, profile exclusions, invalid rules, and peers unused by every
-fixture. Comparison inputs and results are under
-`artifacts/wire-pairings-migration/`.
-
-The fixture lookup migration preserved all 182 original command queries across
-91 positive cases and both profiles, including the order of all 359 returned
-fixture names. Release build and license-free harness checks passed, covering
-default and named fixtures, RTI-only controls, and sparse typed-default profile
-isolation. Comparison inputs and results are under
-`artifacts/wire-fixtures-migration/`.
-
-The case-field migration compared all five fields for all 91 positive cases:
-455 original command outputs matched both the new typed metadata and the
-standalone adapter byte for byte. Release build and license-free harness checks
-passed, including defaults, ordered lists, ordinal identity, per-run snapshot
-isolation, and native IDL adaptation staging on both profiles. The report/shard
-verifiers passed 1,386 checks on 7.3.1 and 1,387 on 7.7.0. Evidence is under
-`artifacts/wire-fields-migration/`.
-
-The RTI discovery migration matched 566 queries across 176 selected checked-in
-C# captures on both profiles. Queries covered the RTI-only `-` root and every
-available topic basename; selected types and standalone JSON matched the
-original method byte for byte. Release build and license-free harness checks
-passed, including all case preferences, nested sources, duplicate candidates,
-ordinal ties, missing support, and handled builder failure without a registry
-handoff. The report/shard verifiers passed 1,386 checks on 7.3.1 and 1,387 on
-7.7.0. Evidence is under `artifacts/wire-rti-discovery-migration/`.
-
-The oracle-selection migration preserved all 364 managed/native queries across
-91 positive cases and both profiles: 355 selected paths and nine unavailable
-selections. Standalone output matched the original byte for byte. Release build
-and license-free harness checks passed, including explicit-mode suppression,
-conventional fallback, per-peer selection, and per-run/profile snapshots.
-Metadata staging and RTI discovery checks now run before any helper utility is
-built. Both report/shard verifiers passed: 1,386 checks on 7.3.1 and 1,387 on
-7.7.0. Evidence is under `artifacts/wire-oracle-selection-migration/`.
-
-The combined discovery/info migration matched 276 discovery queries and 345
-case-info lookups against the original commands using both profiles' retained
-generator sources and a saved 7.7.0 full-run source tree. All 255 successful
-discovery results retained byte-identical registry JSON and info text; the 21
-existing rejection cases retained their errors. Release build and license-free
-harness checks passed, including shared IDL inputs, namespaces, all required
-roots, wrapper aliases, missing support, and registry/info compatibility. Both
-report/shard verifiers passed: 1,386 checks on 7.3.1 and 1,387 on 7.7.0.
-Evidence is under `artifacts/wire-case-discovery-migration/`.
+See the [historical validation record](../../docs/testing/evidence/wire-runner-2026-10-27.md#runner-structure-validation-2026-10-27).

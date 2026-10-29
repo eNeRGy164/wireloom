@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-29T00:54:43Z
+  generated_at: 2026-10-29T11:13:53Z
   arc42_home: docs/architecture/arc42
   format: yaml-only
 sources:
@@ -30,6 +30,9 @@ sources:
     - docs/guides/generated-value-semantics.md
     - docs/guides/playground-workspaces.md
     - docs/guides/playground-deployment.md
+    - docs/reference/compiler-api.md
+    - docs/reference/playground-protocol.md
+    - docs/guides/reporting-issues.md
     - docs/corpus/README.md
     - docs/corpus/FEATURE-COVERAGE.md
     - docs/corpus/LTS-PROFILES.md
@@ -144,8 +147,9 @@ summary:
       Qodana/SonarQube and browser/accessibility qualification have gaps; the
       retained report misses the broader UI coverage target. Collected output
       invalidation is batch-wide; optimize on evidence.
-      Numerical budgets/post-1.0 policy are open. Reporting guidance/template is
-      planned, not implemented. Priorities constrain affected claims, not all uses.
+      Numerical budgets/post-1.0 policy are open. Reporting guidance and a
+      compatibility issue template exist; qualification remains open.
+      Priorities constrain affected claims, not all uses.
     sources: [docs/architecture/arc42/11-risks-and-technical-debt.md]
   glossary:
     text: >-

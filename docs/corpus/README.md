@@ -35,7 +35,9 @@ RTI C# and C++ generation outcomes and Wireloom output independently. RTI
 outputs live under `<version>/rtiddsgen/`; Wireloom exports live under
 `<version>/generator/`. The 7.3.1 generated
 contracts compile against the exact NuGet package, and its runtime-contract
-suite passes; full profile wire qualification remains pending. The 7.7.0 test
+suite passes. Complete-profile passing wire qualification is not established:
+retained full runs include failures. See the [exact-package records](../releases/README.md)
+and [current recorded limitations](FEATURE-COVERAGE.md#recorded-wire-evidence). The 7.7.0 test
 loader reads its RTI C# oracle tree from `7.7.0/rtiddsgen/csharp/`.
 Wire-matrix-specific RTI source lives in each profile's `wire-adjusted/` and
 `wire-wrapped/` trees. Adjusted sources document each correction; wrapped

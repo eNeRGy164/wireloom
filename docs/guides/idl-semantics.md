@@ -15,6 +15,23 @@ tool versions; it does not limit valid spellings or override the specifications.
 RTI extensions and remaining Wireloom implementation limits are identified
 separately from those language rules.
 
+## Typed values in practice
+
+For two enums with the same numeric value, identity still matters:
+
+```idl
+enum Color { RED };
+enum State { READY };
+const Color selected = Color::RED; // Color, not an untyped integer.
+```
+
+A name bound to `Color::RED` cannot satisfy a `State` default or discriminator
+label merely because both enumerators have value zero. The binder retains the
+declaring enum alongside its value. Likewise, a narrow character constant,
+an integer, and a Boolean are not interchangeable bound values. The
+[architectural concept](../architecture/arc42/08-crosscutting-concepts.md#81-idl-meaning-and-identity)
+explains why this invariant is shared by every emitter.
+
 ## Annotation applications
 
 The front end captures ordered annotation applications with balanced raw text
@@ -155,3 +172,5 @@ implement the effective semantic rules. Runtime-specific default behavior is
 covered by the [generated API contracts](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md);
 DDS evidence remains in the
 [wire runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
+
+[Documentation](../README.md) · [Shared compiler API](../reference/compiler-api.md)

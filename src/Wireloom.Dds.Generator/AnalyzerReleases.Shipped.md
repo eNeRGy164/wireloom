@@ -1,0 +1,42 @@
+; Analyzer Releases - Shipped
+
+## Release 0.5.0
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|--------------------
+DDSG0004 | DDS Source Generator | Error    | IDL feature is not supported by selected RTI API profile
+DDSG0108 | DDS Source Generator | Warning  | IDL keyword and case-only scope collisions; rejected in strict mode
+DDSG0109 | DDS Source Generator | Warning  | Escaped identifier normalizes to a boolean literal
+
+## Release 0.3.0
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|--------------------
+DDSG0106 | DDS Source Generator | Warning  | Active `#warning` directives are reported without stopping generation
+DDSG0107 | DDS Source Generator | Info     | Active `#pragma message` directives are reported without stopping generation
+
+## Release 0.2.0
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|--------------------
+DDSG0101 | DDS Source Generator | Warning  | Unknown IDL annotation is ignored
+DDSG0102 | DDS Source Generator | Warning  | Recognized but unsupported IDL annotation is ignored before contextual validation
+DDSG0103 | DDS Source Generator | Warning  | IDL interfaces are ignored because no interface C# type is emitted
+DDSG0104 | DDS Source Generator | Warning  | Function-like macro argument count mismatch continues expansion
+DDSG0105 | DDS Source Generator | Warning  | Direct arrays of sequences may not preserve IDL semantics
+
+## Release 0.1.0
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|--------------------
+DDSG0001 | DDS Source Generator | Error    | IDL generation failed
+DDSG0002 | DDS Source Generator | Error    | Consumer C# language baseline is required
+DDSG0003 | DDS Source Generator | Error    | Compatible RTI runtime not found

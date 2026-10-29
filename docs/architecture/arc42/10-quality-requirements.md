@@ -14,13 +14,13 @@ protection of user edits remain required.
 
 ![Quality overview grouping adoption, engineering, and trust/interaction concerns.](images/10/quality-tree.png)
 
-| Primary driver from chapter 1 | Main scenarios                                                                                                                                                                                                                                |
-| :---------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Drop-in compatibility      | [Q-01](#q-01-adopt-generated-application-contracts), [Q-08](#q-08-exchange-dds-data-with-qualified-peers), [Q-09](#q-09-keep-effective-configuration-coherent), [Q-16](#q-16-preserve-generated-value-and-native-resource-behavior)           |
-| 2. Build integration          | [Q-03](#q-03-build-in-a-clean-supported-environment), [Q-07](#q-07-regenerate-from-the-right-inputs), [Q-19](#q-19-use-generated-apis-interactively), [Q-22](#q-22-keep-development-build-cost-proportionate)                                 |
-| 3. Generated C# quality       | [Q-17](#q-17-preserve-handwritten-ownership-through-regeneration), [Q-18](#q-18-keep-emitted-c-clean-without-shifting-noise-to-consumers), [Q-19](#q-19-use-generated-apis-interactively)                                                     |
-| 4. Actionable diagnostics     | [Q-02](#q-02-correct-an-idl-problem-from-its-diagnostic), [Q-21](#q-21-preserve-failure-categories-at-host-boundaries)                                                                                                                        |
-| 5. Compiler maintainability   | [Q-04](#q-04-change-one-responsibility-with-focused-feedback), [Q-20](#q-20-reproduce-and-isolate-a-compilation), [Q-21](#q-21-preserve-failure-categories-at-host-boundaries), [Q-24](#q-24-trust-a-compatibility-or-release-evidence-claim) |
+| Primary driver from chapter 1 | Main scenarios                                                                                                                                                                                                                        |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1. Drop-in compatibility      | [Q01](#q01-adopt-generated-application-contracts), [Q08](#q08-exchange-dds-data-with-qualified-peers), [Q09](#q09-keep-effective-configuration-coherent), [Q16](#q16-preserve-generated-value-and-native-resource-behavior)           |
+| 2. Build integration          | [Q03](#q03-build-in-a-clean-supported-environment), [Q07](#q07-regenerate-from-the-right-inputs), [Q19](#q19-use-generated-apis-interactively), [Q22](#q22-keep-development-build-cost-proportionate)                                 |
+| 3. Generated C# quality       | [Q17](#q17-preserve-handwritten-ownership-through-regeneration), [Q18](#q18-keep-emitted-c-clean-without-shifting-noise-to-consumers), [Q19](#q19-use-generated-apis-interactively)                                                   |
+| 4. Actionable diagnostics     | [Q02](#q02-correct-an-idl-problem-from-its-diagnostic), [Q21](#q21-preserve-failure-categories-at-host-boundaries)                                                                                                                    |
+| 5. Compiler maintainability   | [Q04](#q04-change-one-responsibility-with-focused-feedback), [Q20](#q20-reproduce-and-isolate-a-compilation), [Q21](#q21-preserve-failure-categories-at-host-boundaries), [Q24](#q24-trust-a-compatibility-or-release-evidence-claim) |
 
 The remaining scenarios cover processing safety, local evaluation, data
 preservation, usability/portability, privacy, and release integrity.
@@ -47,7 +47,7 @@ and [concepts](08-crosscutting-concepts.md).
 
 ### 10.2.1 Compatibility and semantic correctness
 
-#### Q-01: Adopt generated application contracts
+#### Q01: Adopt generated application contracts
 
 - **Stakeholder / context:** .NET DDS application developer; a consumer using supported IDL, a declared mapping, and a
   supported RTI profile.
@@ -57,10 +57,10 @@ and [concepts](08-crosscutting-concepts.md).
 - **Validation / gaps:** [Compatibility policy](09-architectural-decisions.md#921-compatibility-policy-evolution),
   [migration contracts](../../migration/rtiddsgen-to-wireloom.md#generated-c-api-differences), and
   [runtime contracts](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md). Adoption exposure and missing general
-  unbounded support are recorded in [R-01](11-risks-and-technical-debt.md#r-01)
-  and [D-01](11-risks-and-technical-debt.md#d-01).
+  unbounded support are recorded in [R01](11-risks-and-technical-debt.md#r01)
+  and [D01](11-risks-and-technical-debt.md#d01).
 
-#### Q-16: Preserve generated value and native resource behavior
+#### Q16: Preserve generated value and native resource behavior
 
 - **Stakeholder / context:** .NET DDS application developer; covered generated values and their selected RTI runtime.
 - **Stimulus:** Construct, copy, mutate, convert, reuse, or destroy values containing aliases, collections, optionals,
@@ -71,9 +71,9 @@ and [concepts](08-crosscutting-concepts.md).
   [Value/resource concept](08-crosscutting-concepts.md#84-generated-values-and-resource-ownership) and
   [runtime coverage matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix). Managed
   behavior, native conversion, and DDS behavior have separate evidence and gaps;
-  [R-02](11-risks-and-technical-debt.md#r-02) records the known enum-array default mismatch.
+  [R02](11-risks-and-technical-debt.md#r02) records the known enum-array default mismatch.
 
-#### Q-08: Exchange DDS data with qualified peers
+#### Q08: Exchange DDS data with qualified peers
 
 - **Stakeholder / context:** .NET DDS application developer; an explicitly planned writer/reader combination on an exact
   RTI release and representation.
@@ -85,10 +85,10 @@ and [concepts](08-crosscutting-concepts.md).
 - **Validation / gaps:** [Evidence scope](08-crosscutting-concepts.md#85-compatibility-and-evidence),
   [qualification flow](06-runtime-view.md#632-qualify-dds-exchanges-and-retained-reports), and
   [wire runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md). Existing profile/peer gaps remain
-  in [R-01](11-risks-and-technical-debt.md#r-01); licensed qualification continuity is
-  covered by [R-03](11-risks-and-technical-debt.md#r-03).
+  in [R01](11-risks-and-technical-debt.md#r01); licensed qualification continuity is
+  covered by [R03](11-risks-and-technical-debt.md#r03).
 
-#### Q-09: Keep effective configuration coherent
+#### Q09: Keep effective configuration coherent
 
 - **Stakeholder / context:** .NET DDS application developer or Wireloom maintainer; multiple roots/includes compiled through
   supported hosts.
@@ -101,7 +101,7 @@ and [concepts](08-crosscutting-concepts.md).
   [configuration reference](../../guides/configuration.md), and packed/runtime contract checks. Mapping, finite-size,
   and escaped-name cases are validation examples, not separate quality goals.
 
-#### Q-14: Keep browser and native compiler behavior aligned
+#### Q14: Keep browser and native compiler behavior aligned
 
 - **Stakeholder / context:** Playground user and Wireloom maintainer; identical supplied source/settings/profile within the
   supported browser boundary.
@@ -116,7 +116,7 @@ and [concepts](08-crosscutting-concepts.md).
 
 ### 10.2.2 .NET workflow and generated C# quality
 
-#### Q-03: Build in a clean supported environment
+#### Q03: Build in a clean supported environment
 
 - **Stakeholder / context:** .NET DDS application developer or Build and CI engineer; a clean supported developer/CI
   host with the consumer's explicit RTI reference.
@@ -129,7 +129,7 @@ and [concepts](08-crosscutting-concepts.md).
   [released sample](../../../samples/HelloWorld/README.md). Compiler-host eligibility and application target framework
   are checked separately.
 
-#### Q-07: Regenerate from the right inputs
+#### Q07: Regenerate from the right inputs
 
 - **Stakeholder / context:** .NET DDS application developer; repeated builds or IDE edits in a project with roots,
   includes, options, and runtime references.
@@ -141,7 +141,7 @@ and [concepts](08-crosscutting-concepts.md).
   [incremental baseline](../../performance/incremental-generator-baseline.md). Current source-output invalidation is
   batch-wide; elapsed baseline values are observations, not performance limits.
 
-#### Q-17: Preserve handwritten ownership through regeneration
+#### Q17: Preserve handwritten ownership through regeneration
 
 - **Stakeholder / context:** .NET DDS application developer; generated contracts extended through supported partial
   declarations.
@@ -153,9 +153,9 @@ and [concepts](08-crosscutting-concepts.md).
   [Generated-code strategy](04-solution-strategy.md#45-generate-c-that-improves-the-developer-experience),
   [package/generated-file reference](../../guides/configuration.md#inspect-generated-files), and package/compiler
   checks. IDE inspectability is additionally qualified under
-  [Q-19](#q-19-use-generated-apis-interactively).
+  [Q19](#q19-use-generated-apis-interactively).
 
-#### Q-18: Keep emitted C# clean without shifting noise to consumers
+#### Q18: Keep emitted C# clean without shifting noise to consumers
 
 - **Stakeholder / context:** .NET DDS application developer and Wireloom maintainer; named compiler/analyzer configurations
   applied to consumer code and independently staged emitted code.
@@ -168,9 +168,9 @@ and [concepts](08-crosscutting-concepts.md).
   [Analysis strategy](04-solution-strategy.md#46-verify-different-contracts-with-separate-test-layers) and
   [generated-C# report](../../corpus/csharp-quality.md). That report has scoped exclusions/configuration differences.
   Consumer Qodana and SonarQube behavior need named-tool/version evidence; an all-analyzers zero-warning guarantee is
-  not established; see [R-05](11-risks-and-technical-debt.md#r-05) for mitigation.
+  not established; see [R05](11-risks-and-technical-debt.md#r05) for mitigation.
 
-#### Q-19: Use generated APIs interactively
+#### Q19: Use generated APIs interactively
 
 - **Stakeholder / context:** .NET DDS application developer; VS Code with documented C# tooling, or Visual Studio 2026,
   using a supported consumer SDK/profile.
@@ -182,12 +182,12 @@ and [concepts](08-crosscutting-concepts.md).
 - **Validation / gaps:** [Build strategy](04-solution-strategy.md#41-integrate-generation-into-the-net-compiler) and
   [generated-value guide](../../guides/generated-value-semantics.md). Interactive IDE qualification is incomplete.
   Record IDE, extensions, selected SDK, RTI version, operations, and results; command-line compilation alone does not
-  meet this scenario. [R-04](11-risks-and-technical-debt.md#r-04) records mitigation and
+  meet this scenario. [R04](11-risks-and-technical-debt.md#r04) records mitigation and
   next actions; refresh-latency budgets remain open.
 
 ### 10.2.3 Diagnostics, predictability, and processing safety
 
-#### Q-02: Correct an IDL problem from its diagnostic
+#### Q02: Correct an IDL problem from its diagnostic
 
 - **Stakeholder / context:** .NET DDS application developer or Playground user; invalid, unsupported, ignored, or
   potentially lossy IDL reaches a host.
@@ -201,7 +201,7 @@ and [concepts](08-crosscutting-concepts.md).
   [diagnostic policy](../../guides/configuration.md#control-diagnostics). Strict rejection and warning promotion remain
   distinct; source-location tests do not by themselves prove message comprehensibility.
 
-#### Q-06: Bound processing and honor cancellation safely
+#### Q06: Bound processing and honor cancellation safely
 
 - **Stakeholder / context:** Build and CI engineer or Wireloom maintainer; adversarial/large inputs or a canceling compiler host.
 - **Stimulus:** Reach a documented processing limit or request cancellation during supported compiler work.
@@ -211,9 +211,9 @@ and [concepts](08-crosscutting-concepts.md).
 - **Validation / gaps:** [Safety concept](08-crosscutting-concepts.md#83-predictable-compilation),
   [published limits](../../guides/configuration.md#fixed-behavior-and-configurable-limits), and compiler
   boundary/adversarial checks. Cancellation-latency and peak-memory budgets remain open. Sample-value unbounded support
-  is independent of these limits; [R-09](11-risks-and-technical-debt.md#r-09) records resource exposure.
+  is independent of these limits; [R09](11-risks-and-technical-debt.md#r09) records resource exposure.
 
-#### Q-20: Reproduce and isolate a compilation
+#### Q20: Reproduce and isolate a compilation
 
 - **Stakeholder / context:** Wireloom maintainer; supplied inputs/options/profile and a conforming deterministic
   platform-service provider.
@@ -226,7 +226,7 @@ and [concepts](08-crosscutting-concepts.md).
   [compiler contract](05-building-block-view.md#compiler-contract-and-payload-examples), and focused compiler
   boundary/order/provider tests. Provider determinism/concurrency safety remains a caller obligation.
 
-#### Q-21: Preserve failure categories at host boundaries
+#### Q21: Preserve failure categories at host boundaries
 
 - **Stakeholder / context:** Wireloom maintainer; invalid caller arguments, provider failures, implementation defects,
   and cancellation.
@@ -236,11 +236,11 @@ and [concepts](08-crosscutting-concepts.md).
   preserves the distinction while keeping current source available.
 - **Validation / gaps:** [Failure categories](08-crosscutting-concepts.md#82-source-provenance-and-failure-reporting),
   [MD5 contract](../adr/ADR-002-inject-member-id-md5-per-compilation.md), and compiler/adapter boundary tests. Browser
-  host recovery is separately covered by [Q-27](#q-27-recover-compilation-after-a-browser-host-failure).
+  host recovery is separately covered by [Q27](#q27-recover-compilation-after-a-browser-host-failure).
 
 ### 10.2.4 Maintainability and confidence in change
 
-#### Q-04: Change one responsibility with focused feedback
+#### Q04: Change one responsibility with focused feedback
 
 - **Stakeholder / context:** Wireloom maintainer; a compiler, integration, or adapter change within the documented
   boundaries.
@@ -254,7 +254,7 @@ and [concepts](08-crosscutting-concepts.md).
   [quality workflow](../../../CONTRIBUTING.md#quality-evidence). Required Qodana/CI/Coveralls checks remain repository
   gates. Test counts, time-to-fix, and modification-size budgets are not established quality guarantees.
 
-#### Q-24: Trust a compatibility or release evidence claim
+#### Q24: Trust a compatibility or release evidence claim
 
 - **Stakeholder / context:** Wireloom maintainer; named cases, profiles, peer scopes, revisions, tools, and partitioned
   reports.
@@ -266,11 +266,11 @@ and [concepts](08-crosscutting-concepts.md).
   [LTS provenance](../../corpus/LTS-PROFILES.md), and
   [Verifier/report contracts](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#read-the-results).
   Unresolved findings remain gaps rather than completed coverage; licensed evidence continuity is
-  assessed in [R-03](11-risks-and-technical-debt.md#r-03).
+  assessed in [R03](11-risks-and-technical-debt.md#r03).
 
 ### 10.2.5 Efficiency and responsiveness
 
-#### Q-22: Keep development build cost proportionate
+#### Q22: Keep development build cost proportionate
 
 - **Stakeholder / context:** .NET DDS application developer or Build and CI engineer; a declared representative contract
   workload on a recorded supported host.
@@ -283,10 +283,10 @@ and [concepts](08-crosscutting-concepts.md).
   [invalidation concept](08-crosscutting-concepts.md#83-predictable-compilation), and
   [build integration](07-deployment-view.md#71-net-build-integration). Refresh the representative workload/host
   baseline before proposing numerical acceptance budgets under
-  [O-01](11-risks-and-technical-debt.md#o-01). Current batch invalidation is recorded in
-  [D-02](11-risks-and-technical-debt.md#d-02).
+  [O01](11-risks-and-technical-debt.md#o01). Current batch invalidation is recorded in
+  [D02](11-risks-and-technical-debt.md#d02).
 
-#### Q-23: Keep Playground interaction responsive
+#### Q23: Keep Playground interaction responsive
 
 - **Stakeholder / context:** Playground user; a recorded desktop browser/workload during cold startup, ordinary edits,
   and sustained compilation.
@@ -303,7 +303,7 @@ and [concepts](08-crosscutting-concepts.md).
 
 ### 10.2.6 Playground reliability and data preservation
 
-#### Q-15: Apply workspace edits atomically
+#### Q15: Apply workspace edits atomically
 
 - **Stakeholder / context:** Playground user; a valid current virtual workspace with open editor models.
 - **Stimulus:** Import, move, rename, change roles/settings, or cancel/reject such a proposed operation.
@@ -315,7 +315,7 @@ and [concepts](08-crosscutting-concepts.md).
   [workspace qualification](../../testing/playground-qualification.md#workspace-boundary). Undo preservation concerns
   editing operations, not an unpromised persisted undo history across reload.
 
-#### Q-25: Present and export only current generated output
+#### Q25: Present and export only current generated output
 
 - **Stakeholder / context:** Playground user; asynchronous compilation with edits, option/profile changes, or replaced
   workers.
@@ -329,7 +329,7 @@ and [concepts](08-crosscutting-concepts.md).
   [preview](06-runtime-view.md#621-preview-the-current-workspace),
   [export flow](06-runtime-view.md#623-export-source-or-current-generated-output), and browser identity/export checks.
 
-#### Q-26: Recover saved work without losing newer edits
+#### Q26: Recover saved work without losing newer edits
 
 - **Stakeholder / context:** Playground user; a last successfully saved workspace, with browser storage either available
   or failing.
@@ -342,9 +342,9 @@ and [concepts](08-crosscutting-concepts.md).
 - **Validation / gaps:** [Recovery concept](08-crosscutting-concepts.md#86-workspace-consistency),
   [restore/reset flow](06-runtime-view.md#624-restore-or-reset-the-local-workspace), and recovery model/browser checks.
   Browser storage is fallible: recovery covers valid saved records and does not guarantee unsaved changes or
-  unlimited retention. [R-07](11-risks-and-technical-debt.md#r-07) records mitigations.
+  unlimited retention. [R07](11-risks-and-technical-debt.md#r07) records mitigations.
 
-#### Q-27: Recover compilation after a browser-host failure
+#### Q27: Recover compilation after a browser-host failure
 
 - **Stakeholder / context:** Playground user; retained workspace source and an eligible compiler request.
 - **Stimulus:** Encounter startup/worker/provider/request failure or a compilation watchdog timeout, then recover after
@@ -359,7 +359,7 @@ and [concepts](08-crosscutting-concepts.md).
 
 ### 10.2.7 Browser usability and portability
 
-#### Q-28: Use the supported desktop browsers
+#### Q28: Use the supported desktop browsers
 
 - **Stakeholder / context:** Playground user; desktop Chrome, Edge, or Firefox on an explicitly qualified OS/version
   combination.
@@ -369,10 +369,10 @@ and [concepts](08-crosscutting-concepts.md).
   supplementary and does not establish Safari support. Mobile and Safari are outside the present promised scope.
 - **Validation / gaps:** [Playground deployment](07-deployment-view.md#72-browser-playground-deployment),
   [browser qualification scope](../../testing/playground-qualification.md#evidence-boundaries), and
-  [Q-29](#q-29-complete-core-tasks-with-accessible-interaction). Existing
+  [Q29](#q29-complete-core-tasks-with-accessible-interaction). Existing
   engine/scoped-host runs do not qualify every branded browser, future version, or OS.
 
-#### Q-29: Complete core tasks with accessible interaction
+#### Q29: Complete core tasks with accessible interaction
 
 - **Stakeholder / context:** Playground user; keyboard-only operation and either supported theme in a qualified desktop
   browser.
@@ -385,11 +385,11 @@ and [concepts](08-crosscutting-concepts.md).
   [UI checks](../../testing/playground-qualification.md#interaction-and-failure-checks). These are required
   usability/accessibility behaviors. Existing keyboard checks are partial evidence; no formal WCAG conformance level or
   completed assistive-technology audit is claimed. Qualification exposure and mitigation are in
-  [R-06](11-risks-and-technical-debt.md#r-06).
+  [R06](11-risks-and-technical-debt.md#r06).
 
 ### 10.2.8 Privacy and trusted delivery
 
-#### Q-30: Keep supplied IDL local
+#### Q30: Keep supplied IDL local
 
 - **Stakeholder / context:** Playground user; private IDL supplied through examples, editing, import, diagnostics, and
   local recovery.
@@ -402,7 +402,7 @@ and [concepts](08-crosscutting-concepts.md).
   [browser deployment](07-deployment-view.md#72-browser-playground-deployment), and scoped browser request checks. A
   recorded trace is evidence for those exercised flows, not a general privacy certification.
 
-#### Q-05: Publish only eligible verifiable artifacts
+#### Q05: Publish only eligible verifiable artifacts
 
 - **Stakeholder / context:** Build and CI engineer or Wireloom maintainer; package/site publication from trusted and
   untrusted candidate contexts.
@@ -417,7 +417,7 @@ and [concepts](08-crosscutting-concepts.md).
   [Pages promotion](07-deployment-view.md#723-publication-and-rollback), and their workflows. A green unrelated build
   or source revision alone is insufficient.
 
-#### Q-31: Detect and recover an invalid public deployment
+#### Q31: Detect and recover an invalid public deployment
 
 - **Stakeholder / context:** Wireloom maintainer; published Playground assets and an eligible retained candidate.
 - **Stimulus:** Deploy incomplete/wrong assets, fail a live behavior/MIME check, or request manual rollback.
@@ -428,7 +428,7 @@ and [concepts](08-crosscutting-concepts.md).
 - **Validation / gaps:** [Publication/rollback](07-deployment-view.md#723-publication-and-rollback) and
   [deployment runbook](../../guides/playground-deployment.md). There is no automatic rollback or agreed public
   availability/recovery-time SLA; retention and procedures belong to the runbook, with operational exposure in
-  [R-08](11-risks-and-technical-debt.md#r-08).
+  [R08](11-risks-and-technical-debt.md#r08).
 
 ## 10.3 Open numerical targets and qualification work
 
@@ -436,29 +436,29 @@ The requirements above include established qualitative and pass/fail targets.
 The following numerical budgets or qualification conclusions are **open**;
 current observations do not stand in for stakeholder agreement.
 
-| Topic                               | Required measurement or next qualification                                                                                                                              | Current distinction                                                                                     |
-| :---------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
-| Build and IDE latency               | Agree representative IDL workloads, host/SDK/IDE conditions, and cold/warm/edit measurements before selecting absolute and regression budgets                           | The incremental baseline is historical measurement evidence, not a ceiling                              |
-| Playground startup and response     | Separately measure cold/warm readiness, public-network loading, main-thread edit latency, and edit-to-current-result latency on declared browser/OS/workload conditions | The scoped 250 ms edit-task check and watchdogs are existing checks/mechanisms, not a general SLA       |
-| Memory, output, and footprint       | Agree peak-memory/package/download budgets where needed; continue enforcing the published deterministic input/work/output limits                                        | A fixed work cap is not a hard memory quota or evidence of efficient behavior                           |
-| Cancellation and recovery time      | Define observable cancellation/retry/recovery budgets on representative inputs and fault conditions                                                                     | Correct classification and preserved source are required now; bounded latency is not yet established    |
+| Topic                           | Required measurement or next qualification                                                                                                                              | Current distinction                                                                                  |
+| :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| Build and IDE latency           | Agree representative IDL workloads, host/SDK/IDE conditions, and cold/warm/edit measurements before selecting absolute and regression budgets                           | The incremental baseline is historical measurement evidence, not a ceiling                           |
+| Playground startup and response | Separately measure cold/warm readiness, public-network loading, main-thread edit latency, and edit-to-current-result latency on declared browser/OS/workload conditions | The scoped 250 ms edit-task check and watchdogs are existing checks/mechanisms, not a general SLA    |
+| Memory, output, and footprint   | Agree peak-memory/package/download budgets where needed; continue enforcing the published deterministic input/work/output limits                                        | A fixed work cap is not a hard memory quota or evidence of efficient behavior                        |
+| Cancellation and recovery time  | Define observable cancellation/retry/recovery budgets on representative inputs and fault conditions                                                                     | Correct classification and preserved source are required now; bounded latency is not yet established |
 
 IDE, consumer-analysis, and browser/accessibility qualification are specified in
-[Q-19](#q-19-use-generated-apis-interactively),
-[Q-18](#q-18-keep-emitted-c-clean-without-shifting-noise-to-consumers), and
-[Q-28–Q-29](#q-28-use-the-supported-desktop-browsers). Their risk assessments,
+[Q19](#q19-use-generated-apis-interactively),
+[Q18](#q18-keep-emitted-c-clean-without-shifting-noise-to-consumers), and
+[Q28–Q29](#q28-use-the-supported-desktop-browsers). Their risk assessments,
 mitigations, and next actions are in [chapter 11](11-risks-and-technical-debt.md#112-active-risks).
 
 The existing direct Node coverage gate and broader combined browser coverage
 have different scopes. The qualification guide owns their dated results and
 outstanding targets, with the retained UI shortfall tracked in
-[D-03](11-risks-and-technical-debt.md#d-03). Neither proves every scenario above is satisfied.
+[D03](11-risks-and-technical-debt.md#d03). Neither proves every scenario above is satisfied.
 Likewise, coverage percentages are regression safeguards, not a substitute for
 API, user-task, native lifecycle, or interoperability evidence.
 
 Current capability gaps and their mitigations are recorded in
 [chapter 11](11-risks-and-technical-debt.md), including general unbounded support
-in [D-01](11-risks-and-technical-debt.md#d-01).
+in [D01](11-risks-and-technical-debt.md#d01).
 Detailed current measurements and findings stay in the
 [generated-C# report](../../corpus/csharp-quality.md),
 [incremental baseline](../../performance/incremental-generator-baseline.md),

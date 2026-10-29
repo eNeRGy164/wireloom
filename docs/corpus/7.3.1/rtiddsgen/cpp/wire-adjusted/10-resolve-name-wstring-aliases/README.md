@@ -1,6 +1,8 @@
 # Adjusted RTI C++ wire oracle
 
-Raw capture: `../features/10-resolve-name-wstring-aliases/`
+Raw capture: [captured source](../../features/10-resolve-name-wstring-aliases/)
 Adjustment: Use alias-tag DynamicType specializations for both generated wide-string aliases. The
-raw RTI output and its file-level notices are preserved. `manifest.json` records the raw and
+raw RTI output and its file-level notices are preserved. [manifest.json](manifest.json) records the raw and
 adjusted SHA-256 values.
+
+[Corpus guide](../../../../../README.md) · [LTS reproduction](../../../../../LTS-PROFILES.md)

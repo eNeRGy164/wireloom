@@ -10,3 +10,5 @@ intended.
 The wire matrix compiles this checked-in adjusted copy directly. It does not invoke `rtiddsgen` for
 the RTI C# peer. The matching RTI C++ peer still needs the generated-source alias-tag correction
 documented in `tests/Wireloom.Dds.Generator.WireCompatibility/WORKAROUNDS.md`.
+
+[Corpus guide](../../../../README.md) · [LTS reproduction](../../../../LTS-PROFILES.md)

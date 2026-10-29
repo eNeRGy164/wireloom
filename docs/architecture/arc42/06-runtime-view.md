@@ -394,7 +394,7 @@ are in [chapter 5](05-building-block-view.md#531-shared-idl-compiler).
 Annotation/value algorithms and mapping rules belong in
 [chapter 8](08-crosscutting-concepts.md#81-idl-meaning-and-identity).
 Acceptance criteria belong in [chapter 10](10-quality-requirements.md);
-[qualification risks and mitigations](11-risks-and-technical-debt.md#r-01)
+[qualification risks and mitigations](11-risks-and-technical-debt.md#r01)
 and the linked evidence retain the current limitations and measured results.
 
 ---

@@ -12,6 +12,11 @@ merge a cleanup update with the actual release details.
 - Update examples in `src/Wireloom.Dds.Generator/README.md`, which ships in the
   package. Add the predicted version to `docs/releases/README.md` and create
   `docs/releases/<version>.md` with the source SHA and release details pending.
+- Review [unshipped diagnostics](../../src/Wireloom.Dds.Generator/AnalyzerReleases.Unshipped.md)
+  against the descriptor catalog. Move newly released entries into
+  [shipped diagnostic history](../../src/Wireloom.Dds.Generator/AnalyzerReleases.Shipped.md)
+  under the chosen release; record verified changes/removals without rewriting
+  earlier releases.
 - Prepare a catchy release title and a summary of changes since the previous
   release.
 - Merge all preparation changes to `main`. Run the
@@ -41,7 +46,12 @@ and confirm the NuGet package is published.
   publication link, workflow links, and results from tests on that source. Keep
   later `main` test runs out of the tagged version record.
 - Archive the wire reports under
-  `docs/testing/wire-compatibility/evidence/` and link them from the record.
+  `docs/testing/wire-compatibility/evidence/<version>/` and link them from the
+  record. Preserve the original sanitized combined archives, extract readable
+  reports without changing their bytes, and record workflow/artifact IDs, exact
+  source SHA, file sizes, and SHA-256 digests. Verify the archive digests against
+  GitHub metadata before retention; retain failures as well as passes. See the
+  [0.5.0 evidence record](../testing/wire-compatibility/evidence/0.5.0/README.md).
 - Advance `Directory.Packages.props` and refresh
   `samples/HelloWorld/packages.lock.json` with restore. Update the consumer
   examples listed above and current-version statements in

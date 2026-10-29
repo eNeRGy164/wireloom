@@ -28,6 +28,8 @@ no-inline-html:
     - summary
     - br
     - a
+    - img
+    - sup
 
 emphasis-style:
   style: underscore

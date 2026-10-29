@@ -64,13 +64,17 @@ which also covers RTI runtime and license prerequisites.
 
 The example above uses a .NET 10 target and the latest C# version. Current package integration
 evidence builds that target using the repository-pinned .NET 10 SDK; the
-Roslyn hosts in older SDKs are not all qualified. RTI Connext 7.7.0 is the
-tested runtime baseline.
+Roslyn hosts in older SDKs are not all qualified. Exact RTI 7.3.1 and 7.7.0 have qualification evidence for documented cases;
+the minimum-host check uses SDK 8.0.100. See the support policy for scope.
 
 For a project replacing existing RTI-generated C#, follow the
 [migration guide](https://github.com/eNeRGy164/wireloom/blob/main/docs/migration/rtiddsgen-to-wireloom.md). It maps
 common `rtiddsgen` options, identifies known API differences, and gives a
 validation and rollback procedure.
+
+Repository links below describe current source. For the package you installed,
+use its [exact-version qualification record](https://github.com/eNeRGy164/wireloom/blob/main/docs/releases/README.md);
+later source tests do not retroactively qualify an older release.
 
 ## Find your task
 
@@ -79,7 +83,7 @@ validation and rollback procedure.
 - [Share compiled contracts](#share-generated-contracts) between applications.
 - [Understand IDL-to-C# mappings](#common-idl-to-c-mappings).
 - [Configure generation settings, defaults, and overrides](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/configuration.md).
-- [Inspect generated source](#inspect-generated-source).
+- [Inspect generated source](#inspect-generated-source), [extend partial types, and use IDE/analysis tooling](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/developer-workflow.md).
 - Look up [annotations](#annotation-reference), [diagnostics](#diagnostics), and [effective limits](#effective-limits-for-unbounded-values).
 - [Troubleshoot generation](#troubleshooting).
 
@@ -108,12 +112,6 @@ versions below 7.3.1 produce `DDSG0003`. Only exact 7.3.1 and 7.7.0 LTS
 versions are qualification targets; intermediate and later versions are mapped
 but not individually qualified. The consumer project must resolve the RTI
 version whose API and generated contracts it intends to use.
-
-In the implementation, profile identifiers use the matching `rtiddsgen`
-version: `Rtiddsgen431` represents RTI 7.3.1, and `Rtiddsgen470` represents
-RTI 7.7.0. Runtime assembly versions still select the profile, while the
-profile's separate version fields identify both the runtime documentation and
-the code-generator API being matched.
 
 The `7.7.0` profile is selected automatically for a 7.7.0 reference. There is
 no public profile override because selecting older API code while compiling
@@ -245,7 +243,7 @@ describes how bounds relate to mutation and DDS processing.
 | `long id;`                                                          | `int id { get; set; }`<br>Assign with `sample.id = 42;`.                                                                          | Same member type and accessors.                                                                       | [RTI][rti-01] · [generated][wire-01]                              |
 | `typedef sequence<long, 4> BoundedLongs;`                           | `ISequence<int> Value` with `[Bound(4)]`.<br>Use `var bounded = new BoundedLongs(); bounded.Value.Add(17);`.                      | Same generated public shape.                                                                          | [RTI][rti-05] · [generated][wire-05]                              |
 | `@optional sequence<long, 4> values;`<br>`@optional long items[2];` | `ISequence<int>? values`; `int[]? items`.<br>Set `items = [1, 2]`; set `values = new Sequence<int> { 17 }` or `null` for absence. | Optional metadata matches. Wireloom adds nullable C# annotations absent from the retained RTI source. | [RTI][rti-09] · [generated][wire-09]                              |
-| `typedef long Scalar;`<br>`typedef sequence<Scalar> Scalars;`       | `ISequence<Scalar>` preserves the scalar wrapper.                                                                                 | API difference: RTI exposes `ISequence<int>`. Callers using that shape must adapt to `Scalar`.        | [RTI][rti-05a] · [generated][wire-05a] · [C136][cov-c136]         |
+| `typedef long Scalar;`<br>`typedef sequence<Scalar> Scalars;`       | `ISequence<int> Value`; scalar aliases erase in collection elements.                                                              | Same element mapping as the retained RTI C# output.                                                   | [RTI][rti-05a] · [generated][wire-05a] · [C136][cov-c136]         |
 | `union Choice switch(Kind) { case Number: long number; ... };`      | `int number`; assigning selects the branch. Reading an inactive branch throws `InvalidOperationException`.                        | Same generated branch API and guard.                                                                  | [RTI][rti-07] · [generated][wire-07] · [runtime test][union-test] |
 
 [rti-01]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/rtiddsgen/csharp/features/01-primitives/
@@ -256,7 +254,7 @@ describes how bounds relate to mutation and DDS processing.
 [wire-09]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/features/09-optional-collections/
 [rti-05a]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/rtiddsgen/csharp/features/05-unbounded-sequence-aliases/
 [wire-05a]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/features/05-unbounded-sequence-aliases/
-[cov-c136]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/FEATURE-COVERAGE.md#positive-cases
+[cov-c136]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/FEATURE-COVERAGE.md#positive-cases
 [rti-07]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/rtiddsgen/csharp/features/07-union-enum/
 [wire-07]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/features/07-union-enum/
 [union-test]: https://github.com/eNeRGy164/wireloom/blob/main/tests/Wireloom.Dds.Generator.RuntimeContracts/Unions/UnionSpecs.cs
@@ -271,83 +269,22 @@ behavior.
 
 ## Configure includes and preprocessing
 
-The [configuration reference](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/configuration.md)
-covers all generation settings, defaults, scopes, precedence, and examples,
-including sequence-array mapping, diagnostics, and generated-file output.
-
-Use project properties for defaults shared by roots, or root-item metadata for
-the project-wide generation batch:
+Use project settings and `DdsIdl` metadata in the project owning the contracts:
 
 ```xml
 <PropertyGroup>
-  <DdsIdlIncludeDirectories>
-    $(MSBuildProjectDirectory)\Contracts\Shared
-  </DdsIdlIncludeDirectories>
+  <DdsIdlIncludeDirectories>$(MSBuildProjectDirectory)/Contracts/Shared</DdsIdlIncludeDirectories>
 </PropertyGroup>
-
 <ItemGroup>
-  <DdsIdl Include="Contracts\Telemetry.idl"
-          IncludeDirectories="$(MSBuildProjectDirectory)\Contracts\Telemetry"
-          Defines="ENABLE_DIAGNOSTICS;PRODUCT_VARIANT=Enterprise"
-          Undefines="LEGACY_LAYOUT"
-          Strict="true" />
+  <DdsIdl Include="Contracts/Telemetry.idl" Defines="PRODUCT=Widget" />
 </ItemGroup>
 ```
 
-Preprocessing and validation settings:
-
-| Setting                    | Scope                                      | Meaning                                                                                       |
-| :------------------------- | :----------------------------------------- | :-------------------------------------------------------------------------------------------- |
-| `DdsIdlIncludeDirectories` | Project                                    | Semicolon-separated directories searched for configured includes and tracked for invalidation |
-| `IncludeDirectories`       | Root-item metadata collected for the batch | Additional include directories available to the generation batch                              |
-| `Defines`                  | Root-item metadata collected for the batch | Semicolon-separated preprocessor symbols                                                      |
-| `Undefines`                | Root-item metadata collected for the batch | Semicolon-separated symbols removed before preprocessing                                      |
-| `Strict`                   | Root-item metadata collected for the batch | Enables strict validation for the generation batch when any root sets it                      |
-| `DdsIdlEnableEscapeChar`   | Project                                    | Removes one leading underscore from each IDL identifier across the generation batch           |
-
-The current compiler combines these settings across all generating roots. It
-does not provide isolated preprocessing or validation settings per root.
-
-Quoted relative includes resolve from the including file's directory. Angle
-includes use the configured include directories. Keep a shared file as an
-included input unless it is intentionally a separate generation root.
-
-Project-level include directories are added before root-item directories.
-Include directories are deduplicated by path, keeping the first occurrence.
-Quoted includes search the including file's directory first, then the combined
-include directories; angle includes search the combined directories only. If
-two search directories contain the same include name, the first matching path
-wins.
-
-`Defines` and `Undefines` are pooled across the generation roots. All external
-defines seed each root's preprocessor, then all external undefines are applied;
-an external undefine therefore removes a name even if another root defines it.
-Each root starts with that same external macro state, so in-file `#define` and
-`#undef` changes do not carry from one root to the next. Avoid assigning
-different values to the same define in separate roots; per-root values are not
-isolated. Split variants into separate projects or separate builds when they
-need different IDL macro or strict-validation settings.
-
-`Strict` defaults to `false`. Case-variant keywords and same-scope case-only
-names report `DDSG0108` and generate code by default. Setting `Strict="true"`
-on any root rejects those names and new keys in derived aggregates before
-emission. Exact reserved keywords fail in declarations, including interface
-bodies. Ordinary interface bodies retain RTI's acceptance of case-only names;
-`@service("DDS")` bodies apply the warning and strict rules. Interface bindings
-remain omitted with `DDSG0103`. See the
-[configuration reference](../../docs/guides/configuration.md#enable-strict-validation)
-for examples, warning exemptions, and differences from RTI's strict mode.
-
-`DdsIdlEnableEscapeChar` defaults to `false`. When enabled, Wireloom removes
-one leading underscore from each IDL identifier after preprocessing.
-Declarations, references, macro-expanded names, and generated type metadata
-use the normalized name; string literals are unchanged. The setting is
-project-wide because all roots and includes share one symbol table. Names that
-collide after normalization fail before emission. Normalized names also affect
-implicit `@autoid(HASH)` IDs.
-
-Large inputs may hit deterministic preprocessing safety limits. They are not
-configurable through MSBuild; see [preprocessor limits](#preprocessor-limits).
+Defines, undefines, include directories, and strict validation aggregate across
+all generating roots. They are not isolated per-root environments. Mapping and
+size overrides instead belong to declarations in each input file. Use the
+[configuration reference](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/configuration.md)
+for the complete settings, defaults, precedence, strictness, and identifier rules.
 
 ### Multiple roots and shared IDL
 
@@ -408,102 +345,31 @@ root metadata is batch-wide.
 
 ## Choose the array-of-sequences mapping
 
-See the [configuration reference](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/configuration.md#choose-the-sequence-array-mapping)
-for the complete setting and precedence rules with before/after examples.
-
-Direct arrays of sequences have two mappings. `RtiCSharp` is the default: it
-matches RTI C# by flattening the outer array and reporting `DDSG0105`. Select
-`Idl` to preserve the fixed array and each independently sized sequence in
-the generated API, native storage, and wire type metadata:
+The default `RtiCSharp` mapping flattens a direct array of sequences and reports
+`DDSG0105`. Select `Idl` to preserve the fixed array and each independently
+sized sequence:
 
 ```xml
 <PropertyGroup>
   <DdsIdlSequenceArrayMapping>Idl</DdsIdlSequenceArrayMapping>
 </PropertyGroup>
-
-<ItemGroup>
-  <DdsIdl Include="Contracts/Telemetry.idl" />
-  <DdsIdl Include="Contracts/Legacy.idl" SequenceArrayMapping="RtiCSharp" />
-</ItemGroup>
 ```
 
-Set `SequenceArrayMapping="Idl"` on a `DdsIdl` item to opt in one file without
-changing the project default. Explicit file metadata takes precedence over
-the project property. Values are case-insensitive; invalid values report
-`DDSG0001` and prevent generation.
-
-The setting belongs to declarations physically in that file. A root's override
-does not flow into included files: they use their own `AdditionalFiles`
-metadata or the project default. For example:
-
-```xml
-<ItemGroup>
-  <AdditionalFiles Include="Contracts/Shared.idl" Generate="false" SequenceArrayMapping="Idl" />
-</ItemGroup>
-```
-
-For `struct Sample { sequence<long, 4> values[2]; };` and a union branch such
-as `default: sequence<long, 4> values[2];`, the `Idl` mapping generates a fixed
-array of sequence wrappers (`Sample_valuesSequence[]` or
-`Choice_valuesSequence[]`). Each wrapper exposes its mutable sequence through
-`Value`:
-
-```csharp
-var sample = new Sample();
-sample.values[0].Value.Add(10);
-sample.values[0].Value.Add(20);
-sample.values[1].Value.Add(30);
-```
-
-The same access pattern applies to a selected union branch:
-
-```csharp
-var choice = new Choice();
-choice.values[0].Value.Add(10);
-choice.values[1].Value.Add(20);
-```
-
-The array has two elements; each sequence has its own length and maximum of
-four elements. Generated wrapper names gain trailing underscores if they
-conflict with existing declarations or generated companions. The enclosing
-wire metadata describes an array of anonymous sequences, without introducing
-a struct or synthetic alias into the member's wire schema.
-
-Switching modes intentionally changes affected generated properties and wire
-types. `Idl` targets the IDL structure used by RTI C++ and Java; it does not
-interoperate with flattened RTI C#/Python direct-form bindings. Ordinary
-sequences, other arrays, and explicit sequence typedefs retain their mappings.
-Both supported RTI profiles have typed runtime coverage. The retained C149
-`Idl` corpus case also passes all 16 focused Wireloom/C++ live DDS exchanges on
-each exact RTI 7.3.1 and 7.7.0 release; see the
-[verification summary](https://github.com/eNeRGy164/wireloom/blob/main/docs/testing/sequence-array-mapping.md#focused-verification).
-These results qualify the recorded fixtures and peer scope. Recursive direct
-sequence arrays are rejected in `Idl` mode with `DDSG0001`. Existing effective
-limits for unbounded sequences and strings still apply.
+For `struct Sample { sequence<long, 4> values[2]; };`, the IDL-preserving API
+uses `sample.values[0].Value.Add(10)`. Selecting this mapping changes the
+C# API and wire schema; it differs from flattened RTI C# direct-form bindings.
+File metadata can override the project setting for declarations in that file.
+See [configuration and compatibility effects](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/configuration.md#choose-the-sequence-array-mapping)
+and [focused wire evidence](https://github.com/eNeRGy164/wireloom/blob/main/docs/testing/sequence-array-mapping.md).
 
 ### Recursive type support
 
-Direct recursive sequence members serialize and exchange bidirectionally
-for the direct self-recursive shape between Wireloom-generated C# and typed RTI
-C++ peers on RTI 7.3.1 and 7.7.0
-with the documented TypeObject v1 participant configuration. RTI 7.3.1's
-generated C++ TypeCode needs the documented module-qualification correction.
-RTI 7.7.0's default TypeObject v2 profile rejects recursive SCC types during
-registration; use a nonzero `type_object_max_serialized_length` and enable only
-`SERVICE_REQUEST_CHANNEL`. Mutual recursive struct graphs remain unqualified.
-
-Recursive sequence typedefs, including self- and mutually recursive forms,
-are rejected with `DDSG0001`. RTI's standard C++11 `rtiddsgen
--unboundedSupport` output does not compile for these forms on RTI 7.3.1 or
-7.7.0. Wireloom requires a normal RTI C++ interoperability path before
-supporting them; this rejection does not claim that the IDL forms are illegal.
-
-Programmatic compiler callers can pass `IdlSequenceArrayMapping.Idl` to the
-`IdlInput` overload. `sequenceSize` and `stringSize` constructor arguments set
-effective limits for unbounded types in that input. The defaults remain 100 and
-255, respectively. Set `enableEscapeChar: true` on every generation root to
-normalize leading-underscore identifiers across the batch; included inputs
-inherit the setting.
+Direct self-recursive sequence members have scoped typed Wireloom C# / RTI C++
+exchange evidence under a TypeObject v1 participant setup. Recursive sequence
+typedefs are rejected and mutual recursive graphs remain unqualified. See the
+[profile limitations](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/support-and-compatibility.md#rti-version-qualification)
+and [fixture setup](https://github.com/eNeRGy164/wireloom/blob/main/tests/Wireloom.Dds.Generator.WireCompatibility/README.md#direct-recursive-sequence-matrix-fixture)
+before relying on recursive contracts.
 
 ## Inspect generated source
 
@@ -522,25 +388,11 @@ pre-generation step.
 
 ### Preprocessor limits
 
-Wireloom applies finite deterministic limits to each IDL input. Exceeding a
-limit stops generation and reports a source-located generation error. These
-limits have no MSBuild override:
-
-| Limit                        | Maximum                               |
-| :--------------------------- | ------------------------------------: |
-| Preprocessed output          | 4,194,304 UTF-16 code units per input |
-| Macro expansion work         | 100,000 operations per input          |
-| Macro expansion depth        | 64 nested expansions                  |
-| Conditional expression depth | 256 nested expressions                |
-| Include nesting              | 128 levels                            |
-| Source-origin alignment work | 100,000 work units per expanded line  |
-
-To reduce a failure, simplify or split large IDL inputs, trim unused macro
-expansions, reduce conditional-expression and macro nesting, and simplify deep
-include chains. Splitting helps only when each resulting input and its
-preprocessed output stay within the per-input limits. The
-[preprocessor feature matrix](https://github.com/eNeRGy164/wireloom/blob/main/docs/PREPROCESSOR-FEATURES.md) describes
-which preprocessing forms are implemented or partial.
+Preprocessing enforces deterministic per-input output, work, and nesting
+limits. Exceeding one fails generation with a source-located error. See the
+[limits reference](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/configuration.md#fixed-behavior-and-configurable-limits)
+and [feature matrix](https://github.com/eNeRGy164/wireloom/blob/main/docs/PREPROCESSOR-FEATURES.md)
+for values, scope, and supported constructs.
 
 ## Annotation reference
 
@@ -569,7 +421,7 @@ array elements from the declared enum member. See the
 [`10-default-literal-enum-array` corpus case](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/idl/features/10-default-literal-enum-array.idl).
 
 Unresolved names used as array, sequence, string, or wstring bounds are
-rejected before C# emission. The [C143–C146 corpus cases](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/FEATURE-COVERAGE.md#negative-cases)
+rejected before C# emission. The [C143–C146 corpus cases](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/FEATURE-COVERAGE.md#negative-cases)
 record the diagnostics and RTI profile outcomes.
 
 An annotation accepted by RTI is not automatically implemented by Wireloom.
@@ -727,6 +579,9 @@ matrix. Rejection is intentional when the current managed compiler does not
 have evidence for a safe generated contract.
 
 ## Learn more
+
+- [Documentation by task](https://github.com/eNeRGy164/wireloom/blob/main/docs/README.md)
+- [Report a compatibility or integration problem](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/reporting-issues.md)
 
 - [Wireloom repository](https://github.com/eNeRGy164/wireloom)
 - [Architecture overview](https://github.com/eNeRGy164/wireloom/blob/main/docs/architecture/arc42/index.md)

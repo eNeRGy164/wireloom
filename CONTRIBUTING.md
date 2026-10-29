@@ -1,7 +1,6 @@
 # Contributing to Wireloom
 
-Thanks for helping improve Wireloom. This guide covers repository development
-and maintenance. For consumer setup, see the [package usage guide](src/Wireloom.Dds.Generator/README.md).
+This guide covers repository development and maintenance. For consumer setup, see the [package usage guide](src/Wireloom.Dds.Generator/README.md).
 
 ## Before changing code
 
@@ -76,7 +75,7 @@ Keep the test layers focused:
   consuming project.
 - [Runtime contract tests](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
   compile focused IDL fixtures during the build and execute generated APIs
-  directly against RTI 7.7.0 on Windows and Linux. Their behavior matrix tracks
+  directly against both exact RTI 7.3.1 and 7.7.0 profiles on Windows and Linux. Their behavior matrix tracks
   runtime contracts; Coveralls measures maintained compiler and generator
   source while excluding generated fixtures and test-project code.
   Keep known failures visible and distinguish API behavior from serialization
@@ -89,6 +88,27 @@ feature index, and respect the licensing rules for RTI-generated sources.
 Exported managed-generator sources belong under the matching version's
 `docs/corpus/<version>/generator/` folder and should be refreshed using the
 corpus guide's documented export command.
+
+## Choose validation
+
+Start with the smallest focused check, then complete the applicable quality
+gates before making the corresponding claim.
+
+| Change                                             | Validation to select                                                                                                                                                                                 |
+| :------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Compiler parsing, binding, validation, or emission | Compiler unit tests, both corpus profiles, generated-source exports, relevant runtime/package tests, coverage, and Qodana; wire checks for affected interoperability claims                          |
+| Roslyn adapter or incremental inputs               | Generator unit tests and incremental baseline; fresh-package checks for consumer effects                                                                                                             |
+| MSBuild targets or analyzer packaging              | [Package integration](tests/Wireloom.Dds.Generator.PackageIntegration/README.md), including minimum-host and negative diagnostic cases                                                               |
+| Generated APIs or native lifecycle                 | [Runtime contracts](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md) and affected packed-consumer checks on applicable profiles/targets                                                      |
+| Robustness or error boundaries                     | [Fuzzing](docs/testing/fuzzing.md), focused regressions, and applicable compiler/adapter checks                                                                                                      |
+| Corpus, peer fixture, or report handling           | [LTS reproduction](docs/corpus/LTS-PROFILES.md), [wire harness checks](tests/Wireloom.Dds.Generator.WireCompatibility/README.md#maintainer-checks), and licensed exchanges when the claim needs them |
+| Playground client or host                          | [Frontend checks](playground/README.md#build-and-checks), [browser qualification](docs/testing/playground-qualification.md), adapter/compiler checks for their affected boundaries                   |
+| Publication                                        | [Package checklist](docs/releases/PREPARING-A-RELEASE.md) or [Playground runbook](docs/guides/playground-deployment.md)                                                                              |
+| Documentation only                                 | Check local paths/anchors, Markdown, examples against current APIs/settings, dated claims, and architecture memory when source contracts change                                                      |
+
+[Stryker](docs/testing/stryker.md) is additional advisory evidence. Test counts,
+coverage, and report completeness do not replace behavioral assertions or prove
+that every DDS exchange passed.
 
 ## Continuous LTS verification
 
@@ -103,177 +123,22 @@ Licensed DDS wire qualification remains a separate manual workflow.
 
 ## Quality evidence
 
-For changes that affect generator quality, the repository requires a successful
-build and relevant test runs, a successful Community Qodana run, and a passing
-Coveralls check after CI completes. Coverage review must include branch coverage
-as the primary signal for control-flow-heavy code and line coverage as a
-secondary signal.
+Generator-quality changes require successful build and relevant tests, branch
+and line coverage review, Community Qodana, and a passing CI Coveralls check.
+The compiler gates are 90% branches and 95% lines. Follow the complete
+[quality procedure](docs/testing/quality.md) for commands, report freshness,
+Qodana isolation, and result interpretation.
 
-After a successful build and test run, run Community Qodana from the repository
-root with `global.json` visible. The command below reuses the host NuGet global
-packages cache. Qodana's Linux restore outputs are kept in ignored directories
-under `.qodana`; do not let them overwrite the Windows `obj` or `bin` folders.
-
-```powershell
-$nugetCache = Join-Path $env:USERPROFILE '.nuget\packages'
-$qodanaObj = Join-Path $PWD '.qodana\obj'
-$qodanaBin = Join-Path $PWD '.qodana\bin'
-$qodanaCompilerObj = Join-Path $PWD '.qodana\compiler-obj'
-$qodanaCompilerBin = Join-Path $PWD '.qodana\compiler-bin'
-$qodanaBrowserObj = Join-Path $PWD '.qodana\browser-obj'
-$qodanaBrowserBin = Join-Path $PWD '.qodana\browser-bin'
-$qodanaCompilerTestsObj = Join-Path $PWD '.qodana\compiler-tests-obj'
-$qodanaCompilerTestsBin = Join-Path $PWD '.qodana\compiler-tests-bin'
-$qodanaGeneratorTestsObj = Join-Path $PWD '.qodana\generator-tests-obj'
-$qodanaGeneratorTestsBin = Join-Path $PWD '.qodana\generator-tests-bin'
-$qodanaFuzzingTestsObj = Join-Path $PWD '.qodana\fuzzing-tests-obj'
-$qodanaFuzzingTestsBin = Join-Path $PWD '.qodana\fuzzing-tests-bin'
-$qodanaRuntimeTestsObj = Join-Path $PWD '.qodana\runtime-tests-obj'
-$qodanaRuntimeTestsBin = Join-Path $PWD '.qodana\runtime-tests-bin'
-$qodanaTestSupportObj = Join-Path $PWD '.qodana\test-support-obj'
-$qodanaTestSupportBin = Join-Path $PWD '.qodana\test-support-bin'
-New-Item -ItemType Directory -Force -Path `
-  $qodanaObj, $qodanaBin, $qodanaCompilerObj, $qodanaCompilerBin, `
-  $qodanaBrowserObj, $qodanaBrowserBin, `
-  $qodanaCompilerTestsObj, $qodanaCompilerTestsBin, `
-  $qodanaGeneratorTestsObj, $qodanaGeneratorTestsBin, `
-  $qodanaFuzzingTestsObj, $qodanaFuzzingTestsBin, `
-  $qodanaRuntimeTestsObj, $qodanaRuntimeTestsBin, `
-  $qodanaTestSupportObj, $qodanaTestSupportBin | Out-Null
-
-docker run --rm `
-  --volume "${PWD}:/data/project" `
-  --volume "${PWD}\.qodana\cache:/data/cache" `
-  --volume "${qodanaObj}:/data/project/src/Wireloom.Dds.Generator/obj" `
-  --volume "${qodanaBin}:/data/project/src/Wireloom.Dds.Generator/bin" `
-  --volume "${qodanaCompilerObj}:/data/project/src/Wireloom.Dds.Compiler/obj" `
-  --volume "${qodanaCompilerBin}:/data/project/src/Wireloom.Dds.Compiler/bin" `
-  --volume "${qodanaBrowserObj}:/data/project/src/Wireloom.Playground.Browser/obj" `
-  --volume "${qodanaBrowserBin}:/data/project/src/Wireloom.Playground.Browser/bin" `
-  --volume "${qodanaCompilerTestsObj}:/data/project/tests/Wireloom.Dds.Compiler.Tests/obj" `
-  --volume "${qodanaCompilerTestsBin}:/data/project/tests/Wireloom.Dds.Compiler.Tests/bin" `
-  --volume "${qodanaGeneratorTestsObj}:/data/project/tests/Wireloom.Dds.Generator.Tests/obj" `
-  --volume "${qodanaGeneratorTestsBin}:/data/project/tests/Wireloom.Dds.Generator.Tests/bin" `
-  --volume "${qodanaFuzzingTestsObj}:/data/project/tests/Wireloom.Dds.Generator.Fuzzing.Tests/obj" `
-  --volume "${qodanaFuzzingTestsBin}:/data/project/tests/Wireloom.Dds.Generator.Fuzzing.Tests/bin" `
-  --volume "${qodanaRuntimeTestsObj}:/data/project/tests/Wireloom.Dds.Generator.RuntimeContracts/obj" `
-  --volume "${qodanaRuntimeTestsBin}:/data/project/tests/Wireloom.Dds.Generator.RuntimeContracts/bin" `
-  --volume "${qodanaTestSupportObj}:/data/project/tests/Wireloom.Dds.Generator.TestSupport/obj" `
-  --volume "${qodanaTestSupportBin}:/data/project/tests/Wireloom.Dds.Generator.TestSupport/bin" `
-  --volume "${nugetCache}:/root/.nuget/packages:ro" `
-  -e NUGET_PACKAGES=/root/.nuget/packages `
-  -e DOTNET_NOLOGO=1 `
-  jetbrains/qodana-cdnet:2026.2-privileged `
-  --solution /data/project/Wireloom.slnx `
-  --configuration Release `
-  --fail-threshold 0 `
-  --results-dir /data/project/.qodana/results
-```
-
-The CI Qodana cache is separate from NuGet's cache. The mounted local cache
-stores analysis state, not the bootstrapped SDK; keep `global.json` visible so
-analysis uses the pinned SDK. The NuGet package cache is safe to share, but
-restore and build intermediates are platform-specific and must remain isolated.
-
-### Interpreting local Docker runs
-
-When Qodana runs against the Windows bind mount through Docker Desktop,
-InspectCode may repeat a `FileSystemTrackerImpl` warning that a watcher would
-reach the “Drive root.” This warning is not by itself a failed scan. InspectCode
-can continue analyzing and inspecting files, then write
-`.qodana/results/qodana.sarif.json`.
-Let the Docker command exit normally; do not interrupt it only because this
-warning repeats or because output pauses while the scan is running.
-
-Do not start another Qodana container while the first `docker run` is still
-active. If the command appears stalled, check `.qodana/results/log/` from a
-second terminal and compare file timestamps with the scan start time. Progress
-in the current `JetBrainsLog.*.inspectcode*.log` file means InspectCode is
-still running. Use these commands to inspect the latest log activity:
-
-```powershell
-Get-ChildItem .qodana/results/log -File |
-  Sort-Object LastWriteTimeUtc -Descending |
-  Select-Object -First 5 Name, Length, LastWriteTimeUtc
-Get-Content .qodana/results/log/code-inspection.log -Tail 20
-```
-
-After the command exits, confirm that `qodana.sarif.json` was updated during
-this run and that `code-inspection.log` ends with `Done`. Read the final
-summary in `baseline-out.log` and check the Docker command's exit code; a
-completed report can still contain findings, and CI uses a zero-finding
-threshold. A report left by an earlier run is not evidence for the current
-source.
-
-The local and CI configurations scan the committed `Wireloom.slnx`, which
-contains the compiler, generator, compiler and generator unit-test projects,
-runtime contract tests, and shared test support. Loading both production
-projects through the solution lets InspectCode resolve their project
-reference. The wire compatibility projects are not included in this solution.
-
-Generate local Cobertura coverage after restoring both unit-test projects. The
-commands match the CI coverage invocation and write separate compiler and
-generator reports:
+For Markdown changes, use the existing pinned Node runtime and run:
 
 ```shell
-dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
-dotnet restore tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj --locked-mode
-dotnet restore tests/Wireloom.Dds.Generator.Fuzzing.Tests/Wireloom.Dds.Generator.Fuzzing.Tests.csproj --locked-mode
-dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
-  --no-restore `
-  --configuration Release `
-  -- `
-  --results-directory coverage `
-  --coverage `
-  --coverage-settings coverage.settings.xml `
-  --coverage-output generator.cobertura.xml `
-  --coverage-output-format cobertura
-dotnet run --project tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj `
-  --no-restore `
-  --configuration Release `
-  -- `
-  --results-directory coverage `
-  --coverage `
-  --coverage-settings coverage.settings.xml `
-  --coverage-output compiler.cobertura.xml `
-  --coverage-output-format cobertura
+node docs/scripts/check-links.mjs
 ```
 
-Each Cobertura report must contain both branch and line rates and a positive
-`branches-valid` count. Check its counters with:
-
-```powershell
-[xml]$coverageReport = Get-Content -LiteralPath 'coverage\compiler.cobertura.xml'
-$coverageReport.coverage | Select-Object branch-rate, line-rate, branches-covered, branches-valid, lines-covered, lines-valid
-```
-
-The compiler report must meet 90% branch coverage and 95% line coverage. The
-fuzzing suite lives in its own test project and runs without instrumentation;
-its purpose is to find crashes and invalid generated code, not to contribute
-coverage:
-
-```shell
-dotnet run --project tests/Wireloom.Dds.Generator.Fuzzing.Tests/Wireloom.Dds.Generator.Fuzzing.Tests.csproj `
-  --no-restore `
-  --configuration Release `
-  -- `
-  --filter-class Wireloom.Dds.Generator.Fuzzing.Tests.FsCheckIdlCompilerFuzzingSpecs
-```
-
-Coverage validation also requires the local coverage command to succeed and the
-Coveralls GitHub check to pass after CI. Review Coveralls run details to confirm
-branch tracking is included when enabled. A successful local test run alone is
-not sufficient quality evidence.
-
-When changing generator inputs or invalidation behavior, also run the focused
-[incremental generator baseline](docs/performance/incremental-generator-baseline.md)
-and update its evidence before considering a caching redesign.
-
-For the bounded IDL compiler fuzzing gate, run the [fuzzing guide](docs/testing/fuzzing.md)
-and preserve FsCheck's reported input and replay information when investigating a failure.
-
-For mutation testing commands, shared timeout settings, focused batch configs,
-and result interpretation, see the [Stryker guide](docs/testing/stryker.md).
+The dependency-free checker covers common inline/reference links, local images,
+explicit/heading anchors, same-repository `main` links, and literal oracle capture
+paths. It includes untracked Markdown during editing. It does not check external
+sites or historical-revision URLs, or replace Markdown rendering review.
 
 ## Pull requests
 

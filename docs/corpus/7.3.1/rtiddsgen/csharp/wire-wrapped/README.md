@@ -7,3 +7,5 @@ and hashes for every retained generated source. The original corpus captures
 under `features/` remain unchanged.
 
 The wire runner consumes these checked-in files and does not run `rtiddsgen`.
+
+[Corpus guide](../../../../README.md) · [LTS reproduction](../../../../LTS-PROFILES.md)

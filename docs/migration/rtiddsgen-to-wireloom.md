@@ -126,6 +126,11 @@ replacing the existing generation step.
 
 ## Generated C# API differences
 
+Check actual deltas first: optional nullable annotations, diagnostic formatting,
+and any selected alternate mapping. Some rows below document matching behavior
+as useful verification controls. The collection-alias note for Wireloom 0.3.0
+is a historical Wireloom upgrade concern, separate from replacing RTI output.
+
 The table describes known source-level differences against the retained RTI
 7.7.0 oracle. It does not imply that every RTI version emits the same API. See
 the [feature coverage matrix](../corpus/FEATURE-COVERAGE.md) and
@@ -165,3 +170,5 @@ the source-shape comparison, does not establish source compatibility or wire
 compatibility beyond the cases actually tested.
 
 [rti-codegen-args]: https://community.rti.com/static/documentation/connext-dds/7.7.0.1/doc/manuals/connext_dds_professional/code_generator/users_manual/RTI_Code_Generator_UsersManual.pdf
+
+[Documentation](../README.md) · [IDE, extension, and analysis workflow](../guides/developer-workflow.md)

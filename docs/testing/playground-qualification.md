@@ -55,7 +55,7 @@ Each invocation replaces that browser's latest report; archive a full report
 before a focused rerun.
 
 The CLI-compatible prepared runners remain usable through the procedure in
-the [Playground README](../../playground/README.md#reproduce-browser-verification).
+the [advanced browser runbook](playground-cli.md).
 Set `WIRELOOM_VERIFY_ROOT` and `WIRELOOM_VERIFY_NESTED` when preparing them to
 use different preview origins.
 
@@ -172,8 +172,9 @@ recorded desktop versions. Playwright WebKit is supplementary engine evidence;
 it does not qualify Safari or macOS. Mobile, assistive-technology review,
 public-network startup, caching/headers, and the final public host must be
 assessed separately. Local cold/warm startup measurements are not Internet
-latency measurements. Publication and host verification remain
-[#111](https://github.com/eNeRGy164/wireloom/issues/111).
+latency measurements. Publication is implemented separately from local browser qualification. The
+[deployment runbook](../guides/playground-deployment.md) owns candidate and live
+HTTPS verification.
 
 ## Client quality checks
 
@@ -197,36 +198,17 @@ verification requires the deployed HTTPS URL. Compiler/adapter tests, their
 coverage reports, and Community Qodana use the repository's
 [quality procedure](../../CONTRIBUTING.md#quality-evidence).
 
-## Current local results
+<a id="current-local-results"></a>
 
-The qualification reports identify the source revision and uncommitted status,
-input and bundle hashes, tool versions, and verification scope. The latest
-focused run on October 27, 2026, covers the current uncommitted workspace
-changes in Chromium 156.0.8078.4.
+## Recorded results
 
-| Check                                | Scope and result                                                    |
-| :----------------------------------- | :------------------------------------------------------------------ |
-| Node unit and Pages tests            | 65 passed; 1 symlink test skipped because Windows lacks link privileges |
-| Chromium 156.0.8078.4                | All ten release phases passed (87/87 checks)                        |
-| Chromium scenario coverage           | 18 example/profile combinations and all added workspace UX scenarios |
-| TypeScript, ESLint, Prettier         | Passed                                                              |
-| Architecture memory                  | Current                                                            |
-
-| Coverage scope              | Branches             | Lines                |
-| :-------------------------- | :------------------- | :------------------- |
-| Compiler                    | 6,658/7,338 (90.73%) | 8,959/9,203 (97.35%) |
-| Browser adapter             | 110/114 (96.49%)     | 154/158 (97.47%)     |
-| Direct Node TypeScript scope | 278/280 (99.29%)    | 100%                 |
-| Node + first-party Chromium  | 88.46%              | 93.78%               |
-| Source archive unit scope    | 100%                | 100%                 |
-
-The direct Node threshold gates only compiler-client, workspace-model,
-recovery-saver, source-archive, worker-state, and MD5 modules. Combined
-source-mapped browser coverage also includes UI modules and currently remains
-below 99% lines and 98% branches; that broader TypeScript coverage target is
-not met. CI and Coveralls for these changes remain pending. The local results do
-not establish deployment or public-host qualification. Folder-hierarchy import
-is outside this scope and tracked in [#120](https://github.com/eNeRGy164/wireloom/issues/120).
+The [October 27 local snapshot](evidence/playground-2026-10-27.md) records scoped
+workspace/browser results and the broader UI coverage shortfall. Its narrative
+lacks the original source/diff and report bundle, so it is not proof that a
+later checkout is qualified. A new claim requires a report for that exact bundle.
+Direct Node and combined UI coverage have different scopes and thresholds;
+consult `playground/package.json` and the recorded report rather than combining
+percentages from different runs.
 
 ## Evidence artifacts
 

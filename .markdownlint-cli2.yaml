@@ -1,0 +1,5 @@
+# Roslyn parses these files using its release-tracking grammar.
+# Titles are semicolon comments; normal Markdown heading rules do not apply.
+ignores:
+  - src/Wireloom.Dds.Generator/AnalyzerReleases.Shipped.md
+  - src/Wireloom.Dds.Generator/AnalyzerReleases.Unshipped.md

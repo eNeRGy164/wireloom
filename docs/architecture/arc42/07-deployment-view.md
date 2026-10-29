@@ -158,7 +158,7 @@ local/public verification commands, artifact retention, and
 [rollback procedures](../../guides/playground-deployment.md#rollback).
 [Chapter 10](10-quality-requirements.md) defines acceptance criteria;
 [browser qualification](../../testing/playground-qualification.md) retains measured
-results, and [chapter 11](11-risks-and-technical-debt.md#r-08) records remaining deployment exposure.
+results, and [chapter 11](11-risks-and-technical-debt.md#r08) records remaining deployment exposure.
 
 Supporting test and DDS qualification infrastructure is documented in the
 [contribution guide](../../../CONTRIBUTING.md) and

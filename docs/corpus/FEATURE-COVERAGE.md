@@ -21,6 +21,10 @@ and restrictions.
 | Specification validation     | Keyword and same-scope case-only names, exact reserved keywords, and derived keys, and interface-body declarations (C150–C162)    | Implemented; default naming warnings and opt-in strict rejection                      | Implemented; default naming warnings and opt-in strict rejection                   |
 | Restrictions and workarounds | Negative probes, ignored constructs, and integration cases                                                                        | Evaluated per case; rejection may come from Wireloom target checks or RTI limitations | Evaluated per case; rejection may come from Wireloom validation or RTI limitations |
 
+Detailed case rows, stable `C###` tags, and source/oracle links are in the
+[7.3.1 positive/negative case tables](7.3.1/FEATURE-COVERAGE.md#positive-cases)
+and [7.7.0 tables](7.7.0/FEATURE-COVERAGE.md#positive-cases).
+
 ## Annotation case applicability
 
 | Case                        | 7.3.1                                                               | 7.7.0              |
@@ -31,9 +35,9 @@ and restrictions.
 ## Current grouped IDL cases
 
 The parser captures ordered balanced applications and ignores unknown member
-applications without interpreting their arguments. A full catalog-wide
-mixed-order generated-output case and shared OMG-typed constant-expression
-coverage remain tracked in [#91](https://github.com/eNeRGy164/wireloom/issues/91).
+applications without interpreting their arguments. The [semantic reference](../guides/idl-semantics.md) describes the
+maintained rules; custom annotation declarations and a full IDL AST are not
+implied by that work.
 
 C163–C172 cover full-form extensibility, module and local auto-ID scope,
 annotation arguments, multiple member declarators, symbolic and expression

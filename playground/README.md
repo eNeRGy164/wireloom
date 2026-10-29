@@ -61,155 +61,38 @@ Use `npm run preview -- --host 127.0.0.1` to serve the root build locally after
 building. To serve a nested-base build, use a static server that mounts the
 `dist-subpath` directory at `/playground/`.
 
-## Scope and current evidence
+## Repository layout
 
-The client provides a virtual Source Explorer with files and explicit folders,
-source tabs with per-file undo history, and read-only generated C# output.
-Source and Generated groups fold independently; larger chevrons and Explorer
-actions shown on Source-group hover/focus follow familiar VS Code controls.
-Folders expand by default, preserving manual collapse during edits. A blank
-line separates the Generated group.
-Create, rename, move, delete, and import multiple files through familiar tree
-controls and context menus. Imports use basenames in the selected folder and
-resolve collisions atomically. Empty folders survive reload. File context menus switch Root/Include-only;
-folder menus add/remove the selected folder from include search. File menus contain no folder actions. New files are
-Roots by default; file properties can mark them Include-only. Root Properties
-sets root defines, undefines, and strict validation. Workspace Settings sets
-project sequence mapping and size defaults, escape-character handling, and
-include folders. Includes use the shared compiler's rules; configured folders
-are searched alphabetically.
+| Location                        | Responsibility                                                                       |
+| :------------------------------ | :----------------------------------------------------------------------------------- |
+| `src/`                          | Workspace UI/model, compiler client, worker state, local recovery, and source export |
+| `src/protocol.ts`               | TypeScript mirror of the browser adapter DTOs                                        |
+| `src/worker.mjs`, `src/md5.mjs` | Worker-local compiler startup and synchronous MD5 provider                           |
+| `scripts/verification/`         | Native baseline export, prepared browser phases, and qualification orchestration     |
+| `scripts/*pages*`               | Deployment candidate manifest, build, and verification                               |
+| `public/dotnet/`                | Generated browser-host assets replaced by the build                                  |
 
-Edits debounce for 300 ms; examples, imports, recovery, settings, and profile
-changes compile automatically. Both RTI profiles and nine examples are
-available, including two multi-file examples. Version-3 IndexedDB recovery
-preserves files, folders, roles, options, active file, and profile. Unsupported
-or malformed workspace records report a recovery error and leave editing
-available. Empty and no-Root workspaces clear output. The
-Source ZIP button saves current files, empty folders, workspace settings, and a
-matching `Wireloom.csproj` independently of compiler success. Escape cancels all
-dialogs; file properties are available from a source tab's context menu and use
-a two-option role toggle.
-The IDL editor also offers Copy and Download for the active source, regardless
-of compilation success; both are disabled when the workspace is empty.
-See the [workspace guide and v3 contract](../docs/guides/playground-workspaces.md)
-for operations, limits, settings scope, error behavior, and exports.
+## Choose a workflow
 
-Every successful document opens immediately in tabs and is listed in the
-collapsible file explorer, using natural filename order (case-insensitive,
-with numbers in numeric order). Filenames stay on one line; the explorer scrolls
-horizontally for long names. Shared editor font controls default to 12 px and
-remember a 10–20 px preference separately from the source workspace.
-Generated tabs use an overlay scrollbar with a transparent track and thumb visible on
-hover or keyboard focus. Mouse-wheel input over overflowing tabs scrolls them
-horizontally, while Ctrl/Meta-wheel remains available to the browser.
-The thumb is draggable and keyboard accessible; its overlay does not consume
-tab height, so backgrounds and separators remain full height.
-The font controls sit before the RTI profile in the workspace toolbar. The
-explorer has its own pointer/keyboard divider; the editor divider changes only
-the source/output ratio within the remaining editor area. Notices float at the
-bottom right without affecting layout, close after five seconds, and pause
-their timer while hovered or focused. They can also be dismissed explicitly.
-Failures show a red Error notice with alert semantics in both themes.
-Restored custom source has no persistent restore-description row.
-IDL and C# files have local SVG icons in the explorer and tabs. Side gutters
-shrink to 12 px at window widths up to 1280 px and 8 px up to 850 px.
-The header has a Light / Dark toggle. First use resolves the current system
-appearance immediately to Light or Dark and saves it as `wireloom-theme` in
-localStorage. Both the page and Monaco apply the saved choice before the editor
-chunk loads; later system or developer-tools preference changes do not switch
-the appearance. Preference storage failure leaves the switch usable for the
-current session.
-Generated Copy and individual downloads use
-the compiler's original text; all-document downloads use a stored-entry ZIP.
-Windows clipboard reads may normalize newlines. Pending edits mark previous
-output outdated and disable exports; current failures clear documents and
-diagnostic navigation. Empty successful results have no downloadable files.
-Workspace snapshots use normalized virtual paths, root flags, and compiler
-settings. No host filesystem paths or source-bearing requests leave the device.
+- [Use the workspace](../docs/guides/playground-workspaces.md): files, folders,
+  roots, settings, exports, and local recovery.
+- [Maintain the worker boundary](../docs/reference/playground-protocol.md):
+  mirrored DTOs, identity, limits, and error handling.
+- [Qualify the browser release](../docs/testing/playground-qualification.md):
+  native parity, actual UI operations, fault handling, and browser scope.
+- [Publish or roll back](../docs/guides/playground-deployment.md): candidate
+  provenance, live HTTPS checks, and hosting configuration.
 
-The synchronous MD5 provider and its 21 Node tests are retained from commit
-`f995a3f3`. Eight additional deterministic worker-state tests cover bounded
-pending work, complete response identity, stale responses, replacement,
-startup recovery, timeout identity across worker replacement, and draining
-queued work when a replacement becomes ready.
-Workspace tests cover aggregate UTF-8 bounds, current-schema recovery, explicit folders,
-paths, atomic operations, settings, and rejected recovery data. Direct compiler-client and recovery-saver
-tests cover active restarts, request failures, and outdated save confirmations.
-
-The [qualification guide](../docs/testing/playground-qualification.md)
-records UI, native-output, recovery, and browser checks. Monaco and ZIP packages
-are pinned and audited; the production build includes upstream licenses in
-`third-party-notices.txt`. The footer records the Wireloom version and Git
-revision, with a `-dirty` suffix for a modified checkout.
+The client compiles all selected Roots and supplied includes locally through
+the shared compiler. Preview results establish generated text and diagnostics;
+they do not qualify RTI compilation, native behavior, or DDS exchanges.
 
 ## Reproduce browser verification
 
-Build first, then serve the root bundle on port 4173 and the nested bundle on
-4174 in separate terminals:
+Use `npm run verify:release -- chromium` after building. The
+[qualification runbook](../docs/testing/playground-qualification.md#reproduce)
+owns the sequential browser commands, phases, report locations, and pass rules.
+For individual Playwright CLI phases and managed-window troubleshooting, use
+[advanced browser verification](../docs/testing/playground-cli.md).
 
-```shell
-npm run preview -- --host 127.0.0.1 --port 4173 --strictPort
-npm run preview -- --host 127.0.0.1 --port 4174 --strictPort --outDir dist-subpath --base /playground/
-```
-
-From the repository root, export native expectations and prepare each CLI
-verification function:
-
-```shell
-dotnet run --file playground/scripts/verification/export-native-baseline.cs -- playground/scripts/verification/cases.json output/playwright/native-baseline.json
-node playground/scripts/verification/prepare-browser-verification.mjs parity
-node playground/scripts/verification/prepare-browser-verification.mjs faults
-node playground/scripts/verification/prepare-browser-verification.mjs limits
-node playground/scripts/verification/prepare-example-cases.mjs
-dotnet run --file playground/scripts/verification/export-native-baseline.cs -- output/playwright/example-cases.json output/playwright/example-native-baseline.json
-```
-
-Use Playwright CLI 0.1.22 (the version verified here) to open an isolated
-browser session, then run the prepared functions. The `--raw` results are JSON:
-
-```shell
-npx --yes --package @playwright/cli@0.1.22 playwright-cli -s=wireloom-verify open about:blank --browser msedge
-npx --yes --package @playwright/cli@0.1.22 playwright-cli -s=wireloom-verify --raw run-code --filename output/playwright/run-parity.mjs
-npx --yes --package @playwright/cli@0.1.22 playwright-cli -s=wireloom-verify --raw run-code --filename output/playwright/run-faults.mjs
-npx --yes --package @playwright/cli@0.1.22 playwright-cli -s=wireloom-verify --raw run-code --filename output/playwright/run-limits.mjs
-npx --yes --package @playwright/cli@0.1.22 playwright-cli -s=wireloom-verify close
-```
-
-The fault checks intentionally abort local asset requests, inject a transient
-MD5 error and an uncaught worker exception, and stall a worker to exercise the
-real ten-second watchdog. The responsiveness check compiles 128 declarations
-into 512 documents while a main-thread heartbeat and DOM task run. These operations run in
-temporary browser contexts against the published bundle. Generated runners,
-baselines, screenshots, and reports belong in ignored `output/playwright/`.
-After exporting the native baseline, the preparation script also accepts
-`ui`, `workspace`, `recovery`, and `ui-faults`. Run each through the same pinned CLI command
-with `output/playwright/run-<phase>.mjs`. `ui` checks examples, exact native
-downloads/ZIP, clipboard API input, empty/failure states, diagnostic focus,
-themes, and resizing. `recovery` checks import, replacement, reload, reset,
-and storage failures. `ui-faults` checks editor/runtime asset recovery and
-busy-worker replacement. A report's `passed` field must be `true`; CLI process
-completion alone does not establish a pass. All test contexts are isolated
-from the visitor's saved workspace.
-
-For manual UX review, use a normal Edge window or restore normal behavior in
-the automated preview window first. Playwright intercepts native file choosers
-and stores captured downloads under GUIDs even when the browser's suggested
-filename is correct. This can make Open IDL appear unresponsive and a download
-appear unnamed in the automation window. Scripted checks belong in isolated
-contexts. Before handing a managed window back for manual review, remove its
-`filechooser` listeners, disable `Page.setInterceptFileChooserDialog`, and
-restore `Browser.setDownloadBehavior` to `default` for that context. Preserve
-the user's workspace when clearing queued intercepted file-picker requests.
-See [Playwright download paths](https://playwright.dev/docs/api/class-download#download-path)
-and [Chromium file-chooser interception](https://chromedevtools.github.io/devtools-protocol/tot/Page/#method-setInterceptFileChooserDialog).
-
-Choose **Type showcase & XML docs** to explore every supported primitive
-spelling, narrow/wide strings, bounded/unbounded sequences, nested collections,
-arrays, aliases, enums, defaults/ranges, optional/keyed aggregate members,
-inheritance, unions, and value types. Start with the generated
-`Showcase.PrimitiveTypes.g.cs`, `Showcase.TextTypes.g.cs`,
-`Showcase.CollectionTypes.g.cs`, and `Showcase.RangesAndDefaults.g.cs`.
-Comments distinguish explicit IDL bounds from the effective defaults of
-100 sequence elements and 255 string bytes/code units. The UI verification
-compares all nine examples with native output on both profiles; native
-example baselines are generated directly from the visitor-facing sources.
+[Documentation](../docs/README.md) · [Contribution and quality gates](../CONTRIBUTING.md#choose-validation)
