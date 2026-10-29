@@ -44,6 +44,12 @@ async (page) => {
           ["Current", "Failed", "Empty"].includes(document.querySelector("#result-state")?.textContent),
         );
 
+        if (source.options?.unboundedSupport) {
+          await app.getByRole("button", { name: "Workspace Settings" }).click();
+          await app.getByLabel("RTI-style unbounded sequences and strings").check();
+          await app.getByRole("button", { name: "Apply", exact: true }).click();
+        }
+
         const name = source.path.split("/").pop();
 
         await app

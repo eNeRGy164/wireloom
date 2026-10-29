@@ -75,6 +75,7 @@ function toggleChoice<T extends string>(
   title: string,
   choices: [T, string][],
   selected: T,
+  onChange?: () => void,
 ): () => T {
   const group = document.createElement("fieldset");
   group.className = "property-toggle";
@@ -92,6 +93,7 @@ function toggleChoice<T extends string>(
     input.name = name;
     input.value = value;
     input.checked = value === selected;
+    input.addEventListener("change", () => onChange?.());
     const caption = document.createElement("span");
     caption.textContent = text;
     label.append(input, caption);
@@ -158,6 +160,21 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
       let defines: HTMLTextAreaElement | undefined;
       let undefines: HTMLTextAreaElement | undefined;
       let strict: HTMLInputElement | undefined;
+      const unboundedMode = toggleChoice(
+        form,
+        "Unbounded support",
+        [
+          ["project", "Use project setting"],
+          ["enabled", "Enabled"],
+          ["disabled", "Disabled"],
+        ],
+        file.options.unboundedSupport === undefined
+          ? "project"
+          : file.options.unboundedSupport
+            ? "enabled"
+            : "disabled",
+        () => updateFileSizeControls(),
+      );
       const sequence = textInput(String(file.options.sequenceSize ?? draft.options.sequenceSize)) as HTMLInputElement;
       const string = textInput(String(file.options.stringSize ?? draft.options.stringSize)) as HTMLInputElement;
       let sequenceEdited = false;
@@ -170,6 +187,11 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
         input.max = "2147483647";
         input.required = true;
       }
+      const updateFileSizeControls = () => {
+        const enabled = unboundedMode() === "project" ? draft.options.unboundedSupport : unboundedMode() === "enabled";
+        sequence.disabled = enabled;
+        string.disabled = enabled;
+      };
       const resetSequence = document.createElement("button");
       resetSequence.type = "button";
       resetSequence.className = "property-reset-link";
@@ -214,6 +236,7 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
       field(stringGroup, "Unbounded string size", string);
       stringGroup.append(resetString);
       form.append(stringGroup);
+      updateFileSizeControls();
       if (file.isGenerationRoot) {
         defines = textInput(file.options.defines.join("\n"), true) as HTMLTextAreaElement;
         undefines = textInput(file.options.undefines.join("\n"), true) as HTMLTextAreaElement;
@@ -234,6 +257,7 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
               ? Number(sequence.value)
               : file.options.sequenceSize,
           stringSize: resetStringToProject ? undefined : stringEdited ? Number(string.value) : file.options.stringSize,
+          unboundedSupport: unboundedMode() === "project" ? undefined : unboundedMode() === "enabled",
           defines:
             file.isGenerationRoot && defines
               ? defines.value
@@ -261,6 +285,9 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
         ],
         draft.options.sequenceArrayMapping,
       );
+      const unbounded = document.createElement("input");
+      unbounded.type = "checkbox";
+      unbounded.checked = draft.options.unboundedSupport;
       const sequence = textInput(String(draft.options.sequenceSize)) as HTMLInputElement;
       const string = textInput(String(draft.options.stringSize)) as HTMLInputElement;
       for (const input of [sequence, string]) {
@@ -269,6 +296,13 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
         input.max = "2147483647";
         input.required = true;
       }
+      const updateProjectSizeControls = () => {
+        sequence.disabled = unbounded.checked;
+        string.disabled = unbounded.checked;
+      };
+      unbounded.addEventListener("change", updateProjectSizeControls);
+      field(form, "RTI-style unbounded sequences and strings", unbounded);
+      updateProjectSizeControls();
       field(form, "Unbounded sequence size", sequence);
       field(form, "Unbounded string size", string);
       const escape = document.createElement("input");
@@ -294,6 +328,7 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
           sequenceSize: Number(sequence.value),
           stringSize: Number(string.value),
           enableEscapeChar: escape.checked,
+          unboundedSupport: unbounded.checked,
           includeDirectories: includeFolders.filter((item) => item.checkbox.checked).map((item) => item.path),
         });
       };

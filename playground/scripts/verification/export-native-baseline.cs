@@ -37,6 +37,7 @@ foreach (var testCase in cases)
             undefines: file.IsGenerationRoot ? file.Options?.Undefines : [],
             includeDirectories: testCase.Options?.IncludeDirectories?.Order(StringComparer.Ordinal).ToArray(),
             sequenceSize: file.Options?.SequenceSize ?? 100, stringSize: file.Options?.StringSize ?? 255,
+            unboundedSupport: file.Options?.UnboundedSupport ?? false,
             enableEscapeChar: testCase.Options?.EnableEscapeChar ?? false))
         .ToArray();
 
@@ -109,13 +110,15 @@ internal sealed record CaseFile(string Path, string Source, bool IsGenerationRoo
 /// <param name="SequenceArrayMapping">The direct sequence-array mapping.</param>
 /// <param name="SequenceSize">The effective unbounded sequence size.</param>
 /// <param name="StringSize">The effective unbounded string size.</param>
+/// <param name="UnboundedSupport">Whether the file uses RTI-style unbounded metadata.</param>
 internal sealed record CaseFileOptions(
     string? SequenceArrayMapping = null,
     int? SequenceSize = null,
     int? StringSize = null,
     string[]? Defines = null,
     string[]? Undefines = null,
-    bool Strict = false);
+    bool Strict = false,
+    bool UnboundedSupport = false);
 
 /// <summary>Batch settings for a native verification fixture.</summary>
 /// <param name="Defines">External definitions.</param>

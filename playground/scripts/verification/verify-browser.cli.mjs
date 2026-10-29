@@ -141,13 +141,14 @@ async (page) => {
             async ({ cases, expected }) => {
               const base = new URL(".", location.href);
               const worker = new Worker(new URL("dotnet/worker.mjs", base), { type: "module" });
-              const defaultFileOptions = { defines: [], undefines: [], strict: false };
+              const defaultFileOptions = { defines: [], undefines: [], strict: false, unboundedSupport: false };
               const defaultWorkspaceOptions = {
                 sequenceArrayMapping: "RtiCSharp",
                 sequenceSize: 100,
                 stringSize: 255,
                 includeDirectories: [],
                 enableEscapeChar: false,
+                unboundedSupport: false,
               };
               const withDefaultFileOptions = (files) =>
                 files.map((file) => ({ ...file, options: file.options ?? defaultFileOptions }));
@@ -182,7 +183,7 @@ async (page) => {
                 for (const baseline of expected) {
                   const fixture = cases.find((value) => value.id === baseline.caseId);
                   const request = {
-                    protocolVersion: 3,
+                    protocolVersion: 4,
                     workerGeneration: 1,
                     requestId: ++requestId,
                     workspaceRevision: requestId,
@@ -235,7 +236,7 @@ async (page) => {
                 const fixture = cases[0];
                 for (let index = 0; index < 2; index++) {
                   const { response } = await wait({
-                    protocolVersion: 3,
+                    protocolVersion: 4,
                     workerGeneration: 1,
                     requestId: ++requestId,
                     workspaceRevision: requestId,
@@ -331,7 +332,7 @@ async (page) => {
                 event.data.type === "result" ? resolve(event.data.response) : reject(new Error(event.data.message));
               };
               worker.postMessage({
-                protocolVersion: 3,
+                protocolVersion: 4,
                 workerGeneration: 1,
                 requestId: 1,
                 workspaceRevision: 1,
@@ -350,6 +351,7 @@ async (page) => {
                   stringSize: 255,
                   includeDirectories: [],
                   enableEscapeChar: false,
+                  unboundedSupport: false,
                 },
               });
             });
@@ -674,14 +676,14 @@ async (page) => {
               };
 
               worker.postMessage({
-                protocolVersion: 3,
+                protocolVersion: 4,
                 workerGeneration: 1,
                 requestId: ++requestId,
                 workspaceRevision: requestId,
                 profile: "7.7.0",
                 files: fixture.files.map((file) => ({
                   ...file,
-                  options: file.options ?? { defines: [], undefines: [], strict: false },
+                  options: file.options ?? { defines: [], undefines: [], strict: false, unboundedSupport: false },
                 })),
                 options: {
                   sequenceArrayMapping: "RtiCSharp",
@@ -689,6 +691,7 @@ async (page) => {
                   stringSize: 255,
                   includeDirectories: [],
                   enableEscapeChar: false,
+                  unboundedSupport: false,
                 },
                 ...extra,
               });

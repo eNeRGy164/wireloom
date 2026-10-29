@@ -550,6 +550,7 @@ function projectPreview() {
     projectSettings.set("DdsIdlSequenceSize", String(workspace.options.sequenceSize));
   if (workspace.options.stringSize !== 255)
     projectSettings.set("DdsIdlStringSize", String(workspace.options.stringSize));
+  if (workspace.options.unboundedSupport) projectSettings.set("DdsIdlUnboundedSupport", "true");
   if (workspace.options.enableEscapeChar) projectSettings.set("DdsIdlEnableEscapeChar", "true");
   if (workspace.options.includeDirectories.length)
     projectSettings.set(
@@ -573,6 +574,8 @@ function projectPreview() {
       settings.push(["SequenceSize", String(file.options.sequenceSize)]);
     if (file.options.stringSize !== undefined && file.options.stringSize !== workspace.options.stringSize)
       settings.push(["StringSize", String(file.options.stringSize)]);
+    if (file.options.unboundedSupport !== undefined)
+      settings.push(["UnboundedSupport", String(file.options.unboundedSupport)]);
     return settings.map(([key, value]) => `      <${key}>${xml(value)}</${key}>`).join("\n");
   };
   const item = (tag: "DdsIdl" | "AdditionalFiles", file: Workspace["files"][number]) => {

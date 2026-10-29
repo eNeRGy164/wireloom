@@ -105,7 +105,7 @@ export class CompilerClient {
   enqueue(snapshot: Omit<CompileRequest, "protocolVersion" | "workerGeneration" | "requestId">) {
     this.state.enqueue({
       ...snapshot,
-      protocolVersion: 3,
+      protocolVersion: 4,
       workerGeneration: this.state.generation,
       requestId: ++this.requestId,
     });

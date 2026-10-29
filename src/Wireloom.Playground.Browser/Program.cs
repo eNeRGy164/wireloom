@@ -20,10 +20,7 @@ public static partial class PlaygroundCompiler
     /// <exception cref="InvalidOperationException">The host MD5 provider fails.</exception>
     [PublicAPI]
     [JSExport]
-    public static string Compile(string requestJson)
-    {
-        return PlaygroundCompilerAdapter.Compile(requestJson, ComputeMd5);
-    }
+    public static string Compile(string requestJson) => PlaygroundCompilerAdapter.Compile(requestJson, ComputeMd5);
 
     [JSImport("computeMd5", "md5-provider")]
     private static partial byte[] ComputeMd5(byte[] input);
