@@ -61,7 +61,7 @@ sample.maybe = null;
 
 The `@optional` annotation requests optionality; check the generated
 declaration for the exact nullable member type. The
-[optional collection cases](../corpus/FEATURE-COVERAGE.md#positive-cases) and
+[optional collection cases](../corpus/FEATURE-COVERAGE.md#current-grouped-idl-cases) and
 [`ScalarSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Managed/ScalarSpecs.cs)
 cover the tested defaults and optional shapes.
 
@@ -83,10 +83,12 @@ copy. [`ReferenceOwnershipSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeCont
 records the reference-retention cases.
 
 A copy constructor called with `null` is also not a substitute for the default
-constructor. Constructor-only allocations and IDL default values do not
-necessarily run on that path; inspect the generated API and use the ordinary
-default constructor when you want initialized defaults. The behavior is covered
-by [`ScalarSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Managed/ScalarSpecs.cs).
+constructor. IDL defaults expressed as member initializers remain in effect,
+while collection and aggregate allocations performed only by the parameterless
+constructor do not run on that path. Use the ordinary default constructor when
+those allocations are required. The behavior is covered by
+[`ScalarSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Managed/ScalarSpecs.cs)
+and the [runtime contract notes](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix).
 
 ## Mutate collections and optional members
 
@@ -112,6 +114,55 @@ Generated equality and hash codes reflect the current member values. If a
 generated object is used as a key in a dictionary or set, mutating it after
 insertion can change its hash code and make lookup behavior surprising. Prefer
 immutable key data or remove and reinsert the object after changing it.
+
+## Maintainer reference: generated storage contracts
+
+These are current emitter contracts for the covered shapes. Review their
+[architectural ownership rules](../architecture/arc42/08-crosscutting-concepts.md#84-generated-values-and-resource-ownership)
+when changing managed methods or native support. The
+[runtime contract matrix](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
+owns executable coverage and gaps.
+
+### Equality and hashing
+
+- Array hash codes use the first element, not the array length. This preserves
+  RTI's intentionally weak hash behavior. Empty arrays are not a supported
+  input for this generated hash path.
+- Primitive arrays use direct `SequenceEqual`. Arrays containing aggregate
+  elements use the casted `Cast<T>().SequenceEqual(...)` path required by the
+  runtime collection API.
+
+For optional arrays of aggregate elements, hashing uses an explicit presence
+branch: add the first aggregate element when present and add `-1` otherwise.
+An integer/aggregate conditional expression cannot be passed to generic
+`HashCode.Add<T>`. C134 checks this rule alongside nullable presence, deep copy,
+optional metadata, and native fixed-array conversion.
+
+### Native cleanup
+
+`optionalsOnly` cleanup is context-sensitive. Types with direct optional
+members destroy those members and return before required cleanup. Derived
+types return after base cleanup because the base may contain optional
+members. Direct strings, nested aggregates, aggregate-element collections,
+and sequence arrays retain the RTI outer guard. Primitive-only fields and
+primitive-only collections delegate cleanup to their member wrapper and do
+not need an outer guard.
+
+Native conversion also distinguishes allocation-enabled calls from calls that
+reuse existing storage. Review conversion, initialization, and destruction
+together when changing a member shape; the
+[native emitter](../../src/Wireloom.Dds.Compiler/Compiler/Emission/Emitters/NativeTypeEmitter.cs)
+and linked runtime contracts define the supported paths.
+
+### Diagnostic formatting
+
+Alias diagnostic formatting intentionally improves on RTI C#'s unsupported
+scalar and collection root formatting. Struct and union formatting continues
+through RTI; aliases needing a fallback use a hidden typed instance method in
+their existing support class rather than embedding loops in the data class.
+Invariant numbers, readable Unicode, quoted collection strings, and nested
+array dimensions are executable runtime contracts. This is diagnostic output,
+with separate evidence from serialization and DDS interoperability.
 
 ## Evidence boundary
 

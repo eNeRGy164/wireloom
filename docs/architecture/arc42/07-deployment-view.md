@@ -1,137 +1,170 @@
 # 7. Deployment view
 
-Wireloom is deployed as a NuGet analyzer/source-generator package rather than
-as a service. The generated application still deploys with the consumer's
-selected RTI Connext DDS runtime. The browser Playground is a separate static
-deployment that carries a TypeScript client and .NET WebAssembly worker assets.
+Wireloom has two deployment scenarios: [.NET build integration](#71-net-build-integration)
+for consumer projects and the [browser Playground](#72-browser-playground-deployment).
+This chapter maps the [building blocks](05-building-block-view.md) to their
+execution environments and identifies where configuration is supplied.
+Collaboration and recovery flows are described in [chapter 6](06-runtime-view.md).
 
-Effective finite limits for unbounded IDL values are build-time MSBuild
-properties with per-file item metadata overrides. They are compiled into the
-generated type metadata and do not add consumer runtime configuration.
-`DdsIdlEnableEscapeChar` is a build-time project property that changes emitted
-names and implicit hash member IDs when enabled; it has no runtime switch or
-per-file override.
+## 7.1 .NET build integration
 
-## 7.1 Infrastructure level 1
+The reference environment is a consumer developer workstation or CI build
+agent using the published `Wireloom.Dds.Generator` NuGet package.
+The same package supplies the MSBuild integration, Roslyn adapter, and
+shared IDL compiler.
 
-![Deployment view showing the developer or CI build host, NuGet feeds, generated application, RTI runtime, and compatibility evidence.](images/07/deployment-overview.png)
+![NuGet package assets loaded by the consumer build host, with the resulting application in its own runtime environment.](images/07/deployment-overview.png)
 
-| Node                       | Deployed material                                                      | Role                                                                    |
-| :------------------------- | :--------------------------------------------------------------------- | :---------------------------------------------------------------------- |
-| Developer or CI build host | .NET 10 SDK, consumer project, IDL, Wireloom package, compiler project | Builds the shared core and adapter; runs generation and tests           |
-| NuGet feed                 | `Wireloom.Dds.Generator` package and dependencies                      | Supplies MSBuild targets, adapter, and bundled compiler assembly        |
-| Consumer output            | Application assembly plus generated source compiled into it            | Runs the DDS application                                                |
-| RTI runtime environment    | Application-selected `Rti.ConnextDds` libraries                        | Owns DDS communication and serialization                                |
-| Evidence repository        | Corpus IDL, retained oracle sources, and wire-compatibility peers      | Supports source-shape and DDS wire verification, not production runtime |
+### 7.1.1 Artifact placement and execution
 
-The Quality workflow continuously checks both exact RTI LTS packages on
-Windows 2025 and Ubuntu 26.04. Its eight runtime/package jobs combine RTI
-7.3.1 and 7.7.0 with consumer targets `net8.0` and `net10.0`; each packs a fresh
-analyzer and compiles the package consumer with C# 12. Two separate corpus
-jobs select the matching retained LTS oracles and verify applicability and
-shard reporting. These jobs need no RTI license secret and retain runtime and
-package test logs. A separate Ubuntu job copies the freshly packed analyzer and
-consumer fixture into an `mcr.microsoft.com/dotnet/sdk:8.0.100` container, which
-contains no .NET 10 SDK or runtime. It restores, compiles, and runs the broad
-package suite with the .NET 8 compiler host for each RTI LTS package. The
-repository SDK remains selected by `global.json` when producing the package.
-See
-[continuous LTS verification](../../guides/support-and-compatibility.md#continuous-lts-verification).
+| Environment                      | Deployed material                                                                                                  | Building-block mapping and responsibility                                                                  |
+| :------------------------------- | :----------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------- |
+| NuGet feed                       | Published `Wireloom.Dds.Generator` package                                                                         | Distributes the versioned build integration and bundled compiler                                           |
+| Consumer package cache           | `build/Wireloom.Dds.Generator.targets`; generator/compiler DLLs and XML documentation under `analyzers/dotnet/cs/` | Supplies MSBuild integration and the assemblies loaded by Roslyn                                           |
+| Developer or CI build host       | Consumer project, IDL inputs, compatible .NET SDK/compiler host, restored package and explicit RTI reference       | Runs .NET build integration and the shared IDL compiler; compiles generated documents into the application |
+| Consumer application environment | Compiled application and its selected RTI managed/native runtime assets                                            | Runs the consumer application; RTI owns DDS communication and serialization                                |
 
-The manually triggered workflow runs eight whole-case shards for each qualified RTI profile. Licensed Docker jobs invoke the C# Runner to build selected peers and schedule domain-isolated exchanges; peer processes disable the unused RTI Monitoring Library. A license-free Verifier job checks shard evidence and produces the combined report. Build concurrency, exchange concurrency, container images, artifacts, and failure handling are documented in the [wire compatibility runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#case-shards-and-combined-reports).
-The checked-in samples/HelloWorld project consumes the released
-Wireloom.Dds.Generator 0.5.0 package from NuGet.org and builds on Ubuntu 26.04
-and Windows 2025. This compile-only CI check needs no RTI native library or
-license; the sample README documents the licensed local DDS exchange.
+The adapter and compiler target `netstandard2.0`. They are loaded together
+from the analyzer package and must have matching Wireloom versions.
+The compiler is non-packable and has no separate public package.
+Package placement is defined in the
+[generator project](../../../src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj).
 
-`Wireloom.Dds.Compiler` is a non-packable `netstandard2.0` project. Its
-assembly is built at the same version as the generator and is packed beside
-`Wireloom.Dds.Generator.dll` under `analyzers/dotnet/cs`. The package remains
-the sole published package and has no compiler package dependency. The
-consumer loads both assemblies through the analyzer package and does not gain
-an application runtime reference to the compiler. Repository project
-references also build and load the compiler beside the generator.
+The consumer build must meet the
+[framework, language, compiler-host, and RTI constraints](02-architecture-constraints.md#21-product-and-execution-boundaries).
+Exact-release qualification and its limits are defined by the
+[support policy](../../guides/support-and-compatibility.md#rti-version-qualification).
+The consumer does not build Wireloom's source projects or inherit its repository
+SDK selection.
+
+Wireloom's assemblies are build-time assets and add no application runtime
+dependency. Generated C# is compiled into the application. The application team
+owns the resulting deployment, RTI runtime selection, native prerequisites,
+and runtime licensing. No external IDL generator or RTI license secret is
+required for Wireloom generation; live DDS operation has separate runtime
+requirements.
+
+### 7.1.2 Consumer configuration
+
+The .NET DDS application developer or Build and CI engineer owns these settings in
+the consuming project and its shared build configuration.
+
+| Configuration                                                                  | Location                                                                                        | Deployment or build impact                                                                                                      | Reference                                                                                                                                  |
+| :----------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| Wireloom package version and feed                                              | Consumer `PackageReference`, central package management if used, and NuGet source configuration | Selects the adapter/compiler pair restored onto each build host; package usage sets `PrivateAssets="all"`                       | [Package usage](../../../src/Wireloom.Dds.Generator/README.md)                                                                             |
+| .NET SDK/compiler and IDE host selection                                       | Installed/selected consumer build or IDE tooling; consumer repository `global.json` when used   | Determines which MSBuild/Roslyn host loads the analyzer; target framework alone does not select this host                       | [Host requirements](02-architecture-constraints.md#21-product-and-execution-boundaries)                                                    |
+| Consumer framework, C# language, and RTI reference                             | Consumer project or shared MSBuild files                                                        | Sets the application target and emitted-code language requirements; resolved RTI reference selects the generation profile       | [Framework, language, and runtime](../../guides/configuration.md#select-the-consumer-framework-language-and-rti-runtime)                   |
+| Generation roots and include search                                            | `DdsIdl`/`AdditionalFiles` items, include-directory properties and root metadata                | Determines which inputs are tracked and made available to generation                                                            | [Roots and includes](../../guides/configuration.md#select-generation-roots-and-included-files)                                             |
+| Preprocessing, strictness, identifier escaping, mappings, and effective limits | Project properties and input metadata                                                           | Changes generated contracts at build time; these settings are compiled into output rather than read by the deployed application | [Settings reference](../../guides/configuration.md#settings-at-a-glance)                                                                   |
+| Diagnostic policy and generated-source inspection                              | Consumer project/shared build files and analyzer configuration                                  | Controls build acceptance and optional generated-file output                                                                    | [Diagnostics](../../guides/configuration.md#control-diagnostics), [generated files](../../guides/configuration.md#inspect-generated-files) |
+
+These are declarative .NET project settings. Normal restore and build load the
+package integration without generation-specific environment variables, tool
+paths, or custom invocation scripts. Defaults, precedence, per-file scope, and
+examples remain in the [configuration guide](../../guides/configuration.md).
+
+### 7.1.3 Package production and distribution
+
+Wireloom maintainers build and package the product with the repository's
+[SDK selection](../../../global.json),
+[build defaults](../../../Directory.Build.props), and
+[central dependencies](../../../Directory.Packages.props).
+These settings belong to the producer environment.
+
+The [preview workflow](../../../.github/workflows/publish-preview.yml)
+publishes to GitHub Packages. The
+[release workflow](../../../.github/workflows/publish-release.yml)
+publishes validated release tags to NuGet.org with SBOM and provenance
+attestations. Consumer builds restore these packages; publication is a
+maintainer responsibility.
 
 ## 7.2 Browser Playground deployment
 
-The non-packable `Wireloom.Playground.Browser` project publishes the shared
-compiler for `browser-wasm` using the pinned .NET 10.0.13 browser runtime. Its
-published `_framework` assets and worker entry are copied into the Vite static
-bundle. The npm project pins Node 26.7.0, npm 12.2.0, Vite 7.3.7, and
-TypeScript 6.0.3 in `package.json` and `package-lock.json`. Vite builds with a
-configurable base path so client chunks and the module worker can be served at
-the site root or under a nested path.
+The reference public deployment is GitHub Pages under `/wireloom/`.
+Wireloom publishes a complete static application; compilation runs in the
+visitor's browser.
 
-The Quality workflow runs the pinned TypeScript compiler, strict ESLint,
-Prettier, Node tests with branch/line/function thresholds, and a production
-browser coverage run using Playwright's Chromium headless shell. Browser V8
-coverage is source-mapped to first-party client code and merged with Node
-coverage into Cobertura; a focused test run reports the linked C# adapter.
-Coveralls receives those reports with the existing compiler and generator
-reports. Community Qodana scans the .NET solution, including the browser
-adapter. The workflow also builds and checks the root and nested static bundles.
+![A complete static Playground bundle served to a browser page, editor worker, and .NET WebAssembly compiler worker, with origin-local storage.](images/07/playground-deployment.png)
 
-Stage 1 adds locally bundled Monaco 0.57.0 and fflate 0.8.3. DOMPurify is
-overridden to patched 3.4.17 until Monaco's upstream pin is updated. The build
-emits upstream licenses/notices, an editor worker, a small bootstrap, and the
-editor application chunk. The latter is about 719 kB gzip and exceeds Vite's
-default chunk-size advisory; public-network loading remains release evidence
-work. The footer records the shared Wireloom version and Git revision,
-including a dirty-checkout suffix. Serve the complete `dist/` tree with its
-matching `dotnet/` assets; partial asset replacement is not supported.
+### 7.2.1 Artifact placement and execution
 
-The current clean Release publish succeeds with interpreter assets and no
-AOT/native relinking. The .NET runtime tree contains 63 files totaling
-14,208,318 uncompressed bytes; the client bundle's `dotnet/` directory has 65
-files and 14,211,428 bytes including the worker and MD5 module. On Windows Edge
-156.0.4314.42, the worker resources transferred 5,798,222 bytes per hosting
-path (5,792,822 encoded bytes). Fresh isolated-context readiness measured 149
-ms at root and 159 ms at `/playground/`; reload readiness measured 124 ms and
-122 ms. A 128-declaration compile that emitted the 512-document cap took
-357.1 ms. The measured heartbeat maximum during that compile was 16.5 ms, and
-a main-thread edit took 30.7 ms. These timings describe one representative
-Edge host and are not cross-browser guarantees.
+| Environment                    | Deployed material                                                                                                  | Building-block mapping and responsibility                                                         |
+| :----------------------------- | :----------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| Wireloom build environment     | Repository .NET SDK, pinned Node/npm toolchain, browser project, and Vite build                                    | Publishes the browser compiler and assembles the static candidate                                 |
+| Same-origin static HTTPS host  | HTML, client chunks, Monaco worker, notices, compiler worker/MD5 modules, and complete `dotnet/_framework/` assets | Serves one matching version of the complete application; GitHub Pages is the selected public host |
+| Browser page                   | TypeScript client and Monaco editor                                                                                | Runs the browser client, workspace interaction, result presentation, and recovery coordination    |
+| Browser compiler module worker | Worker bootstrap/services, downloaded .NET WebAssembly runtime, browser compiler adapter, and shared compiler      | Runs the browser compilation host and shared IDL compiler away from the page's main thread        |
+| Monaco editor worker           | Bundled editor worker                                                                                              | Supplies editor services in a separate worker                                                     |
+| Browser origin storage         | IndexedDB workspace records and localStorage editor preferences                                                    | Keeps recovery data and preferences local to the browser origin                                   |
 
-The accepted deployment requires static assets and workers to be served from
-the same origin. In the observed Edge run, application requests were GETs to
-loopback and no outbound request carrying source was observed. This is scoped
-request evidence, not a general telemetry or privacy certification. Edge, Firefox,
-and Playwright WebKit runs cover representative client flows; Safari is not
-claimed. Browser qualification and its limits are recorded in the
-[qualification scope](../../testing/playground-qualification.md). Public-network
-evidence comes from the deployment checks below.
+The [browser project](../../../src/Wireloom.Playground.Browser/Wireloom.Playground.Browser.csproj)
+publishes for `browser-wasm` with its selected .NET runtime. The
+[build scripts](../../../playground/package.json) copy the published runtime,
+compiler worker, and MD5 module into the static bundle.
+The visitor downloads the runtime assets and needs no installed .NET SDK,
+Node toolchain, RTI runtime, or RTI license. There is no server compiler;
+workspace source is processed locally.
 
-GitHub Pages is the selected public host. Quality builds a separate
-`dist-pages/` candidate at `/wireloom/` by default, with an optional
-`PLAYGROUND_BASE_PATH` repository variable for a later custom hostname.
-PR builds validate and retain this candidate without publishing. The publication
-workflow accepts only successful push Quality runs from this repository's
-`main`, waits for Coveralls, and promotes the exact artifact after checking
-its full revision, base path, and complete file inventory with SHA-256 hashes.
-Qodana and other Quality jobs must also have passed. Automatic publication
-rejects superseded revisions; serialized manual runs can redeploy a retained
-successful artifact for rollback. Only the deploy job receives Pages write
-and OIDC permissions, within the `github-pages` environment restricted to main.
+Serve the complete matching asset tree. Replacing individual client, worker,
+or runtime files independently is unsupported. Host and browser must support
+module workers and the required JavaScript/WebAssembly MIME types.
+Browser qualification and its limits remain in the
+[qualification guide](../../testing/playground-qualification.md).
 
-After deployment, isolated Chromium checks the HTTPS host's complete asset
-bytes, WASM/module MIME types, sample generation, diagnostics, footer, copy,
-downloads, ZIP, and reload. Reports record the actual deployed URL and source
-revision. A failure marks publication verification unsuccessful and requires
-inspection or the documented rollback; it is not a successful public-host
-qualification. GitHub's deployment revision is the publishing workflow's
-revision; `deployment.json` identifies the artifact's source, including manual
-rollback. All runtime assets remain same-origin static downloads. See the
-[deployment runbook](../../guides/playground-deployment.md) and
-[action intake](../dependency-intake/playground-pages-actions.md).
+### 7.2.2 Hosting and browser configuration
 
-Preview publication uses GitHub Packages. Validated release tags publish to
-NuGet.org with SBOM and provenance attestations.
+Wireloom maintainers own bundle/publication settings. Hosting administrators
+own the site configuration; Playground users control their workspace and
+browser-local data.
 
-> [!NOTE]
-> Additional information: This architecture context is also summarized in
-> [Architecture memory](../architecture-memory.md) and
-> `.agents/architecture-memory.yaml` so implementation agents can use it
-> efficiently in limited context windows.
-> The arc42 chapters, linked ADRs, and contracts remain the primary source
-> documents. If the derived memory differs, update the source docs first and
-> refresh the derived memory.
+| Configuration                                                  | Location                                                                                                          | Deployment or runtime impact                                                                              | Reference                                                                                                         |
+| :------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| Ordinary bundle base path: `VITE_BASE_PATH` (default `/`)      | Build environment read by `vite.config.ts`                                                                        | Builds asset and worker URLs for local or alternative static hosting                                      | [Vite configuration](../../../playground/vite.config.ts), [Playground build guide](../../../playground/README.md) |
+| Pages base path: `PLAYGROUND_BASE_PATH` (default `/wireloom/`) | Repository variable passed to the Pages candidate build                                                           | Produces `dist-pages/` for the intended URL; publisher verifies agreement with the actual Pages URL       | [Repository setup](../../guides/playground-deployment.md#repository-setup)                                        |
+| Static host, HTTPS, MIME types, and asset origin               | Static hosting configuration                                                                                      | Makes the complete bundle and workers load from the same origin with correct asset paths                  | [Deployment guide](../../guides/playground-deployment.md)                                                         |
+| Pages publication access                                       | GitHub Pages uses Actions; `github-pages` environment restricted to `main`; deployment-job Pages/OIDC permissions | Controls which validated artifact can reach the public site                                               | [Repository setup](../../guides/playground-deployment.md#repository-setup)                                        |
+| Recovery and editor preferences                                | Browser-origin IndexedDB/localStorage                                                                             | Persists local data subject to browser storage availability; changing hostname changes the storage origin | [Recovery](../../guides/playground-workspaces.md#results-exports-and-local-recovery)                              |
+| IDL workspace settings and selected RTI profile                | Playground workspace UI and exported source workspace                                                             | Configures local compiler requests; these are user inputs rather than host configuration                  | [Workspace settings](../../guides/playground-workspaces.md#compiler-roles-and-settings)                           |
+
+The [base path](12-glossary.md#base-path) is a build-time choice. A changed base path requires a matching
+bundle. A hostname change alone can reuse a bundle whose base path still matches
+the site. A new hostname creates a different browser storage
+[origin](12-glossary.md#origin); existing local recovery data does not move automatically.
+See the [custom-domain procedure](../../guides/playground-deployment.md#custom-domain-later).
+
+### 7.2.3 Publication and rollback
+
+The Quality workflow builds and validates a separate `dist-pages/` candidate.
+Its `deployment.json` identifies the source revision, Wireloom version, base
+path, and complete file inventory with hashes. Pull requests retain a candidate
+without publishing a website.
+
+The [publication workflow](../../../.github/workflows/publish-playground.yml)
+accepts eligible successful Quality runs from this repository's `main`,
+checks the required quality gates, provenance, base path, and artifact hashes,
+and promotes the existing bytes without rebuilding. Automatic publication
+rejects superseded revisions; deployment is serialized. Only the deployment
+job receives Pages write and OIDC permissions.
+
+After publication, checks against the actual HTTPS URL verify the deployed
+assets and representative browser operations. A failure requires inspection or
+manual rollback; it does not trigger automatic rollback.
+A manual `quality_run_id` selects a retained eligible candidate through the
+same validation and publication controls. The artifact manifest identifies the
+candidate's source revision, including after rollback.
+
+The [deployment runbook](../../guides/playground-deployment.md) owns setup,
+local/public verification commands, artifact retention, and
+[rollback procedures](../../guides/playground-deployment.md#rollback).
+[Chapter 10](10-quality-requirements.md) defines acceptance criteria;
+[browser qualification](../../testing/playground-qualification.md) retains measured
+results, and [chapter 11](11-risks-and-technical-debt.md#r-08) records remaining deployment exposure.
+
+Supporting test and DDS qualification infrastructure is documented in the
+[contribution guide](../../../CONTRIBUTING.md) and
+[wire runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
+Its execution flows are in [chapter 6](06-runtime-view.md#63-supporting-verification).
+
+---
+
+[< 6. Runtime view](06-runtime-view.md) | [Index](index.md) | [8. Cross-cutting concepts >](08-crosscutting-concepts.md)

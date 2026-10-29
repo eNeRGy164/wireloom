@@ -1,209 +1,402 @@
 # 6. Runtime view
 
-Wireloom has no long-running server process. Its runtime scenarios include the
-consumer's build, the browser Playground's local WebAssembly compilation, and
-the generated application's later use of the RTI runtime.
+This chapter describes functional outcomes and collaboration between the
+[building blocks](05-building-block-view.md). Sequence diagrams use the shared
+[Wireloom theme](images/wireloom-theme.puml) and a
+[sequence style](images/06/sequence-style.puml). Numbered Step groups match the
+numbered steps below each diagram. A step can contain several messages;
+named branches show alternatives. Referenced subflows avoid repeating the shared compiler.
 
-## 6.1 Consumer build and generation
+The main flows cover the four [stakeholder roles](01-introduction-and-goals.md#13-stakeholders).
+Supporting verification is identified separately from product use. Ordinary
+consumer-application DDS operation remains outside the product boundary;
+the wire scenario below concerns qualification peers.
 
-![Consumer build sequence from MSBuild IDL inputs through Roslyn generation and compilation to application use of the RTI runtime.](images/06/consumer-build-sequence.png)
+| Flow                                                                                         | Main initiator                                          | Intended outcome                                                       |
+| :------------------------------------------------------------------------------------------- | :------------------------------------------------------ | :--------------------------------------------------------------------- |
+| [1. Generate or regenerate contracts](#611-generate-or-regenerate-application-contracts)     | .NET DDS application developer or Build and CI engineer | Generated C# reflects current IDL and project inputs                   |
+| [2. Diagnose and correct generation problems](#612-diagnose-and-correct-generation-problems) | .NET DDS application developer                          | Correct the relevant IDL or configuration and obtain an updated result |
+| [3. Preview the current workspace](#621-preview-the-current-workspace)                       | Playground user                                         | See current generated documents or diagnostics                         |
+| [4. Change a workspace safely](#622-change-a-workspace-safely)                               | Playground user                                         | Apply an accepted workspace change consistently                        |
+| [5. Export source or generated output](#623-export-source-or-current-generated-output)       | Playground user                                         | Obtain the intended local source/output artifact                       |
+| [6. Restore or reset a workspace](#624-restore-or-reset-the-local-workspace)                 | Playground user                                         | Recover saved work or retain a reset/current workspace                 |
+| [7. Recover browser compilation](#625-recover-browser-compilation-after-a-host-failure)      | Playground user or host failure                         | Restore usable compilation with the correct current request            |
+| [8. Verify a change](#631-verify-a-compiler-or-integration-change)                           | Wireloom maintainer                                     | Establish attributable results for the affected contracts              |
+| [9. Qualify DDS exchanges and reports](#632-qualify-dds-exchanges-and-retained-reports)      | Wireloom maintainer                                     | Review exact-scope exchange results and trustworthy evidence           |
+| [C1. Compile an IDL batch](#64-c1-compile-an-in-memory-idl-batch)                            | A compiler host                                         | Obtain documents and diagnostics from supplied inputs                  |
 
-1. MSBuild adds explicit `DdsIdl` roots and tracks other `.idl` files as
-   non-generating inputs. Root metadata determines strictness for the batch;
-   project properties provide effective limits and the batch-wide
-   `DdsIdlEnableEscapeChar` name-normalization setting.
-2. Roslyn supplies the files, item metadata, compiler options, and compilation
-   references to `Generator`.
-3. The generator requires C# 12 or later and a resolved RTI runtime reference
-   of at least 7.3.1. The Roslyn adapter reads the resolved assembly version
-   and maps it to a supported profile through the shared compiler API.
-4. `IdlCompiler` resolves the include graph and preprocesses input. If escape
-   normalization is enabled, a token-aware pass removes one leading underscore
-   from identifiers and composes source origins before parsing. The front end
-   then binds normalized references and deferred bounds against the complete
-   symbol graph and validates semantics using the batch policy.
-5. The adapter calls `IdlCompiler.Compile` with in-memory inputs, the selected
-   profile, and its MD5 provider. The core snapshots the input list,
-   preprocesses and validates IDL, then returns one result containing
-   documents and diagnostics. Emission planning applies profile-specific API policies.
-   Deliberately ignored constructs and potentially lossy mappings report
-   diagnostics while generation continues; see the
-   [diagnostic rules](08-crosscutting-concepts.md#82-diagnostics-and-source-locations).
-6. The consumer compiles generated types together with its hand-written code.
+## 6.1 Application contract generation
 
-Binding order is explicit: integral, boolean, character, and enum constants, deferred collection
-bounds, string and floating constants, explicit and inherited typedef defaults,
-inheritance and member types, member annotation values, then effective member
-IDs. Semantic validation and emission planning follow these stages. Original
-source offsets are captured before work is queued; binding does not depend on
-the parser's current input or source mapping.
+### 6.1.1 Generate or regenerate application contracts
 
-Macro argument binding, stringification, token pasting, and replacement
-rescanning happen during preprocessing. Adjacent string literals retain their
-token boundaries through that stage. Value binding decodes each literal token,
-concatenates the decoded values, and validates the final encoded length.
-Emission formats the bound value for C# without replaying IDL expressions or
-applying text replacement to literal contents.
+**Intent:** Generate application contracts during a build or IDE update.
+Changes to roots, included IDL, project settings, or the resolved RTI reference
+are variants of this same flow.
 
-The adapter resolves direct sequence-array mapping from file metadata first,
-then the project property, defaulting to `RtiCSharp`. The source file owns the
-choice even when reached through multiple roots. Effective sequence and string
-limits use file metadata first, then project properties, then defaults of 100
-elements and 255 UTF-8 bytes or UTF-16 code units. Explicit IDL bounds override
-these effective limits. In `Idl` mode, planning
-creates sequence-element wrappers and array metadata without rewriting the
-semantic model. Other collections retain their existing emission paths.
+**Participants:** .NET DDS application developer or Build and CI engineer, .NET
+build/IDE host, MSBuild integration, Roslyn adapter, and shared IDL compiler.
 
-Repository C# callers use the same synchronous API with an explicit
-`IdlCompilerProfile` and supplied source text. The core resolves includes only
-from the provided input collection and does not read files. An empty document
-list with no error diagnostics is a successful compile; an empty document list
-with an error is a failed compile. Expected IDL failures return source-located
-`DDSG0001`; `DDSG0004` remains an error result with no documents. Warnings
-collected before the first fatal error remain in that result. Cancellation and
-unexpected exceptions propagate. The adapter converts input-configuration
-errors and presents diagnostics through Roslyn before adding successful
-documents.
+![Generate contracts through MSBuild, Roslyn, and the shared compiler.](images/06/consumer-build-sequence.png)
 
-## 6.2 Failure paths
+1. **Evaluate project inputs.**  
+   The .NET host evaluates the consumer project's IDL configuration. MSBuild
+   integration exposes roots, tracked include inputs, and compiler-visible
+   settings.
+2. **Supply tracked inputs.**  
+   Roslyn supplies additional files, options, and compilation references to
+   the adapter. With no generation roots, the adapter returns before its
+   language/runtime checks and compiler invocation.
+3. **Check host and select profile.**  
+   For generation roots, the adapter checks the language version, resolved RTI
+   reference, and host configuration, and selects the RTI profile.
+4. **Compile the IDL batch.**  
+   The adapter invokes [C1](#64-c1-compile-an-in-memory-idl-batch) with the
+   in-memory inputs, profile, digest service, and cancellation token.
+5. **Report the build or IDE result.**  
+   The adapter reports compiler diagnostics and registers generated documents
+   for a successful compiler result. The .NET host compiles them with the
+   application's handwritten code and presents its build/IDE result.
 
-- Missing or cyclic includes stop compilation with an IDL diagnostic.
-- Unsupported syntax is rejected rather than silently dropped.
-- Case-variant keywords and same-scope case-only names report `DDSG0108` and
-  continue by default. Strict mode rejects them and new keys in derived types
-  with source-located `DDSG0001` before emission.
-- Exact reserved keyword identifiers fail in both modes. Suppressing a
-  diagnostic does not restore output after semantic validation fails.
-- With `DdsIdlEnableEscapeChar`, collisions created by normalized identifiers
-  and the identifier `_` (which would normalize to an empty name) fail before
-  emission. Implicit hash member IDs use normalized names.
-- Invalid sequence-array settings and unsupported recursive direct sequence
-  arrays in `Idl` mode produce `DDSG0001` with no partial source emission;
-  there is no silent fallback to flattening. The default `RtiCSharp` mapping
-  continues to report `DDSG0105` and generate its legacy shape.
-- Non-positive or non-Int32 sequence/string size settings produce source-
-  located `DDSG0001` before output for the affected input.
-- An older language version produces `DDSG0002`.
-- A missing compatible RTI runtime reference produces `DDSG0003`.
-- Cyclic typedef aliases are rejected during semantic resolution with a source-
-  located IDL diagnostic; they do not produce generated output.
-- Cancellation is observed during input traversal and preprocessing. Macro-work
-  or output limits fail the file with a stable source-located generator failure;
-  partial preprocessed text is never passed to the parser.
+**Alternatives:** Host/configuration failures produce the appropriate
+diagnostic without invoking compilation. Expected compiler failures return
+diagnostics without generated documents. Observed cancellation propagates as
+cancellation rather than becoming an IDL diagnostic or successful partial
+result. Corrected inputs use this same flow again.
 
-## 6.3 Wire compatibility evidence
+The [configuration contract](../../guides/configuration.md), [version policy](../../guides/support-and-compatibility.md#rti-version-qualification),
+and [incremental baseline](../../performance/incremental-generator-baseline.md)
+define input scope and measured reuse behavior.
 
-The manually dispatched workflow runs eight whole-case shards for each
-qualified RTI profile. Each shard runs the Runner in the matching Docker
-container: it creates a deterministic plan, builds selected managed and native
-peers, then schedules exchanges with a unique DDS domain per active pair. The
-scheduler starts readers before writers and is bounded to 16 exchanges by
-default. Peer processes disable RTI Monitoring Library 2.0 because its
-observability participant is not used by the matrix.
+### 6.1.2 Diagnose and correct generation problems
 
-Each Runner invocation writes its plan, shard metadata, scenario outcomes, and
-sanitized logs, including partial evidence on failure. After shard jobs finish,
-the report job downloads their artifacts and runs the Verifier. The Verifier
-checks assignment, completeness, uniqueness, and report consistency; its merge
-command writes the combined report and evidence. Report assembly needs no RTI
-license.
+**Intent:** Turn a generation finding into a correction at its relevant source.
 
-Peer and exchange failures remain visible in the report. Setup and evidence
-finalization failures fail the job. Missing, duplicate, inconsistent, or
-unrun scenarios cannot produce a complete report. See the
-[wire compatibility runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#case-shards-and-combined-reports)
-for artifact and failure details.
-## 6.4 Browser Playground compilation
+**Participants:** .NET DDS application developer, shared IDL compiler, Roslyn adapter, and
+build/IDE host.
 
-The TypeScript client submits an immutable JSON workspace snapshot containing
-protocol version, worker generation, monotonic request ID, workspace revision,
-profile, normalized virtual paths, source text, generation-root flags,
-file-owned mapping/size settings, and batch-wide preprocessing settings. It sends no host-machine file paths. The client keeps
-one running request and replaces any pending request with the newest snapshot.
-Source, path, role, settings, and profile changes make earlier responses stale.
+![Present a diagnostic, correct its source, and regenerate.](images/06/diagnose-generation.png)
 
-A dedicated module worker initializes the published .NET runtime once, binds
-the retained synchronous JavaScript MD5 provider in that worker, and reports
-readiness. The .NET adapter validates the profile, path collection, total
-UTF-8 input size, and output document/text caps, then calls
-`IdlCompiler.Compile` with the same shared compiler and profile behavior as
-native hosts. It returns every generated name and source with compiler
-diagnostics and request identity. Diagnostics preserve the core's UTF-16
-offset; the current core API does not provide a span length. Adapter and limit
-failures are host outcomes and do not create compiler diagnostic IDs.
+1. **Receive the diagnostic.**  
+   The compiler supplies a stable ID, severity, message, source input, and
+   UTF-16 offset. Adapter-owned configuration/applicability findings use
+   the host's diagnostic path.
+2. **Present the finding.**  
+   The adapter presents the finding through Roslyn, with its original IDL
+   location when available, including locations in supplied include files.
+3. **Correct the input.**  
+   The developer inspects the finding and corrects IDL or configuration.
+4. **Regenerate contracts.**  
+   [Flow 1](#611-generate-or-regenerate-application-contracts) obtains the
+   updated result.
 
-The page applies a response only when protocol version, worker generation,
-request ID, workspace revision, and profile match the request and current
-workspace. A synchronous compile cannot process cancellation on its busy
-worker event loop. The client therefore rejects stale results and replaces a
-timed-out or failed worker. A replacement reports startup failure and exposes
-an explicit retry action. No compiler runs on the main thread.
+**Alternatives:** Unsafe/rejected input has no generated documents for that
+failed compilation. Deliberately ignored or potentially lossy behavior can
+produce diagnostics alongside generated documents. The consumer's
+warnings-as-errors policy can fail a build independently of compiler semantic
+acceptance. A diagnostic without a usable source location remains a message.
 
-Timeout errors remain visible only while their workspace request is current,
-even after replacing the worker generation. When a replacement becomes ready,
-it drains the newest queued snapshot. An idle worker failure clears previously
-shown output so stale documents are not presented as current.
+The [failure-reporting concept](08-crosscutting-concepts.md#82-source-provenance-and-failure-reporting)
+relates semantic acceptance to host diagnostic policy. The
+[configuration reference](../../guides/configuration.md#control-diagnostics)
+owns severity controls and strictness settings.
 
-The current boundaries are 256 KiB of total UTF-8 source, 512 documents, and
-16 MiB of generated UTF-8 text. Startup and compilation watchdogs are 30
-seconds and 10 seconds. They constrain accepted work but do not provide a hard
-browser-memory quota. Eight deterministic state tests cover newest-pending
-retention, full response identity, worker replacement, startup failure,
-recovery, timeout identity, and queued-work draining.
+## 6.2 Playground evaluation
 
-Stage 0 browser acceptance passed on Windows Edge 156.0.4314.42. The eight-case
-corpus matched exact document names, generated source, success state, and
-diagnostics for both RTI profiles at the site root and `/playground/` (32
-comparisons). Repeated compilation and profile switching passed. Fresh isolated
-context worker readiness took 149 ms at root and 159 ms under `/playground/`;
-reload readiness took 124 ms and 122 ms, respectively. Worker resources
-transferred 5,798,222 bytes per path (5,792,822 encoded bytes). A
-128-declaration case producing 512 documents compiled in 357.1 ms. During that
-run, a main-thread edit took 30.7 ms and the maximum observed heartbeat was
-16.5 ms.
+### 6.2.1 Preview the current workspace
 
-All five injected fault scenarios passed: missing-worker retry, MD5 provider
-error classification and retry, idle worker exception and replacement, the
-10-second watchdog rejecting stale work while retaining new pending input, and
-current-request timeout reporting followed by successful recompilation. Three
-additional validation groups passed: retry after a missing `dotnet.native`
-asset, UI rejection of oversized ASCII and UTF-8 input before posting, and
-worker reuse after malformed protocol/profile, aggregate-input-limit, and
-result-document-limit requests. The observed application requests were GETs to
-loopback; no outbound source-bearing request was observed.
+**Intent:** Show generated C# or diagnostics for the user's current IDL,
+settings, and profile.
 
-This is representative Edge evidence, not cross-browser or release
-qualification. Browser matrix coverage remains tracked by issue #110.
+**Participants:** Playground user, browser client, browser compilation host,
+and shared IDL compiler.
 
-The Stage 1 discovery UI now compiles edits after a 300 ms debounce and compiles
-example, import, profile, and restored-workspace changes immediately. Each
-change invalidates exports and diagnostic offsets before dispatch. Previous
-code remains visibly outdated while pending; current failures clear its models
-and tabs. Successful zero-document output is distinct from failure. Diagnostic
-navigation maps the compiler's UTF-16 offset through the exact input model;
-diagnostics without that source remain list-only.
+![Compile a current workspace and accept only a matching result.](images/06/preview-workspace.png)
 
-Imports read multiple UTF-8 files by basename into the selected virtual folder.
-Per-file Replace/Skip/Rename choices are staged; Cancel, decode errors, invalid
-paths, and bounds failures leave the workspace/result intact. Folder and file
-moves preserve source text and stable editor identities, while configured
-include-folder paths follow folder moves. Tree navigation, context menus, and
-Move to provide keyboard alternatives to drag/drop.
+1. **Capture the current workspace.**  
+   Editing, example selection, or a settings/profile change updates the
+   workspace identity. The client invalidates current export eligibility
+   and old diagnostic positions.
+2. **Compile the workspace snapshot.**  
+   The client supplies an eligible workspace snapshot to the compilation host.
+   The host validates/maps the protocol payload and invokes
+   [C1](#64-c1-compile-an-in-memory-idl-batch).
+3. **Return an identified outcome.**  
+   The host returns documents, diagnostics, or a host outcome with request and
+   workspace identity.
+4. **Accept only the current result.**  
+   The client accepts only the result matching the current request, workspace,
+   profile, and worker identity, and presents current documents/diagnostics.
+5. **Navigate to the source.**  
+   Selecting a source-located diagnostic opens the matching source editor
+   and position.
 
-All Roots compile as one batch; Include-only files participate through includes.
-Quoted includes search locally before configured folders; angle includes search
-configured folders only, in ordinal alphabetical order. Each source keeps its
-own Monaco model and undo history. Diagnostics select the matching source tab.
-Empty workspaces do not dispatch; files without a Root produce a workspace
-error without a source location and clear generated output.
+**Alternatives:** Empty/rootless workspaces clear generated output without
+dispatch; rootless workspaces report a workspace finding. Stale responses are
+discarded. Previous code can remain visibly outdated while newer work is
+pending; a current failure clears generated output. Successful output with
+zero documents remains distinct from failure. Host faults use
+[flow 7](#625-recover-browser-compilation-after-a-host-failure).
 
-IndexedDB v3 recovery stores files, explicit folders, roles, settings, profile,
-and active source identity. Unsupported workspace record versions report a
-recovery error. Restore never overwrites edits made while storage is opening;
-serialized saves and deletion preserve reset ordering. Unavailable or invalid
-recovery leaves editing usable. Output is regenerated from source snapshots.
-See the [workspace guide](../../guides/playground-workspaces.md).
+Payloads are in [chapter 5](05-building-block-view.md#533-playground);
+the [worker contract](../../guides/playground-workspaces.md#worker-contract-v3)
+owns identity, validation, and bounds.
 
-The [qualification guide](../../testing/playground-qualification.md) records
-representative Edge flows, native download comparisons, recovery, limits,
-worker failures, and the #119 workspace verification scope.
+### 6.2.2 Change a workspace safely
+
+**Intent:** Import, move, rename, delete, or configure workspace entries while
+preserving a consistent workspace and editor state.
+
+**Participants:** Playground user, Editing and result presentation, workspace
+management, and compilation request coordination.
+
+![Stage and validate workspace changes before accepting them.](images/06/change-workspace.png)
+
+1. **Stage the workspace change.**  
+   The user requests a workspace operation. The client stages candidate changes
+   and obtains any conflict, destination, or settings choices.
+2. **Validate the candidate.**  
+   Workspace management validates the candidate paths, roles, settings, and
+   structural bounds.
+3. **Apply the accepted workspace.**  
+   An accepted change supplies a new workspace value with stable file
+   identities. Presentation synchronizes editor models and selections.
+4. **Refresh the preview.**  
+   The client invalidates the old preview and uses
+   [flow 3](#621-preview-the-current-workspace) for the resulting workspace.
+
+**Alternatives:** Canceled, undecodable, or invalid imports/operations preserve
+the prior workspace and result. Moves preserve source text and editor undo
+identity, while configured include-folder paths follow folder moves.
+A structurally valid change can still produce IDL diagnostics; source include
+text is not rewritten. Removing the last Root uses flow 3's rootless case.
+
+The [workspace guide](../../guides/playground-workspaces.md#files-folders-and-import)
+owns operation rules and settings scope.
+
+### 6.2.3 Export source or current generated output
+
+**Intent:** Copy or download the intended source, source workspace, or
+generated documents.
+
+**Participants:** Playground user, Editing and result presentation, workspace
+management, and browser file/clipboard APIs.
+
+![Export source independently, or generated output from a current result.](images/06/export-workspace.png)
+
+1. **Choose the export.**  
+   The user selects source or generated output and its copy/download/ZIP form.
+2. **Prepare source export.**  
+   Source export obtains the current source/workspace snapshot. Source ZIP
+   includes files, explicit folders, and workspace settings/metadata.
+3. **Prepare generated export.**  
+   Generated export uses the accepted current response's document names/text.
+4. **Deliver the export.**  
+   Browser APIs deliver the selected content to a local file or clipboard.
+
+**Alternatives:** Source backup is available independently of IDL compilation
+success, including unfinished or rootless workspaces. Generated export is
+unavailable while its output is pending, stale, or failed. Clipboard failures
+produce a notice. Downloads are handed to the browser, which controls their
+completion; ZIP/download handler errors can propagate without a themed notice.
+
+See [results and exports](../../guides/playground-workspaces.md#results-exports-and-local-recovery)
+for artifact contents and availability.
+
+### 6.2.4 Restore or reset the local workspace
+
+**Intent:** Restore saved work on opening/reloading, or reset the workspace
+and its persisted state.
+
+**Participants:** Playground user, browser client, local recovery, and IndexedDB.
+
+![Restore only eligible saved state, or reset with ordered storage deletion.](images/06/recover-workspace.png)
+
+1. **Load saved work.**  
+   Initialization records the current revision and requests saved workspace
+   data from local recovery.
+2. **Restore eligible saved work.**  
+   A valid record is applied only if the revision is unchanged. Editor models
+   are synchronized, and [flow 3](#621-preview-the-current-workspace)
+   regenerates output from source.
+3. **Reset the workspace.**  
+   A confirmed reset invalidates obsolete callbacks, queues persisted-record
+   deletion, and replaces the UI with an empty workspace.
+4. **Delete and save in order.**  
+   Earlier queued saves complete before deletion. After successful deletion,
+   the client saves the current empty or newer workspace state.
+
+**Alternatives:** With no saved record, the current/default workspace remains.
+New edits win over a delayed restore. Invalid/unavailable
+recovery reports a notice while editing remains usable. If deletion fails,
+the UI stays reset and reports that persisted data could not be cleared.
+Invalidating save callbacks does not cancel already queued storage writes.
+The recovery-error action **Clear saved data** preserves current editor state;
+it deletes persisted data and saves the current workspace instead of resetting it.
+
+Workspace recovery stores source/settings, with output recomputed rather
+than trusted from storage. The [workspace guide](../../guides/playground-workspaces.md#results-exports-and-local-recovery)
+owns the record contract.
+
+### 6.2.5 Recover browser compilation after a host failure
+
+**Intent:** Restore usable compilation while preserving the distinction
+between current work, abandoned work, and pending work.
+
+**Participants:** Playground user, Editing and result presentation, compilation
+request coordination, Browser Worker APIs, and browser compilation host.
+
+![Handle timeout, worker faults, request errors, and explicit retry separately.](images/06/recover-browser-compiler.png)
+
+| Trigger                                                  | Collaboration and outcome                                                                                                 |
+| :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+| Compilation timeout                                      | Request coordination starts worker replacement and rejects the in-flight request; its still-current failure is presented  |
+| Startup error, startup timeout, or uncaught worker fault | Request coordination marks the worker failed, terminates it, clears output, and exposes Retry; replacement requires Retry |
+| Per-request worker error or failed post                  | The request is rejected and its current failure is shown; a ready worker remains usable for newer work                    |
+| User chooses Retry                                       | The client invalidates output, starts a replacement, and requests compilation of the current eligible workspace           |
+
+Only the newest pending **unsubmitted** snapshot survives replacement.
+The in-flight timed-out request is not re-enqueued. A ready replacement can
+dispatch pending work; with none, an edit or explicit Retry supplies a new
+request. Retry does not dispatch empty/rootless/oversized workspaces.
+
+**Alternatives:** Responses and failure notices for superseded workspace/
+request identities cannot replace current state. A timeout can remain visible
+for its still-current request even after worker generation changes.
+Result presentation resumes through [flow 3](#621-preview-the-current-workspace).
+
+[CompilerClient](../../../playground/src/compiler-client.ts),
+[request state](../../../playground/src/worker-state.mjs), and the
+[workspace consistency rules](08-crosscutting-concepts.md#86-workspace-consistency)
+define request/failure ownership.
+
+## 6.3 Supporting verification
+
+### 6.3.1 Verify a compiler or integration change
+
+**Intent:** Establish attributable results for the contracts affected by a
+defect or implementation change.
+
+**Participants:** Wireloom maintainer, selected verification host/suite,
+the product or generated-code contract under test, and applicable retained
+expectations.
+
+![Exercise a selected contract and compare its result with its expectation.](images/06/verify-change.png)
+
+1. **Select the checks.**  
+   The maintainer selects focused cases and applicable verification layers.
+2. **Load inputs and expectations.**  
+   The selected suite supplies test inputs and any retained versioned
+   expectations/provenance.
+3. **Exercise and compare the contract.**  
+   It exercises the relevant contract and compares the observed result with
+   its assertions.
+4. **Report the result.**  
+   The suite reports a passing or attributable failing case to the maintainer.
+
+| Layer             | Contract exercised                                                                                                                    |
+| :---------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
+| Compiler          | In-memory compiler API and internal responsibility contracts; [C1](#64-c1-compile-an-in-memory-idl-batch) explains shared compilation |
+| Corpus            | Language acceptance and retained generated API expectations                                                                           |
+| Packed package    | Real consumer MSBuild/Roslyn integration and analyzer loading                                                                         |
+| Runtime contracts | Compiled generated APIs and their RTI runtime behavior                                                                                |
+| Browser           | Workspace, protocol, presentation, and recovery contracts                                                                             |
+
+**Alternatives:** Expected rejection is a passing test when its diagnostics
+and document assertions match. A host/package failure can differ from direct
+compiler results. Passing one layer establishes only that layer's contract;
+wire evidence uses [flow 9](#632-qualify-dds-exchanges-and-retained-reports).
+
+Commands, mandatory checks, and evidence locations belong in the
+[contribution guide](../../../CONTRIBUTING.md#tests-and-fixtures),
+[compatibility and evidence concept](08-crosscutting-concepts.md#85-compatibility-and-evidence), and
+[quality requirements](10-quality-requirements.md).
+
+### 6.3.2 Qualify DDS exchanges and retained reports
+
+**Intent:** Produce reviewable exchange results and retained evidence for a
+selected exact RTI release, fixture, and peer scope.
+
+**Participants:** Wireloom maintainer, verification host, Runner, peer
+tools/processes, evidence artifacts, and Verifier. The host can be a selected
+local command or repository workflow.
+
+![Prepare peers, record directed exchanges, and validate retained reports.](images/06/qualify-wire-exchanges.png)
+
+1. **Start qualification.**  
+   The verification host starts the Runner with selected profile/case inputs.
+2. **Plan and prepare peers.**  
+   The Runner establishes a deterministic directed-exchange plan and prepares
+   the selected Wireloom/RTI peers. Wireloom peer generation uses the product's
+   normal build/compiler interfaces.
+3. **Execute planned exchanges.**  
+   The scheduler bounds independent exchanges and assigns distinct domains to
+   simultaneously active pairs. Each exchange observes reader readiness before
+   starting its writer and compares fixture payloads.
+4. **Retain the evidence.**  
+   The Runner retains the plan, shard metadata, outcomes, and provenance,
+   including available partial evidence after failures.
+5. **Validate the evidence.**  
+   The verification host invokes the Verifier on selected shard artifacts.
+   It checks assignment, completeness, uniqueness, and consistency.
+6. **Present the qualified scope.**  
+   A valid combined report retains the recorded peer outcomes and exact scope
+   for maintainer review.
+
+**Alternatives:** Setup or evidence-finalization failures fail the run.
+Peer failures remain visible. Missing, duplicate, inconsistent, or unrun
+evidence cannot become a completed report. A complete report can contain
+failed exchanges; successful discovery alone does not establish payload
+compatibility.
+
+The [wire runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#read-the-results)
+owns fixture-specific adaptations and evidence interpretation.
+[Exact LTS profiles](../../corpus/LTS-PROFILES.md) own toolchain scope;
+execution environments remain in the
+[wire infrastructure runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#github-actions).
+
+## 6.4 C1: Compile an in-memory IDL batch
+
+**Intent:** Produce documents and diagnostics from supplied IDL inputs for any
+supported compiler host.
+
+**Participants:** Calling host, compilation coordination, input processing,
+language analysis, and C# code generation.
+
+![Shared compilation responsibilities and their main collaboration.](images/06/compile-idl-batch.png)
+
+1. **Capture compilation inputs.**  
+   Compilation coordination snapshots supplied inputs and establishes the
+   profile, host services, cancellation, and per-compilation state.
+2. **Process roots and includes.**  
+   Input processing traverses generation roots and reachable supplied includes.
+   Preprocessing, include traversal, and parsing callbacks share context.
+   Language analysis receives processed text with original source facts.
+3. **Bind and validate.**  
+   Language analysis binds declarations and applies semantic validation.
+   Coordination also checks applicability of the selected RTI API profile.
+4. **Generate C# documents.**  
+   C# code generation provides profile/mapping plans and generated documents.
+   Planning and rendering share implementation rather than requiring a
+   separate immutable-plan stage.
+5. **Return the compilation result.**  
+   The public compiler boundary returns the combined documents and diagnostics.
+
+**Alternatives:** Expected IDL errors and unsupported feature applicability return collected diagnostics
+and no documents, including warnings collected before a fatal finding.
+Accepted warnings can accompany output. Empty successful output remains
+distinct from failure. Caller-contract errors, including an invalid profile
+argument or missing digest callback, throw exceptions. Cancellation and
+unexpected exceptions also propagate to the host; adapters own presentation.
+
+This diagram shows the normal path. Expected failures can interrupt the work
+at their originating responsibility. Models, signatures, and payload examples
+are in [chapter 5](05-building-block-view.md#531-shared-idl-compiler).
+Annotation/value algorithms and mapping rules belong in
+[chapter 8](08-crosscutting-concepts.md#81-idl-meaning-and-identity).
+Acceptance criteria belong in [chapter 10](10-quality-requirements.md);
+[qualification risks and mitigations](11-risks-and-technical-debt.md#r-01)
+and the linked evidence retain the current limitations and measured results.
+
+---
+
+[< 5. Building block view](05-building-block-view.md) | [Index](index.md) | [7. Deployment view >](07-deployment-view.md)

@@ -1,275 +1,360 @@
 # 5. Building block view
 
-Wireloom separates the Roslyn adapter from the shared compiler project. The
-level-1 view shows the package and repository-host boundaries; level 2 shows
-compiler ownership and handoffs.
+This chapter describes the product's static structure: containment,
+responsibilities, provided and required interfaces, and dependencies.
+[Chapter 6](06-runtime-view.md) describes collaboration at runtime;
+[chapter 7](07-deployment-view.md) describes packaging and deployment.
 
-## 5.1 Level 1: White-box overall system
+## 5.1 Hierarchy and notation
 
-![Level 1 building blocks from the Roslyn adapter and repository hosts through the shared compiler project to generated C# and the RTI runtime.](images/05/level-1-overview.png)
+The hierarchy follows the [product boundary](03-context-and-scope.md) and
+[architectural choices](04-solution-strategy.md):
 
-The generator and in-repository callers use the same non-packable compiler
-project. The generator package carries the compiler assembly for analyzer
-loading; compiler stages are expanded in the level-2 view.
+```text
+Wireloom
+├── Shared IDL compiler
+│   ├── Compilation coordination
+│   ├── Input processing
+│   │   ├── Input graph and include resolution
+│   │   └── Preprocessing and normalization
+│   ├── Language analysis
+│   │   ├── Parsing
+│   │   ├── Binding
+│   │   └── Semantic validation
+│   └── C# code generation
+│       ├── Emission planning
+│       └── Source emission
+├── .NET build integration
+│   ├── MSBuild integration
+│   └── Roslyn adapter
+└── Playground
+    ├── Browser client
+    │   ├── Workspace management
+    │   ├── Editing and result presentation
+    │   ├── Compilation request coordination
+    │   └── Local recovery
+    └── Browser compilation host
+        ├── Worker runtime bootstrap and services
+        └── Compiler adapter
+```
 
-| Building block                 | Project                       | Responsibility                                                                                                           | Main boundary                                 |
-| :----------------------------- | :---------------------------- | :----------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------- |
-| Roslyn adapter                 | `Wireloom.Dds.Generator`      | Discovers build inputs, maps runtime version, reports diagnostics, and adds documents                                    | `Generator`, `GeneratorInputFactory`          |
-| Shared compiler API            | `Wireloom.Dds.Compiler`       | Accepts in-memory inputs, explicit profile, and per-call MD5 provider; returns documents and diagnostics                 | `IdlCompiler`, `IdlCompilationResult`         |
-| Input graph and preprocessor   | `Wireloom.Dds.Compiler`       | Resolves supplied roots and includes; applies preprocessing                                                              | `IdlInputGraph`, `IdlPreprocessor`            |
-| Front end                      | `Wireloom.Dds.Compiler`       | Parses, binds, and validates IDL                                                                                         | `Compiler/FrontEnd`                           |
-| Compilation orchestration      | `Wireloom.Dds.Compiler`       | Coordinates compilation and emission handoff                                                                             | `IdlCompilation`, `CompilationContext`        |
-| Emission planning and emitters | `Wireloom.Dds.Compiler`       | Chooses generated API shapes and renders C# documents                                                                    | `Emission/Model`, planning, emitters, writers |
-| MSBuild targets                | Generator package             | Pass IDL roots and metadata to the Roslyn adapter                                                                        | Packed NuGet package                          |
-| Browser Playground client      | `playground/`                 | Captures workspace snapshots, retains newest pending work, rejects stale results, and presents documents and diagnostics | TypeScript/Vite static bundle                 |
-| Browser compiler host          | `Wireloom.Playground.Browser` | Validates the typed request, maps inputs and profile, supplies synchronous MD5, and serializes bounded results           | .NET 10 WebAssembly module worker             |
-| Corpus and integration tests   | Existing test projects        | Verify acceptance, generated API shape, package loading, and exact-profile wire evidence                                  | Separate test layers and the C# wire harness   |
+Each diagram expands exactly one parent as a [white box](12-glossary.md#white-box).
+Pale green identifies that expanded block, dark teal identifies its children as
+[black boxes](12-glossary.md#black-box), and gray identifies
+neighbors outside the expanded block. A neighbor can be another Wireloom
+block. Lines identify static interfaces and dependencies.
 
-The public core API is defined in
-[`IdlCompiler`](../../../src/Wireloom.Dds.Compiler/Api/IdlCompiler.cs),
-[`IdlInput`](../../../src/Wireloom.Dds.Compiler/Api/IdlInput.cs),
-[`IdlCompilerProfile`](../../../src/Wireloom.Dds.Compiler/Api/IdlCompilerProfile.cs),
-and [`IdlCompilationResult`](../../../src/Wireloom.Dds.Compiler/Api/IdlCompilationResult.cs).
-It snapshots inputs, requires a profile and synchronous MD5 provider on each
-call, and returns documents and diagnostics together. The host supplies UTF-8
-hashing; the compiler validates the 16-byte digest and applies DDS member-ID
-ordering and masking. Its `netstandard2.0` project has no Roslyn, MSBuild, or
-RTI assembly reference. `Wireloom.Dds.Generator` keeps the build-host adapters
-and bundles the compiler DLL and XML documentation in the existing analyzer
-package.
+The shared compiler has one place in the tree. Its callers depend on it.
+Interfaces, data models, and generated documents are described with their
+owning blocks. Supporting verification tooling is outside the product tree.
 
-The non-packable `Wireloom.Playground.Browser` project references only the
-shared compiler and is published for `browser-wasm` on .NET 10. The TypeScript
-worker initializes .NET and registers the retained synchronous JavaScript MD5
-provider inside the worker. The JSON protocol carries a protocol version,
-worker generation, monotonic request ID, workspace revision, explicit profile,
-virtual-path file collection, root flags, file-owned settings, and batch settings.
-The .NET adapter DTOs own protocol v2; TypeScript mirrors them and adapter tests
-check parity in Quality. The client owns the explicit folder tree, stable
-source/editor identities, atomic import/move operations, and v3 local recovery. The
-host validates normalized unique `/workspace/` paths and a 256 KiB total
-UTF-8 input cap before calling the compiler. The host caps responses at 512
-documents and 16 MiB of generated UTF-8 text. Compiler diagnostics carry the
-compiler-provided UTF-16 offset and no copied source text; the current core API
-does not expose diagnostic length. The static client is built with Vite and
-supports root and nested base paths. Representative published-worker behavior
-has been verified in Edge on Windows; other browser targets remain outside
-this Stage 0 qualification.
+The views use the shared [Wireloom theme](images/wireloom-theme.puml) and the
+chapter-specific [structural legend](images/05/legend.puml).
 
-## 5.2 Level 2: Compiler and preprocessing
+## 5.2 Level 1: Wireloom
 
-![Compiler and preprocessing flow from build metadata and IDL inputs through parsing, semantic validation, and emission planning.](images/05/level-2-compiler-and-preprocessing.png)
+![Wireloom product blocks and external neighbors.](images/05/level-1-overview.png)
 
-| Stage                     | Responsibility                                                                                                                                    | Main implementation                                                                                                                   |
-| :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------ |
-| Root intake               | Builds the graph from `DdsIdl` roots, project options, and file-owned mapping and effective-limit settings                                        | [`IdlInputGraph`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Preprocessing/IdlInputGraph.cs)                                |
-| Include resolution        | Resolves paths while preserving root/include identity                                                                                             | [`IdlIncludeResolver`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Preprocessing/IdlIncludeResolver.cs)                      |
-| Preprocessing             | Applies directives and macros with source mapping; optionally normalizes escaped identifier tokens while composing source origins                 | [`IdlPreprocessor`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Preprocessing/IdlPreprocessor.cs), `IdlEscapeCharNormalizer` |
-| Parsing                   | Reads ordered annotations, type/declarator syntax, and unresolved value expressions while preserving source locations                             | [`IdlDeclarationParser`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs), `IdlTypeParser`       |
-| Semantic model            | Assigns stable symbols and target-independent meaning, including enum identity and typedef annotations                                            | [`IdlSymbolTable`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Symbols/IdlSymbolTable.cs)                                    |
-| Compilation state         | Coordinates parse, bind, and validate                                                                                                             | [`IdlCompilation`](../../../src/Wireloom.Dds.Compiler/Compiler/IdlCompilation.cs)                                                     |
-| Resolution and validation | Binds constants, enum identities, effective member IDs, deferred bounds, union labels, and typed defaults; reports source-located semantic errors | `IdlTypeBinder`, `IdlValueBinder`, `IdlValueResolver`, `IdlMemberIdBinder`                                                            |
-| Specification rules       | Detects keyword, scope, and derived-key violations                                                                                                | `IdlIdentifierValidator`, `IdlSemanticValidator`                                                                                      |
-| Validation policy         | Applies the batch strictness to specification findings                                                                                            | `IdlValidationPolicy`                                                                                                                 |
-| Emission planning         | Projects validated declarations, typed defaults, and union array lifecycle into output plans                                                      | [`EmissionTypeProjector`](../../../src/Wireloom.Dds.Compiler/Compiler/Emission/Planning/EmissionTypeProjector.cs)                     |
+| Block                  | Function and ownership                                                   | Interfaces and dependencies                                                                              | Implementation reference                                                                                                                                       |
+| :--------------------- | :----------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared IDL compiler    | Own IDL meaning, diagnostics, and generated C#                           | Provides the in-memory compiler contract; requires explicit inputs, profile, and host services           | [Compiler entry point](../../../src/Wireloom.Dds.Compiler/Api/IdlCompiler.cs)                                                                                  |
+| .NET build integration | Adapt consumer projects and compiler results to .NET build/IDE contracts | Provides project configuration and analyzer integration; requires MSBuild/Roslyn and the shared compiler | [Generator](../../../src/Wireloom.Dds.Generator/Api/Generator.cs), [MSBuild targets](../../../src/Wireloom.Dds.Generator/build/Wireloom.Dds.Generator.targets) |
+| Playground             | Provide local interactive evaluation of generated C# and diagnostics     | Provides workspace/editor interfaces; requires browser APIs and the shared compiler                      | [Browser client composition](../../../playground/src/main.ts), [compiler adapter](../../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs)       |
 
-The front end reads supported annotations through declaration, type-prefix,
-member, enum-literal, and union-branch readers. `IdlSyntaxReader` captures
-applications in source order with source offsets and balanced raw text.
-`IdlAnnotationCatalog` defines built-in parameter kinds, defaults, targets,
-positional-argument rules, repeat/conflict metadata, and recognized unsupported
-names. It validates known argument shapes while unknown applications remain
-opaque. Readers still own context-specific application and compatibility
-behavior; the catalog is the shared schema, not a replacement semantic model.
-The binder resolves references, constants, member IDs, bounds, union labels, and defaults against the complete symbol graph,
-then validates semantics before planning emission.
-`IdlParseContext` coordinates these stages; `IdlValueBinder` owns queued
-constant, typedef, and member values. `IdlValueResolver` applies typed default
-and range rules, and `IdlStringLiteralDecoder` decodes individual literal
-tokens before concatenating their values. Parsers retain annotation syntax and
-original locations without speculative value evaluation or exception-based
-deferral. Structs, unions, and enums share ordered prefix annotation parsing;
-extensibility is captured once as a typed kind rather than overwritten text.
-Duplicate named argument keys are rejected for known applications during
-binding. Catalogued target checks apply to declaration prefixes, typedefs,
-members, enum literals, and union branches. The catalog validates repeated
-applications and conflicts for each captured target list. Local struct and
-union `@autoid` applications and typedef `@default`
-applications are retained on their semantic targets; the value binder reads a
-typedef default expression only after the target type is resolved. Module
-scope records retain module-level `@autoid` and resolve the policy inherited
-by nested declarations because member IDs are assigned during declaration
-parsing. Public compiler tests exercise mixed built-in order
-with interleaved opaque applications across those targets and inspect emitted
-API/metadata and diagnostics. The numeric expression dispatcher applies OMG
-constant-expression semantics for supported integral, `float`, and `double`
-contexts through the existing integral and floating evaluators. Boolean,
-character, string, and enum values use their typed literal/name binding rules
-rather than a general-purpose expression tree. `long double` and fixed-point
-remain unsupported, while new scalar variants can be added to the internal
-model without changing the capture/catalog/binding boundaries.
-`IdlScalarValue` represents mutually exclusive integer, boolean, character,
-floating-point, string, and enumeration values. Character and string values
-retain their narrow/wide identity, and enumeration values retain their
-declaring type. Constants and defaults use this same representation; an
-integer evaluator can consume only an integer value. This replaces nullable
-parallel scalar fields whose combinations could lose the original IDL type.
-Its semantic model does not depend on the RTI version. The runtime reference
-adapter selects an immutable `RtiApiProfile`; compilation orchestration passes
-that profile to emission planning. Emitters render plans without comparing
-RTI versions. A central result boundary checks duplicate hint names across
-generated documents.
+The human neighbors are the four roles defined in
+[chapter 1](01-introduction-and-goals.md#13-stakeholders). .NET build/IDE
+tooling provides the hosting APIs. The RTI runtime defines the generated-code
+target contract; this relationship does not introduce an RTI assembly
+dependency into the shared compiler. Verification tooling uses product
+interfaces and is described separately in [section 5.5](#55-supporting-verification-tooling).
 
-Parsers capture identifier spellings, lexical scopes, and original source
-locations. `IdlInterfaceIdentifierParser` collects body declarations without
-adding types to emission or binding interface references. Its scope facts
-distinguish ordinary interfaces from DDS services and operation parameters. Specification rules return typed findings; the validation policy
-decides whether to ignore, warn, or fail, and Roslyn presents the resulting
-diagnostics. The validation scope index is private to each compilation;
-collision checks preserve case-sensitive binding and generated names.
+## 5.3 Level 2: Product blocks
 
-`DdsIdlEnableEscapeChar` enables token-aware normalization after preprocessing.
-The normalizer removes one leading underscore from each IDL identifier,
-preserves the original source location, and records escaped declaration facts
-for keyword validation. The project-wide setting keeps declarations and
-references consistent across the shared symbol graph.
+### 5.3.1 Shared IDL compiler
 
-This view describes ownership rather than execution order. Build-time flow and
-failure paths are in [chapter 6](06-runtime-view.md). Deterministic
-preprocessing limits are in
-[chapter 8.7](08-crosscutting-concepts.md#87-deterministic-preprocessing-safety).
+![Shared compiler and its four children.](images/05/level-2-shared-compiler.png)
 
-## 5.3 Level 3: Annotation syntax and value binding
+| Child                        | Function and ownership                                                           | Provided and required interfaces                                                                                     | Implementation reference                                                                                                                                                                                         |
+| :--------------------------- | :------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Compilation coordination** | Own one compilation's configuration, state, diagnostics, and document collection | Provides `IdlCompiler.Compile`; requires the input, analysis, and generation interfaces                              | [IdlCompiler](../../../src/Wireloom.Dds.Compiler/Api/IdlCompiler.cs), [IdlCompilation](../../../src/Wireloom.Dds.Compiler/Compiler/IdlCompilation.cs)                                                            |
+| **Input processing**         | Own supplied roots/includes, preprocessing, and source-origin information        | Requires supplied `IdlInput` values and settings; provides text/origin data through a parsing callback               | [IdlInputGraph](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Preprocessing/IdlInputGraph.cs)                                                                                                             |
+| **Language analysis**        | Own declarations, symbols, bound meaning, and semantic findings                  | Requires source text/origins and semantic policy; provides declarations, symbols, values, and diagnostics            | [IdlDeclarationParser](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs), [IdlParseContext](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlParseContext.cs) |
+| **C# code generation**       | Own generated API/storage shapes and source documents                            | Requires semantic declarations, type resolution, profile, and mapping settings; provides `GeneratedIdlSource` values | [IdlDeclarationEmitter](../../../src/Wireloom.Dds.Compiler/Compiler/Emission/IdlDeclarationEmitter.cs)                                                                                                           |
 
-This level describes the source-facing building blocks maintainers change
-when adding or correcting built-in annotation behavior.
+The compiler's neighbors are .NET build integration, the browser compilation
+host, and direct verification callers. The public API is an interface on the
+compiler, implemented through compilation coordination.
 
-![Annotation capture, catalog classification, context binding, and typed value resolution.](images/05/level-3-annotation-binding.png)
+#### Compiler contract and payload examples
 
-| Building block        | Responsibility                                                                                                                                                                       | Source                                                                                                                                                                                                                                                                                                                                                                                                            |
-| :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Syntax reader         | Reads a complete balanced application and preserves ordered raw syntax and offsets                                                                                                   | [`IdlSyntaxReader`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlSyntaxReader.cs)                                                                                                                                                                                                                                                                                                              |
-| Built-in catalog      | Defines parameter kinds/defaults, targets, positional rules, repeat/conflict metadata, and support status; validates known argument shapes while leaving unknown arguments opaque    | [`IdlAnnotationCatalog`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlAnnotationCatalog.cs)                                                                                                                                                                                                                                                                                                    |
-| Type-prefix reader    | Captures declaration annotations in order and delays unknown warnings until a declaration parser accepts the target                                                                  | [`IdlTypeAnnotationPrefix`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlTypeAnnotationPrefix.cs)                                                                                                                                                                                                                                                                                              |
-| Declaration parser    | Coordinates declaration-level annotation handling and top-level parse order                                                                                                          | [`IdlDeclarationParser`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs)                                                                                                                                                                                                                                                                                                    |
-| Module scope model    | Retains module identity and captured scope annotations while the derived member-ID policy is passed to nested declarations                                                           | [`IdlModuleDeclaration`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlDeclaration.cs), [`IdlDeclarationParser`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs)                                                                                                                                                                                         |
-| Member parser         | Applies known annotations in source order, keeps unknown syntax opaque, binds metadata, and defers symbol-dependent values                                                           | [`IdlTypeParser`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlTypeParser.cs), [`IdlMemberAnnotationSyntax`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlMemberAnnotationSyntax.cs)                                                                                                                                                                                       |
-| Enum-literal parser   | Reads ordered `@value` and `@default_literal` uses while leaving unknown arguments opaque                                                                                            | [`IdlEnumDeclarationParser`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlEnumDeclarationParser.cs)                                                                                                                                                                                                                                                                                            |
-| Union-branch parser   | Reads branch labels, optional annotations, and unknown applications before parsing the branch type                                                                                   | [`IdlUnionParser`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlUnionParser.cs)                                                                                                                                                                                                                                                                                                                |
-| Binding coordinator   | Resolves values in dependency order after the symbol graph is available                                                                                                              | [`IdlParseContext`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlParseContext.cs), [`IdlValueBinder`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlValueBinder.cs)                                                                                                                                                                                                         |
-| Expression dispatcher | Applies declared scalar context and OMG numeric constant-expression rules through the existing integral/floating evaluators; other scalar forms use their typed literal/name binders | [`IdlTypedExpressionEvaluator`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlTypedExpressionEvaluator.cs), [`IdlConstantExpressionEvaluator`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlConstantExpressionEvaluator.cs), [`FloatingConstantExpressionEvaluator`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/FloatingConstantExpressionEvaluator.cs) |
-| Typed value resolver  | Evaluates defaults, boolean annotation arguments, and range constraints into explicit scalar variants                                                                                | [`IdlValueResolver`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlValueResolver.cs), [`IdlScalarValue`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlScalarValue.cs)                                                                                                                                                                                                      |
+The provided interface is defined by
+[IdlCompiler](../../../src/Wireloom.Dds.Compiler/Api/IdlCompiler.cs):
 
-The syntax reader owns balanced delimiter and literal handling. The catalog
-owns the boundary between known and unknown names. Context parsers own legal
-targets and annotation-specific duplicate/conflict policy. The binder owns
-symbol-dependent evaluation and source-located failures. This separation
-keeps unknown vendor syntax from being interpreted as a Wireloom expression
-and lets future scalar variants extend the internal typed value model. Boolean
-member flags that accept constants remain unresolved until the binder has
-processed the complete constant graph. Enum-literal and union-branch readers
-consume unknown applications without parsing their arguments. Numeric
-expression dispatch reuses the integral and floating evaluators. The floating
-evaluator rejects integer literal operands and integral constant references;
-integer expressions support IDL operator precedence and the specified shift
-range. `IdlConstantExpressionEvaluator` carries rank and signedness with each
-integer operand, including constants reached through aliases, and promotes
-types pairwise at each operator. Literal parsing recognizes decimal, octal,
-and hexadecimal forms and retains values through promotion and operator
-evaluation; out-of-range intermediate values fail during binding. `@id`
-integer arguments use the same evaluator as constants and bounds. The
-supported numeric contexts use declared-type dispatch with the existing
-evaluators; this does not add a general-purpose expression tree. Annotation
-parameter kinds and targets are catalogued. Captured declaration applications
-remain on their semantic targets; bindings that need the complete symbol
-graph run in the value-binder phase.
+```csharp
+IdlCompilationResult Compile(
+    IReadOnlyList<IdlInput> inputs,
+    IdlCompilerProfile profile,
+    Func<byte[], byte[]> computeMd5,
+    CancellationToken cancellationToken = default);
+```
 
-Balanced application records are transient parser inputs. The semantic model
-stores effective values and unresolved expressions needed for binding rather
-than retaining duplicate source text. For comma-separated member declarations,
-the parser consumes the annotations once and applies effective member metadata
-to the final declarator, matching the current RTI compatibility behavior.
+Example input values contain complete source text, including supplied include
+files. These paths identify the supplied inputs; the core has no filesystem
+dependency.
 
-## 5.4 Emission boundary
+```csharp
+IReadOnlyList<IdlInput> inputs =
+[
+    new(
+        path: "contracts/sample.idl",
+        text:
+          """
+          #include "types.idl"
+          struct Sample { Count value; };
+          """,
+        generate: true),
+    new(
+        path: "contracts/types.idl",
+        text: "typedef long Count;",
+        generate: false),
+];
+IdlCompilerProfile profile = IdlCompilerProfile.Rti770;
+```
 
-Emission planning owns decisions that affect generated APIs, native storage,
-DynamicType metadata, and initialization. Emitters write those decisions to
-source documents; they do not choose mappings independently. This keeps RTI
-profile differences and IDL-shape policies out of parsing and semantic
-validation.
+The required MD5 delegate accepts UTF-8 bytes and returns a complete 16-byte
+digest, as specified in [ADR-002](../adr/ADR-002-inject-member-id-md5-per-compilation.md).
+The result contract contains `Documents`, `Diagnostics`, and `Success`.
+Each [generated document](../../../src/Wireloom.Dds.Compiler/Api/GeneratedIdlSource.cs)
+contains a deterministic `HintName` and complete C# `Source`.
 
-`ScalarValueEmissionPlan` supplies managed defaults, native scalar defaults,
-and DynamicType annotation values to both member and typedef emission.
-Explicit and default union branches use the same branch-copy operation,
-including aggregate-array element ownership.
+An example [diagnostic payload](../../../src/Wireloom.Dds.Compiler/Api/IdlDiagnostic.cs)
+is represented by the actual compiler type:
 
-`SequenceArrayEmissionPlan` selects opt-in direct sequence-array projections
-from each member's source input after binding and validation, including class
-members and union branches. It reserves deterministic helper identities,
-reuses collection-wrapper emitters, and provides the same projection for
-inherited class members. Managed/native wrappers preserve element ownership;
-enclosing member metadata embeds an anonymous sequence inside the array. The
-semantic model is not rewritten with synthetic IDL types. Unsupported
-recursive element paths fail before source emission.
+```csharp
+new IdlDiagnostic(
+    "DDSG0001",
+    IdlDiagnosticSeverity.Error,
+    new IdlInput("contracts/sample.idl",
+        """
+        #include "missing.idl"
+        """),
+    0,
+    "Could not resolve included IDL: missing.idl");
+```
 
-The generated-value contracts and their evidence are maintained in
-[chapter 8.6](08-crosscutting-concepts.md#86-rti-compatible-generated-value-semantics),
-the [runtime contract matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix),
-and the [corpus feature index](../../corpus/FEATURE-COVERAGE.md).
+Its `Path` and `SourceText` come from the supplied input; `Offset` is a
+zero-based UTF-16 source offset. Detailed diagnostic policy is in
+[chapter 8](08-crosscutting-concepts.md#82-source-provenance-and-failure-reporting).
 
-## 5.5 Browser discovery client
+### 5.3.2 .NET build integration
 
-The workspace client opens source files in left-editor tabs and generated
-documents in right-editor tabs. Source and Generated groups have independent
-collapsible headers in the Explorer; Source is an explicit virtual folder tree with compact
-New File, New Folder, Collapse Folders, and More Actions icon controls shown
-on Source-group hover or keyboard focus. Folders expand by default; manual
-collapse survives workspace edits. File context actions update roles, and
-folder actions configure include search through immutable workspace operations.
-The source editor copies/downloads active IDL independently of compilation.
-Operation failures use themed red Error notices with alert semantics. Shared
-editor font controls default to 12 px. It uses stable file identities for
-Monaco source models, an IDL lexical
-tokenizer, and read-only C# models. Tab switches and virtual moves preserve
-source undo history and selections. `CompilerClient` owns the existing
-bounded worker queue, request matching, and watchdogs; editor modules do not
-interpret IDL semantics. Generated-file selection and open tabs retain editor
-view state, and removed models are disposed. The page resolves the system's
-initial appearance to a stored Light/Dark choice, synchronized with Monaco.
-Pointer and keyboard controls resize the explorer independently from the
-source/output divider, which repartitions only the remaining editor area.
+![MSBuild integration, Roslyn adapter, and their neighbors.](images/05/level-2-dotnet-integration.png)
 
-The version-3 workspace stores files, explicit folders including empty ones,
-Root/Include-only roles, declaring-file settings, batch settings, profile, and
-active source ID. All Roots compile as one immutable batch. Unsupported or
-malformed records report a recovery error. `RecoveryStore` serializes
-IndexedDB writes and deletion
-so pending saves cannot resurrect a reset workspace. It validates recovered
-paths, schema, profile, and UTF-8 size, stores source/settings only, and
-regenerates output after restore. Generated download actions use the accepted
-compiler response's original names/text. Locally bundled `fflate` creates
-stored-entry ZIPs. The Source ZIP action independently archives current text,
-explicit folders, and a workspace metadata record even when compilation fails.
-Monaco and archive dependencies do not add a remote service.
+| Child                   | Function and ownership                                                                  | Provided and required interfaces                                                                                              | Implementation reference                                                                                                                                                                                                                                                                                                                          |
+| :---------------------- | :-------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **MSBuild integration** | Define project-facing IDL inputs and compiler-visible settings                          | Provides `DdsIdl` items, properties, and additional-file metadata through the MSBuild host                                    | [Wireloom.Dds.Generator.targets](../../../src/Wireloom.Dds.Generator/build/Wireloom.Dds.Generator.targets)                                                                                                                                                                                                                                        |
+| **Roslyn adapter**      | Own host applicability, input translation, compiler invocation, and result presentation | Requires Roslyn additional files/options/references and the compiler API; provides generated documents and Roslyn diagnostics | [Generator](../../../src/Wireloom.Dds.Generator/Api/Generator.cs), [input factory](../../../src/Wireloom.Dds.Generator/Roslyn/GeneratorInputFactory.cs), [runtime reference guard](../../../src/Wireloom.Dds.Generator/Roslyn/RuntimeReferenceGuard.cs), [diagnostic mapping](../../../src/Wireloom.Dds.Generator/Roslyn/GeneratorDiagnostics.cs) |
 
-## 5.6 Wire compatibility harness
+The two children share the compiler-visible metadata contract supplied by
+MSBuild/Roslyn. The external host owns that transport. The Roslyn adapter
+examines the resolved RTI assembly identity through compilation metadata.
 
-The wire harness uses three non-packable projects with separate responsibilities:
+Example consumer configuration payload:
 
-| Project | Responsibility |
-| :--- | :--- |
-| `Wireloom.Dds.Generator.WireCompatibility.Runner` | Plan a shard, prepare managed and native peers, run exchanges, and write per-shard evidence. |
-| `Wireloom.Dds.Generator.WireCompatibility.Shared` | Define the scenario-row and peer-pairing contracts used across applications. |
-| `Wireloom.Dds.Generator.WireCompatibility.Verifier` | Check shard/report integrity and host the catalog, adaptation, reporting, and merge commands. |
+```xml
+<ItemGroup>
+  <DdsIdl Include="contracts/sample.idl"
+          IncludeDirectories="contracts/includes"
+          Defines="FEATURE_X"
+          Strict="true" />
+</ItemGroup>
+```
 
-`Program` composes the Runner; `MatrixRunner` owns its lifecycle. Planning
-produces a typed `MatrixPlan`, preparation returns peer build outcomes, and the
-reporter receives the final run outcome, including partial results after
-failures. Planning, peer preparation, exchange execution, and reporting are
-kept in distinct components.
+The adapter's input metadata includes keys such as
+`build_metadata.AdditionalFiles.Generate` and
+`build_metadata.AdditionalFiles.Strict`. The
+[configuration guide](../../guides/configuration.md) owns the full settings
+contract and precedence rules.
 
-The Runner builds selected peers before scheduling exchanges. The Verifier
-runs without an RTI license; its checks invoke the Verifier command interface
-as child processes, and CI uses its merge command to produce the combined
-report. TSV and JSON remain at process and evidence boundaries; domain rules
-and typed handoffs stay in C#.
+### 5.3.3 Playground
+
+![Playground client and compilation host with neighbors.](images/05/level-2-playground.png)
+
+| Child                        | Function and ownership                                                                          | Provided and required interfaces                                                                                                            | Implementation reference                                                                                                                       |
+| :--------------------------- | :---------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Browser client**           | Own workspace interaction, editor/result presentation, request coordination, and local recovery | Provides the user interface and typed workspace requests; requires browser APIs, editor/archive libraries, and the browser compilation host | [Client composition](../../../playground/src/main.ts), [protocol mirror](../../../playground/src/protocol.ts)                                  |
+| **Browser compilation host** | Own the browser-compatible compiler boundary and its platform services                          | Provides the workspace compile contract; requires .NET browser runtime/interop and the shared compiler                                      | [Worker bridge](../../../playground/src/worker.mjs), [compiler adapter](../../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs) |
+
+The shared compiler is the Playground's sibling. Its implementation has one
+owner in the product tree. The Playground user, browser APIs, and .NET browser
+runtime are neighbors of this view.
+
+#### Workspace protocol payload examples
+
+The .NET adapter DTOs own the JSON contract; TypeScript mirrors it.
+[The workspace guide](../../guides/playground-workspaces.md#worker-contract-v3)
+is the authoritative protocol reference. Example request payload:
+
+```json
+{
+  "protocolVersion": 3,
+  "workerGeneration": 1,
+  "requestId": 1,
+  "workspaceRevision": 1,
+  "profile": "7.7.0",
+  "files": [
+    {
+      "path": "/workspace/main.idl",
+      "source": "#include \"missing.idl\"",
+      "isGenerationRoot": true,
+      "options": {
+        "defines": [],
+        "undefines": [],
+        "strict": false
+      }
+    }
+  ],
+  "options": {
+    "sequenceArrayMapping": "RtiCSharp",
+    "sequenceSize": 100,
+    "stringSize": 255,
+    "includeDirectories": [],
+    "enableEscapeChar": false
+  }
+}
+```
+
+The corresponding compiler-response payload illustrates the document and
+diagnostic fields. The worker message union wraps this payload in
+`{ "type": "result", "response": ... }`.
+
+```json
+{
+  "protocolVersion": 3,
+  "workerGeneration": 1,
+  "requestId": 1,
+  "workspaceRevision": 1,
+  "profile": "7.7.0",
+  "kind": "compiler",
+  "success": false,
+  "documents": [],
+  "diagnostics": [
+    {
+      "id": "DDSG0001",
+      "severity": "Error",
+      "message": "Could not resolve included IDL: missing.idl",
+      "filePath": "/workspace/main.idl",
+      "startOffset": 0,
+      "length": 0
+    }
+  ],
+  "error": null
+}
+```
+
+Compiler diagnostics have no span length in the current core API; the browser
+DTO's `length` is zero. Host outcome variants are documented in
+[chapter 6](06-runtime-view.md#621-preview-the-current-workspace); protocol rules
+are in the [worker contract](../../guides/playground-workspaces.md#worker-contract-v3).
+
+## 5.4 Level 3: Selected child blocks
+
+### 5.4.1 Input processing
+
+![Input graph and preprocessing responsibilities.](images/05/level-3-input-processing.png)
+
+| Child                                  | Function and ownership                                                       | Provided and required interfaces                                                                                    | Implementation reference                                                                                                                                                                                                           |
+| :------------------------------------- | :--------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Input graph and include resolution** | Own the supplied input map, root/include identity, and include lookup        | Requires supplied sources/settings and the parsing callback; provides source-associated text and origin facts       | [IdlInputGraph](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Preprocessing/IdlInputGraph.cs), [IdlIncludeResolver](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Preprocessing/IdlIncludeResolver.cs)               |
+| **Preprocessing and normalization**    | Own directives/macros, escaped-name normalization, and source-origin mapping | Requires source text and include/directive callbacks; provides processed text, origins, and identifier-offset facts | [IdlPreprocessor](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Preprocessing/IdlPreprocessor.cs), [IdlEscapeCharNormalizer](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Preprocessing/IdlEscapeCharNormalizer.cs) |
+
+The parsing [callback](12-glossary.md#callback) contract carries text, the owning `IdlInput`, offset,
+namespace, source origins, and escaped-identifier offsets. Include resolution
+and preprocessing share callback contracts; the tree records ownership rather
+than a strictly sequential pipeline. The
+[compiler-input example](#compiler-contract-and-payload-examples) shows the supplied root/include payload.
+
+### 5.4.2 Language analysis
+
+![Parsing, binding, and semantic validation.](images/05/level-3-language-analysis.png)
+
+| Child                   | Function and ownership                                                                      | Provided and required interfaces                                                                                 | Implementation reference                                                                                                                                                                                                                                                                               |
+| :---------------------- | :------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Parsing**             | Own recognized declaration/annotation syntax and source-associated declaration construction | Requires processed source and origin facts; provides declarations and symbol entries through the analysis facade | [IdlDeclarationParser](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs), [IdlSyntaxReader](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlSyntaxReader.cs)                                                                                       |
+| **Binding**             | Own name/type resolution, constants, defaults, bounds, and effective metadata               | Requires declarations and the symbol model; provides bound semantic facts and source-located findings            | [IdlParseContext](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlParseContext.cs), [IdlTypeBinder](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlTypeBinder.cs), [IdlValueBinder](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlValueBinder.cs) |
+| **Semantic validation** | Own deferred semantic/specification checks and validation policy                            | Requires semantic declarations and policy; provides source-located findings                                      | [IdlSemanticValidator](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlSemanticValidator.cs), [IdlIdentifierValidator](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlIdentifierValidator.cs)                                                                       |
+
+Declarations, symbols, values, source facts, and diagnostic contracts are
+shared data owned within language analysis. Contextual checks also exist in
+parsing and binding. This responsibility split does not claim hermetic passes.
+Annotation and expression details are maintained in the
+[semantic-binding concept](08-crosscutting-concepts.md#81-idl-meaning-and-identity).
+
+### 5.4.3 C# code generation
+
+![Emission planning and source emission.](images/05/level-3-code-generation.png)
+
+| Child                 | Function and ownership                                                                 | Provided and required interfaces                                                                                                       | Implementation reference                                                                                                                                                                                                                                                                                         |
+| :-------------------- | :------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Emission planning** | Own generated API/storage shapes, metadata, defaults, and member policies              | Requires bound declarations, type facts, profile, and mappings; provides emission models, member plans, and shared rendering contracts | [EmissionTypeProjector](../../../src/Wireloom.Dds.Compiler/Compiler/Emission/Planning/EmissionTypeProjector.cs), [MemberEmissionPlan](../../../src/Wireloom.Dds.Compiler/Compiler/Emission/Planning/EmissionMemberPlan.cs)                                                                                       |
+| **Source emission**   | Own deterministic C# documents for managed types, native interop, and RTI type support | Requires declarations, plans, and type resolution; provides `GeneratedIdlSource` values                                                | [IdlDeclarationEmitter](../../../src/Wireloom.Dds.Compiler/Compiler/Emission/IdlDeclarationEmitter.cs), [GeneratedSourceWriter](../../../src/Wireloom.Dds.Compiler/Compiler/Emission/Writers/GeneratedSourceWriter.cs), [EmissionResult](../../../src/Wireloom.Dds.Compiler/Compiler/Emission/EmissionResult.cs) |
+
+Planning and source emission share implementation and rendering helpers.
+Their boundary is a set of model/helper contracts, rather than a standalone
+frozen-plan artifact. Generated native interop support is C#; C++ peer tooling
+belongs to supporting qualification.
+
+The output payload is defined by [GeneratedIdlSource](../../../src/Wireloom.Dds.Compiler/Api/GeneratedIdlSource.cs):
+`HintName` identifies the document, and `Source` contains its complete C#.
+The [option-ownership concept](08-crosscutting-concepts.md#81-idl-meaning-and-identity)
+and [mapping reference](../../guides/configuration.md#choose-the-sequence-array-mapping)
+define the scope and effect of the selected emission settings.
+
+### 5.4.4 Browser client
+
+![Browser client responsibilities and interfaces.](images/05/level-3-browser-client.png)
+
+| Child                                | Function and ownership                                                                        | Provided and required interfaces                                                                                                         | Implementation reference                                                                                                                                                                                                           |
+| :----------------------------------- | :-------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Workspace management**             | Own virtual files/folders, roles/settings, and validated workspace changes, including imports | Provides workspace values and edit operations; requires source/path/settings data                                                        | [Workspace model and operations](../../../playground/src/workspace.ts), [workbench integration](../../../playground/src/workspace-ui.ts)                                                                                           |
+| **Editing and result presentation**  | Own editor models, selection/undo, diagnostics, generated-document views, and exports         | Provides user-facing editor/result interfaces; requires workspace operations, compile results, browser APIs, Monaco, and archive helpers | [Editors](../../../playground/src/editors.ts), [SourceWorkbench](../../../playground/src/workspace-ui.ts), [application composition](../../../playground/src/main.ts), [source archive](../../../playground/src/source-archive.ts) |
+| **Compilation request coordination** | Own the browser client's worker connection and request/result identity                        | Provides the client compile/status contract; requires workspace snapshots, Worker APIs, and the browser compilation host                 | [CompilerClient](../../../playground/src/compiler-client.ts), [protocol types](../../../playground/src/protocol.ts)                                                                                                                |
+| **Local recovery**                   | Own persisted workspace snapshots and save/reset consistency                                  | Provides recovery load/save/delete interfaces; requires the workspace schema and IndexedDB                                               | [RecoveryStore](../../../playground/src/workspace.ts), [RecoverySaver](../../../playground/src/recovery-saver.ts)                                                                                                                  |
+
+These are logical responsibilities. `main.ts` composes several of them, and `workspace.ts` contains both workspace
+operations and the recovery-store implementation. Import/export ownership is distributed across the relevant
+workspace and presentation code. The workspace model and worker payload have different purposes;
+the [workspace guide](../../guides/playground-workspaces.md) defines their fields. Runtime request scheduling
+and recovery scenarios belong in [chapter 6](06-runtime-view.md#62-playground-evaluation).
+
+### 5.4.5 Browser compilation host
+
+![Browser compilation host and its two children.](images/05/level-3-browser-compilation-host.png)
+
+| Child                                     | Function and ownership                                                   | Provided and required interfaces                                                                                            | Implementation reference                                                                                                                                                  |
+| :---------------------------------------- | :----------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Worker runtime bootstrap and services** | Own the JS/.NET bridge and host-provided MD5 implementation              | Provides worker messages, assembly-export access, and the digest service; requires .NET browser runtime and JS interop APIs | [Worker bridge](../../../playground/src/worker.mjs), [MD5 provider](../../../playground/src/md5.mjs), [.NET exports](../../../src/Wireloom.Playground.Browser/Program.cs) |
+| **Compiler adapter**                      | Own protocol validation, input/result mapping, and result-size contracts | Provides typed compile request/response DTOs; requires the compiler API and host digest service                             | [PlaygroundCompilerAdapter](../../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs)                                                                        |
+
+This block spans JavaScript and C#. Worker lifecycle/request coordination
+belongs to the browser client. See the [protocol payloads](#workspace-protocol-payload-examples)
+and [shared compiler interface](#compiler-contract-and-payload-examples).
+
+## 5.5 Supporting verification tooling
+
+Verification tooling is a neighbor of the product and uses its compiler,
+analyzer, and browser interfaces. Its ownership is separate from the product
+hierarchy.
+
+| Supporting area                                                  | Function and interfaces                                                                                                                  | Reference                                                                                                                                                                                                             |
+| :--------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Compiler, corpus, package, runtime, and browser verification** | Verify public/internal contracts through focused tests, retained fixtures, real analyzer consumption, and browser protocol/UI interfaces | [Contribution guide](../../../CONTRIBUTING.md#tests-and-fixtures), [evidence scope](08-crosscutting-concepts.md#85-compatibility-and-evidence), [Playground qualification](../../testing/playground-qualification.md) |
+| **Wire qualification tooling**                                   | Own fixture/peer preparation and evidence/report contracts through the Runner and Verifier applications and their shared library         | [Wire harness code map](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#code-map), [report contracts](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#read-the-results)           |
+
+Harness execution scenarios belong in [chapter 6](06-runtime-view.md#632-qualify-dds-exchanges-and-retained-reports);
+its execution environments are documented in the
+[wire runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#github-actions).
+
+---
+
+[< 4. Solution strategy](04-solution-strategy.md) | [Index](index.md) | [6. Runtime view >](06-runtime-view.md)

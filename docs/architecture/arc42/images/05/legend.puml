@@ -1,0 +1,8 @@
+skinparam legendFontSize 11
+legend bottom
+  |<#E9F7ED> Expanded block |<#027473><color:white> Black box </color>|<#F5F8F7> Neighbor |
+  **Dashed arrows**: interface use / dependency
+  **Plain lines**: interface association; **dotted lines**: target contract
+  Neighbors are outside the expanded block; no execution order is shown
+endlegend
+

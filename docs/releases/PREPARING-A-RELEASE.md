@@ -45,9 +45,8 @@ and confirm the NuGet package is published.
 - Advance `Directory.Packages.props` and refresh
   `samples/HelloWorld/packages.lock.json` with restore. Update the consumer
   examples listed above and current-version statements in
-  `docs/architecture/arc42/07-deployment-view.md`,
-  `docs/architecture/arc42/10-quality-requirements.md`, and
-  `docs/architecture/architecture-memory.md`. Refresh
+  `docs/architecture/arc42/07-deployment-view.md` and
+  `docs/architecture/arc42/10-quality-requirements.md`. Refresh only
   `.agents/architecture-memory.yaml` if its source chapters change.
 - Measure the published version's `.nupkg` and update the root README package
   size with that version and byte count. Do not present an older package's size

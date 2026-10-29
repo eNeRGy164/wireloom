@@ -1,0 +1,61 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include sequence-style.puml
+
+actor "Playground user" as user
+participant "Browser client" as client
+participant "Local recovery" as recovery
+database "IndexedDB" as storage #F5F8F7
+
+activate user
+
+alt Open / reload
+  group Step 1: Load saved work
+    user -> client ++ : Open Playground
+    client -> client : Capture current revision
+    client -> recovery ++ : Load saved workspace
+    recovery -> storage ++ : Read record
+    storage --> recovery -- : Saved record / storage error
+    recovery --> client -- : Validated workspace / recovery error
+  end
+
+  group Step 2: Restore eligible saved work
+    alt Valid record and revision unchanged
+      client -> client : Apply workspace and synchronize editors
+    else No saved record
+      client -> client : Keep current/default workspace
+    else Newer edits exist
+      client -> client : Keep current edits
+    else Invalid/unavailable recovery
+      client --> user : Notice; editing remains usable
+    end
+    ref over client : Flow 3: Preview current source (regenerate output)
+  end
+else Confirmed workspace reset
+  group Step 3: Reset the workspace
+    user -> client : Reset workspace and confirm
+    client -> recovery ++ : Invalidate obsolete callbacks; queue deletion
+    client -> client : Replace UI with empty workspace
+  end
+
+  group Step 4: Delete and save in order
+    recovery -> storage ++ : Delete after earlier queued writes
+    alt Deletion succeeds
+      storage --> recovery -- : Deleted
+      recovery --> client : Completion
+      client -> recovery : Save current empty/newer state
+    else Deletion fails
+      recovery --> client -- : Storage error
+      client --> user -- : UI remains reset; persisted data could not be cleared
+    end
+  end
+end
+
+note over recovery,storage
+Queued writes/deletes are serialized.
+Stored data contains workspace source/settings, not trusted generated output.
+end note
+
+@enduml
+

@@ -1,33 +1,54 @@
 @startuml
-autonumber
 
-actor "Consumer project build" as build
-participant "MSBuild targets" as msbuild
-participant "Roslyn" as roslyn
-participant "Generator" as generator
-participant "Input graph + preprocessor" as preprocess
-participant "Target-independent compiler" as compiler
-participant "Emission plans + emitters" as emitters
-participant "Consumer compilation" as compilation
-participant "Generated application" as application
-participant "RTI runtime" as runtime
+!include ../wireloom-theme.puml
+!include sequence-style.puml
 
-build -> msbuild : Declare DdsIdl roots\nand project-wide metadata
-msbuild -> roslyn : Add AdditionalFiles\nand visible item metadata
-roslyn -> generator : Execute with IDL,\noptions, and references
-generator -> preprocess : Resolve roots/includes\nand preprocess input
-preprocess --> generator : Preprocessed IDL\nand source locations
-generator -> compiler : Parse declarations\nBind references and bounds\nValidate complete graph
+actor ".NET DDS application\ndeveloper /\nBuild and CI engineer" as user
+participant "\n.NET build / IDE" as host #F5F8F7
+participant "MSBuild\nintegration" as msbuild
+participant "\nRoslyn adapter" as adapter
+participant "Shared IDL\ncompiler" as compiler
 
-alt Invalid or unsupported input
-  compiler --> generator : Source-located diagnostic
-  generator --> roslyn : Report diagnostic
-  roslyn --> build : Fail compilation
-else Valid input
-  compiler -> emitters : Create resolved emission plans
-  emitters --> roslyn : Return generated documents
-  roslyn --> compilation : Generated and\nhand-written C#
-  compilation -> application : Build application
-  application -> runtime : DDS runtime calls
+activate user
+
+group Step 1: Evaluate project inputs
+  user -> host ++ : Build / edit tracked inputs
+  host -> msbuild ++ : Evaluate project IDL configuration
+  msbuild --> host -- : Additional files and visible metadata
 end
+
+group Step 2: Supply tracked inputs
+  host -> adapter ++ : Generator callback with inputs / references
+end
+
+alt No generation roots
+  adapter --> host : No generation-specific work
+else Generation roots present
+  group Step 3: Check host and select profile
+    adapter -> adapter : Check language, RTI reference,\nand host settings; select profile
+  end
+
+  alt Host/configuration check fails
+    adapter --> host : Host/configuration diagnostic
+  else Applicable inputs
+    group Step 4: Compile the IDL batch
+      adapter -> compiler ++ : Compile(inputs, profile, MD5, cancellation)
+      ref over compiler : C1: Compile an in-memory IDL batch
+      compiler --> adapter -- : Documents and diagnostics
+    end
+  end
+end
+
+group Step 5: Report the build or IDE result
+  opt Compiler result is available
+    adapter -> host -- : Report diagnostics; register documents\nonly for a successful result
+  end
+  host --> user -- : Build/IDE result and diagnostics
+end
+
+note over user,host
+Root/include/settings/RTI-reference changes are variants.
+Cancellation remains cancellation, not a successful partial result.
+end note
+
 @enduml

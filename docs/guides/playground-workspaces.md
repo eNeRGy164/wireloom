@@ -103,6 +103,22 @@ explicit folders, active file, workspace settings, and profile. Version 3 is the
 current format. Older, unknown, or malformed records report a recovery error
 and leave editing available. Reload regenerates output.
 
+## Editor services and preferences
+
+Monaco supplies lexical IDL/C# colors, models, markers, and UTF-16 position
+mapping; it supplies no semantic IDL or C# service. The compiler remains the
+authority on language validity and profile behavior.
+
+Editor font size is an optional localStorage preference (10–20 px, default
+12 px), separate from source/profile recovery. Unavailable preference storage
+does not prevent changing the font in either editor.
+Theme is a separate `wireloom-theme` localStorage preference with Light and
+Dark choices. On first use the bootstrap resolves the current system appearance
+to one of those choices and saves it. It applies the saved choice before the
+editor chunk loads and updates both page color scheme and Monaco. Later system
+or developer-tools preference changes do not override it. Preference storage
+failure leaves the current session's choice usable.
+
 ## Worker contract v3
 
 The canonical contract is the .NET adapter DTOs in

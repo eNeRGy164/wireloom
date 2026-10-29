@@ -1,0 +1,27 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include legend.puml
+
+actor "Playground user" as user
+rectangle "Browser compilation host" as host <<neighbor>>
+rectangle "Browser APIs" as browser <<neighbor>>
+rectangle "Editor / archive libraries\nMonaco + fflate" as libraries <<neighbor>>
+rectangle "Browser client" as client <<whitebox>> {
+  rectangle "Workspace management" as workspace <<blackbox>>
+  rectangle "Editing and\nresult presentation" as presentation <<blackbox>>
+  rectangle "Compilation request\ncoordination" as compilation <<blackbox>>
+  rectangle "Local recovery" as recovery <<blackbox>>
+
+  presentation -- workspace : Workspace editing contract
+  compilation -- workspace : Workspace snapshot contract
+  recovery -- workspace : Recovery snapshot contract
+  presentation -- compilation : Compile status / result contract
+}
+
+user - presentation : Workspace UI
+compilation -- host : Workspace compile protocol
+client .> browser : Browser platform APIs
+client ..> libraries : Editor / archive APIs
+
+@enduml

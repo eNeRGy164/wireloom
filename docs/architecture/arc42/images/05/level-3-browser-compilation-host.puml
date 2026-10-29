@@ -1,0 +1,20 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include legend.puml
+
+rectangle "Browser client" as client <<neighbor>>
+rectangle "Shared IDL compiler" as compiler <<neighbor>>
+rectangle ".NET browser runtime\nand JS interop" as runtime <<neighbor>>
+rectangle "Browser compilation host" as host <<whitebox>> {
+  rectangle "Worker runtime bootstrap\nand services" as bootstrap <<blackbox>>
+  rectangle "Compiler adapter" as adapter <<blackbox>>
+
+  bootstrap -- adapter : JS/.NET compile bridge\nand MD5 service contract
+}
+
+client -right- bootstrap : Worker message contract
+bootstrap .right.> runtime : Runtime initialization / interop APIs
+adapter .down.> compiler : IdlCompiler.Compile
+
+@enduml

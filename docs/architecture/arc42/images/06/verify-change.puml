@@ -1,0 +1,48 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include sequence-style.puml
+
+actor "Wireloom maintainer" as user
+participant "Selected verification\nhost/suite" as tests #F5F8F7
+participant "Selected product /\ngenerated-code contract" as product
+participant "Retained expectations /\nfixtures" as evidence #F5F8F7
+
+activate user
+
+group Step 1: Select the checks
+  user -> tests ++ : Run applicable focused / integration checks
+end
+
+group Step 2: Load inputs and expectations
+  tests -> tests : Prepare the selected test inputs
+  opt Corpus or retained-reference check
+    tests -> evidence ++ : Read selected fixture and expected contract
+    evidence --> tests -- : Versioned expectation and provenance
+  end
+end
+
+group Step 3: Exercise and compare the contract
+  tests -> product ++ : Exercise the selected contract
+  opt Direct shared-compiler check
+    ref over product : C1: Compile an in-memory IDL batch
+  end
+  product --> tests -- : Result / diagnostics / generated or runtime behavior
+  tests -> tests : Assert the selected contract
+end
+
+group Step 4: Report the result
+  alt Assertion matches expectation
+    tests --> user : Passing check, including expected rejections
+  else Mismatch or host/integration failure
+    tests --> user -- : Attributable failing case and details
+  end
+end
+
+note over user,evidence
+Select additional corpus, package, runtime, and browser checks for the change.
+Their results establish their own scope; wire qualification is flow 9.
+end note
+
+@enduml
+

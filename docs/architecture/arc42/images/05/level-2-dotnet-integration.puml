@@ -1,0 +1,20 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include legend.puml
+
+rectangle "Consumer project" as project <<neighbor>>
+rectangle ".NET build / IDE host\nMSBuild + Roslyn" as host <<neighbor>>
+rectangle "Shared IDL compiler" as compiler <<neighbor>>
+rectangle ".NET build integration" as integration <<whitebox>> {
+  rectangle "MSBuild integration" as msbuild <<blackbox>>
+  rectangle "Roslyn adapter" as adapter <<blackbox>>
+  msbuild -- adapter : Compiler-visible metadata\nthrough the .NET host
+}
+
+project -- msbuild : DdsIdl / project settings
+host - msbuild : MSBuild item/property contract
+host - adapter : Roslyn generator contract
+adapter ..> compiler : Compiler contract
+
+@enduml

@@ -1,459 +1,345 @@
 # 8. Cross-cutting concepts
 
-## 8.1 Evidence vocabulary
+These concepts describe rules maintainers must preserve when changing Wireloom.
+They apply across compiler features, generated support, and host integrations.
+Each section starts from a concrete example, then explains the rules that must
+keep holding and the consequences of breaking them. Short term definitions
+belong in the [glossary](12-glossary.md#121-definitions).
 
-The project distinguishes RTI acceptance, managed implementation, generated
-contract shape, runtime eligibility, and verified wire compatibility. The
-corpus feature index is the authoritative status view for source generation.
-The generator selects an immutable emission profile from the resolved
-`Rti.ConnextDds` assembly identity. Missing and below-minimum references report
-`DDSG0003`; versions 7.3.1 through below 7.7.0 select the 7.3.1 profile, and
-7.7.0 or later select the 7.7.0 profile. No separate target-version override
-is exposed. Only exact 7.3.1 and 7.7.0 have qualification status; mapping other
-versions to a profile does not assert that they have been tested. The root
-corpus IDL is shared, with version-scoped oracle and generated output folders.
+The surrounding chapters own the [solution strategy](04-solution-strategy.md),
+[building blocks](05-building-block-view.md), [runtime flows](06-runtime-view.md),
+[deployment and configuration entry points](07-deployment-view.md), and
+[decisions](09-architectural-decisions.md). This chapter references those views
+and their detailed guides rather than repeating them.
 
-Oracle comparisons always use the selected exact LTS capture, including its
-source directories and generation outcomes. Wire planning separately records
-`notApplicableCases` for features unavailable in the selected RTI version.
-Those cases retain explanatory evidence but contribute no exchanges,
-compatibility failures, or Wireloom implementation gaps. Requesting such a
-case explicitly fails before peer builds and type-support discovery. New oracle
-captures and Wireloom exports retain source revision/dirty state, input and
-output hashes, tool versions, arguments, and outcomes. Legacy missing provenance
-remains unknown; unattributed local totals cannot establish qualification. The
-[LTS runbook](../../corpus/LTS-PROFILES.md) owns reproduction commands and
-attribution requirements.
-Feature cases isolate availability boundaries: C040 (`09-autoid-hash`)
-checks hash member IDs on both LTS versions; C142 (`09-must-understand`) is
-not applicable to 7.3.1. The shared positive inventory contains 91 cases, of
-which 90 apply to 7.3.1 and all 91 apply to 7.7.0. Wire evidence is tied to
-the exact case inputs and profile; changed inputs require fresh exchanges.
+## 8.1 IDL meaning and identity
 
-## 8.2 Diagnostics and source locations
+Two IDL values can have the same number while representing different kinds of
+thing. For example:
 
-Generator-owned diagnostics use stable IDs. IDL failures retain the original
-input path and offset so a consumer can fix the source rather than inspect a
-generated file. Unsupported or invalid input that prevents safe managed output
-is rejected with `DDSG0001`. Recognized but unsupported annotation uses report
-`DDSG0102` before generation fails with `DDSG0001`.
+```idl
+enum EngineState { Stopped, Running };
+enum DoorState { Closed, Open };
 
-Target-profile incompatibilities have a separate error path. The 7.3.1 profile
-does not support `@must_understand`; using it reports `DDSG0004` at the source
-location and emits no generated sources. The 7.7.0 profile preserves it in
-DynamicType metadata.
+const EngineState InitialEngine = Stopped;
+const DoorState InitialDoor = Closed;
+```
 
-Some constructs deliberately continue with a warning or informational
-diagnostic: unknown annotations are ignored with `DDSG0101`, IDL interfaces are accepted without
-emitting C# interface types (`DDSG0103`), and direct arrays of sequences warn
-that the default generated mapping may not preserve IDL semantics (`DDSG0105`).
-The opt-in `Idl` sequence-array mapping preserves both layers and omits that
-warning. Invalid mapping values and unsupported recursive direct sequence arrays
-produce source-located `DDSG0001` before emission. Macro
-argument-count mismatches and active `#warning` directives also report
-warnings while preprocessing continues (`DDSG0104`/`DDSG0106`); active
-`#pragma message` directives are informational (`DDSG0107`). The package guide
-documents the adopter impact and how to promote selected diagnostics to errors.
+`Stopped` and `Closed` both have numeric value zero. That does not make an engine
+state a door state. This additional declaration must be rejected:
 
-Naming violations report `DDSG0108` while generation continues by default.
-Setting `Strict="true"` on any generating root instead rejects case-variant
-keywords, same-scope case-only names, and new keys in derived aggregates with
-`DDSG0001` before emission. Exact reserved keywords fail in both modes.
-Strictness applies to the batch; a non-generating input cannot enable it.
+```idl
+const DoorState WrongDoor = InitialEngine;
+```
 
-Interface bodies are parsed for declared identifiers even when `DDSG0103`
-reports omitted bindings. Exact reserved keywords fail in every body.
-Following RTI, ordinary interface bodies do not apply specification warnings;
-`@service("DDS")` bodies apply keyword-case and scope-collision rules, with
-separate parameter scopes per operation. Body types are not emitted, and full
-interface type resolution and RPC semantics remain outside this validation.
+[Binding](12-glossary.md#binding) must retain the declared enum in the
+[bound value](12-glossary.md#bound-value), rather than reduce both constants to
+an untyped zero. Generated representations must use that same typed meaning.
 
-Compiler warning policies affect diagnostic presentation, not semantic
-acceptance. `DDSG0108` can fail a warnings-as-errors build in default mode;
-suppressing it cannot bypass a strict failure. The
-[configuration reference](../../guides/configuration.md#enable-strict-validation)
-describes the rules, warning exemptions, and differences from RTI's mode.
+Preserve these rules:
 
-## 8.3 Determinism and invalidation
+- Resolve names, types, constants, annotations, defaults, and member IDs into
+  effective semantic facts. Managed initialization, native conversion, and
+  [DynamicType](12-glossary.md#dynamic-type) metadata must consume those facts consistently.
+- Preserve type identity and distinctions such as an absent annotation versus
+  an explicit false value. An enum-valued constant must not become an untyped
+  integer merely because its value is numeric.
+- Keep [canonical IDL names](12-glossary.md#canonical-idl-name) consistent through
+  binding, collision checks,
+  metadata, and implicit member-ID hashing. Generated C# spelling is a
+  projection of that identity, not an independent naming authority.
+- Preserve the ownership of effective options. Batch settings and
+  declaring-file settings have different scopes; reaching a declaration
+  through another root or include must not silently transfer option ownership.
+  The [configuration reference](../../guides/configuration.md#settings-at-a-glance)
+  owns the exact scopes and precedence.
 
-Physical IDL files are canonical inputs. Shared files are emitted once per
-project, generated hint names are deterministic, and edits to tracked includes
-invalidate generation. The current measured behavior is recorded in the
-[incremental generator baseline](../../performance/incremental-generator-baseline.md):
-unchanged and unrelated non-IDL inputs remain cached, while tracked IDL edits
-invalidate the shared source-output batch. Per-root incremental caching is not
-yet implemented.
+When these rules diverge, an apparently correct C# value can carry different
+native initialization or DDS type metadata. A language change therefore needs
+review across all projections of the affected semantic fact.
 
-Finite limits for unbounded IDL values default to 100 sequence elements and
-255 UTF-8 bytes for narrow strings or UTF-16 code units for wide strings.
-Project properties set the defaults; `SequenceSize` and `StringSize` metadata
-override them for declarations physically in one IDL file. Explicit IDL bounds
-take precedence. Values must be positive `Int32` numbers. This configuration
-does not enable RTI's true-unbounded allocation and deserialization behavior.
+The [semantic reference](../../guides/idl-semantics.md) owns detailed annotation,
+constant, literal, and default rules. The
+[language-analysis view](05-building-block-view.md#542-language-analysis) identifies
+their implementation boundaries; [chapter 9](09-architectural-decisions.md)
+records the decisions behind them.
 
-`DdsIdlEnableEscapeChar` defaults to `false` and applies across the generation
-batch. Its token-aware preprocessing follow-up removes one leading underscore
-from each identifier while composing source origins; strings and comments are
-preserved. Canonical names drive binding, duplicate detection, generated C# and
-DynamicType names, and implicit hash member IDs. Escaped IDL keywords are
-permitted, while names colliding after normalization fail before emission.
+## 8.2 Source provenance and failure reporting
 
-## 8.4 Dependency and supply-chain boundaries
+A useful diagnostic identifies the supplied IDL that caused it, even after
+preprocessing, includes, and identifier normalization. For example:
 
-The consumer owns the RTI runtime reference. Roslyn compiler packages remain
-private build dependencies. The host-neutral compiler is a `netstandard2.0`
-project shared by repository C# hosts and has no Roslyn, MSBuild, or RTI
-references. It is built at the generator's version and bundled beside the
-adapter in the single published generator package; consumers do not receive it
-as an application runtime dependency. The compiler is not independently
-published. Central package management, lock files, NuGet audit, pinned GitHub
-Actions, SBOM generation, and provenance attestation protect the package path.
+```idl
+#define MISSING_TYPE Missing
+module Outer { struct Broken { MISSING_TYPE value; }; };
+```
 
-## 8.5 Test separation
+Preprocessing replaces `MISSING_TYPE` with `Missing`. The unknown-type finding
+must still point to the `MISSING_TYPE` use in the original IDL. This
+[source provenance](12-glossary.md#source-provenance) lets the developer fix the
+text they actually supplied.
 
-Fast in-memory tests validate compiler invariants and the independent emission
-plans; characterization tests protect current diagnostic and generated-output
-contracts; corpus tests validate feature-level acceptance and required public
-output shape; packed-package tests validate the actual NuGet consumption path.
-The corpus shape comparison does not establish exact generated-source, native
-support, runtime, or wire equivalence.
+Preserve the original input identity and zero-based
+[UTF-16 offset](12-glossary.md#utf-16-offset) through
+text transformations. Adapters translate that location into their host's
+diagnostic or editor model; they must not substitute generated-C# locations
+or invent source spans the compiler does not provide. This applies equally
+to filesystem-backed and virtual inputs.
 
-The separate [runtime contract suite](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
-uses build-time generation and strongly typed calls to managed, native, and
-type-support APIs. Focused IDL fixtures and tests are grouped by responsibility.
-Windows and Linux validation complement maintained compiler and generator
-source coverage; generated fixture files and test project code are excluded
-from Coveralls.
-The packed-package suite links these runtime contracts and runs them against
-the packed analyzer assets, including a .NET 8-only compiler-host container.
-Explicit skipped contracts and opt-in compile reproductions retain unresolved
-findings; they do not establish a complete API contract or wire compatibility.
+Keep failure categories distinct:
 
-The licensed wire matrix keeps its fixture catalog, complete directed scenario
-plan, bounded scheduler, and evidence checks in C#. Bash handles RTI environment
-setup and per-case source staging. It builds all selected case peers before
-starting exchanges; one C# scheduler then draws from the full shard plan. Each
-shard defaults to 16 concurrent exchanges with distinct active DDS domains;
-readers report ready before writers start. RTI Monitoring Library 2.0 is
-disabled in each peer because the matrix does not consume its telemetry and the
-library creates a background discovery participant. Reports retain each
-exchange result and reject missing, duplicate, or unrun plan rows. Whole-case
-shards remain the build and evidence partition.
+| Category                                                                           | Contract                                                                                   |
+| :--------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------- |
+| Invalid or unsupported IDL, including features unavailable in the selected profile | Expected compiler findings return diagnostics and no generated documents                   |
+| Accepted ignored or potentially lossy behavior                                     | Generation may continue with a warning or informational diagnostic                         |
+| Caller-contract violation or unexpected implementation fault                       | An exception propagates; it must not be disguised as an IDL finding                        |
+| Cancellation                                                                       | Cancellation propagates; it is not successful partial compilation or an ordinary IDL error |
 
-## 8.6 RTI-compatible generated value semantics
+Diagnostic IDs are stable integration contracts. Core findings retain their
+severity, message, and source origin when presented by a host. Semantic
+acceptance and host diagnostic policy remain separate: promoting a warning
+can fail a consumer build, while suppressing a warning cannot bypass a
+semantic rejection. The
+[diagnostic policy reference](../../guides/configuration.md#control-diagnostics)
+and [strictness reference](../../guides/configuration.md#enable-strict-validation)
+own the detailed policies; the
+[package diagnostic catalog](../../../src/Wireloom.Dds.Generator/README.md#diagnostics)
+owns individual IDs.
 
-The generated API and native plugin are compatibility artifacts. The goal is
-RTI C# or better: RTI's observable behavior provides a baseline and evidence,
-not a ceiling. Existing quirks remain characterized until an intentional
-behavior change is implemented and documented. RTI C++ wire support can justify
-a more capable managed API; interoperability claims still require wire
-verification. The current behavior below is not a requirement to reproduce
-every RTI limitation in future APIs.
+Incorrect origin mapping directs users to the wrong input. Collapsing failure
+categories can hide implementation defects or make cancellation look like a
+valid result. See the [correction flow](06-runtime-view.md#612-diagnose-and-correct-generation-problems)
+and [shared compilation flow](06-runtime-view.md#64-c1-compile-an-in-memory-idl-batch)
+for their host-visible effects.
 
-Alias diagnostic formatting intentionally improves on RTI C#'s unsupported
-scalar and collection root formatting. Struct and union formatting continues
-through RTI; aliases needing a fallback use a hidden typed instance method in
-their existing support class rather than embedding loops in the data class.
-Invariant numbers, readable Unicode, quoted collection strings, and nested
-array dimensions are executable runtime contracts. This is diagnostic output,
-with separate evidence from serialization and DDS interoperability.
+## 8.3 Predictable compilation
 
-- Array hash codes use the first element, not the array length. This preserves
-  RTI's intentionally weak hash behavior. Empty arrays are not a supported
-  input for this generated hash path.
-- Primitive arrays use direct `SequenceEqual`. Arrays containing aggregate
-  elements use the casted `Cast<T>().SequenceEqual(...)` path required by the
-  runtime collection API.
-- Newly allocated CLR arrays use zero initialization unless the element type
-  is an enum with a declared `@default_literal`. In that case, generated
-  managed and native initialization fills every array element with the declared
-  literal, including typedef arrays, enum alias chains, and multidimensional
-  members. Caller-supplied arrays remain caller owned by the value constructor.
-  C148 and the runtime contract suite verify this behavior.
-- Sequence members with array dimensions retain those dimensions in the
-  emission model even though the managed public shape remains the RTI sequence
-  shape by default (`RtiCSharp`). Integer sequence arrays use `NativeSeq`; bounded string sequence
-  arrays use `NativeStringSeq` with the string bound passed through
-  `FromNative`, `Initialize`, and `ToNative`.
-- `DdsIdlSequenceArrayMapping=Idl` opts into faithful direct sequence arrays;
-  file metadata `SequenceArrayMapping` overrides the project default. Included
-  declarations use the included file's setting, independent of root order.
-  The generated API uses arrays of sequence wrappers with mutable `Value`
-  containers and shared native-array lifecycle paths. The enclosing metadata
-  contains anonymous sequence elements rather than synthetic alias or struct
-  layers. Runtime fixtures verify numeric, string, enum, scalar-alias, aggregate,
-  optional, multidimensional, and inherited cases on both profiles. Recursive
-  direct sequence arrays remain unsupported in this mode; DDS wire qualification
-  is separate. Direct sequence-array union branches use this same configured
-  projection.
-- A default union branch that is a fixed array of aggregate values initializes
-  each element during construction. Copy construction creates an independent
-  array and copies each aggregate element, so the copy does not share those
-  values with the source union.
-- Direct narrow and wide string-sequence union branches use specialized native
-  storage and pass element bounds through initialization and conversion.
-  Typedef-backed union branches delegate through their generated native alias
-  wrappers. Runtime API coverage is separate from DDS wire verification.
-- `optionalsOnly` cleanup is context-sensitive. Types with direct optional
-  members destroy those members and return before required cleanup. Derived
-  types return after base cleanup because the base may contain optional
-  members. Direct strings, nested aggregates, aggregate-element collections,
-  and sequence arrays retain the RTI outer guard. Primitive-only fields and
-  primitive-only collections delegate cleanup to their member wrapper and do
-  not need an outer guard.
+A compilation is determined by its supplied sources, effective options,
+selected [profile](12-glossary.md#compiler-profile), and platform-service results. State from an earlier or
+concurrent call must not change that meaning.
 
-## 8.7 Deterministic preprocessing safety
+For example, the compiler API copies an input's definition list:
 
-Preprocessing is finite by contract. A file may perform at most 100,000 macro
-expansion operations and produce at most 4,194,304 UTF-16 code units of
-preprocessed text. The output ceiling counts text units, not memory usage. These
-limits are deterministic rather than elapsed-time based. Exceeding either
-limit, invalid include operands, and cancellation reject the compilation
-instead of returning partial text. Physical line starts are indexed once so
-repeated `__LINE__` expansion remains linear in total input and output size.
+```csharp
+using Wireloom;
 
-For optional arrays of aggregate elements, hashing uses an explicit presence
-branch: add the first aggregate element when present and add `-1` otherwise.
-An integer/aggregate conditional expression cannot be passed to generic
-`HashCode.Add<T>`. C134 checks this rule alongside nullable presence, deep copy,
-optional metadata, and native fixed-array conversion.
+var defines = new List<string> { "FEATURE" };
+var input = new IdlInput("sample.idl", "struct Sample { long value; };", defines);
 
-## 8.8 Annotation, constant, and default semantics
+defines.Clear();
+// input.Defines still contains "FEATURE".
+```
 
-Supported language constructs follow OMG IDL and DDS-XTypes semantics.
-Retained RTI output records observed compatibility for specific inputs and
-tool versions; it does not limit valid spellings or override the specifications.
-RTI extensions and remaining Wireloom implementation limits are identified
-separately from those language rules.
+Clearing the caller's list must not change the input already created. The
+same isolation principle applies to the
+[snapshot](12-glossary.md#compilation-snapshot) captured for a compilation.
 
-The front end captures ordered annotation applications with balanced raw text
-and source offsets before known-name argument validation. Unknown applications
-remain opaque and are ignored with diagnostics. The built-in catalog defines
-parameter kinds, defaults, legal targets, positional rules, repeat/conflict
-metadata, and supported versus recognized-unsupported names. Context-specific
-readers apply those definitions while retaining target-specific semantic and
-compatibility behavior. It
-distinguishes an absent boolean annotation from an explicit `false`; shorthand
-and full-form extensibility annotations resolve to the same model. A bare
-`@autoid` selects `HASH`. Module auto-ID applies within that module block,
-reopened blocks are resolved independently, and a declaration-local setting
-does not leak to sibling declarations or included top-level declarations.
-Profile-specific annotation availability is checked at the compilation and
-emission boundary.
+Preserve these rules:
 
-Known applications reject repeated named argument keys and invalid argument
-shapes. Type prefixes, members, enum literals, and union branches consume
-ordered applications; unknown arguments stay opaque. The typed expression
-dispatcher reuses integral and floating evaluators with OMG numeric expression
-semantics, while boolean member flags bind constants after the complete symbol
-graph is available. Boolean, character, string, and enum values remain typed
-literals or names resolved by their dedicated value rules; `long double` and
-fixed-point remain unsupported. The catalog validates repeat/conflict rules
-across captured target lists, preserving context-specific diagnostics.
-Local struct/union `@autoid` and typedef `@default` applications are retained
-on their semantic targets, and typedef default expressions are read during
-binding after target resolution. Module scope records retain module-level
-annotations and resolve the member-ID policy inherited by nested declarations,
-because member IDs are assigned during declaration parsing.
-Unknown applications, including those interleaved with member annotations,
-are consumed as complete scoped applications, including balanced and quoted
-arguments, before the following declaration is checked.
+- Each call owns its input snapshot and compilation state. Treat caller-supplied
+  text and copied option collections as the inputs to that call; do not retain
+  mutable semantic state across compilations.
+- Keep source access and platform services explicit at the compiler boundary.
+  The compiler uses supplied text rather than reaching into a host filesystem.
+  A host-provided MD5 service must return the specified digest consistently;
+  a host sharing that service across calls owns its concurrency safety.
+- Preserve deterministic output ordering and unique
+  [hint names](12-glossary.md#hint-name). A duplicate
+  hint must fail rather than overwrite an earlier document. Deduplication must
+  distinguish different preprocessed outputs of the same supplied source under
+  different macro states. Tracked IDL dependencies must participate in
+  invalidation; a cached result is valid only for its effective inputs.
+- Bound preprocessing work, nesting, and output deterministically. Exceeding a
+  safety bound must not pass partial preprocessed text into parsing.
+  Cancellation remains observable and follows the failure contract above.
 
-Balanced application records are transient parser inputs; the semantic model
-stores effective values and unresolved expressions needed for binding rather
-than duplicating source text. For an annotated comma-separated member
-declaration, the parser consumes the list once and applies effective metadata
-to the final declarator, matching the retained RTI case. The OMG question
-about annotation application to multiple declarators, IDL43-37, remains open;
-Wireloom's current behavior is a compatibility policy, not a claimed normative resolution
-([OMG open IDL issues](https://issues.omg.org/issues/spec/IDL?view=OPEN)).
+Leaking state or omitting an input from invalidation can make a successful
+build depend on edit history. Time-based cutoffs alone would make acceptance
+depend on machine speed; finite work limits provide a reproducible boundary.
 
-An enum accepts FINAL or APPENDABLE extensibility in either shorthand or full
-form. MUTABLE is invalid for enumerated types. Applying extensibility more
-than once is an error, including equivalent shorthand and full-form uses.
-These rules follow [DDS-XTypes 1.3 sections 7.2.2.4.1 and 7.3.1.2.1.8](https://www.omg.org/spec/DDS-XTypes/1.3/PDF).
+The [safety-limit reference](../../guides/configuration.md#fixed-behavior-and-configurable-limits)
+owns numeric limits and scope. The
+[incremental baseline](../../performance/incremental-generator-baseline.md)
+owns measured cache behavior; deterministic results do not imply per-root
+incremental caching. The
+[compiler contract](05-building-block-view.md#compiler-contract-and-payload-examples)
+and [MD5 service decision](../adr/ADR-002-inject-member-id-md5-per-compilation.md)
+define the relevant boundaries.
 
-Quoted literal contents do not terminate declaration bodies or annotation
-arguments. Explicit member-ID expressions resolve after constant binding and
-before duplicate-ID validation, and take precedence over automatic hash IDs.
-Sequential IDs continue after the preceding explicit or sequential ID,
-including inherited members. Hash IDs do not advance that counter. The binder
-records effective IDs separately from declared annotations; validation checks
-the complete inherited and local member set, and emission renders those IDs.
+## 8.4 Generated values and resource ownership
 
-Constant expressions, chained enum-valued constants, union labels, string bounds, and
-defaults use the shared binding and evaluation path. Enum values retain their
-declaring enum identity for assignment and label validation. Bound scalar
-values distinguish integers, booleans, characters, floating-point values,
-strings, and enumerators. Only integer values enter integer expressions such
-as bounds and member IDs; boolean and character constants are resolved by
-their own default and discriminator rules. Integral evaluation retains literal
-values until their expression type is determined, then promotes operands
-using their individual rank and signedness and checks each intermediate
-result. The declared target type is validated after expression evaluation;
-`@id` literals share this integer-expression path, including octal and
-hexadecimal forms. `@unit` and `@hashid` string arguments use the shared
-literal decoder, which combines adjacent tokens and supports wide literals
-before storing the resulting value. Floating-point range annotations fail
-during binding with a source-located IDL diagnostic. Union labels are checked
-for duplicates after evaluation before emission.
-Direct fixed-array union branches remain arrays in the semantic and emission
-models, and use the same initialization, copying, conversion, and destruction
-paths as other arrays.
+Generated managed values, [native storage](12-glossary.md#native-storage), and
+DDS type metadata describe the same IDL contract, but they have different
+ownership and lifecycle rules.
+A change to one representation must preserve the relationships to the others.
 
-Defaults resolve after the declared type and alias chain are known. A default
-on the nearest annotated typedef in the chain applies unless the member has an
-explicit default. The resolved typed scalar value feeds
-managed initialization, native initialization, and DynamicType annotations.
-The default is therefore a type-aware semantic value rather than a literal
-string interpreted independently by each emitter. Profile runtime support for
-DynamicType defaults is recorded with the corresponding corpus and runtime
-evidence. The 7.3.1 API has no member annotation support for missing-field
-defaults. On 7.7.0, runtime tests restore integral and narrow-string defaults
-after clearing DynamicData members. Managed/native initialization preserves
-fractional float/double and non-ASCII wide-string defaults on both LTS
-profiles. Runtime metadata tests confirm that RTI 7.7.0 exposes the fractional
-and wide-string annotation values exactly. Its `ClearMember` path does not
-preserve fractional metadata defaults (1.5 becomes 1.0, 2.5 becomes 2.0, and
-1.25 becomes 1.0) and returns `??` for a cleared non-ASCII wide-string
-default; these are recorded as DynamicData restoration limitations, not
-generator initialization failures.
-Negative-zero sign bits survive cleared-member restoration on 7.7.0. For C171,
-a one-member appendable writer sends `inherited=17101`; the full reader receives
-`overridden=9`, `text="alias"`, `ratio=1.5`, and `single=1.25` from the omitted
-trailing members' declared defaults. This behavior uses DDS deserialization,
-separately from in-memory `ClearMember` behavior. RTI 7.3.1 lacks the
-member-annotation API used for metadata restoration and sparse-field defaults.
+Consider a generated wrapper around a bounded sequence:
 
-Range validation compares integral, boolean, and character defaults with the
-declared limits, including defaults inherited from typedefs. Boolean and
-character values use their ordering representation only for this comparison;
-they remain ineligible for integer expressions such as bounds and member IDs.
+```idl
+module RuntimeAliases {
+    typedef sequence<long, 4> Numbers;
+};
+```
 
-Character defaults require the matching `char` or `wchar` literal or constant
-type, including through aliases; an integer expression is not a character
-default. String literals also require matching width: every token assigned to
-a `wstring` requires the `L` prefix, and a narrow string cannot use that prefix.
-Adjacent string literals are decoded independently and then joined,
-so hexadecimal and octal escapes cannot consume characters from the next
-token. Bounds apply to the final value. These rules follow
-[IDL 4.2 sections 7.2.6.2 and 7.2.6.3](https://www.omg.org/spec/IDL/4.2/PDF).
-Focused probes on both RTI LTS generators reject the retained adjacent-string
-typedef-default input rather than applying the standard concatenation rule;
-Wireloom's regression and runtime tests establish its behavior independently.
+Its value constructor retains the supplied collection, while its copy
+constructor creates an independent collection:
 
-The existing `wchar` union-label syntax also accepts unprefixed character
-literals, as recorded by C113/C131. This is a legacy Wireloom extension;
-constant and default assignments still require matching narrow/wide types.
+```csharp
+using RuntimeAliases;
+using Rti.Types;
 
-## 8.9 Shared compiler API
+var values = new Sequence<int> { 1, 2 };
+var original = new Numbers(values);
+var copy = new Numbers(original);
 
-`Wireloom.Dds.Compiler` exposes an in-memory API for repository C# projects.
-Callers select `IdlCompilerProfile` explicitly and receive one
-`IdlCompilationResult` containing generated documents and diagnostics. A
-compilation can fail with an empty document list and source-located diagnostics;
-the core preserves diagnostics collected before the first fatal error. It
-observes cancellation and lets unexpected exceptions propagate. `IdlInput`
-copies its define, undefine, and include-directory lists, and compilation
-snapshots the input collection at entry. Inputs and includes are text supplied
-by the caller; the compiler does not access the filesystem. Existing root
-aggregation, path interpretation, and option ownership remain unchanged.
+values[0] = 9;
+// original.Value[0] is 9; copy.Value[0] is 1.
+```
 
-Each compile call requires a synchronous MD5 delegate. The host hashes the
-provided UTF-8 bytes and returns a 16-byte digest; the compiler validates its
-length and applies the existing little-endian conversion and 28-bit mask. The
-Roslyn generator supplies `MD5.HashData`; the callback is scoped to that
-compilation and is used by both struct and union member-ID paths. This keeps
-hashing replaceable for browser hosts without changing parser behavior. The
-Playground adapter supplies the synchronous callback; published-browser
-execution and profile parity remain pending.
+The constructors look similar, but promise different ownership. A maintainer
+changing either path must preserve that distinction.
 
-The Roslyn adapter discovers the resolved RTI assembly version, maps that
-version to the corresponding profile, translates compiler diagnostics into
-Roslyn diagnostics, and adds generated documents to the consumer build. Core
-character and string literal formatting preserves the output of the previous
-Roslyn helper behavior. Direct API tests cover result/error cases, cancellation,
-input snapshots, profile mapping, formatting parity, and the MD5 provider
-contract. Corpus comparisons verify complete generated text for both
-maintained RTI profiles.
+[Optional presence](12-glossary.md#optional-presence) is another distinction
+that must survive representation changes:
 
-## 8.10 Browser worker protocol
+| State                                 | Meaning                                                                  |
+| :------------------------------------ | :----------------------------------------------------------------------- |
+| Absent optional scalar                | No scalar value is present                                               |
+| Present scalar with its default value | A scalar is present, even when its value is zero or another default      |
+| Present empty collection              | A collection is present with no elements; it is not an absent collection |
 
-The Playground protocol is versioned and carries worker generation, request ID,
-workspace revision, explicit profile, and a collection of normalized virtual
-file paths with source, generation-root flags, and file-owned settings. Protocol
-v2 uses the .NET adapter DTOs as its canonical contract, checked against the
-TypeScript mirror in Quality. Client and worker ship atomically without a
-cross-release compatibility window. Workspace settings are batch-wide; explicit
-folders and stable editor IDs stay in the client/recovery model. Workspace snapshots are
-bounded before dispatch, and only the running request plus newest pending
-request are retained. The client applies a response only when all identity
-fields match both the dispatched request and current workspace. A failed or
-timed-out worker is terminated and replaced; synchronous work cannot be
-interrupted by posting cancellation to the same busy worker. Startup failures
-are explicit and retryable. The compiler remains the source of generated
-documents and diagnostic IDs, severities, messages, and UTF-16 offsets. The
-current diagnostic API exposes no length, so the adapter does not invent one.
+Preserve these rules:
 
-Deterministic Node tests cover newest-pending replacement, all response identity
-fields, stale results after worker replacement, and worker-start recovery. The
-maintained worker was also exercised in Windows Edge 156.0.4314.42: native
-parity passed for eight cases, two profiles, and root plus nested hosting (32
-comparisons); injected worker, provider, timeout, asset, and bounded-input
-failures recovered as expected. Startup, asset transfer, compile, and
-main-thread responsiveness measurements are recorded in
-[the runtime view](06-runtime-view.md#64-browser-playground-compilation).
-This result covers the representative Edge host; cross-browser and release
-qualification remain pending.
+- Apply resolved defaults consistently to the initialization and metadata paths
+  that support them. Managed construction, native initialization, and RTI
+  missing-field restoration are different contracts; evidence for one does not
+  establish the others.
+- Distinguish reference retention from independent copying. Value constructors
+  for alias wrappers can retain supplied aggregates or collections; tested copy
+  constructors copy mutable nested values. Do not assume every constructor
+  establishes independent ownership.
+- Preserve collection dimensions, aliases, optional presence, union branch
+  selection, and the selected mapping across managed/native conversions.
+- Respect whether native conversion may allocate or must use existing storage.
+  Release owned resources under the appropriate cleanup mode, including
+  optional-only cleanup and inherited members.
+- Keep equality, hashing, and diagnostic formatting aligned with their
+  documented generated API contracts. Formatting is separate from DDS
+  serialization.
 
-## 8.11 Browser workspace and presentation
+Breaking these rules can produce shared mutable state where a caller expects
+a copy, lose optional presence, or corrupt native resource handling while
+ordinary managed tests still pass.
 
-The existing Source/Generated workbench presents a virtual `/workspace/` tree,
-source tabs on the left, and generated C# on the right. Source and Generated
-headers collapse independently, with a blank line above Generated. Source
-actions appear on Source-group hover/focus. Folders expand by default while
-manual collapse survives edits. File context actions switch generation roles;
-folder menus configure include search. Properties uses role/mapping toggles,
-and Escape cancels dialogs. Active IDL can be copied/downloaded even on compile
-failure; operation errors use red Error notices with alert semantics. Stable file identities
-preserve editor undo through tab switches and moves. Import uses basenames in
-the selected folder, resolving all conflicts before atomic apply. Paths are
-normalized and unique; file/folder collisions and traversal fail before state
-changes. Renames do not rewrite source includes. Empty folders persist and
-configured include folders follow moves. Batch and declaring-file settings
-follow the [compiler configuration scopes](../../guides/configuration.md).
+The [generated-value guide](../../guides/generated-value-semantics.md) owns
+constructor, mutation, copying, and maintainer storage details. The
+[runtime contract matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
+identifies covered shapes and gaps. Mapping settings belong to
+[configuration](../../guides/configuration.md#choose-the-sequence-array-mapping);
+the policy for deliberate developer-experience improvements belongs to
+[the strategy](04-solution-strategy.md#45-generate-c-that-improves-the-developer-experience).
 
-Workspace bounds are 512 files, 512 explicit folders, and 256 KiB aggregate
-UTF-8 source; paths allow 1,024 code units and 32 levels. Settings lists allow
-128 entries of 1,024 characters each. The adapter independently checks the
-compile-boundary bounds. See the [v2 contract](../../guides/playground-workspaces.md#worker-contract-v2).
+## 8.5 Compatibility and evidence
 
-Monaco supplies lexical IDL/C# colors, models, markers, and UTF-16 position
-mapping; it supplies no semantic IDL or C# service. The compiler remains the
-only authority on language validity and profile behavior. Source changes clear
-markers and diagnostic navigation immediately. Generated copy/download actions are
-enabled only for the current successful result with documents. Individual
-files and ZIP entries preserve original generated text; operating-system
-clipboard reads may normalize newlines. Source backup is independent: the
-Source ZIP preserves current text, virtual folders including empty ones, and
-workspace settings in `workspace.json`, with source entries under `workspace/`.
-This export also works with invalid or empty compiler input.
+A compatibility claim has a scope. An API profile determines which support
+surface is generated; qualification establishes what was actually checked
+with named inputs, tool versions, and peers. Selecting a profile does not
+qualify every runtime version mapped to it.
 
-Workspace recovery uses the `wireloom-playground` IndexedDB database and a
-version-3 workspace record with files, explicit folders (including empty
-folders), roles, file and workspace settings, profile, and active source ID.
-Unknown or malformed versions fail explicitly. Writes/deletion are ordered, and save callbacks
-carry a generation so old completions do not mislabel newer edits. No source
-is placed in URLs, telemetry, or network requests. All runtime/editor assets
-are bundled at the deployment base. A small bootstrap provides reload recovery
-if the editor chunk is missing; compiler asset failures expose worker restart.
+For example, suppose the Playground generates C# for `Sample.idl` with the
+7.7.0 profile. This shows that generation completed for that input and profile.
+It says nothing yet about compiling the generated application against RTI or
+exchanging DDS samples with a C++ peer. Those claims need different evidence.
 
-Editor font size is an optional localStorage preference (10–20 px, default
-12 px), separate from source/profile recovery. Unavailable preference storage
-does not prevent changing the font in either editor.
-Theme is a separate `wireloom-theme` localStorage preference with Light and
-Dark choices. On first use the bootstrap resolves the current system appearance
-to one of those choices and saves it. It applies the saved choice before the
-editor chunk loads and updates both page color scheme and Monaco. Later system
-or developer-tools preference changes do not override it. Preference storage
-failure leaves the current session's choice usable.
+Keep these kinds of evidence distinct:
+
+| Evidence                                         | What it establishes within its recorded scope                                                    |
+| :----------------------------------------------- | :----------------------------------------------------------------------------------------------- |
+| Language acceptance and generated contract shape | Supported inputs and the required generated declarations                                         |
+| Exact generated-text comparison                  | Output equality for the compared inputs, profiles, and versions                                  |
+| Packed-package consumption and compiled usage    | Whether the distributed integration loads and its generated API compiles                         |
+| Generated API/runtime contracts                  | Observed managed behavior, native lifecycle/conversion, or metadata behavior                     |
+| Directed DDS exchanges                           | Interoperability for the exercised writer/reader, type, representation, and runtime combinations |
+| Generated-source analysis                        | Findings about emitted C# quality under the selected analysis rules                              |
+
+Use one explicit profile consistently for the generated API and support paths.
+Keep specification meaning, vendor behavior, and Wireloom implementation
+limits distinguishable when interpreting a result.
+
+Retain [evidence provenance](12-glossary.md#evidence-provenance) with a claim:
+input/output hashes, source revision, toolchain/profile, and outcomes. Changed inputs require fresh evidence for
+the changed scope; unknown historical provenance remains unknown.
+Unavailable cases must remain distinguishable from failures and implementation
+gaps. A complete, internally consistent report can still contain failing
+exchanges.
+
+Otherwise, successful generation or discovery can be mistaken for working
+application behavior or interoperability.
+
+The [support policy](../../guides/support-and-compatibility.md#rti-version-qualification)
+owns profile mapping and qualification policy; the
+[corpus index](../../corpus/FEATURE-COVERAGE.md) owns feature status.
+The [LTS runbook](../../corpus/LTS-PROFILES.md) and
+[wire runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
+own attribution and report contracts. [Chapter 10](10-quality-requirements.md)
+owns acceptance criteria and evidence links; [chapter 9](09-architectural-decisions.md)
+owns verification-strategy decisions.
+
+## 8.6 Workspace consistency
+
+An editable workspace and a compilation result have different identities and
+lifetimes. The workspace is current user-owned source; generated output is a
+derived result valid only for the snapshot that produced it.
+
+For example, compare the workspace with a successful incoming result:
+
+| Compared value     | Current workspace | Incoming result |
+| :----------------- | :---------------- | :-------------- |
+| Workspace revision | 13                | 12              |
+| RTI profile        | 7.7.0             | 7.7.0           |
+
+The profile matches, but the result belongs to older source or settings. It
+must not replace the output or enable generated export. A
+[current result](12-glossary.md#current-result) must match the
+[workspace revision](12-glossary.md#workspace-revision) as well as the other
+request identity fields.
+
+Preserve these rules:
+
+- Keep file identity separate from virtual path. Accepted moves and tab changes
+  retain editor state; paths remain normalized and unique.
+- Validate an entire proposed workspace change before applying it. Rejected or
+  canceled operations leave the prior workspace intact. A path change must not
+  silently rewrite IDL source.
+- Accept a result only when worker generation, request, workspace revision, and
+  profile match the dispatched snapshot and current workspace. Obsolete success
+  and failure responses cannot replace current state.
+- Permit generated export only for a current successful result with documents.
+  Source backup represents the live workspace and remains independent of
+  compilation success.
+- Persist source, structure, roles, and settings rather than treating saved
+  generated output as authoritative. Validate stored records before applying
+  them, and preserve newer edits when recovery finishes late.
+- Serialize recovery writes and deletion, and ignore obsolete completion
+  callbacks. After successful reset deletion, older queued saves must not
+  resurrect reset data. A save completion must not mark newer edits as saved.
+  Storage failures remain explicit; editor preferences are separate from source recovery.
+
+Breaking these rules can export obsolete contracts, discard edits, or restore
+data the user has reset. Local recovery is a convenience with explicit failure
+handling, not an alternative authority for compiler validity.
+The [local-source constraint](02-architecture-constraints.md#21-product-and-execution-boundaries)
+also applies to browser persistence and export.
+
+The [workspace guide](../../guides/playground-workspaces.md) owns editing,
+presentation, persistence formats, and protocol details. Its .NET/TypeScript
+contract must remain aligned; deployment compatibility belongs to
+[chapter 7](07-deployment-view.md#72-browser-playground-deployment).
+The [preview](06-runtime-view.md#621-preview-the-current-workspace),
+[workspace-change](06-runtime-view.md#622-change-a-workspace-safely), and
+[recovery flows](06-runtime-view.md#624-restore-or-reset-the-local-workspace)
+show these invariants in action.
+
+---
+
+[< 7. Deployment view](07-deployment-view.md) | [Index](index.md) | [9. Architectural decisions >](09-architectural-decisions.md)
