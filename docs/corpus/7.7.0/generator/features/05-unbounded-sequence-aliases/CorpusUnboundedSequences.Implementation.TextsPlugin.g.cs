@@ -32,6 +32,6 @@ internal class TextsPlugin : InterpretedTypePlugin<Texts, TextsUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<TextsUnmanaged>(dtf, "Texts", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateString(255), 100));
+        return tsf.CreateAliasWithAccessInfo<TextsUnmanaged>(dtf, "Texts", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateString(), SequenceType.Unbounded));
     }
 }

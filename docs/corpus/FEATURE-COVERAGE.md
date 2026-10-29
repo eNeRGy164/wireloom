@@ -5,7 +5,7 @@ assembly. Versions from 7.3.1 up to, but not including, 7.7.0 use the 7.3.1
 profile; version 7.7.0 and later use the 7.7.0 profile. Only exact 7.3.1 and
 7.7.0 have qualification evidence.
 
-The corpus contains 91 positive feature cases, 77 negative probes, and 4
+The corpus contains 92 positive feature cases, 77 negative probes, and 4
 integration entry points. “Implemented” describes Wireloom generation support;
 it does not promise RTI acceptance or runtime interoperability. C142 is not
 applicable to RTI 7.3.1. See the version pages for profile-specific behavior
@@ -44,6 +44,11 @@ annotation arguments, multiple member declarators, symbolic and expression
 union labels, scoped enum labels and constants, direct fixed-array union
 branches, expression string bounds, and typed defaults. Profile-specific
 RTI behavior and restrictions are recorded in the corresponding feature pages.
+
+C173 covers RTI-style unbounded sequences and strings with explicitly selected
+XCDR1/XCDR2 fixtures. Its nine directed peer pairings per encoding verify the
+selected values; the [support policy](../guides/support-and-compatibility.md)
+defines the remaining lifecycle and fragmentation limits.
 
 Typed defaults declared by C171 initialize generated values, and RTI 7.7.0
 readers apply those defaults to trailing fields omitted by a compatible

@@ -5,6 +5,7 @@
 #nullable enable
 
 using Rti.Dds.NativeInterface.TypePlugin;
+using Rti.Types.Dynamic;
 
 namespace CorpusUnboundedStrings.Implementation;
 
@@ -41,7 +42,7 @@ public struct TextUnmanaged : INativeTopicType<Text>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize(size: 255, allocateMemory);
+        Value.Initialize(size: 0, allocateMemory);
     }
 
     /// <summary>
@@ -51,6 +52,6 @@ public struct TextUnmanaged : INativeTopicType<Text>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void ToNative(Text sample, bool keysOnly = false)
     {
-        Value.ToNative(sample.Value, 255);
+        Value.ToNative(sample.Value, StringType.Unbounded);
     }
 }

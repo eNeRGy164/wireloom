@@ -45,12 +45,12 @@ namespace CorpusUnboundedStrings
 
             public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
             {
-                Value.Initialize(size: ((int) 255), allocateMemory: allocateMemory);
+                Value.Initialize(size: 0, allocateMemory: allocateMemory);
             }
 
             public void ToNative(global::CorpusUnboundedStrings.Text sample, bool keysOnly = false)
             {
-                Value.ToNative(sample.Value, ((int) 255));
+                Value.ToNative(sample.Value, StringType.Unbounded);
             }
         }
 
@@ -70,7 +70,7 @@ namespace CorpusUnboundedStrings
                 return tsf.CreateAliasWithAccessInfo<TextUnmanaged>(
                     dtf,
                     "Text",
-                    dtf.CreateString(((int) 255)));
+                    dtf.CreateString());
             }
         }
     }
@@ -112,12 +112,12 @@ namespace CorpusUnboundedStrings
 
             public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
             {
-                Value.Initialize(size: ((int) 255), allocateMemory: allocateMemory);
+                Value.Initialize(size: 0, allocateMemory: allocateMemory);
             }
 
             public void ToNative(global::CorpusUnboundedStrings.WideText sample, bool keysOnly = false)
             {
-                Value.ToNative(sample.Value, ((int) 255));
+                Value.ToNative(sample.Value, WideStringType.Unbounded);
             }
         }
 
@@ -137,7 +137,7 @@ namespace CorpusUnboundedStrings
                 return tsf.CreateAliasWithAccessInfo<WideTextUnmanaged>(
                     dtf,
                     "WideText",
-                    dtf.CreateWideString(((int) 255)));
+                    dtf.CreateWideString());
             }
         }
     }

@@ -41,8 +41,14 @@
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '05-unbounded-sequence-aliases'">
     <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_UNBOUNDED_SEQUENCE_ALIASES</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '04-unbounded-string-aliases' or '$(WireCompatibilityCase)' == '05-unbounded-sequence-aliases'">
+    <DdsIdlUnboundedSupport>true</DdsIdlUnboundedSupport>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '07-union-string-sequence-aliases'">
     <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_UNION_STRING_SEQUENCE_ALIASES</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-unbounded-support'">
+    <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_UNBOUNDED_SUPPORT</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-extensibility-full' or '$(WireCompatibilityCase)' == '14-autoid-scope' or '$(WireCompatibilityCase)' == '14-annotation-arguments' or '$(WireCompatibilityCase)' == '14-member-declarators' or '$(WireCompatibilityCase)' == '14-union-label-expressions' or '$(WireCompatibilityCase)' == '14-union-scoped-enum' or '$(WireCompatibilityCase)' == '14-union-array-branch' or '$(WireCompatibilityCase)' == '14-string-expression-bound' or '$(WireCompatibilityCase)' == '14-typed-defaults' or '$(WireCompatibilityCase)' == '14-enum-constant'">
     <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_IDL_GAPS</DefineConstants>
@@ -95,6 +101,9 @@
     <DdsIdl Update="..\..\docs\corpus\idl\features\11-preprocessing.idl"
             Condition="'$(WireCompatibilityCase)' == '11-preprocessing'"
             Defines="CORPUS_CAPTURE_DEFINE" />
+    <DdsIdl Update="..\..\docs\corpus\idl\features\14-unbounded-support.idl"
+            Condition="'$(WireCompatibilityCase)' == '14-unbounded-support'"
+            SequenceSize="7" StringSize="9" UnboundedSupport="true" />
   </ItemGroup>
 
   <Import Project="..\..\src\Wireloom.Dds.Generator\build\Wireloom.Dds.Generator.targets" />

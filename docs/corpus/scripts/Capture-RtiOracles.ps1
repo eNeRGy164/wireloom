@@ -16,7 +16,8 @@ param(
     [string[]]$CaseId = @(),
     [ValidateSet('csharp', 'cpp')][string[]]$Language = @('csharp', 'cpp'),
     [string]$OutputDirectory,
-    [switch]$DisablePreprocessor
+    [switch]$DisablePreprocessor,
+    [switch]$WireWrapper
 )
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/Evidence.Common.ps1"
@@ -43,7 +44,9 @@ if (!$relative.StartsWith('artifacts/', [StringComparison]::Ordinal) -or (Test-P
     throw 'OutputDirectory must be a new directory under repository artifacts/.'
 }
 New-Item -ItemType Directory -Path "$output/.capture/jobs" -Force | Out-Null
-$identity = Get-EvidenceSnapshot $repo @('docs/corpus/idl', 'docs/corpus/manifest.json', 'docs/corpus/scripts')
+$identityPaths = @('docs/corpus/idl', 'docs/corpus/manifest.json', 'docs/corpus/scripts')
+if ($WireWrapper) { $identityPaths += 'tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers' }
+$identity = Get-EvidenceSnapshot $repo $identityPaths
 $revision = Get-EvidenceRevision $repo
 $jobs = @()
 $utf8 = [Text.UTF8Encoding]::new($false)
@@ -54,6 +57,13 @@ foreach ($case in $cases) {
         New-Item -ItemType Directory -Path "$job/generated" -Force | Out-Null
         $source = "$repo/docs/corpus/$($case.idl)"
         $input = "/work/docs/corpus/$($case.idl)"
+        if ($WireWrapper) {
+            $wrapper = "$repo/tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/$($case.id).idl"
+            if (!(Test-Path -LiteralPath $wrapper)) { throw "No wire wrapper exists for $($case.id)." }
+            $source = "$job/idl.idl"
+            Copy-Item -LiteralPath $wrapper -Destination $source
+            $input = "/work/$relative/.capture/jobs/$jobName/idl.idl"
+        }
         $adaptations = @()
         if ($lang -eq 'cpp' -and $case.id -eq '10-flat-data-binding') {
             $text = [IO.File]::ReadAllText($source) -replace '(?m)^.*@language_binding\(FLAT_DATA\).*\r?\n', ''
@@ -65,14 +75,19 @@ foreach ($case in $cases) {
         $options = @('-language', $(if ($lang -eq 'cpp') { 'C++11' } else { 'C#' }), '-replace')
         if ($DisablePreprocessor) { $options += '-ppDisable' }
         if ($case.strict) { $options += '-strict' }
+        foreach ($option in $case.rtiddsgenOptions) { $options += $option }
         if ($Version -eq '7.7.0') { $options += '-generateIncludeFiles' }
-        if ($lang -eq 'cpp') { $options += @($case.wireMatrix.rtiCppCodegenOptions | Where-Object { $_ }) }
+        if ($lang -eq 'cpp') {
+            foreach ($option in $case.wireMatrix.rtiCppCodegenOptions) {
+                if ($option -notin $options) { $options += $option }
+            }
+        }
         foreach ($define in $case.defines) { $options += "-D$define" }
         foreach ($include in $manifest.includeDirectories) { $options += @('-I', "/work/docs/corpus/$include") }
         $arguments = $options + @('-d', "/work/$relative/.capture/jobs/$jobName/generated", $input)
         if (@($arguments | Where-Object { $_ -match '[\r\n]' }).Count -gt 0) { throw 'Codegen arguments must be single-line values.' }
         [IO.File]::WriteAllText("$job/arguments.txt", ($arguments -join "`n") + "`n", $utf8)
-        $destination = "$lang/$($case.idl -replace '^idl/', '' -replace '\.idl$', '')"
+        $destination = if ($WireWrapper) { "$lang/wire-wrapped/$($case.id)" } else { "$lang/$($case.idl -replace '^idl/', '' -replace '\.idl$', '')" }
         [IO.File]::WriteAllText("$job/destination.txt", $destination + "`n", $utf8)
         $jobs += [ordered]@{
             id = $case.id; language = $lang; idl = $case.idl
@@ -87,7 +102,7 @@ $request = [ordered]@{
     schemaVersion = 1; kind = 'rti-oracle-capture'; rtiVersion = $Version
     rtiddsgenVersion = $generator; image = $images[$Version]
     startedAtUtc = [DateTime]::UtcNow.ToString('o'); source = $revision; inputs = $identity
-    preprocessorDisabled = [bool]$DisablePreprocessor; cases = $jobs
+    preprocessorDisabled = [bool]$DisablePreprocessor; wireWrapper = [bool]$WireWrapper; cases = $jobs
 }
 Write-EvidenceJson "$output/capture-request.json" $request
 $preprocess = if ($DisablePreprocessor) { 'disabled' } else { 'enabled' }
@@ -101,7 +116,7 @@ foreach ($case in $jobs) {
     $case.output = Get-EvidenceSnapshot $output @($case.outputDirectory)
     $case.Remove('job')
 }
-$after = Get-EvidenceSnapshot $repo @('docs/corpus/idl', 'docs/corpus/manifest.json', 'docs/corpus/scripts')
+$after = Get-EvidenceSnapshot $repo $identityPaths
 if ($after.sha256 -ne $identity.sha256) { throw 'Capture inputs changed during execution; do not promote this run.' }
 $request.completedAtUtc = [DateTime]::UtcNow.ToString('o')
 $request.toolchain = Get-EvidenceSnapshot $output @('toolchain.txt')

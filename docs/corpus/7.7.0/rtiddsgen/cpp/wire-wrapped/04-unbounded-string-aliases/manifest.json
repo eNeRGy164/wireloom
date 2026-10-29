@@ -5,6 +5,9 @@
   "language": "cpp",
   "rtiddsgenVersion": "4.7.0",
   "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-unbounded-string-aliases.idl",
+  "rtiddsgenOptions": [
+    "-unboundedSupport"
+  ],
   "inputs": [
     {
       "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-unbounded-string-aliases.idl",
@@ -17,32 +20,8 @@
   ],
   "generatedFiles": [
     {
-      "path": "features/04-unbounded-string-aliases.cxx",
-      "sha256": "944e513b3ff02064289af532e4608ce9ba1d93a0c0c1aec1bb84f732a3f81ebf"
-    },
-    {
-      "path": "features/04-unbounded-string-aliases.hpp",
-      "sha256": "4fd88d101d1cc5c7eb96f908dc0d03fcb1f0b0bc30146e3345cd681039f41d20"
-    },
-    {
-      "path": "features/04-unbounded-string-aliases.hpp",
-      "sha256": "4fd88d101d1cc5c7eb96f908dc0d03fcb1f0b0bc30146e3345cd681039f41d20"
-    },
-    {
-      "path": "features/04-unbounded-string-aliasesPlugin.cxx",
-      "sha256": "b451a2c8f377a26416f2a151c11444cfc67c46e71e3f47c65014f63e1941ddd6"
-    },
-    {
-      "path": "features/04-unbounded-string-aliasesPlugin.hpp",
-      "sha256": "33601b31596874131721ed3d10a73e6e4609003e27e9c1c12091058f7f7e7050"
-    },
-    {
-      "path": "features/04-unbounded-string-aliasesPlugin.hpp",
-      "sha256": "33601b31596874131721ed3d10a73e6e4609003e27e9c1c12091058f7f7e7050"
-    },
-    {
       "path": "idl.cxx",
-      "sha256": "adf0c58de09c6cfdf46619410ba1886b82537599e095545bc070f81801ff1b44"
+      "sha256": "b1dd94b349b08f85206d7f64ebab88066ed7929b12ba986bfb2b2c8328a4b089"
     },
     {
       "path": "idl.hpp",
@@ -55,6 +34,22 @@
     {
       "path": "idlPlugin.hpp",
       "sha256": "4fa4a50d5c9257af6637065710c184fe324d504ede1f07962ef53cd5835bc0e4"
+    },
+    {
+      "path": "features/04-unbounded-string-aliases.cxx",
+      "sha256": "e6f0ef4b81e25ef4c7a318a94d8ff5ba7eafb2b99fe4cf273d4bfb223c97ea1c"
+    },
+    {
+      "path": "features/04-unbounded-string-aliases.hpp",
+      "sha256": "4fd88d101d1cc5c7eb96f908dc0d03fcb1f0b0bc30146e3345cd681039f41d20"
+    },
+    {
+      "path": "features/04-unbounded-string-aliasesPlugin.cxx",
+      "sha256": "b451a2c8f377a26416f2a151c11444cfc67c46e71e3f47c65014f63e1941ddd6"
+    },
+    {
+      "path": "features/04-unbounded-string-aliasesPlugin.hpp",
+      "sha256": "33601b31596874131721ed3d10a73e6e4609003e27e9c1c12091058f7f7e7050"
     }
   ]
 }

@@ -33,7 +33,7 @@ internal class NarrowTextChainPlugin : InterpretedTypePlugin<NarrowTextChain, Na
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        using var dtString = dtf.CreateString(255);
+        var dtString = dtf.CreateString(255);
         var aliasType = tsf.CreateAliasWithAccessInfo<NarrowTextChainUnmanaged>(dtf, "NarrowTextChain", dtString);
 
         return aliasType;

@@ -33,7 +33,7 @@ internal class WideTextChainPlugin : InterpretedTypePlugin<WideTextChain, WideTe
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        using var dtWString = dtf.CreateWideString(255);
+        var dtWString = dtf.CreateWideString(255);
         var aliasType = tsf.CreateAliasWithAccessInfo<WideTextChainUnmanaged>(dtf, "WideTextChain", dtWString);
 
         return aliasType;

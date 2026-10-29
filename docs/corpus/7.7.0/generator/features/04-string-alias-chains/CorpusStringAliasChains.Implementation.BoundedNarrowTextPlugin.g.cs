@@ -33,7 +33,7 @@ internal class BoundedNarrowTextPlugin : InterpretedTypePlugin<BoundedNarrowText
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        using var dtString = dtf.CreateString(16);
+        var dtString = dtf.CreateString(16);
         var aliasType = tsf.CreateAliasWithAccessInfo<BoundedNarrowTextUnmanaged>(dtf, "BoundedNarrowText", dtString);
 
         {

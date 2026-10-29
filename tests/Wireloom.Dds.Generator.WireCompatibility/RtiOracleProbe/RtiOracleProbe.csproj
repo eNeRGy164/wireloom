@@ -31,6 +31,9 @@
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '07-union-char-numeric-255'">
     <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_NUMERIC_CHAR_255_UNION</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-unbounded-support'">
+    <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_UNBOUNDED_SUPPORT</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-extensibility-full' or '$(WireCompatibilityCase)' == '14-autoid-scope' or '$(WireCompatibilityCase)' == '14-annotation-arguments' or '$(WireCompatibilityCase)' == '14-member-declarators' or '$(WireCompatibilityCase)' == '14-union-label-expressions' or '$(WireCompatibilityCase)' == '14-union-scoped-enum' or '$(WireCompatibilityCase)' == '14-union-array-branch' or '$(WireCompatibilityCase)' == '14-string-expression-bound' or '$(WireCompatibilityCase)' == '14-typed-defaults' or '$(WireCompatibilityCase)' == '14-enum-constant'">
     <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_IDL_GAPS</DefineConstants>
   </PropertyGroup>

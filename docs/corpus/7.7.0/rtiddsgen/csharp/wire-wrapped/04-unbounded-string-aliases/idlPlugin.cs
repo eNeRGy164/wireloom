@@ -1,7 +1,7 @@
 /*
 WARNING: THIS FILE IS AUTO-GENERATED. DO NOT MODIFY.
 
-This file was generated from 04-unbounded-string-aliases.idl
+This file was generated from idl.idl
 using RTI Code Generator (rtiddsgen) version 4.7.0.
 The rtiddsgen tool is part of the RTI Connext DDS distribution.
 For more information, type 'rtiddsgen -help' at a command shell
@@ -48,14 +48,14 @@ namespace CorpusUnboundedStrings
 
             public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
             {
-                narrow.Initialize(size: ((int) 255), allocateMemory: allocateMemory);
-                wide.Initialize(size: ((int) 255), allocateMemory: allocateMemory);
+                narrow.Initialize(size: 0, allocateMemory: allocateMemory);
+                wide.Initialize(size: 0, allocateMemory: allocateMemory);
             }
 
             public void ToNative(global::CorpusUnboundedStrings.StringAliasesSample sample, bool keysOnly = false)
             {
-                narrow.ToNative(sample.narrow, ((int) 255));
-                wide.ToNative(sample.wide, ((int) 255));
+                narrow.ToNative(sample.narrow, StringType.Unbounded);
+                wide.ToNative(sample.wide, WideStringType.Unbounded);
             }
         }
 

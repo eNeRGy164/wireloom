@@ -131,7 +131,7 @@ namespace rti {
                     return &Numbers_g_tc;
                 }
 
-                Numbers_g_tc_sequence = initialize_sequence_typecode< ::rti::core::bounded_sequence< int32_t, 100L > >((100L));
+                Numbers_g_tc_sequence = initialize_sequence_typecode< std::vector< int32_t > >(RTIXCdrLong_MAX);
 
                 Numbers_g_tc._data._annotations._allowedDataRepresentationMask = 5;
 
@@ -710,7 +710,7 @@ namespace rti {
                     return &States_g_tc;
                 }
 
-                States_g_tc_sequence = initialize_sequence_typecode< ::rti::core::bounded_sequence< ::CorpusUnboundedSequences::State, 100L > >((100L));
+                States_g_tc_sequence = initialize_sequence_typecode< std::vector< ::CorpusUnboundedSequences::State > >(RTIXCdrLong_MAX);
 
                 States_g_tc._data._annotations._allowedDataRepresentationMask = 5;
 
@@ -836,7 +836,7 @@ namespace rti {
                     return &Children_g_tc;
                 }
 
-                Children_g_tc_sequence = initialize_sequence_typecode< ::rti::core::bounded_sequence< ::CorpusUnboundedSequences::Child, 100L > >((100L));
+                Children_g_tc_sequence = initialize_sequence_typecode< std::vector< ::CorpusUnboundedSequences::Child > >(RTIXCdrLong_MAX);
 
                 Children_g_tc._data._annotations._allowedDataRepresentationMask = 5;
 
@@ -962,7 +962,7 @@ namespace rti {
                     return &Scalars_g_tc;
                 }
 
-                Scalars_g_tc_sequence = initialize_sequence_typecode< ::rti::core::bounded_sequence< ::CorpusUnboundedSequences::Scalar, 100L > >((100L));
+                Scalars_g_tc_sequence = initialize_sequence_typecode< std::vector< ::CorpusUnboundedSequences::Scalar > >(RTIXCdrLong_MAX);
 
                 Scalars_g_tc._data._annotations._allowedDataRepresentationMask = 5;
 
@@ -1089,8 +1089,8 @@ namespace rti {
                     return &Texts_g_tc;
                 }
 
-                Texts_g_tc_string = initialize_string_typecode((255L));
-                Texts_g_tc_sequence = initialize_sequence_typecode< ::rti::core::bounded_sequence< std::string, 100L > >((100L));
+                Texts_g_tc_string = initialize_string_typecode(RTIXCdrLong_MAX);
+                Texts_g_tc_sequence = initialize_sequence_typecode< std::vector< std::string > >(RTIXCdrLong_MAX);
 
                 Texts_g_tc._data._annotations._allowedDataRepresentationMask = 5;
 
@@ -1217,8 +1217,8 @@ namespace rti {
                     return &WideTexts_g_tc;
                 }
 
-                WideTexts_g_tc_string = initialize_wstring_typecode((255L));
-                WideTexts_g_tc_sequence = initialize_sequence_typecode< ::rti::core::bounded_sequence< std::wstring, 100L > >((100L));
+                WideTexts_g_tc_string = initialize_wstring_typecode(RTIXCdrLong_MAX);
+                WideTexts_g_tc_sequence = initialize_sequence_typecode< std::vector< std::wstring > >(RTIXCdrLong_MAX);
 
                 WideTexts_g_tc._data._annotations._allowedDataRepresentationMask = 5;
 
@@ -1346,7 +1346,7 @@ namespace rti {
                 }
 
                 BoundedTexts_g_tc_string = initialize_string_typecode((8L));
-                BoundedTexts_g_tc_sequence = initialize_sequence_typecode< ::rti::core::bounded_sequence< std::string, 100L > >((100L));
+                BoundedTexts_g_tc_sequence = initialize_sequence_typecode< std::vector< std::string > >(RTIXCdrLong_MAX);
 
                 BoundedTexts_g_tc._data._annotations._allowedDataRepresentationMask = 5;
 
@@ -1474,7 +1474,7 @@ namespace rti {
                 }
 
                 BoundedWideTexts_g_tc_string = initialize_wstring_typecode((4L));
-                BoundedWideTexts_g_tc_sequence = initialize_sequence_typecode< ::rti::core::bounded_sequence< std::wstring, 100L > >((100L));
+                BoundedWideTexts_g_tc_sequence = initialize_sequence_typecode< std::vector< std::wstring > >(RTIXCdrLong_MAX);
 
                 BoundedWideTexts_g_tc._data._annotations._allowedDataRepresentationMask = 5;
 

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Wireloom.Dds.Generator.CorpusCompliance;
 
-public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<string> Defines, string Classification, string OracleDirectory, IdlSequenceArrayMapping SequenceArrayMapping = IdlSequenceArrayMapping.RtiCSharp, string Tag = "", bool OracleSourcesRetained = true, string? OracleCompileOutcome = null, bool Strict = false)
+public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<string> Defines, string Classification, string OracleDirectory, IdlSequenceArrayMapping SequenceArrayMapping = IdlSequenceArrayMapping.RtiCSharp, string Tag = "", bool OracleSourcesRetained = true, string? OracleCompileOutcome = null, bool Strict = false, bool UnboundedSupport = false)
 {
     // This is an explicit managed-generator acceptance map, not an inference
     // from the RTI result or the positive/negative manifest bucket. It keeps
@@ -119,7 +119,8 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "14-union-array-branch",
         "14-string-expression-bound",
         "14-typed-defaults",
-        "14-enum-constant"
+        "14-enum-constant",
+        "14-unbounded-support"
     ];
 
     public bool ExpectedToCompile => ExpectedToCompileForProfile(CorpusRepository.RtiProfile);
@@ -181,6 +182,9 @@ internal sealed class ManifestEntry
 
     [JsonPropertyName("sequenceArrayMapping")]
     public string? SequenceArrayMapping { get; init; }
+
+    [JsonPropertyName("rtiddsgenOptions")]
+    public List<string> RtiDdsGenOptions { get; init; } = [];
 }
 
 internal sealed class OracleManifest
@@ -269,7 +273,8 @@ internal static class CorpusRepository
                 strict: string.Equals(path, rootPath, PathComparer) && corpusCase.Strict,
                 defines: string.Equals(path, rootPath, PathComparer) ? corpusCase.Defines : [],
                 includeDirectories: Current.Value.IncludeDirectories,
-                sequenceArrayMapping: corpusCase.SequenceArrayMapping))
+                sequenceArrayMapping: corpusCase.SequenceArrayMapping,
+                unboundedSupport: string.Equals(path, rootPath, PathComparer) && corpusCase.UnboundedSupport))
             .ToList();
 
         return files;
@@ -410,7 +415,8 @@ internal static class CorpusRepository
                 ? entry.OracleSourcesRetained
                 : capturedCase.OracleSourcesRetained,
             oracleCompileOutcomes.GetValueOrDefault(entry.Id),
-            entry.Strict);
+            entry.Strict,
+            entry.RtiDdsGenOptions.Contains("-unboundedSupport", StringComparer.Ordinal));
     }
 
     private static T Read<T>(string path) =>

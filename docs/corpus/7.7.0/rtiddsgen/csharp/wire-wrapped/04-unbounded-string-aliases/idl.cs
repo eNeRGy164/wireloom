@@ -2,7 +2,7 @@
 /*
 WARNING: THIS FILE IS AUTO-GENERATED. DO NOT MODIFY.
 
-This file was generated from 04-unbounded-string-aliases.idl
+This file was generated from idl.idl
 using RTI Code Generator (rtiddsgen) version 4.7.0.
 The rtiddsgen tool is part of the RTI Connext DDS distribution.
 For more information, type 'rtiddsgen -help' at a command shell
@@ -21,9 +21,9 @@ namespace CorpusUnboundedStrings
 
     public class StringAliasesSample :  IEquatable<StringAliasesSample>
     {
-        [Bound(255)]
+        [Bound(-1)]
         public string narrow { get; set; } = string.Empty;
-        [Bound(255)]
+        [Bound(-1)]
         public string wide { get; set; } = string.Empty;
 
         public StringAliasesSample()

@@ -332,8 +332,8 @@ namespace dds {
 
         void topic_type_support< ::CorpusUnboundedStrings::StringAliasesSample >::allocate_sample(::CorpusUnboundedStrings::StringAliasesSample& sample, int, int) 
         {
-            ::rti::topic::allocate_sample(sample.narrow(),  -1, 255L);
-            ::rti::topic::allocate_sample(sample.wide(),  -1, 255L);
+            ::rti::topic::allocate_sample(sample.narrow(),  -1, -1);
+            ::rti::topic::allocate_sample(sample.wide(),  -1, -1);
         }
     }
 }  

@@ -84,7 +84,7 @@ public sealed class CorpusComplianceSpecs
     public void CorpusManifestAndOracleLibraryHaveExpectedCaseCoverage()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(172);
+        cases.Length.ShouldBe(173);
         cases.ShouldBeUnique();
         CorpusRepository.OracleCaseIds.ShouldBe(CorpusRepository.Cases
             .Where(corpusCase => corpusCase.OracleSourcesRetained)
@@ -621,6 +621,20 @@ public sealed class CorpusComplianceSpecs
         support.ShouldContain("internal static NodeSupport GetOrCreateInstanceImpl()");
     }
 
+    [Fact]
+    public void RecursiveAggregateUsesRtiUnboundedSequenceSupport()
+    {
+        // Arrange
+        var corpusCase = CorpusRepository.Cases.Single(corpusCase => corpusCase.Id == "06-aggregates");
+
+        // Act
+        var generated = Compile(corpusCase);
+
+        // Assert
+        generated["CorpusAggregates.Implementation.RecursivePlugin.g.cs"].Source
+            .ShouldContain("SequenceType.Unbounded");
+    }
+
     private static Dictionary<string, GeneratedIdlSource> Compile(CorpusCase corpusCase, ICollection<IdlDiagnostic>? diagnostics = null,
         IdlSequenceArrayMapping? sequenceArrayMapping = null)
     {
@@ -636,7 +650,8 @@ public sealed class CorpusComplianceSpecs
             : IdlCompilerProfile.Rti770;
         var result = IdlCompiler.Compile(
             CorpusRepository.BuildInputs(corpusCase).Select(input => new IdlInput(input.Path, input.Text, sequenceArrayMapping ?? corpusCase.SequenceArrayMapping,
-                input.Generate, input.Strict, input.Defines, input.Undefines, input.IncludeDirectories)).ToList(),
+                input.Generate, input.Strict, input.Defines, input.Undefines, input.IncludeDirectories,
+                unboundedSupport: input.UnboundedSupport)).ToList(),
             compilerProfile,
             static bytes => System.Security.Cryptography.MD5.HashData(bytes),
             TestContext.Current.CancellationToken);

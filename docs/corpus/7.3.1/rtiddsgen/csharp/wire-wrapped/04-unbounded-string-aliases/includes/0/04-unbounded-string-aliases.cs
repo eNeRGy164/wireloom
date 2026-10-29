@@ -22,7 +22,7 @@ namespace CorpusUnboundedStrings
     public class Text :  IEquatable<Text>
     {
 
-        [Bound(255)]
+        [Bound(-1)]
         public string Value { get; set; } = string.Empty;
 
         public Text()
@@ -77,7 +77,7 @@ namespace CorpusUnboundedStrings
     public class WideText :  IEquatable<WideText>
     {
 
-        [Bound(255)]
+        [Bound(-1)]
         public string Value { get; set; } = string.Empty;
 
         public WideText()

@@ -45,12 +45,12 @@ namespace CorpusUnboundedStrings
 
             public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
             {
-                Value.Initialize(size: ((int) 255), allocateMemory: allocateMemory);
+                Value.Initialize(size: 0, allocateMemory: allocateMemory);
             }
 
             public void ToNative(global::CorpusUnboundedStrings.Text sample, bool keysOnly = false)
             {
-                Value.ToNative(sample.Value, ((int) 255));
+                Value.ToNative(sample.Value, StringType.Unbounded);
             }
         }
 
@@ -66,7 +66,7 @@ namespace CorpusUnboundedStrings
                 var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
                 var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-                using var dtString = dtf.CreateString(((int) 255));
+                using var dtString = dtf.CreateString();
                 var aliasType = tsf.CreateAliasWithAccessInfo<TextUnmanaged>(
                     dtf,
                     "Text",
@@ -127,12 +127,12 @@ namespace CorpusUnboundedStrings
 
             public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
             {
-                Value.Initialize(size: ((int) 255), allocateMemory: allocateMemory);
+                Value.Initialize(size: 0, allocateMemory: allocateMemory);
             }
 
             public void ToNative(global::CorpusUnboundedStrings.WideText sample, bool keysOnly = false)
             {
-                Value.ToNative(sample.Value, ((int) 255));
+                Value.ToNative(sample.Value, WideStringType.Unbounded);
             }
         }
 
@@ -148,7 +148,7 @@ namespace CorpusUnboundedStrings
                 var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
                 var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-                using var dtString = dtf.CreateWideString(((int) 255));
+                using var dtString = dtf.CreateWideString();
                 var aliasType = tsf.CreateAliasWithAccessInfo<WideTextUnmanaged>(
                     dtf,
                     "WideText",

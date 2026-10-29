@@ -40,13 +40,20 @@ internal static class TypedPeer
             or "14-extensibility-full" or "14-autoid-scope" or "14-annotation-arguments"
             or "14-member-declarators" or "14-union-label-expressions" or "14-union-scoped-enum"
             or "14-union-array-branch" or "14-string-expression-bound" or "14-typed-defaults"
-            or "14-enum-constant"))
+            or "14-enum-constant" or "14-unbounded-support"))
         {
             fixture = FixtureCatalog.CreateFixture(typeSupport.DynamicType, options.CaseId, options.Fixture);
         }
 
         using var expectedDynamic = fixture;
         var expected = ManagedFixtures.Create(options, serializer, expectedDynamic);
+#if WIRE_COMPATIBILITY_UNBOUNDED_SUPPORT
+        if (options.CaseId == "14-unbounded-support")
+        {
+            ManagedFixtures.VerifyUnboundedSupportFixture(expected!, options);
+        }
+        else
+#endif
         if (options.CaseId.StartsWith("14-", StringComparison.Ordinal))
         {
             ManagedFixtures.VerifyIdlGapFixture(expected!, options);

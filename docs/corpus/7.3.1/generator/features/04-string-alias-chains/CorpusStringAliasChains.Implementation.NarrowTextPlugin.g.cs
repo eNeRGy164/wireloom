@@ -33,7 +33,7 @@ internal class NarrowTextPlugin : InterpretedTypePlugin<NarrowText, NarrowTextUn
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        using var dtString = dtf.CreateString(255);
+        var dtString = dtf.CreateString(255);
         var aliasType = tsf.CreateAliasWithAccessInfo<NarrowTextUnmanaged>(dtf, "NarrowText", dtString);
 
         return aliasType;

@@ -32,7 +32,11 @@ internal static class PeerTransport
                 protocol.MaxHeartbeatRetries = 600;
             });
 
-        if (PeerQos.UsesXcdr2(options.CaseId))
+        if (PeerQos.UsesXcdr1(options.CaseId, options.Fixture))
+        {
+            writerQos = writerQos.WithRepresentation(PeerQos.Xcdr1Only);
+        }
+        else if (PeerQos.UsesXcdr2(options.CaseId, options.Fixture))
         {
             writerQos = writerQos.WithRepresentation(PeerQos.Xcdr2Only);
         }
@@ -79,7 +83,12 @@ internal static class PeerTransport
     {
         var readerQos = participant.ImplicitSubscriber.DefaultDataReaderQos
             .WithReliability(policy => policy.Kind = ReliabilityKind.Reliable);
-        if (PeerQos.UsesXcdr2(options.CaseId))
+
+        if (PeerQos.UsesXcdr1(options.CaseId, options.Fixture))
+        {
+            readerQos = readerQos.WithRepresentation(PeerQos.Xcdr1Only);
+        }
+        else if (PeerQos.UsesXcdr2(options.CaseId, options.Fixture))
         {
             readerQos = readerQos.WithRepresentation(PeerQos.Xcdr2Only);
         }

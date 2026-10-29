@@ -5,6 +5,7 @@
 #nullable enable
 
 using Rti.Dds.NativeInterface.TypePlugin;
+using Rti.Types.Dynamic;
 
 namespace CorpusUnboundedSequences.Implementation;
 
@@ -46,7 +47,7 @@ public struct TextsUnmanaged : INativeTopicType<Texts>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize(max: 100, absoluteMax: 100, maxStrLen: 255, allocateMemory);
+        Value.Initialize(max: 0, absoluteMax: SequenceType.Unbounded, maxStrLen: StringType.Unbounded, allocateMemory);
     }
 
     /// <summary>
@@ -56,6 +57,6 @@ public struct TextsUnmanaged : INativeTopicType<Texts>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void ToNative(Texts sample, bool keysOnly = false)
     {
-        Value.ToNative(sample.Value, 255);
+        Value.ToNative(sample.Value, StringType.Unbounded);
     }
 }

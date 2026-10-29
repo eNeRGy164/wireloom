@@ -18,6 +18,9 @@ internal static partial class ManagedFixtures
 
         return options.CaseId switch
         {
+#if WIRE_COMPATIBILITY_UNBOUNDED_SUPPORT
+            "14-unbounded-support" => CreateUnboundedSupportFixture<T>(options),
+#endif
 #if WIRE_COMPATIBILITY_SEQUENCE_ARRAYS
             "05-array-of-sequences-idl" => CreateSequenceArrayFixture<T>(options.Fixture),
 #endif

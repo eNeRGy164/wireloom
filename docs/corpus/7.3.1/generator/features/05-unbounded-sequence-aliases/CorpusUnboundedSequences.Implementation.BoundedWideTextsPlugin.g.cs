@@ -33,6 +33,6 @@ internal class BoundedWideTextsPlugin : InterpretedTypePlugin<BoundedWideTexts, 
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<BoundedWideTextsUnmanaged>(dtf, "BoundedWideTexts", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(4), 100));
+        return tsf.CreateAliasWithAccessInfo<BoundedWideTextsUnmanaged>(dtf, "BoundedWideTexts", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(4), SequenceType.Unbounded));
     }
 }

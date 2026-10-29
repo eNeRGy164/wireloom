@@ -33,7 +33,7 @@ internal class BoundedNarrowTextChainPlugin : InterpretedTypePlugin<BoundedNarro
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        using var dtString = dtf.CreateString(16);
+        var dtString = dtf.CreateString(16);
         var aliasType = tsf.CreateAliasWithAccessInfo<BoundedNarrowTextChainUnmanaged>(dtf, "BoundedNarrowTextChain", dtString);
 
         return aliasType;

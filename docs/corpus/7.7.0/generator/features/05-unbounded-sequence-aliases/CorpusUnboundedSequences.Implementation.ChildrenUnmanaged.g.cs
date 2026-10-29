@@ -6,6 +6,7 @@
 
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
+using Rti.Types.Dynamic;
 
 namespace CorpusUnboundedSequences.Implementation;
 
@@ -47,7 +48,7 @@ public struct ChildrenUnmanaged : INativeTopicType<Children>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize<Child, ChildUnmanaged>(max: 100, absoluteMax: 100, allocateMemory);
+        Value.Initialize<Child, ChildUnmanaged>(max: 0, absoluteMax: SequenceType.Unbounded, allocateMemory);
     }
 
     /// <summary>

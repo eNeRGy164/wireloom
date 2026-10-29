@@ -5,6 +5,9 @@
   "language": "csharp",
   "rtiddsgenVersion": "4.3.1",
   "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-unbounded-string-aliases.idl",
+  "rtiddsgenOptions": [
+    "-unboundedSupport"
+  ],
   "inputs": [
     {
       "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-unbounded-string-aliases.idl",
@@ -17,20 +20,20 @@
   ],
   "generatedFiles": [
     {
-      "path": "04-unbounded-string-aliases.cs",
-      "sha256": "6e7ccf097618161a098f1aca5835212023af29fc5f7a4ea30e97c61de3a5963e"
+      "path": "idl.cs",
+      "sha256": "e7155ede0ad859b99ee15ee3c7b4b8a778ed4afba35e38c4f9ffe7f61f4ee4ea"
     },
     {
-      "path": "04-unbounded-string-aliasesPlugin.cs",
-      "sha256": "a7aebae7e8f6048f2f91ae3fd19b27545a76ece40509ba2a52fe719afa383b0d"
+      "path": "idlPlugin.cs",
+      "sha256": "4aa23afb7212626f8e9ad3da22da59575acd0257874627e7e19713672fc640af"
     },
     {
       "path": "includes/0/04-unbounded-string-aliases.cs",
-      "sha256": "a1f03ee1a61adbae33c90d384d636ad4b716a4368d7352e71de85c79dec9ac87"
+      "sha256": "d1e603ea151451b35b9e80a675da7dda056124c81ee6c47aeeda0e7ef808047c"
     },
     {
       "path": "includes/0/04-unbounded-string-aliasesPlugin.cs",
-      "sha256": "92a38583871092b92baf0b88dbc2c7b12cb6ce806e09c1088c89da2f88293838"
+      "sha256": "328810c35832f81b06cd56cc57b41cc1186e6b5b3339da58d6552d88c3bd4460"
     }
   ]
 }

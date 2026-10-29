@@ -1,5 +1,6 @@
 #pragma once
 #include "peer-qos.hpp"
+#include <iomanip>
 #include <sstream>
 #include <utility>
 #ifdef WIRELOOM_RTI_7_3_1
@@ -17,7 +18,7 @@
 #define WIRELOOM_SET_MEMBER_ON(object, member, value) object.member = value
 #define WIRELOOM_BOUNDED_SEQUENCE ::omg::types::bounded_sequence
 #endif
-#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES) || defined(WIRELOOM_TYPED_DEFAULT_LITERAL_ENUM_ARRAY) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS) || defined(WIRELOOM_TYPED_IDL_GAPS_FIXTURE)
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES) || defined(WIRELOOM_TYPED_DEFAULT_LITERAL_ENUM_ARRAY) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS) || defined(WIRELOOM_TYPED_IDL_GAPS_FIXTURE) || defined(WIRELOOM_TYPED_C173_UNBOUNDED_SUPPORT)
 // RTI's generated DynamicData API omits some string template instantiations.
 // Use RTI-generated typed C++ endpoints for these fixtures and compare the
 // complete generated sample value at the reader.
@@ -198,6 +199,42 @@ static int run_typed_fixture_peer(
         }
     }
 #endif
+#ifdef WIRELOOM_TYPED_C173_UNBOUNDED_SUPPORT
+    if (case_id == "14-unbounded-support") {
+        std::vector<int32_t> values;
+        for (int32_t index = 0; index < 103; ++index) {
+            values.push_back(index - 51);
+        }
+        WIRELOOM_SET_TYPED_MEMBER(values, std::move(values));
+        WIRELOOM_SET_TYPED_STRING(text, std::string(300, 'n'));
+        WIRELOOM_SET_TYPED_STRING(wideText, std::wstring(16, static_cast<wchar_t>(0x03bb)));
+        std::vector<std::string> labels{
+            "label-000000", "label-000001", "label-000002", "label-000003", "label-000004",
+            "label-000005", "label-000006", "label-000007", "label-000008"};
+        WIRELOOM_SET_TYPED_MEMBER(labels, std::move(labels));
+        ::CorpusUnboundedSupport::LongValues alias_values;
+        for (int32_t index = 0; index < 101; ++index) {
+            alias_values.push_back(index + 1000);
+        }
+        WIRELOOM_SET_TYPED_MEMBER(aliasValues, std::move(alias_values));
+        auto &bounded_values = WIRELOOM_TYPED_MEMBER(expected, boundedValues);
+        bounded_values.push_back(4);
+        bounded_values.push_back(-4);
+        bounded_values.push_back(INT32_MIN);
+        bounded_values.push_back(INT32_MAX);
+        WIRELOOM_SET_TYPED_STRING(boundedText, "12345678");
+
+        const auto &actual_values = WIRELOOM_TYPED_MEMBER(expected, values);
+        const auto &actual_labels = WIRELOOM_TYPED_MEMBER(expected, labels);
+        const auto &actual_alias_values = WIRELOOM_TYPED_MEMBER(expected, aliasValues);
+        if (actual_values.size() != 103 || actual_labels.size() != 9 || actual_alias_values.size() != 101
+            || WIRELOOM_TYPED_MEMBER(expected, text).size() != 300
+            || WIRELOOM_TYPED_MEMBER(expected, wideText).size() != 16
+            || WIRELOOM_TYPED_MEMBER(expected, boundedText) != "12345678") {
+            throw std::runtime_error("C173 unbounded fixture values do not match their independent expected sizes");
+        }
+    }
+#endif
 #ifdef WIRELOOM_TYPED_SEQUENCE_ARRAYS
     if (case_id == "05-array-of-sequences-idl") {
         auto &values = WIRELOOM_TYPED_MEMBER(expected, values);
@@ -228,32 +265,37 @@ static int run_typed_fixture_peer(
 #ifdef WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES
     if (case_id == "05-unbounded-sequence-aliases" && fixture == "sequence-multiple") {
         ::CorpusUnboundedSequences::Numbers numbers;
-        numbers.push_back(101);
-        numbers.push_back(-102);
-        WIRELOOM_SET_TYPED_MEMBER(numbers, std::move(numbers));
         ::CorpusUnboundedSequences::States states;
-        states.push_back(::CorpusUnboundedSequences::State::Idle);
-        states.push_back(::CorpusUnboundedSequences::State::Ready);
-        WIRELOOM_SET_TYPED_MEMBER(states, std::move(states));
         ::CorpusUnboundedSequences::Children children;
-        ::CorpusUnboundedSequences::Child first_child;
-        WIRELOOM_SET_TYPED_MEMBER_ON(first_child, value, 301);
-        ::CorpusUnboundedSequences::Child second_child;
-        WIRELOOM_SET_TYPED_MEMBER_ON(second_child, value, -302);
-        children.push_back(first_child);
-        children.push_back(second_child);
-        WIRELOOM_SET_TYPED_MEMBER(children, std::move(children));
         ::CorpusUnboundedSequences::Scalars scalars;
-        scalars.push_back(201);
-        scalars.push_back(-202);
-        WIRELOOM_SET_TYPED_MEMBER(scalars, std::move(scalars));
         ::CorpusUnboundedSequences::Texts texts;
-        texts.push_back("narrow-1");
-        texts.push_back("narrow-2");
-        WIRELOOM_SET_TYPED_MEMBER(texts, std::move(texts));
         ::CorpusUnboundedSequences::WideTexts wide_texts;
-        wide_texts.push_back(L"wide-λ");
-        wide_texts.push_back(L"wide-2");
+        for (int index = 0; index < 257; ++index) {
+            numbers.push_back(index - 128);
+            states.push_back(index % 2 == 0
+                ? ::CorpusUnboundedSequences::State::Idle
+                : ::CorpusUnboundedSequences::State::Ready);
+            ::CorpusUnboundedSequences::Child child;
+            WIRELOOM_SET_TYPED_MEMBER_ON(child, value, index - 128);
+            children.push_back(child);
+            scalars.push_back(index + 1000);
+            if (index == 128) {
+                texts.push_back(std::string(300, 'n'));
+                wide_texts.push_back(std::wstring(300, L'λ'));
+            } else {
+                std::ostringstream narrow_index;
+                narrow_index << std::setfill('0') << std::setw(3) << index;
+                texts.push_back("text-" + narrow_index.str());
+                std::wostringstream wide_index;
+                wide_index << std::setfill(L'0') << std::setw(3) << index;
+                wide_texts.push_back(L"wide-" + wide_index.str() + L"-λ");
+            }
+        }
+        WIRELOOM_SET_TYPED_MEMBER(numbers, std::move(numbers));
+        WIRELOOM_SET_TYPED_MEMBER(states, std::move(states));
+        WIRELOOM_SET_TYPED_MEMBER(children, std::move(children));
+        WIRELOOM_SET_TYPED_MEMBER(scalars, std::move(scalars));
+        WIRELOOM_SET_TYPED_MEMBER(texts, std::move(texts));
         WIRELOOM_SET_TYPED_MEMBER(wideTexts, std::move(wide_texts));
         ::CorpusUnboundedSequences::BoundedTexts bounded_texts;
         bounded_texts.push_back("12345678");
@@ -370,8 +412,8 @@ static int run_typed_fixture_peer(
 #endif
 #ifdef WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES
     if (case_id == "04-unbounded-string-aliases") {
-        WIRELOOM_SET_TYPED_STRING(narrow, fixture == "string-empty" ? "" : std::string(255, 'n'));
-        WIRELOOM_SET_TYPED_STRING(wide, fixture == "string-empty" ? L"" : std::wstring(255, L'λ'));
+        WIRELOOM_SET_TYPED_STRING(narrow, fixture == "string-empty" ? "" : std::string(300, 'n'));
+        WIRELOOM_SET_TYPED_STRING(wide, fixture == "string-empty" ? L"" : std::wstring(300, L'λ'));
     }
 #endif
 #ifdef WIRELOOM_TYPED_NUMERIC_CHAR_UNION
@@ -490,6 +532,13 @@ static int run_typed_fixture_peer(
     if (role == "writer") {
         dds::pub::Publisher publisher(participant);
         auto writer_qos = reliable_writer_qos(publisher);
+        if (case_id == "14-unbounded-support") {
+            const std::vector<dds::core::policy::DataRepresentationId> representations{
+                fixture == "xcdr2-unbounded"
+                    ? dds::core::policy::DataRepresentation::xcdr2()
+                    : dds::core::policy::DataRepresentation::xcdr()};
+            writer_qos << dds::core::policy::DataRepresentation(representations);
+        }
         if (case_id == "09-optional-recursive-array") {
             // Avoid allocating the recursive maximum size for every initial sample.
             // Samples larger than the fast-pool threshold can allocate separately.
@@ -538,6 +587,13 @@ static int run_typed_fixture_peer(
         auto reader_qos = subscriber.default_datareader_qos();
         reader_qos << dds::core::policy::Reliability(
             dds::core::policy::ReliabilityKind::RELIABLE);
+        if (case_id == "14-unbounded-support") {
+            const std::vector<dds::core::policy::DataRepresentationId> representations{
+                fixture == "xcdr2-unbounded"
+                    ? dds::core::policy::DataRepresentation::xcdr2()
+                    : dds::core::policy::DataRepresentation::xcdr()};
+            reader_qos << dds::core::policy::DataRepresentation(representations);
+        }
         dds::sub::DataReader<DdsType> reader(subscriber, topic, reader_qos);
         const auto initial_match_status = reader.subscription_matched_status();
         std::cout << "READY case=" << case_id << " fixture=" << fixture

@@ -72,7 +72,7 @@ namespace CorpusUnboundedSequences {
     template class NDDSUSERDllExport std::allocator< int32_t >;
     template class NDDSUSERDllExport std::vector< int32_t >;
     #endif
-    typedef ::rti::core::bounded_sequence< int32_t, 100L > Numbers;
+    typedef std::vector< int32_t > Numbers;
     struct Numbers_AliasTag_t {};
     enum class State {
         Idle, 
@@ -128,7 +128,7 @@ namespace CorpusUnboundedSequences {
     template class NDDSUSERDllExport std::allocator< ::CorpusUnboundedSequences::State >;
     template class NDDSUSERDllExport std::vector< ::CorpusUnboundedSequences::State >;
     #endif
-    typedef ::rti::core::bounded_sequence< ::CorpusUnboundedSequences::State, 100L > States;
+    typedef std::vector< ::CorpusUnboundedSequences::State > States;
     struct States_AliasTag_t {};
 
     #if (defined(RTI_WIN32) || defined (RTI_WINCE)) && defined(NDDS_USER_DLL_EXPORT)
@@ -137,10 +137,10 @@ namespace CorpusUnboundedSequences {
     template class NDDSUSERDllExport std::allocator< ::CorpusUnboundedSequences::Child >;
     template class NDDSUSERDllExport std::vector< ::CorpusUnboundedSequences::Child >;
     #endif
-    typedef ::rti::core::bounded_sequence< ::CorpusUnboundedSequences::Child, 100L > Children;
+    typedef std::vector< ::CorpusUnboundedSequences::Child > Children;
     struct Children_AliasTag_t {};
 
-    typedef ::rti::core::bounded_sequence< int32_t, 100L > Scalars;
+    typedef std::vector< int32_t > Scalars;
     struct Scalars_AliasTag_t {};
 
     #if (defined(RTI_WIN32) || defined (RTI_WINCE)) && defined(NDDS_USER_DLL_EXPORT)
@@ -149,7 +149,7 @@ namespace CorpusUnboundedSequences {
     template class NDDSUSERDllExport std::allocator< std::string >;
     template class NDDSUSERDllExport std::vector< std::string >;
     #endif
-    typedef ::rti::core::bounded_sequence< std::string, 100L > Texts;
+    typedef std::vector< std::string > Texts;
     struct Texts_AliasTag_t {};
 
     #if (defined(RTI_WIN32) || defined (RTI_WINCE)) && defined(NDDS_USER_DLL_EXPORT)
@@ -158,13 +158,13 @@ namespace CorpusUnboundedSequences {
     template class NDDSUSERDllExport std::allocator< std::wstring >;
     template class NDDSUSERDllExport std::vector< std::wstring >;
     #endif
-    typedef ::rti::core::bounded_sequence< std::wstring, 100L > WideTexts;
+    typedef std::vector< std::wstring > WideTexts;
     struct WideTexts_AliasTag_t {};
 
-    typedef ::rti::core::bounded_sequence< std::string, 100L > BoundedTexts;
+    typedef std::vector< std::string > BoundedTexts;
     struct BoundedTexts_AliasTag_t {};
 
-    typedef ::rti::core::bounded_sequence< std::wstring, 100L > BoundedWideTexts;
+    typedef std::vector< std::wstring > BoundedWideTexts;
     struct BoundedWideTexts_AliasTag_t {};
 
     typedef ::CorpusUnboundedSequences::Numbers NumbersChain;

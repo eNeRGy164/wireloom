@@ -74,7 +74,7 @@ namespace rti {
                     return &Text_g_tc;
                 }
 
-                Text_g_tc_string = initialize_string_typecode((255L));
+                Text_g_tc_string = initialize_string_typecode(RTIXCdrLong_MAX);
 
                 Text_g_tc._data._annotations._allowedDataRepresentationMask = 5;
 
@@ -201,7 +201,7 @@ namespace rti {
                     return &WideText_g_tc;
                 }
 
-                WideText_g_tc_string = initialize_wstring_typecode((255L));
+                WideText_g_tc_string = initialize_wstring_typecode(RTIXCdrLong_MAX);
 
                 WideText_g_tc._data._annotations._allowedDataRepresentationMask = 5;
 

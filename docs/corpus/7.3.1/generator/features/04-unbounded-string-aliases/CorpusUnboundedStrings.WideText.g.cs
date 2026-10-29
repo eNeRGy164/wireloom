@@ -16,9 +16,9 @@ public partial class WideText : global::System.IEquatable<WideText>
     /// <summary>
     /// Gets or sets the value represented by this typedef.
     /// </summary>
-    /// <remarks>This unbounded wide IDL string has an effective limit of 255 UTF-16 code units. The generated C# property does not enforce the effective limit when assigned.</remarks>
+    /// <remarks>This wide IDL string is unbounded.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.3.1 string and wide-string bounds</seealso>
-    [Bound(255)]
+    [Bound(-1)]
     public string Value { get; set; } = string.Empty;
 
     /// <summary>

@@ -33,6 +33,6 @@ internal class StatesPlugin : InterpretedTypePlugin<States, StatesUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<StatesUnmanaged>(dtf, "States", tsf.CreateSequenceWithAccessInfo(dtf, StateSupport.Instance.GetDynamicTypeInternal(isPublic), 100));
+        return tsf.CreateAliasWithAccessInfo<StatesUnmanaged>(dtf, "States", tsf.CreateSequenceWithAccessInfo(dtf, StateSupport.Instance.GetDynamicTypeInternal(isPublic), SequenceType.Unbounded));
     }
 }

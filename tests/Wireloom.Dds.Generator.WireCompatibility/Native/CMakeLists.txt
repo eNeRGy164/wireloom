@@ -25,6 +25,9 @@ foreach(fixture_define IN ITEMS
         add_compile_definitions(WIRELOOM_TYPED_IDL_GAPS_FIXTURE)
     endif()
 endforeach()
+if(WIRELOOM_TYPED_C173_UNBOUNDED_SUPPORT)
+    add_compile_definitions(WIRELOOM_TYPED_C173_UNBOUNDED_SUPPORT)
+endif()
 
 find_package(RTIConnextDDS REQUIRED)
 
