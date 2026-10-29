@@ -1,8 +1,8 @@
 /*
 WARNING: THIS FILE IS AUTO-GENERATED. DO NOT MODIFY.
 
-This file was generated from 05-unbounded-sequence-aliases.idl
-using RTI Code Generator (rtiddsgen) version 4.7.0.
+This file was generated from idl.idl
+using RTI Code Generator (rtiddsgen) version 4.3.1.
 The rtiddsgen tool is part of the RTI Connext DDS distribution.
 For more information, type 'rtiddsgen -help' at a command shell
 or consult the Code Generator User's Manual.
@@ -94,6 +94,7 @@ namespace CorpusUnboundedSequences
 
             internal SequenceAliasesSamplePlugin() : base("global::CorpusUnboundedSequences.SequenceAliasesSample", isKeyed: false, CreateDynamicType(isPublic: false))
             {
+                xTypesComplianceMask = 0x0000068C;
             }
 
             public static DynamicType CreateDynamicType(bool isPublic = true)
@@ -112,7 +113,6 @@ namespace CorpusUnboundedSequences
                     new StructMember("wideTexts", global::CorpusUnboundedSequences.WideTextsSupport.Instance.GetDynamicTypeInternal(isPublic), id: 5),
                     new StructMember("boundedTexts", global::CorpusUnboundedSequences.BoundedTextsSupport.Instance.GetDynamicTypeInternal(isPublic), id: 6),
                     new StructMember("boundedWideTexts", global::CorpusUnboundedSequences.BoundedWideTextsSupport.Instance.GetDynamicTypeInternal(isPublic), id: 7)
-
                 };
 
                 DynamicType result = tsf.CreateTypeWithAccessInfo<SequenceAliasesSampleUnmanaged>(
@@ -122,7 +122,6 @@ namespace CorpusUnboundedSequences
                     .AddMembers(SequenceAliasesSampleStructMembers));
 
                 return result;
-
             }
         }
     }

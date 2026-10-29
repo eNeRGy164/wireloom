@@ -5,6 +5,9 @@
   "language": "cpp",
   "rtiddsgenVersion": "4.7.0",
   "wireInput": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/05-unbounded-sequence-aliases.idl",
+  "rtiddsgenOptions": [
+    "-unboundedSupport"
+  ],
   "inputs": [
     {
       "path": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/05-unbounded-sequence-aliases.idl",
@@ -16,30 +19,6 @@
     }
   ],
   "generatedFiles": [
-    {
-      "path": "features/05-unbounded-sequence-aliases.cxx",
-      "sha256": "900cb1180b1d08db06537b291cd550d577fbb92db507a9459d67433903a1a10a"
-    },
-    {
-      "path": "features/05-unbounded-sequence-aliases.hpp",
-      "sha256": "8a71c8b00ab81b4b2e1c53fb340d5fe91936f79f7e62e703b9db9b9f55badac1"
-    },
-    {
-      "path": "features/05-unbounded-sequence-aliases.hpp",
-      "sha256": "8a71c8b00ab81b4b2e1c53fb340d5fe91936f79f7e62e703b9db9b9f55badac1"
-    },
-    {
-      "path": "features/05-unbounded-sequence-aliasesPlugin.cxx",
-      "sha256": "f1ca69dd13279cf027302da0db47c099f1978afe819c433dcb8e8004621ebf03"
-    },
-    {
-      "path": "features/05-unbounded-sequence-aliasesPlugin.hpp",
-      "sha256": "b068a024a76cfa1e1d73e3b213cfd1a713e6038c847cc3b82ee76d6ad7ea507c"
-    },
-    {
-      "path": "features/05-unbounded-sequence-aliasesPlugin.hpp",
-      "sha256": "b068a024a76cfa1e1d73e3b213cfd1a713e6038c847cc3b82ee76d6ad7ea507c"
-    },
     {
       "path": "idl.cxx",
       "sha256": "8cc5c4caa81f15207e2bb118fdc1dfe617e282b051267ef79efa2ed4705a164a"
@@ -55,6 +34,22 @@
     {
       "path": "idlPlugin.hpp",
       "sha256": "b3bf532c0ea94ba7f1165443b462bc2ffcf77f171d106c2b525462442b06f430"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliases.cxx",
+      "sha256": "6c5398a0ad27075a5d8e48a913e00e6d5b422bf9c90b0964a91320eda5e9d19c"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliases.hpp",
+      "sha256": "64dd2d8d640daf61ab33337a8b1425f816ca917ad0e6db81edbf7611fa7db906"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliasesPlugin.cxx",
+      "sha256": "f1ca69dd13279cf027302da0db47c099f1978afe819c433dcb8e8004621ebf03"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliasesPlugin.hpp",
+      "sha256": "b068a024a76cfa1e1d73e3b213cfd1a713e6038c847cc3b82ee76d6ad7ea507c"
     }
   ]
 }

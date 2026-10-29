@@ -9,7 +9,7 @@ internal static class ScenarioPlanningVerification
         var root = Path.Combine(options.ScratchDirectory, "planning-verification");
         VerifyPairingPolicy(root);
         VerifyShardTiesAndInvalidInputs(root);
-        foreach (var (version, expectedCases, expectedScenarios) in new[] { ("7.3.1", 90, 1560), ("7.7.0", 91, 1555) })
+        foreach (var (version, expectedCases, expectedScenarios) in new[] { ("7.3.1", 91, 1578), ("7.7.0", 92, 1573) })
         {
             VerifyCompleteProfile(options, root, version, expectedCases, expectedScenarios);
             Console.WriteLine($"Scenario planning {version}: {expectedCases} cases, {expectedScenarios} exchanges across 8 shards; complete and deterministic.");

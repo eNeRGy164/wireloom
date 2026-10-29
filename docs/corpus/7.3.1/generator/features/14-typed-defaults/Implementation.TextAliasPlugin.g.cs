@@ -33,7 +33,7 @@ internal class TextAliasPlugin : InterpretedTypePlugin<global::TextAlias, TextAl
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        using var dtString = dtf.CreateString(8);
+        var dtString = dtf.CreateString(8);
         var aliasType = tsf.CreateAliasWithAccessInfo<TextAliasUnmanaged>(dtf, "TextAlias", dtString);
 
         return aliasType;

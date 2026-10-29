@@ -20,9 +20,9 @@ public partial class Recursive : global::System.IEquatable<Recursive>
     public int value { get; set; }
 
     /// <summary>
-    /// Gets the <c>children</c> member. Its maximum number of elements is <c>100</c>.
+    /// Gets the <c>children</c> member.
     /// </summary>
-    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, an effective limit of 100 elements is set. RTI uses the bound from the type metadata when processing DDS data.</remarks>
+    /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. This IDL sequence is unbounded.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
     /// <example>
     /// <code>
@@ -31,7 +31,6 @@ public partial class Recursive : global::System.IEquatable<Recursive>
     /// sample.children.RemoveAt(sample.children.Count - 1);
     /// </code>
     /// </example>
-    [Bound(100)]
     public ISequence<Recursive> children { get; } = null!;
 
     /// <summary>

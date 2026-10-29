@@ -5,6 +5,7 @@
 #nullable enable
 
 using Rti.Dds.NativeInterface.TypePlugin;
+using Rti.Types.Dynamic;
 
 namespace CorpusUnboundedStrings.Implementation;
 
@@ -41,7 +42,7 @@ public struct WideTextUnmanaged : INativeTopicType<WideText>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize(size: 255, allocateMemory);
+        Value.Initialize(size: 0, allocateMemory);
     }
 
     /// <summary>
@@ -51,6 +52,6 @@ public struct WideTextUnmanaged : INativeTopicType<WideText>
     /// <param name="keysOnly">Whether to copy only key members.</param>
     public void ToNative(WideText sample, bool keysOnly = false)
     {
-        Value.ToNative(sample.Value, 255);
+        Value.ToNative(sample.Value, WideStringType.Unbounded);
     }
 }

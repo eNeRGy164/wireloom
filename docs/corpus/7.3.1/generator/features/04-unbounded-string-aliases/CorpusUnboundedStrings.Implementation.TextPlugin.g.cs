@@ -33,7 +33,7 @@ internal class TextPlugin : InterpretedTypePlugin<Text, TextUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        using var dtString = dtf.CreateString(255);
+        var dtString = dtf.CreateString();
         var aliasType = tsf.CreateAliasWithAccessInfo<TextUnmanaged>(dtf, "Text", dtString);
 
         return aliasType;

@@ -33,7 +33,7 @@ internal class BoundedWideTextChainPlugin : InterpretedTypePlugin<BoundedWideTex
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        using var dtWString = dtf.CreateWideString(8);
+        var dtWString = dtf.CreateWideString(8);
         var aliasType = tsf.CreateAliasWithAccessInfo<BoundedWideTextChainUnmanaged>(dtf, "BoundedWideTextChain", dtWString);
 
         return aliasType;

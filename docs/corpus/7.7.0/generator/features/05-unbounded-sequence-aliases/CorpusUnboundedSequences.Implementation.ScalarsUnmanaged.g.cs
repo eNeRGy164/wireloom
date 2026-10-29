@@ -6,6 +6,7 @@
 
 using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
+using Rti.Types.Dynamic;
 
 namespace CorpusUnboundedSequences.Implementation;
 
@@ -42,7 +43,7 @@ public struct ScalarsUnmanaged : INativeTopicType<Scalars>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize<int>(max: 100, absoluteMax: 100, allocateMemory);
+        Value.Initialize<int>(max: 0, absoluteMax: SequenceType.Unbounded, allocateMemory);
     }
 
     /// <summary>

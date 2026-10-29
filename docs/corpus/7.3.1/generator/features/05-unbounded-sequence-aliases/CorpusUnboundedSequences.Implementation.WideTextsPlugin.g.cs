@@ -33,6 +33,6 @@ internal class WideTextsPlugin : InterpretedTypePlugin<WideTexts, WideTextsUnman
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<WideTextsUnmanaged>(dtf, "WideTexts", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(255), 100));
+        return tsf.CreateAliasWithAccessInfo<WideTextsUnmanaged>(dtf, "WideTexts", tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(), SequenceType.Unbounded));
     }
 }

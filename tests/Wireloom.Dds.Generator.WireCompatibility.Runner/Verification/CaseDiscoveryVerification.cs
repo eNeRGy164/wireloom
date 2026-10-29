@@ -13,7 +13,7 @@ internal static class CaseDiscoveryVerification
             // Arrange
             var exclusions = Path.Combine(workspace.TestRoot, $"wire-case-exclusions-{version}.json");
             var discovered = CorpusCaseDiscovery.Read(workspace.Manifest, exclusions);
-            var expectedCaseCount = version == "7.3.1" ? 90 : 91;
+            var expectedCaseCount = version == "7.3.1" ? 91 : 92;
 
             // Assert
             Check(discovered.WireloomCases.Count == expectedCaseCount, $"Case discovery must retain the expected eligible case count for RTI {version}.");

@@ -12,6 +12,13 @@ internal static class ReceivedSampleVerifier
     internal static void Verify<T>(T expected, T sample, DynamicData? expectedDynamic, PeerOptions options)
     {
         var context = $"{options.CaseId} fixture {options.Fixture}";
+#if WIRE_COMPATIBILITY_UNBOUNDED_SUPPORT
+        if (options.CaseId == "14-unbounded-support")
+        {
+            ManagedFixtures.VerifyUnboundedSupportFixture(sample, options);
+            return;
+        }
+#endif
         if (options.CaseId.StartsWith("14-", StringComparison.Ordinal))
         {
             ManagedFixtures.VerifyIdlGapFixture(sample!, options);

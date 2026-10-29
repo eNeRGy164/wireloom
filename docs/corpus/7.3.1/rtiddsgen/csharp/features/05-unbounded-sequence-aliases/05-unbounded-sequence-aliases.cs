@@ -22,7 +22,6 @@ namespace CorpusUnboundedSequences
     public class Numbers :  IEquatable<Numbers>
     {
 
-        [Bound(100)]
         public ISequence<int> Value { get; }
 
         public Numbers()
@@ -191,7 +190,6 @@ namespace CorpusUnboundedSequences
     public class States :  IEquatable<States>
     {
 
-        [Bound(100)]
         public ISequence<global::CorpusUnboundedSequences.State> Value { get; }
 
         public States()
@@ -247,7 +245,6 @@ namespace CorpusUnboundedSequences
     public class Children :  IEquatable<Children>
     {
 
-        [Bound(100)]
         public ISequence<global::CorpusUnboundedSequences.Child> Value { get; }
 
         public Children()
@@ -303,7 +300,6 @@ namespace CorpusUnboundedSequences
     public class Scalars :  IEquatable<Scalars>
     {
 
-        [Bound(100)]
         public ISequence<int> Value { get; }
 
         public Scalars()
@@ -359,7 +355,6 @@ namespace CorpusUnboundedSequences
     public class Texts :  IEquatable<Texts>
     {
 
-        [Bound(100)]
         public ISequence<string> Value { get; }
 
         public Texts()
@@ -415,7 +410,6 @@ namespace CorpusUnboundedSequences
     public class WideTexts :  IEquatable<WideTexts>
     {
 
-        [Bound(100)]
         public ISequence<string> Value { get; }
 
         public WideTexts()
@@ -471,7 +465,6 @@ namespace CorpusUnboundedSequences
     public class BoundedTexts :  IEquatable<BoundedTexts>
     {
 
-        [Bound(100)]
         public ISequence<string> Value { get; }
 
         public BoundedTexts()
@@ -527,7 +520,6 @@ namespace CorpusUnboundedSequences
     public class BoundedWideTexts :  IEquatable<BoundedWideTexts>
     {
 
-        [Bound(100)]
         public ISequence<string> Value { get; }
 
         public BoundedWideTexts()

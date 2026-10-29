@@ -33,7 +33,7 @@ internal class BoundedWideTextPlugin : InterpretedTypePlugin<BoundedWideText, Bo
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        using var dtWString = dtf.CreateWideString(8);
+        var dtWString = dtf.CreateWideString(8);
         var aliasType = tsf.CreateAliasWithAccessInfo<BoundedWideTextUnmanaged>(dtf, "BoundedWideText", dtWString);
 
         return aliasType;

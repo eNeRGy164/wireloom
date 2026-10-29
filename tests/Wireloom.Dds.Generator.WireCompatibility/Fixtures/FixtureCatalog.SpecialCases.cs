@@ -9,8 +9,8 @@ internal static partial class FixtureCatalog
     {
         if (caseId == "04-unbounded-string-aliases")
         {
-            SetFixtureValue(sample, "narrow", fixture == "string-empty" ? string.Empty : new string('n', 255));
-            SetFixtureValue(sample, "wide", fixture == "string-empty" ? string.Empty : new string('λ', 255));
+            SetFixtureValue(sample, "narrow", fixture == "string-empty" ? string.Empty : new string('n', 300));
+            SetFixtureValue(sample, "wide", fixture == "string-empty" ? string.Empty : new string('λ', 300));
             return true;
         }
 

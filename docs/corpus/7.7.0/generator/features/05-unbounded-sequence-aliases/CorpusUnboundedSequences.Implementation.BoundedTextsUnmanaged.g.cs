@@ -5,6 +5,7 @@
 #nullable enable
 
 using Rti.Dds.NativeInterface.TypePlugin;
+using Rti.Types.Dynamic;
 
 namespace CorpusUnboundedSequences.Implementation;
 
@@ -46,7 +47,7 @@ public struct BoundedTextsUnmanaged : INativeTopicType<BoundedTexts>
     /// <param name="allocateMemory">Whether native memory should be allocated.</param>
     public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
     {
-        Value.Initialize(max: 100, absoluteMax: 100, maxStrLen: 8, allocateMemory);
+        Value.Initialize(max: 0, absoluteMax: SequenceType.Unbounded, maxStrLen: 8, allocateMemory);
     }
 
     /// <summary>

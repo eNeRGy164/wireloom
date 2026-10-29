@@ -15,11 +15,10 @@ namespace CorpusUnboundedSequences;
 public partial class Texts : global::System.IEquatable<Texts>
 {
     /// <summary>
-    /// Gets the sequence value represented by this typedef. Its maximum number of elements is <c>100</c>. Each unbounded narrow IDL string element has an effective limit of <c>255</c> UTF-8 bytes.
+    /// Gets the sequence value represented by this typedef. The sequence has no IDL maximum length. Each narrow IDL string element is unbounded.
     /// </summary>
-    /// <remarks>Use the mutable sequence instance to add or remove elements; the property itself is getter-only. For an unbounded IDL sequence, an effective limit of 100 elements is set. RTI uses the bound from the type metadata when processing DDS data.</remarks>
+    /// <remarks>Use the mutable sequence instance to add or remove elements; the property itself is getter-only.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
-    [Bound(100)]
     public ISequence<string> Value { get; } = null!;
 
     /// <summary>

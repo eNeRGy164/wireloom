@@ -20,6 +20,8 @@ try
         ["05-array-of-sequences-idl"] = ["sequence-empty", "sequence-unequal", "sequence-mixed-empty", "sequence-boundary"],
         ["14-extensibility-full"] = ["non-default"],
         ["06-aggregates"] = ["non-default", "direct-recursive-sequence"],
+        ["04-unbounded-string-aliases"] = ["string-empty", "string-over-default-bound"],
+        ["05-unbounded-sequence-aliases"] = ["sequence-empty", "sequence-multiple"],
         ["14-autoid-scope"] = ["scope-nested"],
         ["14-annotation-arguments"] = ["default", "non-default"],
         ["14-member-declarators"] = ["non-default"],

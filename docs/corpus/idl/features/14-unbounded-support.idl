@@ -1,0 +1,13 @@
+module CorpusUnboundedSupport {
+    typedef sequence<long> LongValues;
+
+    struct Sample {
+        sequence<long> values;
+        string text;
+        wstring wideText;
+        sequence<string> labels;
+        LongValues aliasValues;
+        sequence<long, 4> boundedValues;
+        string<8> boundedText;
+    };
+};

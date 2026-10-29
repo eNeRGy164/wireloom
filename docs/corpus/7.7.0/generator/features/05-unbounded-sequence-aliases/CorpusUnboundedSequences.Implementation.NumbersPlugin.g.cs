@@ -32,6 +32,6 @@ internal class NumbersPlugin : InterpretedTypePlugin<Numbers, NumbersUnmanaged>
         var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
         var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-        return tsf.CreateAliasWithAccessInfo<NumbersUnmanaged>(dtf, "Numbers", tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), 100));
+        return tsf.CreateAliasWithAccessInfo<NumbersUnmanaged>(dtf, "Numbers", tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), SequenceType.Unbounded));
     }
 }

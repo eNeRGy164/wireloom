@@ -60,8 +60,10 @@ try {
     $sdkVersion = dotnet --version
     if ($LASTEXITCODE -ne 0) { throw 'Cannot identify the .NET SDK version.' }
     $sdkVersion | Out-File "$evidence/dotnet-version.txt" -Encoding utf8
-    dotnet restore $project --locked-mode
-    if ($LASTEXITCODE -ne 0) { throw 'Corpus locked restore failed.' }
+    $restoreOutput = & dotnet restore $project --locked-mode 2>&1
+    $restoreExitCode = $LASTEXITCODE
+    $restoreOutput | Tee-Object "$evidence/restore.txt"
+    if ($restoreExitCode -ne 0) { throw "Corpus locked restore failed (exit code $restoreExitCode)." }
     foreach ($version in $Profile | Select-Object -Unique) {
         $env:CORPUS_RTI_PROFILE = $version
         $env:CORPUS_GENERATOR_EXPORT_ROOT = Join-Path $output "$version/generator"

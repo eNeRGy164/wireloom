@@ -30,7 +30,8 @@ internal static class WireCompatibilityCaseCatalog
             "03-enums-aliases" => ["default", "enum-alternate"],
             "02-scopes" or "02-constant-expressions" or "05-collections" => ["sequence-empty", "sequence-single", "non-default"],
             "04-strings" => ["string-empty", "string-boundary", "non-default"],
-            "04-unbounded-string-aliases" or "04-string-alias-chains" => ["string-empty", "string-boundary"],
+            "04-unbounded-string-aliases" => ["string-empty", "string-over-default-bound"],
+            "04-string-alias-chains" => ["string-empty", "string-boundary"],
             "05-unbounded-sequence-aliases" => ["sequence-empty", "sequence-multiple"],
             "06-aggregates" => ["non-default", "direct-recursive-sequence"],
             "04-boundaries" => ["string-boundary", "non-default"],
@@ -66,6 +67,7 @@ internal static class WireCompatibilityCaseCatalog
             "14-typed-defaults" when rtiVersion == "7.7.0" => ["default", "non-default", "sparse-omitted"],
             "14-typed-defaults" => ["default", "non-default"],
             "14-enum-constant" => ["constant-and-label"],
+            "14-unbounded-support" => ["xcdr1-unbounded", "xcdr2-unbounded"],
             _ => [NonDefaultCases.Contains(caseId) ? "non-default" : "default"],
         };
 

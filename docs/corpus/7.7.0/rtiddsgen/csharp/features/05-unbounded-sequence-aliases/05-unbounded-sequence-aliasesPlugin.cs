@@ -41,7 +41,7 @@ namespace CorpusUnboundedSequences
 
             public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
             {
-                Value.Initialize<int >(max: ((int)100), absoluteMax: ((int)100), allocateMemory: allocateMemory);
+                Value.Initialize<int >(max: 0, absoluteMax: Rti.Types.Dynamic.SequenceType.Unbounded, allocateMemory: allocateMemory);
             }
 
             public void ToNative(global::CorpusUnboundedSequences.Numbers sample, bool keysOnly = false)
@@ -65,7 +65,7 @@ namespace CorpusUnboundedSequences
                 var aliasType = tsf.CreateAliasWithAccessInfo<NumbersUnmanaged>(
                     dtf,
                     "Numbers",
-                    tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), ((int)100)));
+                    tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), Rti.Types.Dynamic.SequenceType.Unbounded));
                 return aliasType;
 
             }
@@ -321,7 +321,7 @@ namespace CorpusUnboundedSequences
 
             public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
             {
-                Value.Initialize<global::CorpusUnboundedSequences.State >(max: ((int)100), absoluteMax: ((int)100), allocateMemory: allocateMemory);
+                Value.Initialize<global::CorpusUnboundedSequences.State >(max: 0, absoluteMax: Rti.Types.Dynamic.SequenceType.Unbounded, allocateMemory: allocateMemory);
             }
 
             public void ToNative(global::CorpusUnboundedSequences.States sample, bool keysOnly = false)
@@ -345,7 +345,7 @@ namespace CorpusUnboundedSequences
                 var aliasType = tsf.CreateAliasWithAccessInfo<StatesUnmanaged>(
                     dtf,
                     "States",
-                    tsf.CreateSequenceWithAccessInfo(dtf, global::CorpusUnboundedSequences.StateSupport.Instance.GetDynamicTypeInternal(isPublic), ((int)100)));
+                    tsf.CreateSequenceWithAccessInfo(dtf, global::CorpusUnboundedSequences.StateSupport.Instance.GetDynamicTypeInternal(isPublic), Rti.Types.Dynamic.SequenceType.Unbounded));
                 return aliasType;
 
             }
@@ -389,7 +389,7 @@ namespace CorpusUnboundedSequences
 
             public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
             {
-                Value.Initialize<global::CorpusUnboundedSequences.Child , global::CorpusUnboundedSequences.Implementation.ChildUnmanaged >(max: ((int)100), absoluteMax: ((int)100), allocateMemory: allocateMemory);
+                Value.Initialize<global::CorpusUnboundedSequences.Child , global::CorpusUnboundedSequences.Implementation.ChildUnmanaged >(max: 0, absoluteMax: Rti.Types.Dynamic.SequenceType.Unbounded, allocateMemory: allocateMemory);
             }
 
             public void ToNative(global::CorpusUnboundedSequences.Children sample, bool keysOnly = false)
@@ -413,7 +413,7 @@ namespace CorpusUnboundedSequences
                 var aliasType = tsf.CreateAliasWithAccessInfo<ChildrenUnmanaged>(
                     dtf,
                     "Children",
-                    tsf.CreateSequenceWithAccessInfo(dtf, global::CorpusUnboundedSequences.ChildSupport.Instance.GetDynamicTypeInternal(isPublic), ((int)100)));
+                    tsf.CreateSequenceWithAccessInfo(dtf, global::CorpusUnboundedSequences.ChildSupport.Instance.GetDynamicTypeInternal(isPublic), Rti.Types.Dynamic.SequenceType.Unbounded));
                 return aliasType;
 
             }
@@ -453,7 +453,7 @@ namespace CorpusUnboundedSequences
 
             public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
             {
-                Value.Initialize<int >(max: ((int)100), absoluteMax: ((int)100), allocateMemory: allocateMemory);
+                Value.Initialize<int >(max: 0, absoluteMax: Rti.Types.Dynamic.SequenceType.Unbounded, allocateMemory: allocateMemory);
             }
 
             public void ToNative(global::CorpusUnboundedSequences.Scalars sample, bool keysOnly = false)
@@ -477,7 +477,7 @@ namespace CorpusUnboundedSequences
                 var aliasType = tsf.CreateAliasWithAccessInfo<ScalarsUnmanaged>(
                     dtf,
                     "Scalars",
-                    tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), ((int)100)));
+                    tsf.CreateSequenceWithAccessInfo(dtf, dtf.GetPrimitiveType<int>(), Rti.Types.Dynamic.SequenceType.Unbounded));
                 return aliasType;
 
             }
@@ -521,12 +521,12 @@ namespace CorpusUnboundedSequences
 
             public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
             {
-                Value.Initialize(max: ((int)100), absoluteMax: ((int)100), maxStrLen: ((int) 255), allocateMemory: allocateMemory);
+                Value.Initialize(max: 0, absoluteMax: Rti.Types.Dynamic.SequenceType.Unbounded, maxStrLen: StringType.Unbounded, allocateMemory: allocateMemory);
             }
 
             public void ToNative(global::CorpusUnboundedSequences.Texts sample, bool keysOnly = false)
             {
-                Value.ToNative(sample.Value, ((int) 255));
+                Value.ToNative(sample.Value, StringType.Unbounded);
             }
         }
 
@@ -542,11 +542,11 @@ namespace CorpusUnboundedSequences
                 var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
                 var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-                using var dtString = dtf.CreateString(((int) 255));
+                using var dtString = dtf.CreateString();
                 var aliasType = tsf.CreateAliasWithAccessInfo<TextsUnmanaged>(
                     dtf,
                     "Texts",
-                    tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateString(((int) 255)), ((int)100)));
+                    tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateString(), Rti.Types.Dynamic.SequenceType.Unbounded));
                 return aliasType;
 
             }
@@ -590,12 +590,12 @@ namespace CorpusUnboundedSequences
 
             public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
             {
-                Value.Initialize(max: ((int)100), absoluteMax: ((int)100), maxStrLen: ((int) 255), allocateMemory: allocateMemory);
+                Value.Initialize(max: 0, absoluteMax: Rti.Types.Dynamic.SequenceType.Unbounded, maxStrLen: WideStringType.Unbounded, allocateMemory: allocateMemory);
             }
 
             public void ToNative(global::CorpusUnboundedSequences.WideTexts sample, bool keysOnly = false)
             {
-                Value.ToNative(sample.Value, ((int) 255));
+                Value.ToNative(sample.Value, WideStringType.Unbounded);
             }
         }
 
@@ -611,11 +611,11 @@ namespace CorpusUnboundedSequences
                 var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
                 var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
 
-                using var dtString = dtf.CreateWideString(((int) 255));
+                using var dtString = dtf.CreateWideString();
                 var aliasType = tsf.CreateAliasWithAccessInfo<WideTextsUnmanaged>(
                     dtf,
                     "WideTexts",
-                    tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(((int) 255)), ((int)100)));
+                    tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(), Rti.Types.Dynamic.SequenceType.Unbounded));
                 return aliasType;
 
             }
@@ -659,7 +659,7 @@ namespace CorpusUnboundedSequences
 
             public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
             {
-                Value.Initialize(max: ((int)100), absoluteMax: ((int)100), maxStrLen: ((int) 8), allocateMemory: allocateMemory);
+                Value.Initialize(max: 0, absoluteMax: Rti.Types.Dynamic.SequenceType.Unbounded, maxStrLen: ((int) 8), allocateMemory: allocateMemory);
             }
 
             public void ToNative(global::CorpusUnboundedSequences.BoundedTexts sample, bool keysOnly = false)
@@ -684,7 +684,7 @@ namespace CorpusUnboundedSequences
                 var aliasType = tsf.CreateAliasWithAccessInfo<BoundedTextsUnmanaged>(
                     dtf,
                     "BoundedTexts",
-                    tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateString(((int) 8)), ((int)100)));
+                    tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateString(((int) 8)), Rti.Types.Dynamic.SequenceType.Unbounded));
                 return aliasType;
 
             }
@@ -728,7 +728,7 @@ namespace CorpusUnboundedSequences
 
             public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
             {
-                Value.Initialize(max: ((int)100), absoluteMax: ((int)100), maxStrLen: ((int) 4), allocateMemory: allocateMemory);
+                Value.Initialize(max: 0, absoluteMax: Rti.Types.Dynamic.SequenceType.Unbounded, maxStrLen: ((int) 4), allocateMemory: allocateMemory);
             }
 
             public void ToNative(global::CorpusUnboundedSequences.BoundedWideTexts sample, bool keysOnly = false)
@@ -753,7 +753,7 @@ namespace CorpusUnboundedSequences
                 var aliasType = tsf.CreateAliasWithAccessInfo<BoundedWideTextsUnmanaged>(
                     dtf,
                     "BoundedWideTexts",
-                    tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(((int) 4)), ((int)100)));
+                    tsf.CreateSequenceWithAccessInfo(dtf, dtf.CreateWideString(((int) 4)), Rti.Types.Dynamic.SequenceType.Unbounded));
                 return aliasType;
 
             }

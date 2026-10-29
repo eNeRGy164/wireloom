@@ -20,18 +20,18 @@ internal static partial class ManagedFixtures
             throw new FixtureException($"Unknown unbounded sequence fixture '{fixture}'.");
         }
 
-        sample.numbers.Value.Add(101);
-        sample.numbers.Value.Add(-102);
-        sample.states.Value.Add(CorpusUnboundedSequences.State.Idle);
-        sample.states.Value.Add(CorpusUnboundedSequences.State.Ready);
-        sample.children.Value.Add(new CorpusUnboundedSequences.Child(301));
-        sample.children.Value.Add(new CorpusUnboundedSequences.Child(-302));
-        sample.scalars.Value.Add(201);
-        sample.scalars.Value.Add(-202);
-        sample.texts.Value.Add("narrow-1");
-        sample.texts.Value.Add("narrow-2");
-        sample.wideTexts.Value.Add("wide-λ");
-        sample.wideTexts.Value.Add("wide-2");
+        for (var index = 0; index < 257; index++)
+        {
+            sample.numbers.Value.Add(index - 128);
+            sample.states.Value.Add(index % 2 == 0
+                ? CorpusUnboundedSequences.State.Idle
+                : CorpusUnboundedSequences.State.Ready);
+            sample.children.Value.Add(new CorpusUnboundedSequences.Child(index - 128));
+            sample.scalars.Value.Add(index + 1000);
+            sample.texts.Value.Add(index == 128 ? new string('n', 300) : $"text-{index:D3}");
+            sample.wideTexts.Value.Add(index == 128 ? new string('λ', 300) : $"wide-{index:D3}-λ");
+        }
+
         sample.boundedTexts.Value.Add("12345678");
         sample.boundedTexts.Value.Add("bounded");
         sample.boundedWideTexts.Value.Add("ABCD");
