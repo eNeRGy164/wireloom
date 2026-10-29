@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "kind": "rti-finite-fallback-controls",
+  "rtiVersion": "7.7.0",
+  "language": "csharp",
+  "sourceRevision": "c868a8634a0fcdbbbed4912d246ed55868d99404",
+  "semantics": {
+    "unboundedSupport": false,
+    "sequenceFallback": 100,
+    "stringFallback": 255
+  },
+  "files": [
+    {
+      "path": "04-unbounded-string-aliases/04-unbounded-string-aliases.cs",
+      "sourcePath": "docs/corpus/7.7.0/rtiddsgen/csharp/features/04-unbounded-string-aliases/04-unbounded-string-aliases.cs",
+      "sha256": "830124e6c62767d4f934e9f033ae23258495bc82b86563b324ad2e1a086b2a7b"
+    },
+    {
+      "path": "04-unbounded-string-aliases/04-unbounded-string-aliasesPlugin.cs",
+      "sourcePath": "docs/corpus/7.7.0/rtiddsgen/csharp/features/04-unbounded-string-aliases/04-unbounded-string-aliasesPlugin.cs",
+      "sha256": "21ec6dae0b34118ad4b66aa93ed7ad35851caa1bd428309dfa46a205a1275aad"
+    },
+    {
+      "path": "05-unbounded-sequence-aliases/05-unbounded-sequence-aliases.cs",
+      "sourcePath": "docs/corpus/7.7.0/rtiddsgen/csharp/features/05-unbounded-sequence-aliases/05-unbounded-sequence-aliases.cs",
+      "sha256": "e72fdaf9fd5429f97b2b9dc18d5270ecb4204a3cc024c4a961370d342690143c"
+    },
+    {
+      "path": "05-unbounded-sequence-aliases/05-unbounded-sequence-aliasesPlugin.cs",
+      "sourcePath": "docs/corpus/7.7.0/rtiddsgen/csharp/features/05-unbounded-sequence-aliases/05-unbounded-sequence-aliasesPlugin.cs",
+      "sha256": "b9a6cbf90bd647b86d1cee2ce42c0eb06e3075ab79066919026a580410fa63df"
+    }
+  ]
+}

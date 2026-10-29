@@ -175,15 +175,21 @@ jobs:
           -Framework $env:CONSUMER_FRAMEWORK -LogPath artifacts/lts/strict-consumer.txt
         shell: pwsh
 
-      - name: Check retained RTI C# 7.7.0 unbounded alias oracle
+      - name: Check retained RTI C# 7.7.0 finite and unbounded alias oracles
         if: matrix.rti_version == '7.7.0' && matrix.framework == 'net10.0'
         run: |
           $probe = 'tests/Wireloom.Dds.Generator.WireCompatibility/RtiOracleProbe/RtiOracleProbe.csproj'
           dotnet restore $probe --locked-mode
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet run --project $probe --no-restore --configuration Release `
-            -p:RtiOracleProgram=UnboundedAliasProbe.cs `
-            '-p:RtiOracleSourceDir=../../../docs/corpus/7.7.0/rtiddsgen/csharp/features/*-unbounded-*-aliases'
+          foreach ($oracleMode in @('finite-fallback', 'features')) {
+            $probeArguments = @()
+            if ($oracleMode -eq 'features') { $probeArguments += '--unbounded' }
+            dotnet run --project $probe --no-restore --configuration Release `
+              -p:RtiOracleProgram=UnboundedAliasProbe.cs `
+              "-p:RtiOracleSourceDir=../../../docs/corpus/7.7.0/rtiddsgen/csharp/$oracleMode/*-unbounded-*-aliases" `
+              -- @probeArguments
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
         shell: pwsh
 
       - name: Retain LTS test output

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "kind": "rti-finite-fallback-controls",
+  "rtiVersion": "7.7.0",
+  "language": "cpp",
+  "sourceRevision": "c868a8634a0fcdbbbed4912d246ed55868d99404",
+  "semantics": {
+    "unboundedSupport": false,
+    "sequenceFallback": 100,
+    "stringFallback": 255
+  },
+  "files": [
+    {
+      "path": "04-unbounded-string-aliases/04-unbounded-string-aliases.cxx",
+      "sourcePath": "docs/corpus/7.7.0/rtiddsgen/cpp/features/04-unbounded-string-aliases/04-unbounded-string-aliases.cxx",
+      "sha256": "944e513b3ff02064289af532e4608ce9ba1d93a0c0c1aec1bb84f732a3f81ebf"
+    },
+    {
+      "path": "04-unbounded-string-aliases/04-unbounded-string-aliases.hpp",
+      "sourcePath": "docs/corpus/7.7.0/rtiddsgen/cpp/features/04-unbounded-string-aliases/04-unbounded-string-aliases.hpp",
+      "sha256": "4fd88d101d1cc5c7eb96f908dc0d03fcb1f0b0bc30146e3345cd681039f41d20"
+    },
+    {
+      "path": "04-unbounded-string-aliases/04-unbounded-string-aliasesPlugin.cxx",
+      "sourcePath": "docs/corpus/7.7.0/rtiddsgen/cpp/features/04-unbounded-string-aliases/04-unbounded-string-aliasesPlugin.cxx",
+      "sha256": "b451a2c8f377a26416f2a151c11444cfc67c46e71e3f47c65014f63e1941ddd6"
+    },
+    {
+      "path": "04-unbounded-string-aliases/04-unbounded-string-aliasesPlugin.hpp",
+      "sourcePath": "docs/corpus/7.7.0/rtiddsgen/cpp/features/04-unbounded-string-aliases/04-unbounded-string-aliasesPlugin.hpp",
+      "sha256": "33601b31596874131721ed3d10a73e6e4609003e27e9c1c12091058f7f7e7050"
+    },
+    {
+      "path": "05-unbounded-sequence-aliases/05-unbounded-sequence-aliases.cxx",
+      "sourcePath": "docs/corpus/7.7.0/rtiddsgen/cpp/features/05-unbounded-sequence-aliases/05-unbounded-sequence-aliases.cxx",
+      "sha256": "900cb1180b1d08db06537b291cd550d577fbb92db507a9459d67433903a1a10a"
+    },
+    {
+      "path": "05-unbounded-sequence-aliases/05-unbounded-sequence-aliases.hpp",
+      "sourcePath": "docs/corpus/7.7.0/rtiddsgen/cpp/features/05-unbounded-sequence-aliases/05-unbounded-sequence-aliases.hpp",
+      "sha256": "8a71c8b00ab81b4b2e1c53fb340d5fe91936f79f7e62e703b9db9b9f55badac1"
+    },
+    {
+      "path": "05-unbounded-sequence-aliases/05-unbounded-sequence-aliasesPlugin.cxx",
+      "sourcePath": "docs/corpus/7.7.0/rtiddsgen/cpp/features/05-unbounded-sequence-aliases/05-unbounded-sequence-aliasesPlugin.cxx",
+      "sha256": "f1ca69dd13279cf027302da0db47c099f1978afe819c433dcb8e8004621ebf03"
+    },
+    {
+      "path": "05-unbounded-sequence-aliases/05-unbounded-sequence-aliasesPlugin.hpp",
+      "sourcePath": "docs/corpus/7.7.0/rtiddsgen/cpp/features/05-unbounded-sequence-aliases/05-unbounded-sequence-aliasesPlugin.hpp",
+      "sha256": "b068a024a76cfa1e1d73e3b213cfd1a713e6038c847cc3b82ee76d6ad7ea507c"
+    }
+  ]
+}
