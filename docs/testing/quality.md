@@ -76,7 +76,7 @@ stores analysis state, not the bootstrapped SDK; keep `global.json` visible so
 analysis uses the pinned SDK. The NuGet package cache is safe to share, but
 restore and build intermediates are platform-specific and must remain isolated.
 
-### Interpreting local Docker runs
+## Interpreting local Docker runs
 
 When Qodana runs against the Windows bind mount through Docker Desktop,
 InspectCode may repeat a `FileSystemTrackerImpl` warning that a watcher would
@@ -105,6 +105,8 @@ summary in `baseline-out.log` and check the Docker command's exit code; a
 completed report can still contain findings, and CI uses a zero-finding
 threshold. A report left by an earlier run is not evidence for the current
 source.
+
+## Coverage and scan scope
 
 The local and CI configurations scan the committed `Wireloom.slnx`, which
 contains the compiler, generator, compiler and generator unit-test projects,

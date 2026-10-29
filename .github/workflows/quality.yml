@@ -531,11 +531,22 @@ jobs:
             --configuration Release
             --fail-threshold 0
             --skip-pull=false
+            --log-level info
           env-vars-to-linter: DOTNET_CLI_TELEMETRY_OPTOUT
+          results-dir: ${{ runner.temp }}/qodana/results
           cache-dir: ${{ runner.temp }}/qodana/caches
           use-caches: true
           primary-cache-key: qodana-2026.2-wireloom
           cache-default-branch-only: true
           post-pr-comment: true
-          upload-result: true
-          artifact-name: qodana-community-report
+          # Upload the directory directly to avoid Qodana's nested ZIP with rooted paths.
+          upload-result: false
+
+      - name: Retain Qodana report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: qodana-community-report
+          path: ${{ runner.temp }}/qodana/results/
+          if-no-files-found: warn
+          retention-days: 90
