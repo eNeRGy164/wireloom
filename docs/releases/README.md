@@ -17,7 +17,10 @@ the quality and release workflow results available for that source revision.
 
 Each record identifies the source tag and links to test evidence for that source
 revision. Workflow links point to GitHub Actions; artifact downloads may expire
-according to the workflow retention policy.
+according to the workflow retention policy. The
+[0.5.0 wire evidence](../testing/wire-compatibility/evidence/0.5.0/README.md)
+is retained in the repository with its original archive hashes. Older records
+report only the evidence known for their tags; absent details remain unknown.
 
 Published GitHub releases are immutable and have no attached release assets.
 Existing NuGet package pages and release descriptions cannot be changed to add
