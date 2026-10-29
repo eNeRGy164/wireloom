@@ -1,0 +1,3 @@
+# Roslyn release metadata has exact headers and table syntax.
+src/Wireloom.Dds.Generator/AnalyzerReleases.Shipped.md
+src/Wireloom.Dds.Generator/AnalyzerReleases.Unshipped.md

@@ -672,7 +672,7 @@ A DDS receiving endpoint, also called a **DataReader**. It receives samples from
 #### Recursive type
 
 A type that refers to itself, directly or through other types. Support and qualification depend on the shape and peer
-setup; see [compatibility risks](11-risks-and-technical-debt.md#r-01).
+setup; see [compatibility risks](11-risks-and-technical-debt.md#r01).
 
 #### Rollback
 
@@ -897,7 +897,7 @@ editor and workspace explorer.
 #### Unbounded support
 
 RTI-style allocation/deserialization behavior for sequences or strings declared without finite bounds. General opt-in
-support is missing in Wireloom; see [D-01](11-risks-and-technical-debt.md#d-01).
+support is missing in Wireloom; see [D-01](11-risks-and-technical-debt.md#d01).
 
 #### Union
 

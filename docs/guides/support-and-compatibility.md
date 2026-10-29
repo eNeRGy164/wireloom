@@ -12,7 +12,9 @@ Wireloom support is best effort and has no response-time or resolution
 commitment. Open Wireloom defects and requests in the
 [GitHub issue tracker](https://github.com/eNeRGy164/wireloom/issues). Wireloom's
 scope is generated code, samples, plugins, and integration into the .NET build
-and IDE, including MSBuild and compiler integration.
+and IDE, including MSBuild and compiler integration. Use the
+[reporting guide](reporting-issues.md) and [compatibility issue template](https://github.com/eNeRGy164/wireloom/issues/new?template=compatibility.md)
+for a reproducible contract or integration failure.
 
 The RTI runtime, its installation, licensing, configuration, and DDS operation
 remain RTI's scope. Use RTI support channels and entitlements you already have
@@ -46,22 +48,13 @@ identifies tested revisions, reports, remaining failures, and peer adaptations.
 Qualification is specific to the documented features and peer profiles; it is
 not a claim that every scenario passed.
 
-Recursive sequence typedefs are currently rejected by Wireloom with a
-source-located semantic error. The normal RTI C++11 `rtiddsgen
--unboundedSupport` output for self- and mutually recursive sequence typedefs
-does not compile on RTI 7.3.1 or 7.7.0, so a C#-only workaround would not meet
-Wireloom's wire-compatibility requirement. This does not mean the IDL forms are
-illegal. Direct recursive sequence members are a separate supported shape;
-their typed Wireloom C# ↔ RTI C++ exchanges pass in both directions on RTI
-7.3.1 and 7.7.0. Use the documented TypeObject v1 participant profile: set
-`type_object_max_serialized_length` to 8192 and enable only
-`SERVICE_REQUEST_CHANNEL`. RTI 7.7.0's default TypeObject v2 profile rejects
-recursive types at registration. RTI 7.3.1 also needs the generated TypeCode
-module-qualification correction documented in the wire test workaround. See
-[the direct-recursion matrix fixture](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#direct-recursive-sequence-matrix-fixture)
-for the tested direct self-recursive shape. Mutually recursive struct graphs
-remain unqualified. See [Chapter 11](../architecture/arc42/11-risks-and-technical-debt.md)
-for the evidence and limitations.
+Recursive sequence typedefs remain rejected, and mutual recursive graphs remain
+unqualified. Direct self-recursive sequence members have scoped TypeObject-v1
+exchange evidence with required peer adjustments. Use the
+[direct-recursion fixture setup](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#direct-recursive-sequence-matrix-fixture)
+and [active compatibility risk](../architecture/arc42/11-risks-and-technical-debt.md#r01)
+for the exact boundary. General opt-in unbounded support is a separate
+[missing capability](https://github.com/eNeRGy164/wireloom/issues/131).
 
 ## Continuous LTS verification
 

@@ -1,9 +1,33 @@
 # Generated C# Qodana report
 
-Measured on October 25, 2026. This report describes the current Qodana scan of
+Measured on October 25, 2026. This report describes a dated Qodana scan of
 Wireloom-generated C# and the retained RTI C# corpus. It is a snapshot, not a
 change log. The scans assess static inspections; they do not measure runtime
 serialization or interoperability.
+
+## Attribution and reproduction
+
+The retained narrative does not identify the exact source revision, input/output
+snapshot hashes, or an archived raw SARIF bundle. Its totals are historical
+observations for the stated setup, not a current-source or consumer-tool
+qualification. A local `.qodana/results` directory from another run cannot
+supply the missing attribution.
+
+For a fresh measurement:
+
+1. Record the source revision and working-tree state, exact exported inputs,
+   profile, SDK/runtime, Qodana image/version, and host project settings.
+2. Use the [LTS export/capture procedure](LTS-PROFILES.md) for attributable source
+   snapshots, then stage one isolated project per case as described below.
+3. Record the staging transformations and exclusions. Retain the project files,
+   scan command, raw SARIF, exit status, and input/output hashes with the result.
+4. Publish a separately dated result; do not replace these counts or infer an
+   RTI preventable-warning classification that was never reviewed.
+
+The [maintainer Qodana command](../testing/quality.md) scans maintained repository
+source. It is not a drop-in command for these independently staged generated
+sources. [Consumer analysis](../guides/developer-workflow.md#review-consumer-analysis)
+is a third scope with its own open qualification work.
 
 ## Scan scope and method
 

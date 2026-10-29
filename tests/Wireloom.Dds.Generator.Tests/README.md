@@ -1,23 +1,36 @@
-# Wireloom generator tests
+# Roslyn generator tests
 
-This project is the fast, self-contained unit-test layer for the IDL front end
-and managed source emitters. Test inputs are created in memory with
-`CompilerTestSupport`; the tests do not depend on the repository corpus, RTI
-generated files, or a live DDS runtime.
+This project verifies the Roslyn adapter: compiler inputs and options,
+applicability diagnostics, generated-document presentation, and incremental
+invalidation. Inputs are created in memory; tests do not require the retained
+RTI corpus or a live DDS domain.
 
-When an inline test directly characterizes a central corpus case, it carries
-an xUnit trait such as `Trait("Corpus", "C039")`. The synthetic input file name
-also starts with the same tag so failures retain useful provenance without
-introducing a file-system dependency.
+## Run
 
-The exact corpus files and their RTI-generated oracle sources are exercised by
-`tests/Wireloom.Dds.Generator.CorpusCompliance`. That project is the authoritative check for complete
-positive, negative, and integration corpus coverage; this project intentionally
-does not duplicate its manifest-driven loading or oracle comparison.
+From the repository root, using the pinned SDK:
 
-Tests that cover a general compiler invariant rather than one specific corpus
-case may have no `Corpus` trait.
+```powershell
+dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
+dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --no-restore --configuration Release
+```
 
-Preprocessor tests use the separate `Preprocessor` trait with `PP###` values.
-The feature matrix is maintained in
-[`docs/PREPROCESSOR-FEATURES.md`](../../docs/PREPROCESSOR-FEATURES.md).
+Use Microsoft.Testing.Platform options after `--`. The
+[incremental measurement guide](../../docs/performance/incremental-generator-baseline.md)
+provides the focused measurement filter and historical observations.
+
+## Related test layers
+
+- [Compiler unit tests](../Wireloom.Dds.Compiler.Tests/README.md) own parsing,
+  preprocessing, binding, validation, and emission rules.
+- [Fuzzing](../Wireloom.Dds.Generator.Fuzzing.Tests/README.md) owns bounded
+  property checks of the public compiler and adapter.
+- [Corpus compliance](../Wireloom.Dds.Generator.CorpusCompliance/README.md)
+  owns manifest loading and exact-profile oracle comparisons.
+- [Package integration](../Wireloom.Dds.Generator.PackageIntegration/README.md)
+  checks real MSBuild/analyzer consumption; in-memory adapter tests do not.
+
+Focused tests may carry `Corpus=C###` traits without reading corpus files.
+Test support is shared through `Wireloom.Dds.Generator.TestSupport` and the
+linked helpers under `tests/Shared`.
+
+[Documentation](../../docs/README.md) · [Quality procedure](../../docs/testing/quality.md)

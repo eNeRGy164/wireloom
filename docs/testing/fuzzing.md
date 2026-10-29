@@ -1,16 +1,15 @@
 # IDL fuzzing
 
 Wireloom fuzzes the public IDL compiler and Roslyn generator adapter with FsCheck in
-[`FsCheckIdlCompilerFuzzingSpecs`](../../tests/Wireloom.Dds.Generator.Tests/Fuzzing/FsCheckIdlCompilerFuzzingSpecs.cs).
+[`FsCheckIdlCompilerFuzzingSpecs`](../../tests/Wireloom.Dds.Generator.Fuzzing.Tests/FsCheckIdlCompilerFuzzingSpecs.cs).
 The property selects structured IDL strings derived from valid seeds and
 bounded insert/delete/replace mutations. The compiler property exercises the
-public in-memory API through the test-only `CompilerTestSupport` adapter and
-`IdlInput` options. The
+public in-memory API with explicit `IdlInput` options and a native MD5 provider. The
 generator property sends the same cases through the Roslyn adapter with
 build-style `Generate`, `Strict`, `Defines`, `Undefines`, and
-`IncludeDirectories` metadata. Each case must either compile or be rejected by
-the compiler's expected `IdlException` boundary; an unrelated exception fails
-the property and FsCheck reports the reproducing input.
+`IncludeDirectories` metadata. The compiler returns diagnostics for expected IDL failures; the harness
+classifies those results through its test-only `IdlException` path. An unrelated
+exception fails the property and FsCheck reports the reproducing input.
 
 The NuGet MSBuild target is a separate integration surface. It is exercised by
 the packed-package consumer in
@@ -22,8 +21,9 @@ is intentionally not launched for every fuzz case.
 Run the CI-facing fuzzing pass with:
 
 ```powershell
-dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
-  --no-restore --configuration Release -- --filter-class Wireloom.Dds.Generator.Tests.FsCheckIdlCompilerFuzzingSpecs
+dotnet restore tests/Wireloom.Dds.Generator.Fuzzing.Tests/Wireloom.Dds.Generator.Fuzzing.Tests.csproj --locked-mode
+dotnet run --project tests/Wireloom.Dds.Generator.Fuzzing.Tests/Wireloom.Dds.Generator.Fuzzing.Tests.csproj `
+  --no-restore --configuration Release -- --filter-class Wireloom.Dds.Generator.Fuzzing.Tests.FsCheckIdlCompilerFuzzingSpecs
 ```
 
 Set `WIRELOOM_FSCHECK_TESTS` to change the number of generated cases per

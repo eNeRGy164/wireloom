@@ -1,5 +1,7 @@
 # Adjusted RTI C++ wire oracle
 
-Raw capture: `../features/06-aggregates/`
+Raw capture: [captured source](../../features/06-aggregates/)
 Adjustment: No source correction is required for this profile. The raw RTI output and its file-level
-notices are preserved. `manifest.json` records the raw and adjusted SHA-256 values.
+notices are preserved. [manifest.json](manifest.json) records the raw and adjusted SHA-256 values.
+
+[Corpus guide](../../../../../README.md) · [LTS reproduction](../../../../../LTS-PROFILES.md)

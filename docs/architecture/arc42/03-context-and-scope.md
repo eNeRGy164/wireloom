@@ -71,7 +71,7 @@ require that evidence or invoke the RTI reference generator.
 The [qualification policy](02-architecture-constraints.md#22-evidence-and-provenance-policies)
 governs what these facilities can establish. Current feature status is recorded
 in the [corpus index](../../corpus/FEATURE-COVERAGE.md), with remaining
-qualification exposure in [R-01](11-risks-and-technical-debt.md#r-01).
+qualification exposure in [R01](11-risks-and-technical-debt.md#r01).
 
 ---
 

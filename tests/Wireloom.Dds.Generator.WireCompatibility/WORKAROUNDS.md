@@ -359,7 +359,8 @@ rtiddsgen -language C++11 -d generated docs/corpus/idl/features/06-aggregates.id
 rtiddsgen -language C++11 -unboundedSupport -d generated docs/corpus/idl/features/06-aggregates.idl
 ```
 
-The harness passes this option through each case's `rtiCppCodegenOptions`.
+Oracle capture records this option in each case's `rtiCppCodegenOptions`.
+Wire execution consumes the retained sources and does not run `rtiddsgen`.
 Generation with this flag does not correct generated TypeCode references;
 RTI `7.3.1` also needs [type-name qualification](#recursive-aggregate-qualification).
 See [reference build](../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/NativePeerSources.cs).
@@ -547,7 +548,7 @@ new int[] { unchecked((int) 4294967295) } // -1, the same 0xFFFFFFFF bits
 This preserves the discriminator's 32-bit representation in RTI's signed
 metadata API. The raw generated C# stays under `csharp/features`; the adjusted
 peer and its hashes are recorded under `csharp/wire-adjusted` in
-`wire-oracles.json`. See the [adjusted source manifests](../../../docs/corpus/7.3.1/rtiddsgen/csharp/wire-adjusted/07-union-uint32/manifest.json).
+`wire-oracles.json`. See the [adjusted source manifests](../../docs/corpus/7.3.1/rtiddsgen/csharp/wire-adjusted/07-union-uint32/manifest.json).
 
 <a id="ascii-character-label-capture"></a>
 <a id="w017"></a>

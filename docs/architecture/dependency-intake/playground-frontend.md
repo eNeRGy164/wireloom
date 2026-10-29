@@ -84,8 +84,10 @@ Browser verification used the official `@playwright/cli` package pinned to
 0.1.22 through `npx`, with the installed Microsoft Edge browser. This is a
 verification tool, with no application dependency or package manifest change.
 The published worker passed parity, recovery, responsiveness, and limit checks
-at root and nested paths. Results and measurement limits are recorded in the
-[stage 0 evidence](../../plans/109-browser-playground-stage0-evidence.md).
+at root and nested paths. Decision-time measurements and limits are retained in
+[ADR-003](../adr/ADR-003-run-playground-compilation-in-a-browser-worker.md).
+Use the [current qualification runbook](../../testing/playground-qualification.md)
+for reproduction and separately identified results.
 
 ## References
 

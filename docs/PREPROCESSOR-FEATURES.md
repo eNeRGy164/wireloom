@@ -137,3 +137,14 @@ as evidence of general C-preprocessor compatibility.
 | PP031–PP043, PP048–PP049, PP052 | Guarded/unguarded cycles, malformed operands/directives, macro-expanded probes, `#line` bounds, root-output path identity | Include, directive, and graph specs                   |
 | PP050                           | Longer/shorter expansion, post-expansion, included-file, EOF, and sequential-parse diagnostics                            | Diagnostic and validation specs                       |
 | PP051                           | Per-input macro-work reset; bounded macro expansion and origin alignment                                                  | Limit and source-origin specs                         |
+
+## Reference and tests
+
+The [compiler preprocessing tests](../tests/Wireloom.Dds.Compiler.Tests/Compiler/FrontEnd/Preprocessing/)
+carry focused `PP###` traits and adversarial cases. Run them through the
+[compiler unit-test project](../tests/Wireloom.Dds.Compiler.Tests/README.md).
+The [configuration reference](guides/configuration.md) owns external defines,
+include settings, and fixed work limits; the [IDL semantic reference](guides/idl-semantics.md)
+owns binding and validation rules after preprocessing.
+
+[Documentation](README.md)

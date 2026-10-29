@@ -1,7 +1,7 @@
 # Incremental generator baseline
 
-This document records the current Roslyn incremental-generator behavior before
-any per-root caching redesign. The measurement harness is
+This document records dated Roslyn incremental-generator measurements and the
+invalidation behavior exercised by the harness. The measurement harness is
 [`IncrementalGeneratorMeasurementSpecs`](../../tests/Wireloom.Dds.Generator.Tests/Generation/IncrementalGeneratorMeasurementSpecs.cs).
 It uses `GeneratorDriver` tracking and measures both driver and generator wall
 time. Timing values are indicative; tracked-step reasons and generated-source
@@ -48,9 +48,10 @@ outside the filtered input provider and remains fully cached. With multiple
 roots, changing one root still invalidates the shared source-output batch even
 though the other root's input step remains cached.
 
-This confirms the existing architecture risk: the generator has incremental
-input-step reuse, but does not yet provide per-root output caching. No caching
-redesign or generator semantic change is included in this baseline.
+These observations show incremental input-step reuse and batch-wide output
+invalidation in the measured implementation. See the
+[current invalidation debt](../architecture/arc42/11-risks-and-technical-debt.md#d02)
+for its architectural impact.
 
 ## Sequence-array mapping setting
 
@@ -71,3 +72,12 @@ These are indicative timings. Output shape, diagnostic transitions, and the
 unchanged-rerun cache assertions are executable regression checks. The mapping
 setting uses the existing analyzer-options invalidation boundary; it adds no
 per-root caching design.
+
+## Attribution limits
+
+The historical tables do not retain their exact source revision, dirty-tree
+snapshot, or raw timing report. They must not be treated as a new measurement
+of a later checkout. A fresh run should retain those identifiers, workload and
+host details, SDK/Roslyn versions, complete test output, and generated-source
+counts. Numerical acceptance budgets remain open in
+[chapter 10](../architecture/arc42/10-quality-requirements.md#103-open-numerical-targets-and-qualification-work).

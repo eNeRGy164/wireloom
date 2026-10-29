@@ -10,6 +10,7 @@ fragments; add them inside the consuming project's `<Project>` element.
 - [Configure include directories](#configure-include-directories)
 - [Define and undefine preprocessor symbols](#define-and-undefine-preprocessor-symbols)
 - [Enable strict validation](#enable-strict-validation)
+- [Escape leading underscores](#escape-leading-underscores)
 - [Choose the sequence-array mapping](#choose-the-sequence-array-mapping)
 - [Select the consumer framework, language, and RTI runtime](#select-the-consumer-framework-language-and-rti-runtime)
 - [Control diagnostics](#control-diagnostics)
@@ -503,79 +504,11 @@ Wireloom has no separate `rtiddsgen`-style `-d` output setting.
 
 ## Configure the programmatic compiler
 
-Callers of `IdlCompiler` supply `IdlInput` objects directly. Constructor options
-correspond to the build settings, with one important default difference:
-`IdlInput.generate` defaults to `true`; automatically tracked MSBuild includes
-have `Generate="false"`.
-
-This API is for repository C# projects referencing the
-`Wireloom.Dds.Compiler` project. The normal analyzer package bundles the same
-compiler assembly beside the generator for analyzer loading; it does not add a
-compiler application runtime dependency.
-
-```csharp
-using System.Collections.Generic;
-using System.Threading;
-using Wireloom;
-
-var inputs = new List<IdlInput>
-{
-    new(
-        path: "Telemetry.idl",
-        text: """
-            #include "Shared.idl"
-            struct Sample { sequence<long, SAMPLE_BOUND> values[2]; };
-            """,
-        sequenceArrayMapping: IdlSequenceArrayMapping.Idl,
-        generate: true,
-        strict: false,
-        defines: ["SAMPLE_BOUND=4"],
-        undefines: ["LEGACY_LAYOUT"],
-        includeDirectories: []),
-    new(
-        path: "Shared.idl",
-        text: "struct Shared { long id; };",
-        generate: false)
-};
-
-var profile = IdlCompiler.GetProfileForRuntimeVersion(new Version(7, 7, 0));
-var result = IdlCompiler.Compile(inputs, profile, CancellationToken.None);
-
-foreach (var diagnostic in result.Diagnostics)
-{
-    Console.WriteLine($"{diagnostic.Severity} {diagnostic.Id}: {diagnostic.Path}:{diagnostic.Offset}: {diagnostic.Message}");
-}
-
-if (result.Success)
-{
-    foreach (var document in result.Documents)
-    {
-        Console.WriteLine($"{document.HintName}: {document.Source.Length} characters");
-    }
-}
-```
-
-`path` provides input identity and diagnostic/include locations; `text`
-provides the source. Supply included files as inputs too: an include directory
-searches the supplied inputs rather than loading arbitrary files from disk.
-`strict`, `defines`, `undefines`, and `includeDirectories` retain the same
-batch semantics. Define, undefine, and include-directory lists are copied when
-the input is created, and the compiler snapshots the input collection at call
-entry. `sequenceArrayMapping` remains file-owned; omitting it selects
-`RtiCSharp`. Set `enableEscapeChar: true` on every generation root to enable
-leading-underscore normalization for the batch. Included inputs inherit this
-setting. Includes resolve only against supplied inputs; the compiler does not
-read from disk.
-
-Select `IdlCompilerProfile.Rti731` or `IdlCompilerProfile.Rti770` for each
-compile. `GetProfileForRuntimeVersion` maps supported runtime versions and
-throws when the version is below 7.3.1. `IdlCompilationResult.Success` is based
-on error diagnostics, so an empty document list can be either successful or a
-failure. `DDSG0001` and unsupported-profile `DDSG0004` errors return no
-documents; warnings and informational diagnostics can accompany documents.
-Diagnostics retain the input path, complete source text, and zero-based UTF-16
-offset. Cancellation and unexpected implementation exceptions propagate to
-the caller. The extraction is not evidence of browser execution.
+Repository hosts call the shared compiler directly. See the
+[shared compiler API reference](../reference/compiler-api.md) for a complete
+example, input ownership, required MD5 provider, and failure handling. The
+analyzer package does not expose a separately supported compiler application
+library; ordinary consumers use the MSBuild settings above.
 
 ## Fixed behavior and configurable limits
 

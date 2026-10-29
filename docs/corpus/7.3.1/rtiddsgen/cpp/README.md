@@ -17,3 +17,5 @@ the generated code compiles or that the feature is wire-compatible.
 RTI-generated sources are third-party reference material and may be subject to
 RTI license terms. Retain file-level notices and do not redistribute outside
 the applicable license.
+
+[Corpus guide](../../../README.md) · [LTS reproduction](../../../LTS-PROFILES.md)

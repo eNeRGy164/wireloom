@@ -24,6 +24,10 @@ example. The application uses RTI's C# APIs for all DDS operations.
   `RTI_LICENSE_FILE` to your license file's full path in each terminal. The
   commands below show an example path to replace with your own.
 
+This tutorial uses `net8.0` and C# 12 to demonstrate the consumer baseline.
+The repository sample uses the pinned producer SDK and `net10.0`; both exercise
+the same application flow. Its build-only CI does not qualify a live exchange.
+
 The commands use PowerShell. Run the two processes on the same machine for
 this exercise, in a fresh directory without unrelated DDS configuration files.
 Generation uses the .NET SDK and NuGet package; the application still needs

@@ -12,3 +12,5 @@ ownership of RTI material. Retain all original file-level notices and capture
 provenance. Rejected cases have an empty case
 directory and remain represented in the
 [version manifest](../../manifest.json) with their classification.
+
+[Corpus guide](../../../README.md) · [LTS reproduction](../../../LTS-PROFILES.md)

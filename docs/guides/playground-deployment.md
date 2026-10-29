@@ -8,6 +8,9 @@ and [generation qualification](../testing/playground-qualification.md).
 
 ## Repository setup
 
+These are one-time settings. Routine publication follows the next section;
+repeat setup checks when changing hosting or repository protections.
+
 1. In repository **Settings > Pages**, select **GitHub Actions** as the build
    and deployment source. The initial expected URL is
    `https://energy164.github.io/wireloom/`.
@@ -17,9 +20,9 @@ and [generation qualification](../testing/playground-qualification.md).
    `/wireloom/`. Use `/` when this repository has its own custom hostname.
    The publisher verifies this value against the actual Pages URL before
    deploying; a mismatch requires a new Quality build.
-4. Merge the deployment workflow through the usual reviewed pull request.
-   The first successful push Quality run containing the candidate artifact
-   can publish. Earlier runs without that artifact cannot publish this site.
+4. Keep workflow changes in reviewed pull requests. Eligible push Quality runs
+   containing the candidate artifact can publish; older runs without the
+   artifact cannot publish the site.
 
 The workflow uses `GITHUB_TOKEN` and GitHub's OIDC token, with no personal
 deployment credential. Only the deployment job has `pages: write` and
@@ -134,3 +137,5 @@ download their IDL first and import it at the new URL. Keep a rollback path for
 both DNS and the corresponding base-path bundle. Pages has limited response
 header control; revisit Azure Static Web Apps if future shared-memory or
 response-header requirements exceed this static deployment.
+
+[Documentation](../README.md) · [Playground qualification](../testing/playground-qualification.md)
