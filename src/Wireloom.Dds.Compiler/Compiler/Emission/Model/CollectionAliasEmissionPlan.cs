@@ -16,7 +16,8 @@ internal sealed class CollectionAliasEmissionPlan(
     bool isSequenceArrayElement = false,
     IdlMemberValueMetadata? valueMetadata = null,
     bool isRecursiveUnboundedSequenceElement = false,
-    int effectiveSequenceBound = 100)
+    int effectiveSequenceBound = 100,
+    bool isUnboundedSequence = false)
 {
     /// <summary>Gets whether the wrapper is generated for an anonymous sequence-array element.</summary>
     internal bool IsSequenceArrayElement { get; } = isSequenceArrayElement;
@@ -40,9 +41,17 @@ internal sealed class CollectionAliasEmissionPlan(
     public string ElementNativeType { get; } = elementNativeType ?? elementPlan.CSharpType;
 
     public bool IsSequence { get; } = isSequence;
+    public bool IsUnboundedSequence { get; } = isUnboundedSequence;
 
     /// <summary>Gets the effective sequence limit shared by managed, native, and metadata emission.</summary>
     public int SequenceBound { get; } = sequenceBound ?? effectiveSequenceBound;
+    public string SequenceBoundArgument => IsUnboundedSequence ? "SequenceType.Unbounded" : SequenceBound.ToString();
+    public string SequenceInitialSize => IsUnboundedSequence ? "0" : SequenceBound.ToString();
+    public bool IsUnboundedString => EmissionTypeProjector.UnwrapValueEmissionType(ElementPlan) is StringEmissionType { IsUnbounded: true };
+    public string StringBoundArgument => IsUnboundedString
+        ? IsWideString ? "WideStringType.Unbounded" : "StringType.Unbounded"
+        : StringBound.ToString();
+    public string StringInitialSize => IsUnboundedString ? "0" : StringBound.ToString();
 
     public bool IsArray { get; } = isArray;
 

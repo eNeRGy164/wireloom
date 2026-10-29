@@ -44,7 +44,7 @@ internal sealed partial class MemberEmissionPlan
 
         var recursiveSupportType = IdlNaming.GeneratedSupportTypeReference(structure.SupportType, implementationNamespace);
 
-        var bound = sequence.IsBounded ? sequence.Bound.ToString() : "SequenceType.Unbounded";
+        var bound = sequence.IsUnbounded ? "SequenceType.Unbounded" : sequence.Bound.ToString();
 
         expression = $"tsf.CreateSequenceWithAccessInfo(dtf, {recursiveSupportType}Support.GetOrCreateInstanceImpl().GetDynamicTypeInternal(isPublic), {bound})";
         return true;
@@ -70,7 +70,7 @@ internal sealed partial class MemberEmissionPlan
             if (IsSequence)
             {
                 var recursiveSupportType = $"{IdlNaming.GeneratedSupportTypeReference(recursiveTypeName!, implementationNamespace)}Support.GetOrCreateInstanceImpl()";
-                return $"tsf.CreateSequenceWithAccessInfo(dtf, {recursiveSupportType}.GetDynamicTypeInternal(isPublic), {Bound})";
+                return $"tsf.CreateSequenceWithAccessInfo(dtf, {recursiveSupportType}.GetDynamicTypeInternal(isPublic), {SequenceBoundArgument})";
             }
 
             var supportType = $"{IdlNaming.GeneratedSupportTypeReference(recursiveTypeName!, implementationNamespace)}Support.GetOrCreateInstanceImpl()";
@@ -82,6 +82,8 @@ internal sealed partial class MemberEmissionPlan
 
     private string BuildStringDynamicType() => ValueType switch
     {
+        StringEmissionType { IsUnbounded: true, IsWide: true } => "dtf.CreateWideString()",
+        StringEmissionType { IsUnbounded: true } => "dtf.CreateString()",
         StringEmissionType { IsWide: true } stringType => $"dtf.CreateWideString({stringType.Bound})",
         StringEmissionType stringType => $"dtf.CreateString({stringType.Bound})",
         _ => throw new InvalidOperationException("Expected a string emission type.")
@@ -104,7 +106,7 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsSequence)
         {
-            return $"tsf.CreateSequenceWithAccessInfo(dtf, {element}, {Bound})";
+            return $"tsf.CreateSequenceWithAccessInfo(dtf, {element}, {SequenceBoundArgument})";
         }
 
         var unmanagedElementType = HasAggregateElement ? ElementUnmanagedType(implementationNamespace) : ElementCSharpType;
@@ -125,9 +127,9 @@ internal sealed partial class MemberEmissionPlan
 
         if (ElementType is StringEmissionType stringType)
         {
-            return stringType.IsWide
-                ? $"dtf.CreateWideString({stringType.Bound})"
-                : $"dtf.CreateString({stringType.Bound})";
+            return stringType.IsUnbounded
+                ? stringType.IsWide ? "dtf.CreateWideString()" : "dtf.CreateString()"
+                : stringType.IsWide ? $"dtf.CreateWideString({stringType.Bound})" : $"dtf.CreateString({stringType.Bound})";
         }
 
         if (HasAggregateElement || ElementType?.IsEnum == true || ElementSupportType is not null)

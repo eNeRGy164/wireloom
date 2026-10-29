@@ -38,7 +38,7 @@ internal static class CollectionAliasNativeEmitter
         {
             stringArrayNativeType = "NativeWstringArray";
         }
-        var stringSequenceBound = isStringSequence ? plan.StringBound : 0;
+        var stringSequenceBound = isStringSequence ? plan.StringBoundArgument : "0";
         var isAggregate = plan.IsAggregate;
         var isUnion = plan.IsUnion;
         var collectionElementIsAggregate = plan is { IsCollection: true, CollectionElementIsAggregate: true };
@@ -52,7 +52,8 @@ internal static class CollectionAliasNativeEmitter
 
         var writer = EmissionSupport.CreateSource(
             names.ImplementationNamespace,
-            EmissionSupport.GetUnmanagedTypeUsings([plan.ElementPlan], usesSequence: usesRtiSequenceType),
+            EmissionSupport.GetUnmanagedTypeUsings([plan.ElementPlan], usesSequence: usesRtiSequenceType,
+                usesDynamicSequenceType: plan.IsUnboundedSequence || plan.IsUnboundedString),
             sourceIdlFileName);
 
         writer.WriteXmlSummary($"Provides native storage and conversion operations for the {typeName} typedef. This type is used by RTI runtime integration and is not an application-facing value type.");
@@ -223,22 +224,22 @@ internal static class CollectionAliasNativeEmitter
         {
             if (isStringSequence)
             {
-                writer.WriteLine($"Value.Initialize(max: {plan.SequenceBound}, absoluteMax: {plan.SequenceBound}, maxStrLen: {stringSequenceBound}, allocateMemory);");
+                writer.WriteLine($"Value.Initialize(max: {plan.SequenceInitialSize}, absoluteMax: {plan.SequenceBoundArgument}, maxStrLen: {stringSequenceBound}, allocateMemory);");
             }
             else if (collectionElementIsAggregate)
             {
                 if (plan.IsRecursiveUnboundedSequenceElement)
                 {
-                    writer.WriteLine($"Value.Initialize<{implementationElementType}, {collectionElementUnmanagedType}>(max: 0, absoluteMax: Rti.Types.Dynamic.SequenceType.Unbounded, allocateMemory);");
+                    writer.WriteLine($"Value.Initialize<{implementationElementType}, {collectionElementUnmanagedType}>(max: 0, absoluteMax: SequenceType.Unbounded, allocateMemory);");
                 }
                 else
                 {
-                    writer.WriteLine($"Value.Initialize<{implementationElementType}, {collectionElementUnmanagedType}>(max: {plan.SequenceBound}, absoluteMax: {plan.SequenceBound}, allocateMemory);");
+                    writer.WriteLine($"Value.Initialize<{implementationElementType}, {collectionElementUnmanagedType}>(max: {plan.SequenceInitialSize}, absoluteMax: {plan.SequenceBoundArgument}, allocateMemory);");
                 }
             }
             else
             {
-                writer.WriteLine($"Value.Initialize<{implementationElementType}>(max: {plan.SequenceBound}, absoluteMax: {plan.SequenceBound}, allocateMemory);");
+                writer.WriteLine($"Value.Initialize<{implementationElementType}>(max: {plan.SequenceInitialSize}, absoluteMax: {plan.SequenceBoundArgument}, allocateMemory);");
             }
         }
         else
@@ -251,7 +252,7 @@ internal static class CollectionAliasNativeEmitter
                 }
                 else if (isStringArray)
                 {
-                    writer.WriteLine($"Value.Initialize(dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, maxStrLen: {plan.StringBound}, allocateMemory: allocateMemory);");
+                    writer.WriteLine($"Value.Initialize(dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, maxStrLen: {plan.StringBoundArgument}, allocateMemory: allocateMemory);");
                 }
                 else if (enumElementType is { DefaultValue: not 0 } && profile.SupportsNativeEnumArrayDefaultValueInitialization)
                 {
@@ -285,11 +286,11 @@ internal static class CollectionAliasNativeEmitter
                 }
                 else if (isString)
                 {
-                    writer.WriteLine($"Value.Initialize(size: {plan.StringBound}, allocateMemory);");
+                    writer.WriteLine($"Value.Initialize(size: {plan.StringInitialSize}, allocateMemory);");
 
                     if (plan.ValueMetadata?.DefaultValue is IdlScalarValue.Text && plan.ManagedDefaultLiteral is { } stringDefault)
                     {
-                        writer.WriteLine($"Value.ToNative({stringDefault}, {plan.StringBound});");
+                        writer.WriteLine($"Value.ToNative({stringDefault}, {plan.StringBoundArgument});");
                     }
                 }
                 else
@@ -332,7 +333,7 @@ internal static class CollectionAliasNativeEmitter
                 }
                 else if (isStringArray)
                 {
-                    writer.WriteLine($"Value.ToNative(sample.Value, dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, maxStrLen: {plan.StringBound});");
+                    writer.WriteLine($"Value.ToNative(sample.Value, dimension: {ArraySourceEmitter.ElementCount(declaration.Dimensions)}, maxStrLen: {plan.StringBoundArgument});");
                 }
                 else
                 {
@@ -347,7 +348,7 @@ internal static class CollectionAliasNativeEmitter
                 }
                 else if (isString)
                 {
-                    writer.WriteLine($"Value.ToNative(sample.Value, {plan.StringBound});");
+                    writer.WriteLine($"Value.ToNative(sample.Value, {plan.StringBoundArgument});");
                 }
                 else
                 {

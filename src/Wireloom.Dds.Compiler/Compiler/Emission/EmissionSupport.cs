@@ -72,7 +72,7 @@ internal static class EmissionSupport
         var plans = fields.ToArray();
         var types = plans.Select(field => field.Type).ToArray();
         var usesOmgSequence = plans.Any(field => field.IsSequence && field.IsOptional && (field.IsStringSequence || field.HasAggregateElement));
-        var usesDynamicSequenceType = plans.Any(field => field.IsRecursiveUnboundedSequence);
+        var usesDynamicSequenceType = plans.Any(field => field.IsRecursiveUnboundedSequence || field.IsUnboundedSequence || field.UsesUnboundedDynamicType);
         var usesSequenceType = usesSequence || plans.Any(field => field is
         {
             IsSequence: true,
@@ -80,6 +80,7 @@ internal static class EmissionSupport
             IsStringSequence: false,
             Type.Shape.Kind: not EmissionShapeKind.Alias
         });
+
         return GetTypeUsings(
             types,
             usesOmgSequence,
@@ -90,10 +91,11 @@ internal static class EmissionSupport
     }
 
     /// <summary>Gets namespaces required by native storage for an alias or collection type.</summary>
-    internal static IReadOnlyList<string> GetUnmanagedTypeUsings(IEnumerable<EmissionTypePlan> types, bool usesSequence = false)
+    internal static IReadOnlyList<string> GetUnmanagedTypeUsings(IEnumerable<EmissionTypePlan> types, bool usesSequence = false, bool usesDynamicSequenceType = false)
     {
         var typePlans = types.ToArray();
-        return GetTypeUsings(typePlans, usesOmgTypes: false, usesSequence, includeNativeTopicTypePlugin: true, requireNativeRtiTypes: true);
+
+        return GetTypeUsings(typePlans, usesOmgTypes: false, usesSequence, includeNativeTopicTypePlugin: true, requireNativeRtiTypes: true, usesDynamicSequenceType: usesDynamicSequenceType);
     }
 
     /// <summary>Gets namespaces required by one plugin document's dynamic types and metadata.</summary>

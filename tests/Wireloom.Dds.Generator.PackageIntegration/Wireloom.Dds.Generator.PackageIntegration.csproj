@@ -7,6 +7,7 @@
     <DdsIdlSequenceArrayMapping>Idl</DdsIdlSequenceArrayMapping>
     <DdsIdlSequenceSize>11</DdsIdlSequenceSize>
     <DdsIdlStringSize>21</DdsIdlStringSize>
+    <DdsIdlUnboundedSupport>false</DdsIdlUnboundedSupport>
     <!-- Legacy, non-emitted interface, and permissive naming fixtures intentionally report warnings. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);DDSG0103;DDSG0105;DDSG0108</WarningsNotAsErrors>
     <!-- Test-only switch: the negative build enables strict validation batch-wide. -->
@@ -33,9 +34,11 @@
              Exclude="../Wireloom.Dds.Generator.RuntimeContracts/bin/**;../Wireloom.Dds.Generator.RuntimeContracts/obj/**;../Wireloom.Dds.Generator.RuntimeContracts/scripts/**"
              Link="RuntimeContracts/%(RecursiveDir)%(Filename)%(Extension)" />
     <DdsIdl Include="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/*.idl" SequenceSize="100" StringSize="255" />
+    <DdsIdl Update="../Wireloom.Dds.Generator.RuntimeContracts/Fixtures/recursive-startup.idl" UnboundedSupport="true" />
     <DdsIdl Include="Fixtures/legacy-sequence-arrays.idl" SequenceArrayMapping="RtiCSharp" />
     <DdsIdl Include="Fixtures/configured-limits.idl" SequenceSize="7" StringSize="19" />
     <DdsIdl Include="Fixtures/project-limits.idl" />
+    <DdsIdl Include="Fixtures/unbounded-support.idl" SequenceSize="7" StringSize="9" UnboundedSupport="true" />
     <DdsIdl Include="Fixtures/strict-identifiers.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-integration.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\features\09-optional-recursive-array.idl" />

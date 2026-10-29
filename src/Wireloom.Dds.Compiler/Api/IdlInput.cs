@@ -23,6 +23,7 @@ namespace Wireloom;
 /// <param name="sequenceSize">Effective size for unbounded sequences in this file.</param>
 /// <param name="stringSize">Effective size for unbounded strings in this file.</param>
 /// <param name="enableEscapeChar">Whether leading underscores escape IDL identifiers for the generation batch.</param>
+/// <param name="unboundedSupport">Whether unbounded sequences and strings use RTI unbounded semantics in declarations from this file.</param>
 [PublicAPI]
 public sealed class IdlInput(
     string path,
@@ -34,7 +35,8 @@ public sealed class IdlInput(
     IReadOnlyList<string>? includeDirectories = null,
     int sequenceSize = 100,
     int stringSize = 255,
-    bool enableEscapeChar = false)
+    bool enableEscapeChar = false,
+    bool unboundedSupport = false)
 {
     /// <summary>Initializes an IDL input with an explicit direct sequence-array mapping.</summary>
     /// <param name="path">The absolute or project-relative input path.</param>
@@ -48,12 +50,13 @@ public sealed class IdlInput(
     /// <param name="sequenceSize">Effective size for unbounded sequences in this file.</param>
     /// <param name="stringSize">Effective size for unbounded strings in this file.</param>
     /// <param name="enableEscapeChar">Whether leading underscores escape IDL identifiers for the generation batch.</param>
+    /// <param name="unboundedSupport">Whether unbounded sequences and strings use RTI unbounded semantics in declarations from this file.</param>
     [PublicAPI]
     public IdlInput(string path, string text, IdlSequenceArrayMapping sequenceArrayMapping,
         bool generate = true, bool strict = false, IReadOnlyList<string>? defines = null,
         IReadOnlyList<string>? undefines = null, IReadOnlyList<string>? includeDirectories = null,
-        int sequenceSize = 100, int stringSize = 255, bool enableEscapeChar = false)
-        : this(path, text, generate, strict, defines, undefines, includeDirectories, sequenceSize, stringSize, enableEscapeChar)
+        int sequenceSize = 100, int stringSize = 255, bool enableEscapeChar = false, bool unboundedSupport = false)
+        : this(path, text, generate, strict, defines, undefines, includeDirectories, sequenceSize, stringSize, enableEscapeChar, unboundedSupport)
     {
         SequenceArrayMapping = sequenceArrayMapping;
     }
@@ -110,4 +113,6 @@ public sealed class IdlInput(
     /// <summary>Gets whether leading underscores escape IDL identifiers for the generation batch.</summary>
     public bool EnableEscapeChar { get; } = enableEscapeChar;
 
+    /// <summary>Gets whether declarations in this file use RTI-style unbounded sequence and string semantics.</summary>
+    public bool UnboundedSupport { get; } = unboundedSupport;
 }

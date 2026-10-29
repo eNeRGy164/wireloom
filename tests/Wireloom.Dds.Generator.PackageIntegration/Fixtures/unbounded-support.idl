@@ -1,0 +1,21 @@
+module UnboundedOption {
+    typedef sequence<long> Longs;
+    typedef string Text;
+    typedef wstring WideText;
+    typedef string TextArray[2];
+    typedef wstring WideTextArray[2];
+
+    struct Sample {
+        sequence<long> values;
+        string text;
+        wstring wideText;
+        sequence<string> texts;
+        sequence<string<8> > boundedTexts;
+        sequence<long, 4> boundedValues;
+        Longs aliasValues;
+        Text aliasText;
+        WideText aliasWideText;
+        TextArray aliasTexts;
+        WideTextArray aliasWideTexts;
+    };
+};

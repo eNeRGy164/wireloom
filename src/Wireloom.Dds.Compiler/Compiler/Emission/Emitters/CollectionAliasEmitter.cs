@@ -53,7 +53,7 @@ internal static class CollectionAliasEmitter
         EmissionTypePlan elementPlan;
         if (declaration.IsString)
         {
-            elementPlan = new StringEmissionType(declaration.IsWideString, declaration.StringBound, declaration.IsStringBounded);
+            elementPlan = new StringEmissionType(declaration.IsWideString, declaration.StringBound, declaration.IsStringBounded, declaration.IsUnboundedString);
         }
         else
         {
@@ -77,8 +77,8 @@ internal static class CollectionAliasEmitter
             {
                 if (IdlBuiltinTypeSyntax.TryParseStringType(element, out var isWideString, out _))
                 {
-                    resolvedElementType = new IdlType.StringType(isWideString, declaration.StringBound, declaration.IsStringBounded);
-                    elementPlan = new StringEmissionType(isWideString, declaration.StringBound, declaration.IsStringBounded);
+                    resolvedElementType = new IdlType.StringType(isWideString, declaration.StringBound, declaration.IsStringBounded, declaration.IsUnboundedStringElement);
+                    elementPlan = new StringEmissionType(isWideString, declaration.StringBound, declaration.IsStringBounded, declaration.IsUnboundedStringElement);
                 }
                 else
                 {
@@ -122,7 +122,8 @@ internal static class CollectionAliasEmitter
             profile: profile,
             valueMetadata: declaration.ValueMetadata,
             isRecursiveUnboundedSequenceElement: isRecursiveUnboundedSequenceElement,
-            effectiveSequenceBound: declaration.EffectiveSequenceBound);
+            effectiveSequenceBound: declaration.EffectiveSequenceBound,
+            isUnboundedSequence: declaration.IsUnboundedSequence);
     }
 
     private static bool RequiresNativeValueCast(EmissionTypePlan elementPlan)

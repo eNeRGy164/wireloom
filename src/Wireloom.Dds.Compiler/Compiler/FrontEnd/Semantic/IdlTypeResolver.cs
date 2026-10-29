@@ -20,7 +20,7 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
         {
             if (boundExpression is null)
             {
-                return new IdlType.StringType(isWide, input.StringSize, isBounded: false);
+                return new IdlType.StringType(isWide, input.StringSize, isBounded: false, isUnbounded: input.UnboundedSupport);
             }
 
             var bound = IdlBoundResolver.Resolve(
@@ -57,7 +57,7 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
         {
             if (alias.IsString)
             {
-                return new IdlType.Alias(qualified, new IdlType.StringType(alias.IsWideString, alias.StringBound, alias.IsStringBounded));
+                return new IdlType.Alias(qualified, new IdlType.StringType(alias.IsWideString, alias.StringBound, alias.IsStringBounded, alias.IsUnboundedString));
             }
 
             if (!activeAliases.Add(qualified))
@@ -77,16 +77,16 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
 
                 if (alias.IsSequence)
                 {
-                    var element = Resolve(alias.ElementType!, alias.Namespace, input, offset, activeAliases, alias.ElementTypeWasEscaped);
+                    var element = ResolveTypedefElement(alias, input, offset, activeAliases);
                     return element is null ? null : new IdlType.Alias(qualified,
-                        new IdlType.Sequence(element, alias.Bound, effectiveBound: alias.EffectiveSequenceBound));
+                        new IdlType.Sequence(element, alias.Bound, effectiveBound: alias.EffectiveSequenceBound, isUnbounded: alias.IsUnboundedSequence));
                 }
 
                 if (alias.IsArray)
                 {
                     // Preserve collection typedef identity for nested and composed
                     // collection shapes instead of flattening the alias.
-                    var element = Resolve(alias.ElementType!, alias.Namespace, input, offset, activeAliases, alias.ElementTypeWasEscaped);
+                    var element = ResolveTypedefElement(alias, input, offset, activeAliases);
                     return element is null ? null : new IdlType.Alias(qualified, new IdlType.Array(element, alias.Dimensions));
                 }
 
@@ -99,6 +99,17 @@ internal sealed class IdlTypeResolver(IdlSymbolTable symbols)
         }
 
         return symbols.ContainsTypeName(qualified) ? new IdlType.Struct(qualified) : null;
+    }
+
+    private IdlType? ResolveTypedefElement(IdlTypedef alias, IdlInput input, int offset, HashSet<string> activeAliases)
+    {
+        var element = Resolve(alias.ElementType!, alias.Namespace, input, offset, activeAliases, alias.ElementTypeWasEscaped);
+        if (element is IdlType.StringType { IsBounded: false } stringType)
+        {
+            return new IdlType.StringType(stringType.IsWide, alias.StringBound, isBounded: false, isUnbounded: alias.IsUnboundedStringElement);
+        }
+
+        return element;
     }
 
 }

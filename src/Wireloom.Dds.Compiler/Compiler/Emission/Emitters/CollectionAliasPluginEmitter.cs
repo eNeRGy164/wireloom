@@ -48,7 +48,7 @@ internal static class CollectionAliasPluginEmitter
 
         if (plan.IsSequence)
         {
-            writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{names.UnmanagedTypeName}>(dtf, \"{typeName}\", tsf.CreateSequenceWithAccessInfo(dtf, {GetDynamicElementType(plan, names.ImplementationNamespace, plan.IsRecursiveUnboundedSequenceElement)}, {(plan.IsRecursiveUnboundedSequenceElement ? "Rti.Types.Dynamic.SequenceType.Unbounded" : plan.SequenceBound.ToString())}));");
+            writer.WriteLine($"return tsf.CreateAliasWithAccessInfo<{names.UnmanagedTypeName}>(dtf, \"{typeName}\", tsf.CreateSequenceWithAccessInfo(dtf, {GetDynamicElementType(plan, names.ImplementationNamespace, plan.IsRecursiveUnboundedSequenceElement)}, {(plan.IsUnboundedSequence ? "SequenceType.Unbounded" : plan.SequenceBound.ToString())}));");
         }
         else if (plan.IsArray)
         {
@@ -73,12 +73,12 @@ internal static class CollectionAliasPluginEmitter
             {
                 if (plan.IsWideString)
                 {
-                    writer.WriteLine($"using var dtWString = dtf.CreateWideString({plan.StringBound});");
+                    writer.WriteLine(plan.IsUnboundedString ? "var dtWString = dtf.CreateWideString();" : $"var dtWString = dtf.CreateWideString({plan.StringBound});");
                     dynamicType = "dtWString";
                 }
                 else
                 {
-                    writer.WriteLine($"using var dtString = dtf.CreateString({plan.StringBound});");
+                    writer.WriteLine(plan.IsUnboundedString ? "var dtString = dtf.CreateString();" : $"var dtString = dtf.CreateString({plan.StringBound});");
                     dynamicType = "dtString";
                 }
             }
@@ -150,8 +150,8 @@ internal static class CollectionAliasPluginEmitter
         if (plan.IsString)
         {
             return plan.IsWideString
-                ? $"dtf.CreateWideString({plan.StringBound})"
-                : $"dtf.CreateString({plan.StringBound})";
+                ? plan.IsUnboundedString ? "dtf.CreateWideString()" : $"dtf.CreateWideString({plan.StringBound})"
+                : plan.IsUnboundedString ? "dtf.CreateString()" : $"dtf.CreateString({plan.StringBound})";
         }
 
         if (plan.IsPrimitive)

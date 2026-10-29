@@ -40,6 +40,19 @@ internal sealed partial class MemberEmissionPlan(
     public bool IsOptional => facts.IsOptional;
     public string CSharpType => facts.CSharpType;
     public int? Bound => facts.Bound;
+    private string SequenceBoundArgument => ValueType is SequenceEmissionType { IsUnbounded: true }
+        ? "SequenceType.Unbounded"
+        : Bound?.ToString() ?? "SequenceType.Unbounded";
+    private string StringBoundArgument => ValueType is StringEmissionType { IsUnbounded: true, IsWide: true }
+        ? "WideStringType.Unbounded"
+        : ValueType is StringEmissionType { IsUnbounded: true }
+            ? "StringType.Unbounded"
+            : Bound?.ToString() ?? "0";
+    private string ElementStringBoundArgument => ElementType is StringEmissionType { IsUnbounded: true, IsWide: true }
+        ? "WideStringType.Unbounded"
+        : ElementType is StringEmissionType { IsUnbounded: true }
+            ? "StringType.Unbounded"
+            : ElementType?.Bound?.ToString() ?? "0";
     public string? SupportType => facts.SupportType;
     public EmissionTypePlan? ElementType => facts.ElementType;
     public string? ElementCSharpType => facts.ElementCSharpType;
@@ -59,6 +72,9 @@ internal sealed partial class MemberEmissionPlan(
     public bool IsString => facts.IsString;
     public bool IsWideString => facts.IsString && ValueType is StringEmissionType { IsWide: true };
     public bool IsBoundedString => ValueType is StringEmissionType { IsBounded: true };
+    public bool IsUnboundedSequence => ValueType is SequenceEmissionType { IsUnbounded: true };
+    public bool UsesUnboundedDynamicType => ValueType is StringEmissionType { IsUnbounded: true }
+        || ElementType is StringEmissionType { IsUnbounded: true };
     public bool IsSequence => facts.IsSequence;
     /// <summary>Gets whether this unbounded sequence breaks a recursive type cycle.</summary>
     public bool IsRecursiveUnboundedSequence { get; } = isRecursiveUnboundedSequence;

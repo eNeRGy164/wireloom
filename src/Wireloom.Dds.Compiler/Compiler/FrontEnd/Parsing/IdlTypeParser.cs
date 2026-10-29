@@ -67,7 +67,8 @@ internal sealed class IdlTypeParser
             {
                 var (ElementType, ElementOffset, Bound) = ParseSequenceType(input, typeOffset, kind, currentNamespace);
                 var element = ParseCollectionElementType(input, ElementOffset, ElementType, currentNamespace, "Unknown collection element type");
-                var sequence = new IdlType.Sequence(element, Bound?.Value, dimensions, input.SequenceSize);
+                var sequence = new IdlType.Sequence(element, Bound?.Value, dimensions, input.SequenceSize,
+                    isUnbounded: Bound is null && input.UnboundedSupport);
                 Bound?.AddConsumer(sequence.SetBound);
                 parsedType = sequence;
             }
@@ -78,7 +79,8 @@ internal sealed class IdlTypeParser
             }
             else if (!typeWasEscaped && IdlBuiltinTypeSyntax.TryParseStringType(kind, out var isWideString, out var stringBoundExpression))
             {
-                var stringType = new IdlType.StringType(isWideString, input.StringSize, isBounded: stringBoundExpression is not null);
+                var stringType = new IdlType.StringType(isWideString, input.StringSize, isBounded: stringBoundExpression is not null,
+                    isUnbounded: stringBoundExpression is null && input.UnboundedSupport);
                 if (member.Groups[2].Success)
                 {
                     var deferredBound = ResolveBound(input, typeOffset, member.Groups[2].Value, currentNamespace, "String bound");
@@ -360,7 +362,8 @@ internal sealed class IdlTypeParser
             return context.ReferenceType(elementType, currentNamespace, input, offset, errorPrefix);
         }
 
-        var stringType = new IdlType.StringType(isWideString, input.StringSize, isBounded: boundExpression is not null);
+        var stringType = new IdlType.StringType(isWideString, input.StringSize, isBounded: boundExpression is not null,
+            isUnbounded: boundExpression is null && input.UnboundedSupport);
         var bound = ParseStringBound(input, offset, elementType, currentNamespace, "String bound must be a positive Int32.");
         bound?.AddConsumer(stringType.SetBound);
         return stringType;

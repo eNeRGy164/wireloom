@@ -1,4 +1,5 @@
 using Wireloom.Compiler.Emission.Emitters;
+using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Writers;
 using Wireloom.Compiler.Naming;
 
@@ -29,9 +30,9 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsString)
         {
-            var initialize = $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {Bound}, allocateMemory);";
+            var initialize = $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {(ValueType is StringEmissionType { IsUnbounded: true } ? 0 : Bound)}, allocateMemory);";
             return HasExplicitDefault
-                ? $"{initialize}\n{nativeFieldPrefix}{EscapedName}.ToNative({ManagedDefaultValue}, {Bound});"
+                ? $"{initialize}\n{nativeFieldPrefix}{EscapedName}.ToNative({ManagedDefaultValue}, {StringBoundArgument});"
                 : initialize;
         }
 
@@ -83,9 +84,9 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsString)
         {
-            var initialize = $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {Bound}, allocateMemory);";
+            var initialize = $"{nativeFieldPrefix}{EscapedName}.Initialize(size: {(ValueType is StringEmissionType { IsUnbounded: true } ? 0 : Bound)}, allocateMemory);";
             return HasExplicitDefault
-                ? $"{initialize}\n{nativeFieldPrefix}{EscapedName}.ToNative({ManagedDefaultValue}, {Bound});"
+                ? $"{initialize}\n{nativeFieldPrefix}{EscapedName}.ToNative({ManagedDefaultValue}, {StringBoundArgument});"
                 : initialize;
         }
 
@@ -142,20 +143,24 @@ internal sealed partial class MemberEmissionPlan
 
         if (IsRecursiveUnboundedSequence && HasAggregateElement)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: 0, absoluteMax: SequenceType.Unbounded, allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: 0, absoluteMax: {SequenceBoundArgument}, allocateMemory);";
         }
 
         if (IsStringSequence)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.Initialize(max: {Bound}, absoluteMax: {Bound}, maxStrLen: {ElementType!.Bound}, allocateMemory);";
+            var maximum = SequenceBoundArgument;
+            var initialMaximum = IsUnboundedSequence ? "0" : maximum;
+            var maximumStringLength = ElementStringBoundArgument;
+
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize(max: {initialMaximum}, absoluteMax: {maximum}, maxStrLen: {maximumStringLength}, allocateMemory);";
         }
 
         if (HasAggregateElement)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory);";
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(max: {(IsUnboundedSequence ? "0" : Bound)}, absoluteMax: {SequenceBoundArgument}, allocateMemory);";
         }
 
-        return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(max: {Bound}, absoluteMax: {Bound}, allocateMemory);";
+        return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(max: {(IsUnboundedSequence ? "0" : Bound)}, absoluteMax: {SequenceBoundArgument}, allocateMemory);";
     }
 
     private string BuildArrayInitializeStatement(string? namespaceName, string nativeFieldPrefix)
@@ -171,6 +176,11 @@ internal sealed partial class MemberEmissionPlan
         if (HasAggregateElement)
         {
             return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}, {ElementUnmanagedType(namespaceName)}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, allocatePointers: allocatePointers, allocateMemory: allocateMemory);";
+        }
+
+        if (ElementType is StringEmissionType)
+        {
+            return $"{nativeFieldPrefix}{EscapedName}.Initialize(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, maxStrLen: {ElementStringBoundArgument}, allocateMemory: allocateMemory);";
         }
 
         return $"{nativeFieldPrefix}{EscapedName}.Initialize<{element}>(dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, allocateMemory);";

@@ -14,11 +14,12 @@ internal abstract class IdlType
     }
 
     /// <summary>Represents a bounded IDL string or wide-string type.</summary>
-    public sealed class StringType(bool isWide, int bound, bool isBounded)
+    public sealed class StringType(bool isWide, int bound, bool isBounded, bool isUnbounded = false)
         : IdlType
     {
         public bool IsWide { get; } = isWide;
         public bool IsBounded { get; } = isBounded;
+        public bool IsUnbounded { get; } = isUnbounded;
         public int Bound { get; private set; } = bound;
 
         /// <summary>Applies a bound resolved after parsing.</summary>
@@ -65,13 +66,14 @@ internal abstract class IdlType
     }
 
     /// <summary>Represents an IDL sequence type, optionally bounded and multidimensional.</summary>
-    public sealed class Sequence(IdlType element, int? bound, IReadOnlyList<int>? dimensions = null, int effectiveBound = 100)
+    public sealed class Sequence(IdlType element, int? bound, IReadOnlyList<int>? dimensions = null, int effectiveBound = 100, bool isUnbounded = false)
         : IdlType
     {
         public IdlType Element { get; } = element;
         public int? Bound { get; private set; } = bound;
         public IReadOnlyList<int> Dimensions { get; } = dimensions ?? [];
         public int EffectiveBound { get; private set; } = bound ?? effectiveBound;
+        public bool IsUnbounded { get; } = isUnbounded;
 
         /// <summary>Applies a bound resolved after parsing.</summary>
         internal void SetBound(int value)

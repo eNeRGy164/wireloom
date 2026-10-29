@@ -47,7 +47,7 @@ public sealed class Generator : IIncrementalGenerator
                 return;
             }
 
-            var invalidBooleanSetting = files.FirstOrDefault(file => file.Input.Generate && file.InvalidEnableEscapeCharValue is not null);
+            var invalidBooleanSetting = files.FirstOrDefault(file => file.InvalidBooleanSettingName is not null);
             if (invalidBooleanSetting is not null)
             {
                 ReportInvalidBooleanSetting(production, invalidBooleanSetting);
@@ -77,8 +77,9 @@ public sealed class Generator : IIncrementalGenerator
     {
         var text = SourceText.From(input.Input.Text);
         var span = new TextSpan(0, 0);
+
         production.ReportDiagnostic(Diagnostic.Create(GeneratorDiagnostics.GenerationError,
             Location.Create(input.Input.Path, span, text.Lines.GetLinePositionSpan(span)),
-            "DdsIdlEnableEscapeChar must be 'true' or 'false'."));
+            $"{input.InvalidBooleanSettingName} must be 'true' or 'false'."));
     }
 }

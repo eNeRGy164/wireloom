@@ -42,7 +42,9 @@ internal sealed class IdlTypedefParser
                 stringBound: stringBound?.Value,
                 effectiveSequenceBound: input.SequenceSize,
                 effectiveStringBound: input.StringSize,
-                elementTypeWasEscaped: elementTypeWasEscaped);
+                elementTypeWasEscaped: elementTypeWasEscaped,
+                isUnboundedSequence: bound is null && input.UnboundedSupport,
+                isUnboundedStringElement: stringBound is null && input.UnboundedSupport);
             bound?.AddConsumer(parsedSequence.SetBound);
             stringBound?.AddConsumer(parsedSequence.SetStringBound);
             context.AddTypedef(qualified, parsedSequence, input, baseOffset + position);
@@ -79,7 +81,8 @@ internal sealed class IdlTypedefParser
                 stringBound: stringBound?.Value,
                 effectiveSequenceBound: input.SequenceSize,
                 effectiveStringBound: input.StringSize,
-                elementTypeWasEscaped: arrayElementTypeWasEscaped);
+                elementTypeWasEscaped: arrayElementTypeWasEscaped,
+                isUnboundedStringElement: stringBound is null && input.UnboundedSupport);
             stringBound?.AddConsumer(parsedArray.SetStringBound);
             context.AddTypedef(qualified, parsedArray, input, baseOffset + position);
             context.Declarations.Add(new IdlTypedefDeclaration(parsedArray, Path.GetFileName(input.Path)));
@@ -121,7 +124,8 @@ internal sealed class IdlTypedefParser
                 null,
                 stringBound: bound?.Value,
                 isWideString: isWideString,
-                effectiveStringBound: input.StringSize);
+                effectiveStringBound: input.StringSize,
+                isUnboundedString: bound is null && input.UnboundedSupport);
             bound?.AddConsumer(parsedStringTypedef.SetStringBound);
             context.AddTypedef(typeName, parsedStringTypedef, input, baseOffset + position);
             var typedefDeclarationModel = new IdlTypedefDeclaration(parsedStringTypedef, Path.GetFileName(input.Path));

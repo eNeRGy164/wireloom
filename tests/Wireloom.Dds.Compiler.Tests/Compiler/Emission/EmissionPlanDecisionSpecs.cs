@@ -176,6 +176,41 @@ public sealed class EmissionPlanDecisionSpecs
     }
 
     [Fact]
+    public void RecursiveSequenceDynamicTypeFallbackUsesTheUnboundedBound()
+    {
+        // Arrange
+        var sequence = new SequenceEmissionType(
+            new StructEmissionType("Node", supportType: "Example.Node"),
+            bound: 100,
+            cSharpType: "ISequence<Node>",
+            isBounded: false,
+            isUnbounded: true);
+        var field = new IdlEmissionField(
+            "children",
+            sequence,
+            new EmissionMetadata(
+                isKey: false,
+                memberId: null,
+                isOptional: false,
+                valueMetadata: null,
+                isExternal: false,
+                isMustUnderstand: false,
+                memberIdHashSource: null,
+                usesAutoIdHash: false));
+        var plan = new MemberEmissionPlan(field, currentNamespace: "Example");
+
+        // Act
+        var expression = plan.BuildDynamicTypeExpression(
+            "Example.Implementation",
+            recursiveTypeName: "Example.Node",
+            isRecursive: true);
+
+        // Assert
+        expression.ShouldContain("CreateSequenceWithAccessInfo");
+        expression.ShouldContain("SequenceType.Unbounded");
+    }
+
+    [Fact]
     public void NativeEnumInitializationUsesZeroWithoutRedundantCasts()
     {
         // Arrange
