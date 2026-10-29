@@ -20,4 +20,8 @@
   "markdown.validate.fragmentLinks.enabled": "ignore",
   "markdown.validate.fileLinks.enabled": "ignore",
   "dotnet.defaultSolution": "Wireloom.slnx",
+  "plantuml.exportOutDir": ".",
+  "plantuml.exportSubFolder": false,
+  "plantuml.exportFormat": "png",
+  "plantuml.lintDiagramNoName": false,
 }

@@ -19,8 +19,10 @@ RTI
 rtiddsgen
 sarif
 Shouldly
+SonarQube
 Testcontainers
 Undefines
+WCAG
 Wireloom
 XCDR
 Xunit
