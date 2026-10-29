@@ -1,59 +1,137 @@
 # 4. Solution strategy
 
-1. **Use a managed Roslyn incremental generator.**  
-   The package participates in the normal compiler invocation and does not
-   require a second generator toolchain.
-2. **Separate input discovery, semantic meaning, and emission.**  
-   Include resolution and preprocessing feed a target-independent semantic model;
-   the front end moves through explicit parse, bind, and validate phases before
-   resolved emission plans feed managed, native, and type-support emitters.
-3. **Make roots and include behavior explicit.**  
-   `DdsIdl` starts generation; included IDL is tracked for invalidation but
-   does not become another root.
-   Direct sequence-array mapping is selected independently: the project
-   `DdsIdlSequenceArrayMapping` default can be overridden by a file's
-   `SequenceArrayMapping` metadata. It belongs to the declaring file rather
-   than an include traversal or the project-wide preprocessor environment.
-4. **Fail visibly at unsupported boundaries.**  
-   Invalid input and unsupported contracts that cannot produce safe managed
-   output fail with source-located diagnostics. Deliberately ignored constructs
-   and potentially lossy mappings report diagnostics while generation continues;
-   consumers must review those outcomes. See the
-   [diagnostic rules](08-crosscutting-concepts.md#82-diagnostics-and-source-locations).
-5. **Select the RTI API profile at the host boundary.**
-   The Roslyn adapter reports missing or below-minimum references and maps the
-   resolved runtime version through the shared compiler API. Repository hosts
-   select a supported profile explicitly. Compilation orchestration passes
-   that profile to emission planning. Parsing, binding, and semantic
-   validation remain independent of RTI. Versions 7.3.1 through below 7.7.0
-   select the 7.3.1 profile; 7.7.0 and later select the 7.7.0 profile. Only
-   exact 7.3.1 and 7.7.0 versions receive qualification claims. Profile
-   mapping does not qualify every version in a mapped range.
-6. **Use IDL and DDS-XTypes to define language meaning.**
-   Interpret supported constructs using the OMG specifications. Retained RTI
-   output tests compatibility with a particular generator and runtime; it does
-   not define the set of valid IDL programs. When old design wording conflicts
-   with a specification, correct the wording and implementation together.
-   Record RTI extensions, implementation limits, and interoperability evidence
-   separately; a language feature does not need to reproduce an RTI generator
-   defect. See [value semantics](08-crosscutting-concepts.md#88-annotation-constant-and-default-semantics).
-7. **Share one host-neutral compiler project.**
-   Repository C# hosts call the same `netstandard2.0` compiler with in-memory
-   inputs and receive documents and diagnostics together. The Roslyn adapter
-   keeps MSBuild parsing, runtime discovery, and IDE/build presentation. The
-   core has no Roslyn, MSBuild, or RTI references and is bundled beside the
-   adapter in the existing generator package.
-8. **Keep browser compilation in a dedicated worker.**
-   The Playground sends bounded, immutable workspace snapshots to a .NET 10
-   WebAssembly module worker, which loads the shared compiler and synchronous
-   MD5 provider. The TypeScript client retains only the running request and
-   newest pending request, and applies only results with a matching protocol,
-   worker generation, request ID, workspace revision, and profile. Worker
-   failure is visible and recoverable by replacing the worker; the application
-   has no main-thread compilation fallback. The maintained worker has passed
-   representative Edge acceptance on root and nested hosting; broader browser
-   and release qualification remains separate evidence work.
-   The workspace UI layers a virtual tree, per-file Monaco models and undo,
-   compiler settings, local workspace recovery, and current-result exports
-   over that boundary.
-   The compiler still owns all language meaning and generated text.
+The following choices shape how Wireloom realizes its
+[goals](01-introduction-and-goals.md) within the
+[constraints](02-architecture-constraints.md) and
+[product boundary](03-context-and-scope.md). Each choice explains the approach,
+its rationale, and the architectural consequences. Detailed behavior and
+implementation remain in the linked chapters, contracts, and ADRs.
+
+## 4.1 Integrate generation into the .NET compiler
+
+Use a managed [Roslyn](12-glossary.md#roslyn)
+[incremental generator](12-glossary.md#incremental-generator), distributed as a NuGet analyzer.
+MSBuild `DdsIdl` items declare generation roots and options; Roslyn
+[`AdditionalFiles`](12-glossary.md#additionalfiles) carries the tracked inputs into compilation. Following an
+include does not automatically make that file a generation root; the same
+file can also be selected explicitly as a root.
+
+This makes generation part of normal restore, build, and IDE operation,
+removing the separate generator toolchain and custom invocation scripts.
+Roslyn manages the generated documents, so consumers can build directly from
+IDL without maintaining generated C# files in source control. The adapter
+targets `netstandard2.0` to preserve the
+[minimum analyzer-host baseline](02-architecture-constraints.md#21-product-and-execution-boundaries).
+Input discovery and invalidation must remain aligned with the
+[project configuration contract](../../guides/configuration.md).
+
+## 4.2 Share one compiler and keep host integration in adapters
+
+Use one host-neutral, non-packable `netstandard2.0` compiler for the generator,
+repository callers, and Playground. It accepts in-memory inputs and an explicit
+RTI profile and returns generated documents and diagnostics. Host adapters own
+input discovery, platform services, and presentation; the core has no Roslyn,
+MSBuild, RTI assembly, or filesystem dependency.
+
+This keeps language behavior and generated output consistent across entry
+points and allows focused compiler tests without a build or browser host.
+The generator bundles the compiler assembly in the existing analyzer package;
+the two are built and tested as one version. Platform-dependent services such
+as [MD5](12-glossary.md#md5) digest production are supplied per compilation while DDS member-ID
+semantics remain in the core. These boundaries follow
+[ADR-001](../adr/ADR-001-share-a-host-neutral-compiler-project.md) and
+[ADR-002](../adr/ADR-002-inject-member-id-md5-per-compilation.md).
+
+## 4.3 Resolve language meaning before planning generated code
+
+Use OMG IDL and [DDS-XTypes](12-glossary.md#dds-xtypes) to define language meaning. Separate preprocessing,
+parsing, binding, semantic validation, emission planning, and rendering.
+Resolve names, values, annotations, and source origins once, then let output
+paths consume the resolved model and plans.
+
+This localizes semantic decisions, avoids inconsistent rules across emitters,
+and supports the [diagnostic and maintainability goals](01-introduction-and-goals.md#12-quality-goals).
+Unsafe input fails before emission with diagnostics at the original IDL
+location. Accepted ignored or potentially lossy behavior remains explicitly
+diagnosed. Host adapters present the core's results through their own UI.
+Specification meaning, RTI generator limitations, and Wireloom support limits
+remain distinct; see [diagnostic policy](08-crosscutting-concepts.md#82-source-provenance-and-failure-reporting)
+and [semantic binding](08-crosscutting-concepts.md#81-idl-meaning-and-identity).
+
+## 4.4 Isolate RTI version differences in explicit profiles
+
+Select the [API profile](12-glossary.md#rti-api-profile) from the runtime assembly resolved by the consumer
+build. Direct compiler hosts supply their profile explicitly. Keep parsing,
+binding, and semantic validation independent of that selection; apply
+profile-specific API and runtime-support choices during emission planning.
+
+This matches generated support to the runtime the application actually uses
+and contains version differences without duplicating the compiler front end.
+A mapped profile and exact-release qualification have separate meanings,
+following the [RTI version policy](../../guides/support-and-compatibility.md#rti-version-qualification).
+The adapter owns version discovery, and generated API and native-support paths
+must use the same selected profile. See the
+[compiler structure](05-building-block-view.md) and
+[profile decision](09-architectural-decisions.md).
+
+## 4.5 Generate C# that improves the developer experience
+
+Generate modern C# with explicit generated-code identification, useful XML
+documentation, [nullable annotations](12-glossary.md#nullable-annotation), and
+[partial types](12-glossary.md#partial-type). Keep handwritten
+extensions in separate maintained files. Together with compiler-managed
+generated documents, this supports the
+[generated C# quality goal](01-introduction-and-goals.md#12-quality-goals)
+without source-control noise or manual edits that regeneration would replace.
+
+Preserve working application API usage as the drop-in baseline. Improvements
+to the developer experience are acceptable even when they introduce observable
+differences, provided they do not affect DDS wire operations. Reliable alias
+`ToString` output and richer IntelliSense are examples; reproducing RTI's
+limitations in those areas would not serve the product's goals.
+
+Document deliberate differences and verify their behavior separately from
+serialization and interoperability. The
+[value-semantics concept](08-crosscutting-concepts.md#84-generated-values-and-resource-ownership)
+and [migration guide](../../migration/rtiddsgen-to-wireloom.md#generated-c-api-differences)
+record the current behavior and its impact.
+
+## 4.6 Verify different contracts with separate test layers
+
+Use focused in-memory tests for compiler behavior, attributable corpus cases
+for language acceptance and API shape, packed-package tests for real consumer
+integration, runtime-contract tests for generated API behavior, and directed
+peer exchanges for DDS interoperability. Analyze emitted C# independently of
+its normal generated-code classification.
+
+This gives maintainers fast feedback while keeping each compatibility claim
+linked to evidence that establishes it. API shape alone cannot establish
+application behavior or wire compatibility. Independent output analysis checks
+the code itself alongside the normal treatment of generated documents in
+consumer tooling. Exact-profile wire checks remain separate from the
+license-free test and report-verification paths. See the
+[evidence constraints](02-architecture-constraints.md#22-evidence-and-provenance-policies),
+[evidence scope](08-crosscutting-concepts.md#85-compatibility-and-evidence), and
+[generated C# quality report](../../corpus/csharp-quality.md).
+
+## 4.7 Run the supporting Playground locally in a worker
+
+Reuse the shared compiler in a dedicated .NET WebAssembly module worker behind
+a TypeScript/Vite client, following
+[ADR-003](../adr/ADR-003-run-playground-compilation-in-a-browser-worker.md).
+This provides local evaluation without a compilation service and isolates
+synchronous compiler work from page interaction.
+
+The client owns workspace editing and presentation; the worker hosts compiler
+execution. Results must belong to the current workspace, and worker failures
+must allow recovery. This boundary preserves a responsive, useful demo while
+keeping language meaning in the shared compiler. Preview behavior and DDS
+qualification remain separate. Scheduling and recovery interactions are in the
+[runtime view](06-runtime-view.md#62-playground-evaluation); protocol and
+workspace models are in the
+[browser concepts](08-crosscutting-concepts.md#86-workspace-consistency).
+Browser evidence belongs in the [qualification guide](../../testing/playground-qualification.md).
+
+---
+
+[< 3. Context and scope](03-context-and-scope.md) | [Index](index.md) | [5. Building block view >](05-building-block-view.md)

@@ -1,19 +1,23 @@
 @startuml
-skinparam componentStyle rectangle
+!include ../wireloom-theme.puml
 
-rectangle "Wireloom\nmanaged generator package" as wireloom
+actor ".NET DDS application\ndeveloper" as developer
+actor "Build and CI\nengineer" as engineer
+actor "Wireloom\nmaintainer" as maintainer
+actor "Playground user" as user
+rectangle "Wireloom" as wireloom <<product>>
+rectangle ".NET build and IDE" as dotnet
+rectangle "RTI Connext DDS\nruntime" as rti
 
-rectangle ".NET DDS consumer project" as consumer
-rectangle "Generated DDS application" as application
-rectangle "RTI Connext DDS runtime" as runtime
-cloud "CI and package feeds" as ci
-database "Compatibility corpus\nand RTI oracle output" as corpus
+developer --> wireloom : Drop-in compatibility;\nclean, extensible generated C#
+engineer --> wireloom : Repeatable builds;\nminimal generation setup
+maintainer --> wireloom : Testable changes;\nattributable compatibility evidence
+user --> wireloom : Reliable local preview;\nno installation
+wireloom <-- dotnet : Normal build integration;\nsource-located diagnostics
+wireloom <-- rti : Compatible generated APIs\nand type-specific support
 
-consumer --> wireloom : DdsIdl roots\ninclude dirs + defines
-wireloom --> consumer : generated C#\ndiagnostics + build integration
-consumer --> application : compiles
-application --> runtime : DDS APIs,\nserialization, communication
-consumer --> runtime : explicit runtime reference
-ci <--> wireloom : restore inputs\npackage artifacts + tests
-corpus --> wireloom : IDL cases +\noracle evidence
+legend bottom
+  Relationships express expectations of Wireloom
+endlegend
+
 @enduml

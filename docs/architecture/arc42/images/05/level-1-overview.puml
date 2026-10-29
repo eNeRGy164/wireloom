@@ -1,30 +1,28 @@
 @startuml
-skinparam componentStyle rectangle
 
-rectangle "Consumer project" as consumer
-rectangle "MSBuild targets\nDdsIdl + include metadata" as msbuild
-rectangle "Roslyn adapter\nGenerator + runtime discovery" as generator
-rectangle "Repository compiler host\ncurrent tests and tools" as host
-package "Wireloom.Dds.Compiler" as compiler {
-  rectangle "Public API\nIdlCompiler.Compile(inputs, profile)" as api
-  rectangle "Compilation pipeline\npreprocess, parse, bind, validate" as pipeline
-  rectangle "Emitters\nmanaged/native/type support" as emitters
+!include ../wireloom-theme.puml
+!include legend.puml
+
+rectangle ".NET build and IDE" as dotnet <<neighbor>>
+actor "Build and CI\nengineer" as engineer
+actor "Wireloom maintainer" as maintainer
+actor ".NET DDS application\ndeveloper" as developer
+rectangle "RTI Connext DDS\nruntime contract" as rti <<neighbor>>
+rectangle "Supporting verification\ntooling" as verification <<neighbor>>
+rectangle "Wireloom" as product <<whitebox>> {
+  rectangle ".NET build\nintegration" as integration <<blackbox>>
+  rectangle "Playground" as playground <<blackbox>>
+  rectangle "Shared IDL\ncompiler" as compiler <<blackbox>>
+  integration ..> compiler : Compiler contract
+  playground .> compiler
 }
-rectangle "Generated C#\nAdditional documents" as output
-rectangle "RTI Connext DDS\nruntime" as runtime
-database "IDL corpus + RTI oracles" as corpus
+actor "Playground user" as user
+developer -- integration : Project configuration interface
+engineer -- integration : Build configuration interface
+maintainer -left- verification : Verification entry points
+verification .up.> product : Product interfaces
+dotnet -- integration : MSBuild / Roslyn contracts
+rti .up. compiler : Generated-code target contract
+playground -left- user : Local workspace interface
 
-consumer --> msbuild : declares roots
-msbuild --> generator : AdditionalFiles
-generator --> api : in-memory inputs + mapped profile
-host --> api : in-memory inputs + explicit profile
-api --> pipeline : input snapshot
-pipeline --> emitters
-emitters --> api : documents + diagnostics
-api --> generator : combined result
-api --> host : combined result
-generator --> output : AddSource
-output --> consumer : compile-time types
-consumer --> runtime : explicit reference
-corpus --> pipeline : compliance cases
 @enduml

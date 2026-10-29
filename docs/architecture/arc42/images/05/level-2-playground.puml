@@ -1,0 +1,21 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include legend.puml
+
+actor "Playground user" as user
+rectangle "Browser APIs" as browser <<neighbor>>
+rectangle ".NET browser runtime" as runtime <<neighbor>>
+rectangle "Shared IDL compiler" as compiler <<neighbor>>
+rectangle "Playground" as playground <<whitebox>> {
+  rectangle "Browser client" as client <<blackbox>>
+  rectangle "Browser compilation\nhost" as host <<blackbox>>
+  client -- host : Workspace compile protocol
+}
+
+user - client : Local workspace interface
+client .> browser : DOM / Worker / storage APIs
+host ..> runtime : Runtime / JS interop APIs
+host ..> compiler : Compiler contract
+
+@enduml

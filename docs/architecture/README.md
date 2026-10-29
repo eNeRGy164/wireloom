@@ -3,14 +3,13 @@
 ## Purpose
 
 This directory contains the repository's architecture source documents. The
-arc42 baseline is intentionally compact and records the current compiler,
-package, evidence, and deployment boundaries.
+arc42 chapters describe the product goals, shared compiler, .NET build
+integration, supporting Playground, evidence, and deployment boundaries.
 
 ## Start here
 
 - [arc42 architecture index](arc42/index.md)
-- [derived architecture memory](architecture-memory.md)
-- [machine-readable architecture memory](../../.agents/architecture-memory.yaml)
+- [agent architecture memory](../../.agents/architecture-memory.yaml) (YAML only)
 
 ## What belongs here
 
@@ -25,4 +24,10 @@ package, evidence, and deployment boundaries.
 ## Naming conventions
 
 Use descriptive Markdown and `.puml` filenames. Keep arc42 chapter numbers in
-Markdown headings and keep diagram source beside the chapter that uses it.
+Markdown headings. Keep diagram sources under `arc42/images/<chapter>/`,
+with rendered images beside their `.puml` sources.
+
+Use the shared [Wireloom diagram theme](arc42/images/wireloom-theme.puml)
+with the default top-to-bottom layout. Keep view-specific legends in their
+chapter directory; chapter 5 uses a separate
+[building-block legend](arc42/images/05/legend.puml).

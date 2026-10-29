@@ -110,6 +110,12 @@ shape-specific evidence, not a blanket claim for every IDL construct or RTI
 release. Check the [feature coverage index](../corpus/FEATURE-COVERAGE.md) and
 the API comparison in the [migration guide](../migration/rtiddsgen-to-wireloom.md).
 
+Improvements to the developer experience may introduce observable differences
+when they do not affect DDS wire operations. Examples include reliable alias
+`ToString` output and richer IntelliSense documentation. Deliberate differences
+and their application impact are documented in the migration guide and
+verified separately from wire compatibility.
+
 The configuration API differs from `rtiddsgen` options. It may change when
 issues are found; consult release notes and the package guide before upgrading.
 Diagnostic IDs are expected to remain stable. New IDs may be added, and their

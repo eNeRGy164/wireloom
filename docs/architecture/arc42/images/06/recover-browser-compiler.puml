@@ -1,0 +1,52 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include sequence-style.puml
+
+actor "Playground user" as user
+participant "Editing and result\npresentation" as ui
+participant "Compilation request\ncoordination" as client
+participant "\nBrowser Worker API" as browser #F5F8F7
+participant "Browser compilation\nhost" as host
+
+activate client
+
+alt Compilation timeout
+  client -> browser ++ : Terminate old worker; create replacement
+  browser -> host ++ : Bootstrap replacement
+  client -> ui : Reject timed-out request; show current timeout
+  host --> client -- : Ready
+
+  opt Newest unsubmitted pending snapshot exists
+    client -> host : Submit pending snapshot with new identity
+  end
+else Startup error, startup timeout, or uncaught worker fault
+  client -> client : Detect startup error, worker fault,\nor startup timeout
+  client -> browser : Terminate failed worker
+  client -> ui : Failed state / clear output / expose Retry
+else Per-request worker error or failed post
+  client -> client : Reject failed request / failed post
+  client -> ui -- : Current request error / expose Retry
+
+  note over client,host : The ready worker is retained when applicable
+end
+
+opt User chooses Retry
+  user -> ui ++ : Retry
+  ui -> client --++ : Restart and request current workspace
+  client -> browser  : Replace/start worker
+  browser -> host ++ : Bootstrap
+  host --> client -- : Ready
+  client -> host -- : Current eligible workspace snapshot
+
+  ref over ui,host : Flow 3: Accept current result / present diagnostics
+end
+
+note over client,ui
+The in-flight timed-out request is not requeued.
+Only the newest unsubmitted pending snapshot survives replacement.
+Stale workspace failures/results do not replace current state.
+end note
+
+@enduml
+

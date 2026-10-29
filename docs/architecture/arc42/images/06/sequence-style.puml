@@ -1,0 +1,17 @@
+skinparam sequence {
+  ParticipantBackgroundColor #E9F7ED
+  ParticipantBorderColor #027473
+  ParticipantFontColor #29353F
+  LifeLineBorderColor #A8BFBB
+  LifeLineBackgroundColor #F5F8F7
+  GroupBorderColor #D6B17A
+  GroupHeaderBackgroundColor #FFFBF5
+  GroupBodyBackgroundColor #FFFFFF
+  ReferenceBorderColor #027473
+  ReferenceBackgroundColor #F5F8F7
+}
+hide footbox
+skinparam NoteBackgroundColor #FFFBF5
+skinparam NoteBorderColor #D6B17A
+skinparam NoteFontColor #29353F
+

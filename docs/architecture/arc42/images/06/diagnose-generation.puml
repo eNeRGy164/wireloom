@@ -1,0 +1,39 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include sequence-style.puml
+
+actor ".NET DDS application\ndeveloper" as user
+participant "\n.NET build / IDE" as host #F5F8F7
+participant "\nRoslyn adapter" as adapter
+participant "Shared IDL\ncompiler" as compiler
+
+activate compiler
+
+group Step 1: Receive the diagnostic
+  compiler --> adapter ++ : Diagnostic ID, severity, message,\nsource input and UTF-16 offset
+end
+
+group Step 2: Present the finding
+  adapter -> host ++ : Roslyn diagnostic / location
+  host --> user ++ : Navigable diagnostic when source is available
+
+  alt Unsafe / rejected input
+    note over adapter,host : No generated documents for the failed compilation
+  else Accepted input with warnings
+    adapter -> host -- : Generated documents and diagnostics
+    note over host : Consumer warning policy may still fail the build
+  end
+end
+
+group Step 3: Correct the input
+  user -> host -- : Inspect source/configuration and correct it
+end
+
+group Step 4: Regenerate contracts
+  ref over host,compiler : Flow 1: Generate or regenerate contracts
+  host --> user -- : Updated build/IDE result
+end
+deactivate compiler
+
+@enduml

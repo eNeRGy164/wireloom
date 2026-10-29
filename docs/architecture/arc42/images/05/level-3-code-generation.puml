@@ -1,0 +1,22 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include legend.puml
+
+rectangle "Compilation coordination" as coordination <<neighbor>>
+rectangle "Language analysis" as analysis <<neighbor>>
+rectangle "RTI generated-code\nAPI target" as rti <<neighbor>>
+rectangle "C# code generation" as generation <<whitebox>> {
+  rectangle "Emission planning" as planning <<blackbox>>
+  rectangle "Source emission" as emission <<blackbox>>
+
+  planning -- emission : Emission shapes / member plans\nand shared rendering contracts
+}
+
+rti .right. planning : Generated-code target contract
+coordination .up.> emission : Declaration generation interface
+coordination .up.> planning : Sequence-array planning contract
+analysis -left- planning : Bound declarations / semantic facts
+analysis -left- emission : Declarations / type resolution
+
+@enduml

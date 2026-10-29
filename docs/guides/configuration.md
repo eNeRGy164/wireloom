@@ -614,6 +614,10 @@ the file is reached through an include. They do not change explicitly bounded
 IDL types. These finite limits do not enable RTI's `-unboundedSupport` behavior;
 Wireloom continues to use finite bounds in generated metadata.
 
+General opt-in unbounded support is a missing feature tracked in
+[#131](https://github.com/eNeRGy164/wireloom/issues/131); finite handling is the
+current implementation boundary, not a permanent exclusion of that capability.
+
 Preprocessing safety limits are also fixed:
 
 | Limit                        |                               Maximum |

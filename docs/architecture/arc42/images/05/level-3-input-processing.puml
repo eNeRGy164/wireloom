@@ -1,0 +1,18 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include legend.puml
+
+rectangle "Compilation coordination" as coordination <<neighbor>>
+rectangle "Language analysis" as analysis <<neighbor>>
+rectangle "Input processing" as input <<whitebox>> {
+  rectangle "Input graph and\ninclude resolution" as graph <<blackbox>>
+  rectangle "Preprocessing and\nnormalization" as preprocessing <<blackbox>>
+
+  graph -- preprocessing : Include / directive callbacks\nand source-origin contracts
+}
+
+coordination .right.> graph : Supplied inputs / root configuration
+graph -right- analysis : Parse callback with source origins
+
+@enduml

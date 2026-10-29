@@ -1,0 +1,50 @@
+' Deployment notation layered over the shared Wireloom theme.
+skinparam node {
+  BackgroundColor #E1E5EA
+  BorderColor #5D6874
+  FontColor #29353F
+}
+skinparam artifact {
+  BackgroundColor #006A68
+  BorderColor #004846
+  FontColor #FFFFFF
+}
+skinparam artifact<<external>> {
+  BackgroundColor #FFFFFF
+  BorderColor #5D6874
+  FontColor #29353F
+}
+skinparam folder {
+  BackgroundColor #FFF0CD
+  BorderColor #B88628
+  FontColor #29353F
+}
+skinparam database {
+  BackgroundColor #E1E5EA
+  BorderColor #5D6874
+  FontColor #29353F
+}
+skinparam cloud {
+  BackgroundColor #E1E5EA
+  BorderColor #5D6874
+  FontColor #29353F
+}
+skinparam note {
+  BackgroundColor #FFFBF5
+  BorderColor #D6B17A
+  FontColor #29353F
+}
+skinparam rectangle<<whitebox>> {
+  BackgroundColor #A9DDB8
+  BorderColor #006A68
+  BorderThickness 2
+  FontColor #163F2F
+  FontStyle bold
+}
+legend bottom
+  |<#E1E5EA> **Gray nodes / storage** | Execution or storage environment |
+  |<#006A68><color:white> **Dark teal artifacts** </color>| Deployed Wireloom material |
+  |<#A9DDB8> **Green blocks** | Executing Wireloom building blocks |
+  |<#FFFFFF> **White artifacts** | Consumer project, application, or RTI assets |
+  |<#FFF0CD> **Amber folder** | Restored package container |
+endlegend

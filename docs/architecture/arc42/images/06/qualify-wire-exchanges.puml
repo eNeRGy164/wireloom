@@ -1,0 +1,62 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include sequence-style.puml
+
+actor "Wireloom maintainer" as user
+participant "\nVerification host" as workflow #F5F8F7
+participant "\nRunner" as runner
+participant "Peer tools /\nprocesses" as peers #F5F8F7
+participant "\nVerifier" as verifier
+participant "\nEvidence artifacts" as artifacts #F5F8F7
+
+activate user
+
+group Step 1: Start qualification
+  user -> workflow ++ : Qualify selected exact profile and fixtures
+  workflow -> runner ++ : Selected case / profile inputs
+end
+
+group Step 2: Plan and prepare peers
+  runner -> runner : Create deterministic directed-exchange plan
+  runner -> peers ++ : Prepare selected Wireloom / RTI peers
+  peers --> runner -- : Build outcomes and provenance
+end
+
+alt Setup succeeds
+  group Step 3: Execute planned exchanges
+    runner -> peers ++ : Bounded concurrent reader-ready / writer exchanges\non distinct active DDS domains
+    peers --> runner -- : Payload verdicts, failures, and logs
+  end
+else Setup fails
+  runner --> workflow : Failed run; retain available partial evidence
+end
+
+group Step 4: Retain the evidence
+  runner -> artifacts -- : Plan, shard metadata, outcomes, provenance
+end
+
+group Step 5: Validate the evidence
+  workflow -> verifier ++ : Validate/combine selected shard artifacts
+  verifier -> artifacts : Read plan and recorded evidence
+  artifacts --> verifier : Reports / sidecars / outcomes
+  verifier -> verifier : Check assignment, completeness,\nuniqueness, and consistency
+end
+
+group Step 6: Present the qualified scope
+  alt Complete, unique, consistent evidence
+    verifier -> artifacts : Combined report including recorded peer failures
+    verifier --> workflow : Reviewable report with exact scope
+    workflow --> user : Results and remaining compatibility gaps
+  else Missing, duplicate, inconsistent, or unrun evidence
+    verifier --> workflow -- : Reject completed report / fail validation
+    workflow --> user -- : Incomplete or invalid evidence
+  end
+end
+
+note over user,verifier
+Complete reporting is distinct from all peer exchanges passing.
+DDS discovery alone does not establish payload compatibility.
+end note
+
+@enduml

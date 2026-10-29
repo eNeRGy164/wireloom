@@ -86,7 +86,7 @@ client asset directory. There is no main-thread compilation fallback.
 
 ## References
 
-- Related building block: [Level 1 white-box overall system](../arc42/05-building-block-view.md#51-level-1-white-box-overall-system).
-- Related runtime flow: [Browser Playground compilation](../arc42/06-runtime-view.md#64-browser-playground-compilation).
-- Related concept: [Shared compiler API](../arc42/08-crosscutting-concepts.md#89-shared-compiler-api).
+- Related building block: [Playground](../arc42/05-building-block-view.md#533-playground).
+- Related runtime flow: [Browser Playground compilation](../arc42/06-runtime-view.md#62-playground-evaluation).
+- Related contract: [Shared compiler API](../arc42/05-building-block-view.md#compiler-contract-and-payload-examples).
 - Related code: `src/Wireloom.Playground.Browser/` and `playground/`.

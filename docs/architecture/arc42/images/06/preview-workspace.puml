@@ -1,0 +1,58 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include sequence-style.puml
+
+actor "Playground user" as user
+participant "\nBrowser client" as client
+participant "Browser compilation\nhost" as host
+participant "Shared IDL\ncompiler" as compiler
+
+activate user
+
+group Step 1: Capture the current workspace
+  user -> client ++ : Edit IDL / choose example / change settings or profile
+  client -> client : Capture workspace identity; invalidate\ncurrent export and diagnostic locations
+end
+
+alt Empty or rootless workspace
+  client --> user : Clear output; rootless workspaces\nshow a workspace diagnostic
+else Compilable workspace
+  group Step 2: Compile the workspace snapshot
+    client -> host ++ : Current workspace compile request
+    host -> host : Validate/map protocol request and bounds
+    host -> compiler ++ : Compile inputs with explicit profile/services
+    ref over compiler : C1: Compile an in-memory IDL batch
+  end
+
+  group Step 3: Return an identified outcome
+    compiler --> host -- : Compiler result
+    host --> client -- : Identified response / host outcome
+  end
+
+  group Step 4: Accept only the current result
+    alt Response belongs to current request/workspace
+      alt Successful result
+        client --> user : Current documents and diagnostics
+      else Current compilation/host failure
+        client --> user : Clear generated output; show diagnostics/error
+      end
+    else Stale identity
+      client -> client -- : Discard response
+    end
+  end
+end
+
+group Step 5: Navigate to the source
+  opt Source-located diagnostic selected
+    user -> client ++ : Select diagnostic
+    client --> user -- : Matching source editor / position
+  end
+end
+
+note over client
+Previous code may remain visibly outdated while work is pending.
+Generated exports require an accepted current successful result.
+end note
+
+@enduml

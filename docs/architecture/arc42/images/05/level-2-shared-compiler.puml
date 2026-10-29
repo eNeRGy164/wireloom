@@ -1,0 +1,26 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include legend.puml
+
+rectangle ".NET build integration" as dotnet <<neighbor>>
+rectangle "Browser compilation host" as browser <<neighbor>>
+rectangle "Verification callers" as tests <<neighbor>>
+rectangle "Shared IDL compiler" as compiler <<whitebox>> {
+  rectangle "Compilation\ncoordination" as coordination <<blackbox>>
+  rectangle "Input processing" as input <<blackbox>>
+  rectangle "Language analysis" as analysis <<blackbox>>
+  rectangle "C# code generation" as generation <<blackbox>>
+
+  coordination ..> input : Input graph interface
+  coordination ..> analysis : Declaration analysis interface
+  coordination ..> generation : Generation interface
+  input -- analysis : Parse callback / source origins
+  generation -- analysis : Semantic declarations / symbols
+}
+
+dotnet ..> coordination : IdlCompiler.Compile
+browser ..> coordination : IdlCompiler.Compile
+tests ..> coordination : IdlCompiler.Compile
+
+@enduml

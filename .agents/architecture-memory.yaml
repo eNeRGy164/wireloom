@@ -1,9 +1,9 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-27T23:08:07Z
+  generated_at: 2026-10-29T00:54:43Z
   arc42_home: docs/architecture/arc42
-  human_memory_path: docs/architecture/architecture-memory.md
+  format: yaml-only
 sources:
   arc42:
     - docs/architecture/arc42/index.md
@@ -24,284 +24,160 @@ sources:
     - docs/architecture/adr/ADR-002-inject-member-id-md5-per-compilation.md
     - docs/architecture/adr/ADR-003-run-playground-compilation-in-a-browser-worker.md
   contracts:
+    - docs/guides/configuration.md
+    - docs/guides/support-and-compatibility.md
+    - docs/guides/idl-semantics.md
+    - docs/guides/generated-value-semantics.md
+    - docs/guides/playground-workspaces.md
+    - docs/guides/playground-deployment.md
     - docs/corpus/README.md
     - docs/corpus/FEATURE-COVERAGE.md
     - docs/corpus/LTS-PROFILES.md
-    - docs/guides/support-and-compatibility.md
-    - docs/guides/configuration.md
-    - docs/guides/playground-workspaces.md
     - tests/Wireloom.Dds.Generator.RuntimeContracts/README.md
     - tests/Wireloom.Dds.Generator.WireCompatibility/README.md
   evidence:
+    - docs/corpus/csharp-quality.md
     - docs/performance/incremental-generator-baseline.md
-    - docs/testing/sequence-array-mapping.md
-    - docs/architecture/dependency-intake/playground-frontend.md
     - docs/testing/playground-qualification.md
-    - docs/guides/playground-deployment.md
-    - docs/architecture/dependency-intake/playground-pages-actions.md
+    - .github/workflows/quality.yml
     - .github/workflows/publish-playground.yml
     - CONTRIBUTING.md
-    - .github/workflows/quality.yml
-    - qodana.yaml
   defaults:
-    - skill: dotnet-bootstrap
-      resource: attachments/dotnet-defaults.yaml
-      status: standard
+    - AGENTS.md
+    - global.json
+    - Directory.Build.props
+    - Directory.Packages.props
+    - src/Wireloom.Playground.Browser/Wireloom.Playground.Browser.csproj
 summary:
   goals:
     text: >-
-      Keep Connext IDL generation in the .NET build and extend compatibility
-      through evidence-backed language and runtime cases.
-    sources:
-      - docs/architecture/arc42/01-introduction-and-goals.md
+      Drop-in RTI C# generation replacement for supported IDL: preserve working
+      application APIs and DDS behavior. Normal restore/build needs no external
+      generator or machine-specific wiring. Generated C# remains inspectable,
+      extensible, outside source control, and free of preventable analysis noise.
+      The local Playground is a supporting demo/evaluation tool.
+    sources: [docs/architecture/arc42/01-introduction-and-goals.md]
   constraints:
     text: >-
-      Repository projects target net10.0. The Roslyn adapter and shared,
-      non-packable compiler target netstandard2.0 for the .NET 8, C# 12 host
-      with Roslyn 4.8.0. Consumers require RTI 7.3.1 or later; exact
-      qualification targets are 7.3.1 and 7.7.0.
-    sources:
-      - docs/architecture/arc42/02-architecture-constraints.md
+      Honor separate consumer and producer baselines below. Generation and
+      report verification need no RTI license secret; live DDS needs the
+      selected RTI runtime/license. IDL stays local in the Playground.
+      Retain exact-scope evidence/provenance without licenses or credentials.
+    sources: [docs/architecture/arc42/02-architecture-constraints.md]
   context:
     text: >-
-      Wireloom is a compile-time generator between consumer projects and
-      generated C#; it is outside the DDS runtime data path and does not provide
-      RTI support.
-    sources:
-      - docs/architecture/arc42/03-context-and-scope.md
+      One product contains build integration and Playground. Consumers, RTI
+      runtime, .NET hosts, feeds, and hosting are external; DDS traffic is
+      outside Wireloom. Human roles: .NET DDS application developer, Build and
+      CI engineer, Wireloom maintainer, Playground user. RTI support is external.
+    sources: [docs/architecture/arc42/03-context-and-scope.md]
   strategy:
     text: >-
-      OMG IDL and DDS-XTypes define language semantics; RTI captures provide
-      versioned compatibility evidence. A host-neutral in-memory compiler
-      accepts an explicit profile and returns documents with diagnostics. The
-      Roslyn adapter resolves the RTI version and owns diagnostics and source
-      registration. The pipeline separates preprocessing, parsing, binding,
-      validation, profile-specific planning, and emission.
-    sources:
-      - docs/architecture/arc42/04-solution-strategy.md
+      Managed Roslyn incremental adapter plus one host-neutral compiler shared
+      with browser callers. OMG IDL/XTypes define meaning; profile-specific
+      support is emitted from resolved semantics. Per-call platform services
+      include MD5. Developer-experience improvements may differ observably
+      when working application usage and DDS wire behavior are preserved.
+    sources: [docs/architecture/arc42/04-solution-strategy.md]
   building_blocks:
     text: >-
-      The compiler core owns IDL parsing, binding, validation, diagnostics, and generated documents; the Roslyn adapter integrates that core with consumer builds. The wire harness has three non-packable projects: Runner plans shards, builds peers, schedules exchanges, and writes evidence; Shared defines contracts; Verifier checks and merges reports. Typed records connect application stages; JSON and TSV remain at command and evidence boundaries.
-    sources:
-      - docs/architecture/arc42/05-building-block-view.md
+      Shared IDL compiler: coordination, input processing, language analysis,
+      C# generation. .NET integration: MSBuild and Roslyn adapter. Playground:
+      browser client and compilation host. Interfaces/models belong to blocks;
+      Runner, Verifier, and Shared qualification tooling are outside the product.
+    sources: [docs/architecture/arc42/05-building-block-view.md]
   runtime:
     text: >-
-      Consumer compilation invokes generation through the analyzer. Wire shards plan whole cases, build selected managed and native peers, and run bounded reader-first exchanges on unique active DDS domains. Peer processes disable RTI Monitoring Library 2.0. The license-free Verifier rejects missing, duplicate, or inconsistent shard evidence before producing the combined report.
-    sources:
-      - docs/architecture/arc42/06-runtime-view.md
+      No roots skips adapter applicability checks. Expected IDL failures return
+      diagnostics/no documents; empty success is distinct. Caller/provider faults
+      and cancellation propagate. Browser output requires current worker/request/
+      revision/profile identity; keep one active and newest unsubmitted request.
+      Compilation timeout replaces the worker without replaying in-flight work;
+      startup failures/timeouts and uncaught faults require Retry. Per-request
+      failure can retain a ready worker.
+    sources: [docs/architecture/arc42/06-runtime-view.md]
   deployment:
     text: >-
-      Wireloom publishes one analyzer package with its compiler assembly. CI qualifies exact RTI profiles. Licensed Docker jobs run the C# Runner; a separate license-free job uses the Verifier to validate and combine shard artifacts. The wire runbook records concurrency, container, and artifact details.
-    sources:
-      - docs/architecture/arc42/07-deployment-view.md
+      One analyzer package bundles matching generator/compiler versions under
+      analyzers/dotnet/cs; generated code adds no Wireloom application dependency.
+      SDK/IDE selection differs from target framework. Playground uses a complete
+      same-origin static bundle and browser workers. Pages promotes validated
+      bytes, verifies live HTTPS, and supports manual eligible rollback.
+      Changed base paths require matching bundles; changed origins affect storage.
+    sources: [docs/architecture/arc42/07-deployment-view.md]
   cross_cutting:
     text: >-
-      Effective IDL annotations, typed defaults, bounds, and member IDs are
-      resolved during binding and shared by output paths. Sequence-array
-      mapping defaults to RtiCSharp and may be overridden per declaring file.
-      Preprocessing and strictness are batch-wide; mapping is file-owned.
-      Deterministic inputs, source mapping, diagnostics, package provenance,
-      and exact-profile evidence are cross-cutting requirements. Wire evidence
-      is complete only when every planned exchange is present exactly once and
-      consistent with its profile. See chapter 8 and the configuration guide
-      for detailed rules.
-    sources:
-      - docs/architecture/arc42/08-crosscutting-concepts.md
+      Preserve typed IDL identity and declaring-file options across outputs;
+      roots may share includes and included files may also be roots. Retain
+      original UTF-16 origins. Isolate snapshots/state; bound work/output, not
+      process memory. Distinct macro outputs and unique hints matter. Preserve
+      optional presence, reference/copy semantics, allocation, and native cleanup.
+      Workspace edits are atomic; source backup is independent of generation.
+      Restore cannot overwrite edits; serialize saves/deletes, with no resurrection
+      after successful reset deletion. Browser storage is fallible.
+    sources: [docs/architecture/arc42/08-crosscutting-concepts.md]
   decisions:
     text: >-
-      ADR-001 (shared compiler), ADR-002 (per-compilation MD5 provider), and
-      ADR-003 (browser worker host) are Accepted. ADR-003 was approved by
-      Michaël Hompus on 2026-10-26. Chapter 9 is the decision history and
-      authoritative status index.
-    sources:
-      - docs/architecture/arc42/09-architectural-decisions.md
+      Accepted: ADR-001 shared compiler, ADR-002 per-compilation MD5 delegate,
+      ADR-003 browser worker. ADR contexts/measurements are historical snapshots.
+      C# wire orchestration reduces maintained languages/scripts. Consult chapter 9
+      for evidence-qualified history and rationale; do not invent past approvals.
+    sources: [docs/architecture/arc42/09-architectural-decisions.md]
   quality:
     text: >-
-      Quality evidence covers exact RTI profiles, corpus and wire behavior,
-      package integration, minimum-host loading, maintained C# source, and
-      supply-chain controls. Compiler unit coverage is gated at 90% branches
-      and 95% lines; fuzzing runs in a separate uninstrumented project.
-      Browser workspace quality scenarios require atomic changes, preserved
-      editor undo, and exact local recovery.
-      Playground checks add strict TypeScript, ESLint, Prettier, direct Node
-      coverage at 98% branches and 99% lines, Chromium coverage, and focused
-      C# adapter tests. Combined source-mapped Chromium coverage includes
-      browser-only UI paths and is tracked separately from the direct Node gate.
-      Coveralls combines Playground and adapter Cobertura
-      with compiler and generator reports; Community Qodana scans the .NET
-      solution. Current local results and pending remote gates are recorded
-      in the qualification guide.
-      Release-bundle qualification adds 76 exact native/worker corpus
-      comparisons and 36 single-file UI comparisons per engine on both profiles,
-      with limits, responsiveness, stale-result rejection, and recovery checks.
-      Quality CI retains Chromium reports with input and bundle hashes. The
-      public HTTPS checks verify all asset bytes, MIME types, Hello on both
-      profiles, diagnostics, exports, revision/scope, and reload. Reports retain
-      the deployed URL, SHA, headers, and browser version. The retained corpus
-      remains authoritative; previews do not establish RTI
-      compilation, runtime behavior, or DDS wire compatibility.
-    sources:
-      - docs/architecture/arc42/10-quality-requirements.md
+      Prioritize compatibility, build integration, generated C#, diagnostics,
+      maintainability. Require VS Code/C# tooling and Visual Studio 2026; desktop
+      Chrome/Edge/Firefox with keyboard/focus/label/noncolor-error behavior;
+      WebKit checks do not qualify Safari.
+      Compiler gates: 90% branches/95% lines; Node gates: 98%/99%, distinct from
+      broader UI coverage. Profile mapping, corpus, API/runtime, wire, and analysis
+      evidence establish different facts. Numerical latency/memory/footprint
+      budgets and formal accessibility level remain open; observations are not
+      acceptance targets.
+    sources: [docs/architecture/arc42/10-quality-requirements.md]
   risks:
     text: >-
-      Recursive sequence typedefs remain unsupported; recursive graphs and
-      several RTI-specific or optional-type cases remain unqualified. RTI
-      7.3.1 C# RPC output for C157/C159 fails compilation (issue 75). Browser
-      qualification remains scoped to recorded evidence. Pages publication in
-      issue 111 requires live checks; failures need inspection/manual rollback.
-      A custom hostname changes the base path and browser storage origin.
-      Keep adapter and bundled compiler
-      versions aligned and preserve direct-caller path and formatting behavior.
-    sources:
-      - docs/architecture/arc42/11-risks-and-technical-debt.md
+      General unbounded support is missing (#131); finite fallbacks are not
+      equivalent. RTI 7.3.1 C148 enum-array defaults differ across peers.
+      Recursive sequence typedefs are rejected; direct self-recursive wire scope
+      needs TypeObject v1, while mutual graphs remain unqualified. IDE, consumer
+      Qodana/SonarQube and browser/accessibility qualification have gaps; the
+      retained report misses the broader UI coverage target. Collected output
+      invalidation is batch-wide; optimize on evidence.
+      Numerical budgets/post-1.0 policy are open. Reporting guidance/template is
+      planned, not implemented. Priorities constrain affected claims, not all uses.
+    sources: [docs/architecture/arc42/11-risks-and-technical-debt.md]
   glossary:
     text: >-
-      Project-specific terms include Connext IDL, annotation application,
-      DdsIdl root, compiler core, Roslyn adapter, compiler profile, RTI oracle,
-      wire compatibility, and strict validation. Strict validation is distinct
-      from warning promotion, C# escaping, and sequence-array mapping.
-    sources:
-      - docs/architecture/arc42/12-glossary.md
-  browser_playground:
-    text: >-
-      The desktop-first Playground runs the shared compiler in a dedicated
-      .NET 10 browser-WASM module worker. Versioned requests carry worker,
-      request, revision, profile, and file identity; the client accepts only
-      current responses and keeps one active plus the newest pending request.
-      Protocol v3 is owned by .NET adapter DTOs with a TypeScript mirror
-      checked in Quality. The UI provides an explicit virtual folder tree,
-      stable per-file Monaco models, atomic multi-file import, root roles,
-      root Defines/Undefines/Strict settings, workspace sequence defaults,
-      file-level sequence/string size overrides, escape handling, and include
-      folders, cross-file diagnostics, generated
-      browsing and exports. Recovery stores v3 workspace records and persists
-      empty folders. All Roots compile together; rootless/empty
-      workspaces clear output without dispatch. Include folders are searched
-      alphabetically and follow virtual moves; source text stays unchanged.
-      Source and Generated groups collapse independently with spacing between
-      them. Explorer actions appear on Source-group hover/focus.
-      Folders expand by default and retain manual
-      collapse during edits. File menus change roles; folder menus configure
-      include search. Active IDL Copy/Download saves current source; Source ZIP
-      backs up files, empty folders, and settings even on compile failure.
-      Escape cancels dialogs; Properties exposes role/mapping toggles.
-      Operation failures use themed red Error notices with alert semantics.
-      Workspace checks pass in Chromium, Firefox, and WebKit; issue 119 CI
-      and Coveralls remain pending. Scoped Edge, Firefox, and Playwright
-      WebKit checks pass; WebKit does not qualify Safari. Direct Node tests
-      cover worker replacement and recovery-save ordering; Chromium coverage
-      is mapped to first-party code. ADR-003 is Accepted. Issue 110 tracks
-      generation qualification; public Pages hosting is tracked in issue 111.
-    sources:
-      - docs/architecture/arc42/04-solution-strategy.md
-      - docs/architecture/adr/ADR-003-run-playground-compilation-in-a-browser-worker.md
-      - docs/architecture/arc42/05-building-block-view.md
-      - docs/architecture/arc42/06-runtime-view.md
-      - docs/architecture/arc42/07-deployment-view.md
-      - docs/architecture/arc42/08-crosscutting-concepts.md
-      - docs/architecture/arc42/10-quality-requirements.md
-      - docs/architecture/arc42/11-risks-and-technical-debt.md
-      - docs/architecture/dependency-intake/playground-frontend.md
-      - docs/testing/playground-qualification.md
-      - docs/guides/playground-workspaces.md
-      - docs/guides/playground-deployment.md
-      - docs/architecture/dependency-intake/playground-pages-actions.md
-      - .github/workflows/publish-playground.yml
-
+      Use chapter 1 role names and chapter 5 block names; chapter 12 defines
+      jargon/aliases with linkable terms. Compiler core means Shared IDL compiler;
+      browser workers include separate compiler and editor workers.
+    sources: [docs/architecture/arc42/12-glossary.md]
 defaults:
   repository:
-    root_namespace:
-      value: Wireloom
-      source: brownfield-detection
-      status: detected
-    consumer_minimum_target_framework:
-      value: net8.0
-      source: chapter-2
-      status: explicit
-    consumer_minimum_roslyn_version:
-      value: 4.8.0
-      source: chapter-2
-      status: explicit
-    consumer_target_framework:
-      value: net10.0
-      source: chapter-2
-      status: explicit
-    generator_target_framework:
-      value: netstandard2.0
-      source: chapter-2
-      status: explicit
-    compiler_target_framework:
-      value: netstandard2.0
-      source: chapter-2
-      status: explicit
-    compiler_packaging:
-      value: non-packable; bundled beside generator; no standalone package
-      source: chapter-7
-      status: explicit
-    sdk:
-      value: 10.0.400
-      source: global.json
-      status: explicit
-    sdk_policy:
-      version: 10.0.400
-      allow_prerelease: false
-      roll_forward: latestFeature
-      source: global.json
-      status: explicit
-    package_type:
-      value: nuget-analyzer-source-generator
-      source: chapter-7
-      status: explicit
-    generation_batch_configuration_scope:
-      value: preprocessing-and-strictness-project-wide; mapping-file-owned
-      source: chapter-2
-      status: explicit
-    runtime_identifiers:
-      value: []
-      source: brownfield-detection
-      status: detected
-    strict_validation:
-      value: false
-      source: chapter-8
-      status: explicit
-    sequence_array_mapping:
-      value: RtiCSharp
-      source: chapter-8
-      status: explicit
-    playground_host:
-      value: GitHub Pages
-      source: chapter-7
-      status: explicit
-    playground_base_path:
-      value: /wireloom/; PLAYGROUND_BASE_PATH overrides for custom hosting
-      source: chapter-7
-      status: explicit
+    root_namespace: {value: Wireloom, source: Directory.Build.props, status: explicit}
+    target_framework: {value: net10.0, source: Directory.Build.props, status: explicit}
+    sdk: {value: 10.0.400, source: global.json, status: explicit}
+    sdk_policy: {value: {roll_forward: latestFeature, allow_prerelease: false}, source: global.json, status: explicit}
+    consumer_baseline: {value: {minimum_framework: net8.0, minimum_csharp: 12, minimum_roslyn: 4.8.0}, source: chapter-2, status: explicit}
+    compiler_targets: {value: {generator: netstandard2.0, compiler: netstandard2.0}, source: chapter-4, status: explicit}
+    compiler_packaging: {value: "non-packable; bundled with generator at matching version", source: chapter-7, status: explicit}
+    package_type: {value: nuget-analyzer-source-generator, source: chapter-7, status: explicit}
+    configuration_scope: {value: "preprocessing/strictness/escaping batch-wide; mapping/sizes declaring-file-owned", source: chapter-8, status: explicit}
+    strict_validation: {value: false, source: docs/guides/configuration.md, status: explicit}
+    escape_normalization: {value: false, source: docs/guides/configuration.md, status: explicit}
+    sequence_array_mapping: {value: RtiCSharp, source: docs/guides/configuration.md, status: explicit}
+    effective_limits: {value: {sequence: 100, string: 255}, source: docs/guides/configuration.md, status: explicit}
+    playground_target: {value: browser-wasm, source: src/Wireloom.Playground.Browser/Wireloom.Playground.Browser.csproj, status: explicit}
+    playground_host: {value: GitHub Pages, source: chapter-7, status: explicit}
+    playground_base_path: {value: /wireloom/, source: chapter-7, status: explicit}
+    vite_base_path: {value: /, source: chapter-7, status: explicit}
   dotnet:
-    unit_test_framework:
-      value: xunit_v3_mtp-v2
-      source: chapter-2
-      status: explicit
-    assertions:
-      value: shouldly
-      source: brownfield-detection
-      status: detected
-    test_platform:
-      value: microsoft_testing_platform
-      source: brownfield-detection
-      status: detected
-    code_coverage:
-      value: microsoft_testing_extensions_codecoverage
-      source: brownfield-detection
-      status: detected
-    package_management:
-      value: central_versions_lock_files_nuget_audit
-      source: chapter-8
-      status: explicit
-    rti_runtime_eligibility:
-      value: ">= 7.3.1"
-      source: chapter-2
-      status: explicit
-    rti_oracle_baseline:
-      value: "7.7.0 / rtiddsgen 4.7.0"
-      source: chapter-2
-      status: explicit
+    unit_test_framework: {value: xunit_v3_mtp-v2, source: CONTRIBUTING.md, status: explicit}
+    assertions: {value: shouldly, source: Directory.Packages.props, status: detected}
+    test_platform: {value: microsoft_testing_platform, source: global.json, status: explicit}
+    code_coverage: {value: microsoft_testing_extensions_codecoverage, source: Directory.Packages.props, status: detected}
+    package_management: {value: central_versions_lock_files_nuget_audit, source: chapter-2, status: explicit}
+    rti_runtime_eligibility: {value: ">= 7.3.1", source: chapter-2, status: explicit}
+    rti_profiles: {value: "7.3.1 <= version < 7.7.0 -> 7.3.1; version >= 7.7.0 -> 7.7.0", source: docs/guides/support-and-compatibility.md, status: explicit}
+    qualified_rti_releases: {value: [7.3.1, 7.7.0], source: docs/guides/support-and-compatibility.md, status: explicit}

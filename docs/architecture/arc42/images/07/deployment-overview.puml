@@ -1,23 +1,40 @@
 @startuml
-cloud "NuGet feeds" as feeds
-database "Evidence repository" as evidence
 
-node "Developer or CI build host" as build {
-  artifact "Consumer project + IDL" as source
-  artifact "Wireloom.Dds.Generator\nNuGet package" as package
-  node ".NET SDK + Roslyn" as sdk
+!include ../wireloom-theme.puml
+!include deployment-style.puml
+
+cloud "NuGet feed" as feed
+
+node "Developer workstation or CI build agent" as build {
+  folder "Restored Wireloom.Dds.Generator package" as cache {
+    artifact "build/\nWireloom.Dds.Generator.targets" as targets
+    artifact "analyzers/dotnet/cs/\nWireloom.Dds.Generator.dll\nWireloom.Dds.Compiler.dll\n+ XML documentation" as dlls
+  }
+  node "Compatible .NET SDK / MSBuild / Roslyn host" as sdk {
+    rectangle ".NET build integration\nMSBuild integration + Roslyn adapter" as integration <<whitebox>>
+    rectangle "Shared IDL compiler" as compiler <<whitebox>>
+  }
+  artifact "Consumer project + IDL\nExplicit RTI reference" as inputs <<external>>
+
+  sdk -> inputs: build inputs + references
 }
 
-node "Application runtime environment" as runtimeHost {
-  artifact "Generated DDS application" as application
-  artifact "Rti.ConnextDds runtime" as runtime
+node "Consumer application environment" as runtime {
+  artifact "Application assembly\nincluding generated contracts" as app <<external>>
+  artifact "Selected RTI managed/native\nruntime assets" as rti <<external>>
 }
 
-feeds --> build : restore package
-build --> feeds : publish preview\nor release package
-evidence --> build : corpus fixtures\n(CI only)
-source --> sdk : project + IDL inputs
-package --> sdk : analyzer + MSBuild targets
-sdk --> application : compiled output
-application --> runtime : uses selected runtime
+feed --> cache : package restore
+cache --> sdk : MSBuild import +\nRoslyn analyzer loading
+integration --> compiler : compiler API
+sdk -down--> app : compiled application
+app --> rti : application runtime dependency
+
+build -[hidden]down-> runtime
+
+caption
+  Application team owns deployment and RTI licensing
+  Wireloom adds no application runtime dependency
+endcaption
+
 @enduml

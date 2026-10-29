@@ -113,13 +113,13 @@ all repository callers, following ADR-001's direct-caller policy.
 ## More information
 
 - [Issue #108](https://github.com/eNeRGy164/wireloom/issues/108).
-- [Compiler host boundary](../arc42/images/05/browser-compiler-hosts.puml).
+- [Compiler host boundary](../arc42/images/05/level-3-browser-compilation-host.puml).
 
 ## References
 
-- Related building block: [Compiler and preprocessing](../arc42/05-building-block-view.md#52-level-2-compiler-and-preprocessing).
-- Related runtime flow: [Consumer build and generation](../arc42/06-runtime-view.md#61-consumer-build-and-generation).
-- Related API concept: [Shared compiler API](../arc42/08-crosscutting-concepts.md#89-shared-compiler-api).
+- Related building block: [Shared IDL compiler](../arc42/05-building-block-view.md#531-shared-idl-compiler).
+- Related runtime flow: [Consumer build and generation](../arc42/06-runtime-view.md#611-generate-or-regenerate-application-contracts).
+- Related API contract: [Shared compiler API](../arc42/05-building-block-view.md#compiler-contract-and-payload-examples).
 - Related code: [`IdlCompiler`](../../../src/Wireloom.Dds.Compiler/Api/IdlCompiler.cs),
   [`IdlParseContext`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlParseContext.cs),
   and [`IdlMemberIdHash`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlMemberIdHash.cs).

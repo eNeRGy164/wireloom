@@ -1,0 +1,38 @@
+@startuml
+
+!include ../wireloom-theme.puml
+!include deployment-style.puml
+
+node "Wireloom build environment\nRepository .NET SDK + Node/npm" as build {
+  artifact ".NET browser publish + Vite bundle\nComplete dist-pages/ candidate\nwith deployment.json" as candidate
+}
+
+node "Static HTTPS host\nReference: GitHub Pages /wireloom/" as host {
+  artifact "HTML + client chunks + editor worker\nCompiler worker + MD5 module\ndotnet/_framework/ runtime and assemblies\nNotices + deployment.json" as bundle
+}
+
+node "User's browser / site origin" as browser {
+  node "Page main thread" as page {
+    rectangle "Browser client\nWorkspace, editors, results,\nrequest coordination, recovery" as client <<whitebox>>
+  }
+  node "Compiler module worker\nDownloaded .NET WebAssembly runtime" as worker {
+    rectangle "Browser compilation host\nBootstrap/services + compiler adapter" as adapter <<whitebox>>
+    rectangle "Shared IDL compiler" as compiler <<whitebox>>
+  }
+  node "Monaco editor worker" as monaco
+  database "Origin-local browser storage\nIndexedDB: workspace recovery\nlocalStorage: editor preference" as storage
+}
+
+candidate --> bundle : validate and promote complete candidate
+bundle --> browser : same-origin static asset downloads
+client --> adapter : browser Worker API
+adapter --> compiler : compiler API
+client --> monaco : editor services
+client --> storage : local persistence
+
+caption
+  Workspace source is processed locally
+  No server compiler or RTI runtime is deployed
+endcaption
+
+@enduml

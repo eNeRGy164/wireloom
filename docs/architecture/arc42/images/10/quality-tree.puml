@@ -1,0 +1,33 @@
+@startuml
+
+!include ../wireloom-theme.puml
+
+skinparam rectangle<<qualityRoot>> {
+  BackgroundColor #027473
+  BorderColor #005E5D
+  FontColor #FFFFFF
+  FontStyle bold
+}
+skinparam rectangle<<quality>> {
+  BackgroundColor #E9F7ED
+  BorderColor #027473
+  FontColor #29353F
+}
+
+rectangle "Wireloom quality\nChapter 1 goals remain the primary drivers" as quality <<qualityRoot>>
+
+rectangle "Adoption and contract quality\n\nAPI and DDS compatibility\n.NET build and IDE integration\nGenerated C# quality\nActionable diagnostics" as adoption <<quality>>
+
+rectangle "Engineering quality\n\nPredictable, bounded generation\nEfficiency and responsiveness\nMaintainability\nTrustworthy evidence" as engineering <<quality>>
+
+rectangle "Trust and interaction quality\n\nWorkspace/data preservation\nUsability and browser portability\nLocal-source privacy\nArtifact integrity and recovery" as trust <<quality>>
+
+quality --> adoption
+quality --> engineering
+quality --> trust
+
+caption
+  Required outcomes, acceptance targets, and available evidence are distinct
+  Open budgets and qualification gaps remain explicit in chapter 10
+endcaption
+@enduml

@@ -60,6 +60,10 @@ dotnet run --project tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tes
 
 ## Tests and fixtures
 
+The current test suites use xUnit v3 with Shouldly assertions on
+Microsoft.Testing.Platform. Dependency versions are maintained in
+[`Directory.Packages.props`](Directory.Packages.props).
+
 Structure tests with explicit `// Arrange`, `// Act`, and `// Assert` sections.
 Use C# raw string literals for multiline IDL test bodies.
 
