@@ -265,17 +265,18 @@ public sealed class PlaygroundCompilerAdapterSpecs
             SequenceArrayMapping = "Idl",
             SequenceSize = 12,
             StringSize = 42,
+            UnboundedSupport = true,
             IncludeDirectories = ["/workspace/z", "/workspace/a"],
             EnableEscapeChar = true,
         };
-        var request = new CompileRequest(3, 1, 1, 1, profile,
+        var request = new CompileRequest(4, 1, 1, 1, profile,
             [new WorkspaceFile("/workspace/main.idl", root, true, new FileOptions { Defines = ["FEATURE=1", "DISABLED=1"], Undefines = ["DISABLED"], Strict = true }),
              new WorkspaceFile("/workspace/a/types.idl", shared, false),
              new WorkspaceFile("/workspace/z/types.idl", "invalid IDL", false)], options);
         var expected = IdlCompiler.Compile(
             [new IdlInput("/workspace/main.idl", root, IdlSequenceArrayMapping.Idl, generate: true, strict: true,
-                defines: ["FEATURE=1", "DISABLED=1"], undefines: ["DISABLED"], includeDirectories: ["/workspace/a", "/workspace/z"], sequenceSize: 12, stringSize: 42, enableEscapeChar: true),
-             new IdlInput("/workspace/a/types.idl", shared, IdlSequenceArrayMapping.Idl, generate: false, sequenceSize: 12, stringSize: 42, enableEscapeChar: true),
+                defines: ["FEATURE=1", "DISABLED=1"], undefines: ["DISABLED"], includeDirectories: ["/workspace/a", "/workspace/z"], sequenceSize: 12, stringSize: 42, enableEscapeChar: true, unboundedSupport: true),
+             new IdlInput("/workspace/a/types.idl", shared, IdlSequenceArrayMapping.Idl, generate: false, sequenceSize: 12, stringSize: 42, enableEscapeChar: true, unboundedSupport: true),
              new IdlInput("/workspace/z/types.idl", "invalid IDL", generate: false, enableEscapeChar: true)],
             profile == "7.3.1" ? IdlCompilerProfile.Rti731 : IdlCompilerProfile.Rti770, MD5.HashData, TestContext.Current.CancellationToken);
 
@@ -379,7 +380,9 @@ public sealed class PlaygroundCompilerAdapterSpecs
             ["FileOptions.SequenceArrayMapping"] = "\"RtiCSharp\" | \"Idl\"",
             ["FileOptions.SequenceSize"] = "number",
             ["FileOptions.StringSize"] = "number",
+            ["FileOptions.UnboundedSupport"] = "boolean",
             ["WorkspaceOptions.SequenceArrayMapping"] = "\"RtiCSharp\" | \"Idl\"",
+            ["WorkspaceOptions.UnboundedSupport"] = "boolean",
             ["CompileResponse.Kind"] = "\"compiler\" | \"limit\"",
         };
 
@@ -402,7 +405,7 @@ public sealed class PlaygroundCompilerAdapterSpecs
 
                 fields.ShouldContainKey(key);
                 var optional = type == typeof(WorkspaceFile) && property.Name == "Options" ||
-                               type == typeof(FileOptions) && property.Name is "SequenceArrayMapping" or "SequenceSize" or "StringSize";
+                               type == typeof(FileOptions) && property.Name is "SequenceArrayMapping" or "SequenceSize" or "StringSize" or "UnboundedSupport";
                 fields[key].Optional.ShouldBe(optional, $"{name}.{key} optionality");
                 Regex.Replace(fields[key].Type, @"\s+", "").ShouldBe(Regex.Replace(expected, @"\s+", ""), $"{name}.{key}");
             }
@@ -450,7 +453,7 @@ public sealed class PlaygroundCompilerAdapterSpecs
     {
         return new Dictionary<string, object?>
         {
-            ["protocolVersion"] = 3,
+            ["protocolVersion"] = 4,
             ["workerGeneration"] = 2,
             ["requestId"] = 4,
             ["workspaceRevision"] = 8,

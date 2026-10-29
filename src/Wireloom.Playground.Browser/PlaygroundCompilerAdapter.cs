@@ -8,7 +8,7 @@ namespace Wireloom;
 internal static class PlaygroundCompilerAdapter
 {
     /// <summary>The worker protocol shipped atomically with this adapter.</summary>
-    private const int ProtocolVersion = 3;
+    private const int ProtocolVersion = 4;
     private const int MaxSourceBytes = 256 * 1024;
     private const int MaxDocuments = 512;
     private const int MaxGeneratedBytes = 16 * 1024 * 1024;
@@ -104,7 +104,8 @@ internal static class PlaygroundCompilerAdapter
                 includeDirectories: includeDirectories,
                 sequenceSize: sequenceSize,
                 stringSize: stringSize,
-                enableEscapeChar: request.Options.EnableEscapeChar);
+                enableEscapeChar: request.Options.EnableEscapeChar,
+                unboundedSupport: options.UnboundedSupport ?? request.Options.UnboundedSupport);
         }
 
         if (seenPaths.Any(path => seenPaths.Any(other => other.StartsWith(path + "/", StringComparison.Ordinal))))
@@ -247,6 +248,9 @@ internal sealed record WorkspaceOptions
 
     /// <summary>Gets whether leading underscores escape identifiers across the batch.</summary>
     public bool EnableEscapeChar { get; init; }
+
+    /// <summary>Gets whether project files default to RTI-style unbounded sequence and string semantics.</summary>
+    public bool UnboundedSupport { get; init; }
 }
 
 /// <summary>Configures DdsIdl root metadata and optional declaring-file overrides.</summary>
@@ -269,6 +273,9 @@ internal sealed record FileOptions
 
     /// <summary>Gets an optional legacy unbounded string size override.</summary>
     public int? StringSize { get; init; }
+
+    /// <summary>Gets an optional declaring-file override for unbounded sequence and string semantics.</summary>
+    public bool? UnboundedSupport { get; init; }
 }
 
 /// <summary>Describes one generated C# document.</summary>

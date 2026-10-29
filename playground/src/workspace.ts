@@ -15,7 +15,7 @@ export interface SourceFile extends WorkspaceFile {
 }
 
 export interface Workspace {
-  version: 3;
+  version: 4;
   files: SourceFile[];
   folders: string[];
   profile: Profile;
@@ -30,6 +30,7 @@ export function defaultOptions(): WorkspaceOptions {
     stringSize: 255,
     includeDirectories: [],
     enableEscapeChar: false,
+    unboundedSupport: false,
   };
 }
 
@@ -45,7 +46,7 @@ export function createFile(path: string, source = ""): SourceFile {
 
 export function createWorkspace(source = "", profile: Profile = "7.7.0"): Workspace {
   return {
-    version: 3,
+    version: 4,
     files: [createFile(`${workspaceRoot}/main.idl`, source)],
     folders: [],
     profile,
@@ -55,7 +56,7 @@ export function createWorkspace(source = "", profile: Profile = "7.7.0"): Worksp
 
 export function createEmptyWorkspace(profile: Profile = "7.7.0"): Workspace {
   return {
-    version: 3,
+    version: 4,
     files: [],
     folders: [],
     profile,
@@ -101,6 +102,7 @@ export function validateOptions(value: unknown): WorkspaceOptions {
   if (
     !item ||
     typeof item.enableEscapeChar !== "boolean" ||
+    typeof item.unboundedSupport !== "boolean" ||
     !["RtiCSharp", "Idl"].includes(item.sequenceArrayMapping) ||
     ![item.sequenceSize, item.stringSize].every((size) => Number.isInteger(size) && size > 0 && size <= 2147483647)
   )
@@ -137,6 +139,7 @@ function validateFileOptions(value: unknown): asserts value is FileOptions {
   }
   if (
     (item.sequenceArrayMapping !== undefined && !["RtiCSharp", "Idl"].includes(item.sequenceArrayMapping)) ||
+    (item.unboundedSupport !== undefined && typeof item.unboundedSupport !== "boolean") ||
     [item.sequenceSize, item.stringSize].some(
       (size) => size !== undefined && (!Number.isInteger(size) || size <= 0 || size > 2147483647),
     )
@@ -145,10 +148,15 @@ function validateFileOptions(value: unknown): asserts value is FileOptions {
 }
 
 export function validateWorkspace(value: unknown): Workspace {
-  const item = value as Workspace | null;
+  const raw = value as
+    | (Omit<Workspace, "version"> & { version: number; options: WorkspaceOptions & { unboundedSupport?: boolean } })
+    | null;
+  const item = (
+    raw?.version === 3 ? { ...raw, version: 4 as const, options: { ...raw.options, unboundedSupport: false } } : raw
+  ) as Workspace | null;
   if (
     !item ||
-    item.version !== 3 ||
+    item.version !== 4 ||
     !["7.3.1", "7.7.0"].includes(item.profile) ||
     !Array.isArray(item.files) ||
     item.files.length > maxFiles ||
@@ -279,7 +287,8 @@ export class RecoveryStore {
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
-    return value === undefined ? undefined : validateWorkspace(value);
+    if (value === undefined) return undefined;
+    return validateWorkspace(value);
   }
 
   save(workspace: Workspace): Promise<unknown> {

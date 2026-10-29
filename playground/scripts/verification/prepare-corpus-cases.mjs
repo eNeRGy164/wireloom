@@ -13,6 +13,8 @@ const selection = [
   ["01-full-widths", true],
   ["03-enums-aliases", true],
   ["04-strings", true],
+  ["04-unbounded-string-aliases", true],
+  ["05-unbounded-sequence-aliases", true],
   ["05-shapes", true],
   ["06-aggregates", true],
   ["07-union-enum", true],
@@ -27,6 +29,7 @@ const selection = [
   ["12-error-directive", false],
   ["14-typed-defaults", true],
   ["14-autoid-scope", true],
+  ["14-unbounded-support", true],
 ];
 const cases = [];
 const provenance = [];
@@ -34,13 +37,23 @@ for (const [id, accepted] of selection) {
   const entry = [...manifest.positiveCases, ...manifest.negativeCases].find((value) => value.id === id);
   assert(entry, `Missing retained corpus case: ${id}`);
   assert(!entry.defines?.length && !entry.strict && !entry.sequenceArrayMapping, `Nondefault options: ${id}`);
+  assert(
+    (entry.rtiddsgenOptions ?? []).every((option) => option === "-unboundedSupport"),
+    `Unsupported native options: ${id}`,
+  );
+  const unboundedSupport = entry.rtiddsgenOptions?.includes("-unboundedSupport") ?? false;
   const paths = [entry.idl];
   if (id === "14-autoid-scope") paths.push("idl/includes/autoid-hash-include.idl");
   const files = [];
   for (const [index, path] of paths.entries()) {
     const bytes = await readFile(resolve(corpus, path));
     const virtualPath = index === 0 ? `/workspace/${id}.idl` : "/workspace/includes/autoid-hash-include.idl";
-    files.push({ path: virtualPath, source: bytes.toString("utf8"), isGenerationRoot: index === 0 });
+    files.push({
+      path: virtualPath,
+      source: bytes.toString("utf8"),
+      isGenerationRoot: index === 0,
+      options: { defines: [], undefines: [], strict: false, unboundedSupport },
+    });
     provenance.push({
       caseId: id,
       path: `docs/corpus/${path}`,

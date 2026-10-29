@@ -13,6 +13,7 @@ export interface FileOptions {
   sequenceArrayMapping?: "RtiCSharp" | "Idl";
   sequenceSize?: number;
   stringSize?: number;
+  unboundedSupport?: boolean;
 }
 
 export interface WorkspaceOptions {
@@ -21,10 +22,11 @@ export interface WorkspaceOptions {
   stringSize: number;
   includeDirectories: string[];
   enableEscapeChar: boolean;
+  unboundedSupport: boolean;
 }
 
 export interface CompileRequest {
-  protocolVersion: 3;
+  protocolVersion: 4;
   workerGeneration: number;
   requestId: number;
   workspaceRevision: number;

@@ -61,7 +61,7 @@ test("recovery preserves the selected profile, file identity, and exact source",
 
   const restored = validateWorkspace(original);
 
-  assert.equal(restored.version, 3);
+  assert.equal(restored.version, 4);
 
   assert.equal(restored.profile, original.profile);
 
@@ -76,9 +76,27 @@ test("recovery preserves the selected profile, file identity, and exact source",
   assert.equal(restored.files[0].source, source);
 });
 
+test("legacy recovery remains readable when migration persistence is unavailable", async (context) => {
+  // Arrange
+  const original = new RecoveryStore();
+  await original.open();
+  context.after(() => original.clear());
+  await original.save(saved("struct Legacy { long value; };"));
+  const restored = new RecoveryStore();
+  restored.save = () => Promise.reject(new Error("Storage is read-only"));
+
+  // Act
+  const workspace = await restored.open();
+
+  // Assert
+  assert.equal(workspace.version, 4);
+  assert.equal(workspace.options.unboundedSupport, false);
+  assert.equal(workspace.files[0].source, "struct Legacy { long value; };");
+});
+
 test("empty workspace creation keeps the profile and starts without files or folders", () => {
   assert.deepEqual(createEmptyWorkspace(), {
-    version: 3,
+    version: 4,
     files: [],
     folders: [],
     profile: "7.7.0",
@@ -97,7 +115,7 @@ test("recovery rejects unsupported schemas, profiles, malformed workspace collec
 
     { ...saved(""), version: 2 },
 
-    { ...saved(""), version: 4 },
+    { ...saved(""), version: 5 },
 
     { ...saved(""), profile: "unknown" },
 
@@ -222,7 +240,7 @@ test("IndexedDB restores invalid stored data as a storage error", async () => {
   }
 });
 
-test("v3 recovery supports empty and rootless workspaces, nested files, and empty folders", () => {
+test("v4 recovery supports empty and rootless workspaces, nested files, and empty folders", () => {
   let workspace = createWorkspace("struct Main { long x; };");
 
   workspace = addFolder(workspace, "/workspace/includes");
@@ -250,6 +268,17 @@ test("v3 recovery supports empty and rootless workspaces, nested files, and empt
   assert.deepEqual(validateWorkspace({ ...createWorkspace(), files: [] }).files, []);
 
   assert.equal(sourceBytes(createWorkspace("\u00e9")), 2);
+});
+
+test("v3 workspace migration defaults unbounded support off and emits the v4 form", () => {
+  const legacy = { ...createWorkspace("struct Legacy { long value; };"), version: 3 };
+  delete legacy.options.unboundedSupport;
+
+  const upgraded = validateWorkspace(legacy);
+
+  assert.equal(upgraded.version, 4);
+  assert.equal(upgraded.options.unboundedSupport, false);
+  assert.equal(upgraded.files[0].source, legacy.files[0].source);
 });
 
 test("virtual paths are normalized and bounded without interpreting source folders", () => {
@@ -289,7 +318,7 @@ test("workspace validation rejects malformed identities, settings, collisions, a
 
   for (const mutation of [
     (w) => {
-      w.version = 4;
+      w.version = 5;
     },
     (w) => {
       w.profile = "unknown";
@@ -371,6 +400,9 @@ test("workspace validation rejects malformed identities, settings, collisions, a
     },
     (w) => {
       w.files[0].options.sequenceSize = 0;
+    },
+    (w) => {
+      w.files[0].options.unboundedSupport = "yes";
     },
 
     (w) => {

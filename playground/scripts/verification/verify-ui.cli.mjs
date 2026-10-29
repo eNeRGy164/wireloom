@@ -84,18 +84,26 @@ async (page) => {
             worker.onmessage = ({ data }) =>
               data.type === "result" ? resolve(data.response) : reject(new Error(data.message));
             worker.postMessage({
-              protocolVersion: 3,
+              protocolVersion: 4,
               workerGeneration: 1,
               requestId: 1,
               workspaceRevision: 1,
               profile,
-              files: [{ path, source, isGenerationRoot: true, options: { defines: [], undefines: [], strict: false } }],
+              files: [
+                {
+                  path,
+                  source,
+                  isGenerationRoot: true,
+                  options: { defines: [], undefines: [], strict: false, unboundedSupport: false },
+                },
+              ],
               options: {
                 sequenceArrayMapping: "RtiCSharp",
                 sequenceSize: 100,
                 stringSize: 255,
                 includeDirectories: [],
                 enableEscapeChar: false,
+                unboundedSupport: false,
               },
             });
           });
