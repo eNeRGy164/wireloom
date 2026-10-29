@@ -27,6 +27,11 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
             if (facts.IsString)
             {
                 var stringType = (StringEmissionType)facts.ValueType;
+                if (stringType.IsUnbounded)
+                {
+                    return "This string has no IDL maximum length.";
+                }
+
                 return $"Its maximum length is <c>{bound}</c> {StringBoundUnit(stringType.IsWide)}.";
             }
 
@@ -60,12 +65,16 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
             var unit = StringBoundUnit(stringType.IsWide);
             return stringType.IsBounded
                 ? $"Each {stringKind} IDL string element is limited to <c>{stringType.Bound}</c> {unit}."
-                : $"Each unbounded {stringKind} IDL string element has an effective limit of <c>{stringType.Bound}</c> {unit}.";
+                : stringType.IsUnbounded
+                    ? $"Each {stringKind} IDL string element is unbounded."
+                    : $"Each unbounded {stringKind} IDL string element has an effective limit of <c>{stringType.Bound}</c> {unit}.";
         }
 
         if (type is SequenceEmissionType sequence)
         {
-            var summary = $"Each nested sequence is limited to <c>{sequence.Bound}</c> elements.";
+            var summary = sequence.IsUnbounded
+                ? "Each nested sequence is unbounded."
+                : $"Each nested sequence is limited to <c>{sequence.Bound}</c> elements.";
             var nestedConstraints = NestedCollectionConstraintSummary(sequence.Element);
             return nestedConstraints is null ? summary : $"{summary} {nestedConstraints}";
         }

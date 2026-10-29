@@ -19,6 +19,7 @@ internal static class GeneratorInputFactory
         options.TryGetValue("build_metadata.AdditionalFiles.SequenceArrayMapping", out var sequenceArrayMapping);
         options.TryGetValue("build_metadata.AdditionalFiles.SequenceSize", out var sequenceSize);
         options.TryGetValue("build_metadata.AdditionalFiles.StringSize", out var stringSize);
+        options.TryGetValue("build_metadata.AdditionalFiles.UnboundedSupport", out var unboundedSupportSetting);
 
         if (string.IsNullOrWhiteSpace(sequenceArrayMapping))
         {
@@ -28,22 +29,38 @@ internal static class GeneratorInputFactory
         inputAndOptions.Options.GlobalOptions.TryGetValue("build_property.DdsIdlSequenceSize", out var projectSequenceSize);
         inputAndOptions.Options.GlobalOptions.TryGetValue("build_property.DdsIdlStringSize", out var projectStringSize);
         inputAndOptions.Options.GlobalOptions.TryGetValue("build_property.DdsIdlEnableEscapeChar", out var enableEscapeCharSetting);
+        inputAndOptions.Options.GlobalOptions.TryGetValue("build_property.DdsIdlUnboundedSupport", out var projectUnboundedSupportSetting);
         var (enableEscapeChar, invalidEnableEscapeCharValue) = ParseBooleanSetting(enableEscapeCharSetting);
+        var (unboundedSupport, invalidUnboundedSupportValue) = ParseBooleanSetting(
+            string.IsNullOrWhiteSpace(unboundedSupportSetting) ? projectUnboundedSupportSetting : unboundedSupportSetting);
+        var isGenerationRoot = string.Equals(generate, "true", StringComparison.OrdinalIgnoreCase);
+        string? invalidBooleanSettingName = null;
+        if (invalidEnableEscapeCharValue is not null && isGenerationRoot)
+        {
+            invalidBooleanSettingName = "DdsIdlEnableEscapeChar";
+        }
+        else if (invalidUnboundedSupportValue is not null)
+        {
+            invalidBooleanSettingName = string.IsNullOrWhiteSpace(unboundedSupportSetting)
+                ? "DdsIdlUnboundedSupport"
+                : "UnboundedSupport metadata";
+        }
 
         return new GeneratorInput(
             new IdlInput(
                 input.Path,
                 input.GetText(cancellationToken)?.ToString() ?? string.Empty,
                 ParseSequenceArrayMapping(sequenceArrayMapping),
-                generate: string.Equals(generate, "true", StringComparison.OrdinalIgnoreCase),
+                generate: isGenerationRoot,
                 strict: string.Equals(strict, "true", StringComparison.OrdinalIgnoreCase),
                 defines: ParseSymbols(defines),
                 undefines: ParseSymbols(undefines),
                 includeDirectories: ParseIncludeDirectories(includeDirectories),
                 sequenceSize: ParsePositiveSize(sequenceSize, projectSequenceSize, 100),
                 stringSize: ParsePositiveSize(stringSize, projectStringSize, 255),
-                enableEscapeChar: enableEscapeChar),
-            invalidEnableEscapeCharValue);
+                enableEscapeChar: enableEscapeChar,
+                unboundedSupport: unboundedSupport),
+            invalidBooleanSettingName);
     }
 
     private static IdlSequenceArrayMapping ParseSequenceArrayMapping(string? value)
@@ -105,9 +122,12 @@ internal static class GeneratorInputFactory
     }
 }
 
-internal sealed class GeneratorInput(IdlInput input, string? invalidEnableEscapeCharValue)
+/// <summary>Pairs a resolved compiler input with an invalid Boolean setting name, if any.</summary>
+internal sealed class GeneratorInput(IdlInput input, string? invalidBooleanSettingName)
 {
+    /// <summary>Gets the compiler input resolved from project and file settings.</summary>
     internal IdlInput Input { get; } = input;
 
-    internal string? InvalidEnableEscapeCharValue { get; } = invalidEnableEscapeCharValue;
+    /// <summary>Gets the setting name used in a source-located configuration diagnostic.</summary>
+    internal string? InvalidBooleanSettingName { get; } = invalidBooleanSettingName;
 }

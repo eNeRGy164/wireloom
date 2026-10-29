@@ -145,7 +145,7 @@ internal static class EmissionTypeProjector
         type switch
         {
             IdlType.Primitive primitive => new PrimitiveEmissionType(IdlNaming.NormalizeIdlType(primitive.Name), IdlNaming.MapPrimitive(primitive.Name)),
-            IdlType.StringType stringType => new StringEmissionType(stringType.IsWide, stringType.Bound, stringType.IsBounded),
+            IdlType.StringType stringType => new StringEmissionType(stringType.IsWide, stringType.Bound, stringType.IsBounded, stringType.IsUnbounded),
             IdlType.Enum @enum => new EnumEmissionType(
                 IdlNaming.ResolvedTypeReference(@enum.QualifiedName, currentNamespace),
                 @enum.DefaultValue,
@@ -191,7 +191,7 @@ internal static class EmissionTypeProjector
         var element = ProjectMemberType(sequence.Element, currentNamespace);
 
         return new SequenceEmissionType(element, sequence.EffectiveBound, $"ISequence<{element.CSharpType}>", sequence.Dimensions,
-            isBounded: sequence.Bound is not null);
+            isBounded: sequence.Bound is not null, isUnbounded: sequence.IsUnbounded);
     }
 
     private static ArrayEmissionType ProjectArray(IdlType.Array array, string? currentNamespace)

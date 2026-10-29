@@ -9,6 +9,68 @@ namespace Wireloom.Generation.Tests;
 
 public sealed class GeneratorSpecs
 {
+    /// <summary>Resolves the unbounded mode from the project default and explicit file overrides.</summary>
+    [Theory]
+    [InlineData(null, null, false)]
+    [InlineData("true", null, true)]
+    [InlineData("false", "true", true)]
+    [InlineData("true", "false", false)]
+    [InlineData(" true ", " ", true)]
+    [InlineData("false", " TRUE ", true)]
+    [InlineData("false", "false", false)]
+    public void SelectsUnboundedSupport(string? projectValue, string? fileValue, bool unboundedSupport)
+    {
+        // Arrange
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
+        if (projectValue is not null)
+        {
+            metadata["build_property.DdsIdlUnboundedSupport"] = projectValue;
+        }
+        if (fileValue is not null)
+        {
+            metadata["UnboundedSupport"] = fileValue;
+        }
+
+        // Act
+        var result = Run("struct Sample { sequence<long> values; string text; };",
+            LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldBeEmpty();
+        var generated = string.Join(Environment.NewLine, result.Output.SyntaxTrees.Select(tree => tree.ToString()));
+        if (unboundedSupport)
+        {
+            generated.ShouldContain("values.Initialize<int>(max: 0, absoluteMax: SequenceType.Unbounded");
+            generated.ShouldContain("text.ToNative(sample.text, StringType.Unbounded)");
+        }
+        else
+        {
+            generated.ShouldContain("values.Initialize<int>(max: 100, absoluteMax: 100");
+            generated.ShouldContain("text.ToNative(sample.text, 255)");
+        }
+    }
+
+    /// <summary>Reports the invalid setting name without interpreting its supplied value as a setting identifier.</summary>
+    [Theory]
+    [InlineData("build_property.DdsIdlUnboundedSupport", "enabled", "DdsIdlUnboundedSupport")]
+    [InlineData("UnboundedSupport", "enabled", "UnboundedSupport metadata")]
+    [InlineData("build_property.DdsIdlEnableEscapeChar", "DdsIdlUnboundedSupport=enabled", "DdsIdlEnableEscapeChar")]
+    public void RejectsInvalidBooleanSettingWithItsOwnName(string setting, string value, string expectedName)
+    {
+        // Arrange
+        var metadata = new Dictionary<string, string> { ["Generate"] = "true", [setting] = value };
+
+        // Act
+        var result = Run("struct Sample { long value; };", LanguageVersion.CSharp12, metadata, includeRuntime: true);
+
+        // Assert
+        result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0001"
+            && diagnostic.GetMessage().Contains($"{expectedName} must be", StringComparison.Ordinal)
+            && diagnostic.Location.GetLineSpan().Path == "sample.idl");
+        string.Join(Environment.NewLine, result.Output.SyntaxTrees.Select(tree => tree.ToString()))
+            .ShouldNotContain("class Sample");
+    }
+
     [Theory]
     [InlineData("7.3.1", IdlCompilerProfile.Rti731)]
     [InlineData("7.7.0", IdlCompilerProfile.Rti770)]

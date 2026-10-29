@@ -126,7 +126,9 @@ internal static class ManagedDataTypeEmitter
                 var sequenceRemarks = "The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound.";
                 if (EmissionTypeProjector.UnwrapValueEmissionType(field.Type) is SequenceEmissionType { IsBounded: false } sequenceType)
                 {
-                    sequenceRemarks += $" For an unbounded IDL sequence, an effective limit of {sequenceType.Bound} elements is set. RTI uses the bound from the type metadata when processing DDS data.";
+                    sequenceRemarks += sequenceType.IsUnbounded
+                        ? " This IDL sequence is unbounded."
+                        : $" For an unbounded IDL sequence, an effective limit of {sequenceType.Bound} elements is set. RTI uses the bound from the type metadata when processing DDS data.";
                 }
 
                 writer.WriteXmlRemarks(sequenceRemarks);
@@ -141,8 +143,10 @@ internal static class ManagedDataTypeEmitter
             {
                 var stringKind = field.IsWideString ? "wide" : "narrow";
                 var unit = MemberEmissionRenderer.StringBoundUnit(field.IsWideString);
-                var remark = !field.IsBoundedString
-                    ? $"This unbounded {stringKind} IDL string has an effective limit of {field.Bound} {unit}. The generated C# property does not enforce the effective limit when assigned."
+                var remark = !field.IsBoundedString && ValueIsUnbounded(field.Type)
+                    ? $"This {stringKind} IDL string is unbounded."
+                    : !field.IsBoundedString
+                        ? $"This unbounded {stringKind} IDL string has an effective limit of {field.Bound} {unit}. The generated C# property does not enforce the effective limit when assigned."
                     : $"The bound on this {stringKind} IDL string is measured in {unit}. The generated C# property does not check the bound when assigned.";
                 writer.WriteXmlRemarks(remark);
             }
@@ -209,6 +213,9 @@ internal static class ManagedDataTypeEmitter
         writer.CloseBlock();
         writer.CloseBlock();
     }
+
+    private static bool ValueIsUnbounded(EmissionTypePlan type) =>
+        EmissionTypeProjector.UnwrapValueEmissionType(type) is StringEmissionType { IsUnbounded: true };
 
     private static void EmitDefaultConstructor(GeneratedSourceWriter writer, string typeName, IReadOnlyList<MemberEmissionPlan> fields)
     {

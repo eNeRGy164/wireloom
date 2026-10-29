@@ -37,14 +37,15 @@ internal sealed class PrimitiveEmissionType(string idlName, string cSharpType)
 }
 
 /// <summary>Represents a bounded IDL string projected to C#.</summary>
-internal sealed class StringEmissionType(bool isWide, int bound, bool isBounded)
+internal sealed class StringEmissionType(bool isWide, int bound, bool isBounded, bool isUnbounded = false)
     : EmissionTypePlan("string")
 {
     public override EmissionShape Shape { get; } = new(EmissionShapeKind.String);
     public bool IsWide { get; } = isWide;
     public bool IsBounded { get; } = isBounded;
+    public bool IsUnbounded { get; } = isUnbounded;
     public override bool IsWideString => IsWide;
-    public override int? Bound { get; } = bound;
+    public override int? Bound { get; } = isUnbounded ? -1 : bound;
 }
 
 /// <summary>Represents an IDL enum projected to a C# type.</summary>
@@ -91,13 +92,14 @@ internal sealed class AliasEmissionType(string qualifiedName, EmissionTypePlan t
 }
 
 /// <summary>Represents a bounded IDL sequence projected to a C# type.</summary>
-internal sealed class SequenceEmissionType(EmissionTypePlan element, int bound, string cSharpType, IReadOnlyList<int>? dimensions = null, bool isBounded = true)
+internal sealed class SequenceEmissionType(EmissionTypePlan element, int bound, string cSharpType, IReadOnlyList<int>? dimensions = null, bool isBounded = true, bool isUnbounded = false)
     : EmissionTypePlan(cSharpType)
 {
     public override EmissionShape Shape { get; } = new(EmissionShapeKind.Sequence, element.Shape);
-    public override int? Bound { get; } = bound;
+    public override int? Bound { get; } = isUnbounded ? null : bound;
     /// <summary>Gets whether the IDL declares an explicit sequence bound.</summary>
     public bool IsBounded { get; } = isBounded;
+    public bool IsUnbounded { get; } = isUnbounded;
     public override EmissionTypePlan Element { get; } = element;
     public override IReadOnlyList<int> Dimensions { get; } = dimensions ?? [];
 }

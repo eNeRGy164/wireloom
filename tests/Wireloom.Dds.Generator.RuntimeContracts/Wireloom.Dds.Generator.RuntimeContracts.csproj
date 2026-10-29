@@ -24,6 +24,7 @@
   <ItemGroup>
     <DdsIdl Include="Fixtures/*.idl" />
     <DdsIdl Update="Fixtures/sequence-arrays.idl" SequenceArrayMapping="Idl" />
+    <DdsIdl Update="Fixtures/recursive-startup.idl" UnboundedSupport="true" />
   </ItemGroup>
 
   <ItemGroup>

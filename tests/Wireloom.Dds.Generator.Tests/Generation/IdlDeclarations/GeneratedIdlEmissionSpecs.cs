@@ -252,8 +252,9 @@ public sealed class GeneratedIdlEmissionSpecs
     public void EmitsUnboundedRecursiveSequenceWithImportedSequenceType()
     {
         // Arrange
-        var input = Input("recursive-sequence-bound.idl",
-            "module RecursiveSupport { struct Node { sequence<Node> children; }; };");
+        var input = new IdlInput("recursive-sequence-bound.idl",
+            "module RecursiveSupport { struct Node { sequence<Node> children; }; };",
+            unboundedSupport: true);
 
         // Act
         var documents = CompileSources(input);
@@ -269,6 +270,27 @@ public sealed class GeneratedIdlEmissionSpecs
         unmanaged.ShouldContain("SequenceType.Unbounded");
         unmanaged.ShouldNotContain("Rti.Types.Dynamic.SequenceType.Unbounded");
         unmanaged.ShouldNotContain("using Rti.Types;");
+    }
+
+    [Theory]
+    [InlineData(false, "100")]
+    [InlineData(true, "SequenceType.Unbounded")]
+    public void EmitsRecursiveSequenceMetadataAndNativeLimitsForSelectedUnboundedMode(bool unboundedSupport, string expectedBound)
+    {
+        // Arrange
+        var input = new IdlInput("recursive-sequence-mode.idl",
+            "module RecursiveSupport { struct Node { sequence<Node> children; }; };",
+            unboundedSupport: unboundedSupport);
+
+        // Act
+        var documents = CompileSources(input);
+
+        // Assert
+        var plugin = documents["RecursiveSupport.Implementation.NodePlugin.g.cs"].Source;
+        plugin.ShouldContain($"CreateSequenceWithAccessInfo(dtf, NodeSupport.GetOrCreateInstanceImpl().GetDynamicTypeInternal(isPublic), {expectedBound})");
+
+        var unmanaged = documents["RecursiveSupport.Implementation.NodeUnmanaged.g.cs"].Source;
+        unmanaged.ShouldContain($"Initialize<Node, NodeUnmanaged>(max: 0, absoluteMax: {expectedBound}, allocateMemory);");
     }
 
     [Fact]

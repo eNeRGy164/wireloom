@@ -119,7 +119,7 @@ internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken c
             }
 
             var resolvedType = typedef.IsString
-                ? new IdlType.StringType(typedef.IsWideString, typedef.StringBound, typedef.IsStringBounded)
+                ? new IdlType.StringType(typedef.IsWideString, typedef.StringBound, typedef.IsStringBounded, typedef.IsUnboundedString)
                 : typeResolver.Resolve(typedef.Target, typedef.Namespace, location.Input, application.Offset, typedef.TargetWasEscaped);
             if (resolvedType is null)
             {

@@ -199,6 +199,11 @@ internal sealed partial class MemberEmissionPlan
             return $"{nativeFieldPrefix}{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, {KeysOnlyArgument(forwardKeysOnly)}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
         }
 
+        if (ElementType is StringEmissionType)
+        {
+            return $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)}, maxStrLen: {ElementStringBoundArgument});";
+        }
+
         return $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName}, dimension: {ArraySourceEmitter.ElementCount(Dimensions)});";
     }
 
@@ -206,22 +211,22 @@ internal sealed partial class MemberEmissionPlan
     {
         if (IsStringSequence && IsOptional)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName}, {Bound}, {ElementType!.Bound});";
+            return $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName}, {SequenceBoundArgument}, {ElementType!.Bound});";
         }
 
         if (IsStringSequence)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName}, {ElementType!.Bound});";
+            return $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName}, {ElementStringBoundArgument});";
         }
 
         if (IsOptional && HasAggregateElement)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, {Bound});";
+            return $"{nativeFieldPrefix}{EscapedName}.ToNative<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}, {ElementUnmanagedType(namespaceName)}>(sample.{EscapedName}, {SequenceBoundArgument});";
         }
 
         if (IsOptional)
         {
-            return $"{nativeFieldPrefix}{EscapedName}.ToNative((Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>)sample.{EscapedName}!, {Bound});";
+            return $"{nativeFieldPrefix}{EscapedName}.ToNative((Sequence<{IdlNaming.TypeReference(ElementCSharpType!, namespaceName)}>)sample.{EscapedName}!, {SequenceBoundArgument});";
         }
 
         if (HasAggregateElement)
@@ -247,7 +252,7 @@ internal sealed partial class MemberEmissionPlan
         forwardKeysOnly ? "keysOnly" : "keysOnly: false";
 
     private string BuildStringToNativeStatement(string nativeFieldPrefix) =>
-        $"{nativeFieldPrefix}{EscapedName}{(IsOptional ? ".ToNativeOptional(sample." : ".ToNative(sample.")}{EscapedName}, {Bound});";
+        $"{nativeFieldPrefix}{EscapedName}{(IsOptional ? ".ToNativeOptional(sample." : ".ToNative(sample.")}{EscapedName}, {StringBoundArgument});";
 
     private string BuildPrimitiveToNativeStatement(string nativeFieldPrefix) => IsOptional
         ? $"{nativeFieldPrefix}{EscapedName}.ToNative(sample.{EscapedName});"

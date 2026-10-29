@@ -42,7 +42,9 @@ internal static class CollectionAliasManagedEmitter
 
         if (plan.IsSequence)
         {
-            var sequenceSummary = $"Gets the sequence value represented by this typedef. Its maximum number of elements is <c>{plan.SequenceBound}</c>.";
+            var sequenceSummary = plan.IsUnboundedSequence
+                ? "Gets the sequence value represented by this typedef. The sequence has no IDL maximum length."
+                : $"Gets the sequence value represented by this typedef. Its maximum number of elements is <c>{plan.SequenceBound}</c>.";
             var elementConstraints = MemberEmissionRenderer.NestedCollectionConstraintSummary(plan.ElementPlan);
             if (elementConstraints is not null)
             {
@@ -50,14 +52,19 @@ internal static class CollectionAliasManagedEmitter
             }
             writer.WriteXmlSummary(sequenceSummary);
             var sequenceRemarks = "Use the mutable sequence instance to add or remove elements; the property itself is getter-only.";
-            if (declaration.Bound is null)
+            if (declaration.Bound is null && !plan.IsUnboundedSequence)
             {
                 sequenceRemarks += $" For an unbounded IDL sequence, an effective limit of {plan.SequenceBound} elements is set. RTI uses the bound from the type metadata when processing DDS data.";
             }
 
             writer.WriteXmlRemarks(sequenceRemarks);
             writer.WriteXmlSeeAlso($"https://community.rti.com/static/documentation/connext-dds/{profile.RtiVersion}/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html", $"RTI Connext {profile.RtiVersion} ISequence API");
-            writer.WriteLine($"[Bound({plan.SequenceBound})]");
+
+            if (!plan.IsUnboundedSequence)
+            {
+                writer.WriteLine($"[Bound({plan.SequenceBound})]");
+            }
+
             writer.WriteLine($"public ISequence<{elementReference}> Value {{ get; }} = null!;");
             writer.BlankLine();
 
@@ -244,7 +251,9 @@ internal static class CollectionAliasManagedEmitter
                 var unit = MemberEmissionRenderer.StringBoundUnit(plan.IsWideString);
                 var stringRemarks = plan.IsStringBounded
                     ? $"The bound on this {stringKind} IDL string is measured in {unit}. The generated C# property does not check the bound when assigned."
-                    : $"This unbounded {stringKind} IDL string has an effective limit of {plan.StringBound} {unit}. The generated C# property does not enforce the effective limit when assigned.";
+                    : plan.IsUnboundedString
+                        ? $"This {stringKind} IDL string is unbounded."
+                        : $"This unbounded {stringKind} IDL string has an effective limit of {plan.StringBound} {unit}. The generated C# property does not enforce the effective limit when assigned.";
                 writer.WriteXmlRemarks(stringRemarks);
                 writer.WriteXmlSeeAlso($"https://community.rti.com/static/documentation/connext-dds/{profile.RtiVersion}/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", $"RTI Connext {profile.RtiVersion} string and wide-string bounds");
             }

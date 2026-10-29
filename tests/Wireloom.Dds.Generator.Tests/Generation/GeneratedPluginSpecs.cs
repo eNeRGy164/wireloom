@@ -543,7 +543,8 @@ public sealed class GeneratedPluginSpecs
         var documents = CompileSources(input);
 
         var producerPlugin = documents["AliasInheritance.Implementation.ProducerPlugin.g.cs"].Source;
-        producerPlugin.ShouldContain("using var dtString = dtf.CreateString(16);");
+        producerPlugin.ShouldContain("var dtString = dtf.CreateString(16);");
+        producerPlugin.ShouldNotContain("using var dtString");
         producerPlugin.ShouldContain("\"Producer\", dtString);");
         producerPlugin.ShouldContain("TypeKind.String,");
         producerPlugin.ShouldContain("defaultValue: new AnnotationParameterValue { StringValue = \"\" },");

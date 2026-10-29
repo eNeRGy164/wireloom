@@ -17,7 +17,7 @@ internal sealed class IdlTypeBinder(IdlSymbolTable symbols)
     public IdlType Bind(IdlType type) => type switch
     {
         IdlType.Reference reference => Bind(reference),
-        IdlType.Sequence sequence => new IdlType.Sequence(Bind(sequence.Element), sequence.Bound, sequence.Dimensions, sequence.EffectiveBound),
+        IdlType.Sequence sequence => new IdlType.Sequence(Bind(sequence.Element), sequence.Bound, sequence.Dimensions, sequence.EffectiveBound, sequence.IsUnbounded),
         IdlType.Array array => new IdlType.Array(Bind(array.Element), array.Dimensions),
         _ => type
     };
