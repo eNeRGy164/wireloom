@@ -54,12 +54,20 @@ Use separate projects/builds for variants that need independent external
 symbols or strictness.
 
 **Workspace Settings** configures project defaults for sequence-array mapping,
-unbounded sequence size, and unbounded string size. It also configures
+RTI-style unbounded support, sequence size, and string size. It also configures
 escape-character handling for the batch and include folders. Defaults are
 `RtiCSharp`, 100, and 255. File Properties shows these effective project
 values by default. Changing a file's sequence or string size saves a file-level
 preference that remains in effect when project defaults change; **Use project
 setting** clears that override.
+
+RTI-style unbounded support defaults to disabled and applies to sequences,
+narrow strings, and wide strings together. File Properties selects **Use
+project setting**, **Enabled**, or **Disabled** for declarations in that file,
+including include-only files. A root override does not flow into included
+files. Explicit IDL bounds remain authoritative. Size controls are disabled
+where the effective mode is unbounded; their values are retained and remain
+validated. Disabling unbounded support restores those finite settings.
 
 Quoted includes search the including file's folder first, then configured
 include folders. Angle includes search configured folders only. No folders
@@ -101,11 +109,15 @@ host files.
 Failed operations use a red notice with an **Error** label and alert semantics
 in both themes. Notices can be dismissed; hovering or focusing pauses their timer.
 
-The existing `wireloom-playground` IndexedDB database stores a version-3
+The `wireloom-playground` IndexedDB database stores a version-4
 workspace record: file identities, paths, sources, file settings, roles,
-explicit folders, active file, workspace settings, and profile. Version 3 is the
-current format. Older, unknown, or malformed records report a recovery error
-and leave editing available. Reload regenerates output.
+explicit folders, active file, workspace settings, and profile. Valid version-3
+records are upgraded in memory with unbounded support disabled and file modes
+inherited. The restored workspace is saved in version-4 format through the
+normal recovery-save path; a failed save does not prevent reading the source.
+Other versions and malformed records report a recovery error and leave editing
+available. Reload regenerates output. Source ZIP exports use version 4, which
+older clients reject instead of ignoring unbounded settings.
 
 ## Editor services and preferences
 
@@ -131,7 +143,7 @@ The workspace accepts at most 512 source files, 512 explicit folders, and
 compilation is ineligible. See the [protocol limits](../reference/playground-protocol.md)
 for path/settings validation and host rejection rules.
 
-## Worker contract v3
+## Worker contract v4
 
 The browser client and compiler worker ship together. Their request/response
 schema, validation limits, and failure categories are documented in the

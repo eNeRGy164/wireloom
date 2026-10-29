@@ -175,6 +175,8 @@ The adapter's input metadata includes keys such as
 `build_metadata.AdditionalFiles.Strict`. The
 [configuration guide](../../guides/configuration.md) owns the full settings
 contract and precedence rules.
+The compiler-visible input metadata also carries the unbounded-support
+override; it is resolved per declaring file by the input factory.
 
 ### 5.3.3 Playground
 
@@ -192,12 +194,12 @@ runtime are neighbors of this view.
 #### Workspace protocol payload examples
 
 The .NET adapter DTOs own the JSON contract; TypeScript mirrors it.
-[The workspace guide](../../guides/playground-workspaces.md#worker-contract-v3)
+[The workspace guide](../../guides/playground-workspaces.md#worker-contract-v4)
 is the authoritative protocol reference. Example request payload:
 
 ```json
 {
-  "protocolVersion": 3,
+  "protocolVersion": 4,
   "workerGeneration": 1,
   "requestId": 1,
   "workspaceRevision": 1,
@@ -219,7 +221,8 @@ is the authoritative protocol reference. Example request payload:
     "sequenceSize": 100,
     "stringSize": 255,
     "includeDirectories": [],
-    "enableEscapeChar": false
+    "enableEscapeChar": false,
+    "unboundedSupport": false
   }
 }
 ```
@@ -230,7 +233,7 @@ diagnostic fields. The worker message union wraps this payload in
 
 ```json
 {
-  "protocolVersion": 3,
+  "protocolVersion": 4,
   "workerGeneration": 1,
   "requestId": 1,
   "workspaceRevision": 1,
@@ -255,7 +258,7 @@ diagnostic fields. The worker message union wraps this payload in
 Compiler diagnostics have no span length in the current core API; the browser
 DTO's `length` is zero. Host outcome variants are documented in
 [chapter 6](06-runtime-view.md#621-preview-the-current-workspace); protocol rules
-are in the [worker contract](../../guides/playground-workspaces.md#worker-contract-v3).
+are in the [worker contract](../../guides/playground-workspaces.md#worker-contract-v4).
 
 ## 5.4 Level 3: Selected child blocks
 

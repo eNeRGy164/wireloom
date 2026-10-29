@@ -20,23 +20,25 @@ fragments; add them inside the consuming project's `<Project>` element.
 
 ## Settings at a glance
 
-Wireloom has five project properties and eight input metadata settings:
+Wireloom has six project properties and nine input metadata settings:
 
-| Setting                      | Where to set it                        | Default                                                           | Effect and scope                                                                                                                   |
-| ---------------------------- | -------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `DdsIdlIncludeDirectories`   | Project property                       | Empty                                                             | Adds semicolon-separated include search directories and tracks their IDL files. Directories are available to the generation batch. |
-| `DdsIdlSequenceArrayMapping` | Project property                       | `RtiCSharp`                                                       | Sets the default mapping for direct arrays of sequences in all tracked files.                                                      |
-| `DdsIdlSequenceSize`         | Project property                       | `100`                                                             | Sets the effective element limit for unbounded sequences.                                                                          |
-| `DdsIdlStringSize`           | Project property                       | `255`                                                             | Sets the effective length limit for unbounded narrow and wide strings.                                                             |
-| `DdsIdlEnableEscapeChar`     | Project property                       | `false`                                                           | Removes one leading underscore from each IDL identifier across the generation batch.                                               |
-| `Generate`                   | `AdditionalFiles` metadata             | `false` for tracked includes; forced to `true` for `DdsIdl` items | Marks a file as a generation root.                                                                                                 |
-| `IncludeDirectories`         | Generating-root metadata               | Empty                                                             | Adds semicolon-separated include directories to the batch's search path.                                                           |
-| `Defines`                    | Generating-root metadata               | Empty                                                             | Supplies semicolon-separated preprocessor definitions to every root's initial macro environment.                                   |
-| `Undefines`                  | Generating-root metadata               | Empty                                                             | Removes semicolon-separated symbols after the batch's external defines are applied.                                                |
-| `Strict`                     | Generating-root metadata               | `false`                                                           | Enables strict validation for the whole batch when any root sets `true`.                                                           |
-| `SequenceArrayMapping`       | `DdsIdl` or `AdditionalFiles` metadata | Inherits the project default                                      | Overrides mapping for declarations physically in that file. Values: `RtiCSharp`, `Idl`.                                            |
-| `SequenceSize`               | `DdsIdl` or `AdditionalFiles` metadata | Inherits the project default                                      | Overrides the effective limit for unbounded sequences declared in that file. Must be a positive Int32.                             |
-| `StringSize`                 | `DdsIdl` or `AdditionalFiles` metadata | Inherits the project default                                      | Overrides the effective limit for unbounded strings declared in that file. Must be a positive Int32.                               |
+| Setting                      | Where to set it                        | Default                                                           | Effect and scope                                                                                                                    |
+| ---------------------------- | -------------------------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `DdsIdlIncludeDirectories`   | Project property                       | Empty                                                             | Adds semicolon-separated include search directories and tracks their IDL files. Directories are available to the generation batch.  |
+| `DdsIdlSequenceArrayMapping` | Project property                       | `RtiCSharp`                                                       | Sets the default mapping for direct arrays of sequences in all tracked files.                                                       |
+| `DdsIdlSequenceSize`         | Project property                       | `100`                                                             | Sets the effective element limit for unbounded sequences.                                                                           |
+| `DdsIdlStringSize`           | Project property                       | `255`                                                             | Sets the effective length limit for unbounded narrow and wide strings.                                                              |
+| `DdsIdlEnableEscapeChar`     | Project property                       | `false`                                                           | Removes one leading underscore from each IDL identifier across the generation batch.                                                |
+| `DdsIdlUnboundedSupport`     | Project property                       | `false`                                                           | Enables RTI-style unbounded sequence, narrow-string, and wide-string semantics for declarations in files that inherit this setting. |
+| `Generate`                   | `AdditionalFiles` metadata             | `false` for tracked includes; forced to `true` for `DdsIdl` items | Marks a file as a generation root.                                                                                                  |
+| `IncludeDirectories`         | Generating-root metadata               | Empty                                                             | Adds semicolon-separated include directories to the batch's search path.                                                            |
+| `Defines`                    | Generating-root metadata               | Empty                                                             | Supplies semicolon-separated preprocessor definitions to every root's initial macro environment.                                    |
+| `Undefines`                  | Generating-root metadata               | Empty                                                             | Removes semicolon-separated symbols after the batch's external defines are applied.                                                 |
+| `Strict`                     | Generating-root metadata               | `false`                                                           | Enables strict validation for the whole batch when any root sets `true`.                                                            |
+| `SequenceArrayMapping`       | `DdsIdl` or `AdditionalFiles` metadata | Inherits the project default                                      | Overrides mapping for declarations physically in that file. Values: `RtiCSharp`, `Idl`.                                             |
+| `SequenceSize`               | `DdsIdl` or `AdditionalFiles` metadata | Inherits the project default                                      | Overrides the effective limit for unbounded sequences declared in that file. Must be a positive Int32.                              |
+| `StringSize`                 | `DdsIdl` or `AdditionalFiles` metadata | Inherits the project default                                      | Overrides the effective limit for unbounded strings declared in that file. Must be a positive Int32.                                |
+| `UnboundedSupport`           | `DdsIdl` or `AdditionalFiles` metadata | Inherits the project default                                      | Overrides unbounded sequence/string semantics for declarations in that file. Use `true` or `false`.                                 |
 
 Use `true` or `false` for Boolean metadata. Mapping values are case-insensitive;
 blank mapping metadata inherits the project property, and an unset or blank
@@ -48,8 +50,10 @@ with source-located `DDSG0001`.
 all generation roots. Setting them on an included file with `Generate="false"`
 does not configure the batch. `DdsIdlEnableEscapeChar` applies uniformly to
 every root and included file. `SequenceArrayMapping`, `SequenceSize`, and
-`StringSize` instead belong to each declaring file, including non-root files.
-A root's override does not flow through its includes.
+`StringSize`, and `UnboundedSupport` instead belong to each declaring file,
+including non-root files. Blank `UnboundedSupport` metadata inherits the
+project property; explicit `false` overrides project `true`. A root's override
+does not flow through its includes.
 
 Standard .NET settings also affect the consumer build:
 
@@ -544,12 +548,31 @@ For example, project defaults can be set in the consuming project:
 
 Per-file settings apply to declarations physically in that IDL file, even when
 the file is reached through an include. They do not change explicitly bounded
-IDL types. These finite limits do not enable RTI's `-unboundedSupport` behavior;
-Wireloom continues to use finite bounds in generated metadata.
+IDL types. `DdsIdlUnboundedSupport` and `UnboundedSupport` select RTI-style
+unbounded sequence and string metadata and native conversion. A valid finite
+size remains required and is ignored for unbounded declarations. Native
+sequences and strings start with zero capacity and grow to hold sample values.
+The [compatibility guide](support-and-compatibility.md) defines the exact-profile
+evidence and qualification limits.
 
-General opt-in unbounded support is a missing feature tracked in
-[#131](https://github.com/eNeRGy164/wireloom/issues/131); finite handling is the
-current implementation boundary, not a permanent exclusion of that capability.
+For example, enable unbounded support project-wide while keeping one file
+finite:
+
+```xml
+<PropertyGroup>
+  <DdsIdlUnboundedSupport>true</DdsIdlUnboundedSupport>
+</PropertyGroup>
+
+<ItemGroup>
+  <DdsIdl Include="Contracts/Telemetry.idl" />
+  <DdsIdl Include="Contracts/Legacy.idl" UnboundedSupport="false" />
+</ItemGroup>
+```
+
+The declarations in included files use their own `UnboundedSupport` metadata
+or the project default. A root's metadata does not flow into its includes.
+
+Unbounded semantics do not change preprocessing or workspace safety limits.
 
 Preprocessing safety limits are also fixed:
 

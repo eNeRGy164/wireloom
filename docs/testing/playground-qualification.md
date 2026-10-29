@@ -107,7 +107,7 @@ The Source Explorer supports multiple virtual files, explicit folders, Root and
 Include-only roles, Workspace Settings, and declaring-file Properties. The
 worker compiles all Roots together with their supplied includes. Import uses
 basenames in the selected virtual folder.
-See the [workspace guide and canonical v3 contract](../guides/playground-workspaces.md).
+See the [workspace guide and canonical v4 contract](../guides/playground-workspaces.md).
 
 The retained `14-autoid-scope` worker comparison supplies its unchanged include
 closure. That case remains excluded from the 36-case corpus UI selection;

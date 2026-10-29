@@ -26,6 +26,7 @@ var inputs = new List<IdlInput>
             struct Sample { sequence<long, SAMPLE_BOUND> values[2]; };
             """,
         sequenceArrayMapping: IdlSequenceArrayMapping.Idl,
+        unboundedSupport: true,
         generate: true,
         strict: false,
         defines: ["SAMPLE_BOUND=4"],
@@ -63,8 +64,10 @@ the input is created, and the compiler snapshots the input collection at call
 entry. `sequenceArrayMapping` remains file-owned; omitting it selects
 `RtiCSharp`. Set `enableEscapeChar: true` on every generation root to enable
 leading-underscore normalization for the batch. Included inputs inherit this
-setting. Includes resolve only against supplied inputs; the compiler does not
-read from disk.
+setting. `unboundedSupport` is file-owned: set it on each input whose
+declarations should use RTI-style unbounded sequence and string semantics. It
+defaults to `false`; includes do not inherit a root's value. Includes resolve
+only against supplied inputs; the compiler does not read from disk.
 
 Select `IdlCompilerProfile.Rti731` or `IdlCompilerProfile.Rti770` for each
 compile. `GetProfileForRuntimeVersion` maps supported runtime versions and

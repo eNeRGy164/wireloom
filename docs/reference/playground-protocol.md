@@ -1,16 +1,18 @@
-# Playground worker protocol v3
+# Playground worker protocol v4
 
 The canonical contract is the .NET adapter DTOs in
 [`PlaygroundCompilerAdapter.cs`](../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs).
 [`protocol.ts`](../../playground/src/protocol.ts) mirrors their field names and
 types. Adapter tests in Quality verify parity. The client and worker ship in
 one static release, so no cross-release protocol compatibility window is
-supported. Version-1 compile requests are rejected. Workspace records use the
-current version-3 format without schema migration.
+supported. Compile requests with a different protocol version are rejected.
+Workspace records use version 4. Valid version-3 records are upgraded with
+unbounded support disabled; other versions remain unsupported. Workspace
+schema migration does not provide compatibility with older workers.
 
 ```json
 {
-  "protocolVersion": 3,
+  "protocolVersion": 4,
   "workerGeneration": 1,
   "requestId": 1,
   "workspaceRevision": 1,
@@ -32,14 +34,17 @@ current version-3 format without schema migration.
     "sequenceSize": 100,
     "stringSize": 255,
     "includeDirectories": [],
-    "enableEscapeChar": false
+    "enableEscapeChar": false,
+    "unboundedSupport": false
   }
 }
 ```
 
 Root file options carry `Defines`, `Undefines`, and `Strict`, matching
 `DdsIdl` item metadata. Workspace settings carry project sequence defaults,
-escape-character behavior, and include directories. File options may be
+unbounded support, escape-character behavior, and include directories. File
+`unboundedSupport` is an optional Boolean override: omitted inherits the project
+default, while explicit `false` disables it for that file. File options may be
 omitted to select root defaults. Recovery-only file IDs, explicit folders,
 and active selection are not sent to the compiler. The adapter uses only
 supplied text and virtual paths; it never opens a host file.

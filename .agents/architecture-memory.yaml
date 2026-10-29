@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-10-29T11:13:53Z
+  generated_at: 2026-10-29T19:53:21.807Z
   arc42_home: docs/architecture/arc42
   format: yaml-only
 sources:
@@ -79,7 +79,8 @@ summary:
       Managed Roslyn incremental adapter plus one host-neutral compiler shared
       with browser callers. OMG IDL/XTypes define meaning; profile-specific
       support is emitted from resolved semantics. Per-call platform services
-      include MD5. Developer-experience improvements may differ observably
+      include MD5. Unbounded semantics are opt-in and resolved by declaring
+      file, separate from finite fallback sizes. Developer-experience improvements may differ observably
       when working application usage and DDS wire behavior are preserved.
     sources: [docs/architecture/arc42/04-solution-strategy.md]
   building_blocks:
@@ -112,13 +113,17 @@ summary:
     text: >-
       Preserve typed IDL identity and declaring-file options across outputs;
       roots may share includes and included files may also be roots. Retain
-      original UTF-16 origins. Isolate snapshots/state; bound work/output, not
+      original UTF-16 origins. Unbounded mode preserves RTI sequence/string
+      metadata with zero initial capacity; finite fallback sizes are ignored,
+      and explicit IDL bounds remain finite. Isolate snapshots/state; bound work/output, not
       process memory. Distinct macro outputs and unique hints matter. Preserve
       optional presence, reference/copy semantics, allocation, and native cleanup.
       Workspace edits are atomic; source backup is independent of generation.
       Restore cannot overwrite edits; serialize saves/deletes, with no resurrection
-      after successful reset deletion. Browser storage is fallible.
-    sources: [docs/architecture/arc42/08-crosscutting-concepts.md]
+      after successful reset deletion. Workspace v3 upgrades to v4 with
+      unbounded mode disabled; failed persistence cannot block reading source.
+      Browser storage is fallible.
+    sources: [docs/architecture/arc42/08-crosscutting-concepts.md, docs/guides/playground-workspaces.md]
   decisions:
     text: >-
       Accepted: ADR-001 shared compiler, ADR-002 per-compilation MD5 delegate,
@@ -140,8 +145,9 @@ summary:
     sources: [docs/architecture/arc42/10-quality-requirements.md]
   risks:
     text: >-
-      General unbounded support is missing (#131); finite fallbacks are not
-      equivalent. RTI 7.3.1 C148 enum-array defaults differ across peers.
+      Unbounded wire evidence covers individual samples; fragmentation and
+      repeated receive-buffer reuse remain unqualified. Finite fallbacks are
+      the default. RTI 7.3.1 C148 enum-array defaults differ across peers.
       Recursive sequence typedefs are rejected; direct self-recursive wire scope
       needs TypeObject v1, while mutual graphs remain unqualified. IDE, consumer
       Qodana/SonarQube and browser/accessibility qualification have gaps; the
@@ -172,6 +178,7 @@ defaults:
     escape_normalization: {value: false, source: docs/guides/configuration.md, status: explicit}
     sequence_array_mapping: {value: RtiCSharp, source: docs/guides/configuration.md, status: explicit}
     effective_limits: {value: {sequence: 100, string: 255}, source: docs/guides/configuration.md, status: explicit}
+    unbounded_support: {value: false, source: docs/guides/configuration.md, status: explicit}
     playground_target: {value: browser-wasm, source: src/Wireloom.Playground.Browser/Wireloom.Playground.Browser.csproj, status: explicit}
     playground_host: {value: GitHub Pages, source: chapter-7, status: explicit}
     playground_base_path: {value: /wireloom/, source: chapter-7, status: explicit}

@@ -53,8 +53,22 @@ unqualified. Direct self-recursive sequence members have scoped TypeObject-v1
 exchange evidence with required peer adjustments. Use the
 [direct-recursion fixture setup](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#direct-recursive-sequence-matrix-fixture)
 and [active compatibility risk](../architecture/arc42/11-risks-and-technical-debt.md#r01)
-for the exact boundary. General opt-in unbounded support is a separate
-[missing capability](https://github.com/eNeRGy164/wireloom/issues/131).
+for the exact boundary.
+
+`DdsIdlUnboundedSupport` and declaring-file `UnboundedSupport` enable RTI-style
+unbounded sequences, narrow strings, and wide strings. Finite behavior remains
+the default. Corpus cases C135, C136, and C173 select the unbounded mode for
+matching RTI and Wireloom peers. C173 explicitly exercises XCDR1 and XCDR2 across
+all nine directed peer pairings for each exact LTS release. The
+[configuration guide](configuration.md#fixed-behavior-and-configurable-limits)
+defines precedence and allocation behavior.
+
+The wire fixtures verify individual samples beyond finite fallback sizes.
+Repeated native conversion is covered by package/runtime tests. Fragmented
+payloads and repeated receive-side grow/shrink/reuse are outside the current
+wire qualification envelope; [D01](../architecture/arc42/11-risks-and-technical-debt.md#d01)
+records that limit. A successful single-sample exchange does not establish
+receive-buffer reuse or unrestricted sample-size support.
 
 ## Continuous LTS verification
 
