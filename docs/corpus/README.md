@@ -237,6 +237,19 @@ the runtime/package consumer matrix; see the [LTS runbook](LTS-PROFILES.md).
 Use the feature index to find the exact IDL, oracle files, managed status, and
 test entry points: [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md).
 
+## Finite fallback oracle controls
+
+Each exact profile retains separate `rtiddsgen/csharp/finite-fallback/` and
+`rtiddsgen/cpp/finite-fallback/` controls for string and sequence aliases. Their
+metadata uses the finite 100-element and 255-byte/code-unit defaults. Each
+directory's manifest records the source revision, original paths, and SHA-256
+hashes; the source bytes retain vendor formatting.
+
+The corresponding `features/` cases select `-unboundedSupport`. Keep the modes
+separate when probing metadata or native conversion. The RTI C# 7.7.0 alias
+probe runs with no arguments for finite controls and `--unbounded` for unbounded
+captures. These probes do not exchange DDS samples.
+
 ## Feature coverage document
 
 `FEATURE-COVERAGE.md` is a maintained feature index, not generated output from

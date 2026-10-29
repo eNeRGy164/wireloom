@@ -7,7 +7,16 @@ using Rti.Dds.NativeInterface.TypePlugin;
 using Rti.Types;
 using Rti.Types.Dynamic;
 
-// This probe characterizes the retained RTI C# oracle. It does not exchange DDS samples.
+// This probe characterizes finite and unbounded retained RTI C# oracles without DDS exchanges.
+if (args.Length > 1 || (args.Length == 1 && args[0] != "--unbounded"))
+{
+    throw new ArgumentException("Use no arguments for finite fallbacks or --unbounded for RTI unbounded support.");
+}
+var unboundedSupport = args.Length == 1;
+var expectedStringBound = unboundedSupport ? StringType.Unbounded : 255;
+var expectedSequenceBound = unboundedSupport ? SequenceType.Unbounded : 100;
+var stringLength = unboundedSupport ? 300 : 255;
+var sequenceLength = unboundedSupport ? 129 : 100;
 var assertions = 0;
 
 // Arrange
@@ -44,13 +53,13 @@ foreach (var isPublic in new[] { false, true })
     var wideSequence = Sequence(WideTextsPlugin.CreateDynamicType(isPublic));
 
     // Assert
-    Expect(narrow.Bounds == 255 && wide.Bounds == 255, "string metadata bounds");
-    Expect(Sequence(NumbersPlugin.CreateDynamicType(isPublic)).Bounds == 100, "primitive sequence bound");
-    Expect(Sequence(StatesPlugin.CreateDynamicType(isPublic)).Bounds == 100, "enum sequence bound");
-    Expect(Sequence(ChildrenPlugin.CreateDynamicType(isPublic)).Bounds == 100, "aggregate sequence bound");
-    Expect(Sequence(ScalarsPlugin.CreateDynamicType(isPublic)).Bounds == 100, "scalar alias sequence bound");
-    Expect(textSequence.Bounds == 100 && ((StringType)textSequence.ContentType).Bounds == 255, "string sequence bounds");
-    Expect(wideSequence.Bounds == 100 && ((WideStringType)wideSequence.ContentType).Bounds == 255, "wide string sequence bounds");
+    Expect(narrow.Bounds == expectedStringBound && wide.Bounds == expectedStringBound, "string metadata bounds");
+    Expect(Sequence(NumbersPlugin.CreateDynamicType(isPublic)).Bounds == expectedSequenceBound, "primitive sequence bound");
+    Expect(Sequence(StatesPlugin.CreateDynamicType(isPublic)).Bounds == expectedSequenceBound, "enum sequence bound");
+    Expect(Sequence(ChildrenPlugin.CreateDynamicType(isPublic)).Bounds == expectedSequenceBound, "aggregate sequence bound");
+    Expect(Sequence(ScalarsPlugin.CreateDynamicType(isPublic)).Bounds == expectedSequenceBound, "scalar alias sequence bound");
+    Expect(textSequence.Bounds == expectedSequenceBound && ((StringType)textSequence.ContentType).Bounds == expectedStringBound, "string sequence bounds");
+    Expect(wideSequence.Bounds == expectedSequenceBound && ((WideStringType)wideSequence.ContentType).Bounds == expectedStringBound, "wide string sequence bounds");
     Expect(((StringType)Sequence(BoundedTextsPlugin.CreateDynamicType(isPublic)).ContentType).Bounds == 8, "bounded string elements");
     Expect(((WideStringType)Sequence(BoundedWideTextsPlugin.CreateDynamicType(isPublic)).ContentType).Bounds == 4, "bounded wide string elements");
 }
@@ -58,19 +67,19 @@ foreach (var isPublic in new[] { false, true })
 Expect(TextSupport.Instance != null && WideTextSupport.Instance != null, "string support construction");
 Expect(NumbersSupport.Instance != null && NumbersChainSupport.Instance != null, "sequence support construction");
 
-RoundTrip<Text, TextUnmanaged>(new Text(new string('x', 255)), result => Expect(result.Value == new string('x', 255), "native string"));
-RoundTrip<WideText, WideTextUnmanaged>(new WideText(new string('Ω', 255)), result => Expect(result.Value == new string('Ω', 255), "native wide string"));
-RoundTrip<Numbers, NumbersUnmanaged>(new Numbers(new Sequence<int>(Enumerable.Range(1, 100))), result => Expect(result.Value.SequenceEqual(Enumerable.Range(1, 100)), "native primitive sequence"));
+RoundTrip<Text, TextUnmanaged>(new Text(new string('x', stringLength)), result => Expect(result.Value == new string('x', stringLength), "native string"));
+RoundTrip<WideText, WideTextUnmanaged>(new WideText(new string('Ω', stringLength)), result => Expect(result.Value == new string('Ω', stringLength), "native wide string"));
+RoundTrip<Numbers, NumbersUnmanaged>(new Numbers(new Sequence<int>(Enumerable.Range(1, sequenceLength))), result => Expect(result.Value.SequenceEqual(Enumerable.Range(1, sequenceLength)), "native primitive sequence"));
 RoundTrip<States, StatesUnmanaged>(new States(new Sequence<State> { State.Ready }), result => Expect(result.Value.Count == 1 && result.Value[0] == State.Ready, "native enum sequence"));
 RoundTrip<Children, ChildrenUnmanaged>(new Children(new Sequence<Child> { new Child { value = 17 } }), result => Expect(result.Value.Count == 1 && result.Value[0].value == 17, "native aggregate sequence"));
 RoundTrip<Scalars, ScalarsUnmanaged>(new Scalars(new Sequence<int> { 17 }), result => Expect(result.Value.Count == 1 && result.Value[0] == 17, "native scalar alias sequence (RTI erases the element typedef)"));
-RoundTrip<Texts, TextsUnmanaged>(new Texts(new Sequence<string> { new string('x', 255) }), result => Expect(result.Value.SequenceEqual(new[] { new string('x', 255) }), "native string sequence"));
-RoundTrip<WideTexts, WideTextsUnmanaged>(new WideTexts(new Sequence<string> { new string('Ω', 255) }), result => Expect(result.Value.SequenceEqual(new[] { new string('Ω', 255) }), "native wide string sequence"));
+RoundTrip<Texts, TextsUnmanaged>(new Texts(new Sequence<string> { new string('x', stringLength) }), result => Expect(result.Value.SequenceEqual(new[] { new string('x', stringLength) }), "native string sequence"));
+RoundTrip<WideTexts, WideTextsUnmanaged>(new WideTexts(new Sequence<string> { new string('Ω', stringLength) }), result => Expect(result.Value.SequenceEqual(new[] { new string('Ω', stringLength) }), "native wide string sequence"));
 RoundTrip<BoundedTexts, BoundedTextsUnmanaged>(new BoundedTexts(new Sequence<string> { "12345678" }), result => Expect(result.Value.SequenceEqual(new[] { "12345678" }), "native bounded string elements"));
 RoundTrip<BoundedWideTexts, BoundedWideTextsUnmanaged>(new BoundedWideTexts(new Sequence<string> { "世界世界" }), result => Expect(result.Value.SequenceEqual(new[] { "世界世界" }), "native bounded wide string elements"));
 RoundTrip<NumbersChain, NumbersChainUnmanaged>(new NumbersChain(numbers), result => Expect(result.Value.Value.SequenceEqual(new[] { 17, 18 }), "native sequence alias chain"));
 
-Console.WriteLine($"RTI C# 7.7.0 unbounded alias oracle: {assertions} assertions passed; 88 native flag/shape combinations. No DDS wire exchange performed.");
+Console.WriteLine($"RTI C# 7.7.0 alias oracle (unboundedSupport={unboundedSupport}): {assertions} assertions passed; 88 native flag/shape combinations. No DDS wire exchange performed.");
 
 void Expect(bool condition, string contract)
 {

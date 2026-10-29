@@ -88,7 +88,9 @@ All eight runtime/package combinations fail their jobs on errors, with
 independent failure reporting and retained test output. Runtime restores use version- and
 target-specific lock files. Corpus runs select `CORPUS_RTI_PROFILE` explicitly;
 unavailable features remain N/A and contribute no compatibility failures.
-The existing 7.7.0 unbounded-alias oracle probe also runs on both hosts.
+The RTI C# 7.7.0 alias oracle probe checks both finite fallback and unbounded
+captures on both hosts, including native conversions beyond the fallback sizes
+in unbounded mode.
 
 Builds use the SDK selected by `global.json`; .NET 8 is installed alongside it
 so `net8.0` consumers execute on the .NET 8 runtime. The dedicated consumer
