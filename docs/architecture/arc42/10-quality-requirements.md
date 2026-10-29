@@ -56,8 +56,7 @@ and [concepts](08-crosscutting-concepts.md).
   developer-experience differences and qualify behavior separately; source resemblance alone is insufficient.
 - **Validation / gaps:** [Compatibility policy](09-architectural-decisions.md#921-compatibility-policy-evolution),
   [migration contracts](../../migration/rtiddsgen-to-wireloom.md#generated-c-api-differences), and
-  [runtime contracts](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md). Adoption exposure and missing general
-  unbounded support are recorded in [R01](11-risks-and-technical-debt.md#r01)
+  [runtime contracts](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md). Adoption exposure and unbounded qualification limits are recorded in [R01](11-risks-and-technical-debt.md#r01)
   and [D01](11-risks-and-technical-debt.md#d01).
 
 #### Q16: Preserve generated value and native resource behavior
@@ -110,7 +109,7 @@ and [concepts](08-crosscutting-concepts.md).
   source locations match for the compared scope. Host-specific failures remain distinguishable from compiler findings;
   preview success does not claim RTI compilation or wire interoperability.
 - **Validation / gaps:** [Shared compilation](06-runtime-view.md#64-c1-compile-an-in-memory-idl-batch),
-  [workspace contract](../../guides/playground-workspaces.md#worker-contract-v3), and
+  [workspace contract](../../guides/playground-workspaces.md#worker-contract-v4), and
   [browser qualification](../../testing/playground-qualification.md). Corpus counts are evidence inventory, not
   permanent acceptance targets.
 
@@ -354,7 +353,7 @@ and [concepts](08-crosscutting-concepts.md).
   failure can retain a ready worker. Retry can compile the current eligible workspace; failed in-flight work
   is not automatically replayed.
 - **Validation / gaps:** [Host recovery flow](06-runtime-view.md#625-recover-browser-compilation-after-a-host-failure),
-  [worker contract](../../guides/playground-workspaces.md#worker-contract-v3), and injected-fault checks. Watchdog
+  [worker contract](../../guides/playground-workspaces.md#worker-contract-v4), and injected-fault checks. Watchdog
   settings are failure-detection mechanisms, not accepted startup/response-time budgets.
 
 ### 10.2.7 Browser usability and portability
@@ -457,7 +456,7 @@ Likewise, coverage percentages are regression safeguards, not a substitute for
 API, user-task, native lifecycle, or interoperability evidence.
 
 Current capability gaps and their mitigations are recorded in
-[chapter 11](11-risks-and-technical-debt.md), including general unbounded support
+[chapter 11](11-risks-and-technical-debt.md), including the unbounded qualification envelope
 in [D01](11-risks-and-technical-debt.md#d01).
 Detailed current measurements and findings stay in the
 [generated-C# report](../../corpus/csharp-quality.md),

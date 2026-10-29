@@ -74,6 +74,14 @@ with `SequenceSize=7` and `StringSize=19`; its runtime contract checks direct
 members, typedefs, string sequences, and union branches. The linked runtime
 fixtures explicitly retain their established 100/255 defaults.
 
+`unbounded-support.idl` enables `UnboundedSupport="true"` with finite fallback
+settings of 7 and 9. Its package tests verify unbounded metadata, explicitly
+bounded controls, and native conversion of 129-element sequences and
+300-character narrow/wide strings. Cross-file compiler tests cover declaration
+ownership for sequence and fixed-array string aliases. Packed-consumer tests
+exercise those array aliases and reuse native storage across large and smaller
+values; they do not claim repeated DDS receive-buffer reuse.
+
 The ordinary packed consumer uses `PackageIntegrationStrict=false` and
 explicitly exempts `DDSG0108` from warnings-as-errors. Its retained `Context`
 type and focused `strict-identifiers.idl` fixture deliberately trigger that

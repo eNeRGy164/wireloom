@@ -522,6 +522,16 @@ verifies native round trips at the effective limits. It does not establish
 exactly where or how an over-limit value fails, so consumers should validate
 values before DDS processing rather than rely on assignment-time checks.
 
+To retain RTI's unbounded metadata and native conversion behavior, enable
+`DdsIdlUnboundedSupport` for the project or set `UnboundedSupport="true"` on
+the relevant `DdsIdl` or `AdditionalFiles` item. The file option controls the
+declarations originating in that file, including when it is included by a
+root. Explicit IDL bounds remain finite. In this mode the configured sequence
+and string sizes remain validated but are ignored for unbounded declarations.
+Native sequences and strings start with zero capacity and grow to hold the
+sample. See the [configuration reference](../../docs/guides/configuration.md#fixed-behavior-and-configurable-limits)
+and the [support policy](../../docs/guides/support-and-compatibility.md#rti-version-qualification).
+
 The compatibility corpus compares source-generation behavior and generated C#
 shape. It does not automatically prove serialization-byte equivalence, live DDS
 behavior, or C++ interoperability.

@@ -54,7 +54,7 @@ the [support boundary](../../guides/support-and-compatibility.md#support-boundar
 The shared compiler API and Playground client/worker protocol connect internal
 blocks. Their structure and payloads are in
 [chapter 5](05-building-block-view.md#531-shared-idl-compiler), with detailed
-protocol rules in the [worker contract](../../guides/playground-workspaces.md#worker-contract-v3).
+protocol rules in the [worker contract](../../guides/playground-workspaces.md#worker-contract-v4).
 
 ## 3.3 Development and qualification context
 

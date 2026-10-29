@@ -41,7 +41,8 @@ build/IDE host, MSBuild integration, Roslyn adapter, and shared IDL compiler.
 1. **Evaluate project inputs.**  
    The .NET host evaluates the consumer project's IDL configuration. MSBuild
    integration exposes roots, tracked include inputs, and compiler-visible
-   settings.
+   settings, including the project default and per-file unbounded-support
+   override.
 2. **Supply tracked inputs.**  
    Roslyn supplies additional files, options, and compilation references to
    the adapter. With no generation roots, the adapter returns before its
@@ -138,7 +139,7 @@ zero documents remains distinct from failure. Host faults use
 [flow 7](#625-recover-browser-compilation-after-a-host-failure).
 
 Payloads are in [chapter 5](05-building-block-view.md#533-playground);
-the [worker contract](../../guides/playground-workspaces.md#worker-contract-v3)
+the [worker contract](../../guides/playground-workspaces.md#worker-contract-v4)
 owns identity, validation, and bounds.
 
 ### 6.2.2 Change a workspace safely

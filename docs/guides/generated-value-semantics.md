@@ -80,6 +80,14 @@ necessarily enforce IDL bounds at assignment time; consult the package guide's
 [effective limits](../../src/Wireloom.Dds.Generator/README.md#effective-limits-for-unbounded-values)
 and runtime evidence before relying on mutation-time validation.
 
+When RTI-style unbounded semantics are enabled for a declaring file,
+unbounded sequences and strings retain unbounded metadata and start with zero
+native capacity. Storage grows to hold the sample; configured finite fallback
+sizes are validated but ignored. Explicitly bounded IDL members keep their
+bounds. See the [configuration reference](configuration.md#fixed-behavior-and-configurable-limits)
+for scope and the [support policy](support-and-compatibility.md) for qualification
+limits.
+
 ## Use unions safely
 
 Assigning a union branch selects that branch. Reading a property for an

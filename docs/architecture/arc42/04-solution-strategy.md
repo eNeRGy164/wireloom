@@ -24,6 +24,9 @@ targets `netstandard2.0` to preserve the
 [minimum analyzer-host baseline](02-architecture-constraints.md#21-product-and-execution-boundaries).
 Input discovery and invalidation must remain aligned with the
 [project configuration contract](../../guides/configuration.md).
+Per-file sequence/string semantics travel with each tracked IDL input, so an
+included declaration uses the policy of its declaring file. The compiler
+keeps finite fallback sizes separate from RTI unbounded metadata and allocation.
 
 ## 4.2 Share one compiler and keep host integration in adapters
 

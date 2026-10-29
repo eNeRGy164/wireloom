@@ -33,6 +33,12 @@ $qodanaRuntimeTestsObj = Join-Path $PWD '.qodana\runtime-tests-obj'
 $qodanaRuntimeTestsBin = Join-Path $PWD '.qodana\runtime-tests-bin'
 $qodanaTestSupportObj = Join-Path $PWD '.qodana\test-support-obj'
 $qodanaTestSupportBin = Join-Path $PWD '.qodana\test-support-bin'
+$qodanaWireSharedObj = Join-Path $PWD '.qodana\wire-shared-obj'
+$qodanaWireSharedBin = Join-Path $PWD '.qodana\wire-shared-bin'
+$qodanaWireRunnerObj = Join-Path $PWD '.qodana\wire-runner-obj'
+$qodanaWireRunnerBin = Join-Path $PWD '.qodana\wire-runner-bin'
+$qodanaWireVerifierObj = Join-Path $PWD '.qodana\wire-verifier-obj'
+$qodanaWireVerifierBin = Join-Path $PWD '.qodana\wire-verifier-bin'
 New-Item -ItemType Directory -Force -Path `
   $qodanaObj, $qodanaBin, $qodanaCompilerObj, $qodanaCompilerBin, `
   $qodanaBrowserObj, $qodanaBrowserBin, `
@@ -40,7 +46,10 @@ New-Item -ItemType Directory -Force -Path `
   $qodanaGeneratorTestsObj, $qodanaGeneratorTestsBin, `
   $qodanaFuzzingTestsObj, $qodanaFuzzingTestsBin, `
   $qodanaRuntimeTestsObj, $qodanaRuntimeTestsBin, `
-  $qodanaTestSupportObj, $qodanaTestSupportBin | Out-Null
+  $qodanaTestSupportObj, $qodanaTestSupportBin, `
+  $qodanaWireSharedObj, $qodanaWireSharedBin, `
+  $qodanaWireRunnerObj, $qodanaWireRunnerBin, `
+  $qodanaWireVerifierObj, $qodanaWireVerifierBin | Out-Null
 
 docker run --rm `
   --volume "${PWD}:/data/project" `
@@ -61,6 +70,12 @@ docker run --rm `
   --volume "${qodanaRuntimeTestsBin}:/data/project/tests/Wireloom.Dds.Generator.RuntimeContracts/bin" `
   --volume "${qodanaTestSupportObj}:/data/project/tests/Wireloom.Dds.Generator.TestSupport/obj" `
   --volume "${qodanaTestSupportBin}:/data/project/tests/Wireloom.Dds.Generator.TestSupport/bin" `
+  --volume "${qodanaWireSharedObj}:/data/project/tests/Wireloom.Dds.Generator.WireCompatibility.Shared/obj" `
+  --volume "${qodanaWireSharedBin}:/data/project/tests/Wireloom.Dds.Generator.WireCompatibility.Shared/bin" `
+  --volume "${qodanaWireRunnerObj}:/data/project/tests/Wireloom.Dds.Generator.WireCompatibility.Runner/obj" `
+  --volume "${qodanaWireRunnerBin}:/data/project/tests/Wireloom.Dds.Generator.WireCompatibility.Runner/bin" `
+  --volume "${qodanaWireVerifierObj}:/data/project/tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/obj" `
+  --volume "${qodanaWireVerifierBin}:/data/project/tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/bin" `
   --volume "${nugetCache}:/root/.nuget/packages:ro" `
   -e NUGET_PACKAGES=/root/.nuget/packages `
   -e DOTNET_NOLOGO=1 `
@@ -110,9 +125,11 @@ source.
 
 The local and CI configurations scan the committed `Wireloom.slnx`, which
 contains the compiler, generator, compiler and generator unit-test projects,
-runtime contract tests, and shared test support. Loading both production
+runtime contract tests, shared test support, and the wire Shared, Runner, and
+Verifier projects. Loading both production
 projects through the solution lets InspectCode resolve their project
-reference. The wire compatibility projects are not included in this solution.
+reference. The managed wire-peer and package-integration consumers remain
+outside this solution and are verified separately.
 
 Generate local Cobertura coverage after restoring both unit-test projects. The
 commands match the CI coverage invocation and write separate compiler and

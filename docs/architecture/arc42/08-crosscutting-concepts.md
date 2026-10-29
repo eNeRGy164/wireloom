@@ -53,6 +53,10 @@ Preserve these rules:
   through another root or include must not silently transfer option ownership.
   The [configuration reference](../../guides/configuration.md#settings-at-a-glance)
   owns the exact scopes and precedence.
+- Keep explicit IDL bounds separate from finite fallback sizes and from the
+  RTI-style unbounded opt-in. The opt-in is declaration-owned, including for
+  declarations reached through includes and aliases. Native lifecycle and DDS
+  type metadata must derive from the same resolved policy.
 
 When these rules diverge, an apparently correct C# value can carry different
 native initialization or DDS type metadata. A language change therefore needs

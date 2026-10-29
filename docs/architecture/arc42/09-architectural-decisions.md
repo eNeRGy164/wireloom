@@ -7,7 +7,7 @@ expanded note; the three existing ADRs retain their full records.
 
 Accepted ADRs retain their dated context and observations. ADR-003's
 single-root UI and timings describe the initial worker host; the
-[current multi-file contract](../../guides/playground-workspaces.md#worker-contract-v3)
+[current multi-file contract](../../guides/playground-workspaces.md#worker-contract-v4)
 and [qualification evidence](../../testing/playground-qualification.md)
 describe the evolved Playground.
 
