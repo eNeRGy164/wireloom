@@ -258,24 +258,14 @@ consumer sample bounds before selecting budgets under [O01](#o01). Preserve
 [Q06 safety/cancellation](10-quality-requirements.md#q06-bound-processing-and-honor-cancellation-safely);
 raise the [published limits](../../guides/configuration.md#fixed-behavior-and-configurable-limits)
 only with adversarial evidence. Distinguish build-safety limits from
-sample-value allocation and the unbounded qualification envelope in [D01](#d01).
+sample-value allocation and the [unbounded qualification envelope](../../guides/support-and-compatibility.md#rti-version-qualification).
 
 ## 11.3 Existing debt and capability gaps
 
-| ID                          | Existing shortfall                                                             | Impact                                                                                    | Priority | Next action and completion evidence                                                                                                                                                            |
-| :-------------------------- | :----------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------- | :------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <a id="d01"></a>[D01](#d01) | Unbounded receive-lifecycle and fragmented-payload qualification is incomplete | Single-sample exchanges do not establish buffer reuse or unrestricted sample sizes        | High     | Qualify repeated receive-side grow/shrink/reuse and fragmented samples for both exact profiles; retain scope-specific evidence under [#131](https://github.com/eNeRGy164/wireloom/issues/131). |
-| <a id="d02"></a>[D02](#d02) | Collected incremental output batch invalidates unrelated roots together        | Coarser regeneration can increase edit/build cost; no agreed budget breach is established | Low      | Extend the [incremental baseline](../../performance/incremental-generator-baseline.md) to representative workloads; introduce finer caching only when measurement justifies its complexity     |
-| <a id="d03"></a>[D03](#d03) | Broader combined browser UI coverage target is unmet in the retained report    | UI-only branches have less regression coverage than the declared broader target           | Medium   | Review uncovered behaviors and add meaningful assertions; retain updated combined reports and required CI results, keeping the direct Node gate separate                                       |
-
-**D01:** RTI-style unbounded support is available through the explicit project
-and declaring-file opt-in. Current wire fixtures exercise individual values
-beyond finite fallbacks, including explicit XCDR1/XCDR2 controls. Package tests
-exercise repeated native conversions. These establish different facts from
-fragmented DDS reception or repeated receive-buffer reuse, which remain outside
-the current wire qualification envelope. See the
-[support policy](../../guides/support-and-compatibility.md). Recursive-shape
-restrictions in [R01](#r01) remain separate.
+| ID                          | Existing shortfall                                                               | Impact                                                                                    | Priority | Next action and completion evidence                                                                                                                                                        |
+| :-------------------------- | :------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <a id="d02"></a>[D02](#d02) | Collected incremental output batch invalidates unrelated roots together          | Coarser regeneration can increase edit/build cost; no agreed budget breach is established | Low      | Extend the [incremental baseline](../../performance/incremental-generator-baseline.md) to representative workloads; introduce finer caching only when measurement justifies its complexity |
+| <a id="d03"></a>[D03](#d03) | Broader combined browser UI coverage target is unmet in the retained report      | UI-only branches have less regression coverage than the declared broader target           | Medium   | Review uncovered behaviors and add meaningful assertions; retain updated combined reports and required CI results, keeping the direct Node gate separate                                   |
 
 **D03:** The [qualification report](../../testing/playground-qualification.md#current-local-results)
 records the measured coverage scope and results. The direct Node scope has its
@@ -293,6 +283,35 @@ required CI results.
 Core accessibility behavior is already required. A formal conformance level
 has not been selected; that does not postpone [R06](#r06)'s agreed task baseline or
 create a conformance claim.
+
+## 11.5 Mitigated debt (historical)
+
+<a id="d01"></a>
+
+### D01: Unbounded receive-lifecycle and fragmentation qualification
+
+**Status: Mitigated.** The former gap was the absence of repeated receive-side
+growth, shrink, and reuse evidence and confirmed fragmented-payload reception
+for RTI-style unbounded support.
+
+C174 verifies five application-paced phases on persistent typed readers:
+empty, large, small, empty, and larger. It covers unbounded sequences,
+narrow/wide strings, aliases, optional/nested transitions, and bounded
+neighbors, with loan return before each phase acknowledgment. Both exact RTI
+LTS profiles, XCDR1/XCDR2, all nine directed peer pairings, and ordinary and
+fragmented fixtures are covered: 72 scenarios and 360 verified phase payloads.
+Fragmented fixtures retain positive fragment/reassembly counters and effective
+transport/resource settings. See the [C174 corpus record](../../corpus/manifest.json)
+and the [7.3.1](../../corpus/7.3.1/FEATURE-COVERAGE.md) and
+[7.7.0](../../corpus/7.7.0/FEATURE-COVERAGE.md) evidence indexes.
+
+This mitigation applies to the declared payloads and QoS settings. The
+[support policy](../../guides/support-and-compatibility.md#rti-version-qualification)
+owns the current qualification envelope and distinguishes Wireloom endpoint
+checks from RTI reference controls. Unrestricted sample sizes and general RTI
+runtime cleanup guarantees are outside this debt item's closure criterion.
+The ongoing compatibility and resource risks remain in [R01](#r01) and
+[R09](#r09).
 
 ---
 

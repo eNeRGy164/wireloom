@@ -56,8 +56,9 @@ and [concepts](08-crosscutting-concepts.md).
   developer-experience differences and qualify behavior separately; source resemblance alone is insufficient.
 - **Validation / gaps:** [Compatibility policy](09-architectural-decisions.md#921-compatibility-policy-evolution),
   [migration contracts](../../migration/rtiddsgen-to-wireloom.md#generated-c-api-differences), and
-  [runtime contracts](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md). Adoption exposure and unbounded qualification limits are recorded in [R01](11-risks-and-technical-debt.md#r01)
-  and [D01](11-risks-and-technical-debt.md#d01).
+  [runtime contracts](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md).
+  Adoption exposure is recorded in [R01](11-risks-and-technical-debt.md#r01);
+  the [support policy](../../guides/support-and-compatibility.md#rti-version-qualification) defines the unbounded qualification envelope.
 
 #### Q16: Preserve generated value and native resource behavior
 
@@ -455,9 +456,10 @@ outstanding targets, with the retained UI shortfall tracked in
 Likewise, coverage percentages are regression safeguards, not a substitute for
 API, user-task, native lifecycle, or interoperability evidence.
 
-Current capability gaps and their mitigations are recorded in
-[chapter 11](11-risks-and-technical-debt.md), including the unbounded qualification envelope
-in [D01](11-risks-and-technical-debt.md#d01).
+Current capability gaps and historical mitigations are recorded in
+[chapter 11](11-risks-and-technical-debt.md). The unbounded receive-lifecycle
+and fragmentation gap is mitigated in [historical D01](11-risks-and-technical-debt.md#d01);
+the [support policy](../../guides/support-and-compatibility.md#rti-version-qualification) defines its qualification envelope.
 Detailed current measurements and findings stay in the
 [generated-C# report](../../corpus/csharp-quality.md),
 [incremental baseline](../../performance/incremental-generator-baseline.md),
