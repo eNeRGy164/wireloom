@@ -896,8 +896,10 @@ editor and workspace explorer.
 
 #### Unbounded support
 
-RTI-style allocation/deserialization behavior for sequences or strings declared without finite bounds. General opt-in
-support is missing in Wireloom; see [D-01](11-risks-and-technical-debt.md#d01).
+Opt-in RTI-style metadata and native runtime integration for sequences or strings declared without finite bounds.
+Enable it through the project default or declaring-file override; finite fallbacks remain the default.
+See [configuration](../../guides/configuration.md#fixed-behavior-and-configurable-limits) and the
+[qualification envelope](../../guides/support-and-compatibility.md#rti-version-qualification).
 
 #### Union
 

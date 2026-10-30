@@ -46,9 +46,12 @@ branches, expression string bounds, and typed defaults. Profile-specific
 RTI behavior and restrictions are recorded in the corresponding feature pages.
 
 C173 covers RTI-style unbounded sequences and strings with explicitly selected
-XCDR1/XCDR2 fixtures. Its nine directed peer pairings per encoding verify the
-selected values; the [support policy](../guides/support-and-compatibility.md)
-defines the remaining lifecycle and fragmentation limits.
+XCDR1/XCDR2 fixtures. C174 adds five-phase persistent-reader growth, shrink,
+regrowth, optional/nested transitions, and confirmed fragmented reception.
+Both cases cover all nine directed peer pairings per encoding and exact LTS
+profile. The [support policy](../guides/support-and-compatibility.md)
+defines the qualified payload and QoS scope and the distinction between
+Wireloom endpoint checks and RTI reference controls.
 
 Typed defaults declared by C171 initialize generated values, and RTI 7.7.0
 readers apply those defaults to trailing fields omitted by a compatible

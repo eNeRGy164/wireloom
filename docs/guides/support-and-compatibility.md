@@ -57,18 +57,26 @@ for the exact boundary.
 
 `DdsIdlUnboundedSupport` and declaring-file `UnboundedSupport` enable RTI-style
 unbounded sequences, narrow strings, and wide strings. Finite behavior remains
-the default. Corpus cases C135, C136, and C173 select the unbounded mode for
-matching RTI and Wireloom peers. C173 explicitly exercises XCDR1 and XCDR2 across
-all nine directed peer pairings for each exact LTS release. The
-[configuration guide](configuration.md#fixed-behavior-and-configurable-limits)
+the default. Corpus cases C135, C136, C173, and C174 select the unbounded mode
+for matching RTI and Wireloom peers. C173 and C174 exercise XCDR1 and XCDR2
+across all nine directed peer pairings for each exact LTS release.
+The [configuration guide](configuration.md#fixed-behavior-and-configurable-limits)
 defines precedence and allocation behavior.
 
-The wire fixtures verify individual samples beyond finite fallback sizes.
-Repeated native conversion is covered by package/runtime tests. Fragmented
-payloads and repeated receive-side grow/shrink/reuse are outside the current
-wire qualification envelope; [D01](../architecture/arc42/11-risks-and-technical-debt.md#d01)
-records that limit. A successful single-sample exchange does not establish
-receive-buffer reuse or unrestricted sample-size support.
+C174 verifies five application-paced phases on persistent typed readers,
+including growth, shrink, regrowth, optional/nested transitions, and bounded
+neighbors. Each phase checks contents and returns its loan before
+acknowledgment. Fragmented fixtures verify large-payload reassembly with
+positive fragment counters and no observed drops or rejects. Across both
+profiles, 40 of its 72 scenarios involve a Wireloom-generated endpoint; the
+other 32 are RTI-only reference controls. The direct C++ CDR storage/ownership
+probe exercises RTI-generated reference code. Scheduler tests separately
+verify bounded process cleanup and evidence handling.
+
+The qualification covers the declared corpus payloads and configured QoS and
+resource limits. It does not establish unrestricted sample-size support or
+general RTI native-allocation cleanup guarantees. The receive-lifecycle and
+fragmentation evidence mitigates [historical D01](../architecture/arc42/11-risks-and-technical-debt.md#d01).
 
 ## Continuous LTS verification
 
