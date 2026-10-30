@@ -6,7 +6,8 @@
   --page-gutter: 3.4vw;
 }
 * { box-sizing: border-box; }
-body { margin: 0; }
+body { margin: 0; height: 100dvh; display: flex; flex-direction: column; }
+.site-header, main > :not(.workbench) { flex-shrink: 0; }
 button, select { font: inherit; font-size: 12px; color: inherit; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); min-height: 34px; padding: 6px 10px; }
 button { cursor: pointer; white-space: nowrap; }
 button:hover:not(:disabled), select:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
@@ -26,8 +27,8 @@ a:hover { color: var(--accent); }
 .theme-toggle span { display: block; padding: 5px 10px; border-radius: 16px; font-size: 11px; color: var(--muted); transition: background .15s, color .15s; }
 .theme-toggle input:checked + span { color: var(--accent); background: var(--surface); box-shadow: 0 1px 4px #10232d18; }
 .theme-toggle input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
-main { padding: 0 var(--page-gutter) 10px; max-width: 2000px; margin: auto; }
-.intro { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 31px 0 26px; }
+main { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; padding: 0 var(--page-gutter) 10px; max-width: 2000px; margin: 0 auto; }
+.intro { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px 0 18px; }
 .eyebrow { margin: 0; font-size: 10px; letter-spacing: 2px; font-weight: 750; color: var(--accent); }
 h1 { margin: 0; font-size: clamp(24px, 2.6vw, 34px); font-weight: 650; letter-spacing: -1px; color: var(--heading); }
 .intro p:last-child { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
@@ -43,10 +44,10 @@ h1 { margin: 0; font-size: clamp(24px, 2.6vw, 34px); font-weight: 650; letter-sp
 .font-controls > span { margin-right: 5px; }
 .font-controls button { min-height: 26px; padding: 2px 7px; }
 #font-reset { min-width: 50px; font-variant-numeric: tabular-nums; }
-.workbench { --explorer-width: 210px; display: grid; grid-template-columns: minmax(0, var(--explorer-width)) 9px minmax(0, 1fr); margin-top: 12px; }
+.workbench { --explorer-width: 210px; display: grid; flex: 1; min-height: 320px; grid-template-columns: minmax(0, var(--explorer-width)) 9px minmax(0, 1fr); margin-top: 12px; }
 .workbench.explorer-collapsed { grid-template-columns: 36px 9px minmax(0, 1fr); }
 .explorer-collapsed .explorer-splitter { visibility: hidden; pointer-events: none; }
-.explorer { display: flex; flex-direction: column; min-width: 0; height: clamp(490px, 57vh, 850px); overflow: hidden; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
+.explorer { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
 .explorer-toggle { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 43px; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; padding: 0 10px; text-align: left; font-size: 12px; letter-spacing: 0; font-weight: 500; }
 .explorer-collapsed .explorer-title { display: none; }
 #explorer-content { overflow: auto; flex: 1; min-height: 0; padding-bottom: 10px; scrollbar-width: thin; }
@@ -63,7 +64,7 @@ h1 { margin: 0; font-size: clamp(24px, 2.6vw, 34px); font-weight: 650; letter-sp
 #notice-action { min-height: 26px; padding: 2px 5px; border-color: transparent; background: transparent; color: var(--accent); font-size: 11px; text-decoration: underline; }
 #notice-action:hover:not(:disabled) { background: transparent; color: var(--heading); }
 #notice-dismiss { min-height: 26px; padding: 0 7px; font-size: 18px; border-color: transparent; background: transparent; }
-.workspace { --input-width: 45%; display: grid; grid-template-columns: minmax(0, var(--input-width)) 9px minmax(0, 1fr); min-height: 490px; height: clamp(490px, 57vh, 850px); }
+.workspace { --input-width: 45%; display: grid; grid-template-columns: minmax(0, var(--input-width)) 9px minmax(0, 1fr); min-height: 0; }
 .pane { display: flex; min-width: 0; flex-direction: column; overflow: hidden; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); box-shadow: 0 2px 5px #142c3804; }
 .pane-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; height: 43px; flex-shrink: 0; padding: 0 15px; font-size: 10px; letter-spacing: 1.2px; font-weight: 700; border-bottom: 1px solid var(--border); }
 .panel-number { margin-right: 10px; color: var(--accent); font-size: 10px; }
@@ -155,7 +156,13 @@ h1 { margin: 0; font-size: clamp(24px, 2.6vw, 34px); font-weight: 650; letter-sp
   .workspace-dialog .property-reset-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .workspace-dialog .property-reset-link[hidden] { display: none; }
   .workspace-dialog input:not([type="checkbox"]), .workspace-dialog textarea, .workspace-dialog select { width: 100%; box-sizing: border-box; background: var(--subtle); color: inherit; border: 1px solid var(--border); padding: 8px; border-radius: 4px; font: inherit; }
-  .workspace-dialog input[type="checkbox"] { align-self: flex-start; }
+  .workspace-dialog input[type="checkbox"] { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--accent); cursor: pointer; }
+  .workspace-dialog .checkbox-field { display: grid; grid-template-columns: 1.1rem minmax(0, 1fr); align-items: center; gap: 6px 10px; }
+  .workspace-dialog .checkbox-field input { grid-column: 1; grid-row: 1; }
+  .workspace-dialog .checkbox-field .setting-hint { grid-column: 2; }
+  .workspace-dialog .setting-hint { display: block; margin: 6px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+  .workspace-dialog input:disabled { background: var(--border); color: var(--muted); border-style: dashed; opacity: .65; cursor: not-allowed; }
+  .workspace-dialog label:has(input:disabled) { color: var(--muted); }
   .workspace-dialog fieldset { max-height: 180px; overflow: auto; border: 1px solid var(--border); margin: 0 0 16px; }
   .workspace-dialog fieldset label { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 8px; font-size: 12px; padding: 5px 0; overflow-wrap: anywhere; }
   .workspace-dialog legend { font-size: 12px; padding: 0 5px; }
@@ -163,11 +170,11 @@ h1 { margin: 0; font-size: clamp(24px, 2.6vw, 34px); font-weight: 650; letter-sp
   .workspace-dialog button { margin: 6px 6px 0 0; }
   .workspace-dialog .property-toggle { border: 0; padding: 0; overflow: visible; max-height: none; }
   .workspace-dialog .property-toggle legend { padding: 0; margin-bottom: 7px; }
-  .property-toggle-options { display: flex; border: 1px solid var(--border); border-radius: 5px; overflow: hidden; }
+  .property-toggle-options { display: flex; width: min(100%, 16rem); border: 1px solid var(--border); border-radius: 5px; overflow: hidden; }
   .workspace-dialog .property-toggle label { display: block; flex: 1; position: relative; padding: 0; }
   .property-toggle label + label { border-left: 1px solid var(--border); }
   .workspace-dialog .property-toggle input[type="radio"] { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; clip-path: inset(50%); overflow: hidden; }
-  .property-toggle span { display: block; padding: 9px 12px; text-align: center; background: var(--subtle); cursor: pointer; }
+  .property-toggle-options span { display: block; padding: 9px 12px; text-align: center; background: var(--subtle); cursor: pointer; }
   .property-toggle input:checked + span { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
   .property-toggle input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: -2px; }
   .dialog-error { color: #bf3345; }
@@ -176,7 +183,7 @@ h1 { margin: 0; font-size: clamp(24px, 2.6vw, 34px); font-weight: 650; letter-sp
 .diagnostics h2 { font-size: 12px; margin: 0; font-weight: 650; }
 #status { margin-left: auto; font-size: 11px; color: var(--muted); }
 #retry { font-size: 11px; min-height: 26px; }
-#diagnostics { list-style: none; margin: 0; padding: 0; max-height: 200px; overflow: auto; }
+#diagnostics { list-style: none; margin: 0; padding: 0; max-height: min(200px, 18dvh); overflow: auto; }
 #diagnostics:empty { display: none; }
 .diagnostic { display: block; width: 100%; text-align: left; padding: 11px 14px; border: 0; border-radius: 0; font-size: 12px; line-height: 1.7; white-space: normal; overflow-wrap: anywhere; }
 .diagnostic.error { border-left: 3px solid #c03545; }
@@ -199,6 +206,9 @@ h1 { margin: 0; font-size: clamp(24px, 2.6vw, 34px); font-weight: 650; letter-sp
 
 @media (max-width: 850px) {
   :root { --page-gutter: 8px; }
+  body { height: auto; min-height: 100dvh; }
+  main { display: block; }
+  .workbench { min-height: 0; }
   .header-note, .local-badge { display: none; }
   .workspace { display: flex; flex-direction: column; height: auto; gap: 12px; }
   .pane { height: 470px; }

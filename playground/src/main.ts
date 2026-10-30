@@ -17,7 +17,6 @@ import { SourceWorkbench } from "./workspace-ui";
 import { sourceArchive } from "./source-archive";
 import { RecoverySaver } from "./recovery-saver";
 import { escapeMsbuild } from "./msbuild-escape";
-import "./style.css";
 
 const element = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const fileNameOrder = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
