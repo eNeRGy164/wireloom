@@ -1,4 +1,6 @@
 using System.Text.Json.Nodes;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Wireloom.Dds.Generator.WireCompatibility.Verifier.Verification;
 
@@ -51,6 +53,15 @@ internal static class ShardIntegrityVerification
         ExpectMergeFailure(context, fixture, "unexpected-fixture", directory => ChangeRows(directory, lines => [lines[0] + "-unknown", .. lines.Skip(1)]));
         ExpectMergeFailure(context, fixture, "invalid-status", directory => ChangeRows(directory, lines => [lines[0].Replace("\tPASS\t", "\tUNKNOWN\t"), .. lines.Skip(1)]));
         ExpectMergeFailure(context, fixture, "wrong-report-count", directory => ChangeJson(Path.Combine(directory, "shard-0", "results.json"), node => node["scenarioCount"] = 999));
+        ExpectMergeFailure(context, fixture, "different-source-revision", directory => ChangeSourceRevisionIdentity(
+            Path.Combine(directory, "shard-1")));
+        ExpectMergeFailure(context, fixture, "different-dirty-source", directory => ChangeDirtySourceIdentity(
+            Path.Combine(directory, "shard-1")));
+        ExpectMergeFailure(context, fixture, "invalid-lifecycle-qos", directory =>
+        {
+            var log = Directory.GetFiles(directory, "14-unbounded-receive-lifecycle-fragmented-xcdr1-*.log", SearchOption.AllDirectories).First();
+            File.WriteAllText(log, File.ReadAllText(log).Replace("fragmentation_enabled=true", "fragmentation_enabled=false", StringComparison.Ordinal));
+        });
 
         Invoke(succeeds: false, "partition-shard", "7.7.0", "4", "4", seed, Path.Combine(root, "invalid-index"));
         context.RecordChecks(1);
@@ -91,5 +102,55 @@ internal static class ShardIntegrityVerification
 
         context.Invoke(succeeds: false, "merge-shards", context.RtiVersion, "4", directory, Path.Combine(context.Root, name + "-output"), fixture.Exclusions);
         context.RecordChecks(1);
+    }
+
+    private static void ChangeDirtySourceIdentity(string shardDirectory)
+    {
+        var path = Path.Combine(shardDirectory, "execution-provenance.json");
+        var node = VerificationContext.ReadJson(path);
+        var retainedPath = Path.Combine("source-files", "identity-change.txt");
+        var bytes = "different retained source\n"u8.ToArray();
+        var sourceFileHash = Convert.ToHexString(SHA256.HashData(bytes));
+        var manifestEntry = Encoding.UTF8.GetBytes($"identity-change.txt\0added\0{sourceFileHash}\n");
+        node["dirtySnapshotSha256"] = Convert.ToHexString(SHA256.HashData(manifestEntry));
+        node["dirtyFileCount"] = 1;
+        node["files"] = new JsonArray(new JsonObject
+        {
+            ["path"] = "identity-change.txt",
+            ["status"] = "added",
+            ["sha256"] = sourceFileHash,
+            ["retainedPath"] = retainedPath.Replace('\\', '/'),
+        });
+        var retainedFile = Path.Combine(shardDirectory, retainedPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(retainedFile)!);
+        File.WriteAllBytes(retainedFile, bytes);
+        File.WriteAllText(path, node.ToJsonString() + "\n");
+        AlignReportIdentity(shardDirectory, (string)node["revision"]!, (string)node["dirtySnapshotSha256"]!, (int)node["dirtyFileCount"]!);
+    }
+
+    private static void ChangeSourceRevisionIdentity(string shardDirectory)
+    {
+        var path = Path.Combine(shardDirectory, "execution-provenance.json");
+        var node = VerificationContext.ReadJson(path);
+        node["revision"] = "another-revision";
+        File.WriteAllText(path, node.ToJsonString() + "\n");
+        AlignReportIdentity(shardDirectory, "another-revision", (string)node["dirtySnapshotSha256"]!, (int)node["dirtyFileCount"]!);
+    }
+
+    private static void AlignReportIdentity(string shardDirectory, string revision, string snapshotHash, int fileCount)
+    {
+        var reportPath = Path.Combine(shardDirectory, "results.json");
+        var report = VerificationContext.ReadJson(reportPath);
+        report["executionProvenance"]!["revision"] = revision;
+        report["executionProvenance"]!["dirtySourceSnapshotSha256"] = snapshotHash;
+        report["executionProvenance"]!["dirtySourceFileCount"] = fileCount;
+        foreach (var scenario in report["scenarios"]!.AsArray())
+        {
+            scenario!["sourceRevision"] = revision;
+            scenario["dirtySourceSnapshotSha256"] = snapshotHash;
+            scenario["dirtySourceFileCount"] = fileCount;
+        }
+
+        File.WriteAllText(reportPath, report.ToJsonString() + "\n");
     }
 }

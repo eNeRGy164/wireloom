@@ -21,6 +21,9 @@ internal static partial class ManagedFixtures
 #if WIRE_COMPATIBILITY_UNBOUNDED_SUPPORT
             "14-unbounded-support" => CreateUnboundedSupportFixture<T>(options),
 #endif
+#if WIRE_COMPATIBILITY_UNBOUNDED_RECEIVE_LIFECYCLE
+            "14-unbounded-receive-lifecycle" => CreateUnboundedReceiveLifecycleFixture<T>(options),
+#endif
 #if WIRE_COMPATIBILITY_SEQUENCE_ARRAYS
             "05-array-of-sequences-idl" => CreateSequenceArrayFixture<T>(options.Fixture),
 #endif
@@ -52,4 +55,11 @@ internal static partial class ManagedFixtures
             _ => serializer.FromDynamicData(expectedDynamic!)
         };
     }
+
+#if WIRE_COMPATIBILITY_UNBOUNDED_RECEIVE_LIFECYCLE
+    private static T CreateUnboundedReceiveLifecycleFixture<T>(PeerOptions options) =>
+        (T)UnboundedReceiveLifecycleFixture.Create(typeof(T), phaseId: 0, IsFragmentedLifecycle(options.Fixture));
+
+    private static bool IsFragmentedLifecycle(string fixture) => fixture.StartsWith("fragmented-", StringComparison.Ordinal);
+#endif
 }

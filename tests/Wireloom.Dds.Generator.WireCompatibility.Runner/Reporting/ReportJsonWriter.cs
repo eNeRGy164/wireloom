@@ -36,6 +36,21 @@ internal static class ReportJsonWriter
                 ["knownExceptions"] = knownExceptions,
                 ["notApplicableCases"] = notApplicable,
                 ["notImplementedCases"] = notImplemented,
+                ["executionProvenance"] = new Dictionary<string, object?>
+                {
+                    ["revision"] = data.ExecutionProvenance.Revision,
+                    ["dirtySourceSnapshotSha256"] = data.ExecutionProvenance.DirtySnapshotSha256,
+                    ["dirtySourceFileCount"] = data.ExecutionProvenance.DirtyFileCount,
+                    ["verifiedUnchanged"] = data.ExecutionProvenance.VerifiedUnchanged,
+                    ["integrityFailure"] = data.ExecutionProvenance.IntegrityFailure,
+                    ["files"] = data.ExecutionProvenance.Files.Select(file => new Dictionary<string, string?>
+                    {
+                        ["path"] = file.Path,
+                        ["status"] = file.Status,
+                        ["sha256"] = file.Sha256,
+                        ["retainedPath"] = file.RetainedPath,
+                    }).ToArray(),
+                },
                 ["scenarios"] = scenarios,
             };
 

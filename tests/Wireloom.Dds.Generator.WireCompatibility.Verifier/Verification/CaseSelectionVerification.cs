@@ -48,7 +48,7 @@ internal static class CaseSelectionVerification
                 var registryPath = Path.Combine(repositoryRoot, "tests", "Wireloom.Dds.Generator.WireCompatibility", $"wire-case-exclusions-{version}.json");
                 var selected = Invoke(succeeds: true, "list-cases", manifestPath, registryPath).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-                Check(selected.Length == (version == "7.3.1" ? 91 : 92), "Only applicable positive cases are selected.");
+                Check(selected.Length == (version == "7.3.1" ? 92 : 93), "Only applicable positive cases are selected.");
                 Check(selected.Contains("05-array-of-sequences-idl"), "The IDL mapping is an independently selected corpus case.");
                 Check(Invoke(succeeds: true, "case-pairings", manifestPath, "05-array-of-sequences-idl")
                         .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)

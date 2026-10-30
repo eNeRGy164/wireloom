@@ -121,8 +121,32 @@ int main(int argc, char **argv)
         }
 #endif
 #endif
-        dds::domain::DomainParticipant participant(domain_id);
-#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS) || defined(WIRELOOM_TYPED_C173_UNBOUNDED_SUPPORT)
+        auto participant_qos = dds::domain::DomainParticipant::default_participant_qos();
+#ifdef WIRELOOM_TYPED_C174_UNBOUNDED_RECEIVE_LIFECYCLE
+        if (case_id == "14-unbounded-receive-lifecycle"
+            && fixture.rfind("fragmented-", 0) == 0) {
+            participant_qos << rti::core::policy::TransportBuiltin::UDPv4();
+            participant_qos.policy<rti::core::policy::Property>().set({
+                "dds.transport.UDPv4.builtin.parent.message_size_max",
+                "16384"});
+        }
+#endif
+        dds::domain::DomainParticipant participant(domain_id, participant_qos);
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS) || defined(WIRELOOM_TYPED_C173_UNBOUNDED_SUPPORT) || defined(WIRELOOM_TYPED_C174_UNBOUNDED_RECEIVE_LIFECYCLE)
+        if (case_id == "14-unbounded-receive-lifecycle"
+            && fixture.rfind("fragmented-", 0) == 0) {
+            const auto effective_qos = participant.qos();
+            const auto effective_mask = effective_qos.policy<rti::core::policy::TransportBuiltin>().mask();
+            const auto &properties = effective_qos.policy<rti::core::policy::Property>();
+            const auto size_limit = properties.try_get(
+                "dds.transport.UDPv4.builtin.parent.message_size_max");
+            const bool udp_only = effective_mask == rti::core::policy::TransportBuiltinMask::udpv4();
+            if (!udp_only || !size_limit.has_value() || size_limit.value() != "16384") {
+                throw std::runtime_error("Effective native participant transport differs from UDPv4/16384-byte settings");
+            }
+            std::cout << "LIFECYCLE_PARTICIPANT_QOS transport_udp_only=true message_size_max="
+                      << size_limit.value() << std::endl;
+        }
         if (case_id == "09-optional-string-sequences"
             || case_id == "04-strings" || case_id == "04-boundaries"
             || case_id == "09-optional-aggregate-member" || case_id == "09-optional-recursive-array") {
@@ -135,7 +159,7 @@ int main(int argc, char **argv)
                     participant, role, topic_name, timeout_seconds, case_id, fixture);
             }
         }
-        if (case_id == "14-unbounded-support") {
+        if (case_id == "14-unbounded-support" || case_id == "14-unbounded-receive-lifecycle") {
             return run_typed_fixture_peer(
                 participant, role, topic_name, timeout_seconds, case_id, fixture);
         }

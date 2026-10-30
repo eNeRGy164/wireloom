@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Threading.Channels;
 
 using ScenarioRow = Wireloom.Dds.Generator.WireCompatibility.Shared.ScenarioRow;
 
@@ -109,6 +110,9 @@ internal sealed record ExchangeCaseBuild(string WireloomType, string RtiType, st
 /// <param name="Status">PASS or FAIL status.</param>
 internal sealed record ExchangeResult(string Status);
 
+/// <summary>Lifecycle coordination result retained even when a peer exits before completing the exchange.</summary>
+internal sealed record LifecycleCoordinationResult(bool Completed, int AcceptedPhases, string Outcome, bool ReaderOutputDrained);
+
 /// <summary>Started peer process and its captured output and log resources.</summary>
 /// <param name="Process">Peer process.</param>
 /// <param name="Output">Captured standard output and error lines.</param>
@@ -118,4 +122,5 @@ internal sealed record ExchangeResult(string Status);
 /// <param name="LogWriter">Per-peer log writer.</param>
 /// <param name="LogLock">Synchronization for concurrent output streams.</param>
 internal sealed record RunningPeer(Process Process, System.Collections.Concurrent.ConcurrentQueue<string> Output, Task Ready,
-    Task StandardOutput, Task StandardError, StreamWriter LogWriter, SemaphoreSlim LogLock);
+    Task StandardOutput, Task StandardError, StreamWriter LogWriter, SemaphoreSlim LogLock,
+    ChannelReader<string> LifecycleEvents, StreamWriter? StandardInput);

@@ -67,6 +67,8 @@ internal static class WireCompatibilityCaseCatalog
             "14-typed-defaults" when rtiVersion == "7.7.0" => ["default", "non-default", "sparse-omitted"],
             "14-typed-defaults" => ["default", "non-default"],
             "14-enum-constant" => ["constant-and-label"],
+            "14-unbounded-receive-lifecycle" => [
+                "lifecycle-xcdr1", "lifecycle-xcdr2", "fragmented-xcdr1", "fragmented-xcdr2"],
             "14-unbounded-support" => ["xcdr1-unbounded", "xcdr2-unbounded"],
             _ => [NonDefaultCases.Contains(caseId) ? "non-default" : "default"],
         };

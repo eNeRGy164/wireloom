@@ -183,7 +183,11 @@ contain at least as many cases as the shard count.
 ## Read the results
 
 The runner writes `results.json` and `results.md`, plus `logs/`, `scenarios.tsv`,
-`plan.json`, and `shard.json`. A complete run combines the shard reports into
+`plan.json`, `shard.json`, and an `execution-provenance.json` captured before peer
+builds. The provenance manifest records the exact dirty source paths and SHA-256
+hashes, with their source bytes retained under `source-files/`. Reporting keeps
+that execution identity; it does not infer it from the checkout doing the render.
+A complete run combines the shard reports into
 one version-specific report. Use the JSON for structured outcomes and the
 Markdown report for review. Its title identifies the RTI profile; shared
 adaptations list all affected peers once. Technical terms use code spans, and
@@ -195,7 +199,8 @@ observed problems. Failed exchanges remain visible in both reports. Not-run,
 not-implemented, and not-applicable cases remain distinct from observed
 exchange failures.
 
-The report merger checks that shards share the same plan and RTI version and
+The report merger checks that shards share the same plan, RTI version, and exact
+execution source identity, and
 that their exchanges are complete, unique, and assigned to the correct shard.
 Missing, duplicated, misassigned, inconsistent, or not-run exchanges prevent a
 complete report. Fatal setup and worker failures preserve a nonzero

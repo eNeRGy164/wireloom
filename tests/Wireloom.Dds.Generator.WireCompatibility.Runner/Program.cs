@@ -1,5 +1,10 @@
 using Wireloom.Dds.Generator.WireCompatibility.Runner;
 
+if (args.Length > 0 && args[0] == "--lifecycle-verification-peer")
+{
+    return await LifecycleVerificationPeer.RunAsync(args[1..]);
+}
+
 if (args.SequenceEqual(["--verify-harness"]))
 {
     return await HarnessVerification.RunAsync();

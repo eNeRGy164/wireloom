@@ -58,10 +58,60 @@ internal static class ReportRenderingVerification
         Check((string?)document["rtiVersion"] == version && (int)document["scenarioCount"]! == 3 && (int)document["fixtureCount"]! == 1, "Report identity and counts must retain scheduler evidence.");
 
         var scenarios = document["scenarios"]!.AsArray();
+        Check(!string.IsNullOrWhiteSpace((string?)scenarios[0]!["sourceRevision"])
+            && ((string?)scenarios[0]!["dirtySourceSnapshotSha256"])?.Length == 64
+            && (int?)scenarios[0]!["dirtySourceFileCount"] is >= 0,
+            "Every scenario retains its source revision and dirty-source snapshot hash.");
         Check(((string?)scenarios[1]!["observedProblem"])!.Contains("Expected 10; observed 20", StringComparison.Ordinal) &&
             ((string?)scenarios[1]!["observedProblem"])!.Contains("SIGSEGV", StringComparison.Ordinal), "Observed failures must retain detail and endpoint exit interpretation.");
         Check((string?)scenarios[2]!["observedProblem"] == "Native peer was unavailable.", "NOT_RUN_DETAIL must retain precedence.");
         Check(markdown.Contains($"# {version} Wire compatibility results", StringComparison.Ordinal) && markdown.Contains("**3** DDS exchanges", StringComparison.Ordinal), "Markdown must describe the same report.");
+
+        // Arrange / Act / Assert: retained evidence keeps its execution identity when rendered from a different checkout without Git.
+        var retainedRevision = (string?)scenarios[0]!["sourceRevision"];
+        var retainedHash = (string?)scenarios[0]!["dirtySourceSnapshotSha256"];
+        var noGitRequest = request with { RepositoryRoot = root };
+        var originalPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+        try
+        {
+            Environment.SetEnvironmentVariable("PATH", string.Empty);
+            WireReportRenderer.Render(noGitRequest);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("PATH", originalPath);
+        }
+
+        var rerenderedScenario = JsonNode.Parse(File.ReadAllText(request.JsonPath))!["scenarios"]![0]!;
+        Check((string?)rerenderedScenario["sourceRevision"] == retainedRevision
+            && (string?)rerenderedScenario["dirtySourceSnapshotSha256"] == retainedHash,
+            "Rendering retained execution evidence from a different Git-free checkout must preserve its original source identity.");
+
+        var missingProvenance = Path.Combine(root, "missing-execution-provenance.json");
+        CheckRejected<InvalidDataException>(() => WireReportRenderer.Render(request with { ExecutionProvenancePath = missingProvenance }),
+            "Rendering must reject missing execution provenance.");
+        var malformedProvenance = Path.Combine(root, "malformed-execution-provenance.json");
+        File.WriteAllText(malformedProvenance, "{ invalid json");
+        CheckRejected<Exception>(() => WireReportRenderer.Render(request with { ExecutionProvenancePath = malformedProvenance }),
+            "Rendering must reject malformed execution provenance.");
+
+        // Arrange: a checkout mismatch at finalization marks prior PASS rows as failures while keeping the captured identity.
+        var capturedProvenance = SourceSnapshotEvidence.Read(workspace.ExecutionProvenance);
+        var changedProvenance = capturedProvenance with { Revision = "different-checkout-revision" };
+        changedProvenance.Write(workspace.ExecutionProvenance);
+        File.WriteAllLines(workspace.Scenarios, rows.Select(row => row.ToTsv()));
+
+        // Act
+        var driftFinalizer = new MatrixReport(reportOptions, workspace, new WorkflowLog());
+        _ = driftFinalizer.Complete(new MatrixRunOutcome(MatrixPlan.Empty, PeerPreparationResult.Empty, 9, ExchangeIssues: false));
+
+        // Assert
+        var driftReport = JsonNode.Parse(File.ReadAllText(request.JsonPath))!;
+        Check((string?)driftReport["scenarios"]![0]!["status"] == "FAIL"
+            && (string?)driftReport["scenarios"]![0]!["sourceRevision"] == "different-checkout-revision"
+            && !(bool)driftReport["executionProvenance"]!["verifiedUnchanged"]!,
+            "Source drift during an exchange must prevent a successful report without replacing the captured identity.");
+        capturedProvenance.Write(workspace.ExecutionProvenance);
 
         // Arrange / Act / Assert: fatal setup/execution recovery must still render without tools.
         var finalizer = new MatrixReport(reportOptions, workspace, new WorkflowLog());

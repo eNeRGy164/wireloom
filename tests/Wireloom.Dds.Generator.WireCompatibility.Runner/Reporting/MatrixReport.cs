@@ -1,3 +1,5 @@
+using ScenarioRow = Wireloom.Dds.Generator.WireCompatibility.Shared.ScenarioRow;
+
 namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 
 /// <summary>Owns report recovery, completion summaries, and final workflow status.</summary>
@@ -9,6 +11,11 @@ internal sealed class MatrixReport(MatrixOptions options, MatrixWorkspace worksp
         var hasIssues = run.HasIssues;
         try
         {
+            if (!options.CompileOnly && VerifyExecutionSourceIntegrity())
+            {
+                hasIssues = true;
+            }
+
             var summary = ScenarioSummary.Empty;
 
             if (run.ExecutionExitCode == 0 && !options.CompileOnly)
@@ -71,7 +78,37 @@ internal sealed class MatrixReport(MatrixOptions options, MatrixWorkspace worksp
             LogsDirectory: workspace.Logs,
             ExclusionsPath: workspace.Exclusions,
             ManifestPath: workspace.Manifest,
-            RepositoryRoot: options.RepositoryRoot));
+            RepositoryRoot: options.RepositoryRoot,
+            ExecutionProvenancePath: workspace.ExecutionProvenance));
+    }
+
+    private bool VerifyExecutionSourceIntegrity()
+    {
+        if (!workspace.HasRunArtifacts || !File.Exists(workspace.ExecutionProvenance))
+        {
+            return false;
+        }
+
+        var provenance = SourceSnapshotEvidence.Read(workspace.ExecutionProvenance);
+        if (provenance.MatchesCurrent(options.RepositoryRoot))
+        {
+            return !provenance.VerifiedUnchanged;
+        }
+
+        provenance = provenance with
+        {
+            VerifiedUnchanged = false,
+            IntegrityFailure = "The dirty source manifest differs from the checkout captured before peer builds.",
+        };
+        provenance.Write(workspace.ExecutionProvenance);
+
+        var rows = File.ReadLines(workspace.Scenarios).Where(line => line.Length > 0)
+            .Select(ScenarioRow.Parse)
+            .Select(row => row.Status == "PASS" ? row with { Status = "FAIL" } : row)
+            .ToArray();
+        File.WriteAllLines(workspace.Scenarios, rows.Select(row => row.ToTsv()));
+        log.Annotate("error", "Wire source changed during execution", provenance.IntegrityFailure);
+        return true;
     }
 
     private ScenarioSummary ReadScenarioSummary()

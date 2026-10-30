@@ -21,6 +21,9 @@
         "dependencies": {
           "Rti.ConnextDds": "[7.7.0, )"
         }
+      },
+      "wireloom.dds.generator.wirecompatibility.shared": {
+        "type": "Project"
       }
     }
   }
