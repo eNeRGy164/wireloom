@@ -1,0 +1,441 @@
+
+
+/*
+WARNING: THIS FILE IS AUTO-GENERATED. DO NOT MODIFY.
+
+This file was generated from 14-unbounded-receive-lifecycle.idl
+using RTI Code Generator (rtiddsgen) version 4.3.1.
+The rtiddsgen tool is part of the RTI Connext DDS distribution.
+For more information, type 'rtiddsgen -help' at a command shell
+or consult the Code Generator User's Manual.
+*/
+
+#ifndef _14_unbounded_receive_lifecyclePlugin_1593090034_h
+#define _14_unbounded_receive_lifecyclePlugin_1593090034_h
+
+#include "14-unbounded-receive-lifecycle.hpp"
+
+struct RTICdrStream;
+
+#ifndef pres_typePlugin_h
+#include "pres/pres_typePlugin.h"
+#endif
+
+#if (defined(RTI_WIN32) || defined (RTI_WINCE) || defined(RTI_INTIME)) && defined(NDDS_USER_DLL_EXPORT)
+/* If the code is building on Windows, start exporting symbols.
+*/
+#undef NDDSUSERDllExport
+#define NDDSUSERDllExport __declspec(dllexport)
+#endif
+
+namespace CorpusUnboundedReceiveLifecycle {
+
+    #define LongValuesPlugin_get_sample PRESTypePluginDefaultEndpointData_getSample
+
+    #define LongValuesPlugin_get_buffer PRESTypePluginDefaultEndpointData_getBuffer 
+    #define LongValuesPlugin_return_buffer PRESTypePluginDefaultEndpointData_returnBuffer
+
+    #define LongValuesPlugin_create_sample PRESTypePluginDefaultEndpointData_createSample 
+    #define LongValuesPlugin_destroy_sample PRESTypePluginDefaultEndpointData_deleteSample 
+
+    /* --------------------------------------------------------------------------------------
+    Support functions:
+    * -------------------------------------------------------------------------------------- */
+
+    NDDSUSERDllExport extern LongValues*
+    LongValuesPluginSupport_create_data_w_params(
+        const struct DDS_TypeAllocationParams_t * alloc_params);
+
+    NDDSUSERDllExport extern LongValues*
+    LongValuesPluginSupport_create_data_ex(RTIBool allocate_pointers);
+
+    NDDSUSERDllExport extern LongValues*
+    LongValuesPluginSupport_create_data(void);
+
+    NDDSUSERDllExport extern RTIBool 
+    LongValuesPluginSupport_copy_data(
+        LongValues *out,
+        const LongValues *in);
+
+    NDDSUSERDllExport extern void 
+    LongValuesPluginSupport_destroy_data_w_params(
+        LongValues *sample,
+        const struct DDS_TypeDeallocationParams_t * dealloc_params);
+
+    NDDSUSERDllExport extern void 
+    LongValuesPluginSupport_destroy_data_ex(
+        LongValues *sample,RTIBool deallocate_pointers);
+
+    NDDSUSERDllExport extern void 
+    LongValuesPluginSupport_destroy_data(
+        LongValues *sample);
+
+    NDDSUSERDllExport extern void 
+    LongValuesPluginSupport_print_data(
+        const LongValues *sample,
+        const char *desc,
+        unsigned int indent);
+
+    /* ----------------------------------------------------------------------------
+    Callback functions:
+    * ---------------------------------------------------------------------------- */
+
+    NDDSUSERDllExport extern RTIBool 
+    LongValuesPlugin_copy_sample(
+        PRESTypePluginEndpointData endpoint_data,
+        LongValues *out,
+        const LongValues *in);
+
+    /* ----------------------------------------------------------------------------
+    (De)Serialize functions:
+    * ------------------------------------------------------------------------- */
+
+    NDDSUSERDllExport extern unsigned int 
+    LongValuesPlugin_get_serialized_sample_max_size(
+        PRESTypePluginEndpointData endpoint_data,
+        RTIBool include_encapsulation,
+        RTIEncapsulationId encapsulation_id,
+        unsigned int current_alignment);
+
+    /* --------------------------------------------------------------------------------------
+    Key Management functions:
+    * -------------------------------------------------------------------------------------- */
+    NDDSUSERDllExport extern PRESTypePluginKeyKind 
+    LongValuesPlugin_get_key_kind(void);
+
+    NDDSUSERDllExport extern unsigned int 
+    LongValuesPlugin_get_serialized_key_max_size(
+        PRESTypePluginEndpointData endpoint_data,
+        RTIBool include_encapsulation,
+        RTIEncapsulationId encapsulation_id,
+        unsigned int current_alignment);
+
+    NDDSUSERDllExport extern unsigned int 
+    LongValuesPlugin_get_serialized_key_max_size_for_keyhash(
+        PRESTypePluginEndpointData endpoint_data,
+        RTIEncapsulationId encapsulation_id,
+        unsigned int current_alignment);
+
+    #define OptionalStatePlugin_get_sample PRESTypePluginDefaultEndpointData_getSample
+
+    #define OptionalStatePlugin_get_buffer PRESTypePluginDefaultEndpointData_getBuffer 
+    #define OptionalStatePlugin_return_buffer PRESTypePluginDefaultEndpointData_returnBuffer
+
+    #define OptionalStatePlugin_create_sample PRESTypePluginDefaultEndpointData_createSample 
+    #define OptionalStatePlugin_destroy_sample PRESTypePluginDefaultEndpointData_deleteSample 
+
+    /* --------------------------------------------------------------------------------------
+    Support functions:
+    * -------------------------------------------------------------------------------------- */
+
+    NDDSUSERDllExport extern OptionalState*
+    OptionalStatePluginSupport_create_data_w_params(
+        const struct DDS_TypeAllocationParams_t * alloc_params);
+
+    NDDSUSERDllExport extern OptionalState*
+    OptionalStatePluginSupport_create_data_ex(RTIBool allocate_pointers);
+
+    NDDSUSERDllExport extern OptionalState*
+    OptionalStatePluginSupport_create_data(void);
+
+    NDDSUSERDllExport extern RTIBool 
+    OptionalStatePluginSupport_copy_data(
+        OptionalState *out,
+        const OptionalState *in);
+
+    NDDSUSERDllExport extern void 
+    OptionalStatePluginSupport_destroy_data_w_params(
+        OptionalState *sample,
+        const struct DDS_TypeDeallocationParams_t * dealloc_params);
+
+    NDDSUSERDllExport extern void 
+    OptionalStatePluginSupport_destroy_data_ex(
+        OptionalState *sample,RTIBool deallocate_pointers);
+
+    NDDSUSERDllExport extern void 
+    OptionalStatePluginSupport_destroy_data(
+        OptionalState *sample);
+
+    NDDSUSERDllExport extern void 
+    OptionalStatePluginSupport_print_data(
+        const OptionalState *sample,
+        const char *desc,
+        unsigned int indent);
+
+    /* ----------------------------------------------------------------------------
+    Callback functions:
+    * ---------------------------------------------------------------------------- */
+
+    NDDSUSERDllExport extern PRESTypePluginParticipantData 
+    OptionalStatePlugin_on_participant_attached(
+        void *registration_data, 
+        const struct PRESTypePluginParticipantInfo *participant_info,
+        RTIBool top_level_registration, 
+        void *container_plugin_context,
+        RTICdrTypeCode *typeCode);
+
+    NDDSUSERDllExport extern void 
+    OptionalStatePlugin_on_participant_detached(
+        PRESTypePluginParticipantData participant_data);
+
+    NDDSUSERDllExport extern PRESTypePluginEndpointData 
+    OptionalStatePlugin_on_endpoint_attached(
+        PRESTypePluginParticipantData participant_data,
+        const struct PRESTypePluginEndpointInfo *endpoint_info,
+        RTIBool top_level_registration, 
+        void *container_plugin_context);
+
+    NDDSUSERDllExport extern void 
+    OptionalStatePlugin_on_endpoint_detached(
+        PRESTypePluginEndpointData endpoint_data);
+
+    NDDSUSERDllExport extern void    
+    OptionalStatePlugin_return_sample(
+        PRESTypePluginEndpointData endpoint_data,
+        OptionalState *sample,
+        void *handle);    
+
+    NDDSUSERDllExport extern RTIBool 
+    OptionalStatePlugin_copy_sample(
+        PRESTypePluginEndpointData endpoint_data,
+        OptionalState *out,
+        const OptionalState *in);
+
+    /* ----------------------------------------------------------------------------
+    (De)Serialize functions:
+    * ------------------------------------------------------------------------- */
+
+    NDDSUSERDllExport extern RTIBool
+    OptionalStatePlugin_serialize_to_cdr_buffer(
+        char * buffer,
+        unsigned int * length,
+        const OptionalState *sample,
+        ::dds::core::policy::DataRepresentationId representation
+        = ::dds::core::policy::DataRepresentation::xcdr()); 
+
+    NDDSUSERDllExport extern RTIBool 
+    OptionalStatePlugin_deserialize(
+        PRESTypePluginEndpointData endpoint_data,
+        OptionalState **sample, 
+        RTIBool * drop_sample,
+        struct RTICdrStream *cdrStream,
+        RTIBool deserialize_encapsulation,
+        RTIBool deserialize_sample, 
+        void *endpoint_plugin_qos);
+
+    NDDSUSERDllExport extern RTIBool
+    OptionalStatePlugin_deserialize_from_cdr_buffer(
+        OptionalState *sample,
+        const char * buffer,
+        unsigned int length);    
+
+    NDDSUSERDllExport extern unsigned int 
+    OptionalStatePlugin_get_serialized_sample_max_size(
+        PRESTypePluginEndpointData endpoint_data,
+        RTIBool include_encapsulation,
+        RTIEncapsulationId encapsulation_id,
+        unsigned int current_alignment);
+
+    /* --------------------------------------------------------------------------------------
+    Key Management functions:
+    * -------------------------------------------------------------------------------------- */
+    NDDSUSERDllExport extern PRESTypePluginKeyKind 
+    OptionalStatePlugin_get_key_kind(void);
+
+    NDDSUSERDllExport extern unsigned int 
+    OptionalStatePlugin_get_serialized_key_max_size(
+        PRESTypePluginEndpointData endpoint_data,
+        RTIBool include_encapsulation,
+        RTIEncapsulationId encapsulation_id,
+        unsigned int current_alignment);
+
+    NDDSUSERDllExport extern unsigned int 
+    OptionalStatePlugin_get_serialized_key_max_size_for_keyhash(
+        PRESTypePluginEndpointData endpoint_data,
+        RTIEncapsulationId encapsulation_id,
+        unsigned int current_alignment);
+
+    NDDSUSERDllExport extern RTIBool 
+    OptionalStatePlugin_deserialize_key(
+        PRESTypePluginEndpointData endpoint_data,
+        OptionalState ** sample,
+        RTIBool * drop_sample,
+        struct RTICdrStream *cdrStream,
+        RTIBool deserialize_encapsulation,
+        RTIBool deserialize_key,
+        void *endpoint_plugin_qos);
+
+    /* Plugin Functions */
+    NDDSUSERDllExport extern struct PRESTypePlugin*
+    OptionalStatePlugin_new(void);
+
+    NDDSUSERDllExport extern void
+    OptionalStatePlugin_delete(struct PRESTypePlugin *);
+
+    #define SamplePlugin_get_sample PRESTypePluginDefaultEndpointData_getSample
+
+    #define SamplePlugin_get_buffer PRESTypePluginDefaultEndpointData_getBuffer 
+    #define SamplePlugin_return_buffer PRESTypePluginDefaultEndpointData_returnBuffer
+
+    #define SamplePlugin_create_sample PRESTypePluginDefaultEndpointData_createSample 
+    #define SamplePlugin_destroy_sample PRESTypePluginDefaultEndpointData_deleteSample 
+
+    /* --------------------------------------------------------------------------------------
+    Support functions:
+    * -------------------------------------------------------------------------------------- */
+
+    NDDSUSERDllExport extern Sample*
+    SamplePluginSupport_create_data_w_params(
+        const struct DDS_TypeAllocationParams_t * alloc_params);
+
+    NDDSUSERDllExport extern Sample*
+    SamplePluginSupport_create_data_ex(RTIBool allocate_pointers);
+
+    NDDSUSERDllExport extern Sample*
+    SamplePluginSupport_create_data(void);
+
+    NDDSUSERDllExport extern RTIBool 
+    SamplePluginSupport_copy_data(
+        Sample *out,
+        const Sample *in);
+
+    NDDSUSERDllExport extern void 
+    SamplePluginSupport_destroy_data_w_params(
+        Sample *sample,
+        const struct DDS_TypeDeallocationParams_t * dealloc_params);
+
+    NDDSUSERDllExport extern void 
+    SamplePluginSupport_destroy_data_ex(
+        Sample *sample,RTIBool deallocate_pointers);
+
+    NDDSUSERDllExport extern void 
+    SamplePluginSupport_destroy_data(
+        Sample *sample);
+
+    NDDSUSERDllExport extern void 
+    SamplePluginSupport_print_data(
+        const Sample *sample,
+        const char *desc,
+        unsigned int indent);
+
+    /* ----------------------------------------------------------------------------
+    Callback functions:
+    * ---------------------------------------------------------------------------- */
+
+    NDDSUSERDllExport extern PRESTypePluginParticipantData 
+    SamplePlugin_on_participant_attached(
+        void *registration_data, 
+        const struct PRESTypePluginParticipantInfo *participant_info,
+        RTIBool top_level_registration, 
+        void *container_plugin_context,
+        RTICdrTypeCode *typeCode);
+
+    NDDSUSERDllExport extern void 
+    SamplePlugin_on_participant_detached(
+        PRESTypePluginParticipantData participant_data);
+
+    NDDSUSERDllExport extern PRESTypePluginEndpointData 
+    SamplePlugin_on_endpoint_attached(
+        PRESTypePluginParticipantData participant_data,
+        const struct PRESTypePluginEndpointInfo *endpoint_info,
+        RTIBool top_level_registration, 
+        void *container_plugin_context);
+
+    NDDSUSERDllExport extern void 
+    SamplePlugin_on_endpoint_detached(
+        PRESTypePluginEndpointData endpoint_data);
+
+    NDDSUSERDllExport extern void    
+    SamplePlugin_return_sample(
+        PRESTypePluginEndpointData endpoint_data,
+        Sample *sample,
+        void *handle);    
+
+    NDDSUSERDllExport extern RTIBool 
+    SamplePlugin_copy_sample(
+        PRESTypePluginEndpointData endpoint_data,
+        Sample *out,
+        const Sample *in);
+
+    /* ----------------------------------------------------------------------------
+    (De)Serialize functions:
+    * ------------------------------------------------------------------------- */
+
+    NDDSUSERDllExport extern RTIBool
+    SamplePlugin_serialize_to_cdr_buffer(
+        char * buffer,
+        unsigned int * length,
+        const Sample *sample,
+        ::dds::core::policy::DataRepresentationId representation
+        = ::dds::core::policy::DataRepresentation::xcdr()); 
+
+    NDDSUSERDllExport extern RTIBool 
+    SamplePlugin_deserialize(
+        PRESTypePluginEndpointData endpoint_data,
+        Sample **sample, 
+        RTIBool * drop_sample,
+        struct RTICdrStream *cdrStream,
+        RTIBool deserialize_encapsulation,
+        RTIBool deserialize_sample, 
+        void *endpoint_plugin_qos);
+
+    NDDSUSERDllExport extern RTIBool
+    SamplePlugin_deserialize_from_cdr_buffer(
+        Sample *sample,
+        const char * buffer,
+        unsigned int length);    
+
+    NDDSUSERDllExport extern unsigned int 
+    SamplePlugin_get_serialized_sample_max_size(
+        PRESTypePluginEndpointData endpoint_data,
+        RTIBool include_encapsulation,
+        RTIEncapsulationId encapsulation_id,
+        unsigned int current_alignment);
+
+    /* --------------------------------------------------------------------------------------
+    Key Management functions:
+    * -------------------------------------------------------------------------------------- */
+    NDDSUSERDllExport extern PRESTypePluginKeyKind 
+    SamplePlugin_get_key_kind(void);
+
+    NDDSUSERDllExport extern unsigned int 
+    SamplePlugin_get_serialized_key_max_size(
+        PRESTypePluginEndpointData endpoint_data,
+        RTIBool include_encapsulation,
+        RTIEncapsulationId encapsulation_id,
+        unsigned int current_alignment);
+
+    NDDSUSERDllExport extern unsigned int 
+    SamplePlugin_get_serialized_key_max_size_for_keyhash(
+        PRESTypePluginEndpointData endpoint_data,
+        RTIEncapsulationId encapsulation_id,
+        unsigned int current_alignment);
+
+    NDDSUSERDllExport extern RTIBool 
+    SamplePlugin_deserialize_key(
+        PRESTypePluginEndpointData endpoint_data,
+        Sample ** sample,
+        RTIBool * drop_sample,
+        struct RTICdrStream *cdrStream,
+        RTIBool deserialize_encapsulation,
+        RTIBool deserialize_key,
+        void *endpoint_plugin_qos);
+
+    /* Plugin Functions */
+    NDDSUSERDllExport extern struct PRESTypePlugin*
+    SamplePlugin_new(void);
+
+    NDDSUSERDllExport extern void
+    SamplePlugin_delete(struct PRESTypePlugin *);
+
+} /* namespace CorpusUnboundedReceiveLifecycle  */
+
+#if (defined(RTI_WIN32) || defined (RTI_WINCE) || defined(RTI_INTIME)) && defined(NDDS_USER_DLL_EXPORT)
+/* If the code is building on Windows, stop exporting symbols.
+*/
+#undef NDDSUSERDllExport
+#define NDDSUSERDllExport
+#endif
+
+#endif /* _14_unbounded_receive_lifecyclePlugin_1593090034_h */
+

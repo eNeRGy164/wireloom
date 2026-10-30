@@ -82,8 +82,8 @@ case; it does not by itself establish runtime or DDS wire compatibility.
   are represented.
 - **Specification validation:** C150–C162 compare default naming warnings
   with strict rejection, plus exact-keyword and legal-name controls.
-- **Grouped IDL coverage:** C163–C172 exercise these annotation, constant,
-  declarator, union, string-bound, and typed-default forms. Profile-specific
+- **Grouped IDL coverage:** C163–C174 exercise these annotation, constant,
+  declarator, union, string-bound, typed-default, and unbounded lifecycle forms. Profile-specific
   behavior and limitations are described in the case remarks below.
 - **Restrictions and workarounds:** the negative probes record rejected syntax
   and unsupported constructs. Consult each row for the responsible tool and
@@ -260,6 +260,7 @@ for generated API behavior coverage.
 | **C171** · `14-typed-defaults`<br>string, floating-point, and typedef defaults                  | [IDL](../idl/features/14-typed-defaults.idl)          | RTI result: **accepted**<br>C# compile: **verified** | [RTI C# folder](rtiddsgen/csharp/features/14-typed-defaults/)          | —                           | [Generated C#](generator/features/14-typed-defaults/)          | RTI 7.3.1 does not expose the member-annotation API used by the metadata-restoration check; sparse omitted-field behavior is evidenced on RTI 7.7.0. |
 | **C172** · `14-enum-constant`<br>named enum-valued constant                                     | [IDL](../idl/features/14-enum-constant.idl)           | RTI result: **accepted**<br>C# compile: **verified** | [RTI C# folder](rtiddsgen/csharp/features/14-enum-constant/)           | —                           | [Generated C#](generator/features/14-enum-constant/)           | An enum-valued constant and enumerator labels select their corresponding union branches.                                                             |
 | **C173** · `14-unbounded-support`<br>RTI-style unbounded sequences and strings                 | [IDL](../idl/features/14-unbounded-support.idl)       | RTI result: **accepted**<br>C# compile: **verified** | [RTI C# folder](rtiddsgen/csharp/features/14-unbounded-support/)       | [RTI C++ folder](rtiddsgen/cpp/features/14-unbounded-support/)       | [Generated C#](generator/features/14-unbounded-support/)       | All 18 directed C#/C++ exchanges pass across XCDR1 and XCDR2.                                                                                         |
+| **C174** · `14-unbounded-receive-lifecycle`<br>unbounded receive lifecycle and fragmentation    | [IDL](../idl/features/14-unbounded-receive-lifecycle.idl) | RTI result: **accepted**<br>C# compile: **verified** | [RTI C#](rtiddsgen/csharp/features/14-unbounded-receive-lifecycle/) | [RTI C++](rtiddsgen/cpp/features/14-unbounded-receive-lifecycle/) | [Generated C#](generator/features/14-unbounded-receive-lifecycle/) | All 36 exchanges pass on this profile across XCDR1/XCDR2; five phases verify receive reuse, and fragmented samples include DATA_FRAG/reassembly evidence with zero drops/rejects. Direct CDR reuse covers strings, sequence elements, and optional/nested transitions; |
 
 ## Negative cases
 
