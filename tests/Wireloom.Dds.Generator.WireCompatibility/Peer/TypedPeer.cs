@@ -40,7 +40,7 @@ internal static class TypedPeer
             or "14-extensibility-full" or "14-autoid-scope" or "14-annotation-arguments"
             or "14-member-declarators" or "14-union-label-expressions" or "14-union-scoped-enum"
             or "14-union-array-branch" or "14-string-expression-bound" or "14-typed-defaults"
-            or "14-enum-constant" or "14-unbounded-support"))
+            or "14-enum-constant" or "14-unbounded-support" or "14-unbounded-receive-lifecycle"))
         {
             fixture = FixtureCatalog.CreateFixture(typeSupport.DynamicType, options.CaseId, options.Fixture);
         }
@@ -54,7 +54,8 @@ internal static class TypedPeer
         }
         else
 #endif
-        if (options.CaseId.StartsWith("14-", StringComparison.Ordinal))
+        if (options.CaseId.StartsWith("14-", StringComparison.Ordinal)
+            && options.CaseId != "14-unbounded-receive-lifecycle")
         {
             ManagedFixtures.VerifyIdlGapFixture(expected!, options);
         }
@@ -65,6 +66,14 @@ internal static class TypedPeer
         }
 
         var participantQos = DomainParticipantFactory.Instance.DefaultParticipantQos;
+        if (PeerQos.IsFragmentedLifecycle(options.CaseId, options.Fixture))
+        {
+            participantQos = participantQos
+                .WithTransportBuiltin(policy => policy.Mask = TransportBuiltinMask.Udpv4)
+                .WithProperty(properties => properties.Add(
+                    "dds.transport.UDPv4.builtin.parent.message_size_max",
+                    new Property.Entry("16384", propagate: false)));
+        }
         var recursiveTypeObjectProfile =
             Environment.GetEnvironmentVariable("WIRELOOM_RECURSIVE_TYPEOBJECT_PROFILE") ?? "v1";
         if (isDirectRecursiveSequenceFixture && recursiveTypeObjectProfile == "v1")
@@ -91,15 +100,30 @@ internal static class TypedPeer
         }
 
         using var participant = DomainParticipantFactory.Instance.CreateParticipant(options.DomainId, participantQos);
+        PeerTransport.WriteLifecycleParticipantQos(participant, options);
         using var topic = participant.CreateTopic<T>(options.TopicName);
 
         if (options.Role == PeerRole.Writer)
         {
-            PeerTransport.Publish(participant, topic, expected, options);
+            if (options.CaseId == "14-unbounded-receive-lifecycle")
+            {
+                PeerTransport.PublishLifecycle(participant, topic, serializer, expected!, options);
+            }
+            else
+            {
+                PeerTransport.Publish(participant, topic, expected, options);
+            }
         }
         else
         {
-            PeerTransport.Receive(participant, topic, expected, expectedDynamic, options);
+            if (options.CaseId == "14-unbounded-receive-lifecycle")
+            {
+                PeerTransport.ReceiveLifecycle(participant, topic, serializer, options);
+            }
+            else
+            {
+                PeerTransport.Receive(participant, topic, expected, expectedDynamic, options);
+            }
         }
     }
 }

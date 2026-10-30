@@ -167,7 +167,11 @@ internal static class VerifierCommandApplication
                 throw new InvalidDataException("The scenario plan contains duplicate exchanges.");
             }
 
+            var seedProvenancePath = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(commandArgs[4]))!, "execution-provenance.json");
+            SourceSnapshotEvidence.Read(seedProvenancePath);
+
             Directory.CreateDirectory(destination);
+            CopyExecutionProvenance(seedProvenancePath, destination);
             var plan = new
             {
                 rtiVersion = version,
@@ -209,6 +213,7 @@ internal static class VerifierCommandApplication
             }
 
             JsonNode? sharedPlan = null;
+            SourceSnapshotEvidence? sharedProvenance = null;
             var indices = new HashSet<int>();
             var exchanges = new Dictionary<string, ScenarioRow>(StringComparer.Ordinal);
             var logFiles = new List<string>();
@@ -218,6 +223,8 @@ internal static class VerifierCommandApplication
                 var metadata = ReadJson(metadataFile);
                 var index = (int)metadata["shardIndex"]!;
                 var plan = ReadJson(Path.Combine(directory, "plan.json"));
+                var provenancePath = Path.Combine(directory, "execution-provenance.json");
+                var provenance = SourceSnapshotEvidence.Read(provenancePath);
                 if ((string)metadata["rtiVersion"]! != version || (string)plan["rtiVersion"]! != version
                     || (int)metadata["shardCount"]! != count || (int)plan["shardCount"]! != count
                     || index < 0 || index >= count || !indices.Add(index))
@@ -229,16 +236,39 @@ internal static class VerifierCommandApplication
                 {
                     throw new InvalidDataException("Shard case plans differ.");
                 }
+                if (sharedProvenance is not null
+                    && (sharedProvenance.Revision != provenance.Revision
+                        || sharedProvenance.DirtySnapshotSha256 != provenance.DirtySnapshotSha256
+                        || sharedProvenance.DirtyFileCount != provenance.DirtyFileCount))
+                {
+                    throw new InvalidDataException($"Shard {index} execution provenance differs from the other shard source snapshots.");
+                }
+
+                sharedProvenance ??= provenance;
                 sharedPlan = plan;
                 var expectedKeys = plan["cases"]!.AsArray().Where(item => (int)item!["shard"]! == index)
                     .SelectMany(item => item!["scenarioKeys"]!.AsArray()).Select(item => (string)item!).ToHashSet(StringComparer.Ordinal);
                 var rows = ReadScenarioRows(Path.Combine(directory, "scenarios.tsv"));
                 var report = ReadJson(Path.Combine(directory, "results.json"));
+                var reportProvenance = report["executionProvenance"];
                 if ((int)metadata["expectedScenarioCount"]! != expectedKeys.Count || rows.Count != expectedKeys.Count
                     || (int)report["expectedScenarioCount"]! != expectedKeys.Count || (int)report["scenarioCount"]! != rows.Count
-                    || (string)report["rtiVersion"]! != version)
+                    || (string)report["rtiVersion"]! != version
+                    || reportProvenance is null
+                    || (string?)reportProvenance["revision"] != provenance.Revision
+                    || (string?)reportProvenance["dirtySourceSnapshotSha256"] != provenance.DirtySnapshotSha256
+                    || (int?)reportProvenance["dirtySourceFileCount"] != provenance.DirtyFileCount)
                 {
-                    throw new InvalidDataException($"Shard {index} has missing exchanges or inconsistent report counts.");
+                    throw new InvalidDataException($"Shard {index} has missing exchanges, inconsistent report counts, or execution provenance that does not match its captured source manifest.");
+                }
+
+                var reportScenarios = report["scenarios"]!.AsArray();
+                if (reportScenarios.Count != rows.Count || reportScenarios.Any(scenario =>
+                    (string?)scenario!["sourceRevision"] != provenance.Revision
+                    || (string?)scenario["dirtySourceSnapshotSha256"] != provenance.DirtySnapshotSha256
+                    || (int?)scenario["dirtySourceFileCount"] != provenance.DirtyFileCount))
+                {
+                    throw new InvalidDataException($"Shard {index} scenario provenance differs from its captured execution identity.");
                 }
 
                 foreach (var row in rows)
@@ -273,6 +303,7 @@ internal static class VerifierCommandApplication
             }
 
             Directory.CreateDirectory(destination);
+            CopyExecutionProvenance(Path.Combine(Path.GetDirectoryName(metadataFiles[0])!, "execution-provenance.json"), destination);
             var logsDestination = Path.Combine(destination, "logs");
             Directory.CreateDirectory(logsDestination);
             foreach (var file in logFiles)
@@ -371,6 +402,24 @@ internal static class VerifierCommandApplication
             var request = new ReportRequest(commandArgs[1], int.Parse(commandArgs[2]), commandArgs[3],
                 commandArgs[4], commandArgs[5], commandArgs[6], commandArgs[7], commandArgs[8], FindRepositoryRoot(commandArgs[8]));
             WireReportRenderer.Render(request);
+        }
+
+        void CopyExecutionProvenance(string sourcePath, string destinationDirectory)
+        {
+            var targetPath = Path.Combine(destinationDirectory, "execution-provenance.json");
+            File.Copy(sourcePath, targetPath, overwrite: true);
+            var sourceRoot = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(sourcePath))!, "source-files");
+            var targetRoot = Path.Combine(destinationDirectory, "source-files");
+            if (Directory.Exists(sourceRoot))
+            {
+                foreach (var file in Directory.GetFiles(sourceRoot, "*", SearchOption.AllDirectories))
+                {
+                    var relativePath = Path.GetRelativePath(sourceRoot, file);
+                    var target = Path.Combine(targetRoot, relativePath);
+                    Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                    File.Copy(file, target, overwrite: true);
+                }
+            }
         }
 
         // Share the guarded source-edit policy with the Runner.

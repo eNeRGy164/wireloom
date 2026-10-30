@@ -24,6 +24,7 @@ internal static class FixtureCatalogVerification
             ["14-union-array-branch"] = ["array-branch", "scalar-branch"],
             ["14-string-expression-bound"] = ["string-boundary"],
             ["14-enum-constant"] = ["constant-and-label"],
+            ["14-unbounded-receive-lifecycle"] = ["lifecycle-xcdr1", "lifecycle-xcdr2", "fragmented-xcdr1", "fragmented-xcdr2"],
         };
 
         foreach (var version in new[] { "7.3.1", "7.7.0" })

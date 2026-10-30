@@ -156,6 +156,8 @@ jobs:
             artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/scenarios.tsv
             artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/plan.json
             artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/shard.json
+            artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/execution-provenance.json
+            artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/source-files/
           if-no-files-found: warn
           retention-days: 14
 

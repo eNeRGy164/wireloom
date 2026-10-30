@@ -141,7 +141,11 @@ internal static class GenerationProvenanceVerification
         File.WriteAllText(workspace.GenerationProvenancePath("stale"), "stale");
 
         // Act
-        workspace.Initialize();
+        workspace.Initialize(captureSourceProvenance: false);
+
+        var syntheticSource = new SourceSnapshotEvidence("synthetic-generation-verification",
+            SourceSnapshotEvidence.ComputeSnapshotHash([]), 0, []);
+        syntheticSource.Write(workspace.ExecutionProvenance);
 
         // Assert
         Check(!File.Exists(workspace.GenerationProvenancePath("stale")), "Initialization must discard provenance from a previous invocation.");

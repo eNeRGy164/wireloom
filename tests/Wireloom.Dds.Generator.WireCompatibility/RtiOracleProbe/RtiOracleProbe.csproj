@@ -34,6 +34,9 @@
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-unbounded-support'">
     <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_UNBOUNDED_SUPPORT</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-unbounded-receive-lifecycle'">
+    <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_UNBOUNDED_RECEIVE_LIFECYCLE</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-extensibility-full' or '$(WireCompatibilityCase)' == '14-autoid-scope' or '$(WireCompatibilityCase)' == '14-annotation-arguments' or '$(WireCompatibilityCase)' == '14-member-declarators' or '$(WireCompatibilityCase)' == '14-union-label-expressions' or '$(WireCompatibilityCase)' == '14-union-scoped-enum' or '$(WireCompatibilityCase)' == '14-union-array-branch' or '$(WireCompatibilityCase)' == '14-string-expression-bound' or '$(WireCompatibilityCase)' == '14-typed-defaults' or '$(WireCompatibilityCase)' == '14-enum-constant'">
     <DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_IDL_GAPS</DefineConstants>
   </PropertyGroup>
@@ -66,6 +69,7 @@
     <Compile Include="$(RtiOracleProgram)" Link="Program.cs" />
     <Compile Include="../FixtureCatalog.cs" Link="FixtureCatalog.cs" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
     <Compile Include="../Peer/*.cs;../Fixtures/*.cs;../Verification/*.cs" Link="Shared/%(Filename)%(Extension)" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
+    <Compile Include="../../Wireloom.Dds.Generator.WireCompatibility.Shared/LifecyclePhaseProtocol.cs" Link="Shared/LifecyclePhaseProtocol.cs" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
     <Compile Include="$(RtiOracleSourceDir)/**/*.cs" Condition="'$(RtiOracleSourceDir)' != ''" />
     <Compile Include="$(RtiOracleSource)" Link="RtiOracle.cs" Condition="'$(RtiOracleSourceDir)' == ''" />
     <Compile Include="$(RtiOraclePlugin)" Link="RtiOraclePlugin.cs" Condition="'$(RtiOracleSourceDir)' == ''" />

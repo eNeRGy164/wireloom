@@ -9,7 +9,8 @@ internal static class ScenarioPlanningVerification
         var root = Path.Combine(options.ScratchDirectory, "planning-verification");
         VerifyPairingPolicy(root);
         VerifyShardTiesAndInvalidInputs(root);
-        foreach (var (version, expectedCases, expectedScenarios) in new[] { ("7.3.1", 91, 1578), ("7.7.0", 92, 1573) })
+
+        foreach (var (version, expectedCases, expectedScenarios) in new[] { ("7.3.1", 92, 1614), ("7.7.0", 93, 1609) })
         {
             VerifyCompleteProfile(options, root, version, expectedCases, expectedScenarios);
             Console.WriteLine($"Scenario planning {version}: {expectedCases} cases, {expectedScenarios} exchanges across 8 shards; complete and deterministic.");
@@ -25,7 +26,9 @@ internal static class ScenarioPlanningVerification
         var allCaseIds = new HashSet<string>(StringComparer.Ordinal);
         string? commonPlan = null;
         var originalOutput = Console.Out;
+
         using var capturedOutput = new StringWriter();
+
         try
         {
             Console.SetOut(capturedOutput);
@@ -41,6 +44,7 @@ internal static class ScenarioPlanningVerification
                     ScratchDirectory = Path.Combine(root, version, $"scratch-{index}"),
                     OutputDirectory = Path.Combine(root, version, $"shard-{index}"),
                 };
+
                 var workspace = new MatrixWorkspace(shardOptions);
                 workspace.Initialize();
 
@@ -49,6 +53,7 @@ internal static class ScenarioPlanningVerification
 
                 // Assert
                 Check(plan.Exchanges is not null, "A wire run must return its typed scenario plan.");
+
                 var exchanges = plan.Exchanges!;
                 Check(exchanges.Cases.Count == expectedCases && exchanges.TotalScenarioCount == expectedScenarios, "A full profile must retain its complete expected evidence.");
                 Check(plan.ExpectedScenarioCount == exchanges.Scenarios.Count, "Expected shard count must come from the in-memory plan.");
@@ -58,6 +63,7 @@ internal static class ScenarioPlanningVerification
                 Check(workspace.Scenarios == workspace.Output("scenarios.tsv"), "Execution and reporting must share the retained scenario file.");
                 Check(!File.Exists(Path.Combine(shardOptions.ScratchDirectory, "scenarios.tsv")), "Planning must not create a duplicate scratch scenario file.");
                 Check(!File.Exists(workspace.Output("selected-cases.txt")), "Selected case IDs must stay in memory.");
+
                 var fullPlan = File.ReadAllText(workspace.Output("plan.json"));
                 commonPlan ??= fullPlan;
                 Check(commonPlan == fullPlan, "Every shard must retain an identical full case assignment.");
@@ -76,9 +82,12 @@ internal static class ScenarioPlanningVerification
     {
         // Arrange
         Directory.CreateDirectory(root);
+
         var manifest = Path.Combine(root, "manifest.json");
         var exclusions = Path.Combine(root, "exclusions.json");
-        File.WriteAllText(manifest, """
+
+        File.WriteAllText(manifest,
+            """
             { "positiveCases": [
               { "id": "01-primitives", "wireMatrix": {
                 "excludedPeersByRtiVersion": { "7.3.1": { "RTI C#": "Test profile exclusion" } }
@@ -90,12 +99,15 @@ internal static class ScenarioPlanningVerification
               { "id": "09-must-understand" }
             ] }
             """);
-        File.WriteAllText(exclusions, """
+
+        File.WriteAllText(exclusions,
+            """
             {
               "notImplementedCases": [ { "id": "09-optional-aggregate-member" } ],
               "notApplicableCases": [ { "id": "09-must-understand" } ]
             }
             """);
+
         const string filter = "01-primitives,09-optional-aggregate-member,03-enums-aliases";
 
         foreach (var version in new[] { "7.3.1", "7.7.0" })
@@ -120,13 +132,16 @@ internal static class ScenarioPlanningVerification
         // Arrange
         var manifest = Path.Combine(root, "ties.json");
         var exclusions = Path.Combine(root, "no-exclusions.json");
-        File.WriteAllText(manifest, """
+
+        File.WriteAllText(manifest,
+            """
             { "positiveCases": [
               { "id": "z", "wireMatrix": { "peers": [ "RTI C++" ] } },
               { "id": "a", "wireMatrix": { "peers": [ "RTI C++" ] } },
               { "id": "m", "wireMatrix": { "peers": [ "RTI C++" ] } }
             ] }
             """);
+
         File.WriteAllText(exclusions, """{ "notImplementedCases": [] }""");
 
         // Act
@@ -134,6 +149,7 @@ internal static class ScenarioPlanningVerification
 
         // Assert
         Check(plan.CaseIds.SequenceEqual(["z", "a"], StringComparer.Ordinal), "Equal-weight assignment must break ties by ordinal case ID, then shard index, while retaining case order.");
+
         ExpectFailure<InvalidDataException>(() => ScenarioPlanBuilder.Create(manifest, exclusions, "7.7.0", "z,z", 0, 1));
         ExpectFailure<InvalidDataException>(() => ScenarioPlanBuilder.Create(manifest, exclusions, "7.7.0", "unknown", 0, 1));
         ExpectFailure<InvalidDataException>(() => ScenarioPlanBuilder.Create(manifest, exclusions, "7.7.0", " ", 0, 1));
@@ -141,7 +157,8 @@ internal static class ScenarioPlanningVerification
         ExpectFailure<ArgumentOutOfRangeException>(() => ScenarioPlanBuilder.Create(manifest, exclusions, "7.7.0", null, 2, 2));
 
         // Arrange
-        File.WriteAllText(manifest, """
+        File.WriteAllText(manifest,
+            """
             { "positiveCases": [ { "id": "01-primitives", "wireMatrix": {
               "fixturePairings": { "default": [ "RTI C++|unknown" ] }
             } } ] }

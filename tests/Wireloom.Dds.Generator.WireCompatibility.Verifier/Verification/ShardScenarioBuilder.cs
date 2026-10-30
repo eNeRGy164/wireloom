@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Wireloom.Dds.Generator.WireCompatibility.Runner;
 
 namespace Wireloom.Dds.Generator.WireCompatibility.Verifier.Verification;
 
@@ -56,7 +57,8 @@ internal static class ShardScenarioBuilder
             ["14-union-array-branch"] = ["array-branch", "scalar-branch"],
             ["14-string-expression-bound"] = ["string-boundary"],
             ["14-typed-defaults"] = ["default", "non-default"],
-            ["14-enum-constant"] = ["constant-and-label"]
+            ["14-enum-constant"] = ["constant-and-label"],
+            ["14-unbounded-receive-lifecycle"] = ["fragmented-xcdr1", "lifecycle-xcdr1"]
         };
 
         var rows = new List<ScenarioRow>();
@@ -97,6 +99,9 @@ internal static class ShardScenarioBuilder
 
         var seed = Path.Combine(root, "all.tsv");
         File.WriteAllLines(seed, rows.Select(row => row.ToTsv()));
+        var syntheticProvenance = new SourceSnapshotEvidence("synthetic-verifier-revision",
+            SourceSnapshotEvidence.ComputeSnapshotHash([]), 0, []);
+        syntheticProvenance.Write(Path.Combine(root, "execution-provenance.json"));
 
         var exclusions = Path.Combine(root, "exclusions.json");
         File.WriteAllText(exclusions,
@@ -182,6 +187,11 @@ internal static class ShardScenarioBuilder
                     logText = "FAIL_DETAIL RTI-generated C# peer failed to compile; CS0221\n";
                 }
 
+                if (row.CaseId == "14-unbounded-receive-lifecycle")
+                {
+                    logText = LifecycleLog(row, peers[2]);
+                }
+
                 File.WriteAllText(Path.Combine(logs, $"{row.CaseId}-{row.Fixture}-{peerIds[row.Writer]}-{peerIds[row.Reader]}.log"), logText);
             }
 
@@ -193,5 +203,44 @@ internal static class ShardScenarioBuilder
         }
 
         return new ShardScenarioFixture(cases, rows, peers, seed, exclusions, source);
+    }
+
+    private static string LifecycleLog(ScenarioRow row, string nativePeer)
+    {
+        var fragmented = row.Fixture.StartsWith("fragmented-", StringComparison.Ordinal);
+        var lines = new List<string>();
+        for (var phase = 0; phase < 5; phase++)
+        {
+            var hasFragments = fragmented && phase is 1 or 4;
+            lines.Add($"LIFECYCLE_PHASE phase={phase} serialized_bytes={(hasFragments ? 24000 : 128)} valid_samples=1 invalid_samples=0 writer_guid=guid-a sequence={phase + 10} received_fragments_delta={(hasFragments ? 2 : 0)} reassembled_samples_delta={(hasFragments ? 1 : 0)} dropped_fragments_delta=0 rejected_samples_delta=0");
+        }
+
+        lines.Add("LIFECYCLE_COORDINATION expected_phases=5 accepted_phases=5 completed=true reader_output_drained=true outcome=complete");
+        lines.Add("LIFECYCLE_READER_FINAL valid_samples=5 rejected_samples=0 dropped_fragments=0");
+        var readerImplementation = row.Reader == nativePeer ? "rti-cpp"
+            : row.Reader == "RTI C#" ? "rti-csharp" : "wireloom-csharp";
+        lines.Add($"LIFECYCLE_RECEIVE_STORAGE implementation={readerImplementation} phases=5 history_depth=1 optional_nested_transitions=true loan_returned_before_ack=true content_verified=true");
+        if (fragmented)
+        {
+            lines.Add("LIFECYCLE_PARTICIPANT_QOS transport_udp_only=true message_size_max=16384 endpoint=writer");
+            lines.Add("LIFECYCLE_PARTICIPANT_QOS transport_udp_only=true message_size_max=16384 endpoint=reader");
+            lines.Add("LIFECYCLE_WRITER_QOS asynchronous=true flow_controller=DDS_FIXED_RATE_FLOW_CONTROLLER_NAME history_kind=KeepLast history_depth=1 fast_pool_max_buffer_size=4096 endpoint=writer");
+            lines.Add("LIFECYCLE_READER_QOS fragmentation_enabled=true dynamic_fragmented_allocation=true initial_fragmented_samples=1 max_fragmented_samples=2 max_fragmented_samples_per_remote_writer=1 max_fragments_per_sample=4096 history_kind=KeepLast history_depth=1 endpoint=reader");
+        }
+
+        if (row.Writer == nativePeer || row.Reader == nativePeer)
+        {
+            if (row.Writer == nativePeer)
+            {
+                lines.Add("LIFECYCLE_NATIVE_CDR phases=5 cycles=10 reused_storage=true aliases=true string_sequence_elements=true optional_transitions=true nested_transitions=true ownership_snapshot=true cleanup=scope-exit endpoint=writer");
+            }
+
+            if (row.Reader == nativePeer)
+            {
+                lines.Add("LIFECYCLE_NATIVE_CDR phases=5 cycles=10 reused_storage=true aliases=true string_sequence_elements=true optional_transitions=true nested_transitions=true ownership_snapshot=true cleanup=scope-exit endpoint=reader");
+            }
+        }
+
+        return string.Join(Environment.NewLine, lines);
     }
 }

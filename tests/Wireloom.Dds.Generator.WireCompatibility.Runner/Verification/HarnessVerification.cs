@@ -12,6 +12,12 @@ internal static class HarnessVerification
         {
             VerifyFinalizationPolicy();
 
+            LifecyclePhaseProtocolVerification.Run();
+            LifecycleEvidenceVerification.Run(Path.Combine(temporaryDirectory, "lifecycle-evidence"));
+            SourceSnapshotVerification.Run(Path.Combine(temporaryDirectory, "source-snapshot"));
+
+            await LifecycleSchedulerVerification.RunAsync(Path.Combine(temporaryDirectory, "lifecycle-scheduler"));
+
             var options = MatrixOptions.FromEnvironment() with
             {
                 CompileOnly = true,
@@ -41,7 +47,7 @@ internal static class HarnessVerification
         }
         catch (Exception exception)
         {
-            await Console.Error.WriteLineAsync(exception.Message);
+            await Console.Error.WriteLineAsync(exception.ToString());
 
             return 1;
         }
@@ -49,6 +55,11 @@ internal static class HarnessVerification
         {
             if (Directory.Exists(temporaryDirectory))
             {
+                foreach (var file in Directory.GetFiles(temporaryDirectory, "*", SearchOption.AllDirectories))
+                {
+                    File.SetAttributes(file, FileAttributes.Normal);
+                }
+
                 Directory.Delete(temporaryDirectory, recursive: true);
             }
         }

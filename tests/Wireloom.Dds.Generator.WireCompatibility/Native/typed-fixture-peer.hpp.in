@@ -1,10 +1,15 @@
 #pragma once
+
 #include "peer-qos.hpp"
+#include <rti/topic/cdr.hpp>
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
 #include <utility>
+
 #ifdef WIRELOOM_RTI_7_3_1
 #define WIRELOOM_SET_TYPED_STRING(member, value) expected.member(value)
+#define WIRELOOM_SET_TYPED_STRING_ON(object, member, value) object.member(value)
 #define WIRELOOM_SET_TYPED_MEMBER(member, value) expected.member(value)
 #define WIRELOOM_SET_TYPED_MEMBER_ON(object, member, value) object.member(value)
 #define WIRELOOM_TYPED_MEMBER(object, member) object.member()
@@ -12,13 +17,16 @@
 #define WIRELOOM_BOUNDED_SEQUENCE ::rti::core::bounded_sequence
 #else
 #define WIRELOOM_SET_TYPED_STRING(member, value) expected.member = value
+#define WIRELOOM_SET_TYPED_STRING_ON(object, member, value) object.member = value
 #define WIRELOOM_SET_TYPED_MEMBER(member, value) expected.member = value
 #define WIRELOOM_SET_TYPED_MEMBER_ON(object, member, value) object.member = value
 #define WIRELOOM_TYPED_MEMBER(object, member) object.member
 #define WIRELOOM_SET_MEMBER_ON(object, member, value) object.member = value
 #define WIRELOOM_BOUNDED_SEQUENCE ::omg::types::bounded_sequence
 #endif
-#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES) || defined(WIRELOOM_TYPED_DEFAULT_LITERAL_ENUM_ARRAY) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS) || defined(WIRELOOM_TYPED_IDL_GAPS_FIXTURE) || defined(WIRELOOM_TYPED_C173_UNBOUNDED_SUPPORT)
+
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES) || defined(WIRELOOM_TYPED_DEFAULT_LITERAL_ENUM_ARRAY) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS) || defined(WIRELOOM_TYPED_IDL_GAPS_FIXTURE) || defined(WIRELOOM_TYPED_C173_UNBOUNDED_SUPPORT) || defined(WIRELOOM_TYPED_C174_UNBOUNDED_RECEIVE_LIFECYCLE)
+
 // RTI's generated DynamicData API omits some string template instantiations.
 // Use RTI-generated typed C++ endpoints for these fixtures and compare the
 // complete generated sample value at the reader.
@@ -31,6 +39,135 @@ static int run_typed_fixture_peer(
     const std::string &fixture)
 {
     DdsType expected;
+    const bool lifecycle_case = case_id == "14-unbounded-receive-lifecycle";
+    const bool fragmented_fixture = fixture.rfind("fragmented-", 0) == 0;
+    const bool xcdr2_fixture = fixture.size() >= 5
+        && fixture.compare(fixture.size() - 5, 5, "xcdr2") == 0;
+#ifdef WIRELOOM_TYPED_C174_UNBOUNDED_RECEIVE_LIFECYCLE
+    auto set_lifecycle_phase = [&](DdsType &sample, int phase) {
+        const bool fragmented = fixture.rfind("fragmented-", 0) == 0;
+        const bool empty = phase == 0 || phase == 3;
+        const auto pattern = [](int length, int seed) {
+            std::string value;
+            value.reserve(static_cast<size_t>(length) * 2);
+            for (int index = 0; index < length; ++index) {
+                const auto code_point = 0x03bb + ((seed + index * 7) % 4);
+                value.push_back(static_cast<char>(0xce));
+                value.push_back(static_cast<char>(0xbb + code_point - 0x03bb));
+            }
+            return value;
+        };
+        const auto wide_pattern = [](int length, int seed) {
+            std::wstring value;
+            value.reserve(static_cast<size_t>(length));
+            for (int index = 0; index < length; ++index) {
+                value.push_back(static_cast<wchar_t>(0x03a9 + ((seed + index * 7) % 4)));
+            }
+            return value;
+        };
+        const auto number = [](int phase_id, int index) {
+            return (phase_id + 1) * 1000003 + index * 97 - 41;
+        };
+        WIRELOOM_SET_TYPED_MEMBER_ON(sample, phaseId, phase);
+        auto &values = WIRELOOM_TYPED_MEMBER(sample, values);
+        values.clear();
+        const int value_count = empty ? 0 : (phase == 1 ? 257 : (phase == 4 ? 521 : 3));
+        for (int index = 0; index < value_count; ++index) {
+            values.push_back(number(phase, index));
+        }
+        WIRELOOM_SET_TYPED_STRING_ON(sample, text,
+            pattern(empty ? 0 : phase == 1 ? (fragmented ? 170 * 1024 : 320)
+                : phase == 4 ? (fragmented ? 350 * 1024 : 640) : 13, phase));
+        WIRELOOM_SET_TYPED_STRING_ON(sample, wideText,
+            wide_pattern(empty ? 0 : phase == 1 ? (fragmented ? 2048 : 320)
+                : phase == 4 ? (fragmented ? 4096 : 640) : 9, phase));
+        auto &labels = WIRELOOM_TYPED_MEMBER(sample, labels);
+        labels.clear();
+        const int label_count = empty ? 0 : (phase == 2 ? 2 : 8);
+        for (int index = 0; index < label_count; ++index) {
+            std::ostringstream label;
+            label << 'p' << phase << "-l" << std::setw(3) << std::setfill('0') << index << '-'
+                  << pattern(phase == 2 ? 5 : (fragmented ? 320 : 300), phase + index);
+            labels.push_back(label.str());
+        }
+        auto &alias_values = WIRELOOM_TYPED_MEMBER(sample, aliasValues);
+        alias_values.clear();
+        for (int index = 0; index < value_count; ++index) {
+            alias_values.push_back(number(phase + 1, index));
+        }
+        auto &bounded_values = WIRELOOM_TYPED_MEMBER(sample, boundedValues);
+        bounded_values.clear();
+        for (int index = 0; index < std::min(value_count, 4); ++index) {
+            bounded_values.push_back(number(phase + 2, index));
+        }
+        std::ostringstream bounded;
+        bounded << 'B' << std::setw(5) << std::setfill('0') << phase;
+        WIRELOOM_SET_TYPED_STRING_ON(sample, boundedText, bounded.str());
+
+        if (empty) {
+#ifdef WIRELOOM_RTI_7_3_1
+            ::rti::topic::reset_sample(sample.optionalState());
+#else
+            sample.optionalState.reset();
+#endif
+        } else {
+            ::CorpusUnboundedReceiveLifecycle::OptionalState optional_state;
+            WIRELOOM_SET_TYPED_MEMBER_ON(optional_state, value, 17400 + phase);
+            auto &optional_labels = WIRELOOM_TYPED_MEMBER(optional_state, labels);
+            optional_labels.clear();
+            const int optional_label_count = phase == 2 ? 1 : phase == 4 ? 5 : 3;
+            for (int index = 0; index < optional_label_count; ++index) {
+                optional_labels.push_back("optional-" + std::to_string(phase) + "-label-"
+                    + std::to_string(index) + "-" + pattern(phase == 4 ? 32 : 7, phase + index));
+            }
+            if (phase == 2) {
+#ifdef WIRELOOM_RTI_7_3_1
+                ::rti::topic::reset_sample(optional_state.note());
+#else
+                optional_state.note.reset();
+#endif
+            } else {
+                std::string optional_note = "optional-" + std::to_string(phase) + "-note";
+                WIRELOOM_SET_TYPED_STRING_ON(optional_state, note, optional_note);
+            }
+#ifdef WIRELOOM_RTI_7_3_1
+            sample.optionalState(::dds::core::optional<::CorpusUnboundedReceiveLifecycle::OptionalState>(std::move(optional_state)));
+#else
+            sample.optionalState = std::move(optional_state);
+#endif
+        }
+    };
+    if (lifecycle_case) {
+        set_lifecycle_phase(expected, 0);
+        const auto representation = xcdr2_fixture
+            ? dds::core::policy::DataRepresentation::xcdr2()
+            : dds::core::policy::DataRepresentation::xcdr();
+        for (int cycle = 0; cycle < 10; ++cycle) {
+            DdsType reused;
+            rti::topic::detail::initialize_sample_impl(reused);
+            DdsType previous_native;
+            DdsType previous_expected;
+            bool has_previous = false;
+            for (int phase = 0; phase < 5; ++phase) {
+                set_lifecycle_phase(expected, phase);
+                std::vector<char> serialized;
+                dds::topic::topic_type_support<DdsType>::to_cdr_buffer(serialized, expected, representation);
+                rti::topic::from_cdr_buffer_no_alloc(reused, serialized);
+                if (!(reused == expected)) {
+                    throw std::runtime_error("Reused native CDR deserialization differs at lifecycle phase " + std::to_string(phase));
+                }
+                if (has_previous && !(previous_native == previous_expected)) {
+                    throw std::runtime_error("Deserializing the next native lifecycle phase mutated the retained prior value");
+                }
+                previous_native = reused;
+                previous_expected = expected;
+                has_previous = true;
+            }
+        }
+        set_lifecycle_phase(expected, 0);
+        std::cout << "LIFECYCLE_NATIVE_CDR phases=5 cycles=10 reused_storage=true aliases=true string_sequence_elements=true optional_transitions=true nested_transitions=true ownership_snapshot=true cleanup=scope-exit" << std::endl;
+    }
+#endif
 #ifdef WIRELOOM_TYPED_C163_EXTENSIBILITY
     if (case_id == "14-extensibility-full") {
         WIRELOOM_SET_TYPED_MEMBER(value, 16301);
@@ -532,9 +669,17 @@ static int run_typed_fixture_peer(
     if (role == "writer") {
         dds::pub::Publisher publisher(participant);
         auto writer_qos = reliable_writer_qos(publisher);
-        if (case_id == "14-unbounded-support") {
+        if (fragmented_fixture) {
+            writer_qos << dds::core::policy::History(
+                dds::core::policy::HistoryKind::KEEP_LAST, 1);
+            writer_qos.policy<rti::core::policy::Property>().set({
+                {"dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size", "4096"}});
+            writer_qos << rti::core::policy::PublishMode::Asynchronous(
+                "DDS_FIXED_RATE_FLOW_CONTROLLER_NAME");
+        }
+        if (case_id == "14-unbounded-support" || lifecycle_case) {
             const std::vector<dds::core::policy::DataRepresentationId> representations{
-                fixture == "xcdr2-unbounded"
+                (fixture == "xcdr2-unbounded" || xcdr2_fixture)
                     ? dds::core::policy::DataRepresentation::xcdr2()
                     : dds::core::policy::DataRepresentation::xcdr()};
             writer_qos << dds::core::policy::DataRepresentation(representations);
@@ -548,6 +693,22 @@ static int run_typed_fixture_peer(
         }
 
         dds::pub::DataWriter<DdsType> writer(publisher, topic, writer_qos);
+        if (fragmented_fixture) {
+            const auto effective_writer_qos = writer.qos();
+            const auto &publish_mode = effective_writer_qos.policy<rti::core::policy::PublishMode>();
+            const auto &history = effective_writer_qos.policy<dds::core::policy::History>();
+            const auto pool_size = effective_writer_qos.policy<rti::core::policy::Property>().get(
+                "dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size");
+            const bool asynchronous = publish_mode.kind() == rti::core::policy::PublishModeKind::ASYNCHRONOUS;
+            if (!asynchronous || publish_mode.flow_controller_name() != "DDS_FIXED_RATE_FLOW_CONTROLLER_NAME"
+                || history.kind() != dds::core::policy::HistoryKind::KEEP_LAST
+                || history.depth() != 1 || pool_size != "4096") {
+                throw std::runtime_error("Effective native writer QoS differs from asynchronous flow-control/history/pool settings");
+            }
+            std::cout << "LIFECYCLE_WRITER_QOS asynchronous=true flow_controller="
+                      << publish_mode.flow_controller_name() << " history_kind=KEEP_LAST history_depth="
+                      << history.depth() << " fast_pool_max_buffer_size=" << pool_size << std::endl;
+        }
         const auto deadline = std::chrono::steady_clock::now()
             + std::chrono::seconds(timeout_seconds);
         while (writer.publication_matched_status().current_count() == 0
@@ -576,6 +737,32 @@ static int run_typed_fixture_peer(
                             ? WIRELOOM_TYPED_MEMBER(expected, wideValues)->size() : 0) << std::endl;
         }
 #endif
+#ifdef WIRELOOM_TYPED_C174_UNBOUNDED_RECEIVE_LIFECYCLE
+        if (lifecycle_case) {
+            for (int phase = 0; phase < 5; ++phase) {
+                set_lifecycle_phase(expected, phase);
+                std::vector<char> serialized;
+                const auto representation = xcdr2_fixture
+                    ? dds::core::policy::DataRepresentation::xcdr2()
+                    : dds::core::policy::DataRepresentation::xcdr();
+                const auto serialized_size = dds::topic::topic_type_support<DdsType>::to_cdr_buffer(
+                    serialized, expected, representation).size();
+                std::cout << "PHASE_PUBLISHED " << topic_name << " " << phase
+                          << " serialized_bytes=" << serialized_size
+                          << " fragmented=" << fragmented_fixture << std::endl;
+                writer.write(expected);
+                std::string acknowledgment;
+                if (!std::getline(std::cin, acknowledgment)
+                    || acknowledgment != "PHASE_ACK " + topic_name + " " + std::to_string(phase)) {
+                    throw std::runtime_error("Invalid lifecycle acknowledgment for phase " + std::to_string(phase));
+                }
+            }
+            writer.wait_for_acknowledgments(dds::core::Duration(timeout_seconds, 0));
+            std::cout << "SENT" << std::endl;
+            return 0;
+        }
+#endif
+
         writer.write(expected);
         writer.wait_for_acknowledgments(dds::core::Duration(timeout_seconds, 0));
         std::cout << "SENT" << std::endl;
@@ -587,14 +774,136 @@ static int run_typed_fixture_peer(
         auto reader_qos = subscriber.default_datareader_qos();
         reader_qos << dds::core::policy::Reliability(
             dds::core::policy::ReliabilityKind::RELIABLE);
-        if (case_id == "14-unbounded-support") {
+        if (fragmented_fixture) {
+            auto &limits = reader_qos.policy<rti::core::policy::DataReaderResourceLimits>();
+            limits.disable_fragmentation_support(false)
+                .initial_fragmented_samples(1)
+                .max_fragmented_samples(2)
+                .max_fragmented_samples_per_remote_writer(1)
+                .max_fragments_per_sample(4096)
+                .dynamically_allocate_fragmented_samples(true);
+        }
+        if (case_id == "14-unbounded-support" || lifecycle_case) {
             const std::vector<dds::core::policy::DataRepresentationId> representations{
-                fixture == "xcdr2-unbounded"
+                (fixture == "xcdr2-unbounded" || xcdr2_fixture)
                     ? dds::core::policy::DataRepresentation::xcdr2()
                     : dds::core::policy::DataRepresentation::xcdr()};
             reader_qos << dds::core::policy::DataRepresentation(representations);
         }
         dds::sub::DataReader<DdsType> reader(subscriber, topic, reader_qos);
+#ifdef WIRELOOM_TYPED_C174_UNBOUNDED_RECEIVE_LIFECYCLE
+        if (lifecycle_case) {
+            std::cout << "READY case=" << case_id << " fixture=" << fixture
+                      << " role=reader" << std::endl;
+            if (fragmented_fixture) {
+                const auto effective_reader_qos = reader.qos();
+                const auto &limits = effective_reader_qos.policy<rti::core::policy::DataReaderResourceLimits>();
+                const auto &history = effective_reader_qos.policy<dds::core::policy::History>();
+                if (limits.disable_fragmentation_support()
+                    || !limits.dynamically_allocate_fragmented_samples()
+                    || limits.initial_fragmented_samples() != 1
+                    || limits.max_fragmented_samples() != 2
+                    || limits.max_fragmented_samples_per_remote_writer() != 1
+                    || limits.max_fragments_per_sample() != 4096
+                    || history.kind() != dds::core::policy::HistoryKind::KEEP_LAST
+                    || history.depth() != 1) {
+                    throw std::runtime_error("Effective native reader fragmentation/history resource limits differ from the qualification settings");
+                }
+                std::cout << "LIFECYCLE_READER_QOS fragmentation_enabled=true dynamic_fragmented_allocation=true initial_fragmented_samples="
+                          << limits.initial_fragmented_samples() << " max_fragmented_samples="
+                          << limits.max_fragmented_samples() << " max_fragmented_samples_per_remote_writer="
+                          << limits.max_fragmented_samples_per_remote_writer() << " max_fragments_per_sample="
+                          << limits.max_fragments_per_sample() << " history_kind=KEEP_LAST history_depth="
+                          << history.depth() << std::endl;
+            }
+            auto previous_protocol_status = reader.extensions().datareader_protocol_status();
+            int total_valid_samples = 0;
+            for (int phase = 0; phase < 5; ++phase) {
+                set_lifecycle_phase(expected, phase);
+                const auto deadline = std::chrono::steady_clock::now()
+                    + std::chrono::seconds(timeout_seconds);
+                bool verified = false;
+                while (!verified && std::chrono::steady_clock::now() < deadline) {
+                    bool received = false;
+                    int valid_samples = 0;
+                    int invalid_samples = 0;
+                    std::string writer_guid;
+                    std::string sequence_number;
+                    {
+                        auto samples = reader.take();
+                        for (const auto &sample : samples) {
+                            if (!sample.info().valid()) {
+                                ++invalid_samples;
+                                continue;
+                            }
+                            ++valid_samples;
+                            if (!(sample.data() == expected)) {
+                                throw std::runtime_error("Lifecycle sample differs from expected phase " + std::to_string(phase));
+                            }
+                            const auto identity = sample.info().delegate().publication_virtual_sample_identity();
+                            std::ostringstream guid_text;
+                            std::ostringstream sequence_text;
+                            guid_text << identity.writer_guid();
+                            sequence_text << identity.sequence_number();
+                            writer_guid = guid_text.str();
+                            sequence_number = sequence_text.str();
+                            received = true;
+                        }
+                    }
+                    if (received) {
+                        if (valid_samples != 1) {
+                            throw std::runtime_error("Received multiple valid samples before lifecycle acknowledgment.");
+                        }
+                        std::vector<char> serialized;
+                        const auto representation = xcdr2_fixture
+                            ? dds::core::policy::DataRepresentation::xcdr2()
+                            : dds::core::policy::DataRepresentation::xcdr();
+                        const auto serialized_size = dds::topic::topic_type_support<DdsType>::to_cdr_buffer(
+                            serialized, expected, representation).size();
+                        const auto protocol_status = reader.extensions().datareader_protocol_status();
+                        const auto received_fragments = protocol_status.received_fragment_count()
+                            - previous_protocol_status.received_fragment_count();
+                        const auto reassembled_samples = protocol_status.reassembled_sample_count()
+                            - previous_protocol_status.reassembled_sample_count();
+                        const auto dropped_fragments = protocol_status.dropped_fragment_count()
+                            - previous_protocol_status.dropped_fragment_count();
+                        const auto rejected_samples = protocol_status.rejected_sample_count().total()
+                            - previous_protocol_status.rejected_sample_count().total();
+                        if (fragmented_fixture && (phase == 1 || phase == 4)
+                            && (serialized_size <= 16 * 1024 || received_fragments <= 0 || reassembled_samples <= 0)) {
+                            throw std::runtime_error("Fragmentation counters did not prove reassembly for phase " + std::to_string(phase));
+                        }
+                        std::cout << "LIFECYCLE_PHASE phase=" << phase
+                                  << " serialized_bytes=" << serialized_size
+                                  << " valid_samples=" << valid_samples
+                                  << " invalid_samples=" << invalid_samples
+                                  << " writer_guid=" << writer_guid
+                                  << " sequence=" << sequence_number
+                                  << " received_fragments_delta=" << received_fragments
+                                  << " reassembled_samples_delta=" << reassembled_samples
+                                  << " dropped_fragments_delta=" << dropped_fragments
+                                  << " rejected_samples_delta=" << rejected_samples << std::endl;
+                        total_valid_samples += valid_samples;
+                        previous_protocol_status = protocol_status;
+                        std::cout << "PHASE_VERIFIED " << topic_name << " " << phase << std::endl;
+                        verified = true;
+                    } else {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    }
+                }
+                if (!verified) {
+                    throw std::runtime_error("Timed out waiting for lifecycle phase " + std::to_string(phase));
+                }
+            }
+            const auto final_protocol_status = reader.extensions().datareader_protocol_status();
+            std::cout << "LIFECYCLE_RECEIVE_STORAGE implementation=rti-cpp phases=5 history_depth=1 optional_nested_transitions=true loan_returned_before_ack=true content_verified=true" << std::endl;
+            std::cout << "LIFECYCLE_READER_FINAL valid_samples=" << total_valid_samples
+                      << " rejected_samples=" << final_protocol_status.rejected_sample_count().total()
+                      << " dropped_fragments=" << final_protocol_status.dropped_fragment_count() << std::endl;
+            std::cout << "RECEIVED" << std::endl;
+            return 0;
+        }
+#endif
         const auto initial_match_status = reader.subscription_matched_status();
         std::cout << "READY case=" << case_id << " fixture=" << fixture
                   << " role=reader matched_writers_current="

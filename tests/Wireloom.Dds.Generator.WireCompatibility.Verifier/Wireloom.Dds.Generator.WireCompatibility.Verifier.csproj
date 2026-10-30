@@ -27,6 +27,8 @@
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/ReportRequest.cs" Link="MatrixTools/Reporting/ReportRequest.cs" />
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/WireReportRenderer.cs" Link="MatrixTools/Reporting/WireReportRenderer.cs" />
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/ReportEvidenceBuilder.cs" Link="MatrixTools/Reporting/ReportEvidenceBuilder.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/LifecycleEvidenceBuilder.cs" Link="MatrixTools/Reporting/LifecycleEvidenceBuilder.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/SourceSnapshotEvidence.cs" Link="MatrixTools/Reporting/SourceSnapshotEvidence.cs" />
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/ReportEndpointPolicy.cs" Link="MatrixTools/Reporting/ReportEndpointPolicy.cs" />
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/ReportProvenance.cs" Link="MatrixTools/Reporting/ReportProvenance.cs" />
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Reporting/ReportProblemReader.cs" Link="MatrixTools/Reporting/ReportProblemReader.cs" />

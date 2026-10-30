@@ -39,8 +39,11 @@ internal sealed class MatrixWorkspace(MatrixOptions options)
     /// <summary>Retained per-case diagnostic files.</summary>
     internal string Logs => Output("logs");
 
+    /// <summary>Source identity captured before any peer build or exchange begins.</summary>
+    internal string ExecutionProvenance => Output("execution-provenance.json");
+
     /// <summary>Resets scratch files and initializes artifacts needed by recovery reporting.</summary>
-    internal void Initialize()
+    internal void Initialize(bool captureSourceProvenance = true)
     {
         HasRunArtifacts = false;
 
@@ -52,6 +55,7 @@ internal sealed class MatrixWorkspace(MatrixOptions options)
         Directory.CreateDirectory(options.ScratchDirectory);
 
         // Logs
+        Directory.CreateDirectory(options.OutputDirectory);
         Directory.CreateDirectory(Logs);
         foreach (var file in Directory.EnumerateFiles(Logs, "*.log").Concat(Directory.EnumerateFiles(Logs, "*-generation.json")))
         {
@@ -65,9 +69,21 @@ internal sealed class MatrixWorkspace(MatrixOptions options)
         }
 
         HasRunArtifacts = true;
+        File.Delete(ExecutionProvenance);
         File.WriteAllText(Scenarios, string.Empty);
         File.WriteAllText(CppResults, PeerBuildFiles.CompilationHeader + Environment.NewLine);
         File.WriteAllText(Output("results.json"), $$"""{"rtiVersion":"{{options.RtiVersion}}","scenarios":[]}""");
+
+        var retainedSourceFiles = Output("source-files");
+        if (Directory.Exists(retainedSourceFiles))
+        {
+            Directory.Delete(retainedSourceFiles, recursive: true);
+        }
+
+        if (captureSourceProvenance)
+        {
+            SourceSnapshotEvidence.Capture(options.RepositoryRoot, options.OutputDirectory).Write(ExecutionProvenance);
+        }
     }
 
     /// <summary>Locates disposable artifacts for one corpus case.</summary>

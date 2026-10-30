@@ -21,9 +21,12 @@ internal static class ReportEvidenceBuilder
         var wireMatrixConfiguration = manifest["positiveCases"]!.AsArray()
             .Where(item => item!["wireMatrix"] is not null)
             .ToDictionary(item => (string)item!["id"]!, item => item!["wireMatrix"]!, StringComparer.Ordinal);
+        var provenancePath = request.ExecutionProvenancePath
+            ?? Path.Combine(Path.GetDirectoryName(Path.GetFullPath(request.ScenarioPath))!, "execution-provenance.json");
+        var sourceSnapshot = SourceSnapshotEvidence.Read(provenancePath);
 
         var scenarios = ReadScenarioRows(request.ScenarioPath)
-            .Select(row => BuildScenario(row, request, manifest, unavailableIds, wireMatrixConfiguration)).ToList();
+            .Select(row => BuildScenario(row, request, manifest, unavailableIds, wireMatrixConfiguration, sourceSnapshot)).ToList();
 
         var reportedCaseIds = scenarios.Select(scenario => (string)scenario["case"]!).ToHashSet(StringComparer.Ordinal);
         var knownExceptions = wireMatrixConfiguration
@@ -37,14 +40,17 @@ internal static class ReportEvidenceBuilder
                 }))
             .ToArray();
 
-        return new ReportData(version, expectedCount, scenarios, notImplemented, notApplicable, knownExceptions, manifest);
+        return new ReportData(version, expectedCount, scenarios, notImplemented, notApplicable, knownExceptions, manifest, sourceSnapshot);
     }
 
-    private static ReportFields BuildScenario(ScenarioRow row, ReportRequest request, JsonNode manifest, HashSet<string> unavailableIds, Dictionary<string, JsonNode> wireMatrixConfiguration)
+    private static ReportFields BuildScenario(ScenarioRow row, ReportRequest request, JsonNode manifest, HashSet<string> unavailableIds, Dictionary<string, JsonNode> wireMatrixConfiguration, SourceSnapshotEvidence sourceSnapshot)
     {
         var version = request.RtiVersion;
         var logsPath = request.LogsDirectory;
-        var (id, wireType, rtiType, cppType, writer, writerVersion, reader, readerVersion, status, fixture) = row;
+        var (id, wireType, rtiType, cppType, writer, writerVersion, reader, readerVersion, rowStatus, fixture) = row;
+        var provenanceInvalid = !sourceSnapshot.VerifiedUnchanged;
+        var status = provenanceInvalid && rowStatus == "PASS" ? "FAIL" : rowStatus;
+
         if (unavailableIds.Contains(id))
         {
             throw new InvalidDataException($"Case {id} is not applicable to RTI {version} and cannot contribute exchanges.");
@@ -59,6 +65,9 @@ internal static class ReportEvidenceBuilder
             ["reader"] = readerEndpoint,
             ["fixture"] = fixture,
             ["status"] = status,
+            ["sourceRevision"] = sourceSnapshot.Revision,
+            ["dirtySourceSnapshotSha256"] = sourceSnapshot.DirtySnapshotSha256,
+            ["dirtySourceFileCount"] = sourceSnapshot.DirtyFileCount,
         };
 
         if (wireMatrixConfiguration.TryGetValue(id, out var matrixConfiguration))
@@ -78,6 +87,13 @@ internal static class ReportEvidenceBuilder
         }
 
         ReportProvenance.Attach(scenario, corpusCase, request, row);
+
+        if (id == "14-unbounded-receive-lifecycle")
+        {
+            var logName = $"{id}-{fixture}-{PeerLogId(writer)}-{PeerLogId(reader)}.log";
+            scenario["lifecycleEvidence"] = LifecycleEvidenceBuilder.Build(fixture, status, Path.Combine(logsPath, logName),
+                writer == "RTI C++" || reader == "RTI C++");
+        }
 
         var adaptations = new Dictionary<string, string>();
 
@@ -106,7 +122,9 @@ internal static class ReportEvidenceBuilder
 
         if (status is "FAIL" or "NOT_RUN")
         {
-            scenario["observedProblem"] = ReportProblemReader.Read(id, fixture, writer, reader, status, logsPath);
+            scenario["observedProblem"] = provenanceInvalid && rowStatus == "PASS"
+                ? $"Execution source changed during the run: {sourceSnapshot.IntegrityFailure}"
+                : ReportProblemReader.Read(id, fixture, writer, reader, status, logsPath);
         }
 
         return scenario;
@@ -133,6 +151,14 @@ internal static class ReportEvidenceBuilder
     private static JsonNode FindCase(JsonNode manifest, string id) => manifest["positiveCases"]!.AsArray()
         .FirstOrDefault(item => (string)item!["id"]! == id)
         ?? throw new InvalidOperationException($"No positive corpus case found for {id}.");
+
+    private static string PeerLogId(string peer) => peer switch
+    {
+        "Wireloom C#" => "wireloom-cs",
+        "RTI C#" => "rti-cs",
+        "RTI C++" => "rti-cpp",
+        _ => throw new InvalidDataException($"Unknown wire peer '{peer}'."),
+    };
 
     private static JsonNode ReadJson(string path) => JsonNode.Parse(File.ReadAllText(path))!;
 
