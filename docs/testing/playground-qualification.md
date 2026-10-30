@@ -124,8 +124,15 @@ and rejection of unsupported workspace record versions.
 Presentation checks cover independent Source/Generated group disclosure,
 Source-scoped hover/focus controls, default folder expansion with preserved
 manual collapse, distinct file/folder context menus, and error alerts in both
-themes. Dialog checks cover Escape cancellation and keyboard-operated role
-and mapping toggles.
+themes. The shell retains its document-level stylesheet when the editor bundle
+cannot load. Desktop layouts fit 1300 × 985, 1440 × 1080, and 1920 × 1200
+viewports in both themes; diagnostics fit at the minimum desktop size, and
+stacked panes keep the footer reachable on smaller screens.
+Dialog checks cover Escape and backdrop cancellation, focus restoration,
+clicks on dialog padding, dragging from inside to outside, and keyboard-operated
+role and mapping toggles. Settings checks cover compact controls, associated
+explanations, distinct disabled inputs in both themes, and file unbounded-mode
+overrides resetting to project inheritance.
 
 IDL Copy/Download checks preserve exact UTF-8/CRLF text, follow the selected
 tab, work with invalid source, and are disabled without an active file. Source
