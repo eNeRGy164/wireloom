@@ -42,17 +42,46 @@ export function dialog<T>(
       finish();
     });
     modal.addEventListener("close", () => finish(), { once: true });
+    const outside = (event: PointerEvent | MouseEvent) => {
+      const bounds = modal.getBoundingClientRect();
+      return (
+        event.target === modal &&
+        (event.clientX < bounds.left ||
+          event.clientX > bounds.right ||
+          event.clientY < bounds.top ||
+          event.clientY > bounds.bottom)
+      );
+    };
+    let pressedOutside = false;
+    modal.addEventListener("pointerdown", (event) => {
+      pressedOutside = outside(event);
+    });
+    modal.addEventListener("click", (event) => {
+      if (pressedOutside && outside(event)) finish();
+      pressedOutside = false;
+    });
     document.body.append(modal);
     modal.showModal();
   });
 }
 
-export function field(form: HTMLElement, label: string, control: HTMLElement) {
+export function field(form: HTMLElement, label: string, control: HTMLElement, description?: string) {
   control.setAttribute("aria-label", label);
   const wrapper = document.createElement("label");
   wrapper.textContent = label;
+  if (control instanceof HTMLInputElement && control.type === "checkbox") wrapper.className = "checkbox-field";
   wrapper.append(control);
+  if (description) describe(wrapper, control, description);
   form.append(wrapper);
+}
+
+function describe(container: HTMLElement, control: HTMLElement, text: string) {
+  const hint = document.createElement("span");
+  hint.id = crypto.randomUUID();
+  hint.className = "setting-hint";
+  hint.textContent = text;
+  control.setAttribute("aria-describedby", hint.id);
+  container.append(hint);
 }
 
 export function textInput(value: string, multiline = false): HTMLInputElement | HTMLTextAreaElement {
@@ -76,7 +105,8 @@ function toggleChoice<T extends string>(
   choices: [T, string][],
   selected: T,
   onChange?: () => void,
-): () => T {
+  description?: string,
+) {
   const group = document.createElement("fieldset");
   group.className = "property-toggle";
   group.setAttribute("role", "radiogroup");
@@ -101,8 +131,15 @@ function toggleChoice<T extends string>(
     return input;
   });
   group.append(legend, options);
+  if (description) describe(group, group, description);
   form.append(group);
-  return () => inputs.find((input) => input.checked)!.value as T;
+  return {
+    value: () => inputs.find((input) => input.checked)!.value as T,
+    select: (value: T) => {
+      for (const input of inputs) input.checked = input.value === value;
+    },
+    element: group,
+  };
 }
 
 export function choose(title: string, message: string, choices: string[]): Promise<string | undefined> {
@@ -156,25 +193,51 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
           ["include", "Include-only"],
         ],
         file.isGenerationRoot ? "root" : "include",
+        undefined,
+        "Root files start generation. Include-only files are available to #include directives without starting generation themselves.",
       );
       let defines: HTMLTextAreaElement | undefined;
       let undefines: HTMLTextAreaElement | undefined;
       let strict: HTMLInputElement | undefined;
+      let unboundedOverride = file.options.unboundedSupport;
       const unboundedMode = toggleChoice(
         form,
         "Unbounded support",
         [
-          ["project", "Use project setting"],
           ["enabled", "Enabled"],
           ["disabled", "Disabled"],
         ],
-        file.options.unboundedSupport === undefined
-          ? "project"
-          : file.options.unboundedSupport
-            ? "enabled"
-            : "disabled",
-        () => updateFileSizeControls(),
+        (unboundedOverride ?? draft.options.unboundedSupport) ? "enabled" : "disabled",
+        () => {
+          unboundedOverride = unboundedMode.value() === "enabled";
+          updateUnboundedDefault();
+          updateFileSizeControls();
+        },
+        "Enabled preserves unbounded sequences and strings, including wide strings. Disabled uses the finite sizes below. Explicit IDL bounds always apply.",
       );
+      const unboundedDefault = document.createElement("p");
+      unboundedDefault.className = "setting-hint";
+      unboundedDefault.setAttribute("aria-live", "polite");
+      const resetUnbounded = document.createElement("button");
+      resetUnbounded.type = "button";
+      resetUnbounded.className = "property-reset-link";
+      resetUnbounded.textContent = "Reset to project default";
+      resetUnbounded.setAttribute("aria-label", "Reset unbounded support to project default");
+      const updateUnboundedDefault = () => {
+        resetUnbounded.hidden = unboundedOverride === undefined;
+        unboundedDefault.textContent =
+          unboundedOverride === undefined
+            ? `Using project default (${draft.options.unboundedSupport ? "Enabled" : "Disabled"}).`
+            : "Overridden for this file.";
+      };
+      resetUnbounded.addEventListener("click", () => {
+        unboundedOverride = undefined;
+        unboundedMode.select(draft.options.unboundedSupport ? "enabled" : "disabled");
+        updateUnboundedDefault();
+        updateFileSizeControls();
+      });
+      unboundedMode.element.append(unboundedDefault, resetUnbounded);
+      updateUnboundedDefault();
       const sequence = textInput(String(file.options.sequenceSize ?? draft.options.sequenceSize)) as HTMLInputElement;
       const string = textInput(String(file.options.stringSize ?? draft.options.stringSize)) as HTMLInputElement;
       let sequenceEdited = false;
@@ -188,7 +251,7 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
         input.required = true;
       }
       const updateFileSizeControls = () => {
-        const enabled = unboundedMode() === "project" ? draft.options.unboundedSupport : unboundedMode() === "enabled";
+        const enabled = unboundedOverride ?? draft.options.unboundedSupport;
         sequence.disabled = enabled;
         string.disabled = enabled;
       };
@@ -245,10 +308,15 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
         strict = document.createElement("input");
         strict.type = "checkbox";
         strict.checked = file.options.strict;
-        field(form, "Strict validation", strict);
+        field(
+          form,
+          "Strict validation",
+          strict,
+          "Enable additional semantic checks for all roots in the generation batch.",
+        );
       }
       apply = () => {
-        file.isGenerationRoot = role() === "root";
+        file.isGenerationRoot = role.value() === "root";
         file.options = {
           ...file.options,
           sequenceSize: resetSequenceToProject
@@ -257,7 +325,7 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
               ? Number(sequence.value)
               : file.options.sequenceSize,
           stringSize: resetStringToProject ? undefined : stringEdited ? Number(string.value) : file.options.stringSize,
-          unboundedSupport: unboundedMode() === "project" ? undefined : unboundedMode() === "enabled",
+          unboundedSupport: unboundedOverride,
           defines:
             file.isGenerationRoot && defines
               ? defines.value
@@ -284,6 +352,8 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
           ["Idl", "IDL"],
         ],
         draft.options.sequenceArrayMapping,
+        undefined,
+        "For arrays of sequences, RTI C# flattens the outer array to match RTI's C# mapping. IDL preserves the array and its separate sequences.",
       );
       const unbounded = document.createElement("input");
       unbounded.type = "checkbox";
@@ -301,14 +371,34 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
         string.disabled = unbounded.checked;
       };
       unbounded.addEventListener("change", updateProjectSizeControls);
-      field(form, "RTI-style unbounded sequences and strings", unbounded);
+      field(
+        form,
+        "Unbounded sequences and strings",
+        unbounded,
+        "Preserve unbounded sequences and strings, including wide strings, instead of applying finite fallback sizes. Explicit IDL bounds always apply.",
+      );
       updateProjectSizeControls();
-      field(form, "Unbounded sequence size", sequence);
-      field(form, "Unbounded string size", string);
+      field(
+        form,
+        "Unbounded sequence size",
+        sequence,
+        "Maximum element count for sequences without an IDL bound. Ignored while unbounded support is enabled.",
+      );
+      field(
+        form,
+        "Unbounded string size",
+        string,
+        "Maximum bytes for narrow strings or code units for wide strings without an IDL bound. Ignored while unbounded support is enabled.",
+      );
       const escape = document.createElement("input");
       escape.type = "checkbox";
       escape.checked = draft.options.enableEscapeChar;
-      field(form, "Enable escape character", escape);
+      field(
+        form,
+        "Enable escape character",
+        escape,
+        "Remove one leading underscore from IDL identifiers. Applies to all files and can change generated names and member IDs.",
+      );
       const folders = document.createElement("fieldset");
       const legend = document.createElement("legend");
       legend.textContent = "Include folders — searched alphabetically";
@@ -324,7 +414,7 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
       form.append(folders);
       apply = () => {
         draft.options = validateOptions({
-          sequenceArrayMapping: mapping(),
+          sequenceArrayMapping: mapping.value(),
           sequenceSize: Number(sequence.value),
           stringSize: Number(string.value),
           enableEscapeChar: escape.checked,
