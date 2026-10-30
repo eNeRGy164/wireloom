@@ -46,7 +46,7 @@ async (page) => {
 
         if (source.options?.unboundedSupport) {
           await app.getByRole("button", { name: "Workspace Settings" }).click();
-          await app.getByLabel("RTI-style unbounded sequences and strings").check();
+          await app.getByLabel("Unbounded sequences and strings", { exact: true }).check();
           await app.getByRole("button", { name: "Apply", exact: true }).click();
         }
 

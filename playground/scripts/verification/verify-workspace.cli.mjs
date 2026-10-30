@@ -124,6 +124,174 @@ async (page, hooks = {}) => {
     await settle(app);
   };
 
+  await check("The shell is styled before the editor bundle loads", async (app) => {
+    const fresh = await app.context().newPage();
+    try {
+      await fresh.route("**/assets/main-*.js", (route) => route.abort());
+      await fresh.goto(input.root);
+      await fresh.getByRole("button", { name: "Reload playground", exact: true }).waitFor();
+      assert(
+        await fresh.evaluate(() => {
+          const link = document.querySelector('head link[rel="stylesheet"]');
+          return link?.sheet && getComputedStyle(document.querySelector(".workbench")).display === "grid";
+        }),
+        "The shell depended on the editor bundle for its stylesheet",
+      );
+    } finally {
+      await fresh.close();
+    }
+  });
+
+  await check("Desktop content fits the viewport and stays reachable after resizing", async (app) => {
+    for (const theme of ["light", "dark"]) {
+      await app.locator(`.theme-toggle input[value="${theme}"]`).locator("..").click();
+      for (const [width, height] of [
+        [1300, 985],
+        [1440, 1080],
+        [1920, 1200],
+      ]) {
+        await app.setViewportSize({ width, height });
+        assert(
+          await app.evaluate(() => {
+            const root = document.documentElement;
+            const footer = document.querySelector(".page-footer").getBoundingClientRect();
+            const editor = document.querySelector("#source").getBoundingClientRect();
+            return (
+              root.scrollHeight <= innerHeight &&
+              root.scrollWidth <= innerWidth &&
+              footer.bottom <= innerHeight &&
+              editor.height > 200
+            );
+          }),
+          `Page overflow or clipped content at ${width}x${height} in ${theme}`,
+        );
+      }
+    }
+    await app.setViewportSize({ width: 1300, height: 985 });
+    await replaceText(app, "struct Broken { long value;\n");
+    assert(await app.locator("#diagnostics button").count(), "Invalid source did not show diagnostics");
+    assert(
+      await app.evaluate(() => document.documentElement.scrollHeight <= innerHeight),
+      "Diagnostics pushed the footer outside the desktop viewport",
+    );
+    await app.setViewportSize({ width: 800, height: 700 });
+    await app.locator(".page-footer").scrollIntoViewIfNeeded();
+    assert(await app.locator(".page-footer").isVisible(), "Footer became unreachable on a smaller screen");
+    assert(
+      await app.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      "Resizing to stacked panes caused horizontal overflow",
+    );
+  });
+
+  await check(
+    "Backdrop clicks cancel dialogs without applying edits or treating dialog padding as outside",
+    async (app) => {
+      const before = JSON.stringify(await saved(app));
+      const dismiss = async () => {
+        await app.mouse.click(5, 5);
+        await app.getByRole("dialog").waitFor({ state: "hidden" });
+        assert(JSON.stringify(await saved(app)) === before, "Backdrop cancellation changed the workspace");
+      };
+      await app.locator("#workspace-settings").click();
+      const modal = app.getByRole("dialog");
+      await modal.getByLabel("Enable escape character", { exact: true }).check();
+      const bounds = await modal.boundingBox();
+      await app.mouse.click(bounds.x + 4, bounds.y + 4);
+      assert(await modal.isVisible(), "Clicking dialog padding canceled the dialog");
+      await app.mouse.move(bounds.x + 4, bounds.y + 4);
+      await app.mouse.down();
+      await app.mouse.move(5, 5);
+      await app.mouse.up();
+      assert(await modal.isVisible(), "Dragging out of the dialog canceled the dialog");
+      await dismiss();
+      assert(
+        await app.locator("#workspace-settings").evaluate((node) => node === document.activeElement),
+        "Cancel did not restore focus to Workspace Settings",
+      );
+      await properties(app);
+      await modal.getByRole("radio", { name: "Include-only", exact: true }).locator("..").click();
+      await dismiss();
+      await app.locator("#source-explorer-panel").hover();
+      await app.locator("#new-file").click();
+      await modal.locator("input").fill("canceled.idl");
+      await dismiss();
+      await app.locator("#file").setInputFiles(filePayload("main.idl", "struct Canceled { long x; };"));
+      await app.getByRole("dialog", { name: "Import conflict", exact: true }).waitFor();
+      await dismiss();
+    },
+  );
+
+  await check("Unbounded file overrides reset to inheritance and settings remain clear in both themes", async (app) => {
+    const modal = app.getByRole("dialog");
+    const reset = modal.getByRole("button", { name: "Reset unbounded support to project default", exact: true });
+    await properties(app);
+    assert(await modal.getByRole("radio", { name: "Disabled", exact: true }).isChecked(), "Wrong inherited mode");
+    assert(!(await reset.isVisible()), "Inherited mode offered a redundant reset");
+    assert((await modal.getByRole("radio").count()) === 4, "File settings did not use two-option toggles");
+    await modal.getByRole("radio", { name: "Enabled", exact: true }).locator("..").click();
+    assert(await reset.isVisible(), "Editing the file mode did not offer reset");
+    assert(
+      await modal.getByLabel("Unbounded sequence size", { exact: true }).isDisabled(),
+      "File sizes remained enabled",
+    );
+    await modal.getByRole("button", { name: "Apply", exact: true }).click();
+    await settle(app);
+    assert((await saved(app)).files[0].options.unboundedSupport === true, "File override was not saved");
+    await properties(app);
+    await reset.click();
+    assert(
+      await modal.getByRole("radio", { name: "Disabled", exact: true }).isChecked(),
+      "Reset did not select the project mode",
+    );
+    assert(
+      await modal.getByLabel("Unbounded string size", { exact: true }).isEnabled(),
+      "Reset did not restore finite size controls",
+    );
+    await modal.getByRole("button", { name: "Apply", exact: true }).click();
+    await settle(app);
+    assert((await saved(app)).files[0].options.unboundedSupport === undefined, "Reset saved an explicit mode");
+    for (const theme of ["light", "dark"]) {
+      await app.locator(`.theme-toggle input[value="${theme}"]`).locator("..").click();
+      await app.locator("#workspace-settings").click();
+      const toggle = modal.locator(".property-toggle-options");
+      const width = (await toggle.boundingBox()).width;
+      assert(width >= 200 && width <= 270, "Mapping toggle was not compact");
+      assert(
+        await modal.locator(".property-toggle").getAttribute("aria-describedby"),
+        "Mapping explanation was not associated with the control",
+      );
+      await modal.getByLabel("Unbounded sequences and strings", { exact: true }).check();
+      const sequence = modal.getByLabel("Unbounded sequence size", { exact: true });
+      assert(await sequence.isDisabled(), "Project sizes remained enabled");
+      assert(
+        await sequence.evaluate((node) => getComputedStyle(node).borderStyle === "dashed"),
+        "Disabled inputs lacked a distinct visual style",
+      );
+      await app.screenshot({ path: `output/playwright/workspace-settings-${theme}.png`, fullPage: true });
+      await modal.getByRole("button", { name: "Apply", exact: true }).click();
+      await settle(app);
+    }
+    await properties(app);
+    assert(
+      await modal.getByRole("radio", { name: "Enabled", exact: true }).isChecked(),
+      "The file did not inherit the changed project mode",
+    );
+    assert(!(await reset.isVisible()), "A project change created a file override");
+    await modal.getByRole("radio", { name: "Disabled", exact: true }).locator("..").click();
+    await reset.click();
+    assert(
+      await modal.getByLabel("Unbounded string size", { exact: true }).isDisabled(),
+      "Reset did not restore inherited unbounded mode",
+    );
+    await app.screenshot({ path: "output/playwright/workspace-properties-default.png", fullPage: true });
+    await modal.getByRole("button", { name: "Apply", exact: true }).click();
+    await settle(app);
+    assert(
+      (await saved(app)).files[0].options.unboundedSupport === undefined,
+      "Reset to enabled project mode saved an override",
+    );
+  });
+
   await check("Explorer groups collapse independently and actions appear on hover or keyboard focus", async (app) => {
     await app.locator("#profile").focus();
     await app.locator(".intro").hover();

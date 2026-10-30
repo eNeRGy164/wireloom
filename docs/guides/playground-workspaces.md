@@ -5,6 +5,11 @@ the left IDL editor; generated C# opens in the right read-only editor. Each
 source has its own editor model, selection, and undo history. Renaming or moving
 a file preserves that history for the current session.
 
+The desktop layout fits a viewport of at least 1300 × 985 pixels without a
+page scrollbar. Editors use the remaining height, and long diagnostic lists
+scroll within their panel. Smaller screens retain page scrolling so all
+content remains reachable.
+
 ## Files, folders, and import
 
 Use the **New File** and **New Folder** icon buttons or the Source context menu to create items in the
@@ -54,16 +59,20 @@ Use separate projects/builds for variants that need independent external
 symbols or strictness.
 
 **Workspace Settings** configures project defaults for sequence-array mapping,
-RTI-style unbounded support, sequence size, and string size. It also configures
+unbounded support, sequence size, and string size. Explanatory text describes
+each setting, including the difference between RTI C# flattening and IDL array
+preservation. It also configures
 escape-character handling for the batch and include folders. Defaults are
 `RtiCSharp`, 100, and 255. File Properties shows these effective project
 values by default. Changing a file's sequence or string size saves a file-level
-preference that remains in effect when project defaults change; **Use project
-setting** clears that override.
+preference that remains in effect when project defaults change; **Reset to
+project default** clears that override.
 
 RTI-style unbounded support defaults to disabled and applies to sequences,
-narrow strings, and wide strings together. File Properties selects **Use
-project setting**, **Enabled**, or **Disabled** for declarations in that file,
+narrow strings, and wide strings together. File Properties shows the effective
+**Enabled** or **Disabled** value and whether it inherits the project default.
+Changing the toggle creates a file override; the conditional **Reset to project
+default** link clears it. This applies to declarations in that file,
 including include-only files. A root override does not flow into included
 files. Explicit IDL bounds remain authoritative. Size controls are disabled
 where the effective mode is unbounded; their values are retained and remain
@@ -82,7 +91,7 @@ See the
 The **Workspace: Root and includes** and **Workspace: preprocessor settings**
 examples demonstrate these controls. Existing single-file examples remain
 available. Selecting a diagnostic opens the corresponding source tab at its
-compiler-provided UTF-16 location. Escape closes dialogs and discards unapplied
+compiler-provided UTF-16 location. Escape or clicking outside a dialog closes it and discards unapplied
 changes, including settings, properties, name prompts, and import conflicts.
 Properties toggles also support the standard radio-group arrow keys.
 
