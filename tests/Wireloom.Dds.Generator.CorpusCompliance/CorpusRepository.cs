@@ -120,7 +120,8 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "14-string-expression-bound",
         "14-typed-defaults",
         "14-enum-constant",
-        "14-unbounded-support"
+        "14-unbounded-support",
+        "14-unbounded-receive-lifecycle"
     ];
 
     public bool ExpectedToCompile => ExpectedToCompileForProfile(CorpusRepository.RtiProfile);
