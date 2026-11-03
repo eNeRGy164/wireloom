@@ -23,6 +23,9 @@ merge a cleanup update with the actual release details.
   [Quality workflow](../../.github/workflows/quality.yml) and
   [wire-compatibility workflow](../../.github/workflows/wire-compatibility.yml)
   on that exact merged commit. If it changes, merge and rerun both workflows.
+  Inspect both combined wire reports for unexpected failures. Keep the
+  combined artifacts available for publication and archival. The publisher
+  checks successful main runs for the tag SHA and both wire artifacts.
 
 Keep consumer references at the latest published version until the new package
 is available. This includes `Directory.Packages.props`,
@@ -37,8 +40,9 @@ the checked-in sample in locked mode, so advance these references after publish.
 In GitHub Releases, create a release for `vMAJOR.MINOR.PATCH` at the tested
 `main` commit. Use the prepared title and change summary. Creating the release
 creates the tag; GitVersion derives the package version from it, with no
-separate confirmation. The tag triggers the release workflow. Check its result
-and confirm the NuGet package is published.
+separate confirmation. The tag triggers the release workflow, which
+smoke-tests the versioned package before attesting and publishing those
+bytes. Check its result and confirm the NuGet package is published.
 
 ## 3. Clean up and merge
 
