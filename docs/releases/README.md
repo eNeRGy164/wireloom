@@ -7,6 +7,7 @@ the quality and release workflow results available for that source revision.
 
 | Package                                                              | Source tag                                                                                                         | Published  | Record                          |
 | :------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- | :--------- | :------------------------------ |
+| 1.0.0 (planned) | `v1.0.0` (pending) | Pending | [1.0.0 release preparation](1.0.0.md) |
 | [0.5.0](https://www.nuget.org/packages/Wireloom.Dds.Generator/0.5.0) | [`v0.5.0`](https://github.com/eNeRGy164/wireloom/releases/tag/v0.5.0) · `01f66fe07a9065751430c3b71bbc72a2a7a4ad0e` | 2026-10-26 | [0.5.0 qualification](0.5.0.md) |
 | [0.4.0](https://www.nuget.org/packages/Wireloom.Dds.Generator/0.4.0) | [`v0.4.0`](https://github.com/eNeRGy164/wireloom/releases/tag/v0.4.0) · `2f77e824ec6ad0a46ee4640b045e1835d023983f` | 2026-10-17 | [0.4.0 qualification](0.4.0.md) |
 | [0.3.0](https://www.nuget.org/packages/Wireloom.Dds.Generator/0.3.0) | [`v0.3.0`](https://github.com/eNeRGy164/wireloom/releases/tag/v0.3.0) · `71bdc406cd565b4bd9d441df470cafcd1c10b326` | 2026-10-05 | [0.3.0 qualification](0.3.0.md) |
