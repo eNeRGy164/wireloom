@@ -461,8 +461,8 @@ mitigations, and next actions are in [chapter 11](11-risks-and-technical-debt.md
 
 The existing direct Node coverage gate and broader combined browser coverage
 have different scopes. The qualification guide owns their current results and
-enforced gates. The broader UI branch target remains a separate follow-up under
-[D03](11-risks-and-technical-debt.md#d03) and does not block the generator's 1.0 release.
+enforced gates. The broader UI branch target remained open at generator
+1.0.0 and is tracked under [D03](11-risks-and-technical-debt.md#d03).
 Neither coverage result proves every scenario above is satisfied.
 Likewise, coverage percentages are regression safeguards, not a substitute for
 API, user-task, native lifecycle, or interoperability evidence.

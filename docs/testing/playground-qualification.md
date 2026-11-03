@@ -243,10 +243,10 @@ live deployment. See the [deployment runbook](../guides/playground-deployment.md
 | Direct Node modules               | 99.31%   | 100%   | 98% branches / 99% lines |
 | Node plus first-party Chromium UI | 88.43%   | 99.61% | 70% branches / 80% lines |
 
-The broader 98% branch / 99% line UI target remains a separate follow-up under
-[D03](../architecture/arc42/11-risks-and-technical-debt.md#d03); it does not block
-the generator's 1.0 release. This does not lower the target or equate Node-only
-coverage with UI coverage. Remaining branches include storage/preferences
+The broader 98% branch / 99% line UI target remained open at generator 1.0.0
+and is tracked under [D03](../architecture/arc42/11-risks-and-technical-debt.md#d03).
+The direct Node and combined UI gates measure different scopes. Remaining
+branches include storage/preferences
 fallbacks, workspace import/cancellation and alternate action paths, and dialog
 validation. Existing behavioral checks remain the release criteria for those
 core user tasks.
