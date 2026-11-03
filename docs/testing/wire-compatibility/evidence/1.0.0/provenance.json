@@ -1,0 +1,39 @@
+{
+  "sourceRevision": "7ab7834a66358915993e09cba308e1c66183f70d",
+  "workflowRunId": 41679384154,
+  "retrievedAt": "2026-11-03",
+  "artifacts": [
+    {
+      "rtiVersion": "7.3.1",
+      "githubArtifactId": 13251074136,
+      "files": [
+        {
+          "path": "wire-rti-7.3.1.zip",
+          "bytes": 1166124,
+          "sha256": "7b5c0e80c4e0d584cc876402868dae5512398ab45d9fac11611b9f2933c3fee0"
+        },
+        {
+          "path": "rti-7.3.1-results.md",
+          "bytes": 308907,
+          "sha256": "136e9e5d9f54ea930ee1d5ee15f58fb8cd7f8b05d489f6d808747bb4966fb11d"
+        }
+      ]
+    },
+    {
+      "rtiVersion": "7.7.0",
+      "githubArtifactId": 13251464008,
+      "files": [
+        {
+          "path": "wire-rti-7.7.0.zip",
+          "bytes": 1096820,
+          "sha256": "28eee8d7a2696c6b15d2bea84dd1a5b883fb5789be59aee5f628b8b645eaf89d"
+        },
+        {
+          "path": "rti-7.7.0-results.md",
+          "bytes": 56764,
+          "sha256": "b2188413db8940acebfd093ee131ed6c7b837099e4062c86c701c6b7e622dd22"
+        }
+      ]
+    }
+  ]
+}

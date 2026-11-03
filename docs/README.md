@@ -50,6 +50,7 @@ establish different facts.
 - [Observed RTI code-generation findings](corpus/RTI-CODEGEN-DEFECTS.md)
 - [Incremental-generator measurements](performance/incremental-generator-baseline.md)
 - [Focused sequence-array evidence](testing/sequence-array-mapping.md)
+- [Retained 1.0.0 wire evidence](testing/wire-compatibility/evidence/1.0.0/README.md)
 - [Retained 0.5.0 wire evidence](testing/wire-compatibility/evidence/0.5.0/README.md)
 - [Historical Playground results](testing/evidence/playground-2026-10-27.md)
 
