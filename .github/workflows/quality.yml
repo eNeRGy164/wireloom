@@ -11,8 +11,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: quality-${{ github.ref }}
-  cancel-in-progress: true
+  group: quality-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
 
 env:
   DOTNET_NOLOGO: true
@@ -25,8 +25,55 @@ env:
   PACKAGE_INTEGRATION_TEST_PROJECT: tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj
 
 jobs:
+  scope:
+    name: Classify change
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    outputs:
+      full: ${{ steps.scope.outputs.full }}
+    steps:
+      - name: Check out PR for path classification
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Detect narrative-only changes
+        id: scope
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          full=true
+          files="$RUNNER_TEMP/quality-changed-paths"
+          if [[ "$EVENT_NAME" == pull_request ]] &&
+             git diff --name-only --no-renames -z "$BASE_SHA" "$GITHUB_SHA" -- > "$files" &&
+             [[ -s "$files" ]]; then
+            full=false
+            while IFS= read -r -d '' path; do
+              case "$path" in
+                README.md|CONTRIBUTING.md|SECURITY.md|docs/releases/*.md|docs/migration/*.md) ;;
+                *) full=true; break ;;
+              esac
+            done < "$files"
+          fi
+          echo "full=$full" >> "$GITHUB_OUTPUT"
+
+  dependency-review:
+    name: Review dependency changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@v5.0.0
+
   sample-build:
     name: Publisher/subscriber sample (${{ matrix.os }})
+    needs: scope
+    if: needs.scope.outputs.full == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     strategy:
@@ -56,6 +103,8 @@ jobs:
 
   corpus-compliance:
     name: Corpus (RTI ${{ matrix.rti_version }})
+    needs: scope
+    if: needs.scope.outputs.full == 'true'
     runs-on: ubuntu-26.04
     timeout-minutes: 20
     strategy:
@@ -85,6 +134,27 @@ jobs:
       - name: Test matching LTS corpus
         run: dotnet run --project "$CORPUS_TEST_PROJECT" --no-restore --configuration Release
 
+  wire-harness:
+    name: Wire harness (RTI ${{ matrix.rti_version }})
+    needs: scope
+    if: needs.scope.outputs.full == 'true'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        rti_version: ['7.3.1', '7.7.0']
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up repository SDK
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+
       - name: Verify matrix applicability and shard reports
         run: |
           dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/Wireloom.Dds.Generator.WireCompatibility.Verifier.csproj --configuration Release
@@ -94,6 +164,8 @@ jobs:
 
   runtime-contracts:
     name: LTS contracts (${{ matrix.os }}, RTI ${{ matrix.rti_version }}, ${{ matrix.framework }})
+    needs: scope
+    if: needs.scope.outputs.full == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     strategy:
@@ -203,6 +275,8 @@ jobs:
 
   net8-package-consumer:
     name: .NET 8 package consumer (RTI ${{ matrix.rti_version }})
+    needs: scope
+    if: needs.scope.outputs.full == 'true'
     runs-on: ubuntu-26.04
     timeout-minutes: 20
     strategy:
@@ -313,40 +387,26 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  coverage:
-    name: Test and upload coverage
-    needs: [runtime-contracts, corpus-compliance, net8-package-consumer]
+  dotnet-tests:
+    name: .NET tests, coverage, and fuzzing
+    needs: scope
+    if: needs.scope.outputs.full == 'true'
     runs-on: ubuntu-26.04
-    timeout-minutes: 35
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v6.0.0
         with:
-          dotnet-version: 10.0.402
+          global-json-file: global.json
           cache: true
           cache-dependency-path: |
             global.json
             **/packages*.lock.json
-
-      - name: Set up pinned Node
-        uses: actions/setup-node@v7.1.0
-        with:
-          node-version-file: playground/.node-version
-          cache: npm
-          cache-dependency-path: playground/package-lock.json
-
-      - name: Set up pinned npm
-        run: npm install --global npm@12.2.0 --ignore-scripts
-
-      - name: Restore locked Playground dependencies
-        run: npm ci --ignore-scripts
-        working-directory: playground
 
       - name: Restore locked dependencies
         run: |
@@ -409,12 +469,66 @@ jobs:
           --coverage-output-format cobertura
         shell: pwsh
 
+      - name: Run IDL FsCheck fuzzing gate
+        run: >-
+          dotnet run --project $env:FUZZING_TEST_PROJECT
+          --no-restore
+          --configuration Release
+          --
+          --filter-class Wireloom.Dds.Generator.Fuzzing.Tests.FsCheckIdlCompilerFuzzingSpecs
+        shell: pwsh
+        env:
+          WIRELOOM_FSCHECK_TESTS: 10000
+
+      - name: Retain .NET coverage
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: dotnet-coverage
+          path: coverage/*.cobertura.xml
+          if-no-files-found: error
+          retention-days: 14
+
+  playground-build:
+    name: Playground client and Release bundles
+    needs: scope
+    if: needs.scope.outputs.full == 'true'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: |
+            global.json
+            **/packages*.lock.json
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: playground/.node-version
+          cache: npm
+          cache-dependency-path: playground/package-lock.json
+
+      - name: Set up pinned npm
+        run: npm install --global npm@12.2.0 --ignore-scripts
+
+      - name: Restore locked Playground dependencies
+        run: npm ci --ignore-scripts
+        working-directory: playground
+
       - name: Check and test Playground client
         run: |
           npm run typecheck
           npm run lint
           npm run format:check
-          npm test
+          node --test scripts/pages-manifest.test.mjs
           npm run coverage
           npm audit --audit-level=low
         working-directory: playground
@@ -425,11 +539,128 @@ jobs:
           npm run check:paths
         working-directory: playground
 
+      - name: Archive browser job inputs
+        run: |
+          tar -cf "$RUNNER_TEMP/playground-inputs.tar" \
+            playground/dist playground/dist-subpath playground/public/dotnet \
+            playground/coverage/unit/coverage-final.json
+
+      - name: Retain browser job inputs
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: playground-inputs
+          path: ${{ runner.temp }}/playground-inputs.tar
+          if-no-files-found: error
+          retention-days: 1
+
+  browser-coverage:
+    name: Playground browser coverage
+    needs: playground-build
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: |
+            global.json
+            **/packages*.lock.json
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: playground/.node-version
+          cache: npm
+          cache-dependency-path: playground/package-lock.json
+
+      - name: Set up pinned npm
+        run: npm install --global npm@12.2.0 --ignore-scripts
+
+      - name: Restore locked Playground dependencies
+        run: npm ci --ignore-scripts
+        working-directory: playground
+
+      - name: Download same-run browser job inputs
+        uses: actions/download-artifact@v8.0.2
+        with:
+          name: playground-inputs
+          path: ${{ runner.temp }}
+
+      - name: Extract browser job inputs
+        run: tar -xf "$RUNNER_TEMP/playground-inputs.tar"
+
+      - name: Install Chromium headless shell
+        run: npx playwright install --with-deps --only-shell chromium
+        working-directory: playground
+
       - name: Measure browser coverage
         run: |
-          npx playwright install --with-deps --only-shell chromium
           npm run build:coverage
           npm run coverage:browser
+        working-directory: playground
+
+      - name: Retain browser coverage
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: playground-coverage
+          path: |
+            playground/coverage/cobertura-coverage.xml
+            playground/coverage/browser-summary.json
+          if-no-files-found: error
+          retention-days: 14
+
+  playground-qualification:
+    name: Playground qualification and Pages candidate
+    needs: playground-build
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: |
+            global.json
+            **/packages*.lock.json
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: playground/.node-version
+          cache: npm
+          cache-dependency-path: playground/package-lock.json
+
+      - name: Set up pinned npm
+        run: npm install --global npm@12.2.0 --ignore-scripts
+
+      - name: Restore locked Playground dependencies
+        run: npm ci --ignore-scripts
+        working-directory: playground
+
+      - name: Download same-run browser job inputs
+        uses: actions/download-artifact@v8.0.2
+        with:
+          name: playground-inputs
+          path: ${{ runner.temp }}
+
+      - name: Extract browser job inputs
+        run: tar -xf "$RUNNER_TEMP/playground-inputs.tar"
+
+      - name: Install Chromium headless shell
+        run: npx playwright install --with-deps --only-shell chromium
         working-directory: playground
 
       - name: Verify published Playground against native corpus expectations
@@ -446,6 +677,7 @@ jobs:
           EXPECTED_SOURCE_SHA: ${{ github.sha }}
 
       - name: Retain validated Pages candidate
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v7.0.2
         with:
           name: playground-pages
@@ -468,6 +700,30 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  coverage:
+    name: Upload combined coverage
+    needs: [dotnet-tests, browser-coverage]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download .NET coverage
+        uses: actions/download-artifact@v8.0.2
+        with:
+          name: dotnet-coverage
+          path: coverage
+
+      - name: Download Playground coverage
+        uses: actions/download-artifact@v8.0.2
+        with:
+          name: playground-coverage
+          path: playground/coverage
+
       - name: Retain combined coverage reports
         uses: actions/upload-artifact@v7.0.2
         with:
@@ -478,25 +734,6 @@ jobs:
             playground/coverage/browser-summary.json
           if-no-files-found: error
           retention-days: 14
-
-      - name: Run adversarial preprocessor review gate
-        run: >-
-          dotnet run --project $env:COMPILER_TEST_PROJECT
-          --no-build
-          --configuration Release
-          --
-          --filter-namespace Wireloom.Compiler.FrontEnd.Preprocessing.Tests
-        shell: pwsh
-
-      - name: Run IDL FsCheck fuzzing gate
-        run: >-
-          dotnet run --project $env:FUZZING_TEST_PROJECT
-          --configuration Release
-          --
-          --filter-class Wireloom.Dds.Generator.Fuzzing.Tests.FsCheckIdlCompilerFuzzingSpecs
-        shell: pwsh
-        env:
-          WIRELOOM_FSCHECK_TESTS: 10000
 
       - name: Upload compiler, generator, and Playground coverage to Coveralls
         uses: coverallsapp/github-action@v2.3.8
@@ -511,15 +748,10 @@ jobs:
     timeout-minutes: 20
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
-    permissions:
-      contents: write
-      pull-requests: write
-      checks: write
     steps:
       - name: Check out repository
         uses: actions/checkout@v7.0.1
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -544,7 +776,7 @@ jobs:
           use-caches: true
           primary-cache-key: qodana-2026.2-wireloom
           cache-default-branch-only: true
-          post-pr-comment: true
+          post-pr-comment: false
           # Upload the directory directly to avoid Qodana's nested ZIP with rooted paths.
           upload-result: false
 
@@ -556,3 +788,44 @@ jobs:
           path: ${{ runner.temp }}/qodana/results/
           if-no-files-found: warn
           retention-days: 90
+
+  quality-result:
+    name: Quality result
+    needs:
+      - scope
+      - dependency-review
+      - sample-build
+      - corpus-compliance
+      - wire-harness
+      - runtime-contracts
+      - net8-package-consumer
+      - dotnet-tests
+      - playground-build
+      - browser-coverage
+      - playground-qualification
+      - coverage
+      - qodana
+    if: always()
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - name: Check applicable job results
+        shell: bash
+        env:
+          JOBS: ${{ toJSON(needs) }}
+          EVENT_NAME: ${{ github.event_name }}
+          FULL: ${{ needs.scope.outputs.full }}
+        run: |
+          jq -e --arg event "$EVENT_NAME" --arg full "$FULL" '
+            to_entries
+            | map(. + {expected: (
+                if .key == "scope" or .key == "qodana" then "success"
+                elif .key == "dependency-review" then
+                  if $event == "pull_request" then "success" else "skipped" end
+                elif $full == "false" then "skipped"
+                else "success"
+                end
+              )})
+            | map(select(.value.result != .expected))
+            | if length == 0 then true else error(tostring) end
+          ' <<< "$JOBS"

@@ -10,6 +10,30 @@ Coveralls check after CI completes. Coverage review must include branch coverage
 as the primary signal for control-flow-heavy code and line coverage as a
 secondary signal.
 
+## GitHub Actions
+
+[Quality](../../.github/workflows/quality.yml) runs compiler and generator
+tests with coverage, fuzzing, corpus, wire harness self-tests, LTS consumer
+checks, the published-package sample, and Playground verification. Independent
+test jobs start after change classification. Browser coverage and Chromium
+qualification consume the same Release WASM and bundle artifact on separate
+runners. Coveralls waits for the .NET and browser coverage files. A main push
+also retains the validated Pages candidate for the separate publisher.
+
+The workflow stays present on all PRs. For changes limited to the explicit
+narrative Markdown allowlist, Quality skips product tests and still runs Qodana
+and dependency review. A missing diff or unknown path runs the full suite.
+Main pushes and manual runs also run the full suite.
+
+After a hosted PR verifies the new gate, require **Quality result** in the
+main ruleset in place of **Build and publish preview**. Keep CodeQL and Qodana
+required during the transition. The preview workflow retains a skipped PR
+check for the current ruleset. Remove that trigger after the ruleset migration.
+Licensed wire checks run independently as described in the
+[wire runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#github-actions).
+
+## Local verification
+
 After a successful build and test run, run Community Qodana from the repository
 root with `global.json` visible. The command below reuses the host NuGet global
 packages cache. Qodana's Linux restore outputs are kept in ignored directories

@@ -1,126 +1,82 @@
 name: Publish preview package
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: [Quality]
+    branches: [main]
+    types: [completed]
+  # Keep the existing required check present until the main ruleset is migrated.
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: preview-package-${{ github.ref }}
-  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
 
 env:
   DOTNET_NOLOGO: true
   PACKAGE_PROJECT: src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
-  TEST_PROJECT: tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj
-  COMPILER_TEST_PROJECT: tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj
-  RUNTIME_TEST_PROJECT: tests/Wireloom.Dds.Generator.RuntimeContracts/Wireloom.Dds.Generator.RuntimeContracts.csproj
-  CORPUS_TEST_PROJECT: tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj
   PACKAGE_INTEGRATION_TEST_PROJECT: tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj
   PACKAGE_TEST_FEED: ${{ github.workspace }}/package-test-feed
   ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
 
 jobs:
-  dependency-review:
-    name: Review dependency changes
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Review dependency changes
-        uses: actions/dependency-review-action@v5.0.0
-
-  pull-request-validation:
-    name: Build and test pull request
-    if: github.event_name == 'pull_request'
+  select:
+    name: Select trusted Quality run
+    if: >-
+      github.repository == 'eNeRGy164/wireloom' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-26.04
-    timeout-minutes: 20
+    timeout-minutes: 5
     permissions:
+      actions: read
       contents: read
+    outputs:
+      revision: ${{ steps.source.outputs.revision }}
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v7.0.1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v6.0.0
-        with:
-          dotnet-version: 10.0.402
-          cache: true
-          cache-dependency-path: |
-            global.json
-            **/packages*.lock.json
-
-      - name: Set up GitVersion
-        uses: gittools/actions/gitversion/setup@v4.7.0
-        with:
-          versionSpec: 6.8.x
-
-      - name: Calculate package version
-        id: gitversion
-        uses: gittools/actions/gitversion/execute@v4.7.0
-        with:
-          targetPath: ${{ github.workspace }}
-
-      - name: Restore locked dependencies
+      - name: Select verified main revision
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          QUALITY_RUN: ${{ github.event.workflow_run.id }}
+          REVISION: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
-          dotnet restore $env:PACKAGE_PROJECT --locked-mode
-          dotnet restore $env:TEST_PROJECT --locked-mode
-          dotnet restore $env:COMPILER_TEST_PROJECT --locked-mode
-          dotnet restore $env:RUNTIME_TEST_PROJECT --locked-mode
-          dotnet restore $env:CORPUS_TEST_PROJECT --locked-mode
-        shell: pwsh
-
-      - name: Build generator
-        run: dotnet build $env:PACKAGE_PROJECT --no-restore --configuration Release
-        shell: pwsh
-
-      - name: Test generator
-        run: dotnet run --project $env:TEST_PROJECT --no-restore --configuration Release
-        shell: pwsh
-
-      - name: Test compiler core
-        run: dotnet run --project $env:COMPILER_TEST_PROJECT --no-restore --configuration Release
-        shell: pwsh
-
-      - name: Test runtime contracts
-        run: dotnet run --project $env:RUNTIME_TEST_PROJECT --no-restore --configuration Release
-        shell: pwsh
-
-      - name: Test corpus compliance
-        run: dotnet run --project $env:CORPUS_TEST_PROJECT --no-restore --configuration Release
-        shell: pwsh
-
-      - name: Pack package for integration test
-        run: >-
-          dotnet pack $env:PACKAGE_PROJECT
-          --no-restore
-          --configuration Release
-          --output $env:PACKAGE_TEST_FEED
-          /p:Version=${{ steps.gitversion.outputs.semVer }}
-          /p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
-        shell: pwsh
-
-      - name: Restore package integration test
-        run: dotnet restore $env:PACKAGE_INTEGRATION_TEST_PROJECT --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config -p:WireloomDdsGeneratorPackageVersion=${{ steps.gitversion.outputs.semVer }}
-        shell: pwsh
-
-      - name: Test packed package
-        run: dotnet run --project $env:PACKAGE_INTEGRATION_TEST_PROJECT --no-restore --configuration Release
-        shell: pwsh
+          current=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          if [[ "$REVISION" != "$current" ]]; then
+            echo "A newer main revision superseded $REVISION." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if [[ -z "$QUALITY_RUN" ]]; then
+            QUALITY_RUN=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow quality.yml \
+              --branch main --event push --commit "$REVISION" --status success --limit 1 \
+              --json databaseId --jq '.[0].databaseId // empty')
+          fi
+          [[ "$QUALITY_RUN" =~ ^[0-9]+$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$QUALITY_RUN" |
+            jq -e --arg repository "$GITHUB_REPOSITORY" --arg sha "$REVISION" '
+              .path == ".github/workflows/quality.yml" and .head_sha == $sha and
+              .head_repository.full_name == $repository and .head_branch == "main" and
+              .event == "push" and .status == "completed" and .conclusion == "success"
+            '
+          echo "revision=$REVISION" >> "$GITHUB_OUTPUT"
 
   package:
     name: Build and publish preview
-    if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    needs: select
+    if: needs.select.outputs.revision != ''
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    concurrency:
+      group: preview-package-main
+      cancel-in-progress: false
     permissions:
       contents: read
       packages: write
@@ -130,13 +86,14 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7.0.1
         with:
+          ref: ${{ needs.select.outputs.revision }}
           fetch-depth: 0
           persist-credentials: false
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v6.0.0
         with:
-          dotnet-version: 10.0.402
+          global-json-file: global.json
           cache: true
           cache-dependency-path: |
             global.json
@@ -153,58 +110,31 @@ jobs:
         with:
           targetPath: ${{ github.workspace }}
 
-      - name: Restore locked dependencies
+      - name: Restore generator dependencies
+        run: dotnet restore "$PACKAGE_PROJECT" --locked-mode
+
+      - name: Pack versioned candidate
+        env:
+          PACKAGE_VERSION: ${{ steps.gitversion.outputs.semVer }}
+        run: >-
+          dotnet pack "$PACKAGE_PROJECT" --no-restore --configuration Release
+          --output "$PACKAGE_TEST_FEED" -p:Version="$PACKAGE_VERSION" -p:PackageVersion="$PACKAGE_VERSION"
+
+      - name: Smoke-test the exact candidate package with C# 12
+        env:
+          NUGET_PACKAGES: ${{ runner.temp }}/candidate-nuget-packages
+          PACKAGE_VERSION: ${{ steps.gitversion.outputs.semVer }}
         run: |
-          dotnet restore $env:PACKAGE_PROJECT --locked-mode
-          dotnet restore $env:TEST_PROJECT --locked-mode
-          dotnet restore $env:COMPILER_TEST_PROJECT --locked-mode
-          dotnet restore $env:RUNTIME_TEST_PROJECT --locked-mode
-          dotnet restore $env:CORPUS_TEST_PROJECT --locked-mode
-        shell: pwsh
+          dotnet restore "$PACKAGE_INTEGRATION_TEST_PROJECT" \
+            --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config \
+            -p:WireloomDdsGeneratorPackageVersion="$PACKAGE_VERSION"
+          dotnet run --project "$PACKAGE_INTEGRATION_TEST_PROJECT" --no-restore --configuration Release \
+            -p:WireloomDdsGeneratorPackageVersion="$PACKAGE_VERSION" -p:LangVersion=12.0
 
-      - name: Test generator
-        run: dotnet run --project $env:TEST_PROJECT --no-restore --configuration Release
-        shell: pwsh
-
-      - name: Test compiler core
-        run: dotnet run --project $env:COMPILER_TEST_PROJECT --no-restore --configuration Release
-        shell: pwsh
-
-      - name: Test runtime contracts
-        run: dotnet run --project $env:RUNTIME_TEST_PROJECT --no-restore --configuration Release
-        shell: pwsh
-
-      - name: Test corpus compliance
-        run: dotnet run --project $env:CORPUS_TEST_PROJECT --no-restore --configuration Release
-        shell: pwsh
-
-      - name: Pack package for integration test
-        run: >-
-          dotnet pack $env:PACKAGE_PROJECT
-          --no-restore
-          --configuration Release
-          --output $env:PACKAGE_TEST_FEED
-          /p:Version=${{ steps.gitversion.outputs.semVer }}
-          /p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
-        shell: pwsh
-
-      - name: Restore package integration test
-        run: dotnet restore $env:PACKAGE_INTEGRATION_TEST_PROJECT --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config -p:WireloomDdsGeneratorPackageVersion=${{ steps.gitversion.outputs.semVer }}
-        shell: pwsh
-
-      - name: Test packed package
-        run: dotnet run --project $env:PACKAGE_INTEGRATION_TEST_PROJECT --no-restore --configuration Release
-        shell: pwsh
-
-      - name: Pack preview package
-        run: >-
-          dotnet pack $env:PACKAGE_PROJECT
-          --no-restore
-          --configuration Release
-          --output $env:ARTIFACTS_DIR
-          /p:Version=${{ steps.gitversion.outputs.semVer }}
-          /p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
-        shell: pwsh
+      - name: Stage the tested package for publication
+        run: |
+          mkdir -p "$ARTIFACTS_DIR"
+          cp "$PACKAGE_TEST_FEED"/*.nupkg "$ARTIFACTS_DIR"/
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0.24.3
@@ -234,14 +164,16 @@ jobs:
           retention-days: 14
 
       - name: Publish preview to GitHub Packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SOURCE_SHA: ${{ needs.select.outputs.revision }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
         run: |
-          $package = Get-ChildItem -LiteralPath $env:ARTIFACTS_DIR -Filter '*.nupkg' | Select-Object -First 1
-          if ($null -eq $package) { throw 'No NuGet package was produced.' }
-          $pushArguments = @(
-            $package.FullName,
-            '--source', "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json",
-            '--api-key', '${{ secrets.GITHUB_TOKEN }}',
-            '--skip-duplicate'
-          )
-          dotnet nuget push @pushArguments
-        shell: pwsh
+          current=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          if [[ "$current" != "$EXPECTED_SOURCE_SHA" ]]; then
+            echo "A newer main revision superseded $EXPECTED_SOURCE_SHA." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          dotnet nuget push "$ARTIFACTS_DIR"/*.nupkg \
+            --source "https://nuget.pkg.github.com/$REPOSITORY_OWNER/index.json" \
+            --api-key "$GH_TOKEN" --skip-duplicate
