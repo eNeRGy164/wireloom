@@ -30,6 +30,7 @@ internal static class ReportRenderingVerification
 
         var workspace = new MatrixWorkspace(reportOptions);
         workspace.Initialize();
+        var log = new WorkflowLog(emitAnnotations: false);
 
         var rows = new[]
         {
@@ -102,8 +103,8 @@ internal static class ReportRenderingVerification
         File.WriteAllLines(workspace.Scenarios, rows.Select(row => row.ToTsv()));
 
         // Act
-        var driftFinalizer = new MatrixReport(reportOptions, workspace, new WorkflowLog());
-        _ = driftFinalizer.Complete(new MatrixRunOutcome(MatrixPlan.Empty, PeerPreparationResult.Empty, 9, ExchangeIssues: false));
+        var finalizer = new MatrixReport(reportOptions, workspace, log);
+        _ = finalizer.Complete(new MatrixRunOutcome(MatrixPlan.Empty, PeerPreparationResult.Empty, 9, ExchangeIssues: false));
 
         // Assert
         var driftReport = JsonNode.Parse(File.ReadAllText(request.JsonPath))!;
@@ -114,7 +115,6 @@ internal static class ReportRenderingVerification
         capturedProvenance.Write(workspace.ExecutionProvenance);
 
         // Arrange / Act / Assert: fatal setup/execution recovery must still render without tools.
-        var finalizer = new MatrixReport(reportOptions, workspace, new WorkflowLog());
         var failedRun = new MatrixRunOutcome(MatrixPlan.Empty, PeerPreparationResult.Empty, 9, ExchangeIssues: false);
         Check(finalizer.Complete(failedRun) == 9, "Successful recovery reporting must preserve the fatal execution status.");
 

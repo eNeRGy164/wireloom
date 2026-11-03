@@ -4,7 +4,8 @@ using System.Text.RegularExpressions;
 namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 
 /// <summary>Owns elapsed progress messages and GitHub Actions presentation state.</summary>
-internal sealed class WorkflowLog
+/// <param name="emitAnnotations">Whether to emit GitHub annotations for this run.</param>
+internal sealed class WorkflowLog(bool emitAnnotations = true)
 {
     private readonly Stopwatch elapsed = Stopwatch.StartNew();
     private readonly bool isGitHubActions = Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
@@ -39,7 +40,7 @@ internal sealed class WorkflowLog
     /// <summary>Emits a workflow annotation without changing exit policy.</summary>
     internal void Annotate(string level, string title, string message)
     {
-        if (isGitHubActions)
+        if (emitAnnotations && isGitHubActions)
         {
             Console.WriteLine($"::{level} title={Escape(title)}::{Escape(message)}");
         }
