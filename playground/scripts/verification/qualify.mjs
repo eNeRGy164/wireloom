@@ -15,11 +15,14 @@ process.chdir(root);
 
 const engine = process.argv[2] ?? "chromium";
 
-assert(["chromium", "msedge", "firefox", "webkit"].includes(engine), "Choose chromium, msedge, firefox, or webkit");
+assert(
+  ["chromium", "chrome", "msedge", "firefox", "webkit"].includes(engine),
+  "Choose chromium, chrome, msedge, firefox, or webkit",
+);
 
 const phases = (
   process.argv[3] ??
-  (engine === "chromium" || engine === "msedge"
+  (["chromium", "chrome", "msedge"].includes(engine)
     ? "parity,corpus,corpus-ui,desktop,workspace,ui,recovery,ui-faults,faults,limits"
     : "parity,corpus,corpus-ui,desktop,workspace,faults,limits")
 ).split(",");
@@ -164,10 +167,16 @@ try {
   await serve(4183, "dist", "/");
   await serve(4184, "dist-subpath", "/playground/");
 
-  browser = await { chromium, msedge: chromium, firefox, webkit }[engine].launch({
-    headless: true,
-    ...(engine === "msedge" ? { channel: "msedge" } : {}),
-  });
+  const browserOptions = { headless: true };
+  if (engine === "msedge") browserOptions.channel = "msedge";
+  if (engine === "chrome") {
+    if (process.env.WIRELOOM_VERIFY_CHROME_EXECUTABLE) {
+      browserOptions.executablePath = process.env.WIRELOOM_VERIFY_CHROME_EXECUTABLE;
+    } else {
+      browserOptions.channel = "chrome";
+    }
+  }
+  browser = await { chromium, chrome: chromium, msedge: chromium, firefox, webkit }[engine].launch(browserOptions);
 
   report.browserVersion = browser.version();
 
