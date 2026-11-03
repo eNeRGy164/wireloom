@@ -95,7 +95,8 @@ internal static class HarnessVerification
         File.WriteAllText(workspace.Scenarios, "partial-plan\n");
         PeerBuildFiles.WriteCompilation(workspace.CppResults, [new BuildOutcome("example", "compile-failed", "build.log")]);
 
-        var report = new MatrixReport(options, workspace, new WorkflowLog());
+        var log = new WorkflowLog(emitAnnotations: false);
+        var report = new MatrixReport(options, workspace, log);
         var failedRun = new MatrixRunOutcome(MatrixPlan.Empty, PeerPreparationResult.Empty, 7, ExchangeIssues: false);
 
         // Act
@@ -108,7 +109,7 @@ internal static class HarnessVerification
 
         // Arrange: an invocation failing before initialization must not relabel old scratch files.
         var uninitialized = new MatrixWorkspace(options);
-        var earlyFailureReport = new MatrixReport(options, uninitialized, new WorkflowLog());
+        var earlyFailureReport = new MatrixReport(options, uninitialized, log);
         File.WriteAllText(workspace.Output("scenarios.tsv"), "previous-report\n");
 
         // Act
