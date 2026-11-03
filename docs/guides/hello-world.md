@@ -70,7 +70,7 @@ Replace `WireloomHelloWorld.csproj` with:
   <ItemGroup>
     <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
     <PackageReference Include="Wireloom.Dds.Generator"
-                      Version="0.5.0"
+                      Version="1.0.0"
                       PrivateAssets="all" />
     <DdsIdl Include="hello_world.idl" />
   </ItemGroup>
