@@ -250,6 +250,16 @@ surface is generated; qualification establishes what was actually checked
 with named inputs, tool versions, and peers. Selecting a profile does not
 qualify every runtime version mapped to it.
 
+The [1.x stability contract](../../guides/support-and-compatibility.md#compatibility-and-stability)
+covers supported generated public APIs, documented value and DDS behavior,
+configuration, diagnostics, defaults, and consumer minimums. It includes public
+native companions following RTI, while direct compiler APIs and the Playground
+engine/protocol remain internal. Patch releases contain corrections rather than
+features; correcting faulty output may break compatibility and requires explicit
+migration guidance. Planned breaking changes require a major release. Playground
+generation/settings share the public contract, with forward migration of valid
+earlier 1.x workspaces and source exports.
+
 For example, suppose the Playground generates C# for `Sample.idl` with the
 7.7.0 profile. This shows that generation completed for that input and profile.
 It says nothing yet about compiling the generated application against RTI or

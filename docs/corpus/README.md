@@ -301,6 +301,6 @@ refresh that profile. The shared IDL inventory stays the same; applicability
 and expected generation outcomes follow the selected profile. In particular,
 C142 is omitted from the 7.3.1 export because `@must_understand` is unavailable.
 
-Unbounded typedef cases C135/C136 retain their RTI C# oracle pairs under
-`7.7.0/rtiddsgen/csharp/features`. Their generated API behavior is covered by the runtime
-contract suite.
+Unbounded typedef cases C135/C136 retain their RTI C# oracle pairs under each
+exact profile's `rtiddsgen/csharp/features` directory. Their generated API
+behavior is covered by the runtime contract suite.

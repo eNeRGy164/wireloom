@@ -97,6 +97,11 @@ Properties toggles also support the standard radio-group arrow keys.
 
 ## Results, exports, and local recovery
 
+The [1.x compatibility contract](support-and-compatibility.md#playground-compatibility)
+covers generation behavior and settings. Later 1.x versions migrate valid
+earlier 1.x workspaces and source exports forward, preserving source and settings;
+internal engine and worker protocol versions may change.
+
 Source, path, role, settings, and profile changes invalidate the current result.
 Previous output is visibly outdated while a new request is pending and cannot
 be exported. Current failures clear output. The Generated pane's Copy, Download,

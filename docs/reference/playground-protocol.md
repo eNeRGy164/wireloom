@@ -10,6 +10,10 @@ Workspace records use version 4. Valid version-3 records are upgraded with
 unbounded support disabled; other versions remain unsupported. Workspace
 schema migration does not provide compatibility with older workers.
 
+This engine protocol is internal. The Playground's generation behavior,
+settings, and forward workspace migration follow the
+[public compatibility contract](../guides/support-and-compatibility.md#playground-compatibility).
+
 ```json
 {
   "protocolVersion": 4,

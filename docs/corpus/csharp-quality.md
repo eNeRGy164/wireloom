@@ -1,56 +1,80 @@
 # Generated C# Qodana report
 
-Measured on October 25, 2026. This report describes a dated Qodana scan of
-Wireloom-generated C# and the retained RTI C# corpus. It is a snapshot, not a
-change log. The scans assess static inspections; they do not measure runtime
-serialization or interoperability.
+The independent scans compare Wireloom-generated C# and the matching retained
+RTI C# captures with generated-code classification removed. Both exact RTI
+7.3.1 and 7.7.0 profiles are covered. Normal
+[consumer Qodana and SonarQube checks](../testing/consumer-analysis.md) retain
+generated classification and establish a different result. Static analysis
+does not measure DDS serialization or interoperability.
 
 ## Attribution and reproduction
 
-The retained narrative does not identify the exact source revision, input/output
-snapshot hashes, or an archived raw SARIF bundle. Its totals are historical
-observations for the stated setup, not a current-source or consumer-tool
-qualification. A local `.qodana/results` directory from another run cannot
-supply the missing attribution.
+The current result uses fresh Wireloom corpus exports and retained RTI captures,
+with source/input/output hashes, staging manifests, project settings, commands,
+exit status, and raw SARIF
+retained under `artifacts/consumer-quality/`. These identify the measured source
+and tool configuration; the result does not retroactively qualify a published
+package. Use the [release records](../releases/README.md) for package scope.
 
-For a fresh measurement:
+To reproduce:
 
-1. Record the source revision and working-tree state, exact exported inputs,
-   profile, SDK/runtime, Qodana image/version, and host project settings.
-2. Use the [LTS export/capture procedure](LTS-PROFILES.md) for attributable source
-   snapshots, then stage one isolated project per case as described below.
-3. Record the staging transformations and exclusions. Retain the project files,
-   scan command, raw SARIF, exit status, and input/output hashes with the result.
-4. Publish a separately dated result; do not replace these counts or infer an
-   RTI preventable-warning classification that was never reviewed.
-
-The [maintainer Qodana command](../testing/quality.md) scans maintained repository
-source. It is not a drop-in command for these independently staged generated
-sources. [Consumer analysis](../guides/developer-workflow.md#review-consumer-analysis)
-is a third scope with its own open qualification work.
+1. Follow the [LTS export procedure](LTS-PROFILES.md#corpus-tests-and-source-exports)
+   with a new output directory. Record both profiles' successful corpus results
+   and source/input/output hashes.
+2. Stage every Wireloom export and its corresponding retained RTI case in
+   separate projects/scan roots. Resolve RTI source paths through the shared
+   manifest, including oracle-directory overrides and required include sources.
+   Preserve source code, XML documentation, nullable directives, and attributes;
+   remove the leading
+   generated provenance comments and rename `.g.cs` files to `.cs`.
+3. Target `net10.0`, C# 12, and the case's exact RTI package using central
+   package versions. Wireloom files establish their own nullable context; their
+   host disables it. RTI hosts enable nullable analysis. Build both solutions
+   and retain failures in unmodified RTI output.
+4. Apply only the four wrapper-project exclusions listed below. Keep the
+   repository's `global.json` visible and stage fresh Linux build intermediates.
+   Run Community Qodana with `qodana.recommended` against each staged solution.
+   Use `--no-build` for RTI so raw-source compiler failures do not prevent the
+   inspection. Separately build both with `-p:GenerateDocumentationFile=true`
+   to measure XML-documentation diagnostics.
+   See the [Docker procedure](../testing/quality.md) for mounting and report checks.
+5. Confirm normal completion and review every reported category against its
+   actual source locations. Retain raw findings and classify intentional output
+   separately; do not turn these classifications into consumer-wide suppressions.
+   Update this report when the measured source or configuration changes.
 
 ## Scan scope and method
 
-Community Qodana 2026.2.691 completed with the `qodana.recommended` profile,
-C# 12, .NET 10, and `Rti.ConnextDds` 7.7.0. The Wireloom scan covers all 109
-exported corpus cases (867 C# files). The RTI scan covers 105 cases with
-retained C# output (214 C# files: 212 case files and two common include files).
-Wireloom has no retained RTI C# oracle for four cases: `05-array-of-sequences-idl`,
-`07-union-wchar-label`, `12-macro-arity-linux`, and `12-union-wchar-rti-limit`.
+Community Qodana 2026.2.691 / InspectCode 2026.2.1 runs under Debian 13 in
+Docker, using SDK 10.0.400 and the `qodana.recommended` profile. Both Wireloom exports
+pass all 379 corpus checks.
 
-The sources were staged in separate scan roots, with generated headers removed
-and `.g.cs` files renamed to `.cs`; source code, XML documentation, and nullable
-directives were preserved. Each case was compiled in an isolated project.
-The Wireloom host projects disabled nullable analysis so generated files could
-establish their own nullable context. The RTI host projects enabled it. RTI was
-scanned with `--no-build` because the unmodified retained sources contain
-compiler errors. These scope and configuration differences mean the raw totals
-are not a percentage comparison or a like-for-like ranking.
+| Output              | RTI version/profile | Isolated cases | C# files |
+| :------------------ | :------------------ | -------------: | -------: |
+| Wireloom            | 7.3.1               | 109            | 883      |
+| RTI rtiddsgen 4.3.1 | 7.3.1               | 104            | 212      |
+| Wireloom            | 7.7.0               | 110            | 887      |
+| RTI rtiddsgen 4.7.0 | 7.7.0               | 106            | 216      |
 
-Each minimal corpus project is only a wrapper around an isolated code snippet;
-it has no application consumers. For both scans, the Qodana `.editorconfig`
-disables the four project-wide inspections surfaced by this scan. File-level
-and compiler inspections remain enabled:
+RTI counts include required shared include files once per physical source.
+Only captures corresponding to accepted Wireloom exports are included; unrelated
+negative probes and wire-adjusted/wrapped sources are excluded. Four Wireloom
+cases have no corresponding retained RTI C# capture on either profile:
+`05-array-of-sequences-idl`, `07-union-wchar-label`,
+`12-macro-arity-linux`, and `12-union-wchar-rti-limit`. The 7.3.1 profile
+also lacks the Windows macro-arity capture.
+
+Wireloom's staged solution builds without warnings or errors. RTI's unmodified
+output contains compiler failures and is inspected with `--no-build`. RTI
+hosts enable nullable analysis, while Wireloom files contain their own nullable
+directives. Differences in input coverage, file organization, host settings,
+and build mode mean raw totals are not a percentage comparison or a normalized
+quality ranking.
+
+Each project wraps an isolated generated contract without application callers.
+The staging `.editorconfig` disables four project-wide inspections whose
+assumptions do not fit those wrappers. File-level and compiler inspections stay
+enabled:
 
 ```editorconfig
 resharper_auto_property_can_be_made_get_only_global_highlighting = none
@@ -59,103 +83,105 @@ resharper_unused_member_global_highlighting = none
 resharper_unused_type_global_highlighting = none
 ```
 
+The [RTI defect catalog](RTI-CODEGEN-DEFECTS.md) links the affected cases and
+exact-profile compilation failures. Inspection findings and compiler diagnostics
+are reported separately below; one tool may report more locations for a syntax
+failure than another.
+
 ## Errors
 
-| Qodana category  | Wireloom | RTI C# |
-| :--------------- | -------: | -----: |
-| `CSharpErrors`   |        0 |     27 |
-| **Total errors** |    **0** | **27** |
+| Qodana category  | Wireloom 7.3.1 | RTI 7.3.1 | Wireloom 7.7.0 | RTI 7.7.0 |
+| :--------------- | -------------: | --------: | -------------: | --------: |
+| .CSharpErrors    | 0              | 56        | 0              | 27        |
+| **Total errors** | **0**          | **56**    | **0**          | **27**    |
+
+The separate compiler build reports 39 diagnostics across eight RTI 7.3.1 cases
+and 24 across seven RTI 7.7.0 cases. Wireloom has zero compiler errors. RTI
+failures include shadowed native-conversion receivers, numeric character labels,
+unsigned union-label metadata, octet bindings, wstring-alias namespace references,
+and malformed 7.3.1 RPC output. No source workarounds are applied to these scans.
 
 ## Warnings
 
-| Qodana category                                                 |  Wireloom |     RTI C# |
-| :-------------------------------------------------------------- | --------: | ---------: |
-| `CheckNamespace`                                                |       867 |        192 |
-| `ConditionalAccessQualifierIsNonNullableAccordingToAPIContract` |         1 |          0 |
-| `ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract`    |        26 |        414 |
-| `CSharpWarnings::CS1591`                                        |         0 |      3,671 |
-| `CSharpWarnings::CS8603`                                        |         0 |         13 |
-| `CSharpWarnings::CS8604`                                        |         0 |        193 |
-| `CSharpWarnings::CS8618`                                        |         0 |         79 |
-| `CSharpWarnings::CS8625`                                        |         0 |          4 |
-| `CSharpWarnings::CS8765`                                        |         0 |        189 |
-| `CSharpWarnings::CS8767`                                        |         0 |        193 |
-| `EmptyNamespace`                                                |         0 |          2 |
-| `EmptyStatement`                                                |         0 |         14 |
-| `InconsistentNaming`                                            |       761 |        924 |
-| `NonReadonlyMemberInGetHashCode`                                |       386 |        377 |
-| `NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract`  |        18 |          0 |
-| `ParameterHidesMember`                                          |         8 |         22 |
-| `PartialTypeWithSinglePart`                                     |       200 |          0 |
-| `RedundantBoolCompare`                                          |         0 |          1 |
-| `RedundantCast`                                                 |         0 |      1,221 |
-| `RedundantDefaultMemberInitializer`                             |         0 |          6 |
-| `RedundantExplicitArrayCreation`                                |         0 |        221 |
-| `RedundantNameQualifier`                                        |     1,159 |      2,377 |
-| `RedundantTypeArgumentsOfMethod`                                |         0 |         14 |
-| `RedundantUsingDirective`                                       |         0 |        741 |
-| **Total warnings**                                              | **3,426** | **10,868** |
+| Qodana category                                               | Wireloom 7.3.1 | RTI 7.3.1 | Wireloom 7.7.0 | RTI 7.7.0 |
+| :------------------------------------------------------------ | -------------: | --------: | -------------: | --------: |
+| CSharpWarnings::CS8603                                        | 0              | 20        | 0              | 13        |
+| CSharpWarnings::CS8604                                        | 0              | 212       | 0              | 198       |
+| CSharpWarnings::CS8618                                        | 0              | 94        | 0              | 85        |
+| CSharpWarnings::CS8625                                        | 0              | 5         | 0              | 5         |
+| CSharpWarnings::CS8765                                        | 0              | 208       | 0              | 194       |
+| CSharpWarnings::CS8767                                        | 0              | 212       | 0              | 198       |
+| CheckNamespace                                                | 883            | 190       | 887            | 193       |
+| ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract    | 28             | 453       | 28             | 425       |
+| ConditionalAccessQualifierIsNonNullableAccordingToAPIContract | 1              | 0         | 1              | 0         |
+| EmptyStatement                                                | 0              | 17        | 0              | 14        |
+| InconsistentNaming                                            | 801            | 1,073     | 802            | 970       |
+| NonReadonlyMemberInGetHashCode                                | 397            | 420       | 398            | 389       |
+| NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract  | 18             | 0         | 18             | 0         |
+| ParameterHidesMember                                          | 8              | 22        | 8              | 22        |
+| PartialTypeWithSinglePart                                     | 204            | 0         | 205            | 0         |
+| RedundantBoolCompare                                          | 0              | 1         | 0              | 1         |
+| RedundantCast                                                 | 0              | 618       | 0              | 1,203     |
+| RedundantDefaultMemberInitializer                             | 0              | 7         | 0              | 7         |
+| RedundantExplicitArrayCreation                                | 0              | 247       | 0              | 224       |
+| RedundantNameQualifier                                        | 1,194          | 2,715     | 1,197          | 2,487     |
+| RedundantTypeArgumentsOfMethod                                | 0              | 14        | 0              | 14        |
+| RedundantUsingDirective                                       | 0              | 1,045     | 0              | 970       |
+| **Total warnings**                                            | **3,534**      | **7,573** | **3,544**      | **7,612** |
+
+### XML-documentation compiler check
+
+Both staged solutions are also built with `GenerateDocumentationFile=true`.
+These compiler `CS1591` counts are separate from the Qodana totals above;
+duplicate build-summary lines are removed, while distinct project contexts
+remain distinct. RTI compiler failures can prevent further diagnostics.
+
+| Diagnostic                                    | Wireloom 7.3.1 | RTI 7.3.1 | Wireloom 7.7.0 | RTI 7.7.0 |
+| :-------------------------------------------- | -------------: | --------: | -------------: | --------: |
+| Missing public API XML documentation (CS1591) | 0              | 3,537     | 0              | 3,568     |
 
 ## Notes
 
-| Qodana category                                | Wireloom |    RTI C# |
-| :--------------------------------------------- | -------: | --------: |
-| `ArrangeAccessorOwnerBody`                     |        0 |         3 |
-| `ArrangeObjectCreationWhenTypeEvident`         |        0 |       311 |
-| `ConvertIfStatementToNullCoalescingAssignment` |        0 |         2 |
-| `ConvertToPrimaryConstructor`                  |        0 |       217 |
-| `UseCollectionExpression`                      |        0 |        98 |
-| `UseObjectOrCollectionInitializer`             |        0 |       644 |
-| **Total notes**                                |    **0** | **1,275** |
+| Qodana category                              | Wireloom 7.3.1 | RTI 7.3.1 | Wireloom 7.7.0 | RTI 7.7.0 |
+| :------------------------------------------- | -------------: | --------: | -------------: | --------: |
+| ArrangeAccessorOwnerBody                     | 0              | 3         | 0              | 3         |
+| ArrangeObjectCreationWhenTypeEvident         | 0              | 347       | 0              | 330       |
+| BadControlBracesIndent                       | 0              | 12        | 0              | 0         |
+| ConvertIfStatementToNullCoalescingAssignment | 0              | 2         | 0              | 2         |
+| ConvertToPrimaryConstructor                  | 0              | 236       | 0              | 222       |
+| InvokeAsExtensionMember                      | 96             | 0         | 96             | 0         |
+| UseCollectionExpression                      | 0              | 107       | 0              | 98        |
+| UseObjectOrCollectionInitializer             | 0              | 0         | 0              | 656       |
+| **Total notes**                              | **96**         | **707**   | **96**         | **1,311** |
 
 ## Preventable-warning review
 
-The Qodana warning categories below are explicitly excluded from the
-preventable-warning count. Each category has evidence that the finding is an
-intentional generated-code choice, preserves IDL/RTI compatibility, or comes
-from the scan setup. The RTI column shows the count in the corresponding
-category; it does not mean RTI's findings received the same review.
+Every Wireloom category is accounted for below. Raw warnings and notes from
+both generators remain in the retained SARIF. RTI findings have not received
+the same preventable/intentional review; they are raw inspection counts. The classifications describe the inspected output, not
+blanket exemptions for arbitrary code with the same inspection ID.
 
-| Excluded category                                               |  Wireloom |    RTI C# | Why excluded                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| :-------------------------------------------------------------- | --------: | --------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CheckNamespace`                                                |       867 |       192 | The temporary scan layout groups files by corpus case ID rather than generated namespace. This is a staging-location artifact.                                                                                                                                                                                                                                                                                                |
-| `ConditionalAccessQualifierIsNonNullableAccordingToAPIContract` |         1 |         0 | Defensive runtime null handling is retained. Nullable annotations cannot guarantee that mutable generated values or caller-supplied values are non-null at runtime.                                                                                                                                                                                                                                                           |
-| `ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract`    |        26 |       414 | Retain defensive guards: generated collection aliases can have a null `Value` after a null copy-constructor argument, mutable string values can be set to null, and recursive support initialization can re-enter before its singleton assignment completes.                                                                                                                                                                  |
-| `InconsistentNaming`                                            |       761 |       924 | Names preserve IDL spelling and match retained RTI C# identifiers wherever corresponding source is available. Same-case comparison matched all enum members, locals, parameters, static fields, and type names, plus 311/312 properties and 371/372 private fields. The unmatched property and field findings are on the Wireloom-only `CorpusIntegrationStatus.active` fixture; 26 findings are in cases without RTI source. |
-| `NonReadonlyMemberInGetHashCode`                                |       386 |       377 | Generated mutable-model hashing follows the established RTI pattern and keeps Wireloom behavior aligned with the oracle.                                                                                                                                                                                                                                                                                                      |
-| `NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract`  |        18 |         0 | Retain null fallback behavior for runtime values. Annotations describe intended use but do not prevent null from reaching mutable generated APIs or caller-provided data.                                                                                                                                                                                                                                                     |
-| `ParameterHidesMember`                                          |         8 |        22 | Generated parameter names are preserved for RTI parity. Where a parameter shadows a member, `this.` qualifies the member; RTI union equality code also uses this qualification.                                                                                                                                                                                                                                               |
-| `PartialTypeWithSinglePart`                                     |       200 |         0 | Partial generated data types are extension points for application-authored partial declarations. The isolated corpus scan cannot see those application parts.                                                                                                                                                                                                                                                                 |
-| `RedundantNameQualifier`                                        |     1,159 |     2,377 | The SARIF-highlighted qualifiers use `global::`. Full qualification avoids collisions when IDL names shadow framework or generated types.                                                                                                                                                                                                                                                                                     |
-| **Total explicitly excluded warnings**                          | **3,426** | **4,306** | RTI total is the sum of the same categories for comparison only; RTI's other findings have not been classified as preventable or non-preventable.                                                                                                                                                                                                                                                                             |
+| Category                                                        | Why intentional or attributable to staging                                                                                             |
+| :-------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
+| `CheckNamespace`                                                | Staging groups files by corpus case rather than generated namespace; a scan-layout artifact.                                           |
+| `ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract`    | Defensive runtime null guards remain necessary for mutable values, null copy-constructor states, and recursive support initialization. |
+| `ConditionalAccessQualifierIsNonNullableAccordingToAPIContract` | Nullable annotations do not prevent a collection alias Value from being null at runtime.                                               |
+| `InconsistentNaming`                                            | Generated names retain IDL spelling and the corresponding RTI API instead of applying application naming conventions.                  |
+| `InvokeAsExtensionMember`                                       | Explicit global::System.Linq.Enumerable calls fix the target without relying on extension lookup or using directives.                  |
+| `NonReadonlyMemberInGetHashCode`                                | Mutable-model hashing preserves the documented generated-value contract and RTI behavior.                                              |
+| `NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract`  | Retain null formatting fallbacks and reentrant support initialization; annotations do not enforce runtime invariants.                  |
+| `ParameterHidesMember`                                          | Parameter and member names follow the RTI/IDL API; explicit this. qualification resolves shadowing.                                    |
+| `PartialTypeWithSinglePart`                                     | Generated data types are partial extension points; isolated cases contain no handwritten application part.                             |
+| `RedundantNameQualifier`                                        | Explicit global:: qualification fixes binding when IDL names shadow framework or generated names.                                      |
 
-### Remaining findings
+The Wireloom review finds **zero preventable warnings or notes** after
+these explicit classifications, with **zero errors**. No generator change or
+additional normal-consumer exclusion is required.
 
-| Measure                                              | Wireloom |      RTI C# |
-| :--------------------------------------------------- | -------: | ----------: |
-| Warnings after the explicit Wireloom exclusions      |        0 |     6,562\* |
-| Notes, reported separately from warnings             |        0 |       1,275 |
-| Errors                                               |        0 |          27 |
-| **Findings remaining after the Wireloom exclusions** |    **0** | **7,864\*** |
-
-Wireloom has **0 preventable warnings** after the documented exclusions.
-The starred RTI figures subtract only the matching excluded warning categories
-above from the raw RTI scan.
-They are not an RTI preventable-warning total because the remaining RTI
-warnings have not been individually reviewed.
-
-## Category-specific decisions
-
-- **Naming:** Generated identifiers retain IDL names and agree with RTI C# in
-  the retained matching cases. Style normalization would change public API names
-  and break parity.
-- **Nullable-condition checks:** A nullable annotation does not enforce a
-  runtime non-null invariant. The runtime contract test
-  [`MatrixChainPreservesItsValueContract`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Aliases/CollectionAliasSpecs.cs)
-  asserts the null collection-alias state; the associated guards remain useful.
-- **Parameter hides member:** The generated `this.` qualification is explicit
-  and consistent with RTI's union equality implementation. It also avoids
-  accidentally binding to a same-named parameter.
-
-Raw SARIF warning counts are retained; the exclusions above are used only to
-calculate the preventable-warning figure.
+Defensive null handling is supported by
+[`MatrixChainPreservesItsValueContract`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Aliases/CollectionAliasSpecs.cs)
+and the [generated-value contracts](../guides/generated-value-semantics.md).
+All inspected redundant qualifiers are `global::` qualifications, and all
+extension-call suggestions target explicitly qualified
+`global::System.Linq.Enumerable` calls. Keeping those forms makes binding
+independent of imported extension methods and IDL naming collisions.
