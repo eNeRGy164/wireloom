@@ -352,8 +352,10 @@ compatibility.
 The [wire runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#read-the-results)
 owns fixture-specific adaptations and evidence interpretation.
 [Exact LTS profiles](../../corpus/LTS-PROFILES.md) own toolchain scope;
-execution environments remain in the
-[wire infrastructure runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#github-actions).
+licensed CI runs on relevant main pushes and trusted same-repository PRs.
+The
+[wire infrastructure runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#github-actions)
+defines secret configuration, fork behavior, and manual dispatch.
 
 ## 6.4 C1: Compile an in-memory IDL batch
 

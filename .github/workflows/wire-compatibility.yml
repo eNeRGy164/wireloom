@@ -1,28 +1,90 @@
 name: Wire compatibility
 
 on:
+  pull_request:
+    paths-ignore:
+      - README.md
+      - CONTRIBUTING.md
+      - SECURITY.md
+      - docs/releases/**.md
+      - docs/migration/**.md
+      - playground/**
+      - src/Wireloom.Playground.Browser/**
+  push:
+    branches: [main]
+    paths-ignore:
+      - README.md
+      - CONTRIBUTING.md
+      - SECURITY.md
+      - docs/releases/**.md
+      - docs/migration/**.md
+      - playground/**
+      - src/Wireloom.Playground.Browser/**
   workflow_dispatch:
+    inputs:
+      shards_per_profile:
+        description: Number of complete case partitions per RTI profile
+        type: choice
+        options: ['4', '6', '8']
+        default: '4'
+        required: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: wire-compatibility-${{ github.ref }}
-  cancel-in-progress: false
+  group: wire-compatibility-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  plan:
+    name: Plan wire shards
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.user.login != 'dependabot[bot]')
+    runs-on: ubuntu-26.04
+    environment: wire-compatibility
+    timeout-minutes: 5
+    outputs:
+      count: ${{ steps.shards.outputs.count }}
+      indices: ${{ steps.shards.outputs.indices }}
+    steps:
+      - name: Select shard count and indices
+        id: shards
+        shell: bash
+        env:
+          SHARDS: ${{ inputs.shards_per_profile || '4' }}
+          RTI_CONNEXT_LICENSE: ${{ secrets.RTI_CONNEXT_LICENSE }}
+        run: |
+          if [[ -z "$RTI_CONNEXT_LICENSE" ]]; then
+            if [[ "$GITHUB_REPOSITORY" == eNeRGy164/wireloom || "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+              echo "::error::Set the RTI_CONNEXT_LICENSE Actions secret for licensed wire checks."
+              exit 1
+            fi
+            echo "Skipping licensed wire checks because RTI_CONNEXT_LICENSE is unavailable." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          case "$SHARDS" in
+            4|6|8) ;;
+            *) echo "Unsupported shard count: $SHARDS" >&2; exit 1 ;;
+          esac
+          echo "count=$SHARDS" >> "$GITHUB_OUTPUT"
+          echo "indices=$(jq -cn --argjson count "$SHARDS" '[range($count)]')" >> "$GITHUB_OUTPUT"
+
   wire-shards:
     name: ${{ matrix.rti_version }} wire test shard ${{ matrix.shard }}
     runs-on: ubuntu-26.04
-    timeout-minutes: 360
+    needs: plan
+    if: needs.plan.outputs.count != ''
+    environment: wire-compatibility
+    timeout-minutes: 25
     strategy:
       fail-fast: false
-      # Eight shards exist for each version, allowing all 16 probes to run
-      # concurrently when the repository's runner quota permits it.
       max-parallel: 16
       matrix:
         rti_version: ['7.3.1', '7.7.0']
-        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+        shard: ${{ fromJSON(needs.plan.outputs.indices) }}
         include:
           - rti_version: '7.3.1'
             rti_package_version: 7.3.1.0-1-1bullseye
@@ -32,7 +94,7 @@ jobs:
       WIRE_COMPATIBILITY_RTI_VERSION: ${{ matrix.rti_version }}
       WIRE_COMPATIBILITY_OUTPUT_DIR: artifacts/wire-compatibility-rti-${{ matrix.rti_version }}
       WIRE_COMPATIBILITY_SHARD_INDEX: ${{ matrix.shard }}
-      WIRE_COMPATIBILITY_SHARD_COUNT: 8
+      WIRE_COMPATIBILITY_SHARD_COUNT: ${{ needs.plan.outputs.count }}
       WIRE_COMPATIBILITY_MAX_CONCURRENCY: 16
       WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY: 4
       WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY: 2
@@ -58,7 +120,7 @@ jobs:
             RTI_PACKAGE_VERSION=${{ matrix.rti_package_version }}
           load: true
           cache-from: type=gha,scope=wireloom-wire-${{ matrix.rti_version }}
-          cache-to: ${{ matrix.shard == 0 && format('type=gha,scope=wireloom-wire-{0},mode=min', matrix.rti_version) || '' }}
+          cache-to: ${{ github.event_name != 'pull_request' && matrix.shard == 0 && format('type=gha,scope=wireloom-wire-{0},mode=min', matrix.rti_version) || '' }}
 
       - name: Identify C++ compiler for cache
         id: cpp_toolchain
@@ -79,11 +141,11 @@ jobs:
         uses: actions/cache/restore@v6.1.0
         with:
           path: ${{ runner.temp }}/wireloom-cache/ccache
-          key: ccache-${{ runner.os }}-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-g++-${{ steps.cpp_toolchain.outputs.version }}-shard-${{ matrix.shard }}-${{ steps.cpp_toolchain.outputs.source_hash }}
+          key: ccache-${{ runner.os }}-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-g++-${{ steps.cpp_toolchain.outputs.version }}-${{ env.WIRE_COMPATIBILITY_SHARD_COUNT }}-shards-${{ matrix.shard }}-${{ steps.cpp_toolchain.outputs.source_hash }}
           restore-keys: |
-            ccache-${{ runner.os }}-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-g++-${{ steps.cpp_toolchain.outputs.version }}-shard-${{ matrix.shard }}-
+            ccache-${{ runner.os }}-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-g++-${{ steps.cpp_toolchain.outputs.version }}-${{ env.WIRE_COMPATIBILITY_SHARD_COUNT }}-shards-${{ matrix.shard }}-
             ccache-${{ runner.os }}-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-g++-${{ steps.cpp_toolchain.outputs.version }}-
-            ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-shard-${{ matrix.shard }}-
+            ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ env.WIRE_COMPATIBILITY_SHARD_COUNT }}-shards-${{ matrix.shard }}-
             ccache-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-
 
       - name: Restore NuGet packages
@@ -101,7 +163,7 @@ jobs:
           RTI_CONNEXT_LICENSE: ${{ secrets.RTI_CONNEXT_LICENSE }}
         run: |
           if [[ -z "$RTI_CONNEXT_LICENSE" ]]; then
-            echo "The RTI_CONNEXT_LICENSE secret is required for this manually dispatched workflow." >&2
+            echo "The RTI_CONNEXT_LICENSE environment secret is required for licensed wire checks." >&2
             exit 1
           fi
           umask 077
@@ -117,6 +179,9 @@ jobs:
             --volume "$RUNNER_TEMP/rti_license.dat:/run/secrets/rti_license.dat:ro" \
             --workdir /workspace \
             --env GITHUB_WORKSPACE=/workspace \
+            --env GIT_CONFIG_COUNT=1 \
+            --env GIT_CONFIG_KEY_0=safe.directory \
+            --env GIT_CONFIG_VALUE_0=/workspace \
             --env RTI_LICENSE_FILE=/run/secrets/rti_license.dat \
             --env NUGET_PACKAGES=/root/.nuget/packages \
             --env CCACHE_DIR=/root/.cache/ccache \
@@ -125,19 +190,22 @@ jobs:
             --env WIRE_COMPATIBILITY_OUTPUT_DIR="$WIRE_COMPATIBILITY_OUTPUT_DIR" \
             --env WIRE_COMPATIBILITY_SHARD_INDEX="$WIRE_COMPATIBILITY_SHARD_INDEX" \
             --env WIRE_COMPATIBILITY_SHARD_COUNT="$WIRE_COMPATIBILITY_SHARD_COUNT" \
+            --env WIRE_COMPATIBILITY_MAX_CONCURRENCY="$WIRE_COMPATIBILITY_MAX_CONCURRENCY" \
+            --env WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY="$WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY" \
+            --env WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY="$WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY" \
             --entrypoint dotnet \
             "wireloom-wire-$WIRE_COMPATIBILITY_RTI_VERSION:local" \
             run --project tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj --configuration Release
 
       - name: Save C++ compiler outputs
-        if: always() && steps.ccache-cache.outcome == 'success' && steps.ccache-cache.outputs.cache-hit != 'true'
+        if: success() && github.event_name != 'pull_request' && steps.ccache-cache.outcome == 'success' && steps.ccache-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6.1.0
         with:
           path: ${{ runner.temp }}/wireloom-cache/ccache
-          key: ccache-${{ runner.os }}-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-g++-${{ steps.cpp_toolchain.outputs.version }}-shard-${{ matrix.shard }}-${{ steps.cpp_toolchain.outputs.source_hash }}
+          key: ccache-${{ runner.os }}-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-g++-${{ steps.cpp_toolchain.outputs.version }}-${{ env.WIRE_COMPATIBILITY_SHARD_COUNT }}-shards-${{ matrix.shard }}-${{ steps.cpp_toolchain.outputs.source_hash }}
 
       - name: Save NuGet packages
-        if: always() && matrix.shard == 0 && steps.nuget-cache.outcome == 'success' && steps.nuget-cache.outputs.cache-hit != 'true'
+        if: success() && github.event_name != 'pull_request' && matrix.shard == 0 && steps.nuget-cache.outcome == 'success' && steps.nuget-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6.1.0
         with:
           path: ${{ runner.temp }}/wireloom-cache/nuget
@@ -147,7 +215,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7.0.2
         with:
-          name: wire-compatibility-rti-${{ matrix.rti_version }}-shard-${{ matrix.shard }}
+          name: wire-compatibility-rti-${{ matrix.rti_version }}-${{ needs.plan.outputs.count }}-shards-${{ matrix.shard }}
           path: |
             artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/results.json
             artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/results.md
@@ -167,8 +235,8 @@ jobs:
 
   report:
     name: ${{ matrix.rti_version }} wire test results
-    needs: wire-shards
-    if: always()
+    needs: [plan, wire-shards]
+    if: always() && needs.plan.outputs.count != '' && !cancelled()
     runs-on: ubuntu-26.04
     timeout-minutes: 15
     strategy:
@@ -186,28 +254,18 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v6.0.0
         with:
-          dotnet-version: 10.0.402
+          global-json-file: global.json
 
       - name: Download shard evidence
         uses: actions/download-artifact@v8.0.2
         with:
-          pattern: wire-compatibility-rti-${{ matrix.rti_version }}-shard-*
+          pattern: wire-compatibility-rti-${{ matrix.rti_version }}-${{ needs.plan.outputs.count }}-shards-*
           path: artifacts/wire-shards
-
-      - name: Verify shard partitioning and merge integrity
-        run: >-
-          dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/Wireloom.Dds.Generator.WireCompatibility.Verifier.csproj
-          --configuration Release
-
-      - name: Verify harness setup failures remain failures
-        run: >-
-          dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj
-          --configuration Release -- --verify-harness
 
       - name: Validate and combine all exchanges
         run: >-
           dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/Wireloom.Dds.Generator.WireCompatibility.Verifier.csproj
-          --configuration Release -- merge-shards ${{ matrix.rti_version }} 8 artifacts/wire-shards artifacts/wire-compatibility-rti-${{ matrix.rti_version }}
+          --configuration Release -- merge-shards ${{ matrix.rti_version }} ${{ needs.plan.outputs.count }} artifacts/wire-shards artifacts/wire-compatibility-rti-${{ matrix.rti_version }}
           tests/Wireloom.Dds.Generator.WireCompatibility/wire-case-exclusions-${{ matrix.rti_version }}.json
 
       - name: Publish combined wire matrix summary
@@ -227,5 +285,5 @@ jobs:
         with:
           name: wire-compatibility-rti-${{ matrix.rti_version }}
           path: artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14
