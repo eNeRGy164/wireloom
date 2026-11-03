@@ -104,6 +104,16 @@ unchanged.
 
 ## Rollback
 
+To verify readiness without replacing the live site, download the current
+deployment's matching candidate and an older eligible candidate. Verify the
+current candidate against the public HTTPS URL, then run `verify:pages` locally
+against the older candidate with its `EXPECTED_SOURCE_SHA`. Check both Quality
+runs, Coveralls results, artifact availability, clean source revisions, matching
+base paths, and the `github-pages` environment's `main` restriction. The current
+deployment and an eligible older candidate pass those checks. This is a
+readiness check, not a live rollback drill; recheck availability before each
+publication because artifact retention is finite.
+
 1. Choose a successful **push** Quality run from this repository's `main`
    branch whose `playground-pages` artifact still exists. Check its SHA and
    original verification evidence. Keep the base path compatible with the
