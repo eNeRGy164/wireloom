@@ -18,6 +18,10 @@ and the [wire compatibility runbook](../../tests/Wireloom.Dds.Generator.WireComp
 
 ## Retained release evidence
 
+The [1.0.0 archived reports](wire-compatibility/evidence/1.0.0/README.md) record
+16 passing exchanges for C149 / `05-array-of-sequences-idl` on each exact RTI
+profile.
+
 The October 20 narrative does not retain an exact revision or raw local report.
 For attributable 0.5.0 evidence, use the
 [archived wire reports and source hashes](wire-compatibility/evidence/0.5.0/README.md)

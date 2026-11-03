@@ -108,10 +108,13 @@ complete package-integration suite, including the linked runtime contracts, so
 it verifies the .NET 8 SDK's Roslyn host as well as the application target.
 Repository defaults remain `net10.0`, and the analyzer remains `netstandard2.0`.
 
-These checks do not establish DDS wire compatibility. Licensed, exact-toolchain
-wire exchanges remain in the manually dispatched wire workflow. The local
-and CI evidence for a particular revision must still be reviewed before
-claiming qualification.
+Licensed, exact-toolchain DDS exchanges run separately on relevant pushes to
+`main` and same-repository pull requests. Maintainers can also dispatch the
+full matrix for an exact revision. See the
+[wire runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#github-actions)
+for fork and license behavior, and the
+[release record](../releases/1.0.0.md#wire-evidence-and-limitations) for the
+tagged 1.0.0 results.
 
 ## Compatibility and stability
 
@@ -133,7 +136,8 @@ guide and verified separately from wire compatibility. Existing documented
 value behavior is covered by the stability rules below.
 
 The following contract applies from 1.0.0 throughout the 1.x release line.
-The current 0.x line permits breaking changes documented in release notes.
+The [0.x release records](../releases/README.md) describe changes from
+earlier versions.
 
 ### Public contract
 

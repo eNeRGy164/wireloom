@@ -214,9 +214,9 @@ package's compiler integration.
   See the [support boundary](docs/guides/support-and-compatibility.md#support-boundary)
   and [Hello World prerequisites](docs/guides/hello-world.md#before-you-start).
 - **Support and stability:** Support is best effort, without response-time or
-  resolution commitments. Breaking changes may occur in 0.x. The 1.x contract
-  preserves supported consumer APIs, behavior, defaults, and requirements;
-  documented defect corrections may require coordinated upgrades. See the
+  resolution commitments. The 1.x contract preserves supported consumer APIs,
+  behavior, defaults, and requirements. Documented defect corrections may
+  require coordinated upgrades. See the
   [support commitment](docs/guides/support-and-compatibility.md#support-boundary)
   and [stability policy](docs/guides/support-and-compatibility.md#compatibility-and-stability).
 - **Migration:** Inventory IDL and options, compare APIs, check runtime and

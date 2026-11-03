@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-11-03T17:24:35.765Z
+  generated_at: 2026-11-03T18:54:31.689Z
   arc42_home: docs/architecture/arc42
   format: yaml-only
 sources:
@@ -168,7 +168,7 @@ summary:
       Qodana/SonarQube profiles pass controls and regeneration; custom rules
       remain unqualified. Named Windows Chrome/Edge/Firefox checks and public
       deployment/rollback readiness pass. Broader UI branch coverage remains a
-      follow-up separate from generator 1.0; other platforms and formal
+      separate follow-up; other platforms and formal
       accessibility remain unqualified. Collected output invalidation is
       batch-wide; optimize on evidence.
       Numerical budgets remain open. Reporting guidance and a

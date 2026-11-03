@@ -5,10 +5,14 @@ merge a cleanup update with the actual release details.
 
 ## 1. Prepare and merge
 
-- Choose the planned SemVer and tag, such as `0.5.0` and `v0.5.0`. Set
+- Choose the planned SemVer and tag, such as `1.0.0` and `v1.0.0`. Set
   `<WireloomVersion>` in `Directory.Build.props` to the version without the
   `v` prefix. Both the generator and its bundled compiler assembly use this
   shared version.
+- Match the private Playground package version in `playground/package.json`
+  and the root package metadata in `playground/package-lock.json` to
+  `<WireloomVersion>`. The browser build and deployment manifest read the
+  version from `Directory.Build.props`.
 - Update examples in `src/Wireloom.Dds.Generator/README.md`, which ships in the
   package. Add the predicted version to `docs/releases/README.md` and create
   `docs/releases/<version>.md` with the source SHA and release details pending.
@@ -55,7 +59,7 @@ bytes. Check its result and confirm the NuGet package is published.
   reports without changing their bytes, and record workflow/artifact IDs, exact
   source SHA, file sizes, and SHA-256 digests. Verify the archive digests against
   GitHub metadata before retention; retain failures as well as passes. See the
-  [0.5.0 evidence record](../testing/wire-compatibility/evidence/0.5.0/README.md).
+  [1.0.0 evidence record](../testing/wire-compatibility/evidence/1.0.0/README.md).
 - Advance `Directory.Packages.props` and refresh
   `samples/HelloWorld/packages.lock.json` with restore. Update the consumer
   examples listed above and current-version statements in

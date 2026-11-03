@@ -283,12 +283,12 @@ sample-value allocation and the [unbounded qualification envelope](../../guides/
 | ID                          | Existing shortfall                                                      | Impact                                                                                    | Priority | Next action and completion evidence                                                                                                                                                        |
 | :-------------------------- | :---------------------------------------------------------------------- | :---------------------------------------------------------------------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <a id="d02"></a>[D02](#d02) | Collected incremental output batch invalidates unrelated roots together | Coarser regeneration can increase edit/build cost; no agreed budget breach is established | Low      | Extend the [incremental baseline](../../performance/incremental-generator-baseline.md) to representative workloads; introduce finer caching only when measurement justifies its complexity |
-| <a id="d03"></a>[D03](#d03) | Broader combined browser UI branch-coverage target remains unmet        | UI-only branches have less regression coverage than the declared broader target           | Medium   | Add meaningful checks for remaining UI branches as a follow-up separate from generator 1.0; preserve the direct Node and browser gates and review CI results.                              |
+| <a id="d03"></a>[D03](#d03) | Broader combined browser UI branch-coverage target remains unmet        | UI-only branches have less regression coverage than the declared broader target           | Medium   | Add meaningful checks for remaining UI branches, preserve the direct Node and browser gates, and review CI results. |
 
 **D03:** The [qualification report](../../testing/playground-qualification.md#current-local-results)
 records the current scopes and gates. Combined UI coverage passes the enforced
-70% branch / 80% line gate; the broader 98% branch / 99% line target remains a
-follow-up separate from the generator's 1.0 release. Remaining work includes
+70% branch / 80% line gate. The broader 98% branch / 99% line target remained
+open at generator 1.0.0. Remaining work includes
 storage/preferences fallback paths, workspace import/cancellation and alternate
 actions, and dialog validation. The direct Node gate remains separate. Closing
 D03 requires meaningful checks and current local/CI results for those branches;
