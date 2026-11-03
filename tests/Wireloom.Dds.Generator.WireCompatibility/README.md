@@ -30,27 +30,41 @@ so inspect the combined report before making a profile-qualification claim.
 
 ### GitHub Actions
 
-Manually dispatch the **Wire compatibility** workflow. It runs both RTI
-versions in the same workflow. Each version has eight case shards and a separate
-report job, summary, and combined artifact. Up to eight shard jobs per version
-can run concurrently (16 total). The workflow requires the `RTI_CONNEXT_LICENSE`
-secret.
+Dispatch **Wire compatibility** on `main` for release evidence, or on a
+branch you control for diagnostics. Each run covers both RTI profiles and
+defaults to four case shards per profile. The dispatch input also accepts
+six or eight shards per profile for benchmarking. Each profile has a separate
+report job and combined artifact.
+
+Relevant main pushes and trusted same-repository PRs run the matrix
+automatically. Set `RTI_CONNEXT_LICENSE` as a repository Actions secret or
+as an environment secret in `wire-compatibility`. Fork maintainers can set
+their own secret to run the workflow inside their fork. Automatic fork runs
+skip the licensed matrix when the secret is absent. PRs from forks into the
+upstream repository, and Dependabot PRs, use the license-free Quality harness.
+Review workflow changes before approving any run that can access the license.
 
 The combined artifacts are named `wire-compatibility-rti-7.3.1` and
-`wire-compatibility-rti-7.7.0`. Shard artifacts use the corresponding
-`-shard-<index>` suffix and retain raw reference copies and staged IDL hash
-mappings under `raw/`. Partial evidence is uploaded even when a shard fails;
-the report job validates available evidence and retains a failing workflow
-status for setup errors or incomplete exchanges.
+`wire-compatibility-rti-7.7.0`. Shard artifacts use
+`wire-compatibility-rti-<version>-<count>-shards-<index>` and retain raw
+reference copies and staged IDL hashes under `raw/`. The merge checks the
+actual shard evidence even when a shard fails. A green run establishes
+complete evidence. Keep reviewing recorded peer failures while the PR
+workflow is advisory.
+
+Compare four, six, and eight shards on the same main SHA before changing the
+default. Keep within-shard concurrency fixed. Record cold and warm queue,
+setup, execution, and merge times plus summed job minutes, and compare the
+canonical scenario identities and outcomes before accepting a configuration.
 
 The workflow shares version-scoped Docker build layers and restores C++
 compiler outputs from GitHub Actions cache. The ccache key includes the runner
-OS, RTI profile, actual `g++` version, shard index, and a hash of the wire
+OS, RTI profile, actual `g++` version, shard count and index, and a hash of the wire
 container definition, native runner sources, runner scripts, corpus manifest,
 oracle manifests, and retained C++ oracle sources. The key stays stable across
 workflow runs while those inputs are unchanged; restore prefixes allow
-compatible prior caches to seed a changed key and retain compatibility with
-the earlier key format during migration. NuGet packages use a separate cache
+compatible prior caches to seed a changed key. PR runs restore caches; main
+runs can also publish cache entries. NuGet packages use a separate cache
 key based on the .NET SDK and package/project manifests. GitHub applies its
 usual branch scope to these caches, so stable keys improve reuse within the
 available scope but do not make caches globally shared.
@@ -141,6 +155,9 @@ docker run --rm --user 0:0 --workdir /workspace \
   --volume "$PWD:/workspace" \
   --volume "$license_file:/run/secrets/rti_license.dat:ro" \
   --env GITHUB_WORKSPACE=/workspace \
+  --env GIT_CONFIG_COUNT=1 \
+  --env GIT_CONFIG_KEY_0=safe.directory \
+  --env GIT_CONFIG_VALUE_0=/workspace \
   --env RTI_LICENSE_FILE=/run/secrets/rti_license.dat \
   --env "WIRE_COMPATIBILITY_RTI_VERSION=$version" \
   --env "WIRE_COMPATIBILITY_OUTPUT_DIR=/workspace/${run_dir#"$PWD/"}" \
