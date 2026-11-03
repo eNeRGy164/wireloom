@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-11-03T14:37:35.358Z
+  generated_at: 2026-11-03T15:40:50.392Z
   arc42_home: docs/architecture/arc42
   format: yaml-only
 sources:
@@ -45,6 +45,7 @@ sources:
     - docs/performance/incremental-generator-baseline.md
     - docs/testing/playground-qualification.md
     - .github/workflows/quality.yml
+    - .github/workflows/wire-compatibility.yml
     - .github/workflows/publish-playground.yml
     - CONTRIBUTING.md
   defaults:
@@ -107,7 +108,9 @@ summary:
       One analyzer package bundles matching generator/compiler versions under
       analyzers/dotnet/cs; generated code adds no Wireloom application dependency.
       SDK/IDE selection differs from target framework. Playground uses a complete
-      same-origin static bundle and browser workers. Pages promotes validated
+      same-origin static bundle and browser workers. Package publishers reuse
+      exact-SHA Quality evidence and test the versioned package bytes. Release
+      publication also requires retained wire reports. Pages promotes validated
       bytes, verifies live HTTPS, and supports manual eligible rollback.
       Changed base paths require matching bundles; changed origins affect storage.
     sources: [docs/architecture/arc42/07-deployment-view.md]
@@ -143,11 +146,13 @@ summary:
       Chrome/Edge/Firefox with keyboard/focus/label/noncolor-error behavior;
       WebKit checks do not qualify Safari.
       Compiler gates: 90% branches/95% lines; Node gates: 98%/99%, distinct from
-      broader UI coverage. Profile mapping, corpus, API/runtime, wire, and analysis
+      broader UI coverage. Quality runs independent coverage and compatibility
+      jobs. Licensed CI uses the running repository's license; incoming
+      fork PRs use the license-free harness. Profile mapping, corpus, API/runtime, wire, and analysis
       evidence establish different facts. Numerical latency/memory/footprint
       budgets and formal accessibility level remain open; observations are not
       acceptance targets.
-    sources: [docs/architecture/arc42/10-quality-requirements.md]
+    sources: [docs/architecture/arc42/10-quality-requirements.md, docs/testing/quality.md]
   risks:
     text: >-
       D01 is mitigated and historical: C174 establishes unbounded receive

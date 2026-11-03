@@ -72,11 +72,13 @@ Wireloom maintainers build and package the product with the repository's
 These settings belong to the producer environment.
 
 The [preview workflow](../../../.github/workflows/publish-preview.yml)
-publishes to GitHub Packages. The
+publishes to GitHub Packages after successful Quality verification of the
+current main revision. The
 [release workflow](../../../.github/workflows/publish-release.yml)
-publishes validated release tags to NuGet.org with SBOM and provenance
-attestations. Consumer builds restore these packages; publication is a
-maintainer responsibility.
+requires Quality and wire evidence for the exact tagged main commit before
+publishing to NuGet.org. Each publisher smoke-tests the versioned analyzer
+package before attesting and publishing those bytes. Consumer builds restore
+these packages. Publication is a maintainer responsibility.
 
 ## 7.2 Browser Playground deployment
 
