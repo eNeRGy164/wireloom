@@ -48,7 +48,7 @@ Replace `WireloomQuickstart.csproj` with:
 
   <ItemGroup>
     <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
-    <PackageReference Include="Wireloom.Dds.Generator" Version="0.5.0" PrivateAssets="all" />
+    <PackageReference Include="Wireloom.Dds.Generator" Version="1.0.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -162,8 +162,8 @@ the member is absent:
 ### Less tooling to install
 
 Generate C# from IDL using the SDK already building your application and a
-small generator package. The latest release, Wireloom 0.5.0, measures
-**402,534 bytes (about 403 kB)** as the published NuGet package. The RTI runtime remains a
+small generator package. The latest release, Wireloom 1.0.0, measures
+**402,171 bytes (about 402 kB)** as the published NuGet package. The RTI runtime remains a
 NuGet dependency in either workflow; the package measurement covers generation
 tooling.
 
@@ -172,8 +172,8 @@ about **2 GB** to the C# Docker build images in the pipeline that motivated
 Wireloom. That is an observation from the original setup, whose selected tools
 determined its size. See the [project background](docs/architecture/arc42/01-introduction-and-goals.md)
 for the other requirements that shaped Wireloom, and the
-[package-size evidence](docs/releases/0.5.0.md#package-and-source) for the local
-package measurement.
+[package-size evidence](docs/releases/1.0.0.md#package-and-source) for the
+published package measurement.
 
 | Generation concern | External `rtiddsgen` workflow                                                                | Wireloom workflow                                          |
 | :----------------- | :------------------------------------------------------------------------------------------- | :--------------------------------------------------------- |
@@ -237,7 +237,7 @@ qualify a release. Each evidence layer answers a different question:
 | [Directed DDS exchanges](tests/Wireloom.Dds.Generator.WireCompatibility/README.md) | Actual sample exchange for named fixtures, exact RTI releases, peer directions, and adaptations.                                                                                |
 | [Generated-C# analysis](docs/corpus/csharp-quality.md)                             | Independent emitted-source inspections with reviewed intentional findings; separate [consumer checks](docs/testing/consumer-analysis.md) verify normal generated-code handling. |
 
-The [0.5.0 release record](docs/releases/0.5.0.md) retains passing and failing
+The [1.0.0 release record](docs/releases/1.0.0.md) retains passing and failing
 wire outcomes and links the original archived reports. A successful source build,
 runtime test, browser preview, or complete report does not establish every
 interoperability outcome.
