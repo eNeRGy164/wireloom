@@ -7,7 +7,7 @@ the quality and release workflow results available for that source revision.
 
 | Package                                                              | Source tag                                                                                                         | Published  | Record                          |
 | :------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- | :--------- | :------------------------------ |
-| 1.0.0 (planned) | `v1.0.0` (pending) | Pending | [1.0.0 release preparation](1.0.0.md) |
+| [1.0.0](https://www.nuget.org/packages/Wireloom.Dds.Generator/1.0.0) | [`v1.0.0`](https://github.com/eNeRGy164/wireloom/releases/tag/v1.0.0) · `7ab7834a66358915993e09cba308e1c66183f70d` | 2026-11-03 | [1.0.0 qualification](1.0.0.md) |
 | [0.5.0](https://www.nuget.org/packages/Wireloom.Dds.Generator/0.5.0) | [`v0.5.0`](https://github.com/eNeRGy164/wireloom/releases/tag/v0.5.0) · `01f66fe07a9065751430c3b71bbc72a2a7a4ad0e` | 2026-10-26 | [0.5.0 qualification](0.5.0.md) |
 | [0.4.0](https://www.nuget.org/packages/Wireloom.Dds.Generator/0.4.0) | [`v0.4.0`](https://github.com/eNeRGy164/wireloom/releases/tag/v0.4.0) · `2f77e824ec6ad0a46ee4640b045e1835d023983f` | 2026-10-17 | [0.4.0 qualification](0.4.0.md) |
 | [0.3.0](https://www.nuget.org/packages/Wireloom.Dds.Generator/0.3.0) | [`v0.3.0`](https://github.com/eNeRGy164/wireloom/releases/tag/v0.3.0) · `71bdc406cd565b4bd9d441df470cafcd1c10b326` | 2026-10-05 | [0.3.0 qualification](0.3.0.md) |
@@ -19,8 +19,9 @@ the quality and release workflow results available for that source revision.
 Each record identifies the source tag and links to test evidence for that source
 revision. Workflow links point to GitHub Actions; artifact downloads may expire
 according to the workflow retention policy. The
-[0.5.0 wire evidence](../testing/wire-compatibility/evidence/0.5.0/README.md)
-is retained in the repository with its original archive hashes. Older records
+[1.0.0 wire evidence](../testing/wire-compatibility/evidence/1.0.0/README.md)
+and [0.5.0 wire evidence](../testing/wire-compatibility/evidence/0.5.0/README.md)
+are retained with their original archive hashes. Older records
 report only the evidence known for their tags; absent details remain unknown.
 
 Published GitHub releases are immutable and have no attached release assets.
