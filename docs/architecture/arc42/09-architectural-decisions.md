@@ -79,6 +79,12 @@ and [support policy](../../guides/support-and-compatibility.md#compatibility-and
 state the current promise; the [evidence concept](08-crosscutting-concepts.md#85-compatibility-and-evidence)
 separates the claims.
 
+The [1.x contract](../../guides/support-and-compatibility.md#compatibility-and-stability)
+defines release rules, stable defaults and consumer minimums, and the boundary
+between public consumer behavior and internal compiler/Playground interfaces.
+It permits patches to correct faulty output even when regeneration or coordinated
+peer upgrades are necessary, with the impact documented for consumers.
+
 This is a reconstructed policy history. It does not assert that a formal
 options comparison or approval meeting occurred on the commit dates.
 

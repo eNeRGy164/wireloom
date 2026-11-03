@@ -32,6 +32,11 @@ and project loading to finish. Use the normal build and C# navigation tools;
 Wireloom needs no external-generator command or IDE-specific generation script.
 Microsoft describes [Go To Definition and Peek Definition](https://learn.microsoft.com/en-us/visualstudio/ide/go-to-and-peek-definition).
 
+After editing IDL, build the project to refresh its generated contracts. In
+VS Code, use **Ctrl+Shift+B**. IntelliSense may show the previous generated
+types until you build; if it stays stale, use **CSharp: Rerun Source Generators**
+from the Command Palette. Automatic refresh while editing IDL is optional.
+
 In either editor, use the same small check:
 
 1. Build the project and reference a generated type from handwritten C#.
@@ -42,11 +47,46 @@ In either editor, use the same small check:
 4. Introduce an invalid bound such as `long values[0];`. Build, select the
    `DDSG0001` diagnostic, and check the original IDL location. Correct it and rebuild.
 
-This is the intended interactive workflow, not a completed qualification claim
-for every IDE/extension version. Record the editor, C# extensions, selected SDK,
-OS, RTI version, and operations when reporting a failure. Interactive qualification
-remains open under [R04](../architecture/arc42/11-risks-and-technical-debt.md#r04).
 The Playground's lexical editor does not provide the consumer IDE's semantic C# service.
+
+Interactive qualification covers VS Code with Microsoft's C# extension and
+C# Dev Kit, and Visual Studio 2026 on Windows x64. Each editor passes with
+RTI 7.3.1 targeting `net8.0` and RTI 7.7.0 targeting `net10.0`, using C# 12
+and SDK 10.0.403. The checked workflow includes generated-definition navigation,
+member documentation, root and included-file changes, IDL diagnostic navigation
+and correction, and handwritten partial extensions. VS Code's explicit generator
+refresh is part of the workflow when its language service retains old output.
+Other host configurations need their own checks.
+
+## Route VS Code build diagnostics
+
+Configure a build task in the consumer's `.vscode/tasks.json` so compiler output
+reaches Problems with source locations:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build contracts",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "HelloWorld.csproj", "--configuration", "Debug"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": "$msCompile",
+      "group": { "kind": "build", "isDefault": true }
+    }
+  ]
+}
+```
+
+Replace `HelloWorld.csproj` with the consumer project or solution and merge this
+task into existing configuration. Run it with **Ctrl+Shift+B**. Selecting a
+`DDSG0001` Problems entry opens the original IDL location.
+Microsoft documents [task problem matchers](https://code.visualstudio.com/docs/debugtest/tasks#processing-task-output-with-problem-matchers).
+
+Use the IDE build task after IDL changes. An external `dotnet build` compiles the
+updated contracts but may leave VS Code's IntelliSense stale.
 
 ## Extend a generated type
 
@@ -80,6 +120,12 @@ type's namespace and accessibility, avoid names already emitted by the generator
 and do not add a second definition of an existing generated constructor or method.
 A helper does not add an IDL member or change DDS type metadata. Change the IDL
 when the shared data contract must change.
+
+Under the [1.x compatibility contract](support-and-compatibility.md#public-contract),
+generated API evolution follows the selected RTI profile. Wireloom does not
+independently add generated members that could collide with partial extensions.
+Review extensions when changing IDL or RTI profiles and when adopting a documented
+defect correction.
 
 ## Inspect files without adding source-control noise
 
@@ -115,15 +161,20 @@ exclusions as a universal consumer policy.
 
 The [generated-C# report](../corpus/csharp-quality.md) deliberately removes
 generated classification to inspect intrinsic output quality. It has a different
-purpose from normal consumer analysis. Named consumer Qodana/SonarQube
-qualification remains open under [R05](../architecture/arc42/11-risks-and-technical-debt.md#r05).
+purpose from normal consumer analysis. The
+[consumer analysis procedure](../testing/consumer-analysis.md) identifies the
+qualified Qodana and SonarQube versions/profiles, positive controls, and clean
+regeneration results for both RTI profiles. Other rule sets and tool versions
+remain subject to [R05](../architecture/arc42/11-risks-and-technical-debt.md#r05).
 
 ## Recover an editor mismatch
 
 If the command-line build succeeds but the IDE lacks or retains old generated
 symbols, check that the project loaded, compare its selected SDK/compiler host,
-inspect analyzer-load diagnostics, then rebuild or reload the project. Use
-physical exports under `obj` to inspect build output independently of the IDE.
+and inspect analyzer-load diagnostics. In VS Code, open a handwritten C# call
+site and run **CSharp: Rerun Source Generators** from the Command Palette after
+the build. If it remains stale, reload the window and recheck the call site.
+Use physical exports under `obj` to inspect build output independently of the IDE.
 
 For a repeatable mismatch, follow [reporting a problem](reporting-issues.md).
 Include both command-line and editor results; a passing build alone does not

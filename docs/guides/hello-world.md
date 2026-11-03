@@ -15,8 +15,8 @@ example. The application uses RTI's C# APIs for all DDS operations.
 ## Before you start
 
 - Use a .NET SDK that can load the generator and build the example's .NET 8 /
-  C# 12 target. Current package integration is checked with the repository's
-  pinned SDK; see [consumer requirements](../../src/Wireloom.Dds.Generator/README.md).
+  C# 12 target. The minimum-host check uses SDK 8.0.100 alongside checks with the
+  repository's pinned SDK; see [consumer requirements](support-and-compatibility.md#continuous-lts-verification).
 - Have access to `Wireloom.Dds.Generator` and `Rti.ConnextDds` through NuGet.
   The project below uses the existing documented baseline, RTI 7.7.0.
 - For the NuGet.org RTI runtime, make a valid RTI license available to **both**

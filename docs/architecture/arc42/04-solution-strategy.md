@@ -93,6 +93,14 @@ differences, provided they do not affect DDS wire operations. Reliable alias
 `ToString` output and richer IntelliSense are examples; reproducing RTI's
 limitations in those areas would not serve the product's goals.
 
+From 1.0.0, changes follow the
+[1.x public compatibility contract](../../guides/support-and-compatibility.md#compatibility-and-stability).
+Generated public data, support, and native APIs follow the selected RTI profile;
+existing partial extensions and documented value behavior are protected.
+Independent API additions must not introduce partial-member collisions.
+Defect corrections may require consumer or peer changes and must explain their
+impact, even when shipped in a patch.
+
 Document deliberate differences and verify their behavior separately from
 serialization and interoperability. The
 [value-semantics concept](08-crosscutting-concepts.md#84-generated-values-and-resource-ownership)

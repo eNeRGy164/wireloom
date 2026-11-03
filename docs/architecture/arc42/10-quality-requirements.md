@@ -166,9 +166,11 @@ and [concepts](08-crosscutting-concepts.md).
   not proof of intrinsic code quality.
 - **Validation / gaps:**
   [Analysis strategy](04-solution-strategy.md#46-verify-different-contracts-with-separate-test-layers) and
-  [generated-C# report](../../corpus/csharp-quality.md). That report has scoped exclusions/configuration differences.
-  Consumer Qodana and SonarQube behavior need named-tool/version evidence; an all-analyzers zero-warning guarantee is
-  not established; see [R05](11-risks-and-technical-debt.md#r05) for mitigation.
+  [generated-C# report](../../corpus/csharp-quality.md), with its reviewed intentional Wireloom findings and staging exclusions.
+  The [consumer qualification](../../testing/consumer-analysis.md#qualified-scope) verifies named Qodana and SonarQube
+  profiles across both RTI versions and .NET 8/10 consumers: maintained-code controls are detected, followed by zero
+  findings after control removal and root/include regeneration. Custom rules and other tool versions remain outside
+  that scope; see [R05](11-risks-and-technical-debt.md#r05).
 
 #### Q19: Use generated APIs interactively
 
@@ -179,11 +181,17 @@ and [concepts](08-crosscutting-concepts.md).
 - **Response / acceptance:** For the qualified IDE configuration, current generated types and member documentation are
   discoverable, handwritten use sites receive current C# IntelliSense, and diagnostics navigate to the correct original
   input. Representative documented API operations compile as shown. No IDL semantic language server is implied.
+  Build after an IDL edit to refresh generated contracts; live refresh while editing IDL is optional.
 - **Validation / gaps:** [Build strategy](04-solution-strategy.md#41-integrate-generation-into-the-net-compiler) and
-  [generated-value guide](../../guides/generated-value-semantics.md). Interactive IDE qualification is incomplete.
+  [generated-value guide](../../guides/generated-value-semantics.md). Follow the
+  [developer workflow](../../guides/developer-workflow.md), using VS Code's build task and explicit generator refresh
+  when IntelliSense remains stale. Interactive checks pass in both named IDEs for RTI 7.3.1/`net8.0` and
+  RTI 7.7.0/`net10.0`, including root/include edits, generated definitions/documentation, diagnostic navigation
+  and correction, and handwritten extensions. Both IDEs select SDK 10.0.403 for these consumers.
+  Recheck against the final packed release candidate. Automatic IDL refresh is optional.
   Record IDE, extensions, selected SDK, RTI version, operations, and results; command-line compilation alone does not
-  meet this scenario. [R04](11-risks-and-technical-debt.md#r04) records mitigation and
-  next actions; refresh-latency budgets remain open.
+  meet this scenario. [R04](11-risks-and-technical-debt.md#r04) records mitigation and next actions;
+  refresh-latency budgets remain open.
 
 ### 10.2.3 Diagnostics, predictability, and processing safety
 
@@ -369,8 +377,9 @@ and [concepts](08-crosscutting-concepts.md).
   supplementary and does not establish Safari support. Mobile and Safari are outside the present promised scope.
 - **Validation / gaps:** [Playground deployment](07-deployment-view.md#72-browser-playground-deployment),
   [browser qualification scope](../../testing/playground-qualification.md#evidence-boundaries), and
-  [Q29](#q29-complete-core-tasks-with-accessible-interaction). Existing
-  engine/scoped-host runs do not qualify every branded browser, future version, or OS.
+  [Q29](#q29-complete-core-tasks-with-accessible-interaction). The current Windows desktop
+  Chrome for Testing, Edge, and Firefox results cover the guide's named versions and phase scopes;
+  they do not qualify future versions or other operating systems.
 
 #### Q29: Complete core tasks with accessible interaction
 
@@ -383,7 +392,8 @@ and [concepts](08-crosscutting-concepts.md).
   returning focus, including dialogs and failure states; syntax coloring alone is not a validity indicator.
 - **Validation / gaps:** [Workspace guide](../../guides/playground-workspaces.md) and
   [UI checks](../../testing/playground-qualification.md#interaction-and-failure-checks). These are required
-  usability/accessibility behaviors. Existing keyboard checks are partial evidence; no formal WCAG conformance level or
+  usability/accessibility behaviors. The desktop qualification covers the declared keyboard, focus, label, and textual
+  error tasks in its phase scopes; no formal WCAG conformance level or
   completed assistive-technology audit is claimed. Qualification exposure and mitigation are in
   [R06](11-risks-and-technical-debt.md#r06).
 
@@ -450,9 +460,10 @@ IDE, consumer-analysis, and browser/accessibility qualification are specified in
 mitigations, and next actions are in [chapter 11](11-risks-and-technical-debt.md#112-active-risks).
 
 The existing direct Node coverage gate and broader combined browser coverage
-have different scopes. The qualification guide owns their dated results and
-outstanding targets, with the retained UI shortfall tracked in
-[D03](11-risks-and-technical-debt.md#d03). Neither proves every scenario above is satisfied.
+have different scopes. The qualification guide owns their current results and
+enforced gates. The broader UI branch target remains a separate follow-up under
+[D03](11-risks-and-technical-debt.md#d03) and does not block the generator's 1.0 release.
+Neither coverage result proves every scenario above is satisfied.
 Likewise, coverage percentages are regression safeguards, not a substitute for
 API, user-task, native lifecycle, or interoperability evidence.
 

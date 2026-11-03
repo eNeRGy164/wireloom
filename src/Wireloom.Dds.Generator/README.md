@@ -53,9 +53,17 @@ module Telemetry {
 
 Build the project to generate and compile `Telemetry.Sample`:
 
-```powershell
+```shell
 dotnet build
 ```
+
+After editing a root or included IDL file, build the project to regenerate its
+C# contracts. In VS Code, use **Ctrl+Shift+B** with a build task; IntelliSense
+may show the previous generated types until you build. If it stays stale,
+run **CSharp: Rerun Source Generators**
+from the Command Palette. See the
+[developer workflow](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/developer-workflow.md#route-vs-code-build-diagnostics)
+for build-task setup.
 
 The generator runs during the normal build; there is no separate code
 generation command. To run communicating publisher and subscriber processes,
@@ -75,6 +83,12 @@ validation and rollback procedure.
 Repository links below describe current source. For the package you installed,
 use its [exact-version qualification record](https://github.com/eNeRGy164/wireloom/blob/main/docs/releases/README.md);
 later source tests do not retroactively qualify an older release.
+
+From 1.0.0, the [1.x compatibility contract](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/support-and-compatibility.md#compatibility-and-stability)
+protects supported generated APIs, configuration, behavior, defaults, and
+consumer minimums. Patch releases correct defects without adding features;
+corrections to faulty output may require regeneration and coordinated peer
+upgrades. Review the installed version's release notes before upgrading.
 
 ## Find your task
 
@@ -281,8 +295,9 @@ Use project settings and `DdsIdl` metadata in the project owning the contracts:
 ```
 
 Defines, undefines, include directories, and strict validation aggregate across
-all generating roots. They are not isolated per-root environments. Mapping and
-size overrides instead belong to declarations in each input file. Use the
+all generating roots. They are not isolated per-root environments. Overrides
+for mapping, sizes, and unbounded support belong to declarations in each
+input file. A root's file overrides do not flow into its includes. Use the
 [configuration reference](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/configuration.md)
 for the complete settings, defaults, precedence, strictness, and identifier rules.
 
@@ -502,14 +517,14 @@ and [corpus rules](https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/R
 
 ### Effective limits for unbounded values
 
-Wireloom assigns effective limits to unbounded IDL values: **255 UTF-8 bytes**
-for narrow strings, **255 UTF-16 code units** for wide strings, and **100
-elements** for sequences by default. Set project properties
+With unbounded support disabled (the default), Wireloom assigns finite limits
+to unbounded IDL values: **255 UTF-8 bytes** for narrow strings, **255 UTF-16 code
+units** for wide strings, and **100 elements** for sequences. Set project properties
 `DdsIdlSequenceSize` and `DdsIdlStringSize` to change those defaults.
 `SequenceSize` and `StringSize` metadata on a `DdsIdl` or `AdditionalFiles`
 item override the project values for declarations in that file. All settings
 must be positive Int32 values; explicit IDL bounds take precedence. See the
-[configuration reference](../../docs/guides/configuration.md#fixed-behavior-and-configurable-limits)
+[configuration reference](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/configuration.md#fixed-behavior-and-configurable-limits)
 for examples and scope details. For example, 128 copies of `é` use 256 UTF-8
 bytes, so they exceed the narrow-string limit even though the C# string
 contains only 128 characters.
@@ -529,8 +544,10 @@ declarations originating in that file, including when it is included by a
 root. Explicit IDL bounds remain finite. In this mode the configured sequence
 and string sizes remain validated but are ignored for unbounded declarations.
 Native sequences and strings start with zero capacity and grow to hold the
-sample. See the [configuration reference](../../docs/guides/configuration.md#fixed-behavior-and-configurable-limits)
-and the [support policy](../../docs/guides/support-and-compatibility.md#rti-version-qualification).
+sample. Qualification covers the documented payloads, QoS, and resource limits;
+it does not establish unrestricted sample-size support. See the
+[configuration reference](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/configuration.md#fixed-behavior-and-configurable-limits)
+and the [support policy](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/support-and-compatibility.md#rti-version-qualification).
 
 The compatibility corpus compares source-generation behavior and generated C#
 shape. It does not automatically prove serialization-byte equivalence, live DDS
@@ -554,16 +571,16 @@ follow the symptom table. IDE behavior can depend on its Roslyn host; current
 package integration evidence covers command-line builds, not every IDE/SDK
 combination.
 
-| Symptom                                               | Check and next step                                                                                                                                                                                                                                                           |
-| :---------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Build succeeds but no generated types appear          | Confirm the project references `Wireloom.Dds.Generator` and declares the intended roots as `DdsIdl` items. Other `.idl` files are tracked includes, not roots.                                                                                                                |
-| Generator package is present but has no effect        | Restore the project, inspect the resolved package version and analyzer/build assets, then run `dotnet build` from the project directory. If the build reports an analyzer load or Roslyn assembly error, verify the SDK/compiler host; older SDK hosts are not all qualified. |
-| `DDSG0002`                                            | Set `<LangVersion>12.0</LangVersion>` or later. This diagnostic is reported when the generator loads and the compiler language version is too old.                                                                                                                            |
-| `DDSG0003`                                            | Add an explicit `Rti.ConnextDds` reference at a version accepted by the guard; the generator package does not add the runtime transitively.                                                                                                                                   |
-| `DDSG0001`                                            | Read the diagnostic text and source location. Check IDL syntax, include resolution, semantic rules, and feature coverage. This is also the generation-failure diagnostic for preprocessing limits.                                                                            |
-| Generated documents are absent in the IDE             | First confirm the command-line build succeeds. Roslyn generated documents appear in the IDE; to inspect files on disk, enable `EmitCompilerGeneratedFiles` and set `CompilerGeneratedFilesOutputPath` as described in [Inspect generated source](#inspect-generated-source).  |
-| Build works but the IDE shows stale generated code    | Rebuild and reload the project, then check the IDE's selected SDK and analyzer diagnostics. Do not infer an IDE-host compatibility result from a command-line build.                                                                                                          |
-| Compiler reports duplicate generated type definitions | Remove exported generated `.g.cs` files from explicit `<Compile>` items. The generator already adds its documents to compilation; do not compile the same emitted source twice.                                                                                               |
+| Symptom                                               | Check and next step                                                                                                                                                                                                                                                                                                   |
+| :---------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Build succeeds but no generated types appear          | Confirm the project references `Wireloom.Dds.Generator` and declares the intended roots as `DdsIdl` items. Other `.idl` files are tracked includes, not roots.                                                                                                                                                        |
+| Generator package is present but has no effect        | Restore the project, inspect the resolved package version and analyzer/build assets, then run `dotnet build` from the project directory. If the build reports an analyzer load or Roslyn assembly error, verify the SDK/compiler host; older SDK hosts are not all qualified.                                         |
+| `DDSG0002`                                            | Set `<LangVersion>12.0</LangVersion>` or later. This diagnostic is reported when the generator loads and the compiler language version is too old.                                                                                                                                                                    |
+| `DDSG0003`                                            | Add an explicit `Rti.ConnextDds` reference at a version accepted by the guard; the generator package does not add the runtime transitively.                                                                                                                                                                           |
+| `DDSG0001`                                            | Read the diagnostic text and source location. Check IDL syntax, include resolution, semantic rules, and feature coverage. This is also the generation-failure diagnostic for preprocessing limits.                                                                                                                    |
+| Generated documents are absent in the IDE             | First confirm the command-line build succeeds. Roslyn generated documents appear in the IDE; to inspect files on disk, enable `EmitCompilerGeneratedFiles` and set `CompilerGeneratedFilesOutputPath` as described in [Inspect generated source](#inspect-generated-source).                                          |
+| Build works but the IDE shows stale generated code    | In VS Code, build with **Ctrl+Shift+B**, then run **CSharp: Rerun Source Generators** if needed. If it stays stale, reload and check the selected SDK and analyzer diagnostics. See the [IDE workflow](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/developer-workflow.md#recover-an-editor-mismatch). |
+| Compiler reports duplicate generated type definitions | Remove exported generated `.g.cs` files from explicit `<Compile>` items. The generator already adds its documents to compilation; do not compile the same emitted source twice.                                                                                                                                       |
 
 ### The generator reports `DDSG0003`
 

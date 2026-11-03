@@ -127,21 +127,99 @@ shape-specific evidence, not a blanket claim for every IDL construct or RTI
 release. Check the [feature coverage index](../corpus/FEATURE-COVERAGE.md) and
 the API comparison in the [migration guide](../migration/rtiddsgen-to-wireloom.md).
 
-Improvements to the developer experience may introduce observable differences
-when they do not affect DDS wire operations. Examples include reliable alias
-`ToString` output and richer IntelliSense documentation. Deliberate differences
-and their application impact are documented in the migration guide and
-verified separately from wire compatibility.
+Deliberate differences from RTI output, such as reliable alias `ToString`
+behavior and richer IntelliSense documentation, are documented in the migration
+guide and verified separately from wire compatibility. Existing documented
+value behavior is covered by the stability rules below.
 
-The configuration API differs from `rtiddsgen` options. It may change when
-issues are found; consult release notes and the package guide before upgrading.
-Diagnostic IDs are expected to remain stable. New IDs may be added, and their
-severity and meaning are documented in the package's
+The following contract applies from 1.0.0 throughout the 1.x release line.
+The current 0.x line permits breaking changes documented in release notes.
+
+### Public contract
+
+For unchanged supported IDL, configuration, and RTI runtime, a 1.x upgrade
+preserves application source compatibility, documented generated-value behavior,
+handwritten partial extensions, and DDS metadata/wire behavior, subject to the
+defect-correction exception below. Existing feature and qualification limits
+still apply.
+
+The public contract covers generated data, support, and native APIs that follow
+the selected RTI API profile, including public native companions under generated
+`Implementation` namespaces. It also covers documented MSBuild items,
+properties, metadata, their scope and precedence, and generator diagnostics.
+Generated source formatting, file layout, private implementation, and
+documentation wording may change.
+
+Generated API evolution follows RTI. Support for new RTI APIs is selected by the
+corresponding newer runtime/profile; it does not change the profile used for an
+existing qualified RTI version. Wireloom does not independently add members to
+existing generated types that could collide with handwritten partial
+extensions. Changing the application's IDL or selecting another RTI profile
+requires reviewing its generated API and peer compatibility.
+
+The bundled compiler's direct C# APIs are internal integration interfaces,
+even where C# accessibility is public. They are not a separately supported
+application library and have no 1.x public API stability guarantee.
+
+### Release rules
+
+| Release | Changes allowed                                                                                                                                                                            |
+| :------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Patch   | Defect corrections for that release line, including correctness and security fixes. No new features or unrelated feature changes.                                                          |
+| Minor   | New features, opt-in behavior, new default warnings, and support for additional RTI versions, while preserving existing supported contracts, profiles, defaults, and minimum requirements. |
+| Major   | Deliberate breaking changes to supported APIs, value or wire behavior, configuration, defaults, or minimum requirements, and increases to an existing diagnostic's severity.               |
+
+**Defect-correction exception:** A patch may correct faulty output against the
+documented RTI/IDL contract even when it breaks compatibility with previous
+Wireloom output. For example, correcting a wrong member ID can require peers to
+upgrade together. Release notes must identify the defect and impact, including
+required regeneration, application adjustments, and coordinated peer upgrades.
+Preserving a known defect is not a stability promise. An intentional contract
+change cannot be classified as a correction simply to avoid a major release.
+
+Diagnostic IDs and their intended meanings remain stable and are not reused for
+unrelated conditions. Message wording may improve. New default warnings belong
+in minor releases and must be called out because `TreatWarningsAsErrors` can
+turn them into build failures. Increasing an existing diagnostic's severity
+requires a major release; a patch may correct its detection without changing
+its declared severity. See the
 [diagnostic reference](../../src/Wireloom.Dds.Generator/README.md#diagnostics).
 
-Wireloom is currently in the 0.x release line, where breaking changes may be
-made and are called out in release notes. The policy for breaking changes
-after 1.0 has not been decided.
+### Stable defaults and minimum requirements
+
+Throughout 1.x, the defaults remain finite fallbacks of 100 sequence elements
+and 255 UTF-8 bytes for narrow strings or UTF-16 code units for wide strings;
+unbounded support, strict validation, and leading-underscore normalization
+remain disabled; direct sequence arrays use `RtiCSharp` mapping. Explicit IDL
+bounds take precedence. The documented batch and declaring-file scopes,
+inheritance, and override precedence remain stable. New modes may be opt-in;
+changing an existing default requires a major release. See
+[configuration](configuration.md#settings-at-a-glance).
+
+The consumer minimums remain .NET 8, C# 12, Roslyn 4.8.0 (the SDK 8.0.100 host),
+and RTI 7.3.1 throughout 1.x. The repository's producer SDK and tooling can
+advance independently while preserving those consumer requirements.
+
+### Playground compatibility
+
+The Playground's IDL generation, generated C#, and generation settings follow
+the same public contract for the selected compiler version and RTI profile.
+Its engine and browser worker protocol are internal and may change together.
+
+Later 1.x Playground versions support forward migration of valid saved
+workspaces and source exports from earlier 1.x versions, preserving source and
+settings through explicitly versioned migrations. Older clients may reject
+newer formats clearly rather than silently discard settings. This does not
+require cross-version worker compatibility. The
+[workspace guide](playground-workspaces.md#results-exports-and-local-recovery)
+describes supported formats and recovery behavior.
+
+### Maintenance
+
+Corrections target the latest 1.x release line. Backports to older minor lines
+are considered when warranted, on a best-effort basis. There is no fixed support
+period or commitment to maintain every minor line. A backported patch contains
+corrections relevant to that line without unrelated features.
 
 ## Choosing a generation path
 

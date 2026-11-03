@@ -1,7 +1,4 @@
-# Wireloom
-
-<!-- markdownlint-disable-next-line MD033 -->
-<img src="docs/assets/wireloom.svg" alt="Wireloom logo" width="360">
+# <img src="docs/assets/wireloom-horizontal.svg" alt="Wireloom" width="560">
 
 [![Quality](https://github.com/eNeRGy164/wireloom/actions/workflows/quality.yml/badge.svg)](https://github.com/eNeRGy164/wireloom/actions/workflows/quality.yml)
 [![Coverage Status](https://coveralls.io/repos/github/eNeRGy164/wireloom/badge.svg?branch=main)](https://coveralls.io/github/eNeRGy164/wireloom?branch=main)
@@ -96,6 +93,12 @@ dotnet build
 A successful build confirms that the generator ran, emitted the expected
 `Telemetry.Sample` and `Telemetry.SampleSupport` APIs, and that the compiler
 accepted them against the referenced RTI runtime.
+
+After editing a root or included IDL file, build again to regenerate the
+contracts. In VS Code, use **Ctrl+Shift+B** with a
+[build task](docs/guides/developer-workflow.md#route-vs-code-build-diagnostics).
+If IntelliSense stays stale, run **CSharp: Rerun Source Generators** from the
+Command Palette.
 
 Continue with the [Hello World publisher/subscriber tutorial](docs/guides/hello-world.md)
 to run two applications and exchange samples. It follows RTI's familiar C#
@@ -194,21 +197,26 @@ package's compiler integration.
 - **Qualification:** Only exact RTI 7.3.1 and 7.7.0 releases have qualification
   evidence for documented cases; mapping other versions does not qualify them.
   See the [RTI version policy](docs/guides/support-and-compatibility.md#rti-version-qualification).
-- **IDL and options:** Coverage is evidence-backed, not universal. RTI's
-  dynamic `-unboundedSupport` behavior is unsupported; defaults are 100 sequence
-  elements, 255 UTF-8 bytes for narrow strings, and 255 UTF-16 code units for
-  wide strings. Direct arrays of sequences flatten by default. Check the
+- **IDL and options:** Coverage is evidence-backed, not universal. Unbounded IDL
+  values default to finite limits of 100 sequence elements, 255 UTF-8 bytes
+  for narrow strings, and 255 UTF-16 code units for wide strings. Opt in to
+  RTI-style unbounded semantics with `DdsIdlUnboundedSupport` or declaring-file
+  `UnboundedSupport`; explicit IDL bounds stay finite. Support covers the
+  documented payloads, QoS, and resource limits, rather than unrestricted sample
+  sizes. Direct arrays of sequences flatten by default. Check the
   [feature coverage](docs/corpus/FEATURE-COVERAGE.md),
   [`rtiddsgen` option map](docs/migration/rtiddsgen-to-wireloom.md#rtiddsgen-option-map),
-  [unbounded limits](src/Wireloom.Dds.Generator/README.md#effective-limits-for-unbounded-values),
+  [unbounded configuration and scope](docs/guides/configuration.md#fixed-behavior-and-configurable-limits),
+  [qualification limits](docs/guides/support-and-compatibility.md#rti-version-qualification),
   and [sequence-array mapping](docs/guides/configuration.md#choose-the-sequence-array-mapping).
 - **Runtime and license:** Generated sources do not provide the RTI runtime or
   native assets; applications still need those and the applicable RTI license.
   See the [support boundary](docs/guides/support-and-compatibility.md#support-boundary)
   and [Hello World prerequisites](docs/guides/hello-world.md#before-you-start).
 - **Support and stability:** Support is best effort, without response-time or
-  resolution commitments. Breaking changes may occur in 0.x; the post-1.0
-  policy is undecided. See the
+  resolution commitments. Breaking changes may occur in 0.x. The 1.x contract
+  preserves supported consumer APIs, behavior, defaults, and requirements;
+  documented defect corrections may require coordinated upgrades. See the
   [support commitment](docs/guides/support-and-compatibility.md#support-boundary)
   and [stability policy](docs/guides/support-and-compatibility.md#compatibility-and-stability).
 - **Migration:** Inventory IDL and options, compare APIs, check runtime and
@@ -221,13 +229,13 @@ Use the [record for the exact package version](docs/releases/README.md) before
 making an adoption claim. Source checks on a later commit do not retroactively
 qualify a release. Each evidence layer answers a different question:
 
-| Evidence                                                                           | What it establishes                                                                                      |
-| :--------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
-| [Package integration](tests/Wireloom.Dds.Generator.PackageIntegration/README.md)   | The packed analyzer loads and generates usable C# in declared consumers, including the minimum SDK host. |
-| [Feature coverage](docs/corpus/FEATURE-COVERAGE.md)                                | Accepted/rejected IDL cases and structural comparison with exact-profile RTI oracles.                    |
-| [Runtime contracts](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)       | Generated APIs, values, type support, and native lifecycle for tested shapes.                            |
-| [Directed DDS exchanges](tests/Wireloom.Dds.Generator.WireCompatibility/README.md) | Actual sample exchange for named fixtures, exact RTI releases, peer directions, and adaptations.         |
-| [Generated-C# analysis](docs/corpus/csharp-quality.md)                             | A dated independent static scan with explicit exclusions and configuration differences.                  |
+| Evidence                                                                           | What it establishes                                                                                                                                                             |
+| :--------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Package integration](tests/Wireloom.Dds.Generator.PackageIntegration/README.md)   | The packed analyzer loads and generates usable C# in declared consumers, including the minimum SDK host.                                                                        |
+| [Feature coverage](docs/corpus/FEATURE-COVERAGE.md)                                | Accepted/rejected IDL cases and structural comparison with exact-profile RTI oracles.                                                                                           |
+| [Runtime contracts](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)       | Generated APIs, values, type support, and native lifecycle for tested shapes.                                                                                                   |
+| [Directed DDS exchanges](tests/Wireloom.Dds.Generator.WireCompatibility/README.md) | Actual sample exchange for named fixtures, exact RTI releases, peer directions, and adaptations.                                                                                |
+| [Generated-C# analysis](docs/corpus/csharp-quality.md)                             | Independent emitted-source inspections with reviewed intentional findings; separate [consumer checks](docs/testing/consumer-analysis.md) verify normal generated-code handling. |
 
 The [0.5.0 release record](docs/releases/0.5.0.md) retains passing and failing
 wire outcomes and links the original archived reports. A successful source build,
@@ -292,8 +300,9 @@ runtime, native assets, licensing, and DDS configuration.
 
 For an existing application, follow the [migration procedure](docs/migration/rtiddsgen-to-wireloom.md)
 to compare API usage, runtime behavior, peer exchanges, and deployment against
-your baseline. Direct arrays of sequences flatten by default; general RTI-style
-unbounded support remains a documented capability gap.
+your baseline. Direct arrays of sequences flatten by default; select `Idl`
+mapping to preserve both layers. RTI-style unbounded sequences and strings are
+opt-in, with the [documented qualification limits](docs/guides/support-and-compatibility.md#rti-version-qualification).
 
 ## Testing and quality
 

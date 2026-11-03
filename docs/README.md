@@ -46,6 +46,7 @@ Generation, application API execution, native serialization, and DDS exchanges
 establish different facts.
 
 - [Generated-C# static-analysis snapshot](corpus/csharp-quality.md)
+- [Consumer Qodana and SonarQube qualification](testing/consumer-analysis.md)
 - [Observed RTI code-generation findings](corpus/RTI-CODEGEN-DEFECTS.md)
 - [Incremental-generator measurements](performance/incremental-generator-baseline.md)
 - [Focused sequence-array evidence](testing/sequence-array-mapping.md)

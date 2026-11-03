@@ -5,6 +5,10 @@ Settings live in the project that generates the contracts, or in shared
 MSBuild files such as `Directory.Build.props`. The examples are project-file
 fragments; add them inside the consuming project's `<Project>` element.
 
+The [1.x compatibility contract](support-and-compatibility.md#compatibility-and-stability)
+preserves documented settings, defaults, scopes, precedence, and consumer
+minimums, with an explicit exception for defect corrections.
+
 - [Settings at a glance](#settings-at-a-glance)
 - [Select generation roots and included files](#select-generation-roots-and-included-files)
 - [Configure include directories](#configure-include-directories)
@@ -26,8 +30,8 @@ Wireloom has six project properties and nine input metadata settings:
 | ---------------------------- | -------------------------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `DdsIdlIncludeDirectories`   | Project property                       | Empty                                                             | Adds semicolon-separated include search directories and tracks their IDL files. Directories are available to the generation batch.  |
 | `DdsIdlSequenceArrayMapping` | Project property                       | `RtiCSharp`                                                       | Sets the default mapping for direct arrays of sequences in all tracked files.                                                       |
-| `DdsIdlSequenceSize`         | Project property                       | `100`                                                             | Sets the effective element limit for unbounded sequences.                                                                           |
-| `DdsIdlStringSize`           | Project property                       | `255`                                                             | Sets the effective length limit for unbounded narrow and wide strings.                                                              |
+| `DdsIdlSequenceSize`         | Project property                       | `100`                                                             | Sets the finite fallback element limit for unbounded sequences when unbounded support is disabled.                                  |
+| `DdsIdlStringSize`           | Project property                       | `255`                                                             | Sets the finite fallback length limit for unbounded narrow and wide strings when unbounded support is disabled.                     |
 | `DdsIdlEnableEscapeChar`     | Project property                       | `false`                                                           | Removes one leading underscore from each IDL identifier across the generation batch.                                                |
 | `DdsIdlUnboundedSupport`     | Project property                       | `false`                                                           | Enables RTI-style unbounded sequence, narrow-string, and wide-string semantics for declarations in files that inherit this setting. |
 | `Generate`                   | `AdditionalFiles` metadata             | `false` for tracked includes; forced to `true` for `DdsIdl` items | Marks a file as a generation root.                                                                                                  |
@@ -49,7 +53,7 @@ with source-located `DDSG0001`.
 `Defines`, `Undefines`, `IncludeDirectories`, and `Strict` are combined from
 all generation roots. Setting them on an included file with `Generate="false"`
 does not configure the batch. `DdsIdlEnableEscapeChar` applies uniformly to
-every root and included file. `SequenceArrayMapping`, `SequenceSize`, and
+every root and included file. `SequenceArrayMapping`, `SequenceSize`,
 `StringSize`, and `UnboundedSupport` instead belong to each declaring file,
 including non-root files. Blank `UnboundedSupport` metadata inherits the
 project property; explicit `false` overrides project `true`. A root's override
@@ -523,8 +527,8 @@ external preprocessor executable, or disabling the standard support emitters.
 Wireloom does not accept `rtiddsgen` command-line options; consult the
 [migration option map](../migration/rtiddsgen-to-wireloom.md#rtiddsgen-option-map).
 
-Unbounded sequences default to an effective limit of 100 elements, and
-unbounded strings default to an effective limit of 255 UTF-8 bytes for narrow
+With unbounded support disabled (the default), unbounded sequences have an
+effective limit of 100 elements. Unbounded strings have a limit of 255 UTF-8 bytes for narrow
 strings or 255 UTF-16 code units for wide strings. Set project properties to
 change the defaults, or set `SequenceSize` and `StringSize` metadata on a
 `DdsIdl` or `AdditionalFiles` item to override values for declarations in that

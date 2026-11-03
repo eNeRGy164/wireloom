@@ -5,7 +5,7 @@ assembly. Versions from 7.3.1 up to, but not including, 7.7.0 use the 7.3.1
 profile; version 7.7.0 and later use the 7.7.0 profile. Only exact 7.3.1 and
 7.7.0 have qualification evidence.
 
-The corpus contains 92 positive feature cases, 77 negative probes, and 4
+The corpus contains 93 positive feature cases, 77 negative probes, and 4
 integration entry points. “Implemented” describes Wireloom generation support;
 it does not promise RTI acceptance or runtime interoperability. C142 is not
 applicable to RTI 7.3.1. See the version pages for profile-specific behavior
@@ -15,6 +15,7 @@ and restrictions.
 | :--------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------- |
 | Primitives and aliases       | Primitive values and boundaries, enums, enum-valued constants, scopes, and annotated scalar or aggregate typedef chains           | Implemented                                                                           | Implemented                                                                        |
 | Collections and aggregates   | Strings with expression bounds, sequences, arrays, nested collections, structs, inheritance, recursion, and value types           | Implemented; configurable `RtiCSharp` and `Idl` mappings                              | Implemented; configurable `RtiCSharp` and `Idl` mappings                           |
+| Unbounded sequences/strings  | Opt-in RTI-style metadata and native conversion; finite fallbacks remain the default                                              | Implemented within the documented payload/QoS scope                                   | Implemented within the documented payload/QoS scope                                |
 | Unions                       | Primitive and enum discriminators, symbolic/scoped/expression labels, defaults, aliases, and fixed-array or collection branches   | Implemented; known cross-language interoperability gaps are recorded per case         | Implemented; known cross-language interoperability gaps are recorded per case      |
 | Annotations and evolution    | Topic, boolean/named/constant arguments, member IDs, optional-member, extensibility, auto-ID, and data-representation annotations | Implemented for applicable features; `@must_understand` is N/A                        | Implemented                                                                        |
 | Preprocessing                | Includes, command-line defines, conditional branches, macros, macro operators, and platform-specific probes                       | Implemented                                                                           | Implemented                                                                        |

@@ -25,11 +25,12 @@ RTI feature.
 | 7.7.0 / 4.7.0                   | C147 `10-resolve-name-wstring-aliases`                                | The accepted raw C# output fails compilation with `CS0400` and `CS8377`. The interoperability harness applies guarded namespace and TypeCode-reference adaptations only to scratch copies; the retained oracle remains unmodified and failing.    | Wireloom's generated case is retained in [7.7.0 generator output](7.7.0/generator/features/10-resolve-name-wstring-aliases/). This is a raw RTI C# compilation finding; wire results rely on the documented adapted reference setup.                                                                                                                                            |
 | 7.3.1 / 4.3.1                   | C157 `12-interface-keyword-default`; C159 `12-interface-case-default` | RTI accepts and generates C# for DDS service interfaces, but the RPC transport plugin contains the unexpanded `${member.unmanageDefaultValue}` template expression. Compilation fails. The ordinary data type in each input is separately usable. | Wireloom reports identifier findings and generates the ordinary `Sample` data type; it does not emit interface/RPC bindings. This case is tracked separately in [issue #75](https://github.com/eNeRGy164/wireloom/issues/75). The 7.7.0 captures compile because they omit the C# interface/transport declarations.                                                             |
 
-The [dated Qodana scan](csharp-quality.md#errors) reports its compiler-error
-category under its declared staging and analysis conditions. It is not a
-separate reproducible `dotnet build` measurement for every case. The case
-captures and exact-profile compilation checks above remain the evidence for
-the listed raw-output failures.
+The case captures and exact-profile compilation checks above establish the
+listed RTI raw-output failures. The
+[emitted-C# comparison](csharp-quality.md#errors) retains RTI and Wireloom
+inspection findings under its declared staging conditions, alongside separate
+compiler diagnostics. Qodana counts can differ from compiler counts when one
+syntax failure produces several inspection locations.
 
 ## Other oracle findings kept separate
 

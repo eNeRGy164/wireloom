@@ -10,6 +10,10 @@ This API is for repository C# projects referencing the
 compiler assembly beside the generator for analyzer loading; it does not add a
 compiler application runtime dependency.
 
+These direct C# APIs are internal integration interfaces, even where their
+C# accessibility is public. They are outside the
+[1.x public stability contract](../guides/support-and-compatibility.md#public-contract).
+
 ```csharp
 using System.Collections.Generic;
 using System.Security.Cryptography;
