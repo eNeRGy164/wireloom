@@ -41,8 +41,8 @@
     <DdsIdl Include="Fixtures/unbounded-support.idl" SequenceSize="7" StringSize="9" UnboundedSupport="true" />
     <DdsIdl Include="Fixtures/strict-identifiers.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-integration.idl" />
-    <DdsIdl Include="..\..\docs\corpus\idl\features\09-optional-recursive-array.idl" />
-    <DdsIdl Include="..\..\docs\corpus\idl\features\06-aggregates.idl" />
+    <DdsIdl Include="..\..\docs\corpus\idl\features\09-optional-recursive-array.idl" Condition="'$(RtiConnextDdsVersion)' != '6.1.2'" />
+    <DdsIdl Include="..\..\docs\corpus\idl\features\06-aggregates.idl" Condition="'$(RtiConnextDdsVersion)' != '6.1.2'" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-modules.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-alias-inheritance.idl" />
     <DdsIdl Include="..\..\docs\corpus\idl\integration\collections\13-compositions.idl" />
@@ -87,4 +87,9 @@
       Condition="'@(_MetadataRoot)' == '' or '%(_MetadataRoot.Generate)' != 'true' or '%(_MetadataRoot.Strict)' != '$(PackageIntegrationStrict)' or '%(_MetadataRoot.Defines)' != 'PACKAGE_FEATURE' or '%(_MetadataRoot.Undefines)' != 'PACKAGE_DISABLED'"
       Text="The package target did not preserve DdsIdl generation metadata." />
   </Target>
+  <ItemGroup Condition="'$(RtiConnextDdsVersion)' == '6.1.2'">
+    <Compile Remove="OptionalRecursiveArraySpecs.cs" />
+  </ItemGroup>
+
+  <Import Project="../Wireloom.Dds.Generator.RuntimeContracts/RuntimeContractProfile.targets" />
 </Project>

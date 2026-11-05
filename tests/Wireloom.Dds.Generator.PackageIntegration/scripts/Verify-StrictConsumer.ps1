@@ -10,7 +10,7 @@ an unrelated build failure alone is not a successful check.
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$PackageVersion,
-    [ValidateSet('7.3.1', '7.7.0')][string]$RtiVersion = '7.7.0',
+    [ValidateSet('6.1.2', '7.3.1', '7.7.0')][string]$RtiVersion = '7.7.0',
     [ValidateSet('net8.0', 'net10.0')][string]$Framework = 'net10.0',
     [string]$LogPath
 )

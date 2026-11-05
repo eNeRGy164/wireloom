@@ -31,12 +31,16 @@ public sealed class CollectionSpecs
         first.optionalNumber.ShouldBeNull();
         first.optionalText.ShouldBeNull();
         first.optionalChild.ShouldBeNull();
+#if !WIRELOOM_RTI_6_1_2
         first.optionalNumbers.ShouldBeNull();
         first.optionalPoints.ShouldBeNull();
+#endif
         first.optionalState.ShouldBeNull();
         first.optionalWideText.ShouldBeNull();
+#if !WIRELOOM_RTI_6_1_2
         first.optionalWideTexts.ShouldBeNull();
         first.optionalMatrix.ShouldBeNull();
+#endif
         // The documented null-copy path retains initializers, not constructor-only allocations.
         nullCopy.optionalChild.ShouldBeNull();
         nullCopy.child.ShouldNotBeNull();
@@ -83,12 +87,16 @@ public sealed class CollectionSpecs
             copy.optionalNumber.ShouldBe(7);
             copy.optionalText.ShouldBe("optional");
             copy.optionalChild.ShouldNotBeSameAs(source.optionalChild);
+#if !WIRELOOM_RTI_6_1_2
             copy.optionalNumbers.ShouldNotBeSameAs(source.optionalNumbers);
             copy.optionalPoints![0].ShouldNotBeSameAs(source.optionalPoints![0]);
+#endif
             copy.optionalState.ShouldBe(State.Ready);
             copy.optionalWideText.ShouldBe("世界");
+#if !WIRELOOM_RTI_6_1_2
             copy.optionalWideTexts.ShouldNotBeSameAs(source.optionalWideTexts);
             copy.optionalMatrix.ShouldNotBeSameAs(source.optionalMatrix);
+#endif
             copy.optionalChild!.id = 777;
             source.optionalChild!.id.ShouldBe(31);
         }
@@ -105,12 +113,16 @@ public sealed class CollectionSpecs
         sample.optionalNumber = null;
         sample.optionalText = null;
         sample.optionalChild = null;
+#if !WIRELOOM_RTI_6_1_2
         sample.optionalNumbers = null;
         sample.optionalPoints = null;
+#endif
         sample.optionalState = null;
         sample.optionalWideText = null;
+#if !WIRELOOM_RTI_6_1_2
         sample.optionalWideTexts = null;
         sample.optionalMatrix = null;
+#endif
 
         // Assert
         sample.Equals(CollectionSamples.Create(present: false)).ShouldBeTrue();

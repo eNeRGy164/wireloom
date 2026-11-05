@@ -32,4 +32,5 @@
   </ItemGroup>
 
   <Import Project="../../src/Wireloom.Dds.Generator/build/Wireloom.Dds.Generator.targets" />
+  <Import Project="RuntimeContractProfile.targets" />
 </Project>

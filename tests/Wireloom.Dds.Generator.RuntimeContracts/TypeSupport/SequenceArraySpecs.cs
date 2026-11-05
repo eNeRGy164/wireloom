@@ -6,18 +6,25 @@ namespace Wireloom.Dds.Generator.RuntimeContracts.TypeSupport;
 public sealed class SequenceArraySpecs
 {
     /// <summary>Preserves independent sequence lengths, element kinds, dimensions, and optional presence.</summary>
+#if WIRELOOM_RTI_6_1_2
+    [Fact]
+    public void SerializesSequenceArrays()
+#else
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void SerializesSequenceArrays(bool present)
+#endif
     {
         // Arrange
         var sample = Create();
+#if !WIRELOOM_RTI_6_1_2
         if (present)
         {
             sample.optionalValues = [new Sample_optionalValuesSequence(), new Sample_optionalValuesSequence()];
             sample.optionalValues[1].Value.Add(77);
         }
+#endif
 
         using var serializer = SampleSupport.Instance.CreateSerializer();
 
@@ -26,6 +33,7 @@ public sealed class SequenceArraySpecs
 
         // Assert
         Check(result);
+#if !WIRELOOM_RTI_6_1_2
         if (present)
         {
             result.optionalValues.ShouldNotBeNull();
@@ -37,6 +45,7 @@ public sealed class SequenceArraySpecs
         {
             result.optionalValues.ShouldBeNull();
         }
+#endif
 
         var description = SampleSupport.Instance.DynamicType.ToString();
         description.ShouldContain("sequence<long,4> values[2]");

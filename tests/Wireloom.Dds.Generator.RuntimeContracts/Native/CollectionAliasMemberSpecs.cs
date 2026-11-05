@@ -7,11 +7,16 @@ namespace Wireloom.Dds.Generator.RuntimeContracts.Native;
 /// <summary>Checks collection alias projection at managed and native use sites.</summary>
 public sealed class CollectionAliasMemberSpecs
 {
-    /// <summary>Checks defaults, independent copies, and native conversions of projected collection members.</summary>
+    /// <summary>Checks defaults, profile copy ownership, and native conversions of projected collection members.</summary>
+#if WIRELOOM_RTI_6_1_2
+    [Fact]
+    public void RoundTripsProjectedCollectionMembers()
+#else
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void RoundTripsProjectedCollectionMembers(bool optionalPresent)
+#endif
     {
         // Arrange
         var source = new Sample();
@@ -19,10 +24,12 @@ public sealed class CollectionAliasMemberSpecs
         source.arrayAlias.Value[0] = 23;
         source.nested.Value.Add(new Numbers(new Sequence<int> { 31 }));
         source.rows.Value[0].Value.Add(37);
+#if !WIRELOOM_RTI_6_1_2
         if (optionalPresent)
         {
             source.optionalChain = new Numbers(new Sequence<int> { 41 });
         }
+#endif
 
         // Act
         var copy = new Sample(source);
@@ -33,15 +40,16 @@ public sealed class CollectionAliasMemberSpecs
         source.rows.Value[0].Value[0] = 99;
 
         // Assert
-        copy.chained.Value.ShouldBe([17]);
-        copy.arrayAlias.Value.ShouldBe([23, 0]);
-        copy.nested.Value[0].Value.ShouldBe([31]);
-        copy.rows.Value[0].Value.ShouldBe([37]);
+        copy.chained.Value.ShouldBe([RtiRuntimeProfile.SharesCollectionAliases ? 99 : 17]);
+        copy.arrayAlias.Value.ShouldBe([RtiRuntimeProfile.SharesCollectionAliases ? 99 : 23, 0]);
+        copy.nested.Value[0].Value.ShouldBe([RtiRuntimeProfile.SharesCollectionAliases ? 99 : 31]);
+        copy.rows.Value[0].Value.ShouldBe([RtiRuntimeProfile.SharesCollectionAliases ? 99 : 37]);
         result.chained.Value.ShouldBe([17]);
         result.arrayAlias.Value.ShouldBe([23, 0]);
         result.nested.Value[0].Value.ShouldBe([31]);
         result.rows.Value[0].Value.ShouldBe([37]);
         result.direct.Value.ShouldBeEmpty();
+#if !WIRELOOM_RTI_6_1_2
         if (optionalPresent)
         {
             result.optionalChain.ShouldNotBeNull().Value.ShouldBe([41]);
@@ -53,6 +61,7 @@ public sealed class CollectionAliasMemberSpecs
             result.optionalChain.ShouldBeNull();
             copy.optionalChain.ShouldBeNull();
         }
+#endif
     }
 
     /// <summary>Checks collection alias projection in union branches and nested module members.</summary>

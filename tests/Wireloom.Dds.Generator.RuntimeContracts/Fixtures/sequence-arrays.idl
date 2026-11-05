@@ -10,7 +10,9 @@ module RuntimeSequenceArrays {
         sequence<State, 3> states[2];
         sequence<Scalar, 3> scalars[2];
         sequence<long, 3> matrix[2][3];
+#if !WIRELOOM_RTI_6_1_2
         @optional sequence<long, 3> optionalValues[2];
+#endif
     };
     struct Derived : Sample { long extra; };
 };

@@ -13,7 +13,9 @@ module RuntimeSequenceCopy {
     struct Holder {
         sequence<Child, 4> direct;
         Children wrapped;
+#if !WIRELOOM_RTI_6_1_2
         @optional sequence<Child, 4> optionalChildren;
+#endif
     };
     union Container switch(long) {
         case 0: sequence<Child, 4> direct;

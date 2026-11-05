@@ -42,7 +42,7 @@ public sealed class ScalarEqualitySpecs
                 sample.byteValue = 1;
                 break;
             case "int8":
-                sample.signedByte = -1;
+                sample.signedByte = RtiRuntimeProfile.Int8Sample;
                 break;
             case "uint8":
                 sample.unsignedByte = 1;

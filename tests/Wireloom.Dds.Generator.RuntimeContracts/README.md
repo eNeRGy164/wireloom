@@ -24,15 +24,20 @@ dotnet run --project $project --no-restore --configuration Release
 
 Use Microsoft.Testing.Platform filters after `--`, for example
 `-- --filter-namespace Wireloom.Dds.Generator.RuntimeContracts.Native`.
-The default suite uses RTI 7.7.0; the matching 7.3.1 package and lock file are
-available for profile checks. Package restores are isolated by RTI version.
-For the 7.3.1 run, use `-p:RtiConnextDdsVersion=7.3.1`; its lock file is
-`packages.7.3.1.lock.json`. Both suites use the matching RTI native libraries
-from NuGet. They create no domain participants and require no DDS peers,
-discovery, or RTI generator installation. A native-loading failure is a test
-failure, not a skip.
-The Quality workflow executes all eight combinations of Windows/Ubuntu,
-RTI 7.3.1/7.7.0, and `net8.0`/`net10.0`, together with fresh-package tests.
+The default suite uses RTI 7.7.0. Pass `-p:RtiConnextDdsVersion=6.1.2` or
+`-p:RtiConnextDdsVersion=7.3.1` on restore and run to select another profile.
+Each profile uses its matching native libraries from NuGet and its own lock
+files. The tests create no domain participants and require no DDS peers,
+discovery, or RTI generator installation. A native-loading failure fails the
+test.
+
+Both test projects use the same profile selection for fixtures and assertions.
+The 6.1.2 run exercises the supported portions of the shared fixtures.
+Optional collections and recursive aggregates apply to 7.3.1 and 7.7.0.
+See the [RTI version policy](../../docs/guides/support-and-compatibility.md#rti-version-qualification).
+
+The Quality workflow runs the three profiles on Windows and Ubuntu with
+`net8.0` and `net10.0`, together with fresh-package tests.
 Preview and release workflows retain their default-target validation.
 
 To select a consumer target without retargeting the referenced analyzer, pass
@@ -102,12 +107,12 @@ Boundaries and interpretation:
   verifies that managed and native enum arrays use the declared
   `@default_literal`.
 - Typed-default initialization covers fractional floating-point and
-  non-ASCII wide-string defaults on both RTI profiles. RTI 7.7.0 metadata
+  non-ASCII wide-string defaults on all three RTI profiles. RTI 7.7.0 metadata
   exposes the exact fractional and wide-string annotations. RTI 7.7.0 restores
   integral, narrow-string, and signed-zero defaults after `ClearMember`, but
   truncates fractional metadata defaults and returns `??` for a cleared
-  non-ASCII wide-string default. RTI 7.3.1 has no member-default annotation
-  API, so cleared-member restoration is not claimed for that profile.
+  non-ASCII wide-string default. The member-default annotation API first
+  appears in the 7.7.0 profile among these test targets.
 
 <details>
 <summary>Maintainer reference: test classes by behavior area</summary>
@@ -141,7 +146,7 @@ and allocation/key combinations reported by the tests.
 - `AggregateNativeSpecs`, `ScalarAliasNativeSpecs`, `StringAliasChainNativeSpecs`
 - `AggregateAliasNativeSpecs`, `CollectionAliasNativeSpecs`, `CollectionAliasMemberSpecs`, `StringArrayAliasNativeSpecs`
 - `UnionNativeSpecs`, `StringSequenceUnionSpecs`, `DiscriminatorSpecs`, `UnionAliasSpecs`
-- `EnumArrayDefaultNativeSpecs` (including selected union arrays on both RTI profiles)
+- `EnumArrayDefaultNativeSpecs` (including selected union arrays on all three RTI profiles)
 - `AggregateNativeSpecs.FiltersKeysInEachDirection`, `NestedKeySpecs`, and alias/union native theories
 
 ### TypeSupport and recursive startup

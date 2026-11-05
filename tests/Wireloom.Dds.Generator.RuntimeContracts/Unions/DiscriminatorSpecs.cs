@@ -53,8 +53,8 @@ public sealed class DiscriminatorSpecs
         var result = NativeSample.RoundTrip<SignedByteChoice, SignedByteChoiceUnmanaged>(sample, allocatePointers, allocateMemory);
 
         // Assert
-        sample.Discriminator.ShouldBe((sbyte)1);
-        result.Discriminator.ShouldBe((sbyte)1);
+        sample.Discriminator.ShouldBe(RtiRuntimeProfile.Int8One);
+        result.Discriminator.ShouldBe(RtiRuntimeProfile.Int8One);
         result.other.ShouldBe(17);
         result.Get().ShouldBe(17);
         copy.Equals(sample).ShouldBeTrue();

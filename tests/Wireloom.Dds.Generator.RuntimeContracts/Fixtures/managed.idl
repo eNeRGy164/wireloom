@@ -34,12 +34,16 @@ module RuntimeManaged {
         @optional long optionalNumber;
         @optional string<16> optionalText;
         @optional Child optionalChild;
+#if !WIRELOOM_RTI_6_1_2
         @optional sequence<long, 4> optionalNumbers;
         @optional Child optionalPoints[2];
+#endif
         @optional State optionalState;
         @optional wstring<16> optionalWideText;
+#if !WIRELOOM_RTI_6_1_2
         @optional sequence<wstring<16>, 3> optionalWideTexts;
         @optional long optionalMatrix[2][3];
+#endif
     };
     struct KeyedEnvelope { @key Child identity; long payload; };
     struct Base { @key long id; @optional string<16> note; };

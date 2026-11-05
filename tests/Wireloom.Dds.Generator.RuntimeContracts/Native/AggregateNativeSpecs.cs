@@ -18,7 +18,7 @@ public sealed class AggregateNativeSpecs
         // Arrange
         var source = new Scalars
         {
-            flag = true, byteValue = 255, signedByte = -128, unsignedByte = 254,
+            flag = true, byteValue = 255, signedByte = RtiRuntimeProfile.Int8Sample, unsignedByte = 254,
             shortValue = short.MinValue, unsignedShort = ushort.MaxValue,
             intValue = int.MinValue, unsignedInt = uint.MaxValue,
             longValue = long.MinValue, unsignedLong = ulong.MaxValue,
@@ -33,7 +33,7 @@ public sealed class AggregateNativeSpecs
         // Assert
         result.flag.ShouldBeTrue();
         result.byteValue.ShouldBe((byte)255);
-        result.signedByte.ShouldBe(sbyte.MinValue);
+        result.signedByte.ShouldBe(RtiRuntimeProfile.Int8Sample);
         result.unsignedByte.ShouldBe((byte)254);
         result.shortValue.ShouldBe(short.MinValue);
         result.unsignedShort.ShouldBe(ushort.MaxValue);
@@ -117,24 +117,32 @@ public sealed class AggregateNativeSpecs
             result.optionalNumber.ShouldBe(7);
             result.optionalText.ShouldBe("optional");
             result.optionalChild!.id.ShouldBe(31);
+#if !WIRELOOM_RTI_6_1_2
             result.optionalNumbers.ShouldBe([5, 6]);
             result.optionalPoints![1].id.ShouldBe(52);
+#endif
             result.optionalState.ShouldBe(State.Ready);
             result.optionalWideText.ShouldBe("世界");
+#if !WIRELOOM_RTI_6_1_2
             result.optionalWideTexts.ShouldBe(["世界", "Ω"]);
             result.optionalMatrix![1, 2].ShouldBe(6);
+#endif
         }
         else
         {
             result.optionalNumber.ShouldBeNull();
             result.optionalText.ShouldBeNull();
             result.optionalChild.ShouldBeNull();
+#if !WIRELOOM_RTI_6_1_2
             result.optionalNumbers.ShouldBeNull();
             result.optionalPoints.ShouldBeNull();
+#endif
             result.optionalState.ShouldBeNull();
             result.optionalWideText.ShouldBeNull();
+#if !WIRELOOM_RTI_6_1_2
             result.optionalWideTexts.ShouldBeNull();
             result.optionalMatrix.ShouldBeNull();
+#endif
         }
     }
 
@@ -242,12 +250,16 @@ public sealed class AggregateNativeSpecs
             result.optionalNumber.ShouldBeNull();
             result.optionalText.ShouldBeNull();
             result.optionalChild.ShouldBeNull();
+#if !WIRELOOM_RTI_6_1_2
             result.optionalNumbers.ShouldBeNull();
             result.optionalPoints.ShouldBeNull();
+#endif
             result.optionalState.ShouldBeNull();
             result.optionalWideText.ShouldBeNull();
+#if !WIRELOOM_RTI_6_1_2
             result.optionalWideTexts.ShouldBeNull();
             result.optionalMatrix.ShouldBeNull();
+#endif
         }
         finally
         {

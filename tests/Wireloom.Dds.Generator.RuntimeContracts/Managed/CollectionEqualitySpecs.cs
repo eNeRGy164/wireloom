@@ -18,12 +18,20 @@ public sealed class CollectionEqualitySpecs
     [InlineData("optional-number")]
     [InlineData("optional-text")]
     [InlineData("optional-child")]
+#if !WIRELOOM_RTI_6_1_2
     [InlineData("optional-numbers")]
+#endif
+#if !WIRELOOM_RTI_6_1_2
     [InlineData("optional-points")]
+#endif
     [InlineData("optional-state")]
     [InlineData("optional-wide-text")]
+#if !WIRELOOM_RTI_6_1_2
     [InlineData("optional-wide-texts")]
+#endif
+#if !WIRELOOM_RTI_6_1_2
     [InlineData("optional-matrix")]
+#endif
     public void DetectsEachChangedMember(string member)
     {
         // Arrange
@@ -66,24 +74,32 @@ public sealed class CollectionEqualitySpecs
             case "optional-child":
                 sample.optionalChild = null;
                 break;
+#if !WIRELOOM_RTI_6_1_2
             case "optional-numbers":
                 sample.optionalNumbers = null;
                 break;
+#endif
+#if !WIRELOOM_RTI_6_1_2
             case "optional-points":
                 sample.optionalPoints = null;
                 break;
+#endif
             case "optional-state":
                 sample.optionalState = null;
                 break;
             case "optional-wide-text":
                 sample.optionalWideText = null;
                 break;
+#if !WIRELOOM_RTI_6_1_2
             case "optional-wide-texts":
                 sample.optionalWideTexts = null;
                 break;
+#endif
+#if !WIRELOOM_RTI_6_1_2
             case "optional-matrix":
                 sample.optionalMatrix = null;
                 break;
+#endif
             default:
                 throw new ArgumentException("Unknown member", nameof(member));
         }

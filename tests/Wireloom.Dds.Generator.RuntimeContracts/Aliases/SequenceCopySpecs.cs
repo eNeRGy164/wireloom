@@ -6,7 +6,7 @@ namespace Wireloom.Dds.Generator.RuntimeContracts.Aliases;
 /// <summary>Checks that generated sequence copies own their mutable elements.</summary>
 public sealed class SequenceCopySpecs
 {
-    /// <summary>Copies aggregate elements independently through typedefs and alias chains.</summary>
+    /// <summary>Checks aggregate element ownership for sequence typedefs and alias chains.</summary>
     [Fact]
     public void SequenceTypedefCopiesOwnAggregateElements()
     {
@@ -27,7 +27,7 @@ public sealed class SequenceCopySpecs
         ExpectEqualIndependentCopy(unboundedCopy, unboundedSource);
         chainCopy.Equals(chainSource).ShouldBeTrue();
         chainCopy.GetHashCode().ShouldBe(chainSource.GetHashCode());
-        chainCopy.Value.Value[0].ShouldNotBeSameAs(chainSource.Value.Value[0]);
+        ReferenceEquals(chainCopy.Value.Value[0], chainSource.Value.Value[0]).ShouldBe(RtiRuntimeProfile.SharesCollectionAliases);
         aliasCopy.Equals(aliasSource).ShouldBeTrue();
         aliasCopy.GetHashCode().ShouldBe(aliasSource.GetHashCode());
         aliasCopy.Value[0].ShouldNotBeSameAs(aliasSource.Value[0]);
@@ -42,7 +42,7 @@ public sealed class SequenceCopySpecs
         boundedSource.Value[0].id.ShouldBe(17);
         boundedSource.Value[0].values[0].ShouldBe(7);
         unboundedSource.Value[0].id.ShouldBe(17);
-        chainSource.Value.Value[0].id.ShouldBe(17);
+        chainSource.Value.Value[0].id.ShouldBe(RtiRuntimeProfile.SharesCollectionAliases ? 97 : 17);
         aliasSource.Value[0].id.ShouldBe(17);
         aliasSource.Value[0].values[0].ShouldBe(7);
     }
@@ -108,15 +108,17 @@ public sealed class SequenceCopySpecs
         source.values[0].ShouldBe(17);
     }
 
-    /// <summary>Copies direct and typedef-backed struct sequence members independently.</summary>
+    /// <summary>Checks ownership of direct and typedef-backed struct sequence members.</summary>
     [Fact]
-    public void StructCopiesOwnRequiredAndOptionalSequenceElements()
+    public void StructCopiesSequenceElementsWithProfileOwnership()
     {
         // Arrange
         var source = new Holder();
         source.direct.Add(ChildWithValue());
         source.wrapped = new Children(ChildrenWithChild());
+#if !WIRELOOM_RTI_6_1_2
         source.optionalChildren = ChildrenWithChild();
+#endif
 
         // Act
         var copy = new Holder(source);
@@ -126,24 +128,30 @@ public sealed class SequenceCopySpecs
         copy.GetHashCode().ShouldBe(source.GetHashCode());
         copy.direct.ShouldNotBeSameAs(source.direct);
         copy.direct[0].ShouldNotBeSameAs(source.direct[0]);
-        copy.wrapped.Value[0].ShouldNotBeSameAs(source.wrapped.Value[0]);
+        ReferenceEquals(copy.wrapped.Value[0], source.wrapped.Value[0]).ShouldBe(RtiRuntimeProfile.SharesCollectionAliases);
+#if !WIRELOOM_RTI_6_1_2
         copy.optionalChildren.ShouldNotBeSameAs(source.optionalChildren);
         copy.optionalChildren![0].ShouldNotBeSameAs(source.optionalChildren[0]);
+#endif
 
         copy.direct[0].id = 99;
         copy.wrapped.Value[0].id = 98;
+#if !WIRELOOM_RTI_6_1_2
         copy.optionalChildren![0].id = 97;
+#endif
 
         source.direct[0].id.ShouldBe(17);
-        source.wrapped.Value[0].id.ShouldBe(17);
+        source.wrapped.Value[0].id.ShouldBe(RtiRuntimeProfile.SharesCollectionAliases ? 98 : 17);
+#if !WIRELOOM_RTI_6_1_2
         source.optionalChildren![0].id.ShouldBe(17);
+#endif
     }
 
-    /// <summary>Copies direct and typedef-backed union sequence branches independently.</summary>
+    /// <summary>Checks ownership of direct and typedef-backed union sequence branches.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void UnionCopiesOwnSequenceElements(bool useTypedef)
+    public void UnionCopiesSequenceElementsWithProfileOwnership(bool useTypedef)
     {
         // Arrange
         var source = useTypedef
@@ -159,9 +167,9 @@ public sealed class SequenceCopySpecs
         copy.GetHashCode().ShouldBe(source.GetHashCode());
         if (useTypedef)
         {
-            copy.wrapped.Value[0].ShouldNotBeSameAs(source.wrapped.Value[0]);
+            ReferenceEquals(copy.wrapped.Value[0], source.wrapped.Value[0]).ShouldBe(RtiRuntimeProfile.SharesCollectionAliases);
             copy.wrapped.Value[0].id = 99;
-            source.wrapped.Value[0].id.ShouldBe(17);
+            source.wrapped.Value[0].id.ShouldBe(RtiRuntimeProfile.SharesCollectionAliases ? 99 : 17);
         }
         else
         {
