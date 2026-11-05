@@ -87,7 +87,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up repository SDK
-        uses: actions/setup-dotnet@v6.0.0
+        uses: actions/setup-dotnet@v6.1.0
         with:
           global-json-file: global.json
           cache: true
@@ -126,7 +126,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up repository SDK
-        uses: actions/setup-dotnet@v6.0.0
+        uses: actions/setup-dotnet@v6.1.0
         with:
           global-json-file: global.json
           cache: true
@@ -166,7 +166,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up repository SDK
-        uses: actions/setup-dotnet@v6.0.0
+        uses: actions/setup-dotnet@v6.1.0
         with:
           global-json-file: global.json
 
@@ -200,7 +200,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up repository SDK and .NET 8 runtime
-        uses: actions/setup-dotnet@v6.0.0
+        uses: actions/setup-dotnet@v6.1.0
         with:
           global-json-file: global.json
           dotnet-version: 8.0.426
@@ -313,7 +313,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up repository SDK
-        uses: actions/setup-dotnet@v6.0.0
+        uses: actions/setup-dotnet@v6.1.0
         with:
           global-json-file: global.json
           cache: true
@@ -425,7 +425,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v6.0.0
+        uses: actions/setup-dotnet@v6.1.0
         with:
           global-json-file: global.json
           cache: true
@@ -526,7 +526,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v6.0.0
+        uses: actions/setup-dotnet@v6.1.0
         with:
           global-json-file: global.json
           cache: true
@@ -590,7 +590,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v6.0.0
+        uses: actions/setup-dotnet@v6.1.0
         with:
           global-json-file: global.json
           cache: true
@@ -653,7 +653,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v6.0.0
+        uses: actions/setup-dotnet@v6.1.0
         with:
           global-json-file: global.json
           cache: true
@@ -781,7 +781,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v6.0.0
+        uses: actions/setup-dotnet@v6.1.0
         with:
           global-json-file: global.json
 
