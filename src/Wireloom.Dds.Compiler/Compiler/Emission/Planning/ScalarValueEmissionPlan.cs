@@ -1,7 +1,6 @@
 using System.Globalization;
 using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.FrontEnd.Semantic;
-using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Planning;
 
@@ -48,7 +47,7 @@ internal sealed class ScalarValueEmissionPlan(EmissionTypePlan declaredType, Idl
         {
             if (ValueType is PrimitiveEmissionType primitive)
             {
-                var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
+                var mapping = primitive.Mapping;
                 return metadata?.HasDefault == true
                     ? mapping.ToNativeExpression(ManagedDefaultLiteral!)
                     : mapping.NativeDefaultLiteral;
@@ -81,7 +80,7 @@ internal sealed class ScalarValueEmissionPlan(EmissionTypePlan declaredType, Idl
                 return null;
             }
 
-            var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
+            var mapping = primitive.Mapping;
             if (mapping.AnnotationTypeKind is null || mapping.AnnotationValueProperty is null)
             {
                 return null;

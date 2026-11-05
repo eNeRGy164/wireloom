@@ -330,7 +330,17 @@ internal static class ManagedDataTypeEmitter
 
         writer.WriteXmlSummary($"Initializes a copy of the specified <see cref=\"{typeName}\"/> instance.");
         writer.WriteXmlParam("other", "The instance to copy, or <see langword=\"null\"/>.");
-        writer.WriteXmlRemarks("Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors. When <paramref name=\"other\"/> is null, explicit IDL defaults and property initializers remain in effect; collections and aggregate values created only by the parameterless constructor are not initialized.");
+        string ownershipRemarks;
+        if (fields.Any(field => field.SharesCollectionAlias))
+        {
+            ownershipRemarks = "Collection-alias members retain the same wrapper instances, matching the RTI 6.1.2 profile. Direct arrays and sequences are copied into new containers, and other nested aggregates use their generated copy constructors.";
+        }
+        else
+        {
+            ownershipRemarks = "Arrays and sequences are copied into new containers, and nested aggregate members are copied through their generated copy constructors.";
+        }
+
+        writer.WriteXmlRemarks(ownershipRemarks + " When <paramref name=\"other\"/> is null, explicit IDL defaults and property initializers remain in effect; collections and aggregate values created only by the parameterless constructor are not initialized.");
         writer.WriteXmlExample($"var original = new {typeName}();\nvar copy = new {typeName}(original);");
         writer.OpenBlock($"public {typeName}({typeName}? other){(baseReference is null ? string.Empty : " : base(other)")}");
         writer.OpenBlock("if (other is null)");

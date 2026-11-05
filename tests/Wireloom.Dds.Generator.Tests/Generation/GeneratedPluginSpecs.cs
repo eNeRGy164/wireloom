@@ -8,6 +8,7 @@ public sealed class GeneratedPluginSpecs
 {
     /// <summary>Uses a free primitive discriminator for legacy fallback constructors and the type default for current constructors.</summary>
     [Theory]
+    [InlineData("6.1.2", "long", "case 0: case 1: long selected; default: long fallback;", "", "2")]
     [InlineData("7.3.1", "long", "case 0: case 1: long selected; default: long fallback;", "", "2")]
     [InlineData("7.3.1", "Kind", "case 0: case 1: long selected; default: long fallback;", "typedef long Kind;", "2")]
     [InlineData("7.3.1", "long", "case 5: long selected; default: long fallback;", "", "0")]
@@ -560,6 +561,7 @@ public sealed class GeneratedPluginSpecs
     private static RtiApiProfile GetEmissionProfile(Version runtimeVersion) =>
         IdlCompiler.GetProfileForRuntimeVersion(runtimeVersion) switch
         {
+            IdlCompilerProfile.Rti612 => RtiApiProfile.Rtiddsgen312,
             IdlCompilerProfile.Rti731 => RtiApiProfile.Rtiddsgen431,
             IdlCompilerProfile.Rti770 => RtiApiProfile.Rtiddsgen470,
             _ => throw new ArgumentOutOfRangeException(nameof(runtimeVersion), runtimeVersion, "The RTI API profile is not supported.")

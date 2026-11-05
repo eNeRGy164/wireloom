@@ -310,10 +310,15 @@ internal static class CollectionAliasManagedEmitter
             var nullCopyRemarks = plan is { IsString: true, ManagedDefaultLiteral: not null }
                 ? "When <paramref name=\"other\"/> is null, the constructor keeps the declared default. An aggregate value is copied through its generated copy constructor."
                 : "When <paramref name=\"other\"/> is null, the constructor keeps the declared default and property initializer. An aggregate value is copied through its generated copy constructor.";
+            if (plan.SharesCollectionAliasValue)
+            {
+                nullCopyRemarks = "When <paramref name=\"other\"/> is null, the constructor keeps the declared default and property initializer. A nested collection-alias value retains the same wrapper instance, matching the RTI 6.1.2 profile.";
+            }
+
             writer.WriteXmlRemarks(nullCopyRemarks);
             writer.OpenBlock($"public {typeName}({typeName}? other){(plan.ManagedDefaultLiteral is not null ? " : this()" : string.Empty)}");
             writer.OpenBlock("if (other is not null)");
-            if (plan.IsAggregate)
+            if (plan is { IsAggregate: true, SharesCollectionAliasValue: false })
             {
                 writer.WriteLine($"Value = new {elementReference}(other.Value);");
             }

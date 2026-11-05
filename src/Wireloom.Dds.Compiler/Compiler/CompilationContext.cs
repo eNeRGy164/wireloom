@@ -1,5 +1,6 @@
-using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Compiler.Emission;
 using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.FrontEnd.Symbols;
 
 namespace Wireloom.Compiler;
 
@@ -7,9 +8,9 @@ namespace Wireloom.Compiler;
 internal sealed class CompilationContext
 {
     private readonly CompilationResolver resolver;
-    internal CompilationContext(IdlSymbolTable symbols)
+    internal CompilationContext(IdlSymbolTable symbols, RtiApiProfile? profile = null)
     {
-        resolver = new CompilationResolver(symbols);
+        resolver = new CompilationResolver(symbols, profile);
     }
 
     /// <summary>Resolves an IDL type into the target-independent semantic type model.</summary>

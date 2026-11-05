@@ -1,6 +1,6 @@
-using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Planning;
+using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -377,7 +377,7 @@ internal static class CollectionAliasNativeEmitter
 
         if (elementPlan is PrimitiveEmissionType primitive)
         {
-            var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
+            var mapping = primitive.Mapping;
             if (primitive.IdlName is "boolean" or "char" or "wchar" or "long long" or "int64")
             {
                 return mapping.NativeDefaultLiteral;
@@ -405,7 +405,7 @@ internal static class CollectionAliasNativeEmitter
             return "Value";
         }
 
-        return PrimitiveTypeMapping.Resolve(primitive.IdlName).FromNativeExpression("Value");
+        return primitive.Mapping.FromNativeExpression("Value");
     }
 
     private static string ToNativeValue(CollectionAliasEmissionPlan plan)
@@ -416,6 +416,6 @@ internal static class CollectionAliasNativeEmitter
             return "sample.Value";
         }
 
-        return PrimitiveTypeMapping.Resolve(primitive.IdlName).ToNativeExpression("sample.Value");
+        return primitive.Mapping.ToNativeExpression("sample.Value");
     }
 }

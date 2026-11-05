@@ -22,7 +22,7 @@ internal sealed class IdlDeclarationEmitter(CompilationContext compilation, IRea
             switch (declaration)
             {
                 case IdlConstantDeclaration constant:
-                    result.AddRange(ConstantEmitter.Emit(compilation, constant, constant.SourceIdlFileName));
+                    result.AddRange(ConstantEmitter.Emit(compilation, constant, constant.SourceIdlFileName, profile));
                     break;
 
                 case IdlEnumDeclaration @enum:

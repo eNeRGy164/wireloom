@@ -8,11 +8,11 @@ namespace Wireloom.Compiler.Emission.Planning;
 internal static class EmissionTypeProjector
 {
     /// <summary>Projects a semantic member into an emission field.</summary>
-    internal static IdlEmissionField ToEmissionField(IdlMember member, string? currentNamespace, SequenceArrayEmissionPlan? sequenceArrays = null)
+    internal static IdlEmissionField ToEmissionField(IdlMember member, string? currentNamespace, SequenceArrayEmissionPlan? sequenceArrays = null, RtiApiProfile? profile = null)
     {
         var mappedType = sequenceArrays?.GetMemberType(member);
-        var declaredType = mappedType ?? ProjectType(member.Type, currentNamespace);
-        var type = mappedType ?? ProjectMemberType(member.Type, currentNamespace);
+        var declaredType = mappedType ?? ProjectType(member.Type, currentNamespace, profile);
+        var type = mappedType ?? ProjectMemberType(member.Type, currentNamespace, profile);
         var cSharpType = type.CSharpType;
 
         if (member.Metadata.IsOptional && type is StringEmissionType)
@@ -50,21 +50,21 @@ internal static class EmissionTypeProjector
     }
 
     /// <summary>Projects a collection element using the RTI C# alias mapping.</summary>
-    internal static EmissionTypePlan ToCollectionElementType(IdlType type, string? currentNamespace)
-        => ProjectMemberType(type, currentNamespace);
+    internal static EmissionTypePlan ToCollectionElementType(IdlType type, string? currentNamespace, RtiApiProfile? profile = null)
+        => ProjectMemberType(type, currentNamespace, profile);
 
     /// <summary>Projects a typedef value while preserving each named alias identity.</summary>
-    internal static EmissionTypePlan ToTypedefValueType(IdlType type, string? currentNamespace)
+    internal static EmissionTypePlan ToTypedefValueType(IdlType type, string? currentNamespace, RtiApiProfile? profile = null)
     {
         if (type is IdlType.Alias alias)
         {
-            var target = ToTypedefValueType(alias.Target, currentNamespace);
+            var target = ToTypedefValueType(alias.Target, currentNamespace, profile);
             var aliasName = IdlNaming.ResolvedTypeReference(alias.QualifiedName, currentNamespace);
             var supportName = IdlNaming.SupportTypeName(alias.QualifiedName, currentNamespace);
             return new AliasEmissionType(alias.QualifiedName, target, aliasName, supportName);
         }
 
-        return ProjectType(type, currentNamespace);
+        return ProjectType(type, currentNamespace, profile);
     }
 
     /// <summary>Projects a semantic union into an emission union.</summary>
@@ -73,13 +73,13 @@ internal static class EmissionTypeProjector
             union.Name,
             union.Namespace,
             ProjectDiscriminatorIdlType(union),
-            ProjectDiscriminatorCSharpType(union),
+            ProjectDiscriminatorCSharpType(union, profile),
             union.DiscriminatorIsEnum,
             union.DiscriminatorDefaultValue,
             union.DiscriminatorFirstValue,
             [.. union.Branches.Select(branch =>
             {
-                var field = ToEmissionField(branch.Field, union.Namespace, sequenceArrays);
+                var field = ToEmissionField(branch.Field, union.Namespace, sequenceArrays, profile);
                 return new UnionBranchEmissionPlan(
                     field,
                     new MemberEmissionPlan(field, union.Namespace, profile: profile),
@@ -101,14 +101,14 @@ internal static class EmissionTypeProjector
         return union.DiscriminatorPrimitiveIdlType!;
     }
 
-    private static string ProjectDiscriminatorCSharpType(IdlUnion union)
+    private static string ProjectDiscriminatorCSharpType(IdlUnion union, RtiApiProfile profile)
     {
         if (union.DiscriminatorIsEnum)
         {
             return IdlNaming.EscapeQualifiedIdentifier(union.DiscriminatorEnumQualifiedName!);
         }
 
-        return IdlNaming.MapPrimitive(union.DiscriminatorPrimitiveIdlType!);
+        return IdlNaming.MapPrimitive(union.DiscriminatorPrimitiveIdlType!, profile);
     }
 
     private static IReadOnlyList<string> ProjectUnionLabels(IdlUnion union, IdlUnionBranch branch) =>
@@ -141,10 +141,10 @@ internal static class EmissionTypeProjector
         return label;
     }
 
-    private static EmissionTypePlan ProjectType(IdlType type, string? currentNamespace) =>
+    private static EmissionTypePlan ProjectType(IdlType type, string? currentNamespace, RtiApiProfile? profile) =>
         type switch
         {
-            IdlType.Primitive primitive => new PrimitiveEmissionType(IdlNaming.NormalizeIdlType(primitive.Name), IdlNaming.MapPrimitive(primitive.Name)),
+            IdlType.Primitive primitive => new PrimitiveEmissionType(IdlNaming.NormalizeIdlType(primitive.Name), IdlNaming.MapPrimitive(primitive.Name, profile), profile),
             IdlType.StringType stringType => new StringEmissionType(stringType.IsWide, stringType.Bound, stringType.IsBounded, stringType.IsUnbounded),
             IdlType.Enum @enum => new EnumEmissionType(
                 IdlNaming.ResolvedTypeReference(@enum.QualifiedName, currentNamespace),
@@ -157,15 +157,15 @@ internal static class EmissionTypeProjector
             IdlType.Union union => new UnionEmissionType(
                 IdlNaming.ResolvedTypeReference(union.QualifiedName, currentNamespace),
                 IdlNaming.SupportTypeName(union.QualifiedName, currentNamespace)),
-            IdlType.Alias alias => ProjectAlias(alias, currentNamespace),
-            IdlType.Sequence sequence => ProjectSequence(sequence, currentNamespace),
-            IdlType.Array array => ProjectArray(array, currentNamespace),
+            IdlType.Alias alias => ProjectAlias(alias, currentNamespace, profile),
+            IdlType.Sequence sequence => ProjectSequence(sequence, currentNamespace, profile),
+            IdlType.Array array => ProjectArray(array, currentNamespace, profile),
             _ => throw new InvalidOperationException($"Unknown semantic IDL type: {type.GetType().Name}")
         };
 
-    private static EmissionTypePlan ProjectMemberType(IdlType type, string? currentNamespace)
+    private static EmissionTypePlan ProjectMemberType(IdlType type, string? currentNamespace, RtiApiProfile? profile)
     {
-        var memberType = ProjectType(type, currentNamespace);
+        var memberType = ProjectType(type, currentNamespace, profile);
         while (memberType is AliasEmissionType alias && RequiresUnderlyingMemberType(alias.Target))
         {
             memberType = alias.Target;
@@ -174,9 +174,9 @@ internal static class EmissionTypeProjector
         return memberType;
     }
 
-    private static EmissionTypePlan ProjectAlias(IdlType.Alias alias, string? currentNamespace)
+    private static EmissionTypePlan ProjectAlias(IdlType.Alias alias, string? currentNamespace, RtiApiProfile? profile)
     {
-        var target = ProjectType(alias.Target, currentNamespace);
+        var target = ProjectType(alias.Target, currentNamespace, profile);
         var aliasName = IdlNaming.ResolvedTypeReference(alias.QualifiedName, currentNamespace);
         var supportName = IdlNaming.SupportTypeName(alias.QualifiedName, currentNamespace);
         var cSharpType = target is SequenceEmissionType or ArrayEmissionType || IsAggregateEmissionType(target)
@@ -186,17 +186,17 @@ internal static class EmissionTypeProjector
         return new AliasEmissionType(alias.QualifiedName, target, cSharpType, supportName);
     }
 
-    private static SequenceEmissionType ProjectSequence(IdlType.Sequence sequence, string? currentNamespace)
+    private static SequenceEmissionType ProjectSequence(IdlType.Sequence sequence, string? currentNamespace, RtiApiProfile? profile)
     {
-        var element = ProjectMemberType(sequence.Element, currentNamespace);
+        var element = ProjectMemberType(sequence.Element, currentNamespace, profile);
 
         return new SequenceEmissionType(element, sequence.EffectiveBound, $"ISequence<{element.CSharpType}>", sequence.Dimensions,
             isBounded: sequence.Bound is not null, isUnbounded: sequence.IsUnbounded);
     }
 
-    private static ArrayEmissionType ProjectArray(IdlType.Array array, string? currentNamespace)
+    private static ArrayEmissionType ProjectArray(IdlType.Array array, string? currentNamespace, RtiApiProfile? profile)
     {
-        var element = ProjectMemberType(array.Element, currentNamespace);
+        var element = ProjectMemberType(array.Element, currentNamespace, profile);
 
         return new ArrayEmissionType(element, array.Dimensions, BuildArrayType(element.CSharpType, array.Dimensions));
     }

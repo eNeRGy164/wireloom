@@ -1,5 +1,4 @@
 using Wireloom.Compiler.Emission.Model;
-using Wireloom.Compiler.Naming;
 
 using static Wireloom.Compiler.Naming.IdlNaming;
 
@@ -88,7 +87,7 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
 
         if (type is PrimitiveEmissionType primitive)
         {
-            var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
+            var mapping = primitive.Mapping;
             if (mapping is { MinimumLiteral: { } minimumLiteral, MaximumLiteral: { } maximumLiteral, AnnotationTypeKind: "Float32" or "Float64" })
             {
                 return $"Each element's finite values are in the inclusive range <c>{minimumLiteral}</c> through <c>{maximumLiteral}</c>. NaN and positive or negative infinity are also representable.";
@@ -135,7 +134,7 @@ internal sealed class MemberEmissionRenderer(MemberEmissionFacts facts, string? 
             }
             else if (facts.ValueType is PrimitiveEmissionType primitive)
             {
-                var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
+                var mapping = primitive.Mapping;
                 if (mapping is { MinimumLiteral: { } minimumLiteral, MaximumLiteral: { } maximumLiteral, AnnotationTypeKind: "Float32" or "Float64" })
                 {
                     constraints.Add($"Finite values are in the inclusive range <c>{minimumLiteral}</c> through <c>{maximumLiteral}</c>. NaN and positive or negative infinity are also representable.");

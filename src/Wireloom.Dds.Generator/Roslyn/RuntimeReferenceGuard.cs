@@ -5,7 +5,7 @@ namespace Wireloom.Roslyn;
 /// <summary>Checks whether the consuming compilation references a supported RTI runtime.</summary>
 internal static class RuntimeReferenceGuard
 {
-    internal const string MinimumSupportedRtiVersion = "7.3.1";
+    internal const string MinimumSupportedRtiVersion = "6.1.2";
     private static readonly Version minimumSupportedVersion = Version.Parse(MinimumSupportedRtiVersion);
 
     internal static bool TryGetProfile(Compilation compilation, out IdlCompilerProfile profile)

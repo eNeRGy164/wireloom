@@ -196,7 +196,7 @@ internal sealed partial class MemberEmissionPlan(
     {
         if (ValueType is PrimitiveEmissionType primitive)
         {
-            return PrimitiveTypeMapping.Resolve(primitive.IdlName).NativeStorageType;
+            return primitive.Mapping.NativeStorageType;
         }
 
         if (ValueType is StringEmissionType stringType)
@@ -218,6 +218,11 @@ internal sealed partial class MemberEmissionPlan(
     public string BuildCopyExpression(string sourcePrefix = "other.")
     {
         var source = sourcePrefix + EscapedName;
+
+        if (SharesCollectionAlias)
+        {
+            return source;
+        }
 
         if (IsSequence)
         {
@@ -255,6 +260,11 @@ internal sealed partial class MemberEmissionPlan(
     {
         var source = sourcePrefix + EscapedName;
 
+        if (SharesCollectionAlias)
+        {
+            return source;
+        }
+
         if (IsSequence)
         {
             var elementType = TypeReference(ElementCSharpType!, currentNamespace);
@@ -280,6 +290,9 @@ internal sealed partial class MemberEmissionPlan(
 
         return source;
     }
+
+    /// <summary>Gets whether this member retains its legacy collection-alias reference during a containing-value copy.</summary>
+    internal bool SharesCollectionAlias => CollectionElementCopyPolicy.RetainsAliasReference(Type, Profile);
 
     /// <summary>Emits initialization code for an aggregate array member.</summary>
     public void EmitAggregateArrayInitialization(GeneratedSourceWriter writer, string target, bool hasFollowingStatements)

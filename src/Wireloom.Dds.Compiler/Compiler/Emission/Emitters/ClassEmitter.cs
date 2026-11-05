@@ -1,5 +1,5 @@
-using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.Emission.Model;
+using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Naming;
 
@@ -26,8 +26,8 @@ internal static class ClassEmitter
         var escapedName = names.ManagedTypeName;
         var runtimeTypeName = currentNamespace is null ? name : $"{currentNamespace}.{name}";
         var recursiveComponent = recursiveTypes.ComponentFor(runtimeTypeName);
-        var emissionFields = fields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace, sequenceArrays)).ToArray();
-        var emissionInheritedFields = inheritedFields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace, sequenceArrays)).ToArray();
+        var emissionFields = fields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace, sequenceArrays, profile)).ToArray();
+        var emissionInheritedFields = inheritedFields.Select(field => EmissionTypeProjector.ToEmissionField(field, currentNamespace, sequenceArrays, profile)).ToArray();
         var initialFieldPlans = emissionFields.Select(field => new MemberEmissionPlan(field, currentNamespace, profile: profile)).ToArray();
         var managedBackingNames = ResolveManagedBackingNames(escapedName: names.ManagedTypeName, initialFieldPlans);
         var fieldPlans = initialFieldPlans

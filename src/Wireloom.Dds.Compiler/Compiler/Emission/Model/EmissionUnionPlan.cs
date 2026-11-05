@@ -154,6 +154,12 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
     /// <summary>Builds a managed discriminator expression for an IDL label.</summary>
     public string ManagedDiscriminatorLabel(string label)
     {
+        if (DiscriminatorCSharpType == "byte"
+            && long.TryParse(label, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integerLabel))
+        {
+            return CSharpScalarValueFormatter.Format("byte", integerLabel);
+        }
+
         if (DiscriminatorCSharpType == "char"
             && int.TryParse(label, NumberStyles.Integer, CultureInfo.InvariantCulture, out var numericLabel))
         {
@@ -172,14 +178,14 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
                 return DiscriminatorCSharpType;
             }
 
-            return PrimitiveTypeMapping.Resolve(DiscriminatorIdlType).NativeStorageType;
+            return PrimitiveTypeMapping.Resolve(DiscriminatorIdlType, Profile).NativeStorageType;
         }
     }
 
     /// <summary>Gets the RTI dynamic-type primitive name for a primitive discriminator.</summary>
     public string PrimitiveDiscriminatorDynamicType => DiscriminatorIdlType == "octet"
         ? Profile.OctetDynamicType
-        : PrimitiveTypeMapping.Resolve(DiscriminatorIdlType).DynamicType;
+        : PrimitiveTypeMapping.Resolve(DiscriminatorIdlType, Profile).DynamicType;
 
     /// <summary>Builds the native-to-managed discriminator conversion expression.</summary>
     public string NativeDiscriminatorReadExpression(string source)
@@ -189,7 +195,7 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
             return source;
         }
 
-        return PrimitiveTypeMapping.Resolve(DiscriminatorIdlType).FromNativeExpression(source);
+        return PrimitiveTypeMapping.Resolve(DiscriminatorIdlType, Profile).FromNativeExpression(source);
     }
 
     /// <summary>Builds the managed-to-native discriminator conversion expression.</summary>
@@ -200,12 +206,12 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
             return source;
         }
 
-        return PrimitiveTypeMapping.Resolve(DiscriminatorIdlType).ToNativeExpression(source);
+        return PrimitiveTypeMapping.Resolve(DiscriminatorIdlType, Profile).ToNativeExpression(source);
     }
 
     private long FindDefaultDiscriminatorValue()
     {
-        if (Profile == RtiApiProfile.Rtiddsgen431)
+        if (Profile.UsesLegacyUnionDefaults)
         {
             if (DefaultBranch is not null)
             {
@@ -276,6 +282,11 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
 
     private (long Minimum, long Maximum) DiscriminatorRange()
     {
+        if (DiscriminatorIdlType == "int8")
+        {
+            return (sbyte.MinValue, sbyte.MaxValue);
+        }
+
         if (UsesNativeCharDiscriminator)
         {
             return (byte.MinValue, byte.MaxValue);
@@ -299,6 +310,7 @@ internal sealed class IdlEmissionUnion(string name, string? @namespace, string d
         "bool" => value == 0 ? "false" : "true",
         "char" when value == 0 => "'\\0'",
         "char" => $"(char){value}",
+        "byte" => CSharpScalarValueFormatter.Format("byte", value),
         _ when DiscriminatorIsEnum && value == 0 => "0",
         _ when DiscriminatorIsEnum && value < 0 => $"({ManagedEnumTypeReference()})({value.ToString(CultureInfo.InvariantCulture)})",
         _ when DiscriminatorIsEnum => $"({ManagedEnumTypeReference()}){value}",

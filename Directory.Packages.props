@@ -1,7 +1,12 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <RtiConnextDdsVersion Condition="'$(RtiConnextDdsVersion)' == '' and '$(WireCompatibilityRtiVersion)' != ''">$(WireCompatibilityRtiVersion)</RtiConnextDdsVersion>
     <RtiConnextDdsVersion Condition="'$(RtiConnextDdsVersion)' == ''">7.7.0</RtiConnextDdsVersion>
+    <!-- Downloaded only as metadata references for exact-profile compilation tests. -->
+    <Rti612CompatibilityVersion>6.1.2</Rti612CompatibilityVersion>
+    <Rti731CompatibilityVersion>7.3.1</Rti731CompatibilityVersion>
+    <Rti770CompatibilityVersion>7.7.0</Rti770CompatibilityVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Meziantou.Polyfill" Version="1.0.165" />

@@ -29,10 +29,14 @@ internal sealed class OptionalEmissionType(EmissionTypePlan target, string cShar
 }
 
 /// <summary>Represents an IDL primitive projected to a C# type.</summary>
-internal sealed class PrimitiveEmissionType(string idlName, string cSharpType)
+internal sealed class PrimitiveEmissionType(string idlName, string cSharpType, RtiApiProfile? profile = null)
     : EmissionTypePlan(cSharpType)
 {
     public string IdlName { get; } = idlName;
+
+    /// <summary>Gets the primitive representation selected for this emission profile.</summary>
+    internal PrimitiveTypeMapping Mapping { get; } = PrimitiveTypeMapping.Resolve(idlName, profile);
+
     public override EmissionShape Shape { get; } = new(EmissionShapeKind.Primitive);
 }
 

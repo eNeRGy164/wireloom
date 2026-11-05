@@ -62,7 +62,7 @@ internal sealed class SequenceArrayEmissionPlan
                 }
 
                 var names = ReserveNames(symbols, declarationNamespace, $"{declarationName}_{member.Name}Sequence");
-                var element = EmissionTypeProjector.ToCollectionElementType(sequence.Element, declarationNamespace);
+                var element = EmissionTypeProjector.ToCollectionElementType(sequence.Element, declarationNamespace, profile);
                 var sequenceType = new SequenceEmissionType(element, sequence.EffectiveBound, $"ISequence<{element.CSharpType}>",
                     isBounded: sequence.Bound is not null, isUnbounded: sequence.IsUnbounded);
                 var wrapper = new AliasEmissionType(names.RuntimeTypeName, sequenceType, names.RuntimeTypeName,
@@ -86,7 +86,7 @@ internal sealed class SequenceArrayEmissionPlan
                 var requiresCast = true;
                 if (EmissionTypeProjector.UnwrapValueEmissionType(element) is PrimitiveEmissionType primitive)
                 {
-                    requiresCast = PrimitiveTypeMapping.Resolve(primitive.IdlName).NativeValueRequiresCast;
+                    requiresCast = primitive.Mapping.NativeValueRequiresCast;
                 }
 
                 var aliasPlan = new CollectionAliasEmissionPlan(element, isSequence: true, isArray: false,
