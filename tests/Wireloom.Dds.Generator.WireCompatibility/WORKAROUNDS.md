@@ -17,7 +17,7 @@ Raw captured RTI oracle sources are not edited; corrections live in versioned
 - [W007 · Recursive metadata propagation](#w007)
 - [W008 · Recursive C# plugin bootstrap](#w008)
 - [W009 · Recursive array TypeCode traversal](#w009)
-- [W010 · Recursive writer memory](#w010)
+- [W010 · Unbounded writer memory](#w010)
 - [W011 · Recursive type generation](#w011)
 - [W012 · Recursive type-name qualification](#w012)
 - [W013 · Wide-character union reference](#w013)
@@ -304,17 +304,19 @@ See [scratch C++ corrections](../Wireloom.Dds.Generator.WireCompatibility.Runner
 <a id="recursive-writer-memory"></a>
 <a id="w010"></a>
 
-## W010 · Recursive writer memory
+## W010 · Unbounded writer memory
 
-**Scope:** C134 `09-optional-recursive-array`\
-**Version:** `7.3.1`\
+**Scope:** C019 `06-aggregates` (direct recursive sequence), C134 `09-optional-recursive-array`,
+C135 `04-unbounded-string-aliases`, C136 `05-unbounded-sequence-aliases`,
+C173 `14-unbounded-support`, and C174 `14-unbounded-receive-lifecycle`\
+**Version:** `6.1.2`, `7.3.1`\
 **Peer:** Wireloom, RTI C#, and RTI C++ writers
 
-**Applies when:** Creating a writer for any recursive-array fixture, before writing the finite sample.
+**Applies when:** Creating a writer for one of the listed fixtures.
 
-Creating the writer with default memory settings makes RTI 7.3.1 preallocate
-about `64 GiB` from the recursive maximum sample size. The writer cannot attach
-when that allocation fails:
+Default writer pools can reserve space based on the type's maximum serialized
+size. For example, RTI 7.3.1 tries to allocate about `64 GiB` for 32 initial
+samples of an unbounded type. Writer creation fails if that allocation fails:
 
 ```csharp
 using var writer = participant.ImplicitPublisher.CreateDataWriter(topic, writerQos);
@@ -327,15 +329,15 @@ Set a fast-pool threshold before creating the writer:
 ```csharp
 writerQos = writerQos.WithProperty(properties => properties.Add(
     "dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size",
-    new Property.Entry("4096", false)));
+    new Property.Entry("4096", propagate: false)));
 ```
 
-The C++ writer sets the same property. This threshold limits fast-pool buffer
-allocation; larger samples can allocate separately. It is not a serialized
-sample-size limit. See
+The C++ writer sets the same property. The threshold controls fast-pool buffer
+allocation. Larger samples allocate separately. See
 [managed writer](Peer/PeerTransport.cs) and [native writer](Native/typed-fixture-peer.hpp.in).
 
-The harness applies this writer setting on both LTS profiles.
+The harness applies this writer setting across all profiles wherever the
+fixture runs.
 
 <a id="recursive-type-generation"></a>
 <a id="w011"></a>

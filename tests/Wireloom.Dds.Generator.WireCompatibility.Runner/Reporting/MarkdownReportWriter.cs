@@ -408,7 +408,9 @@ internal static class MarkdownReportWriter
             "07-union-char-numeric" => ["W003", "W004"],
             "07-union-char-numeric-255" => ["W003", "W004", "W005", "W006"],
             "09-optional-recursive-array" => ["W007", "W008", "W009", "W010"],
-            "06-aggregates" => ["W011", "W012"],
+            "06-aggregates" => ["W010", "W011", "W012"],
+            "04-unbounded-string-aliases" or "05-unbounded-sequence-aliases"
+                or "14-unbounded-support" or "14-unbounded-receive-lifecycle" => ["W010"],
             "07-union-wchar-label" => ["W013"],
             "10-flat-data-binding" => ["W014"],
             "10-resolve-name-wstring-aliases" => ["W015"],

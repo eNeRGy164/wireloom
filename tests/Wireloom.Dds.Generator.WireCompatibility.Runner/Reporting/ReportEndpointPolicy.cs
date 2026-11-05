@@ -13,9 +13,15 @@ internal static class ReportEndpointPolicy
         };
 
     /// <summary>Builds endpoint evidence using the established adaptation rules.</summary>
-    internal static ReportFields Create(string id, string fixture, string peer, string peerVersion)
+    internal static ReportFields Create(string id, string fixture, string peer, string peerVersion, bool isWriter)
     {
         var adaptation = Adaptation(id, fixture, peer, peerVersion);
+        if (isWriter && UnboundedWriterPool.AppliesTo(id, fixture))
+        {
+            var writerPool = $"Writer {UnboundedWriterPool.PropertyName}={UnboundedWriterPool.BufferSize} bytes. Larger samples allocate separately.";
+            adaptation = adaptation is null ? writerPool : $"{adaptation}\n{writerPool}";
+        }
+
         var (Implementation, Language) = PeerData[peer];
         var endpoint = new ReportFields
         {
@@ -86,13 +92,6 @@ internal static class ReportEndpointPolicy
         if (id == "09-optional-recursive-array")
         {
             var adaptation = "Disable TypeObject/TypeCode propagation.";
-            adaptation += " Writer dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size=4096 bytes; larger samples allocate separately.";
-
-            if (peerVersion == "7.3.1")
-            {
-                adaptation += " Avoids RTI 7.3.1 preallocating about 64 GiB.";
-            }
-
             if (peer == "RTI C#")
             {
                 adaptation += "\nBootstrap plugin before Support.Instance to avoid recursive initialization NullReferenceException.";

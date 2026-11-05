@@ -4,6 +4,7 @@
 // Existing DynamicData fixtures share a transport peer; case-specific typed
 // fixtures use generated members directly. Both are harness construction paths.
 #include <chrono>
+#include <cstdio>
 #include <cstdint>
 #include <iostream>
 #include <stdexcept>
@@ -61,6 +62,8 @@ int main(int argc, char **argv)
     }
 
     try {
+        // Keep native diagnostics separate from the lifecycle protocol on stdout.
+        rti::config::Logger::instance().output_file(stderr);
         rti::config::Logger::instance().verbosity(rti::config::Verbosity::WARNING);
         const std::string role(argv[1]);
         const std::string topic_name(argv[2]);

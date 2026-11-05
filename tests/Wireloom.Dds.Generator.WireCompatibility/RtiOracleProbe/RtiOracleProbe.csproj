@@ -74,6 +74,7 @@
     <Compile Include="../FixtureCatalog.cs" Link="FixtureCatalog.cs" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
     <Compile Include="../Peer/*.cs;../Fixtures/*.cs;../Verification/*.cs" Link="Shared/%(Filename)%(Extension)" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
     <Compile Include="../../Wireloom.Dds.Generator.WireCompatibility.Shared/LifecyclePhaseProtocol.cs" Link="Shared/LifecyclePhaseProtocol.cs" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
+    <Compile Include="../../Wireloom.Dds.Generator.WireCompatibility.Shared/UnboundedWriterPool.cs" Link="Shared/UnboundedWriterPool.cs" Condition="'$(RtiOracleProgram)' == '../Program.cs'" />
     <Compile Include="$(RtiOracleSourceDir)/**/*.cs" Condition="'$(RtiOracleSourceDir)' != ''" />
     <Compile Include="$(RtiOracleSource)" Link="RtiOracle.cs" Condition="'$(RtiOracleSourceDir)' == ''" />
     <Compile Include="$(RtiOraclePlugin)" Link="RtiOraclePlugin.cs" Condition="'$(RtiOracleSourceDir)' == ''" />

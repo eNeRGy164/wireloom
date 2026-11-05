@@ -94,11 +94,11 @@ internal sealed class ReportPresentationVerification
             "Scalar fixture assignment is not a compatibility workaround.");
 
         var sequenceScenarios = ReadJson(baseline)["scenarios"]!.AsArray()
-            .Where(item => (string?)item!["case"] is "05-unbounded-sequence-aliases" or "07-union-string-sequence-aliases")
+            .Where(item => (string?)item!["case"] == "07-union-string-sequence-aliases")
             .ToArray();
-        Check(sequenceScenarios.Length == 72 && sequenceScenarios.All(item =>
+        Check(sequenceScenarios.Length == 54 && sequenceScenarios.All(item =>
             new[] { "writer", "reader" }.All(role => item![role]!["adaptation"] is null)),
-            "Normal generated-sample construction is not an adaptation for any peer in either sequence case.");
+            "Normal generated-sample construction is not an adaptation for union sequence aliases.");
 
         var optionalAggregateScenarios = ReadJson(baseline)["scenarios"]!.AsArray()
             .Where(item => (string?)item!["case"] == "09-optional-aggregate-member").ToArray();
@@ -106,7 +106,7 @@ internal sealed class ReportPresentationVerification
             new[] { "writer", "reader" }.All(role => item![role]!["adaptation"] is null)),
             "Ordinary optional aggregate fixture construction is not an RTI workaround.");
 
-        foreach (var caseId in new[] { "04-strings", "04-boundaries", "04-unbounded-string-aliases",
+        foreach (var caseId in new[] { "04-strings", "04-boundaries",
             "04-string-alias-chains", "07-union-string-sequence-bounded-direct",
             "02-multiple", "03-enum-values-prefix", "03-enum-values-explicit" })
         {
@@ -151,8 +151,6 @@ internal sealed class ReportPresentationVerification
             {
                 var peer = scenario![role]!;
                 var adaptation = (string?)peer["adaptation"] ?? "";
-                Check(adaptation.Contains("pool_buffer_max_size=4096", StringComparison.Ordinal),
-                    "Every recursive peer reports the writer fast-pool threshold.");
                 Check(adaptation.Contains("Bootstrap", StringComparison.Ordinal) == ((string?)peer["peer"] == "RTI C#"),
                     "Only the RTI C# reference reports a recursive support bootstrap.");
             }
@@ -161,11 +159,19 @@ internal sealed class ReportPresentationVerification
         Check(scalarMarkdown.Contains("pool_buffer_max_size=4096", StringComparison.Ordinal),
             "The Markdown report discloses the recursive writer memory adaptation.");
 
-        Check(ReadJson(baseline)["scenarios"]!.AsArray()
-            .Where(item => (string?)item!["case"] != "09-optional-recursive-array")
-            .All(item => new[] { "writer", "reader" }.All(role =>
-                !((string?)item![role]!["adaptation"] ?? "").Contains("pool_buffer_max_size", StringComparison.Ordinal))),
-            "The writer memory adaptation is scoped to recursive-array scenarios.");
+        foreach (var item in ReadJson(baseline)["scenarios"]!.AsArray())
+        {
+            var caseId = (string)item!["case"]!;
+            var fixture = (string)item["fixture"]!;
+            var usesFinitePool = caseId is "04-unbounded-string-aliases" or "05-unbounded-sequence-aliases"
+                or "09-optional-recursive-array" or "14-unbounded-support" or "14-unbounded-receive-lifecycle"
+                || (caseId == "06-aggregates" && fixture == "direct-recursive-sequence");
+            var writerAdaptation = (string?)item["writer"]!["adaptation"] ?? "";
+            var readerAdaptation = (string?)item["reader"]!["adaptation"] ?? "";
+            Check(writerAdaptation.Contains("pool_buffer_max_size=4096", StringComparison.Ordinal) == usesFinitePool
+                && !readerAdaptation.Contains("pool_buffer_max_size", StringComparison.Ordinal),
+                $"Only writers for the selected unbounded fixtures report the fast-pool threshold: {caseId} [{fixture}].");
+        }
 
         Check(File.ReadAllText(Path.Combine(root, "baseline.md")) == File.ReadAllText(Path.Combine(merged, "results.md")), "Combined Markdown equals the unsharded report.");
 

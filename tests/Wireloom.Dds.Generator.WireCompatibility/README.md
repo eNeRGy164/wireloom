@@ -310,9 +310,9 @@ See [reproducible rti character-binding workarounds](../../docs/testing/wire-fix
 
 <a id="recursive-array-writer-memory"></a>
 
-### Recursive-array writer memory
+### Unbounded writer memory
 
-See [recursive-array writer memory](../../docs/testing/wire-fixtures.md#recursive-array-writer-memory).
+See [unbounded writer memory](../../docs/testing/wire-fixtures.md#unbounded-writer-memory).
 
 <a id="rti-731-negative-int8-union-discriminator"></a>
 

@@ -56,8 +56,8 @@ internal static class ReportEvidenceBuilder
             throw new InvalidDataException($"Case {id} is not applicable to RTI {version} and cannot contribute exchanges.");
         }
 
-        var writerEndpoint = ReportEndpointPolicy.Create(id, fixture, writer, writerVersion);
-        var readerEndpoint = ReportEndpointPolicy.Create(id, fixture, reader, readerVersion);
+        var writerEndpoint = ReportEndpointPolicy.Create(id, fixture, writer, writerVersion, isWriter: true);
+        var readerEndpoint = ReportEndpointPolicy.Create(id, fixture, reader, readerVersion, isWriter: false);
         var scenario = new ReportFields
         {
             ["case"] = id,
@@ -97,7 +97,8 @@ internal static class ReportEvidenceBuilder
 
         var adaptations = new Dictionary<string, string>();
 
-        foreach (var endpoint in new[] { writerEndpoint, readerEndpoint })
+        // Prefer writer evidence when both endpoints use the same peer.
+        foreach (var endpoint in new[] { readerEndpoint, writerEndpoint })
         {
             if (endpoint.TryGetValue("adaptation", out var value))
             {

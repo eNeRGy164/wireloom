@@ -8,6 +8,7 @@ using Rti.Dds.Subscription;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
 using Wireloom.Dds.Generator.TestSupport;
+using Wireloom.Dds.Generator.WireCompatibility.Shared;
 using LifecyclePhaseProtocol = global::Wireloom.Dds.Generator.WireCompatibility.Shared.LifecyclePhaseProtocol;
 
 namespace Wireloom.Dds.Generator.WireCompatibility;
@@ -65,13 +66,9 @@ internal static class PeerTransport
             writerQos = writerQos.WithRepresentation(PeerQos.Xcdr2Only);
         }
 
-        if (options.CaseId == "09-optional-recursive-array")
+        if (UnboundedWriterPool.AppliesTo(options.CaseId, options.Fixture))
         {
-            // The recursive maximum size makes RTI 7.3.1 preallocate about 64 GiB.
-            // Larger samples can still allocate outside this small fast pool.
-            writerQos = writerQos.WithProperty(properties => properties.Add(
-                "dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size",
-                new Property.Entry("4096", false)));
+            writerQos = WithFiniteWriterPool(writerQos);
         }
 
         using var writer = participant.ImplicitPublisher.CreateDataWriter(topic, writerQos);
@@ -190,17 +187,15 @@ internal static class PeerTransport
             writerQos = writerQos.WithRepresentation(PeerQos.Xcdr2Only);
         }
 
+        writerQos = WithFiniteWriterPool(writerQos);
+
         if (fragmented)
         {
-            writerQos = writerQos
-                .WithHistory(policy =>
-                {
-                    policy.Kind = HistoryKind.KeepLast;
-                    policy.Depth = 1;
-                })
-                .WithProperty(properties => properties.Add(
-                    "dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size",
-                    new Property.Entry("4096", propagate: false)));
+            writerQos = writerQos.WithHistory(policy =>
+            {
+                policy.Kind = HistoryKind.KeepLast;
+                policy.Depth = 1;
+            });
 
             writerQos = writerQos.WithPublishMode(policy =>
             {
@@ -215,20 +210,24 @@ internal static class PeerTransport
         var effectiveWriterQos = writer.Qos;
         var effectiveWriterProperties = effectiveWriterQos.Property.Value;
         var writerPoolSize = effectiveWriterProperties.TryGetValue(
-            "dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size", out var poolEntry)
+            UnboundedWriterPool.PropertyName, out var poolEntry)
             ? poolEntry.Value
             : string.Empty;
+
+        if (writerPoolSize != UnboundedWriterPool.BufferSize)
+        {
+            throw new InvalidOperationException("Effective lifecycle writer fast-pool threshold differs from its configured size.");
+        }
 
         if (fragmented && (effectiveWriterQos.PublishMode.Kind != PublishModeKind.Asynchronous
             || effectiveWriterQos.PublishMode.FlowControllerName != PublishMode.FixedRateFlowControllerName
             || effectiveWriterQos.History.Kind != HistoryKind.KeepLast
-            || effectiveWriterQos.History.Depth != 1
-            || writerPoolSize != "4096"))
+            || effectiveWriterQos.History.Depth != 1))
         {
-            throw new InvalidOperationException("Fragmented lifecycle writer effective QoS differs from its configured publish, flow-control, history, or memory-pool settings.");
+            throw new InvalidOperationException("Fragmented lifecycle writer effective QoS differs from its configured publish, flow-control, or history settings.");
         }
 
-        Console.WriteLine($"LIFECYCLE_WRITER_QOS asynchronous={(effectiveWriterQos.PublishMode.Kind == PublishModeKind.Asynchronous).ToString().ToLowerInvariant()} flow_controller={effectiveWriterQos.PublishMode.FlowControllerName} history_kind={effectiveWriterQos.History.Kind} history_depth={effectiveWriterQos.History.Depth} fast_pool_max_buffer_size={(writerPoolSize.Length == 0 ? "unset" : writerPoolSize)}");
+        Console.WriteLine($"LIFECYCLE_WRITER_QOS asynchronous={(effectiveWriterQos.PublishMode.Kind == PublishModeKind.Asynchronous).ToString().ToLowerInvariant()} flow_controller={effectiveWriterQos.PublishMode.FlowControllerName} history_kind={effectiveWriterQos.History.Kind} history_depth={effectiveWriterQos.History.Depth} fast_pool_max_buffer_size={writerPoolSize}");
         var protocol = new LifecyclePhaseProtocol(options.TopicName);
 
         for (var phaseId = 0; phaseId < LifecyclePhaseProtocol.PhaseCount; phaseId++)
@@ -434,6 +433,12 @@ internal static class PeerTransport
             : "wireloom-csharp";
         Console.WriteLine($"LIFECYCLE_RECEIVE_STORAGE implementation={implementation} phases=5 history_depth=1 optional_nested_transitions=true loan_returned_before_ack=true content_verified=true");
     }
+
+    // Allocate fast-pool buffers up to the threshold. Larger samples allocate separately.
+    private static DataWriterQos WithFiniteWriterPool(DataWriterQos qos) =>
+        qos.WithProperty(properties => properties.Add(
+            UnboundedWriterPool.PropertyName,
+            new Property.Entry(UnboundedWriterPool.BufferSize, propagate: false)));
 
     private static void WaitForSubscriptions<T>(DataWriter<T> writer, PeerOptions options)
     {
