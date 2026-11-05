@@ -54,7 +54,7 @@ namespace CorpusCharUnionBoundaries
         {
             get
             {
-                if (Discriminator != 'ÿ') 
+                if (Discriminator != '~') 
                 {
                     throw new InvalidOperationException("maximum not selected");
                 }
@@ -64,7 +64,7 @@ namespace CorpusCharUnionBoundaries
             set
             {
                 _maximum = value;
-                Discriminator = 'ÿ';
+                Discriminator = '~';
             }
         }
 
@@ -72,7 +72,7 @@ namespace CorpusCharUnionBoundaries
         {
             get
             {
-                if (Discriminator == '\0' || Discriminator == 'ÿ')
+                if (Discriminator == '\0' || Discriminator == '~')
 
                 {
                     throw new InvalidOperationException("fallback not selected");
@@ -105,7 +105,7 @@ namespace CorpusCharUnionBoundaries
                 case '\0':
                 this._minimum = other.minimum;
                 break;
-                case 'ÿ':
+                case '~':
                 this._maximum = other.maximum;
                 break;
                 default:
@@ -116,7 +116,7 @@ namespace CorpusCharUnionBoundaries
 
         public void Setfallback(int  fallback, char discriminator)
         {
-            if (discriminator == '\0' || discriminator == 'ÿ')
+            if (discriminator == '\0' || discriminator == '~')
 
             {
                 throw new ArgumentException("Invalid discriminator value for fallback", paramName: nameof(discriminator));
@@ -131,7 +131,7 @@ namespace CorpusCharUnionBoundaries
             {
                 case '\0':
                 return minimum;
-                case 'ÿ':
+                case '~':
                 return maximum;
                 default:
                 return fallback;
@@ -145,7 +145,7 @@ namespace CorpusCharUnionBoundaries
             {
                 case '\0':
                 return HashCode.Combine(Discriminator, this.minimum);
-                case 'ÿ':
+                case '~':
                 return HashCode.Combine(Discriminator, this.maximum);
                 default:
                 return HashCode.Combine(Discriminator, this.fallback);
@@ -173,7 +173,7 @@ namespace CorpusCharUnionBoundaries
             {
                 case '\0':
                 return this.minimum.Equals(other.minimum);
-                case 'ÿ':
+                case '~':
                 return this.maximum.Equals(other.maximum);
                 default:
                 return this.fallback.Equals(other.fallback);
