@@ -18,3 +18,14 @@ static dds::pub::qos::DataWriterQos reliable_writer_qos(const dds::pub::Publishe
 
     return qos;
 }
+
+static constexpr char writer_pool_property[] =
+    "dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size";
+static constexpr char writer_pool_buffer_size[] = "4096";
+
+// Allocate fast-pool buffers up to the threshold. Larger samples allocate separately.
+inline void configure_finite_writer_pool(dds::pub::qos::DataWriterQos &qos)
+{
+    qos.policy<rti::core::policy::Property>().set({
+        writer_pool_property, writer_pool_buffer_size});
+}

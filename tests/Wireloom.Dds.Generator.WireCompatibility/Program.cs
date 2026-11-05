@@ -12,6 +12,8 @@ internal static class Program
     {
         try
         {
+            // Keep native diagnostics from interleaving with the lifecycle protocol on stdout.
+            Logger.Instance.MessageLogged += message => Console.Error.WriteLine(message.Message);
             Logger.Instance.SetVerbosity(Verbosity.Warning);
             var options = PeerOptions.Parse(args);
             Run(options);

@@ -142,19 +142,20 @@ See [numeric character unions](../../tests/Wireloom.Dds.Generator.WireCompatibil
 failing generated code, guarded post-generation commands, compiler settings,
 and exact discriminator/payload checks.
 
-## Recursive-array writer memory
+<a id="recursive-array-writer-memory"></a>
 
-For `09-optional-recursive-array`, all three peers set the writer property
+## Unbounded writer memory
+
+For unbounded string and sequence aliases, unbounded support and receive
+lifecycle, and recursive fixtures, all three peers set the writer property
 `dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size`
-to `4096` bytes on both LTS versions. RTI 7.3.1 otherwise attempts to
-preallocate about 64 GiB from the recursive type's maximum serialized size,
-preventing writer creation before any sample is sent. The threshold controls
-fast-pool allocation; it does not cap serialized sample size, and larger
-samples can allocate separately. Reader QoS and fixture values are unchanged.
+to `4096` bytes. RTI 6.1.2 and 7.3.1 can fail to create a writer when
+the default pool allocates buffers based on the type's maximum serialized
+size. The threshold controls fast-pool allocation. Larger samples can
+allocate separately.
 
-JSON endpoint adaptations and the Markdown Adaptations column disclose this
-case-specific writer policy alongside the existing recursive metadata
-adaptations. This harness configuration does not modify generated bindings.
+JSON endpoint adaptations and the Markdown Adaptations column record the
+[writer policy](../../tests/Wireloom.Dds.Generator.WireCompatibility/WORKAROUNDS.md#w010).
 
 ## RTI 7.3.1 negative int8 union discriminator
 

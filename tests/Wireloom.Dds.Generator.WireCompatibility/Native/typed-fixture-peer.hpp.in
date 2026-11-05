@@ -669,11 +669,16 @@ static int run_typed_fixture_peer(
     if (role == "writer") {
         dds::pub::Publisher publisher(participant);
         auto writer_qos = reliable_writer_qos(publisher);
+        if (case_id == "04-unbounded-string-aliases"
+            || case_id == "05-unbounded-sequence-aliases"
+            || case_id == "09-optional-recursive-array"
+            || case_id == "14-unbounded-support"
+            || lifecycle_case) {
+            configure_finite_writer_pool(writer_qos);
+        }
         if (fragmented_fixture) {
             writer_qos << dds::core::policy::History(
                 dds::core::policy::HistoryKind::KEEP_LAST, 1);
-            writer_qos.policy<rti::core::policy::Property>().set({
-                {"dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size", "4096"}});
             writer_qos << rti::core::policy::PublishMode::Asynchronous(
                 "DDS_FIXED_RATE_FLOW_CONTROLLER_NAME");
         }
@@ -684,26 +689,23 @@ static int run_typed_fixture_peer(
                     : dds::core::policy::DataRepresentation::xcdr()};
             writer_qos << dds::core::policy::DataRepresentation(representations);
         }
-        if (case_id == "09-optional-recursive-array") {
-            // Avoid allocating the recursive maximum size for every initial sample.
-            // Samples larger than the fast-pool threshold can allocate separately.
-            writer_qos.policy<rti::core::policy::Property>().set({
-                "dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size",
-                "4096"});
-        }
-
         dds::pub::DataWriter<DdsType> writer(publisher, topic, writer_qos);
+        std::string pool_size;
+        if (lifecycle_case) {
+            pool_size = writer.qos().policy<rti::core::policy::Property>().get(writer_pool_property);
+            if (pool_size != writer_pool_buffer_size) {
+                throw std::runtime_error("Effective native lifecycle writer fast-pool threshold differs from its configured size");
+            }
+        }
         if (fragmented_fixture) {
             const auto effective_writer_qos = writer.qos();
             const auto &publish_mode = effective_writer_qos.policy<rti::core::policy::PublishMode>();
             const auto &history = effective_writer_qos.policy<dds::core::policy::History>();
-            const auto pool_size = effective_writer_qos.policy<rti::core::policy::Property>().get(
-                "dds.data_writer.history.memory_manager.fast_pool.pool_buffer_max_size");
             const bool asynchronous = publish_mode.kind() == rti::core::policy::PublishModeKind::ASYNCHRONOUS;
             if (!asynchronous || publish_mode.flow_controller_name() != "DDS_FIXED_RATE_FLOW_CONTROLLER_NAME"
                 || history.kind() != dds::core::policy::HistoryKind::KEEP_LAST
-                || history.depth() != 1 || pool_size != "4096") {
-                throw std::runtime_error("Effective native writer QoS differs from asynchronous flow-control/history/pool settings");
+                || history.depth() != 1) {
+                throw std::runtime_error("Effective native writer QoS differs from asynchronous flow-control/history settings");
             }
             std::cout << "LIFECYCLE_WRITER_QOS asynchronous=true flow_controller="
                       << publish_mode.flow_controller_name() << " history_kind=KEEP_LAST history_depth="

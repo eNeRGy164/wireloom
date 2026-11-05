@@ -8,6 +8,7 @@
 #include <vector>
 #include "idl.hpp"
 #include "idlPlugin.hpp"
+#include "peer-qos.hpp"
 
 using CorpusAggregates::Recursive;
 
@@ -89,6 +90,7 @@ int main(int argc, char** argv)
             auto writer_qos = publisher.default_datawriter_qos();
             writer_qos << dds::core::policy::Reliability(
                 dds::core::policy::ReliabilityKind::RELIABLE);
+            configure_finite_writer_pool(writer_qos);
             dds::pub::DataWriter<Recursive> writer(publisher, topic, writer_qos);
             const auto deadline = std::chrono::steady_clock::now()
                 + std::chrono::seconds(timeout_seconds);
