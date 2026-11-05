@@ -250,9 +250,14 @@ jobs:
           dotnet run --project $env:PACKAGE_INTEGRATION_TEST_PROJECT --no-restore --configuration Release `
             -p:WireloomDdsGeneratorPackageVersion=$env:TEST_PACKAGE_VERSION `
             -p:RtiConnextDdsVersion=$env:RTI_VERSION `
-            -p:WireloomConsumerTargetFramework=$env:CONSUMER_FRAMEWORK -p:LangVersion=12.0 |
-            Tee-Object artifacts/lts/package-integration.txt
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            -p:WireloomConsumerTargetFramework=$env:CONSUMER_FRAMEWORK -p:LangVersion=12.0 `
+            *> artifacts/lts/package-integration.txt
+          $consumerExitCode = $LASTEXITCODE
+          if ($consumerExitCode -ne 0) {
+            Get-Content artifacts/lts/package-integration.txt
+            exit $consumerExitCode
+          }
+          Write-Host 'Fresh-package consumer succeeded; complete build and test output is retained as an artifact.'
         shell: pwsh
 
       - name: Verify strict validation in the packed consumer
@@ -373,11 +378,16 @@ jobs:
                 -p:WireloomDdsGeneratorPackageVersion="$WIRELOOM_DDS_GENERATOR_PACKAGE_VERSION" \
                 -p:RtiConnextDdsVersion="$RTI_CONNEXT_DDS_VERSION" \
                 -p:WireloomConsumerTargetFramework=net8.0
-              dotnet build tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj \
+              if ! dotnet build tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj \
                 --no-restore --configuration Release \
                 -p:WireloomDdsGeneratorPackageVersion="$WIRELOOM_DDS_GENERATOR_PACKAGE_VERSION" \
                 -p:RtiConnextDdsVersion="$RTI_CONNEXT_DDS_VERSION" \
-                -p:WireloomConsumerTargetFramework=net8.0 -p:LangVersion=12.0
+                -p:WireloomConsumerTargetFramework=net8.0 -p:LangVersion=12.0 \
+                > /artifacts/package-consumer-build.txt 2>&1; then
+                cat /artifacts/package-consumer-build.txt
+                exit 1
+              fi
+              echo "Packed consumer build succeeded; complete build output is retained as an artifact."
               dotnet exec tests/Wireloom.Dds.Generator.PackageIntegration/bin/Release/net8.0/Wireloom.Dds.Generator.PackageIntegration.dll |
                 tee /artifacts/package-integration.txt
               if dotnet build tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj \
