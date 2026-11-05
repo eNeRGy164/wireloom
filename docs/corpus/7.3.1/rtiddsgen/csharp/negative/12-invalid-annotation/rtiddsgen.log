@@ -1,0 +1,5 @@
+INFO com.rti.ndds.nddsgen.Main Running rtiddsgen version 4.3.1, please wait ...
+WARN com.rti.ndds.nddsgen.antlr.annotation.IdlAnnotationFactory 12-invalid-annotation.idl line 1:34 The annotation 'position' is not handled for this release, it will be ignored
+ERROR com.rti.ndds.nddsgen.Main 12-invalid-annotation.idl line 1:34 The annotation '@position(1)' is not applicable for the context: struct.
+ERROR com.rti.ndds.nddsgen.Main Fail:  java.lang.Exception: The file couldn't be parsed and the rawTree wasn't generated
+INFO com.rti.ndds.nddsgen.Main Done (failures)

@@ -1,0 +1,4 @@
+INFO com.rti.ndds.nddsgen.Main Running rtiddsgen version 3.1.2, please wait ...
+ERROR com.rti.ndds.nddsgen.Main 12-unresolved-type.idl line 1:20 member type 'Unknown' not found
+ERROR com.rti.ndds.nddsgen.Main Fail:  java.lang.Exception: The file couldn't be parsed and the rawTree wasn't generated
+INFO com.rti.ndds.nddsgen.Main Done (failures)

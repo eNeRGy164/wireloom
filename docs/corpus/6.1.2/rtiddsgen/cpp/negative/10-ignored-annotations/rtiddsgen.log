@@ -1,0 +1,9 @@
+INFO com.rti.ndds.nddsgen.Main Running rtiddsgen version 3.1.2, please wait ...
+WARN com.rti.ndds.nddsgen.antlr.annotation.IdlAnnotationFactory Directive kind from //@verbatim("ignored text") was not recognized. The directive will be ignored.
+WARN com.rti.ndds.nddsgen.antlr.annotation.IdlAnnotationFactory Directive kind from //@ignore_literal_names was not recognized. The directive will be ignored.
+WARN com.rti.ndds.nddsgen.antlr.annotation.IdlAnnotationFactory Directive kind from //@try_construct was not recognized. The directive will be ignored.
+WARN com.rti.ndds.nddsgen.antlr.annotation.IdlAnnotationFactory Directive kind from //@copy-cs(// generated comment) was not recognized. The directive will be ignored.
+WARN com.rti.ndds.nddsgen.antlr.annotation.IdlAnnotationFactory Directive kind from //@copy-cs-declaration(// generated declaration comment) was not recognized. The directive will be ignored.
+ERROR com.rti.ndds.nddsgen.Main 10-ignored-annotations.idl line 9:8 @non_serialized is not supported
+ERROR com.rti.ndds.nddsgen.Main Fail:  java.lang.Exception: The file couldn't be parsed and the rawTree wasn't generated
+INFO com.rti.ndds.nddsgen.Main Done (failures)

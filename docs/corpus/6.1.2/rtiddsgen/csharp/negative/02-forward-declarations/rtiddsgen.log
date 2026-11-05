@@ -1,0 +1,4 @@
+INFO com.rti.ndds.nddsgen.Main Running rtiddsgen version 3.1.2, please wait ...
+ERROR com.rti.ndds.nddsgen.Main 02-forward-declarations.idl line 3:20 member has incomplete type
+ERROR com.rti.ndds.nddsgen.Main Fail:  java.lang.Exception: The file couldn't be parsed and the rawTree wasn't generated
+INFO com.rti.ndds.nddsgen.Main Done (failures)

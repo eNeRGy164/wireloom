@@ -1,0 +1,8 @@
+INFO com.rti.ndds.nddsgen.Main Running rtiddsgen version 3.1.2, please wait ...
+ERROR com.rti.ndds.nddsgen.IDLPreprocessor /work/docs/corpus/idl/negative/12-angle-missing.idl:1:10: fatal error: does-not-exist.idl: No such file or directory
+    1 | #include <does-not-exist.idl>
+      |          ^~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+
+ERROR com.rti.ndds.nddsgen.Main Fail:  java.lang.Exception: Error executing cpp preprocessor. Finished with exit value: 1
+INFO com.rti.ndds.nddsgen.Main Done (failures)
