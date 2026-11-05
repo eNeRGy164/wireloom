@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "Rti.ConnextDds": {
+        "type": "Direct",
+        "requested": "[6.1.2, )",
+        "resolved": "6.1.2",
+        "contentHash": "mWqn/jyei9RjQSegHtv5oJyruBPr+yZSDRHKXmJ35ucVSz0IyKJ+Vi3hlgaHfj5rte5Tu/l/Vzo3fjTsRsyXKA==",
+        "dependencies": {
+          "Microsoft.Bcl.HashCode": "1.1.0",
+          "Rti.ConnextDds.Native": "6.1.2"
+        }
+      },
+      "Microsoft.Bcl.HashCode": {
+        "type": "Transitive",
+        "resolved": "1.1.0",
+        "contentHash": "J2G1k+u5unBV+aYcwxo94ip16Rkp65pgWFb0R6zwJipzWNMgvqlWeuI7/+R+e8bob66LnSG+llLJ+z8wI94cHg=="
+      },
+      "Rti.ConnextDds.Native": {
+        "type": "Transitive",
+        "resolved": "6.1.2",
+        "contentHash": "ffi1Z+EDd1W9Y8rpMG3gIHntw+Ej/Y15nQ+OGsiigDMEw1LKxZynTyuuagnvE6Vp7BCvT3gYHxdkzSV5E5YjDg=="
+      },
+      "wireloom.dds.generator.testsupport": {
+        "type": "Project",
+        "dependencies": {
+          "Rti.ConnextDds": "[6.1.2, )"
+        }
+      }
+    }
+  }
+}

@@ -12,10 +12,16 @@ internal static partial class FixtureCatalog
             SetFixtureValue(sample, "shortValue", short.MinValue);
             SetFixtureValue(sample, "longValue", int.MaxValue);
             SetFixtureValue(sample, "longLongValue", long.MinValue);
-            SetFixtureValue(sample, "int8Value", sbyte.MinValue);
             SetFixtureValue(sample, "int64Value", long.MaxValue);
             SetFixtureValue(sample, "floatValue", 1.25f);
             SetFixtureValue(sample, "doubleValue", -2.5d);
+            return true;
+        }
+
+        if (caseId == "01-int8-boundaries")
+        {
+            SetFixtureValue(sample, "minimum", sbyte.MinValue);
+            SetFixtureValue(sample, "maximum", sbyte.MaxValue);
             return true;
         }
 

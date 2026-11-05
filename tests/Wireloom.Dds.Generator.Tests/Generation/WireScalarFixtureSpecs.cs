@@ -40,7 +40,6 @@ public sealed class WireScalarFixtureSpecs
     [InlineData("shortValue")]
     [InlineData("longValue")]
     [InlineData("longLongValue")]
-    [InlineData("int8Value")]
     [InlineData("int64Value")]
     [InlineData("floatValue")]
     [InlineData("doubleValue")]
@@ -54,6 +53,24 @@ public sealed class WireScalarFixtureSpecs
 
         // Act
         void Verify() => IndependentSampleVerifier.VerifyPrimitiveBoundaryFixture(sample, "01-boundaries", "changed boundary");
+
+        // Assert
+        Should.Throw<InvalidDataException>(Verify).Message.ShouldContain("Received sample differs");
+    }
+
+    /// <summary>Checks the isolated int8 endpoints independently and detects corruption.</summary>
+    [Theory]
+    [InlineData("minimum")]
+    [InlineData("maximum")]
+    public void Int8BoundaryFixtureChecksBothEndpoints(string changedMember)
+    {
+        // Arrange
+        var sample = ManagedFixtures.CreatePrimitiveBoundaryFixture<Int8BoundarySample>("01-int8-boundaries", "non-default");
+        IndependentSampleVerifier.VerifyPrimitiveBoundaryFixture(sample, "01-int8-boundaries", "correct int8 boundaries");
+        typeof(Int8BoundarySample).GetProperty(changedMember)!.SetValue(sample, (sbyte)0);
+
+        // Act
+        void Verify() => IndependentSampleVerifier.VerifyPrimitiveBoundaryFixture(sample, "01-int8-boundaries", "changed endpoint");
 
         // Assert
         Should.Throw<InvalidDataException>(Verify).Message.ShouldContain("Received sample differs");
@@ -138,14 +155,21 @@ public sealed class WireScalarFixtureSpecs
         public int longValue { get; set; }
         /// <summary>Gets or sets the signed long-long boundary.</summary>
         public long longLongValue { get; set; }
-        /// <summary>Gets or sets the signed byte boundary.</summary>
-        public sbyte int8Value { get; set; }
         /// <summary>Gets or sets the signed 64-bit boundary.</summary>
         public long int64Value { get; set; }
         /// <summary>Gets or sets the float fixture.</summary>
         public float floatValue { get; set; }
         /// <summary>Gets or sets the double fixture.</summary>
         public double doubleValue { get; set; }
+    }
+
+    private sealed class Int8BoundarySample
+    {
+        /// <summary>Gets or sets the signed byte minimum.</summary>
+        public sbyte minimum { get; set; }
+
+        /// <summary>Gets or sets the signed byte maximum.</summary>
+        public sbyte maximum { get; set; }
     }
 
     private sealed class FullWidthSample

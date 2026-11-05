@@ -18,7 +18,7 @@ internal sealed class NativePeerBuilder(MatrixOptions options, MatrixWorkspace w
         sources.WritePeerTemplates(paths, profile.CppType);
 
         var configureLog = Path.Combine(paths.Directory, "cmake-configure.log");
-        var architecture = options.RtiVersion == "7.3.1" ? "x64Linux4gcc7.3.0" : "x64Linux4gcc8.5.0";
+        var architecture = options.RtiVersion is "6.1.2" or "7.3.1" ? "x64Linux4gcc7.3.0" : "x64Linux4gcc8.5.0";
         var arguments = new List<string>
         {
             "-S", paths.Native,

@@ -29,7 +29,11 @@ public static partial class IndependentSampleVerifier
             }
             case UnionType union:
             {
+#if WIRELOOM_RTI_6_1_2
+                var discriminator = data.GetDiscriminatorValue();
+#else
                 var discriminator = data.GetDiscriminator();
+#endif
                 var selectedMember = FindUnionMember(union, discriminator);
                 return new SortedDictionary<string, object?>(StringComparer.Ordinal)
                 {

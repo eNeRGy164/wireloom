@@ -8,6 +8,10 @@
     <NuGetLockFilePath Condition="'$(RtiConnextDdsVersion)' != '7.7.0'">packages.$(RtiConnextDdsVersion).lock.json</NuGetLockFilePath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(RtiConnextDdsVersion)' == '6.1.2'">
+    <DefineConstants>$(DefineConstants);WIRELOOM_RTI_6_1_2</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Rti.ConnextDds" />
     <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />

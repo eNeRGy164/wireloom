@@ -3,17 +3,17 @@ namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 /// <summary>Checks profile discovery and synthetic exclusion policy in-process.</summary>
 internal static class CaseDiscoveryVerification
 {
-    /// <summary>Verifies both qualified profiles and edge cases without a utility subprocess.</summary>
+    /// <summary>Verifies all exact profiles and edge cases without a utility subprocess.</summary>
     internal static void Run(MatrixWorkspace workspace)
     {
         VerifyExclusionPolicy(workspace.ForCase("case-discovery-verification").Directory);
 
-        foreach (var version in new[] { "7.3.1", "7.7.0" })
+        foreach (var version in new[] { "6.1.2", "7.3.1", "7.7.0" })
         {
             // Arrange
             var exclusions = Path.Combine(workspace.TestRoot, $"wire-case-exclusions-{version}.json");
             var discovered = CorpusCaseDiscovery.Read(workspace.Manifest, exclusions);
-            var expectedCaseCount = version == "7.3.1" ? 92 : 93;
+            var expectedCaseCount = version switch { "6.1.2" => 84, "7.3.1" => 93, _ => 94 };
 
             // Assert
             Check(discovered.WireloomCases.Count == expectedCaseCount, $"Case discovery must retain the expected eligible case count for RTI {version}.");

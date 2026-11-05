@@ -31,6 +31,7 @@ internal static class RtiTypeDiscoveryVerification
 
         // Act / Assert
         Check(RtiTypeDiscovery.Discover("example", "-", directory) == "Alpha.Sample", "Default Sample roots must use ordinal qualified-name tie breaking.");
+        Check(RtiTypeDiscovery.Discover("example", "-", directory, allowUnqualifiedTypeNames: true) == "A.Sample", "The 6.1.2 discovery mode must accept legacy unqualified type references.");
         Check(RtiTypeDiscovery.Discover("03-enums-aliases", "-", directory) == "Oracle.Record", "The case-specific root must precede defaults.");
         Check(RtiTypeDiscovery.Discover("03-enums-aliases", "Wireloom.Sample", directory) == "Alpha.Sample", "The Wireloom root name must precede case-specific preferences.");
         Check(RtiTypeDiscovery.Discover("example", "Wireloom.Zebra", directory) == "Oracle.Zebra", "Wireloom namespace differences must not affect basename matching.");

@@ -41,14 +41,18 @@ internal static class CaseSelectionVerification
 
         try
         {
-            foreach (var version in new[] { "7.3.1", "7.7.0" })
+            foreach (var version in new[] { "6.1.2", "7.3.1", "7.7.0" })
             {
                 Environment.SetEnvironmentVariable("WIRE_COMPATIBILITY_RTI_VERSION", version);
 
                 var registryPath = Path.Combine(repositoryRoot, "tests", "Wireloom.Dds.Generator.WireCompatibility", $"wire-case-exclusions-{version}.json");
                 var selected = Invoke(succeeds: true, "list-cases", manifestPath, registryPath).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-                Check(selected.Length == (version == "7.3.1" ? 92 : 93), "Only applicable positive cases are selected.");
+                var expectedCount = version switch { "6.1.2" => 84, "7.3.1" => 93, _ => 94 };
+                Check(selected.Length == expectedCount, "Only applicable positive cases are selected.");
+                Check(selected.Contains("01-boundaries"), "Primitive boundaries without int8 apply to every profile.");
+                Check(selected.Contains("01-int8-boundaries") == (version != "6.1.2"), "Signed-int8 boundary support follows the selected profile.");
+                Check(selected.Contains("09-optional-collections") == (version != "6.1.2"), "Optional-collection applicability follows the selected profile.");
                 Check(selected.Contains("05-array-of-sequences-idl"), "The IDL mapping is an independently selected corpus case.");
                 Check(Invoke(succeeds: true, "case-pairings", manifestPath, "05-array-of-sequences-idl")
                         .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)

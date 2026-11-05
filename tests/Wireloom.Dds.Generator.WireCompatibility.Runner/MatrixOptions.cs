@@ -4,7 +4,7 @@ namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 
 /// <summary>Immutable settings captured once from the wire runner environment.</summary>
 /// <param name="RepositoryRoot">Checkout containing the corpus and peer projects.</param>
-/// <param name="RtiVersion">Exact qualified RTI release.</param>
+/// <param name="RtiVersion">Exact RTI release selected for the run.</param>
 /// <param name="CompileOnly">Whether to stop after peer compilation.</param>
 /// <param name="CaseFilter">Optional comma-separated selection of corpus cases.</param>
 /// <param name="ShardIndex">Zero-based shard selected by the planner.</param>
@@ -56,9 +56,9 @@ internal sealed record MatrixOptions(
     /// <summary>Rejects unsupported profiles and invalid scheduling bounds before preparation.</summary>
     internal void Validate()
     {
-        if (RtiVersion is not ("7.3.1" or "7.7.0"))
+        if (RtiVersion is not ("6.1.2" or "7.3.1" or "7.7.0"))
         {
-            throw new ArgumentException("The wire runner supports exact RTI 7.3.1 and 7.7.0 only.");
+            throw new ArgumentException("The wire runner supports exact RTI 6.1.2, 7.3.1, and 7.7.0 only.");
         }
 
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(ShardCount);

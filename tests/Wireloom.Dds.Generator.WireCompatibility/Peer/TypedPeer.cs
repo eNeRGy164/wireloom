@@ -35,7 +35,7 @@ internal static class TypedPeer
         if (!isDirectRecursiveSequenceFixture
             && options.CaseId is not ("09-optional-recursive-array" or "05-unbounded-sequence-aliases"
             or "07-union-char-numeric" or "07-union-char-numeric-255" or "07-union-string-sequence-aliases"
-            or "09-defaults-ranges" or "01-boundaries" or "01-full-widths"
+            or "09-defaults-ranges" or "01-boundaries" or "01-int8-boundaries" or "01-full-widths"
             or "10-default-literal-enum-array" or "05-array-of-sequences-idl"
             or "14-extensibility-full" or "14-autoid-scope" or "14-annotation-arguments"
             or "14-member-declarators" or "14-union-label-expressions" or "14-union-scoped-enum"
@@ -79,8 +79,11 @@ internal static class TypedPeer
         if (isDirectRecursiveSequenceFixture && recursiveTypeObjectProfile == "v1")
         {
             participantQos = participantQos
-                .WithResourceLimits(policy => policy.TypeObjectMaxSerializedLength = 8192)
+                .WithResourceLimits(policy => policy.TypeObjectMaxSerializedLength = 8192);
+#if !WIRELOOM_RTI_6_1_2
+            participantQos = participantQos
                 .WithDiscoveryConfig(policy => policy.EnabledBuiltinChannels = BuiltinChannelsKind.ServiceRequest);
+#endif
         }
         else if (isDirectRecursiveSequenceFixture && recursiveTypeObjectProfile != "v2")
         {

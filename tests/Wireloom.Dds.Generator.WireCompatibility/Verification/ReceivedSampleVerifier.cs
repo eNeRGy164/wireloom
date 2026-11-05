@@ -42,6 +42,7 @@ internal static class ReceivedSampleVerifier
                 IndependentSampleVerifier.VerifyDefaultsAndRangesFixture(sample!, context);
                 break;
             case "01-boundaries":
+            case "01-int8-boundaries":
             case "01-full-widths":
                 IndependentSampleVerifier.VerifyPrimitiveBoundaryFixture(sample!, options.CaseId, context);
                 break;

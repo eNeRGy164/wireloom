@@ -12,6 +12,7 @@ internal static class FixtureCatalogVerification
             ["unknown-case"] = ["default"],
             ["01-primitives"] = ["default"],
             ["01-boundaries"] = ["non-default"],
+            ["01-int8-boundaries"] = ["non-default"],
             ["05-array-of-sequences-idl"] = ["sequence-empty", "sequence-unequal", "sequence-mixed-empty", "sequence-boundary"],
             ["06-aggregates"] = ["non-default", "direct-recursive-sequence"],
             ["09-optional-aggregate-member"] = ["optional-absent", "optional-present"],
@@ -27,8 +28,14 @@ internal static class FixtureCatalogVerification
             ["14-unbounded-receive-lifecycle"] = ["lifecycle-xcdr1", "lifecycle-xcdr2", "fragmented-xcdr1", "fragmented-xcdr2"],
         };
 
-        foreach (var version in new[] { "7.3.1", "7.7.0" })
+        foreach (var version in new[] { "6.1.2", "7.3.1", "7.7.0" })
         {
+            var native = NativePeerProfile.ForCase("04-strings", version, "CorpusStrings.Sample");
+            Check(native.Options.Contains("-DWIRELOOM_RTI_LEGACY_API=ON") == (version != "7.7.0"),
+                $"Native accessor selection must match RTI {version}.");
+            Check(native.Options.Contains("-DWIRELOOM_RTI_6_1_2=ON") == (version == "6.1.2"),
+                $"Native signed-int8 API availability must match RTI {version}.");
+
             foreach (var (caseId, expected) in shared)
             {
                 // Act

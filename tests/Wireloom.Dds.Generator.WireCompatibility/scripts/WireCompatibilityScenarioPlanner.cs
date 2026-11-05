@@ -18,7 +18,7 @@ internal static class WireCompatibilityScenarioPlanner
     internal static void CreatePlan(string manifestPath, string exclusionsPath, string version, string caseFilter,
         int shardIndex, int shardCount, string destination)
     {
-        if (version is not ("7.3.1" or "7.7.0"))
+        if (version is not ("6.1.2" or "7.3.1" or "7.7.0"))
         {
             throw new ArgumentException($"Unsupported RTI profile: {version}.");
         }

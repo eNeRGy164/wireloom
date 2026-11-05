@@ -46,7 +46,7 @@ internal static class PeerTransport
             .WithReliability(policy => policy.Kind = ReliabilityKind.Reliable)
             .WithProtocol(policy =>
             {
-                // Use the same acknowledgment cadence on both RTI LTS versions.
+                // Use the same acknowledgment cadence for each RTI profile.
                 // Keep the default 30-second inactive-reader detection window.
                 var protocol = policy.RtpsReliableWriter;
                 var heartbeatPeriod = Omg.Dds.Core.Duration.FromMilliseconds(50);

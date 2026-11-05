@@ -474,9 +474,9 @@ sealed record Options(
         var options = new Options(
             Required("scenarios"), Required("case-builds"), Required("rti-version"),
             Required("output-directory"), Required("scratch"), timeout, parallelism);
-        if (options.RtiVersion is not ("7.3.1" or "7.7.0"))
+        if (options.RtiVersion is not ("6.1.2" or "7.3.1" or "7.7.0"))
         {
-            throw new ArgumentException("Only RTI profiles 7.3.1 and 7.7.0 are supported.");
+            throw new ArgumentException("Only RTI profiles 6.1.2, 7.3.1, and 7.7.0 are supported.");
         }
 
         return options;

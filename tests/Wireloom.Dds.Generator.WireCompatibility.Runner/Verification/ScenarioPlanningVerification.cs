@@ -3,14 +3,14 @@ namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 /// <summary>Verifies scenario policy, deterministic shard assignments, and retained planning artifacts.</summary>
 internal static class ScenarioPlanningVerification
 {
-    /// <summary>Exercises both complete profiles and focused planning edge cases without RTI processes.</summary>
+    /// <summary>Exercises all complete profiles and focused planning edge cases without RTI processes.</summary>
     internal static void Run(MatrixOptions options)
     {
         var root = Path.Combine(options.ScratchDirectory, "planning-verification");
         VerifyPairingPolicy(root);
         VerifyShardTiesAndInvalidInputs(root);
 
-        foreach (var (version, expectedCases, expectedScenarios) in new[] { ("7.3.1", 92, 1614), ("7.7.0", 93, 1609) })
+        foreach (var (version, expectedCases, expectedScenarios) in new[] { ("6.1.2", 84, 1436), ("7.3.1", 93, 1623), ("7.7.0", 94, 1618) })
         {
             VerifyCompleteProfile(options, root, version, expectedCases, expectedScenarios);
             Console.WriteLine($"Scenario planning {version}: {expectedCases} cases, {expectedScenarios} exchanges across 8 shards; complete and deterministic.");
@@ -55,7 +55,8 @@ internal static class ScenarioPlanningVerification
                 Check(plan.Exchanges is not null, "A wire run must return its typed scenario plan.");
 
                 var exchanges = plan.Exchanges!;
-                Check(exchanges.Cases.Count == expectedCases && exchanges.TotalScenarioCount == expectedScenarios, "A full profile must retain its complete expected evidence.");
+                Check(exchanges.Cases.Count == expectedCases && exchanges.TotalScenarioCount == expectedScenarios,
+                    $"RTI {version}: expected {expectedCases} cases and {expectedScenarios} exchanges; found {exchanges.Cases.Count} cases and {exchanges.TotalScenarioCount} exchanges.");
                 Check(plan.ExpectedScenarioCount == exchanges.Scenarios.Count, "Expected shard count must come from the in-memory plan.");
                 Check(plan.CaseIds.All(allCaseIds.Add), "A whole case must belong to exactly one shard.");
                 Check(exchanges.Scenarios.All(allScenarios.Add), "An exchange must belong to exactly one shard.");
@@ -174,7 +175,7 @@ internal static class ScenarioPlanningVerification
         var compileOptions = options with
         {
             CompileOnly = true,
-            CaseFilter = "14-enum-constant,01-primitives",
+            CaseFilter = "14-enum-constant,01-boundaries",
             ShardIndex = 0,
             ShardCount = 1,
             ScratchDirectory = Path.Combine(root, "compile-scratch"),
@@ -194,7 +195,7 @@ internal static class ScenarioPlanningVerification
 
         // Assert
         Check(plan.Exchanges is null && plan.ExpectedScenarioCount == 0, "Compile-only mode must not expand exchanges.");
-        Check(plan.CaseIds.SequenceEqual(["14-enum-constant", "01-primitives"], StringComparer.Ordinal), "Compile-only mode must retain ordered selected cases in memory.");
+        Check(plan.CaseIds.SequenceEqual(["14-enum-constant", "01-boundaries"], StringComparer.Ordinal), "Compile-only mode must retain ordered selected cases in memory.");
         Check(!File.Exists(workspace.Output("plan.json")) && !File.Exists(workspace.Output("shard.json")) &&
             !File.Exists(workspace.Output("selected-cases.txt")), "Initialization must discard stale planning artifacts.");
     }

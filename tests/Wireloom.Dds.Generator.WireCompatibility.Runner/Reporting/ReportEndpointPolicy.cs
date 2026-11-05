@@ -56,7 +56,7 @@ internal static class ReportEndpointPolicy
             return "Checked-in adjusted RTI C# oracle: use an unchecked 32-bit conversion for the maximum union label.";
         }
 
-        if (peer == "RTI C#" && id == "07-union-char-boundaries")
+        if (peer == "RTI C#" && id == "07-union-char-boundaries" && peerVersion == "7.7.0")
         {
             return "Checked-in adjusted RTI C# oracle: restore the IDL ASCII maximum label U+007E in place of the captured U+00FF literal.";
         }

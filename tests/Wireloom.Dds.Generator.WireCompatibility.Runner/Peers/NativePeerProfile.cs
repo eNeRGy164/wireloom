@@ -40,9 +40,14 @@ internal sealed record NativePeerProfile(string CppType, IReadOnlyList<string> O
     internal static NativePeerProfile ForCase(string caseId, string rtiVersion, string cppType)
     {
         var options = new List<string>();
-        if (rtiVersion == "7.3.1")
+        if (rtiVersion is "6.1.2" or "7.3.1")
         {
-            options.Add("-DWIRELOOM_RTI_7_3_1=ON");
+            options.Add("-DWIRELOOM_RTI_LEGACY_API=ON");
+        }
+
+        if (rtiVersion == "6.1.2")
+        {
+            options.Add("-DWIRELOOM_RTI_6_1_2=ON");
         }
 
         var ccache = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator).Select(directory => Path.Combine(directory, "ccache")).FirstOrDefault(File.Exists);

@@ -67,7 +67,7 @@ internal sealed class ManagedPeerBuilder(MatrixOptions options, MatrixWorkspace 
         string typeName;
         try
         {
-            typeName = RtiTypeDiscovery.Discover(descriptor.CaseId, descriptor.WireloomType, generated);
+            typeName = RtiTypeDiscovery.Discover(descriptor.CaseId, descriptor.WireloomType, generated, allowUnqualifiedTypeNames: options.RtiVersion == "6.1.2");
         }
         catch (Exception exception) when (exception is InvalidOperationException or IOException or UnauthorizedAccessException)
         {
@@ -86,6 +86,8 @@ internal sealed class ManagedPeerBuilder(MatrixOptions options, MatrixWorkspace 
                 "--no-restore",
                 "--configuration", "Release",
                 "--verbosity", "quiet",
+                $"-p:WireCompatibilityRtiVersion={options.RtiVersion}",
+                $"-p:RtiConnextDdsVersion={options.RtiVersion}",
                 $"-p:RtiOracleSourceDir={generated}",
                 $"-p:WireCompatibilityCase={descriptor.CaseId}",
                 $"-p:BaseIntermediateOutputPath={Path.Combine(paths.Directory, "rti-obj")}/",
