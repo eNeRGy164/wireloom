@@ -32,6 +32,7 @@ internal static class ShardScenarioBuilder
             ["03-enum-values-prefix"] = ["default"],
             ["03-enum-values-explicit"] = ["default"],
             ["01-boundaries"] = ["non-default"],
+            ["01-int8-boundaries"] = ["non-default"],
             ["01-full-widths"] = ["non-default"],
             ["09-defaults-ranges"] = ["non-default"],
             ["05-array-of-sequences"] = ["default"],
@@ -62,10 +63,13 @@ internal static class ShardScenarioBuilder
         };
 
         var rows = new List<ScenarioRow>();
+        var definitions = ReadJson(manifestPath)["positiveCases"]!.AsArray()
+            .ToDictionary(item => (string)item!["id"]!, item => item!, StringComparer.Ordinal);
 
         foreach (var item in cases)
         {
-            var pairings = peers.SelectMany(writer => peers.Select(reader => (Writer: writer, Reader: reader))).ToArray();
+            var availablePeers = PeerPairingPolicy.GetPeers(definitions[item.Key], rtiVersion);
+            var pairings = availablePeers.SelectMany(writer => availablePeers.Select(reader => (Writer: writer, Reader: reader))).ToArray();
 
             foreach (var fixture in item.Value)
             {

@@ -48,10 +48,14 @@ internal static partial class ManagedFixtures
                 ["shortValue"] = short.MinValue,
                 ["longValue"] = int.MaxValue,
                 ["longLongValue"] = long.MinValue,
-                ["int8Value"] = sbyte.MinValue,
                 ["int64Value"] = long.MaxValue,
                 ["floatValue"] = 1.25f,
                 ["doubleValue"] = -2.5d
+            },
+            "01-int8-boundaries" => new()
+            {
+                ["minimum"] = sbyte.MinValue,
+                ["maximum"] = sbyte.MaxValue
             },
             "01-full-widths" => new()
             {

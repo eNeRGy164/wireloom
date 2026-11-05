@@ -7,7 +7,7 @@ internal static class WireCompatibilityCaseCatalog
 {
     private static readonly ImmutableHashSet<string> NonDefaultCases = new HashSet<string>(StringComparer.Ordinal)
     {
-        "01-boundaries", "01-full-widths", "02-names-constants", "02-scopes", "02-constant-expressions",
+        "01-boundaries", "01-int8-boundaries", "01-full-widths", "02-names-constants", "02-scopes", "02-constant-expressions",
         "02-formatting", "02-multiple", "03-alias-aggregate", "03-alias-collections", "04-strings",
         "04-boundaries", "04-unbounded-string-aliases", "04-string-alias-chains", "05-unbounded-sequence-aliases",
         "05-collections", "05-shapes", "06-aggregates", "06-alias-composition", "07-unions", "07-union-enum",

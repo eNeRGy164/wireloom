@@ -50,8 +50,8 @@ try
         VerifyFinalizationPolicy();
         return 0;
     }
-    if (version is not ("7.3.1" or "7.7.0"))
-        throw new ArgumentException("The wire runner supports exact RTI 7.3.1 and 7.7.0 only.");
+    if (version is not ("6.1.2" or "7.3.1" or "7.7.0"))
+        throw new ArgumentException("The wire runner supports exact RTI 6.1.2, 7.3.1, and 7.7.0 only.");
 
     InitializeRtiEnvironment();
     var license = Environment.GetEnvironmentVariable("RTI_LICENSE_FILE");
@@ -236,7 +236,7 @@ try
         File.Copy(Path.Combine(nativeTemplate, "typed-fixture-peer.hpp.in"), Path.Combine(nativeDir, "typed-fixture-peer.hpp"), true);
         File.Copy(Path.Combine(nativeTemplate, "peer-qos.hpp"), Path.Combine(nativeDir, "peer-qos.hpp"), true);
         File.Copy(Path.Combine(nativeTemplate, "CMakeLists.txt"), Path.Combine(nativeDir, "CMakeLists.txt"), true);
-        var cmakeArgs = new List<string> { "-S", nativeDir, "-B", Path.Combine(nativeDir, "build"), "-DCMAKE_MODULE_PATH=" + Path.Combine(Environment.GetEnvironmentVariable("NDDSHOME")!, "resource", "cmake"), "-DCONNEXTDDS_ARCH=" + (version == "7.3.1" ? "x64Linux4gcc7.3.0" : "x64Linux4gcc8.5.0") };
+        var cmakeArgs = new List<string> { "-S", nativeDir, "-B", Path.Combine(nativeDir, "build"), "-DCMAKE_MODULE_PATH=" + Path.Combine(Environment.GetEnvironmentVariable("NDDSHOME")!, "resource", "cmake"), "-DCONNEXTDDS_ARCH=" + (version is "6.1.2" or "7.3.1" ? "x64Linux4gcc7.3.0" : "x64Linux4gcc8.5.0") };
         cmakeArgs.AddRange(cmakeOptions.Options);
         var cmake = await Run("cmake", cmakeArgs, Path.Combine(caseDir, "cmake-configure.log"), allowFailure: true);
         if (cmake.ExitCode != 0) { cppRows.Add($"{caseId}\tcmake-configure-failed\tsee {caseDir}/cmake-configure.log"); overallStatus = 1; EndGroup(); continue; }
@@ -376,6 +376,7 @@ async Task<(bool Available, string TypeName)> PrepareRtiCSharp(string caseId, st
     var rtiBin = Path.GetDirectoryName(peerPath)!;
     Directory.CreateDirectory(rtiBin);
     var build = await Run("dotnet", ["build", rtiProject, "--no-restore", "--configuration", "Release", "--verbosity", "quiet",
+        $"-p:WireCompatibilityRtiVersion={version}", $"-p:RtiConnextDdsVersion={version}",
         $"-p:RtiOracleSourceDir={generatedDir}", $"-p:WireCompatibilityCase={caseId}", $"-p:BaseIntermediateOutputPath={Path.Combine(caseDir, "rti-obj")}/",
         $"-p:MSBuildProjectExtensionsPath={Path.Combine(testRoot, "RtiOracleProbe", "obj")}/", $"-p:RestorePackagesPath={nuget}", $"-p:OutputPath={rtiBin}/"],
         Path.Combine(caseDir, "rti-csharp-build.log"), allowFailure: true);
@@ -473,7 +474,8 @@ void StageCppOracle(string caseId, string source, string destination, string rep
 (string CppType, List<string> Options) CMakeOptions(string caseId, string rti, string cppType, string nativeDir, bool noOracle)
 {
     var options = new List<string>();
-    if (rti == "7.3.1") options.Add("-DWIRELOOM_RTI_7_3_1=ON");
+    if (rti is "6.1.2" or "7.3.1") options.Add("-DWIRELOOM_RTI_LEGACY_API=ON");
+    if (rti == "6.1.2") options.Add("-DWIRELOOM_RTI_6_1_2=ON");
     var ccache = FindExecutable("ccache");
     if (ccache is not null) options.Add("-DCMAKE_CXX_COMPILER_LAUNCHER=" + ccache);
     var type = cppType;

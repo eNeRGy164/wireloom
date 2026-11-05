@@ -16,7 +16,7 @@ static Recursive expected_sample()
     Recursive root;
     Recursive child;
     Recursive leaf;
-#ifdef WIRELOOM_RTI_7_3_1
+#ifdef WIRELOOM_RTI_LEGACY_API
     leaf.value(6103);
     child.value(6102);
     root.value(6101);
@@ -38,7 +38,7 @@ static Recursive expected_sample()
 
 static bool matches(const Recursive& actual)
 {
-#ifdef WIRELOOM_RTI_7_3_1
+#ifdef WIRELOOM_RTI_LEGACY_API
     return actual.value() == 6101
         && actual.children().size() == 1
         && actual.children()[0].value() == 6102

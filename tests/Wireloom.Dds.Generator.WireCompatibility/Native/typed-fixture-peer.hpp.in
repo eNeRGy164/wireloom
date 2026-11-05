@@ -7,7 +7,7 @@
 #include <sstream>
 #include <utility>
 
-#ifdef WIRELOOM_RTI_7_3_1
+#ifdef WIRELOOM_RTI_LEGACY_API
 #define WIRELOOM_SET_TYPED_STRING(member, value) expected.member(value)
 #define WIRELOOM_SET_TYPED_STRING_ON(object, member, value) object.member(value)
 #define WIRELOOM_SET_TYPED_MEMBER(member, value) expected.member(value)
@@ -105,7 +105,7 @@ static int run_typed_fixture_peer(
         WIRELOOM_SET_TYPED_STRING_ON(sample, boundedText, bounded.str());
 
         if (empty) {
-#ifdef WIRELOOM_RTI_7_3_1
+#ifdef WIRELOOM_RTI_LEGACY_API
             ::rti::topic::reset_sample(sample.optionalState());
 #else
             sample.optionalState.reset();
@@ -121,7 +121,7 @@ static int run_typed_fixture_peer(
                     + std::to_string(index) + "-" + pattern(phase == 4 ? 32 : 7, phase + index));
             }
             if (phase == 2) {
-#ifdef WIRELOOM_RTI_7_3_1
+#ifdef WIRELOOM_RTI_LEGACY_API
                 ::rti::topic::reset_sample(optional_state.note());
 #else
                 optional_state.note.reset();
@@ -130,7 +130,7 @@ static int run_typed_fixture_peer(
                 std::string optional_note = "optional-" + std::to_string(phase) + "-note";
                 WIRELOOM_SET_TYPED_STRING_ON(optional_state, note, optional_note);
             }
-#ifdef WIRELOOM_RTI_7_3_1
+#ifdef WIRELOOM_RTI_LEGACY_API
             sample.optionalState(::dds::core::optional<::CorpusUnboundedReceiveLifecycle::OptionalState>(std::move(optional_state)));
 #else
             sample.optionalState = std::move(optional_state);
@@ -650,14 +650,14 @@ static int run_typed_fixture_peer(
             ::dds::core::array<DdsType, 2> grandchildren;
             WIRELOOM_SET_TYPED_MEMBER_ON(grandchildren[0], value, 9821);
             WIRELOOM_SET_TYPED_MEMBER_ON(grandchildren[1], value, 9822);
-#ifdef WIRELOOM_RTI_7_3_1
+#ifdef WIRELOOM_RTI_LEGACY_API
             children[0].children(::dds::core::optional<::dds::core::array<DdsType, 2>>(
                 std::move(grandchildren)));
 #else
             children[0].children = std::move(grandchildren);
 #endif
         }
-#ifdef WIRELOOM_RTI_7_3_1
+#ifdef WIRELOOM_RTI_LEGACY_API
         expected.children(::dds::core::optional<::dds::core::array<DdsType, 2>>(std::move(children)));
 #else
         expected.children = std::move(children);

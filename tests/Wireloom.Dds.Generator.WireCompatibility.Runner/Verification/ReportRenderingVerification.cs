@@ -5,15 +5,15 @@ namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 /// <summary>Checks in-process report artifacts, evidence guards, and finalization failures without a helper DLL.</summary>
 internal static class ReportRenderingVerification
 {
-    /// <summary>Renders both profiles and exercises recovery and partial writes before utilities are built.</summary>
+    /// <summary>Renders all profiles and exercises recovery and partial writes before utilities are built.</summary>
     internal static void Run(MatrixOptions options)
     {
-        foreach (var version in new[] { "7.3.1", "7.7.0" })
+        foreach (var version in new[] { "6.1.2", "7.3.1", "7.7.0" })
         {
             VerifyProfile(options, version);
         }
 
-        Console.WriteLine("Report rendering passed: both profiles, JSON/Markdown, log details, provenance guards, helper-free recovery, malformed rows, and partial artifact writes.");
+        Console.WriteLine("Report rendering passed: all profiles, JSON/Markdown, log details, provenance guards, helper-free recovery, malformed rows, and partial artifact writes.");
     }
 
     private static void VerifyProfile(MatrixOptions options, string version)
@@ -40,12 +40,12 @@ internal static class ReportRenderingVerification
         };
 
         File.WriteAllLines(workspace.Scenarios, rows.Select(row => row.ToTsv()));
-        File.WriteAllText(Path.Combine(workspace.Logs, "01-primitives-default-rti-cs-wireloom-cs.log"),
+        File.WriteAllText(Path.Combine(workspace.Logs, "01-boundaries-non-default-rti-cs-wireloom-cs.log"),
             """
             FAIL_DETAIL Expected 10; observed 20.
             ENDPOINT_STATUS writer_exit_code=139 reader_exit_code=0
             """);
-        File.WriteAllText(Path.Combine(workspace.Logs, "01-primitives-default-rti-cpp-rti-cpp.log"), "NOT_RUN_DETAIL Native peer was unavailable.\n");
+        File.WriteAllText(Path.Combine(workspace.Logs, "01-boundaries-non-default-rti-cpp-rti-cpp.log"), "NOT_RUN_DETAIL Native peer was unavailable.\n");
 
         var request = new ReportRequest(version, rows.Length, workspace.Scenarios, workspace.Output("results.json"),
             workspace.Output("results.md"), workspace.Logs, workspace.Exclusions, workspace.Manifest, options.RepositoryRoot);
@@ -172,7 +172,7 @@ internal static class ReportRenderingVerification
     }
 
     private static ScenarioRow Row(string version, string writer, string reader, string status) =>
-        new("01-primitives", "Example.Sample", "Example.Sample", "::Example::Sample", writer, version, reader, version, status, "default");
+        new("01-boundaries", "Example.Sample", "Example.Sample", "::Example::Sample", writer, version, reader, version, status, "non-default");
 
     private static void CheckWriteRejected(Action action)
     {

@@ -51,6 +51,10 @@
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-typed-defaults'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C171</DefineConstants></PropertyGroup>
   <PropertyGroup Condition="'$(WireCompatibilityCase)' == '14-enum-constant'"><DefineConstants>$(DefineConstants);WIRE_COMPATIBILITY_C172</DefineConstants></PropertyGroup>
 
+  <PropertyGroup Condition="'$(WireCompatibilityRtiVersion)' == '6.1.2'">
+    <DefineConstants>$(DefineConstants);WIRELOOM_RTI_6_1_2</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />
     <PackageReference Include="Rti.ConnextDds" Version="$(WireCompatibilityRtiVersion)" />

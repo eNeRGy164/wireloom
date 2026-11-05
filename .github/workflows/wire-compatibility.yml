@@ -83,9 +83,11 @@ jobs:
       fail-fast: false
       max-parallel: 16
       matrix:
-        rti_version: ['7.3.1', '7.7.0']
+        rti_version: ['6.1.2', '7.3.1', '7.7.0']
         shard: ${{ fromJSON(needs.plan.outputs.indices) }}
         include:
+          - rti_version: '6.1.2'
+            rti_package_version: 6.1.2.0-5-4bullseye
           - rti_version: '7.3.1'
             rti_package_version: 7.3.1.0-1-1bullseye
           - rti_version: '7.7.0'
@@ -242,7 +244,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rti_version: ['7.3.1', '7.7.0']
+        rti_version: ['6.1.2', '7.3.1', '7.7.0']
     env:
       WIRE_COMPATIBILITY_RTI_VERSION: ${{ matrix.rti_version }}
     steps:

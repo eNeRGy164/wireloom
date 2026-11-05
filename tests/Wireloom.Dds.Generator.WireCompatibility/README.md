@@ -6,7 +6,7 @@ each other. It complements the [runtime contract suite](../Wireloom.Dds.Generato
 which checks generated APIs and runtime behavior without claiming wire
 compatibility.
 
-The matrix targets the exact RTI Connext LTS releases 7.3.1 and 7.7.0. Each
+The matrix targets the exact RTI Connext releases 6.1.2, 7.3.1, and 7.7.0. Each
 fixture is an independent exchange across the nine directed writer/reader
 pairings among the three peers, unless an explicit corpus case records a
 narrower peer scope and its exclusion reasons. A reader must receive
@@ -15,13 +15,19 @@ the full expected fixture; discovery or lifecycle notifications alone do not
 count as a pass. These runs provide evidence for the selected corpus cases,
 not qualification of every feature or RTI release.
 
+| RTI version | Wire runner       | Evidence                                                                                   |
+| :---------- | :---------------- | :----------------------------------------------------------------------------------------- |
+| 6.1.2       | Production matrix | [Case results](../../docs/corpus/6.1.2/FEATURE-COVERAGE.md#runtime-and-wire-compatibility) |
+| 7.3.1       | Production matrix | [Case results](../../docs/corpus/7.3.1/FEATURE-COVERAGE.md#runtime-and-wire-compatibility) |
+| 7.7.0       | Production matrix | [Case results](../../docs/corpus/7.7.0/FEATURE-COVERAGE.md#runtime-and-wire-compatibility) |
+
 Version-specific registries separate `notApplicableCases` from
 `notImplementedCases`. A feature introduced after the selected RTI version is
 not applicable: it contributes no exchanges, failures, or implementation gaps.
 JSON and Markdown reports retain its case ID and reason separately. For
 example, `09-must-understand` (C142) is not applicable to 7.3.1; explicitly
 requesting it is rejected before peer builds or type-support discovery.
-`09-autoid-hash` (C040) independently checks hash member IDs on both versions;
+`09-autoid-hash` (C040) independently checks hash member IDs on all three versions;
 C142 is exercised on 7.7.0 only. A green workflow means all planned exchanges
 completed and the reports were combined. Individual pairings can still fail,
 so inspect the combined report before making a profile-qualification claim.
@@ -31,7 +37,7 @@ so inspect the combined report before making a profile-qualification claim.
 ### GitHub Actions
 
 Dispatch **Wire compatibility** on `main` for release evidence, or on a
-branch you control for diagnostics. Each run covers both RTI profiles and
+branch you control for diagnostics. Each run covers all three RTI profiles and
 defaults to four case shards per profile. The dispatch input also accepts
 six or eight shards per profile for benchmarking. Each profile has a separate
 report job and combined artifact.
@@ -44,8 +50,7 @@ skip the licensed matrix when the secret is absent. PRs from forks into the
 upstream repository, and Dependabot PRs, use the license-free Quality harness.
 Review workflow changes before approving any run that can access the license.
 
-The combined artifacts are named `wire-compatibility-rti-7.3.1` and
-`wire-compatibility-rti-7.7.0`. Shard artifacts use
+Combined artifacts use the name `wire-compatibility-rti-<version>`. Shard artifacts use
 `wire-compatibility-rti-<version>-<count>-shards-<index>` and retain raw
 reference copies and staged IDL hashes under `raw/`. The merge checks the
 actual shard evidence even when a shard fails. A green run establishes
@@ -135,8 +140,12 @@ From a clean Linux checkout with Docker available, build and run one profile:
 
 ```bash
 version=7.3.1
-package_version=7.3.1.0-1-1bullseye
-# For 7.7.0 use package_version=7.7.0.0-1-1bookworm.
+case "$version" in
+  6.1.2) package_version=6.1.2.0-5-4bullseye ;;
+  7.3.1) package_version=7.3.1.0-1-1bullseye ;;
+  7.7.0) package_version=7.7.0.0-1-1bookworm ;;
+  *) echo "Unsupported RTI version: $version" >&2; exit 1 ;;
+esac
 license_file="$HOME/rti_license.dat" # Keep the license outside the checkout.
 [[ -f "$license_file" && -z "$(git status --porcelain)" ]] || exit 1
 run_dir="$PWD/artifacts/wire-rti-$version-$(date -u +%Y%m%dT%H%M%SZ)"

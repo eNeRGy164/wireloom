@@ -32,8 +32,8 @@ Raw captured RTI oracle sources are not edited; corrections live in versioned
 
 ## W001 · Optional wide-string sequences
 
-**Scope:** C114 `09-optional-string-sequences`  
-**Version:** `7.3.1`, `7.7.0`  
+**Scope:** C114 `09-optional-string-sequences`\
+**Version:** `7.3.1`, `7.7.0`\
 **Peer:** RTI C++ reference
 
 **Applies when:** `optional-wide-only` and `optional-multiple`; other fixtures retain the typed path.
@@ -64,8 +64,8 @@ The implementation checks the return code and sets each element. It constructs
 
 ## W002 · Shadowed C# member
 
-**Scope:** C021 `06-alias-composition`  
-**Version:** `7.3.1`, `7.7.0`  
+**Scope:** C021 `06-alias-composition`\
+**Version:** `6.1.2`, `7.3.1`, `7.7.0`\
 **Peer:** RTI C# reference
 
 **Applies when:** Compiling generated native conversion methods for a member named `sample`.
@@ -92,8 +92,8 @@ The patch changes only those receivers. See [reference build](../Wireloom.Dds.Ge
 
 ## W003 · Numeric character casts
 
-**Scope:** C137 `07-union-char-numeric`; C141 `07-union-char-numeric-255`  
-**Version:** `7.3.1`, `7.7.0`  
+**Scope:** C137 `07-union-char-numeric`; C141 `07-union-char-numeric-255`\
+**Version:** `6.1.2`, `7.3.1`, `7.7.0`\
 **Peer:** RTI C# reference
 
 **Applies when:** Compiling numeric `char` discriminator assignments and labels.
@@ -127,8 +127,8 @@ and [patch utility](../Wireloom.Dds.Generator.WireCompatibility.Verifier/Verifie
 
 ## W004 · Character fallback discriminator
 
-**Scope:** C137 `07-union-char-numeric`; C141 `07-union-char-numeric-255`  
-**Version:** `7.3.1`, `7.7.0`  
+**Scope:** C137 `07-union-char-numeric`; C141 `07-union-char-numeric-255`\
+**Version:** `6.1.2`, `7.3.1`, `7.7.0`\
 **Peer:** RTI C# reference
 
 **Applies when:** Deserializing the `union-default` fixture with discriminator `65` and payload `13703`.
@@ -155,8 +155,8 @@ See [patch utility](../Wireloom.Dds.Generator.WireCompatibility.Verifier/Verifie
 
 ## W005 · Character label metadata
 
-**Scope:** C141 `07-union-char-numeric-255`  
-**Version:** `7.3.1`, `7.7.0`  
+**Scope:** C141 `07-union-char-numeric-255`\
+**Version:** `6.1.2`, `7.3.1`, `7.7.0`\
 **Peer:** RTI C# and RTI C++ references
 
 **Applies when:** Representing label `255` in generated internal union metadata.
@@ -193,8 +193,8 @@ See [patch utility](../Wireloom.Dds.Generator.WireCompatibility.Verifier/Verifie
 
 ## W006 · Unsigned character compilation
 
-**Scope:** C141 `07-union-char-numeric-255`  
-**Version:** `7.3.1`, `7.7.0`  
+**Scope:** C141 `07-union-char-numeric-255`\
+**Version:** `6.1.2`, `7.3.1`, `7.7.0`\
 **Peer:** RTI C++ generated binding and consuming code on Linux
 
 **Applies when:** Building high-label `char` union branch guards.
@@ -222,8 +222,8 @@ The same C++ expression then yields `255`. This compiler setting does not correc
 
 ## W007 · Recursive metadata propagation
 
-**Scope:** C134 `09-optional-recursive-array`  
-**Version:** `7.7.0`  
+**Scope:** C134 `09-optional-recursive-array`\
+**Version:** `7.7.0`\
 **Peer:** Wireloom, RTI C#, and RTI C++ participants
 
 **Applies when:** Registering the recursive array type for discovery.
@@ -251,8 +251,8 @@ or [recursive C++ traversal](#recursive-array-typecode-traversal). See
 
 ## W008 · Recursive C# plugin bootstrap
 
-**Scope:** C134 `09-optional-recursive-array`  
-**Version:** `7.3.1`, `7.7.0`  
+**Scope:** C134 `09-optional-recursive-array`\
+**Version:** `7.3.1`, `7.7.0`\
 **Peer:** RTI C# reference
 
 **Applies when:** Initializing generated recursive-array TypeSupport.
@@ -279,8 +279,8 @@ See [typed peer setup](Peer/TypedPeer.cs).
 
 ## W009 · Recursive array TypeCode traversal
 
-**Scope:** C134 `09-optional-recursive-array`  
-**Version:** `7.3.1`, `7.7.0`  
+**Scope:** C134 `09-optional-recursive-array`\
+**Version:** `7.3.1`, `7.7.0`\
 **Peer:** RTI C++ reference
 
 **Applies when:** Initializing the recursive array element TypeCode.
@@ -306,8 +306,8 @@ See [scratch C++ corrections](../Wireloom.Dds.Generator.WireCompatibility.Runner
 
 ## W010 · Recursive writer memory
 
-**Scope:** C134 `09-optional-recursive-array`  
-**Version:** `7.3.1`  
+**Scope:** C134 `09-optional-recursive-array`\
+**Version:** `7.3.1`\
 **Peer:** Wireloom, RTI C#, and RTI C++ writers
 
 **Applies when:** Creating a writer for any recursive-array fixture, before writing the finite sample.
@@ -342,8 +342,8 @@ The harness applies this writer setting on both LTS profiles.
 
 ## W011 · Recursive type generation
 
-**Scope:** C019 `06-aggregates`; C134 `09-optional-recursive-array`  
-**Version:** `7.3.1`, `7.7.0`  
+**Scope:** C019 `06-aggregates`; C134 `09-optional-recursive-array`\
+**Version:** `7.3.1`, `7.7.0`\
 **Peer:** RTI C++ reference
 
 **Applies when:** Generating C++ bindings for recursive types.
@@ -370,8 +370,8 @@ See [reference build](../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/N
 
 ## W012 · Recursive type-name qualification
 
-**Scope:** C019 `06-aggregates`; C134 `09-optional-recursive-array`  
-**Version:** `7.3.1`  
+**Scope:** C019 `06-aggregates`; C134 `09-optional-recursive-array`\
+**Version:** `7.3.1`\
 **Peer:** RTI C++ reference
 
 **Applies when:** Compiling recursive TypeCode references generated with [recursive-type support](#recursive-type-generation).
@@ -398,8 +398,8 @@ for C134. See [reference build](../Wireloom.Dds.Generator.WireCompatibility.Runn
 
 ## W013 · Wide-character union reference
 
-**Scope:** C113 `07-union-wchar-label`  
-**Version:** `7.3.1`, `7.7.0`  
+**Scope:** C113 `07-union-wchar-label`\
+**Version:** `6.1.2`, `7.3.1`, `7.7.0`\
 **Peer:** RTI C++ manual reference; RTI C# reference remains unavailable
 
 **Applies when:** Exchanging the `wchar` union through a manually constructed DynamicType.
@@ -441,8 +441,8 @@ failures pass. See [native type model](Native/main.cpp.in).
 
 ## W014 · FlatData reference input
 
-**Scope:** C047 `10-flat-data-binding`  
-**Version:** `7.3.1`, `7.7.0`  
+**Scope:** C047 `10-flat-data-binding`\
+**Version:** `6.1.2`, `7.3.1`, `7.7.0`\
 **Peer:** RTI C++ reference
 
 **Applies when:** Generating ordinary C++ bindings from the shared IDL containing `@language_binding(FLAT_DATA)`.
@@ -478,7 +478,7 @@ See [IDL adaptation](../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/Na
 ## W015 · Wstring alias peer corrections
 
 **Scope:** C147 `10-resolve-name-wstring-aliases`<br>
-**Version:** `7.3.1`, `7.7.0`<br>
+**Version:** `6.1.2`, `7.3.1`, `7.7.0`\
 **Peer:** RTI C# and RTI C++ references
 
 **Applies when:** Compiling RTI C# plugin code or C++ TypeCode metadata for structure members that use the `@resolve_name(false)` wstring aliases.
@@ -526,7 +526,7 @@ row](../../../docs/corpus/FEATURE-COVERAGE.md).
 
 ## W016 · Unsigned 32-bit union labels
 
-**Scope:** C119 `07-union-ulong`; C125 `07-union-uint32`; **Version:** `7.3.1`, `7.7.0`
+**Scope:** C119 `07-union-ulong`; C125 `07-union-uint32`; **Version:** `6.1.2`, `7.3.1`, `7.7.0`
 **Peer:** RTI C# reference
 
 **Applies when:** Compiling the generated RTI C# plugin metadata for the
@@ -555,13 +555,13 @@ peer and its hashes are recorded under `csharp/wire-adjusted` in
 
 ## W017 · ASCII character label capture
 
-**Scope:** C130 `07-union-char-boundaries`; **Version:** `7.3.1`, `7.7.0`
+**Scope:** C130 `07-union-char-boundaries`; **Version:** `7.7.0`
 **Peer:** RTI C# reference
 
 **Applies when:** The captured RTI C# source represents the maximum label for
 the IDL `char` discriminator.
 
-The IDL declares ASCII tilde (`~`, U+007E), but the captured RTI C# output uses
+The IDL declares ASCII tilde (`~`, U+007E), but the retained 7.7.0 RTI C# output uses
 U+00FF (`ÿ`) in its branch checks and type metadata. The adjusted oracle changes
 those literals to `~`, matching the declared label and the 27 passing pairings
 in the latest wire CI run. The original captures remain unchanged in
@@ -572,8 +572,8 @@ in the latest wire CI run. The original captures remain unchanged in
 
 ## W018 · Generated include staging
 
-**Scope:** C164 `14-autoid-scope`; C172 `14-enum-constant`<br>
-**Version:** `7.3.1`, `7.7.0`<br>
+**Scope:** C048 `11-preprocessing`; C053 `11-include-search`; C164 `14-autoid-scope`; C172 `14-enum-constant`<br>
+**Version:** `6.1.2`, `7.3.1`, `7.7.0`\
 **Peer:** RTI C# and RTI C++ references
 
 **Applies when:** Compiling generated peers whose IDL includes resolve by

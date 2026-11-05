@@ -7,14 +7,20 @@ internal static class RtiTypeDiscovery
 {
     /// <summary>Prefers the Wireloom root name, then case-specific/default roots, then ordinal qualified names.</summary>
     /// <exception cref="InvalidOperationException">No matching RTI TypeSupport is present.</exception>
-    internal static string Discover(string caseId, string wireloomType, string sourceDirectory)
+    internal static string Discover(string caseId, string wireloomType, string sourceDirectory, bool allowUnqualifiedTypeNames = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(caseId);
         ArgumentException.ThrowIfNullOrWhiteSpace(wireloomType);
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceDirectory);
 
+        var typePattern = @"class\s+\w+Support\s*:\s*Rti\.Dds\.Topics\.TypeSupport<\s*global::([\w.]+)\s*>";
+        if (allowUnqualifiedTypeNames)
+        {
+            typePattern = typePattern.Replace("global::", "(?:global::)?", StringComparison.Ordinal);
+        }
+
         var types = Directory.EnumerateFiles(sourceDirectory, "*.cs", SearchOption.AllDirectories)
-            .SelectMany(path => Regex.Matches(File.ReadAllText(path), @"class\s+\w+Support\s*:\s*Rti\.Dds\.Topics\.TypeSupport<\s*global::([\w.]+)\s*>")
+            .SelectMany(path => Regex.Matches(File.ReadAllText(path), typePattern)
                 .Select(match => match.Groups[1].Value)).ToList();
         if (types.Count == 0)
         {
