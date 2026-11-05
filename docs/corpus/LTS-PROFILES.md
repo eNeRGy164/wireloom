@@ -1,17 +1,26 @@
 # LTS evidence and reproduction
 
 The shared inventory is defined by `idl/` and `manifest.json`. Each version
-folder contains its RTI oracles, Wireloom exports, and feature coverage.
-Features unavailable in a release are N/A; `@must_understand` is N/A on 7.3.1.
+folder records its RTI oracles, available Wireloom exports, and feature coverage.
+Features unavailable in a release are N/A.
 See [feature coverage](FEATURE-COVERAGE.md) for current compatibility limits.
 
-| RTI package | API profile    | rtiddsgen | Pinned capture / helper base image                                                                  |
-| :---------- | :------------- | :-------- | :-------------------------------------------------------------------------------------------------- |
-| 7.3.1       | `Rtiddsgen431` | 4.3.1     | `rticom/connext-base:7.3.1@sha256:f33a61ec6381a8fb73cbb019fbb5c081f434dc5217eb14283fad995306be0f04` |
-| 7.7.0       | `Rtiddsgen470` | 4.7.0     | `rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca` |
+| RTI package | API profile    | rtiddsgen | Pinned capture / helper base image                                                                                |
+| :---------- | :------------- | :-------- | :---------------------------------------------------------------------------------------------------------------- |
+| 6.1.2       | `Rtiddsgen312` | 3.1.2     | Local `wireloom-oracle:6.1.2`, image ID `sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1` |
+| 7.3.1       | `Rtiddsgen431` | 4.3.1     | `rticom/connext-base:7.3.1@sha256:f33a61ec6381a8fb73cbb019fbb5c081f434dc5217eb14283fad995306be0f04`               |
+| 7.7.0       | `Rtiddsgen470` | 4.7.0     | `rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca`               |
 
-The resolved RTI assembly selects the API profile; qualification covers only
-these exact releases. The root manifest's `oracle` block describes the 7.7.0
+| RTI package | Feature and oracle evidence                                          | Wireloom source exports              | Runtime / DDS wire evidence                                                                 |
+| :---------- | :------------------------------------------------------------------- | :----------------------------------- | :------------------------------------------------------------------------------------------ |
+| 6.1.2       | [Feature coverage](6.1.2/FEATURE-COVERAGE.md); C# and C++11 captures | [Retained exports](6.1.2/generator/) | Exact-version runtime and wire evidence; see profile-specific limits and recorded outcomes. |
+| 7.3.1       | [Feature coverage](7.3.1/FEATURE-COVERAGE.md); C# and C++11 captures | [Retained exports](7.3.1/generator/) | Exact-version runtime and wire evidence; see profile-specific limits and recorded outcomes. |
+| 7.7.0       | [Feature coverage](7.7.0/FEATURE-COVERAGE.md); C# and C++11 captures | [Retained exports](7.7.0/generator/) | Exact-version runtime and wire evidence; see profile-specific limits and recorded outcomes. |
+
+The resolved RTI assembly selects the API profile. Generation, compilation,
+runtime, and wire evidence establish different results for each exact release;
+profile selection does not extend qualification to other versions. The root
+manifest's `oracle` block describes the 7.7.0
 capture, not the selected profile.
 
 ## Prerequisites
@@ -29,15 +38,22 @@ Retain generated reference sources with their original notices and provenance.
 $corpus = 'tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj'
 
 dotnet restore $corpus --locked-mode
+foreach ($version in @('6.1.2', '7.3.1', '7.7.0')) {
+    $env:CORPUS_RTI_PROFILE = $version
+    dotnet run --project $corpus --no-restore --configuration Release -- --filter-trait CorpusSuite=Generation
+    if ($LASTEXITCODE -ne 0) { throw "Corpus failed: $version" }
+}
+
+# Detailed oracle comparisons use the separately qualified oracle profiles.
 foreach ($version in @('7.3.1', '7.7.0')) {
     $env:CORPUS_RTI_PROFILE = $version
-    dotnet run --project $corpus --no-restore --configuration Release
-    if ($LASTEXITCODE -ne 0) { throw "Corpus failed: $version" }
+    dotnet run --project $corpus --no-restore --configuration Release -- --filter-trait CorpusSuite=Oracle
+    if ($LASTEXITCODE -ne 0) { throw "Oracle comparison failed: $version" }
 }
 Remove-Item Env:CORPUS_RTI_PROFILE
 ```
 
-Export both profiles with locked restore, Release tests, logs, SDK details,
+Export all three profiles with locked restore, Release tests, logs, SDK details,
 and input/output hashes:
 
 ```powershell
@@ -46,10 +62,30 @@ and input/output hashes:
 
 Use a new `-OutputRoot` for comparison. Sources go to
 `<OutputRoot>/<version>/generator/`; evidence goes to `artifacts/corpus-export-.../`.
-Use `-Profile 7.3.1` for one profile. Without `-OutputRoot`, the script updates
+Use `-Profile 6.1.2`, `-Profile 7.3.1`, or `-Profile 7.7.0` for one profile.
+Every profile selects `CorpusSuite=Generation`: the same inventory-wide
+generation, exact-runtime compilation, and export checks. Detailed oracle
+comparisons run separately with `CorpusSuite=Oracle` as shown above.
+Without `-OutputRoot`, the script updates
 `docs/corpus/<version>/generator/` but leaves obsolete files for manual review.
 
 ## Capture RTI C# and C++ oracles
+
+Use the pinned image listed for the selected version. Registry images are
+selected by default for 7.3.1 and 7.7.0. The 6.1.2 image is built locally from
+the matching trimmed image and official RTI packages; pass its immutable image
+ID through `-Image`:
+
+```powershell
+docker build --file tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile.wire --build-arg RTI_VERSION=6.1.2 --build-arg RTI_PACKAGE_VERSION=6.1.2.0-5-4bullseye --tag wireloom-wire:6.1.2-trimmed tests/Wireloom.Dds.Generator.WireCompatibility
+docker build --file tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile.oracle --tag wireloom-oracle:6.1.2 tests/Wireloom.Dds.Generator.WireCompatibility
+$captureImage = docker image inspect wireloom-oracle:6.1.2 --format '{{.Id}}'
+./docs/corpus/scripts/Capture-RtiOracles.ps1 -Version 6.1.2 -Image $captureImage
+```
+
+The capture image adds the exact `6.1.2.0-5-4bullseye` RTI JRE and generator
+packages from the same official signed feed used by the trimmed image.
+Keep the build log and image ID with the capture. It requires no RTI license.
 
 ```powershell
 ./docs/corpus/scripts/Capture-RtiOracles.ps1 -Version 7.3.1 -CaseId 09-autoid-hash,09-must-understand
@@ -66,7 +102,7 @@ only on 7.7.0. The C++ FlatData input adaptation is recorded with input hashes.
 Wire-peer workarounds are not applied to oracle captures.
 
 Retain generated dependencies for included IDL as well as root outputs. RTI
-7.3.1 requires generating the included IDL separately; 7.7.0 can place included
+6.1.2 and 7.3.1 require generating the included IDL separately; 7.7.0 can place included
 output beside the root output directory. C164 retains its independently
 generated `autoid-hash-include.idl` output in the case's `includes/` directory.
 Its profile manifests record this additional capture and its hashes.
@@ -80,8 +116,9 @@ Before retaining a capture:
 
 1. Compare output with the matching `<version>/rtiddsgen/` tree and review
    diagnostics, options, hashes, and original notices.
-2. Copy reviewed generated sources into the corpus. Keep capture reports,
-   toolchain records, and logs in the artifact bundle.
+2. Copy reviewed generated sources into the corpus. For a negative case that
+   produces no source, retain its `rtiddsgen.log` in the case directory.
+   Keep other logs, capture reports, and toolchain records in the artifact bundle.
 3. Update the profile's C# and C++ manifests and feature coverage together.
 
 ## Compile an RTI C# oracle
@@ -103,7 +140,8 @@ dotnet build $probe --no-restore --configuration Release -p:WireCompatibilityRti
 ## Runtime, package, and wire verification
 
 The [continuous matrix](../guides/support-and-compatibility.md#continuous-lts-verification)
-checks Windows/Linux, both RTI packages, and .NET 8/10 consumers. Local commands
+checks planning and reports for all three profiles and exercises their runtime
+contracts and fresh packages on Windows and Linux with .NET 8 and .NET 10. Local commands
 are in the [runtime guide](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#run)
 and [package guide](../../tests/Wireloom.Dds.Generator.PackageIntegration/README.md).
 .NET 8 execution requires its runtime alongside the repository SDK.

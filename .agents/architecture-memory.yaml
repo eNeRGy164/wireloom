@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-11-03T18:54:31.689Z
+  generated_at: 2026-11-05T07:01:08.6222099Z
   arc42_home: docs/architecture/arc42
   format: yaml-only
 sources:
@@ -122,7 +122,9 @@ summary:
       metadata with zero initial capacity; finite fallback sizes are ignored,
       and explicit IDL bounds remain finite. Isolate snapshots/state; bound work/output, not
       process memory. Distinct macro outputs and unique hints matter. Preserve
-      optional presence, reference/copy semantics, allocation, and native cleanup.
+      optional presence, profile-specific copy ownership, allocation, and native cleanup.
+      RTI 6.1.2 retains collection-alias wrappers when copying members, union
+      branches, and alias chains; newer profiles copy those wrappers.
       Workspace edits are atomic; source backup is independent of generation.
       Restore cannot overwrite edits; serialize saves/deletes, with no resurrection
       after successful reset deletion. Workspace v3 upgrades to v4 with
@@ -173,8 +175,10 @@ summary:
       batch-wide; optimize on evidence.
       Numerical budgets remain open. Reporting guidance and a
       compatibility issue template exist; qualification remains open.
+      RTI profile availability and reference restrictions are in the support guide;
+      generation does not qualify excluded reference behavior.
       Priorities constrain affected claims, not all uses.
-    sources: [docs/architecture/arc42/11-risks-and-technical-debt.md]
+    sources: [docs/architecture/arc42/11-risks-and-technical-debt.md, docs/guides/support-and-compatibility.md]
   glossary:
     text: >-
       Use chapter 1 role names and chapter 5 block names; chapter 12 defines
@@ -207,6 +211,7 @@ defaults:
     test_platform: {value: microsoft_testing_platform, source: global.json, status: explicit}
     code_coverage: {value: microsoft_testing_extensions_codecoverage, source: Directory.Packages.props, status: detected}
     package_management: {value: central_versions_lock_files_nuget_audit, source: chapter-2, status: explicit}
-    rti_runtime_eligibility: {value: ">= 7.3.1", source: chapter-2, status: explicit}
-    rti_profiles: {value: "7.3.1 <= version < 7.7.0 -> 7.3.1; version >= 7.7.0 -> 7.7.0", source: docs/guides/support-and-compatibility.md, status: explicit}
+    rti_runtime_eligibility: {value: ">= 6.1.2", source: chapter-2, status: explicit}
+    rti_int8_mapping: {value: "6.1.2 -> byte; 7.3.1/7.7.0 -> sbyte", source: docs/guides/idl-semantics.md, status: explicit}
+    rti_profiles: {value: "6.1.2 <= version < 7.3.1 -> 6.1.2; 7.3.1 <= version < 7.7.0 -> 7.3.1; version >= 7.7.0 -> 7.7.0", source: docs/guides/support-and-compatibility.md, status: explicit}
     qualified_rti_releases: {value: [7.3.1, 7.7.0], source: docs/guides/support-and-compatibility.md, status: explicit}

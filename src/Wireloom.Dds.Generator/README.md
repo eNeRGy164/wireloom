@@ -71,9 +71,10 @@ follow the [Hello World guide](https://github.com/eNeRGy164/wireloom/blob/main/d
 which also covers RTI runtime and license prerequisites.
 
 The example above uses a .NET 10 target and the latest C# version. Current package integration
-evidence builds that target using the repository-pinned .NET 10 SDK; the
-Roslyn hosts in older SDKs are not all qualified. Exact RTI 7.3.1 and 7.7.0 have qualification evidence for documented cases;
-the minimum-host check uses SDK 8.0.100. See the support policy for scope.
+evidence builds that target using the repository-pinned .NET 10 SDK. The
+minimum-host check uses SDK 8.0.100. Package-integration and DDS wire tests
+cover exact RTI 6.1.2, 7.3.1, and 7.7.0.
+See the support policy for scope.
 
 For a project replacing existing RTI-generated C#, follow the
 [migration guide](https://github.com/eNeRGy164/wireloom/blob/main/docs/migration/rtiddsgen-to-wireloom.md). It maps
@@ -120,12 +121,15 @@ and the [Hello World prerequisites](https://github.com/eNeRGy164/wireloom/blob/m
 ```
 
 The generator selects its API profile from the resolved `Rti.ConnextDds`
-assembly. Versions 7.3.1 through versions below 7.7.0 select the 7.3.1
-profile; 7.7.0 and later select the 7.7.0 profile. Missing references and
-versions below 7.3.1 produce `DDSG0003`. Only exact 7.3.1 and 7.7.0 LTS
-versions are qualification targets; intermediate and later versions are mapped
-but not individually qualified. The consumer project must resolve the RTI
-version whose API and generated contracts it intends to use.
+assembly. Versions 6.1.2 through versions below 7.3.1 select the 6.1.2
+profile; versions 7.3.1 through versions below 7.7.0 select the 7.3.1 profile;
+7.7.0 and later select the 7.7.0 profile. Missing references and
+versions below 6.1.2 produce `DDSG0003`. Test results apply to the exact RTI
+release used in each run. The consumer project must resolve the RTI version
+whose API and generated contracts it intends to use.
+
+Feature availability follows the selected RTI profile; see the
+[support policy](https://github.com/eNeRGy164/wireloom/blob/main/docs/guides/support-and-compatibility.md#rti-version-qualification).
 
 The `7.7.0` profile is selected automatically for a 7.7.0 reference. There is
 no public profile override because selecting older API code while compiling
@@ -450,7 +454,7 @@ contract, not as evidence that the annotation is harmless.
 | :--------- | :------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------- |
 | `DDSG0001` | IDL generation failed                                                | Fix the source-located parse, include, semantic, or unsupported-feature error                              |
 | `DDSG0002` | C# 12 or later is required                                           | Set the consumer's language version to C# 12 or later                                                      |
-| `DDSG0003` | A compatible RTI runtime was not found                               | Add an explicit `Rti.ConnextDds` reference at version 7.3.1 or later                                       |
+| `DDSG0003` | A compatible RTI runtime was not found                               | Add an explicit `Rti.ConnextDds` reference at version 6.1.2 or later                                       |
 | `DDSG0004` | An IDL feature is unavailable in the selected RTI API profile        | Remove the unsupported feature or use a compatible RTI version; `@must_understand` requires 7.7.0 or later |
 | `DDSG0101` | An unknown IDL annotation was ignored                                | Verify the annotation is supported by the managed generator if it affects the generated contract           |
 | `DDSG0102` | A recognized but unsupported annotation use was reported             | Remove the annotation or use a supported declaration context; this warning accompanies rejected generation |
