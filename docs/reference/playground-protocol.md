@@ -6,6 +6,7 @@ The canonical contract is the .NET adapter DTOs in
 types. Adapter tests in Quality verify parity. The client and worker ship in
 one static release, so no cross-release protocol compatibility window is
 supported. Compile requests with a different protocol version are rejected.
+Accepted profile values are `6.1.2`, `7.3.1`, and `7.7.0`.
 Workspace records use version 4. Valid version-3 records are upgraded with
 unbounded support disabled; other versions remain unsupported. Workspace
 schema migration does not provide compatibility with older workers.

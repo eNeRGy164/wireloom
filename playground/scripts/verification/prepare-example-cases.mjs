@@ -6,6 +6,7 @@ import { examples } from "../../src/examples.ts";
 const cases = examples.map((example) => ({
   id: `example-${example.id}`,
   expectedSuccess: {
+    "6.1.2": !["profiles", "unsupported"].includes(example.id),
     "7.3.1": !["profiles", "unsupported"].includes(example.id),
     "7.7.0": example.id !== "unsupported",
   },

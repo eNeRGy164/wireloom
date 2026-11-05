@@ -30,7 +30,7 @@ export interface CompileRequest {
   workerGeneration: number;
   requestId: number;
   workspaceRevision: number;
-  profile: "7.3.1" | "7.7.0";
+  profile: "6.1.2" | "7.3.1" | "7.7.0";
   files: WorkspaceFile[];
   options: WorkspaceOptions;
 }

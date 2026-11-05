@@ -6,6 +6,10 @@ maintained worker boundary. The non-packable .NET host is in
 The host and client share the `Wireloom.Dds.Compiler`; no main-thread compiler
 or fallback provider exists.
 
+The RTI selector offers the 6.1.2, 7.3.1, and 7.7.0 API profiles. Feature
+availability follows the selected profile; see the
+[support policy](../docs/guides/support-and-compatibility.md#rti-version-qualification).
+
 For the retained-corpus matrix, reproducible release verification command,
 workspace behavior, compiler settings, and evidence boundaries, see
 [Playground qualification](../docs/testing/playground-qualification.md).

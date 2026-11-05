@@ -157,7 +157,7 @@ export function validateWorkspace(value: unknown): Workspace {
   if (
     !item ||
     item.version !== 4 ||
-    !["7.3.1", "7.7.0"].includes(item.profile) ||
+    !["6.1.2", "7.3.1", "7.7.0"].includes(item.profile) ||
     !Array.isArray(item.files) ||
     item.files.length > maxFiles ||
     !Array.isArray(item.folders) ||

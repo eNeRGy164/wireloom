@@ -120,9 +120,10 @@ internal static class PlaygroundCompilerAdapter
 
         var profile = request.Profile switch
         {
+            "6.1.2" => IdlCompilerProfile.Rti612,
             "7.3.1" => IdlCompilerProfile.Rti731,
             "7.7.0" => IdlCompilerProfile.Rti770,
-            _ => throw new ArgumentException("Profile must be 7.3.1 or 7.7.0.", nameof(requestJson)),
+            _ => throw new ArgumentException("Profile must be 6.1.2, 7.3.1, or 7.7.0.", nameof(requestJson)),
         };
         var result = IdlCompiler.Compile(files, profile, computeMd5);
         var documents = result.Documents.Select(document => new DocumentDto(document.HintName, document.Source)).ToArray();
