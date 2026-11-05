@@ -25,9 +25,9 @@ The unique local package version prevents a prior global/test-cache copy from
 standing in for the artifact just packed. Keep that same version on restore,
 run, and negative-build verification.
 
-The Quality workflow tests a fresh package across RTI 7.3.1/7.7.0 and
+The Quality workflow tests a fresh package across RTI 6.1.2, 7.3.1, and 7.7.0 and
 `net8.0`/`net10.0` on Windows and Ubuntu. This project also links the complete
-runtime-contract suite, so package consumption exercises managed values,
+applicable runtime contracts, so package consumption exercises managed values,
 aliases, collections, unions, native conversion, type support, and recursive
 startup as well as package-specific MSBuild input handling. To reproduce a
 combination, pass `-p:WireloomConsumerTargetFramework=net8.0` (or `net10.0`)
@@ -39,9 +39,8 @@ The integration project intentionally does not use central package management
 or a lock file: its generator package reference must be resolved from the
 freshly created local feed. The other package versions remain explicit and
 pinned in the project file. Its RTI package cache is isolated by
-`RtiConnextDdsVersion`. Select either exact LTS package with
-`-p:RtiConnextDdsVersion=7.3.1` or `-p:RtiConnextDdsVersion=7.7.0` on restore
-and build; 7.7.0 is the default. The build writes generated C# files under the
+`RtiConnextDdsVersion`. Select 6.1.2, 7.3.1, or 7.7.0 with this property on
+restore and build. The default is 7.7.0. The build writes generated C# files under the
 project's `obj` directory, and the tests exercise those generated types at
 compile time and at runtime.
 
@@ -124,7 +123,7 @@ dotnet run --project tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dd
 The Quality workflow also copies the package and the consumer fixture into an
 `mcr.microsoft.com/dotnet/sdk:8.0.100` container. The container has only the .NET
 8 SDK and runtime, then restores, builds, and runs this complete suite against
-the freshly packed analyzer for both RTI LTS packages. This verifies the
+the freshly packed analyzer for all three RTI packages. This verifies the
 supported .NET 8 compiler host rather than only a `net8.0` application running
 alongside the repository's .NET 10 SDK. Use the package version from your
 isolated feed when checking a newer package.

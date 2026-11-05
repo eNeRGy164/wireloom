@@ -20,7 +20,7 @@ public sealed class ScalarSpecs
         sample.defaultNumber.ShouldBe(42);
         sample.flag.ShouldBeFalse();
         sample.byteValue.ShouldBe((byte)0);
-        sample.signedByte.ShouldBe((sbyte)0);
+        sample.signedByte.ShouldBe(RtiRuntimeProfile.Int8Zero);
         sample.unsignedByte.ShouldBe((byte)0);
         sample.shortValue.ShouldBe((short)0);
         sample.unsignedShort.ShouldBe((ushort)0);
@@ -47,7 +47,7 @@ public sealed class ScalarSpecs
         // Arrange
         var source = new Scalars
         {
-            flag = true, byteValue = 255, signedByte = -128, unsignedByte = 254,
+            flag = true, byteValue = 255, signedByte = RtiRuntimeProfile.Int8Sample, unsignedByte = 254,
             shortValue = short.MinValue, unsignedShort = ushort.MaxValue,
             intValue = int.MinValue, unsignedInt = uint.MaxValue,
             longValue = long.MinValue, unsignedLong = ulong.MaxValue,

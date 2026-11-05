@@ -10,7 +10,9 @@ module RuntimeCollectionAliasMembers {
         Numbers direct;
         LongerChain chained;
         VectorChain arrayAlias;
+#if !WIRELOOM_RTI_6_1_2
         @optional LongerChain optionalChain;
+#endif
         Nested nested;
         Rows rows;
     };

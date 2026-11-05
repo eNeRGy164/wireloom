@@ -50,6 +50,7 @@ public sealed class NestedKeySpecs
         }
     }
 
+#if !WIRELOOM_RTI_6_1_2
     /// <summary>Checks key forwarding through optional aggregate arrays.</summary>
     [Fact]
     public void ForwardsKeysOnlyToOptionalAggregateArrayElements()
@@ -67,4 +68,5 @@ public sealed class NestedKeySpecs
         result.optionalPoints[1].text.ShouldBeEmpty();
         result.points[0].text.ShouldBe("first");
     }
+#endif
 }

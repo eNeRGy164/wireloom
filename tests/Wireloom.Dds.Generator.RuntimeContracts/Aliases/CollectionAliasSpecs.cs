@@ -57,9 +57,9 @@ public sealed class CollectionAliasSpecs
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
-        copy.Value.ShouldNotBeSameAs(source.Value);
+        ReferenceEquals(copy.Value, source.Value).ShouldBe(RtiRuntimeProfile.SharesCollectionAliases);
         copy.Value.Value[0] = 99;
-        source.Value.Value[0].ShouldBe(1);
+        source.Value.Value[0].ShouldBe(RtiRuntimeProfile.SharesCollectionAliases ? 99 : 1);
         copy.Value = new Numbers(new Sequence<int> { 4, 5 });
         copy.Equals(source).ShouldBeFalse();
     }
@@ -233,9 +233,9 @@ public sealed class CollectionAliasSpecs
         copy.Equals((object?)null).ShouldBeFalse();
         copy.Equals(new object()).ShouldBeFalse();
         copy.GetHashCode().ShouldBe(source.GetHashCode());
-        copy.Value.ShouldNotBeSameAs(source.Value);
+        ReferenceEquals(copy.Value, source.Value).ShouldBe(RtiRuntimeProfile.SharesCollectionAliases);
         copy.Value.Value[1, 2] = 99;
-        source.Value.Value[1, 2].ShouldBe(6);
+        source.Value.Value[1, 2].ShouldBe(RtiRuntimeProfile.SharesCollectionAliases ? 99 : 6);
         copy.Value = new Matrix(new [,] { { 7, 8, 9 }, { 10, 11, 12 } });
         copy.Equals(source).ShouldBeFalse();
     }

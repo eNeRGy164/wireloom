@@ -27,12 +27,16 @@ internal static class CollectionSamples
             sample.optionalNumber = 7;
             sample.optionalText = "optional";
             sample.optionalChild = new Child(31, "present");
+#if !WIRELOOM_RTI_6_1_2
             sample.optionalNumbers = new Sequence<int> { 5, 6 };
             sample.optionalPoints = [new Child(51, "one"), new Child(52, "two")];
+#endif
             sample.optionalState = State.Ready;
             sample.optionalWideText = "世界";
+#if !WIRELOOM_RTI_6_1_2
             sample.optionalWideTexts = new Sequence<string> { "世界", "Ω" };
             sample.optionalMatrix = new [,] { { 1, 2, 3 }, { 4, 5, 6 } };
+#endif
         }
 
         return sample;

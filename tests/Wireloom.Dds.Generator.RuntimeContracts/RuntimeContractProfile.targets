@@ -1,0 +1,13 @@
+<Project>
+  <!-- Both the project-reference and packed consumers use the same fixture profile. -->
+  <PropertyGroup Condition="'$(RtiConnextDdsVersion)' == '6.1.2'">
+    <DefineConstants>$(DefineConstants);WIRELOOM_RTI_6_1_2</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(RtiConnextDdsVersion)' == '6.1.2'">
+    <DdsIdl Update="$(MSBuildThisFileDirectory)Fixtures/collection-alias-members.idl;$(MSBuildThisFileDirectory)Fixtures/managed.idl;$(MSBuildThisFileDirectory)Fixtures/sequence-arrays.idl;$(MSBuildThisFileDirectory)Fixtures/sequence-copy.idl"
+            Defines="WIRELOOM_RTI_6_1_2" />
+    <DdsIdl Remove="$(MSBuildThisFileDirectory)Fixtures/recursive-startup.idl" />
+    <Compile Remove="$(MSBuildThisFileDirectory)TypeSupport/Recursive*.cs" />
+  </ItemGroup>
+</Project>

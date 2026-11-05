@@ -81,10 +81,10 @@ public sealed class UnboundedAliasSpecs
         copy.Equals(numbers).ShouldBeTrue();
         copy.GetHashCode().ShouldBe(numbers.GetHashCode());
         chainCopy.Equals(chain).ShouldBeTrue();
-        chainCopy.Value.ShouldNotBeSameAs(numbers);
+        ReferenceEquals(chainCopy.Value, numbers).ShouldBe(RtiRuntimeProfile.SharesCollectionAliases);
         copy.Value[0] = 99;
         chainCopy.Value.Value[0] = 77;
-        numbers.Value[0].ShouldBe(17);
+        numbers.Value[0].ShouldBe(RtiRuntimeProfile.SharesCollectionAliases ? 77 : 17);
         copy.Equals(numbers).ShouldBeFalse();
     }
 

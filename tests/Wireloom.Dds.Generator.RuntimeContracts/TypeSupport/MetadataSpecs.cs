@@ -46,7 +46,9 @@ public sealed class MetadataSpecs
         child.Members.Single(member => member.Name == "id").Type.Kind.ShouldBe(TypeKind.Int32);
         type.Members.Single(member => member.Name == "optionalNumber").IsOptional.ShouldBeTrue();
         type.Members.Single(member => member.Name == "optionalChild").IsOptional.ShouldBeTrue();
+#if !WIRELOOM_RTI_6_1_2
         type.Members.Single(member => member.Name == "optionalPoints").IsOptional.ShouldBeTrue();
+#endif
         type.Members.Single(member => member.Name == "child").IsOptional.ShouldBeFalse();
         ChildSupport.Instance.ShouldBeSameAs(ChildSupport.Instance);
         CollectionsSupport.Instance.DynamicType.ShouldBeOfType<StructType>();

@@ -113,9 +113,9 @@ public sealed class UnionSpecs
         copy.Equals(source).ShouldBeFalse();
     }
 
-    /// <summary>Copies Aggregate And Collection Branches Independently.</summary>
+    /// <summary>Checks copy ownership for aggregate, direct collection, and collection alias branches.</summary>
     [Fact]
-    public void CopiesAggregateAndCollectionBranchesIndependently()
+    public void CopiesBranchesWithProfileOwnership()
     {
         // Arrange
         var source = new Choice { child = new Child(17, "nested") };
@@ -133,11 +133,11 @@ public sealed class UnionSpecs
         childCopy.child.ShouldNotBeSameAs(source.child);
         childCopy.child.id++;
         source.child.id.ShouldBe(17);
-        sequenceCopy.numbers.ShouldNotBeSameAs(sequence.numbers);
+        ReferenceEquals(sequenceCopy.numbers, sequence.numbers).ShouldBe(RtiRuntimeProfile.SharesCollectionAliases);
         sequenceCopy.numbers.Value[0] = 99;
-        sequence.numbers.Value[0].ShouldBe(1);
+        sequence.numbers.Value[0].ShouldBe(RtiRuntimeProfile.SharesCollectionAliases ? 99 : 1);
         arrayCopy.vector.Value[0] = 99;
-        array.vector.Value[0].ShouldBe(3);
+        array.vector.Value[0].ShouldBe(RtiRuntimeProfile.SharesCollectionAliases ? 99 : 3);
         directArrayCopy.values[0] = 99;
         directArray.values.ShouldBe([5, 6]);
         directArrayCopy.Discriminator.ShouldBe(6);
