@@ -1,0 +1,4 @@
+INFO com.rti.ndds.nddsgen.Main Running rtiddsgen version 3.1.2, please wait ...
+ERROR com.rti.ndds.nddsgen.antlr.auto.IdlParser 12-missing-brace.idl line 2:0 mismatched input '<EOF>' expecting '}' in structure
+ERROR com.rti.ndds.nddsgen.Main Fail:  java.lang.Exception: The file couldn't be parsed and the rawTree wasn't generated
+INFO com.rti.ndds.nddsgen.Main Done (failures)

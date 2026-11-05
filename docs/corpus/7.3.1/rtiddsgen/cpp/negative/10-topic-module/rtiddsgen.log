@@ -1,0 +1,4 @@
+INFO com.rti.ndds.nddsgen.Main Running rtiddsgen version 4.3.1, please wait ...
+ERROR com.rti.ndds.nddsgen.Main 10-topic-module.idl line 1:0 The annotation '@topic' is not applicable for the context: module.
+ERROR com.rti.ndds.nddsgen.Main Fail:  java.lang.Exception: The file couldn't be parsed and the rawTree wasn't generated
+INFO com.rti.ndds.nddsgen.Main Done (failures)

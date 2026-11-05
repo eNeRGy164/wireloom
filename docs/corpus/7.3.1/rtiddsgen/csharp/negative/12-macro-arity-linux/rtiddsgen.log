@@ -1,0 +1,10 @@
+INFO com.rti.ndds.nddsgen.Main Running rtiddsgen version 4.3.1, please wait ...
+ERROR com.rti.ndds.nddsgen.IDLPreprocessor /work/docs/corpus/idl/negative/12-macro-arity.idl:2:36: error: macro "CORPUS_PAIR" requires 2 arguments, but only 1 given
+    2 | const long Constant = CORPUS_PAIR(1);
+      |                                    ^
+/work/docs/corpus/idl/negative/12-macro-arity.idl:1: note: macro "CORPUS_PAIR" defined here
+    1 | #define CORPUS_PAIR(a, b) a
+      | 
+
+ERROR com.rti.ndds.nddsgen.Main Fail:  java.lang.Exception: Error executing cpp preprocessor. Finished with exit value: 1
+INFO com.rti.ndds.nddsgen.Main Done (failures)

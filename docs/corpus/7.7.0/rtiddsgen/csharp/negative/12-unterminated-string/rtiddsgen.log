@@ -1,0 +1,9 @@
+INFO com.rti.ndds.nddsgen.Arguments Running rtiddsgen version 4.7.0, please wait ...
+WARN com.rti.ndds.nddsgen.IDLPreprocessor /work/docs/corpus/idl/negative/12-unterminated-string.idl:1:22: warning: missing terminating " character
+    1 | const string Value = "unterminated;
+      |                      ^
+
+12-unterminated-string.idl line 2:0 mismatched character '<EOF>' expecting '"'
+ERROR com.rti.ndds.nddsgen.antlr.auto.IdlParser 12-unterminated-string.idl line 2:0 no viable alternative at input '<EOF>'
+ERROR com.rti.ndds.nddsgen.Main Fail:  java.util.concurrent.ExecutionException: java.lang.Exception: The file couldn't be parsed and the rawTree wasn't generated
+INFO com.rti.ndds.nddsgen.Main Done (failures)

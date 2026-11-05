@@ -1,0 +1,4 @@
+INFO com.rti.ndds.nddsgen.Main Running rtiddsgen version 4.3.1, please wait ...
+ERROR com.rti.ndds.nddsgen.Main 05-direct-sequence-of-sequences.idl line 2:29 Sequence of sequences are not supported. Please use an alias/typedef instead
+ERROR com.rti.ndds.nddsgen.Main Fail:  java.lang.Exception: The file couldn't be parsed and the rawTree wasn't generated
+INFO com.rti.ndds.nddsgen.Main Done (failures)
