@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text;
+using Wireloom.Compiler.Emission;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -72,6 +73,7 @@ public sealed class GeneratorSpecs
     }
 
     [Theory]
+    [InlineData("6.1.2", IdlCompilerProfile.Rti612)]
     [InlineData("7.3.1", IdlCompilerProfile.Rti731)]
     [InlineData("7.7.0", IdlCompilerProfile.Rti770)]
     public void RoslynAdapterMatchesPublicCompilerForWarningAndGeneratedDocuments(
@@ -91,6 +93,7 @@ public sealed class GeneratorSpecs
     }
 
     [Theory]
+    [InlineData("6.1.2", IdlCompilerProfile.Rti612)]
     [InlineData("7.3.1", IdlCompilerProfile.Rti731)]
     [InlineData("7.7.0", IdlCompilerProfile.Rti770)]
     public void RoslynAdapterMatchesPublicCompilerForFatalDiagnostic(
@@ -326,6 +329,8 @@ public sealed class GeneratorSpecs
     }
 
     [Theory]
+    [InlineData("6.1.2.0", "byte", false, false)]
+    [InlineData("7.3.0.0", "byte", false, false)]
     [InlineData("7.3.1.0", "byte", false, true)]
     [InlineData("7.6.1.0", "byte", false, true)]
     [InlineData("7.7.0.0", "Octet", true, false)]
@@ -351,6 +356,7 @@ public sealed class GeneratorSpecs
     }
 
     [Theory]
+    [InlineData("6.1.2.0", "6.1.2", "3.1.2")]
     [InlineData("7.3.1.0", "7.3.1", "4.3.1")]
     [InlineData("7.6.1.0", "7.3.1", "4.3.1")]
     [InlineData("7.7.0.0", "7.7.0", "4.7.0")]
@@ -365,8 +371,14 @@ public sealed class GeneratorSpecs
         var profile = IdlCompiler.GetProfileForRuntimeVersion(version);
 
         // Assert
-        profile.ShouldBe(expectedRtiVersion == "7.3.1" ? IdlCompilerProfile.Rti731 : IdlCompilerProfile.Rti770);
-        (profile == IdlCompilerProfile.Rti731 ? "4.3.1" : "4.7.0").ShouldBe(expectedRtiddsgenVersion);
+        var emissionProfile = profile switch
+        {
+            IdlCompilerProfile.Rti612 => RtiApiProfile.Rtiddsgen312,
+            IdlCompilerProfile.Rti731 => RtiApiProfile.Rtiddsgen431,
+            _ => RtiApiProfile.Rtiddsgen470,
+        };
+        emissionProfile.RtiVersion.ShouldBe(expectedRtiVersion);
+        emissionProfile.RtiddsgenVersion.ShouldBe(expectedRtiddsgenVersion);
     }
 
     [Fact]
@@ -377,22 +389,24 @@ public sealed class GeneratorSpecs
         var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
-        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: false, runtimeVersion: "7.3.0.0");
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: false, runtimeVersion: "6.1.1.0");
 
         // Assert
         result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0003");
         result.Output.SyntaxTrees.Any(tree => tree.GetText().ToString().Contains("class Value", StringComparison.Ordinal)).ShouldBeFalse();
     }
 
-    [Fact]
-    public void ReportsProfileDiagnosticAndEmitsNoSourcesForMustUnderstandOnRtiddsgen431()
+    [Theory]
+    [InlineData("6.1.2.0")]
+    [InlineData("7.3.1.0")]
+    public void ReportsProfileDiagnosticAndEmitsNoSourcesForMustUnderstandOnOlderProfiles(string runtimeVersion)
     {
         // Arrange
         const string input = "struct Sample { @must_understand long value; };";
         var metadata = new Dictionary<string, string> { ["Generate"] = "true" };
 
         // Act
-        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: false, runtimeVersion: "7.3.1.0");
+        var result = Run(input, LanguageVersion.CSharp12, metadata, includeRuntime: false, runtimeVersion: runtimeVersion);
 
         // Assert
         result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "DDSG0004" && diagnostic.Severity == DiagnosticSeverity.Error);

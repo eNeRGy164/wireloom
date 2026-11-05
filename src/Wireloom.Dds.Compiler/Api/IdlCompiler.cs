@@ -7,14 +7,15 @@ namespace Wireloom;
 [PublicAPI]
 public static class IdlCompiler
 {
-    private static readonly Version MinimumRuntimeVersion = new(7, 3, 1);
+    private static readonly Version MinimumRuntimeVersion = new(6, 1, 2);
+    private static readonly Version Rti731RuntimeVersion = new(7, 3, 1);
     private static readonly Version Rti770RuntimeVersion = new(7, 7, 0);
 
     /// <summary>Maps a supported RTI runtime version to the nearest compiler API profile.</summary>
     /// <param name="runtimeVersion">The resolved RTI runtime version.</param>
     /// <returns>The compiler profile whose generated API matches the runtime.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="runtimeVersion"/> is null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">The runtime version is below 7.3.1.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The runtime version is below 6.1.2.</exception>
     public static IdlCompilerProfile GetProfileForRuntimeVersion(Version runtimeVersion)
     {
         ArgumentNullException.ThrowIfNull(runtimeVersion);
@@ -25,7 +26,12 @@ public static class IdlCompiler
                 $"RTI runtime version {MinimumRuntimeVersion} or later is required.");
         }
 
-        return runtimeVersion >= Rti770RuntimeVersion ? IdlCompilerProfile.Rti770 : IdlCompilerProfile.Rti731;
+        if (runtimeVersion >= Rti770RuntimeVersion)
+        {
+            return IdlCompilerProfile.Rti770;
+        }
+
+        return runtimeVersion >= Rti731RuntimeVersion ? IdlCompilerProfile.Rti731 : IdlCompilerProfile.Rti612;
     }
 
     /// <summary>Compiles inputs using an explicit RTI C# API profile.</summary>
@@ -71,5 +77,10 @@ public static class IdlCompiler
     }
 
     private static RtiApiProfile ToEmissionProfile(IdlCompilerProfile profile) =>
-        profile == IdlCompilerProfile.Rti731 ? RtiApiProfile.Rtiddsgen431 : RtiApiProfile.Rtiddsgen470;
+        profile switch
+        {
+            IdlCompilerProfile.Rti612 => RtiApiProfile.Rtiddsgen312,
+            IdlCompilerProfile.Rti731 => RtiApiProfile.Rtiddsgen431,
+            _ => RtiApiProfile.Rtiddsgen470,
+        };
 }

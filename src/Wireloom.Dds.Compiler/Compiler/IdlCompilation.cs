@@ -37,7 +37,7 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, RtiApiProfi
         var graph = new IdlInputGraph(files, roots.SelectMany(input => input.Defines), roots.SelectMany(input => input.Undefines), roots.SelectMany(input => input.IncludeDirectories), cancellationToken, enableEscapeChar);
         var parser = new IdlDeclarationParser(symbols, cancellationToken, computeMd5, diagnostics);
         var result = new EmissionResult();
-        var compilation = new CompilationContext(symbols);
+        var compilation = new CompilationContext(symbols, profile);
 
         // Roots are sorted by path so generation is stable even when the build
         // system supplies AdditionalFiles in a different order.
@@ -51,6 +51,11 @@ internal sealed class IdlCompilation(IReadOnlyList<IdlInput> inputs, RtiApiProfi
         parser.Bind();
         var strict = inputs.Any(input => input.Generate && input.Strict);
         parser.Validate(strict);
+
+        if (!Emission.Planning.RtiProfileValidator.Validate(parser.Declarations, profile, diagnostics))
+        {
+            return [];
+        }
 
         if (!profile.SupportsMustUnderstand)
         {

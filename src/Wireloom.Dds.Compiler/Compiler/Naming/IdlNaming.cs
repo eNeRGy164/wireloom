@@ -1,3 +1,4 @@
+using Wireloom.Compiler.Emission;
 using Wireloom.Compiler.FrontEnd.Parsing;
 
 namespace Wireloom.Compiler.Naming;
@@ -6,9 +7,9 @@ namespace Wireloom.Compiler.Naming;
 internal static class IdlNaming
 {
     /// <summary>Maps an IDL primitive spelling to its managed C# type.</summary>
-    internal static string MapPrimitive(string idlType)
+    internal static string MapPrimitive(string idlType, RtiApiProfile? profile = null)
     {
-        return PrimitiveTypeMapping.Resolve(idlType).ManagedType;
+        return PrimitiveTypeMapping.Resolve(idlType, profile).ManagedType;
     }
 
     /// <summary>Determines whether an IDL type spelling is a supported primitive.</summary>

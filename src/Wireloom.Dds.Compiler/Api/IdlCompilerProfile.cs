@@ -8,5 +8,8 @@ public enum IdlCompilerProfile
     Rti731,
 
     /// <summary>RTI Connext DDS 7.7.0 API, corresponding to rtiddsgen 4.7.0.</summary>
-    Rti770
+    Rti770,
+
+    /// <summary>RTI Connext DDS 6.1.2 API, corresponding to rtiddsgen 3.1.2.</summary>
+    Rti612
 }

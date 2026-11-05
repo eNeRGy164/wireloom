@@ -22,6 +22,7 @@ internal static class CSharpScalarValueFormatter
     {
         "bool" => value.IsZero ? "false" : "true",
         "char" => CSharpLiteralFormatter.FormatCharacter((char)(int)value),
+        "byte" when value < 0 => $"unchecked((byte)({value.ToString(CultureInfo.InvariantCulture)}))",
         "long" when value == long.MinValue => "long.MinValue",
         "long" => $"{value.ToString(CultureInfo.InvariantCulture)}L",
         "ulong" when value == ulong.MaxValue => "ulong.MaxValue",

@@ -1,6 +1,5 @@
 using Wireloom.Compiler.Emission.Planning;
 using Wireloom.Compiler.FrontEnd.Semantic;
-using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Model;
 
@@ -65,6 +64,9 @@ internal sealed class CollectionAliasEmissionPlan(
 
     public bool IsAggregate => ElementPlan.Shape.IsAggregate;
 
+    /// <summary>Gets whether copying this alias retains its nested collection-alias value.</summary>
+    internal bool SharesCollectionAliasValue => CollectionElementCopyPolicy.RetainsAliasReference(ElementPlan, Profile);
+
     public bool IsUnion => ElementPlan.Shape.IsUnion;
 
     public bool NativeValueRequiresCast { get; } = nativeValueRequiresCast;
@@ -90,7 +92,7 @@ internal sealed class CollectionAliasEmissionPlan(
                 throw new InvalidOperationException("Expected a primitive collection element.");
             }
 
-            var mapping = PrimitiveTypeMapping.Resolve(primitive.IdlName);
+            var mapping = primitive.Mapping;
             return primitive.IdlName == "octet" ? Profile.OctetDynamicType : mapping.DynamicType;
         }
     }

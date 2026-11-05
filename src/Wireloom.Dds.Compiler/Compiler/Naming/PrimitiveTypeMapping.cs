@@ -1,3 +1,5 @@
+using Wireloom.Compiler.Emission;
+
 namespace Wireloom.Compiler.Naming;
 
 /// <summary>Provides the shared target mappings for one supported IDL primitive.</summary>
@@ -96,7 +98,7 @@ internal sealed class PrimitiveTypeMapping(
     }
 
     /// <summary>Resolves one IDL primitive spelling to its shared target mapping.</summary>
-    public static PrimitiveTypeMapping Resolve(string idlType)
+    public static PrimitiveTypeMapping Resolve(string idlType, RtiApiProfile? profile = null)
     {
         var normalized = IdlNaming.NormalizeIdlType(idlType);
 
@@ -121,6 +123,11 @@ internal sealed class PrimitiveTypeMapping(
             case "uint64":
                 return new("unsigned long long", "ulong", "ulong", "ulong", "0UL", "UInt64", "Uint64Value", "ulong.MinValue", "ulong.MaxValue");
             case "int8":
+                if (profile?.UsesUnsignedInt8 == true)
+                {
+                    return new("int8", "byte", "byte", "byte", "0", "Int8", "Int8Value", "byte.MinValue", "byte.MaxValue", nativeValueRequiresCast: false);
+                }
+
                 return new("int8", "sbyte", "sbyte", "sbyte", "0", "Int8", "Int8Value", "sbyte.MinValue", "sbyte.MaxValue", nativeValueRequiresCast: false);
             case "uint8":
                 return new("uint8", "byte", "byte", "byte", "0", "Uint8", "Uint8Value", "byte.MinValue", "byte.MaxValue", nativeValueRequiresCast: false);

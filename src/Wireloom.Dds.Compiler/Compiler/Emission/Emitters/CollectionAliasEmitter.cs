@@ -1,7 +1,7 @@
-using Wireloom.Compiler.FrontEnd.Semantic;
-using Wireloom.Compiler.FrontEnd;
 using Wireloom.Compiler.Emission.Model;
 using Wireloom.Compiler.Emission.Planning;
+using Wireloom.Compiler.FrontEnd;
+using Wireloom.Compiler.FrontEnd.Semantic;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler.Emission.Emitters;
@@ -60,7 +60,7 @@ internal static class CollectionAliasEmitter
             if (!declaration.IsCollection)
             {
                 resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
-                elementPlan = EmissionTypeProjector.ToTypedefValueType(resolvedElementType, declaration.Namespace);
+                elementPlan = EmissionTypeProjector.ToTypedefValueType(resolvedElementType, declaration.Namespace, profile);
 
                 if (elementPlan.Shape.IsString)
                 {
@@ -70,7 +70,7 @@ internal static class CollectionAliasEmitter
                 {
                     element = compilation.ResolveUnderlyingType(element, declaration.Namespace);
                     resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
-                    elementPlan = EmissionTypeProjector.ToTypedefValueType(resolvedElementType, declaration.Namespace);
+                    elementPlan = EmissionTypeProjector.ToTypedefValueType(resolvedElementType, declaration.Namespace, profile);
                 }
             }
             else
@@ -83,7 +83,7 @@ internal static class CollectionAliasEmitter
                 else
                 {
                     resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
-                    elementPlan = EmissionTypeProjector.ToCollectionElementType(resolvedElementType, declaration.Namespace);
+                    elementPlan = EmissionTypeProjector.ToCollectionElementType(resolvedElementType, declaration.Namespace, profile);
                 }
             }
         }
@@ -131,7 +131,7 @@ internal static class CollectionAliasEmitter
         var valueType = EmissionTypeProjector.UnwrapValueEmissionType(elementPlan);
         if (valueType is PrimitiveEmissionType primitive)
         {
-            return PrimitiveTypeMapping.Resolve(primitive.IdlName).NativeValueRequiresCast;
+            return primitive.Mapping.NativeValueRequiresCast;
         }
 
         return true;

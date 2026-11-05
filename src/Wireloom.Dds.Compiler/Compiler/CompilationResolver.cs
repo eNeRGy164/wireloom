@@ -1,11 +1,12 @@
-using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Compiler.Emission;
 using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Compiler.FrontEnd.Symbols;
 using Wireloom.Compiler.Naming;
 
 namespace Wireloom.Compiler;
 
 /// <summary>Resolves IDL symbols and typedef representations for the compiler pipeline.</summary>
-internal sealed class CompilationResolver(IdlSymbolTable symbols)
+internal sealed class CompilationResolver(IdlSymbolTable symbols, RtiApiProfile? profile = null)
 {
     private readonly IdlTypeResolver typeResolver = new(symbols);
 
@@ -88,7 +89,7 @@ internal sealed class CompilationResolver(IdlSymbolTable symbols)
     {
         if (type is IdlType.Primitive primitive)
         {
-            return PrimitiveTypeMapping.Resolve(primitive.Name).NativeStorageType;
+            return PrimitiveTypeMapping.Resolve(primitive.Name, profile).NativeStorageType;
         }
 
         if (type is IdlType.Enum enumType)

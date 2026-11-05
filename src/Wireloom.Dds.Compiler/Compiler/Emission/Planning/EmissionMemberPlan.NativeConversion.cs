@@ -139,7 +139,7 @@ internal sealed partial class MemberEmissionPlan
             return name;
         }
 
-        return PrimitiveTypeMapping.Resolve(primitive.IdlName).FromNativeExpression(name);
+        return primitive.Mapping.FromNativeExpression(name);
     }
 
     private string PrimitiveToNativeExpression()
@@ -151,7 +151,7 @@ internal sealed partial class MemberEmissionPlan
             return name;
         }
 
-        return PrimitiveTypeMapping.Resolve(primitive.IdlName).ToNativeExpression(name);
+        return primitive.Mapping.ToNativeExpression(name);
     }
 
     /// <summary>Builds a statement that copies this member to native storage.</summary>

@@ -26,9 +26,12 @@ internal static class CompilerTestSupport
         CancellationToken cancellationToken,
         Emission.RtiApiProfile? profile = null)
     {
-        var selectedProfile = profile == Emission.RtiApiProfile.Rtiddsgen431
-            ? IdlCompilerProfile.Rti731
-            : IdlCompilerProfile.Rti770;
+        var selectedProfile = profile switch
+        {
+            var value when value == Emission.RtiApiProfile.Rtiddsgen312 => IdlCompilerProfile.Rti612,
+            var value when value == Emission.RtiApiProfile.Rtiddsgen431 => IdlCompilerProfile.Rti731,
+            _ => IdlCompilerProfile.Rti770,
+        };
         var result = IdlCompiler.Compile(inputs, selectedProfile, ComputeMd5, cancellationToken);
         var fatal = result.Diagnostics.FirstOrDefault(diagnostic =>
             diagnostic is { Severity: IdlDiagnosticSeverity.Error, Id: "DDSG0001" });

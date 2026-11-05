@@ -9,7 +9,7 @@ namespace Wireloom.Compiler.Emission.Emitters;
 internal static class ConstantEmitter
 {
     /// <summary>Emits the generated document for an IDL constant.</summary>
-    public static IReadOnlyList<GeneratedIdlSource> Emit(CompilationContext compilation, IdlConstantDeclaration declaration, string sourceIdlFileName)
+    public static IReadOnlyList<GeneratedIdlSource> Emit(CompilationContext compilation, IdlConstantDeclaration declaration, string sourceIdlFileName, RtiApiProfile? profile = null)
     {
         var name = declaration.Name;
         var currentNamespace = declaration.Namespace;
@@ -22,7 +22,7 @@ internal static class ConstantEmitter
         }
         else
         {
-            type = MapConstantType(effectiveIdlType);
+            type = MapConstantType(effectiveIdlType, profile);
         }
 
         var expression = declaration.Value switch
@@ -50,14 +50,14 @@ internal static class ConstantEmitter
         return [new GeneratedIdlSource(generatedName.HintName, writer.ToString())];
     }
 
-    private static string MapConstantType(string type) => type switch
+    private static string MapConstantType(string type, RtiApiProfile? profile) => type switch
     {
         "string" or "wstring" => "string",
         "boolean" => "bool",
         "char" or "wchar" => "char",
         "float" => "float",
         "double" => "double",
-        _ => IdlNaming.MapPrimitive(type)
+        _ => IdlNaming.MapPrimitive(type, profile)
     };
 
     private static string ResolveEffectiveConstantType(CompilationContext compilation, IdlConstantDeclaration declaration)

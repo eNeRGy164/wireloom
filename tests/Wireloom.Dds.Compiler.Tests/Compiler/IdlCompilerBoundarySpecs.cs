@@ -61,6 +61,9 @@ public sealed class IdlCompilerBoundarySpecs
     }
 
     [Theory]
+    [InlineData("6.1.2", IdlCompilerProfile.Rti612)]
+    [InlineData("6.1.2.0", IdlCompilerProfile.Rti612)]
+    [InlineData("7.3.0", IdlCompilerProfile.Rti612)]
     [InlineData("7.3.1", IdlCompilerProfile.Rti731)]
     [InlineData("7.6.9", IdlCompilerProfile.Rti731)]
     [InlineData("7.7.0", IdlCompilerProfile.Rti770)]
@@ -81,7 +84,7 @@ public sealed class IdlCompilerBoundarySpecs
     public void RejectsRuntimeVersionsBelowTheMinimumProfile()
     {
         // Arrange
-        var runtimeVersion = Version.Parse("7.3.0");
+        var runtimeVersion = Version.Parse("6.1.1");
 
         // Act
         var exception = Should.Throw<ArgumentOutOfRangeException>(() => IdlCompiler.GetProfileForRuntimeVersion(runtimeVersion));
