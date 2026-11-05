@@ -10,8 +10,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the Code Generator User's Manual.
 */
 
-#ifndef _01_boundariesPlugin_1164299082_h
-#define _01_boundariesPlugin_1164299082_h
+#ifndef _01_boundariesPlugin_1164298997_h
+#define _01_boundariesPlugin_1164298997_h
 
 #include "01-boundaries.hpp"
 
@@ -195,5 +195,5 @@ namespace CorpusPrimitiveBoundaries {
 #define NDDSUSERDllExport
 #endif
 
-#endif /* _01_boundariesPlugin_1164299082_h */
+#endif /* _01_boundariesPlugin_1164298997_h */
 

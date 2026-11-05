@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "05-unbounded-sequence-aliases",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "05-unbounded-sequence-aliases-csharp-05-unbounded-sequence-aliases-root",
+      "case": "05-unbounded-sequence-aliases",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/05-unbounded-sequence-aliases.idl",
+      "sourceSha256": "33fc7871a119accd22f7fdebe219f5c19c5a46eda1176ea3a1d69c17c68043f9",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-unboundedSupport",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/05-unbounded-sequence-aliases-csharp-05-unbounded-sequence-aliases-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/05-unbounded-sequence-aliases-csharp-05-unbounded-sequence-aliases-root/idl.idl"
+      ]
+    },
+    {
+      "name": "05-unbounded-sequence-aliases-csharp-05-unbounded-sequence-aliases-dependency",
+      "case": "05-unbounded-sequence-aliases",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "docs/corpus/idl/features/05-unbounded-sequence-aliases.idl",
+      "sourceSha256": "b8d45edf7759e9f72f656670b1e4cc164c8720322c872f3594a686a89ce4b58f",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-unboundedSupport",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/05-unbounded-sequence-aliases-csharp-05-unbounded-sequence-aliases-dependency/generated",
+        "/work/docs/corpus/idl/features/05-unbounded-sequence-aliases.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cs",
+      "sha256": "5445d7b28435f3bf6b373fe0aeeca09edbb66386d27601f2b739577eac5d2d54"
+    },
+    {
+      "path": "idlPlugin.cs",
+      "sha256": "c3af1eabe220c7de6cc315f45bc5a4ae766b790ea6ed742bfd1ea652a1b7a3de"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliases.cs",
+      "sha256": "3de259bd59604a7c0bdc69686daf493ee87bdf5c187d88d30e3b74d476b34d91"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliasesPlugin.cs",
+      "sha256": "7d9c127b8ba4d331a51b9ed6b3e99cb7081e57201acdc851d3e2a76ad34f5906"
+    }
+  ]
+}

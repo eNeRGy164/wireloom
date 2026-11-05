@@ -6,6 +6,7 @@ using Wireloom.Compiler.Emission;
 
 namespace Wireloom.Dds.Generator.CorpusCompliance;
 
+[Trait("CorpusSuite", "Oracle")]
 public sealed class CorpusComplianceSpecs
 {
     public static IEnumerable<object[]> CorpusCases() =>
@@ -84,7 +85,7 @@ public sealed class CorpusComplianceSpecs
     public void CorpusManifestAndOracleLibraryHaveExpectedCaseCoverage()
     {
         var cases = CorpusRepository.Cases.Select(corpusCase => corpusCase.Id).ToArray();
-        cases.Length.ShouldBe(174);
+        cases.Length.ShouldBe(175);
         cases.ShouldBeUnique();
         CorpusRepository.OracleCaseIds.ShouldBe(CorpusRepository.Cases
             .Where(corpusCase => corpusCase.OracleSourcesRetained)
@@ -153,34 +154,6 @@ public sealed class CorpusComplianceSpecs
                 probeCase.Id is "10-resolve-name-wstring-aliases" or "10-default-literal-enum-array";
             probeCase.OracleSourcesRetained.ShouldBe(retained);
         }
-    }
-
-    [Fact]
-    public void ExportAcceptedCorpusSources()
-    {
-        var exportRoot = Environment.GetEnvironmentVariable("CORPUS_GENERATOR_EXPORT_ROOT");
-        if (string.IsNullOrWhiteSpace(exportRoot))
-        {
-            Assert.Skip("Set CORPUS_GENERATOR_EXPORT_ROOT to publish generated corpus sources.");
-        }
-
-        var root = Path.GetFullPath(exportRoot, CorpusRepository.RepositoryRoot);
-        Directory.CreateDirectory(root);
-
-        foreach (var corpusCase in CorpusRepository.Cases.Where(IsExpectedToCompile))
-        {
-            var caseRoot = Path.Combine(root, corpusCase.SourceKind, corpusCase.Id);
-            Directory.CreateDirectory(caseRoot);
-
-            foreach (var source in Compile(corpusCase).Values)
-            {
-                var fileName = source.HintName.EndsWith(".g.cs", StringComparison.Ordinal)
-                    ? source.HintName
-                    : $"{source.HintName}.g.cs";
-                File.WriteAllText(Path.Combine(caseRoot, fileName), source.Source);
-            }
-        }
-
     }
 
     [Fact]

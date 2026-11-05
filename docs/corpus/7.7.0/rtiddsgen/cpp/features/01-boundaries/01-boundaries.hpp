@@ -10,8 +10,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the Code Generator User's Manual.
 */
 
-#ifndef _01_boundaries_1164299082_hpp
-#define _01_boundaries_1164299082_hpp
+#ifndef _01_boundaries_1164298997_hpp
+#define _01_boundaries_1164298997_hpp
 
 #include <iosfwd>
 
@@ -82,10 +82,6 @@ namespace CorpusPrimitiveBoundaries {
 
     RTI_CONSTEXPR_OR_CONST_STRING int64_t longLongMax = 9223372036854775807LL;
 
-    RTI_CONSTEXPR_OR_CONST_STRING int8_t int8Min = -128;
-
-    RTI_CONSTEXPR_OR_CONST_STRING int8_t int8Max = 127;
-
     RTI_CONSTEXPR_OR_CONST_STRING int64_t int64Min = -9223372036854775807LL-1LL;
 
     RTI_CONSTEXPR_OR_CONST_STRING int64_t int64Max = 9223372036854775807LL;
@@ -94,14 +90,13 @@ namespace CorpusPrimitiveBoundaries {
         int16_t shortValue {};
         int32_t longValue {};
         int64_t longLongValue {};
-        int8_t int8Value {};
         int64_t int64Value {};
         float floatValue {};
         double doubleValue {};
 
         Sample();
 
-        Sample(int16_t shortValue_,int32_t longValue_,int64_t longLongValue_,int8_t int8Value_,int64_t int64Value_,float floatValue_,double doubleValue_);
+        Sample(int16_t shortValue_,int32_t longValue_,int64_t longLongValue_,int64_t int64Value_,float floatValue_,double doubleValue_);
 
     };
 
@@ -190,4 +185,4 @@ namespace rti {
 #define NDDSUSERDllExport
 #endif
 
-#endif // _01_boundaries_1164299082_hpp
+#endif // _01_boundaries_1164298997_hpp

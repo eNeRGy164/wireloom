@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "14-autoid-scope",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "14-autoid-scope-csharp-14-autoid-scope-topic-root",
+      "case": "14-autoid-scope",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-autoid-scope-topic.idl",
+      "sourceSha256": "9f05c4d932617cc906e80e2967742689428b67e3f0e09f49788c455452e28b37",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/14-autoid-scope-csharp-14-autoid-scope-topic-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/14-autoid-scope-csharp-14-autoid-scope-topic-root/idl.idl"
+      ]
+    },
+    {
+      "name": "14-autoid-scope-csharp-14-autoid-scope-dependency",
+      "case": "14-autoid-scope",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "docs/corpus/idl/features/14-autoid-scope.idl",
+      "sourceSha256": "b9bf886cd3c64e85d108fc2063f6ca0b1f921283de769364c9bf7744f3d00e5b",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/14-autoid-scope-csharp-14-autoid-scope-dependency/generated",
+        "/work/docs/corpus/idl/features/14-autoid-scope.idl"
+      ]
+    },
+    {
+      "name": "14-autoid-scope-csharp-autoid-hash-include-dependency",
+      "case": "14-autoid-scope",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "docs/corpus/idl/includes/autoid-hash-include.idl",
+      "sourceSha256": "6a4ba5a745de20fcb401350796eda734a611f144d90dcd09cd784c6de1af01d7",
+      "relative": "includes",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/14-autoid-scope-csharp-autoid-hash-include-dependency/generated",
+        "/work/docs/corpus/idl/includes/autoid-hash-include.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cs",
+      "sha256": "67091c6aa93b0b76ed52d7014f85f6df4a84a036d0409c0e694ae38c9d10e0a7"
+    },
+    {
+      "path": "idlPlugin.cs",
+      "sha256": "cd70d4ee247f732a551de6781d32c529e8b82324acedd083523f472de308b826"
+    },
+    {
+      "path": "features/14-autoid-scope.cs",
+      "sha256": "1f6616245ad9571d4ef4022eb877a7f542d1bc557242df6c6532ee04c2b40464"
+    },
+    {
+      "path": "features/14-autoid-scopePlugin.cs",
+      "sha256": "ebd487dc7b99b6d0ae52c266851ceeeffe8f3235477cdfcb1fa2e6d649a26e87"
+    },
+    {
+      "path": "includes/autoid-hash-include.cs",
+      "sha256": "d703e39c4457255a380fd8307fa96e89f74515fd32275edc38ade4217325a371"
+    },
+    {
+      "path": "includes/autoid-hash-includePlugin.cs",
+      "sha256": "2f133219e3a4d4178d3d18ff8b17fbbda487e5c4ddb89b7e4216a036c1783832"
+    }
+  ]
+}

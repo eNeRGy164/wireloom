@@ -1,0 +1,1665 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "rtiProduct": "RTI Connext DDS",
+  "rtiddsgenVersion": "3.1.2",
+  "sharedCaseInventory": "../manifest.json",
+  "wireQualification": "not-qualified",
+  "oracleRoot": "rtiddsgen/csharp",
+  "capturedCaseCount": 175,
+  "cases": [
+    {
+      "id": "01-primitives",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/01-primitives",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/01-primitives",
+      "unsupportedScopes": [
+        "signed-int8-binding-compatibility"
+      ]
+    },
+    {
+      "id": "01-boundaries",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/01-boundaries",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/01-boundaries",
+      "oracleSourcesRetained": true,
+      "sourceSha256": "f5882dee0c5a650ca862c3fdb1db453a7c118ab39ad691765f48dc5ab39891ef"
+    },
+    {
+      "id": "01-full-widths",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/01-full-widths",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/01-full-widths",
+      "unsupportedScopes": [
+        "signed-int8-binding-compatibility"
+      ]
+    },
+    {
+      "id": "02-names-constants",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/02-names-constants",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/02-names-constants"
+    },
+    {
+      "id": "02-scopes",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/02-scopes",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/02-scopes"
+    },
+    {
+      "id": "02-constant-expressions",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/02-constant-expressions",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/02-constant-expressions"
+    },
+    {
+      "id": "02-formatting",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/02-formatting",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/02-formatting"
+    },
+    {
+      "id": "02-multiple",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/02-multiple",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/02-multiple"
+    },
+    {
+      "id": "03-enums-aliases",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/03-enums-aliases",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/03-enums-aliases"
+    },
+    {
+      "id": "03-enum-values-prefix",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/03-enum-values-prefix",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/03-enum-values-prefix"
+    },
+    {
+      "id": "03-enum-values-explicit",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/03-enum-values-explicit",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/03-enum-values-explicit"
+    },
+    {
+      "id": "03-alias-aggregate",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/03-alias-aggregate",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/03-alias-aggregate"
+    },
+    {
+      "id": "03-alias-collections",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/03-alias-collections",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/03-alias-collections"
+    },
+    {
+      "id": "04-strings",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/04-strings",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/04-strings"
+    },
+    {
+      "id": "04-boundaries",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/04-boundaries",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/04-boundaries"
+    },
+    {
+      "id": "05-collections",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/05-collections",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/05-collections"
+    },
+    {
+      "id": "05-shapes",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/05-shapes",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/05-shapes"
+    },
+    {
+      "id": "05-array-of-sequences",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/05-array-of-sequences",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/05-array-of-sequences"
+    },
+    {
+      "id": "05-array-of-sequences-idl",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/05-array-of-sequences-idl",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/05-array-of-sequences-idl"
+    },
+    {
+      "id": "06-aggregates",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": "rtiddsgen/csharp/features/06-aggregates",
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "recursive-aggregates"
+      ]
+    },
+    {
+      "id": "06-valuetypes",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/06-valuetypes",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/06-valuetypes"
+    },
+    {
+      "id": "06-alias-composition",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/06-alias-composition",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/06-alias-composition"
+    },
+    {
+      "id": "07-unions",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-unions",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-unions"
+    },
+    {
+      "id": "07-union-enum",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-enum",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-enum"
+    },
+    {
+      "id": "07-union-scoped",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-scoped",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-scoped"
+    },
+    {
+      "id": "07-union-multilabel",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-multilabel",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-multilabel"
+    },
+    {
+      "id": "07-union-short",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-short",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-short"
+    },
+    {
+      "id": "07-union-short-boundaries",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-short-boundaries",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-short-boundaries"
+    },
+    {
+      "id": "07-union-char",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-char",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-char"
+    },
+    {
+      "id": "07-union-char-numeric",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-char-numeric",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-char-numeric"
+    },
+    {
+      "id": "07-union-wchar-label",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-wchar-label",
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-wchar-label"
+    },
+    {
+      "id": "07-union-boolean",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-boolean",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-boolean"
+    },
+    {
+      "id": "07-union-aliases",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-aliases",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-aliases"
+    },
+    {
+      "id": "08-keys",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/08-keys",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/08-keys"
+    },
+    {
+      "id": "08-key-nested",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/08-key-nested",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/08-key-nested"
+    },
+    {
+      "id": "08-key-inherited",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/08-key-inherited",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/08-key-inherited"
+    },
+    {
+      "id": "08-key-boundaries",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/08-key-boundaries",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/08-key-boundaries"
+    },
+    {
+      "id": "08-key-union",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/08-key-union",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/08-key-union",
+      "unsupportedScopes": [
+        "xcdr2-union-valued-keys"
+      ]
+    },
+    {
+      "id": "09-extensibility",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-extensibility",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/09-extensibility"
+    },
+    {
+      "id": "09-default",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-default",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/09-default"
+    },
+    {
+      "id": "09-id-gaps",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-id-gaps",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/09-id-gaps"
+    },
+    {
+      "id": "09-evolution-optional",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-evolution-optional",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/09-evolution-optional"
+    },
+    {
+      "id": "09-optional-collections",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-optional-collections",
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "optional-collections"
+      ]
+    },
+    {
+      "id": "09-autoid-hash",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-autoid-hash",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/09-autoid-hash"
+    },
+    {
+      "id": "09-must-understand",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-must-understand",
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "09-data-representation",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-data-representation",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/09-data-representation"
+    },
+    {
+      "id": "09-defaults-ranges",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-defaults-ranges",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/09-defaults-ranges"
+    },
+    {
+      "id": "09-allowed-data-representation",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-allowed-data-representation",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/09-allowed-data-representation"
+    },
+    {
+      "id": "10-annotations",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/10-annotations",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/10-annotations",
+      "unsupportedScopes": [
+        "topic-annotation-semantics"
+      ]
+    },
+    {
+      "id": "10-annotations-extended",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/10-annotations-extended",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/10-annotations-extended",
+      "unsupportedScopes": [
+        "topic-annotation-semantics"
+      ]
+    },
+    {
+      "id": "10-annotations-rti",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/10-annotations-rti",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/10-annotations-rti",
+      "unsupportedScopes": [
+        "topic-annotation-semantics"
+      ]
+    },
+    {
+      "id": "10-flat-data-binding",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/10-flat-data-binding",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/10-flat-data-binding",
+      "unsupportedScopes": [
+        "topic-annotation-semantics"
+      ]
+    },
+    {
+      "id": "11-preprocessing",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/11-preprocessing",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/11-preprocessing",
+      "compileEvidence": "artifacts/rti612-include-compilation/results.json"
+    },
+    {
+      "id": "11-conditionals",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/11-conditionals",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/11-conditionals"
+    },
+    {
+      "id": "11-macros",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/11-macros",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/11-macros"
+    },
+    {
+      "id": "11-macro-operators",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/11-macro-operators",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/11-macro-operators"
+    },
+    {
+      "id": "11-preprocessor-advanced",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/11-preprocessor-advanced",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/11-preprocessor-advanced"
+    },
+    {
+      "id": "11-include-search",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/11-include-search",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/11-include-search",
+      "compileEvidence": "artifacts/rti612-include-compilation/results.json"
+    },
+    {
+      "id": "11-comments",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/11-comments",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/11-comments"
+    },
+    {
+      "id": "09-optional-string-sequences",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-optional-string-sequences",
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "optional-collections"
+      ]
+    },
+    {
+      "id": "09-optional-aggregate-member",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-optional-aggregate-member",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/09-optional-aggregate-member"
+    },
+    {
+      "id": "07-union-octet",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-octet",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-octet"
+    },
+    {
+      "id": "07-union-ushort",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-ushort",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-ushort"
+    },
+    {
+      "id": "07-union-ulong",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-ulong",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-ulong"
+    },
+    {
+      "id": "07-union-int8",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-int8",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-int8",
+      "unsupportedScopes": [
+        "signed-int8-binding-compatibility"
+      ]
+    },
+    {
+      "id": "07-union-uint8",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-uint8",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-uint8"
+    },
+    {
+      "id": "07-union-int16",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-int16",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-int16"
+    },
+    {
+      "id": "07-union-uint16",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-uint16",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-uint16"
+    },
+    {
+      "id": "07-union-int32",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-int32",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-int32"
+    },
+    {
+      "id": "07-union-uint32",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-uint32",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-uint32"
+    },
+    {
+      "id": "07-union-long",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-long",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-long"
+    },
+    {
+      "id": "07-union-char-boundaries",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-char-boundaries",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-char-boundaries"
+    },
+    {
+      "id": "09-optional-recursive-array",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": "rtiddsgen/csharp/features/09-optional-recursive-array",
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "optional-collections",
+        "recursive-aggregates"
+      ]
+    },
+    {
+      "id": "04-unbounded-string-aliases",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/04-unbounded-string-aliases",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/04-unbounded-string-aliases"
+    },
+    {
+      "id": "05-unbounded-sequence-aliases",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/05-unbounded-sequence-aliases",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/05-unbounded-sequence-aliases"
+    },
+    {
+      "id": "04-string-alias-chains",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/04-string-alias-chains",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/04-string-alias-chains"
+    },
+    {
+      "id": "07-union-string-sequence-aliases",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-string-sequence-aliases",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-string-sequence-aliases"
+    },
+    {
+      "id": "07-union-string-sequence-bounded-direct",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-string-sequence-bounded-direct",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-string-sequence-bounded-direct"
+    },
+    {
+      "id": "07-union-char-numeric-255",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-char-numeric-255",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/07-union-char-numeric-255"
+    },
+    {
+      "id": "10-resolve-name-wstring-aliases",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/10-resolve-name-wstring-aliases",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/10-resolve-name-wstring-aliases"
+    },
+    {
+      "id": "10-default-literal-enum-array",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/10-default-literal-enum-array",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/10-default-literal-enum-array"
+    },
+    {
+      "id": "14-extensibility-full",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/14-extensibility-full",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/14-extensibility-full"
+    },
+    {
+      "id": "14-autoid-scope",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/14-autoid-scope",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/14-autoid-scope",
+      "compileEvidence": "artifacts/rti612-include-compilation/results.json"
+    },
+    {
+      "id": "14-annotation-arguments",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/14-annotation-arguments",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/14-annotation-arguments"
+    },
+    {
+      "id": "14-member-declarators",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/14-member-declarators",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/14-member-declarators"
+    },
+    {
+      "id": "14-union-label-expressions",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/14-union-label-expressions",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/14-union-label-expressions"
+    },
+    {
+      "id": "14-union-scoped-enum",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/14-union-scoped-enum",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/14-union-scoped-enum"
+    },
+    {
+      "id": "14-union-array-branch",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/14-union-array-branch",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/14-union-array-branch"
+    },
+    {
+      "id": "14-string-expression-bound",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/14-string-expression-bound",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/14-string-expression-bound"
+    },
+    {
+      "id": "14-typed-defaults",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/14-typed-defaults",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/14-typed-defaults"
+    },
+    {
+      "id": "14-enum-constant",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/14-enum-constant",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/14-enum-constant"
+    },
+    {
+      "id": "14-unbounded-support",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/14-unbounded-support",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/14-unbounded-support"
+    },
+    {
+      "id": "14-unbounded-receive-lifecycle",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/14-unbounded-receive-lifecycle",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/14-unbounded-receive-lifecycle"
+    },
+    {
+      "id": "12-lexical",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-duplicate-member",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "03-enum-values-suffix",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "05-direct-sequence-of-sequences",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "10-topic-module",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/10-topic-module",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-missing-include",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-malformed-condition",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-unsupported-map",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-invalid-annotation",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-unknown-annotation",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-unknown-annotation",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/negative/12-unknown-annotation"
+    },
+    {
+      "id": "12-inline-nested",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-legacy-name",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-legacy-name",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/negative/12-legacy-name"
+    },
+    {
+      "id": "12-missing-brace",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-missing-semicolon",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-unresolved-type",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-zero-bound",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-zero-bound",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-enum-separator",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-missing-name",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-array-bracket",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-const-equals",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-truncated",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-union-without-switch",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-include-cycle-a",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-include-cycle-b",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-include-cycle-root",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-malformed-preprocessor",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "02-forward-declarations",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "07-union-long-long",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-long-long",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "64-bit-union-discriminators"
+      ]
+    },
+    {
+      "id": "02-alias-cycle",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "05-negative-bound",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "05-overflow-bound",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "07-invalid-discriminator",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "07-duplicate-label",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/07-duplicate-label",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "07-duplicate-default",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/07-duplicate-default",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "08-member-id-conflict",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/08-member-id-conflict",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "10-unsupported-annotations",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "10-ignored-annotations",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "10-service-annotation",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-bitmask",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-bitset",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-fixed",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-any",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-interface",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-interface",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "no-output",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-import",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-module-idl",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-module-idl",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/negative/12-module-idl"
+    },
+    {
+      "id": "12-union-64bit-label",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-union-64bit-label",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "64-bit-union-discriminators"
+      ]
+    },
+    {
+      "id": "12-unterminated-string",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-unterminated-comment",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-macro-recursion",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-macro-recursion",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/negative/12-macro-recursion"
+    },
+    {
+      "id": "12-macro-arity-windows",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/negative/12-macro-arity-windows"
+    },
+    {
+      "id": "12-macro-arity-linux",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/negative/12-macro-arity-linux"
+    },
+    {
+      "id": "12-error-directive",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-angle-missing",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-included-error",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-name-collisions",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-name-collisions",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-union-unsigned-long-long",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-union-unsigned-long-long",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "64-bit-union-discriminators"
+      ]
+    },
+    {
+      "id": "12-union-int64",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-union-int64",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "64-bit-union-discriminators"
+      ]
+    },
+    {
+      "id": "12-union-uint64",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-union-uint64",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "64-bit-union-discriminators"
+      ]
+    },
+    {
+      "id": "12-union-long-long",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-union-long-long",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "64-bit-union-discriminators"
+      ]
+    },
+    {
+      "id": "12-union-wchar-rti-limit",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": "rtiddsgen/csharp/features/07-union-wchar-label",
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/negative/12-union-wchar-rti-limit"
+    },
+    {
+      "id": "10-resolve-name-array-bound",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/10-resolve-name-array-bound",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "10-resolve-name-sequence-bound",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/10-resolve-name-sequence-bound",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "10-resolve-name-string-bound",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/10-resolve-name-string-bound",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "10-resolve-name-wstring-bound",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/10-resolve-name-wstring-bound",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-keyword-default",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-keyword-default",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/negative/12-keyword-default"
+    },
+    {
+      "id": "12-keyword-strict",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-keyword-strict",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "strict-generator-validation-parity"
+      ]
+    },
+    {
+      "id": "12-case-collision-default",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-case-collision-default",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/negative/12-case-collision-default"
+    },
+    {
+      "id": "12-case-collision-strict",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-case-collision-strict",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "strict-generator-validation-parity"
+      ]
+    },
+    {
+      "id": "12-exact-keyword",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-identifier-control",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-identifier-control",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/negative/12-identifier-control"
+    },
+    {
+      "id": "12-derived-key-strict",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-interface-keyword-default",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-interface-keyword-default",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/negative/12-interface-keyword-default"
+    },
+    {
+      "id": "12-interface-keyword-strict",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-interface-keyword-strict",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "strict-generator-validation-parity"
+      ]
+    },
+    {
+      "id": "12-interface-case-default",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-interface-case-default",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/negative/12-interface-case-default"
+    },
+    {
+      "id": "12-interface-case-strict",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-interface-case-strict",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null,
+      "unsupportedScopes": [
+        "strict-generator-validation-parity"
+      ]
+    },
+    {
+      "id": "12-interface-exact-keyword",
+      "outcome": "rejected-or-failed",
+      "sourceDirectory": null,
+      "compileOutcome": "not-generated",
+      "wireloomOutcome": "rejected",
+      "wireloomCompileOutcome": null,
+      "generatorSourceDirectory": null
+    },
+    {
+      "id": "12-interface-body-control",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/negative/12-interface-body-control",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/negative/12-interface-body-control"
+    },
+    {
+      "id": "13-integration",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/integration/contracts/13-integration",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/integration/13-integration"
+    },
+    {
+      "id": "13-modules",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/integration/contracts/13-modules",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/integration/13-modules"
+    },
+    {
+      "id": "13-alias-inheritance",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/integration/contracts/13-alias-inheritance",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/integration/13-alias-inheritance"
+    },
+    {
+      "id": "13-compositions",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/integration/collections/13-compositions",
+      "compileOutcome": "compiled",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/integration/13-compositions"
+    },
+    {
+      "id": "01-int8-boundaries",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/01-int8-boundaries",
+      "compileOutcome": "failed",
+      "wireloomOutcome": "generated",
+      "wireloomCompileOutcome": "compiled",
+      "generatorSourceDirectory": "generator/features/01-int8-boundaries",
+      "unsupportedScopes": [
+        "signed-int8-binding-compatibility"
+      ],
+      "oracleSourcesRetained": true,
+      "sourceSha256": "16789a817da0823034c0d14900332cc115e6572390678722b97a8138dbf804bc"
+    }
+  ],
+  "generatorSourceRoot": "generator"
+}

@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "04-unbounded-string-aliases",
+  "language": "cpp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "04-unbounded-string-aliases-cpp-04-unbounded-string-aliases-root",
+      "case": "04-unbounded-string-aliases",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-unbounded-string-aliases.idl",
+      "sourceSha256": "397751b79bf34239c43fb27750a9ab935cb1c00ec7f4a55085900b830d8075cb",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-unboundedSupport",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/04-unbounded-string-aliases-cpp-04-unbounded-string-aliases-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/04-unbounded-string-aliases-cpp-04-unbounded-string-aliases-root/idl.idl"
+      ]
+    },
+    {
+      "name": "04-unbounded-string-aliases-cpp-04-unbounded-string-aliases-dependency",
+      "case": "04-unbounded-string-aliases",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "docs/corpus/idl/features/04-unbounded-string-aliases.idl",
+      "sourceSha256": "8df9c44c3d410d92eeefec78b74282229dcab5bad06ef685284250e7301e359e",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-unboundedSupport",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/04-unbounded-string-aliases-cpp-04-unbounded-string-aliases-dependency/generated",
+        "/work/docs/corpus/idl/features/04-unbounded-string-aliases.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cxx",
+      "sha256": "8b6fad4f703329a63312db2e5a806a478ada2631e28702f492163b337c7e8a5b"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "ba891a5571b10fa5acecdcfd83bf052a6e4cca3d37c40ebe0dd2d0234c5f2c3d"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "8b064740794afcf7bf047a398f0f1aa4084f95a50bdeb177cf3d612918695c39"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "1ae199111172c08768eecd91df3f401e396a3064a068687a25dcd83a8a8b8fea"
+    },
+    {
+      "path": "features/04-unbounded-string-aliases.cxx",
+      "sha256": "994cb49aef725f6913e999dbd10b854a65e808f8c5c05702b01cdea44859f268"
+    },
+    {
+      "path": "features/04-unbounded-string-aliases.hpp",
+      "sha256": "e71330a5df2eb664f3d32111d4fb155adf5eb366bfba799bac32f159d93118c3"
+    },
+    {
+      "path": "features/04-unbounded-string-aliasesPlugin.cxx",
+      "sha256": "2d72c0d4c66d96d7094622204ecce9df116bdadee39504a8b7e52181e4f812c1"
+    },
+    {
+      "path": "features/04-unbounded-string-aliasesPlugin.hpp",
+      "sha256": "fdcb235016a5665d674c5290461f5f22c391551d582b022ebc6aaa1aca0a7449"
+    }
+  ]
+}

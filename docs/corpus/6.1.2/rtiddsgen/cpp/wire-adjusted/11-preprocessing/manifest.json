@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "11-preprocessing",
+  "language": "cpp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "11-preprocessing-cpp-common-dependency",
+      "case": "11-preprocessing",
+      "kind": "wire-adjusted",
+      "language": "cpp",
+      "source": "docs/corpus/idl/includes/common.idl",
+      "sourceSha256": "87b3e6e43d5545f80c539471b4cca82e01e6f0841f2dec7f2caac65537650931",
+      "relative": "includes",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-DCORPUS_CAPTURE_DEFINE",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/11-preprocessing-cpp-common-dependency/generated",
+        "/work/docs/corpus/idl/includes/common.idl"
+      ]
+    }
+  ],
+  "rawFiles": [
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/11-preprocessing/11-preprocessing.cxx",
+      "sha256": "4cc7231a27f5a43f9eed5588d97bb3783af328c9207b202ea9be38a81a461b5b"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/11-preprocessing/11-preprocessing.hpp",
+      "sha256": "88884df8d664ad9db4d776f9266b7602d65f74c634de322b372b8e668cebe12b"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/11-preprocessing/11-preprocessingPlugin.cxx",
+      "sha256": "b3a2624ee21f464964ec835c2bc0815f33141b0dd44b148840a36eb4a121d487"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/11-preprocessing/11-preprocessingPlugin.hpp",
+      "sha256": "9584bca630cfe31e725f1ea1feec4d238d11e2000eea0f90871e43e10513fe44"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "11-preprocessing.cxx",
+      "sha256": "4cc7231a27f5a43f9eed5588d97bb3783af328c9207b202ea9be38a81a461b5b"
+    },
+    {
+      "path": "11-preprocessing.hpp",
+      "sha256": "88884df8d664ad9db4d776f9266b7602d65f74c634de322b372b8e668cebe12b"
+    },
+    {
+      "path": "11-preprocessingPlugin.cxx",
+      "sha256": "b3a2624ee21f464964ec835c2bc0815f33141b0dd44b148840a36eb4a121d487"
+    },
+    {
+      "path": "11-preprocessingPlugin.hpp",
+      "sha256": "9584bca630cfe31e725f1ea1feec4d238d11e2000eea0f90871e43e10513fe44"
+    },
+    {
+      "path": "includes/common.cxx",
+      "sha256": "ae755a81dd9640d4076f2307e7451f26973310d30f2a6b64550ea22fe61d9a3c"
+    },
+    {
+      "path": "includes/common.hpp",
+      "sha256": "ec125ab901106085e74e80847402be22cd1b515eff14deaa40d20f3762b0acb2"
+    },
+    {
+      "path": "includes/commonPlugin.cxx",
+      "sha256": "e6dea302c60614d0d5ce8e81672e4744f33fda0e034f0877e36038ac9a165e9a"
+    },
+    {
+      "path": "includes/commonPlugin.hpp",
+      "sha256": "6f4104fe0a9b3bc3807bcc6a40d9e27ffbba4232d4cc33386284af523fed4a11"
+    }
+  ]
+}

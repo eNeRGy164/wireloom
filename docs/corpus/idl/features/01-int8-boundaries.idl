@@ -1,0 +1,8 @@
+module CorpusInt8Boundaries {
+    const int8 int8Min = -128;
+    const int8 int8Max = 127;
+    struct Sample {
+        int8 minimum;
+        int8 maximum;
+    };
+};

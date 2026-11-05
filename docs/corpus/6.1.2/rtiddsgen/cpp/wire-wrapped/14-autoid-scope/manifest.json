@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "14-autoid-scope",
+  "language": "cpp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "14-autoid-scope-cpp-14-autoid-scope-topic-root",
+      "case": "14-autoid-scope",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-autoid-scope-topic.idl",
+      "sourceSha256": "9f05c4d932617cc906e80e2967742689428b67e3f0e09f49788c455452e28b37",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/14-autoid-scope-cpp-14-autoid-scope-topic-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/14-autoid-scope-cpp-14-autoid-scope-topic-root/idl.idl"
+      ]
+    },
+    {
+      "name": "14-autoid-scope-cpp-14-autoid-scope-dependency",
+      "case": "14-autoid-scope",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "docs/corpus/idl/features/14-autoid-scope.idl",
+      "sourceSha256": "b9bf886cd3c64e85d108fc2063f6ca0b1f921283de769364c9bf7744f3d00e5b",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/14-autoid-scope-cpp-14-autoid-scope-dependency/generated",
+        "/work/docs/corpus/idl/features/14-autoid-scope.idl"
+      ]
+    },
+    {
+      "name": "14-autoid-scope-cpp-autoid-hash-include-dependency",
+      "case": "14-autoid-scope",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "docs/corpus/idl/includes/autoid-hash-include.idl",
+      "sourceSha256": "6a4ba5a745de20fcb401350796eda734a611f144d90dcd09cd784c6de1af01d7",
+      "relative": "includes",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/14-autoid-scope-cpp-autoid-hash-include-dependency/generated",
+        "/work/docs/corpus/idl/includes/autoid-hash-include.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cxx",
+      "sha256": "30616b7468623e89d482dddb37b5426a805587dbd478ec3062c889858ad3eb08"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "458039e48603503b3a17ab5ab40efd21269cab0f49e0b6fab50cd02b75227b05"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "965bda1255eb0c221b32b46cbe488d21c52dc660cc3c0ceb2eb57ac53f6ab23b"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "b9db9865aa33e62c2372cac3c1e46a64063bc5a4ed3e19611c43f4496ecbc097"
+    },
+    {
+      "path": "features/14-autoid-scope.cxx",
+      "sha256": "be8cb21bc5c4dc72b72f3eef083935eb23c977a2b29e265a92e954d5f01ba9bd"
+    },
+    {
+      "path": "features/14-autoid-scope.hpp",
+      "sha256": "bf9be2fde6b5b189c060fc93c1e9f889a8ea226e85956ea8e74911ca3778cdd9"
+    },
+    {
+      "path": "features/14-autoid-scopePlugin.cxx",
+      "sha256": "b2d864ed13528ab0850177520fcb51418f64562bf88ac0b7ef2bf9b19e629e92"
+    },
+    {
+      "path": "features/14-autoid-scopePlugin.hpp",
+      "sha256": "31f5291e30f8ffd43fc15e3e3444145c99b1943a42f91190b8aacc73017701d6"
+    },
+    {
+      "path": "includes/autoid-hash-include.cxx",
+      "sha256": "11d69ec956a341e3a4dd4f55ca2dc0e3948063377c0bf51e240fedd18724c1a8"
+    },
+    {
+      "path": "includes/autoid-hash-include.hpp",
+      "sha256": "bbb3766481cbef3e0f225b5015ece02c1df5dccd9fc719b9ac89a043243d6f0f"
+    },
+    {
+      "path": "includes/autoid-hash-includePlugin.cxx",
+      "sha256": "f8c4354f10f4ee430176e7097622c857cfe2806ad3afdf43ab45911ddc92914e"
+    },
+    {
+      "path": "includes/autoid-hash-includePlugin.hpp",
+      "sha256": "80089cfad97d4914ddf66d14152b012d2b5d715081e104fe21d5b0f79ed476a2"
+    }
+  ]
+}

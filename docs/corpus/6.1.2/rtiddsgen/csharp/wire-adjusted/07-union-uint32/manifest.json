@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "07-union-uint32",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "W016: preserve the maximum unsigned discriminator bits using unchecked conversion in signed label metadata.",
+  "captures": [],
+  "rawFiles": [
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/csharp/features/07-union-uint32/07-union-uint32.cs",
+      "sha256": "b1c3307c2ffea507a29d644870e3e9c53640812efaedb30f23f62070b426356b"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/csharp/features/07-union-uint32/07-union-uint32Plugin.cs",
+      "sha256": "a6d388e2426f789b2aee40aff8d6665ebe0aaff557890d7b3009e74c3e8a802c"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "07-union-uint32.cs",
+      "sha256": "b1c3307c2ffea507a29d644870e3e9c53640812efaedb30f23f62070b426356b"
+    },
+    {
+      "path": "07-union-uint32Plugin.cs",
+      "sha256": "888958063f5e29560f00df0a297ea960af3a082cba169b97043aabf264b9a3ba"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "07-union-string-sequence-aliases",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "07-union-string-sequence-aliases-csharp-07-union-string-sequence-aliases-root",
+      "case": "07-union-string-sequence-aliases",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/07-union-string-sequence-aliases.idl",
+      "sourceSha256": "c87a0d898d0bd4432b9194ae7482c8c7bc714adbd69509c8fca6e11fd64246ef",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/07-union-string-sequence-aliases-csharp-07-union-string-sequence-aliases-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/07-union-string-sequence-aliases-csharp-07-union-string-sequence-aliases-root/idl.idl"
+      ]
+    },
+    {
+      "name": "07-union-string-sequence-aliases-csharp-07-union-string-sequence-aliases-dependency",
+      "case": "07-union-string-sequence-aliases",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "docs/corpus/idl/features/07-union-string-sequence-aliases.idl",
+      "sourceSha256": "83e177230435753e93f34b3370809681663878620b3c1b34cd34cc087a68263e",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/07-union-string-sequence-aliases-csharp-07-union-string-sequence-aliases-dependency/generated",
+        "/work/docs/corpus/idl/features/07-union-string-sequence-aliases.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cs",
+      "sha256": "970beaebf56dc4a88cefb74d06d899e3ed810cf29d41d7f7c52d44993292c19c"
+    },
+    {
+      "path": "idlPlugin.cs",
+      "sha256": "02d8407b725460c615a845b1b6e8b96010208eed0aad12cca9c5e4262ae4c559"
+    },
+    {
+      "path": "features/07-union-string-sequence-aliases.cs",
+      "sha256": "58e00a3ad07605ed00721ed372fe5ae09f9ab3853321826d96667a27c2116f05"
+    },
+    {
+      "path": "features/07-union-string-sequence-aliasesPlugin.cs",
+      "sha256": "e12a818e6f5ee1eee1d3049655f74feef05c9c974a57d59ff5afeff73ae7fff7"
+    }
+  ]
+}

@@ -5,8 +5,8 @@
   "image": "rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca",
   "language": "C++11",
   "sharedCaseInventory": "../../../manifest.json",
-  "capturedAtUtc": "2026-10-17T18:44:47+00:00",
-  "generatedCaseCount": 110,
+  "capturedAtUtc": "2026-10-17T20:44:47+02:00",
+  "generatedCaseCount": 111,
   "failedCaseCount": 57,
   "cases": [
     {
@@ -35,26 +35,27 @@
         "01-primitives.hpp",
         "01-primitivesPlugin.cxx",
         "01-primitivesPlugin.hpp"
-      ],
-      "log": "features/01-primitives/rtiddsgen.log"
+      ]
     },
     {
       "id": "01-boundaries",
       "category": "features",
       "idl": "idl/features/01-boundaries.idl",
       "input": "../../../idl/features/01-boundaries.idl",
-      "sourceSha256": "e6a282c68024672e859d6c99ab6718093cdb26263686d06dd2ef671ed825244f",
-      "generatedInputSha256": "e6a282c68024672e859d6c99ab6718093cdb26263686d06dd2ef671ed825244f",
+      "sourceSha256": "f5882dee0c5a650ca862c3fdb1db453a7c118ab39ad691765f48dc5ab39891ef",
+      "generatedInputSha256": "f5882dee0c5a650ca862c3fdb1db453a7c118ab39ad691765f48dc5ab39891ef",
       "defines": [],
       "options": [
         "-language",
         "C++11",
         "-replace",
+        "-generateIncludeFiles",
         "-I",
         "/work/docs/corpus/idl",
         "-I",
         "/work/docs/corpus/idl/includes",
-        "-generateIncludeFiles"
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [],
       "status": "generated",
@@ -65,7 +66,7 @@
         "01-boundariesPlugin.cxx",
         "01-boundariesPlugin.hpp"
       ],
-      "log": "features/01-boundaries/rtiddsgen.log"
+      "sourceDirectory": "features/01-boundaries"
     },
     {
       "id": "01-full-widths",
@@ -93,8 +94,7 @@
         "01-full-widths.hpp",
         "01-full-widthsPlugin.cxx",
         "01-full-widthsPlugin.hpp"
-      ],
-      "log": "features/01-full-widths/rtiddsgen.log"
+      ]
     },
     {
       "id": "02-names-constants",
@@ -122,8 +122,7 @@
         "02-names-constants.hpp",
         "02-names-constantsPlugin.cxx",
         "02-names-constantsPlugin.hpp"
-      ],
-      "log": "features/02-names-constants/rtiddsgen.log"
+      ]
     },
     {
       "id": "02-scopes",
@@ -151,8 +150,7 @@
         "02-scopes.hpp",
         "02-scopesPlugin.cxx",
         "02-scopesPlugin.hpp"
-      ],
-      "log": "features/02-scopes/rtiddsgen.log"
+      ]
     },
     {
       "id": "02-constant-expressions",
@@ -180,8 +178,7 @@
         "02-constant-expressions.hpp",
         "02-constant-expressionsPlugin.cxx",
         "02-constant-expressionsPlugin.hpp"
-      ],
-      "log": "features/02-constant-expressions/rtiddsgen.log"
+      ]
     },
     {
       "id": "02-formatting",
@@ -209,8 +206,7 @@
         "02-formatting.hpp",
         "02-formattingPlugin.cxx",
         "02-formattingPlugin.hpp"
-      ],
-      "log": "features/02-formatting/rtiddsgen.log"
+      ]
     },
     {
       "id": "02-multiple",
@@ -238,8 +234,7 @@
         "02-multiple.hpp",
         "02-multiplePlugin.cxx",
         "02-multiplePlugin.hpp"
-      ],
-      "log": "features/02-multiple/rtiddsgen.log"
+      ]
     },
     {
       "id": "03-enums-aliases",
@@ -267,8 +262,7 @@
         "03-enums-aliases.hpp",
         "03-enums-aliasesPlugin.cxx",
         "03-enums-aliasesPlugin.hpp"
-      ],
-      "log": "features/03-enums-aliases/rtiddsgen.log"
+      ]
     },
     {
       "id": "03-enum-values-prefix",
@@ -296,8 +290,7 @@
         "03-enum-values-prefix.hpp",
         "03-enum-values-prefixPlugin.cxx",
         "03-enum-values-prefixPlugin.hpp"
-      ],
-      "log": "features/03-enum-values-prefix/rtiddsgen.log"
+      ]
     },
     {
       "id": "03-enum-values-explicit",
@@ -325,8 +318,7 @@
         "03-enum-values-explicit.hpp",
         "03-enum-values-explicitPlugin.cxx",
         "03-enum-values-explicitPlugin.hpp"
-      ],
-      "log": "features/03-enum-values-explicit/rtiddsgen.log"
+      ]
     },
     {
       "id": "03-alias-aggregate",
@@ -354,8 +346,7 @@
         "03-alias-aggregate.hpp",
         "03-alias-aggregatePlugin.cxx",
         "03-alias-aggregatePlugin.hpp"
-      ],
-      "log": "features/03-alias-aggregate/rtiddsgen.log"
+      ]
     },
     {
       "id": "03-alias-collections",
@@ -383,8 +374,7 @@
         "03-alias-collections.hpp",
         "03-alias-collectionsPlugin.cxx",
         "03-alias-collectionsPlugin.hpp"
-      ],
-      "log": "features/03-alias-collections/rtiddsgen.log"
+      ]
     },
     {
       "id": "04-strings",
@@ -412,8 +402,7 @@
         "04-strings.hpp",
         "04-stringsPlugin.cxx",
         "04-stringsPlugin.hpp"
-      ],
-      "log": "features/04-strings/rtiddsgen.log"
+      ]
     },
     {
       "id": "04-boundaries",
@@ -441,8 +430,7 @@
         "04-boundaries.hpp",
         "04-boundariesPlugin.cxx",
         "04-boundariesPlugin.hpp"
-      ],
-      "log": "features/04-boundaries/rtiddsgen.log"
+      ]
     },
     {
       "id": "05-collections",
@@ -470,8 +458,7 @@
         "05-collections.hpp",
         "05-collectionsPlugin.cxx",
         "05-collectionsPlugin.hpp"
-      ],
-      "log": "features/05-collections/rtiddsgen.log"
+      ]
     },
     {
       "id": "05-shapes",
@@ -499,8 +486,7 @@
         "05-shapes.hpp",
         "05-shapesPlugin.cxx",
         "05-shapesPlugin.hpp"
-      ],
-      "log": "features/05-shapes/rtiddsgen.log"
+      ]
     },
     {
       "id": "05-array-of-sequences",
@@ -528,8 +514,7 @@
         "05-array-of-sequences.hpp",
         "05-array-of-sequencesPlugin.cxx",
         "05-array-of-sequencesPlugin.hpp"
-      ],
-      "log": "features/05-array-of-sequences/rtiddsgen.log"
+      ]
     },
     {
       "id": "06-aggregates",
@@ -558,8 +543,7 @@
         "06-aggregates.hpp",
         "06-aggregatesPlugin.cxx",
         "06-aggregatesPlugin.hpp"
-      ],
-      "log": "features/06-aggregates/rtiddsgen.log"
+      ]
     },
     {
       "id": "06-valuetypes",
@@ -587,8 +571,7 @@
         "06-valuetypes.hpp",
         "06-valuetypesPlugin.cxx",
         "06-valuetypesPlugin.hpp"
-      ],
-      "log": "features/06-valuetypes/rtiddsgen.log"
+      ]
     },
     {
       "id": "06-alias-composition",
@@ -616,8 +599,7 @@
         "06-alias-composition.hpp",
         "06-alias-compositionPlugin.cxx",
         "06-alias-compositionPlugin.hpp"
-      ],
-      "log": "features/06-alias-composition/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-unions",
@@ -645,8 +627,7 @@
         "07-unions.hpp",
         "07-unionsPlugin.cxx",
         "07-unionsPlugin.hpp"
-      ],
-      "log": "features/07-unions/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-enum",
@@ -674,8 +655,7 @@
         "07-union-enum.hpp",
         "07-union-enumPlugin.cxx",
         "07-union-enumPlugin.hpp"
-      ],
-      "log": "features/07-union-enum/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-scoped",
@@ -703,8 +683,7 @@
         "07-union-scoped.hpp",
         "07-union-scopedPlugin.cxx",
         "07-union-scopedPlugin.hpp"
-      ],
-      "log": "features/07-union-scoped/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-multilabel",
@@ -732,8 +711,7 @@
         "07-union-multilabel.hpp",
         "07-union-multilabelPlugin.cxx",
         "07-union-multilabelPlugin.hpp"
-      ],
-      "log": "features/07-union-multilabel/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-short",
@@ -761,8 +739,7 @@
         "07-union-short.hpp",
         "07-union-shortPlugin.cxx",
         "07-union-shortPlugin.hpp"
-      ],
-      "log": "features/07-union-short/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-short-boundaries",
@@ -790,8 +767,7 @@
         "07-union-short-boundaries.hpp",
         "07-union-short-boundariesPlugin.cxx",
         "07-union-short-boundariesPlugin.hpp"
-      ],
-      "log": "features/07-union-short-boundaries/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-char",
@@ -819,8 +795,7 @@
         "07-union-char.hpp",
         "07-union-charPlugin.cxx",
         "07-union-charPlugin.hpp"
-      ],
-      "log": "features/07-union-char/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-char-numeric",
@@ -848,8 +823,7 @@
         "07-union-char-numeric.hpp",
         "07-union-char-numericPlugin.cxx",
         "07-union-char-numericPlugin.hpp"
-      ],
-      "log": "features/07-union-char-numeric/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-wchar-label",
@@ -872,8 +846,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "features/07-union-wchar-label/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "07-union-boolean",
@@ -901,8 +874,7 @@
         "07-union-boolean.hpp",
         "07-union-booleanPlugin.cxx",
         "07-union-booleanPlugin.hpp"
-      ],
-      "log": "features/07-union-boolean/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-aliases",
@@ -930,8 +902,7 @@
         "07-union-aliases.hpp",
         "07-union-aliasesPlugin.cxx",
         "07-union-aliasesPlugin.hpp"
-      ],
-      "log": "features/07-union-aliases/rtiddsgen.log"
+      ]
     },
     {
       "id": "08-keys",
@@ -959,8 +930,7 @@
         "08-keys.hpp",
         "08-keysPlugin.cxx",
         "08-keysPlugin.hpp"
-      ],
-      "log": "features/08-keys/rtiddsgen.log"
+      ]
     },
     {
       "id": "08-key-nested",
@@ -988,8 +958,7 @@
         "08-key-nested.hpp",
         "08-key-nestedPlugin.cxx",
         "08-key-nestedPlugin.hpp"
-      ],
-      "log": "features/08-key-nested/rtiddsgen.log"
+      ]
     },
     {
       "id": "08-key-inherited",
@@ -1017,8 +986,7 @@
         "08-key-inherited.hpp",
         "08-key-inheritedPlugin.cxx",
         "08-key-inheritedPlugin.hpp"
-      ],
-      "log": "features/08-key-inherited/rtiddsgen.log"
+      ]
     },
     {
       "id": "08-key-boundaries",
@@ -1046,8 +1014,7 @@
         "08-key-boundaries.hpp",
         "08-key-boundariesPlugin.cxx",
         "08-key-boundariesPlugin.hpp"
-      ],
-      "log": "features/08-key-boundaries/rtiddsgen.log"
+      ]
     },
     {
       "id": "08-key-union",
@@ -1075,8 +1042,7 @@
         "08-key-union.hpp",
         "08-key-unionPlugin.cxx",
         "08-key-unionPlugin.hpp"
-      ],
-      "log": "features/08-key-union/rtiddsgen.log"
+      ]
     },
     {
       "id": "09-extensibility",
@@ -1104,8 +1070,7 @@
         "09-extensibility.hpp",
         "09-extensibilityPlugin.cxx",
         "09-extensibilityPlugin.hpp"
-      ],
-      "log": "features/09-extensibility/rtiddsgen.log"
+      ]
     },
     {
       "id": "09-default",
@@ -1133,8 +1098,7 @@
         "09-default.hpp",
         "09-defaultPlugin.cxx",
         "09-defaultPlugin.hpp"
-      ],
-      "log": "features/09-default/rtiddsgen.log"
+      ]
     },
     {
       "id": "09-id-gaps",
@@ -1162,8 +1126,7 @@
         "09-id-gaps.hpp",
         "09-id-gapsPlugin.cxx",
         "09-id-gapsPlugin.hpp"
-      ],
-      "log": "features/09-id-gaps/rtiddsgen.log"
+      ]
     },
     {
       "id": "09-evolution-optional",
@@ -1191,8 +1154,7 @@
         "09-evolution-optional.hpp",
         "09-evolution-optionalPlugin.cxx",
         "09-evolution-optionalPlugin.hpp"
-      ],
-      "log": "features/09-evolution-optional/rtiddsgen.log"
+      ]
     },
     {
       "id": "09-optional-collections",
@@ -1220,8 +1182,7 @@
         "09-optional-collections.hpp",
         "09-optional-collectionsPlugin.cxx",
         "09-optional-collectionsPlugin.hpp"
-      ],
-      "log": "features/09-optional-collections/rtiddsgen.log"
+      ]
     },
     {
       "id": "09-autoid-hash",
@@ -1251,7 +1212,6 @@
         "09-autoid-hashPlugin.cxx",
         "09-autoid-hashPlugin.hpp"
       ],
-      "log": "features/09-autoid-hash/rtiddsgen.log",
       "capturedAtUtc": "2026-10-18T08:29:49Z"
     },
     {
@@ -1282,7 +1242,6 @@
         "09-must-understandPlugin.cxx",
         "09-must-understandPlugin.hpp"
       ],
-      "log": "features/09-must-understand/rtiddsgen.log",
       "capturedAtUtc": "2026-10-18T08:29:49Z"
     },
     {
@@ -1311,8 +1270,7 @@
         "09-data-representation.hpp",
         "09-data-representationPlugin.cxx",
         "09-data-representationPlugin.hpp"
-      ],
-      "log": "features/09-data-representation/rtiddsgen.log"
+      ]
     },
     {
       "id": "09-defaults-ranges",
@@ -1340,8 +1298,7 @@
         "09-defaults-ranges.hpp",
         "09-defaults-rangesPlugin.cxx",
         "09-defaults-rangesPlugin.hpp"
-      ],
-      "log": "features/09-defaults-ranges/rtiddsgen.log"
+      ]
     },
     {
       "id": "09-allowed-data-representation",
@@ -1369,8 +1326,7 @@
         "09-allowed-data-representation.hpp",
         "09-allowed-data-representationPlugin.cxx",
         "09-allowed-data-representationPlugin.hpp"
-      ],
-      "log": "features/09-allowed-data-representation/rtiddsgen.log"
+      ]
     },
     {
       "id": "10-annotations",
@@ -1398,8 +1354,7 @@
         "10-annotations.hpp",
         "10-annotationsPlugin.cxx",
         "10-annotationsPlugin.hpp"
-      ],
-      "log": "features/10-annotations/rtiddsgen.log"
+      ]
     },
     {
       "id": "10-annotations-extended",
@@ -1427,8 +1382,7 @@
         "10-annotations-extended.hpp",
         "10-annotations-extendedPlugin.cxx",
         "10-annotations-extendedPlugin.hpp"
-      ],
-      "log": "features/10-annotations-extended/rtiddsgen.log"
+      ]
     },
     {
       "id": "10-annotations-rti",
@@ -1456,8 +1410,7 @@
         "10-annotations-rti.hpp",
         "10-annotations-rtiPlugin.cxx",
         "10-annotations-rtiPlugin.hpp"
-      ],
-      "log": "features/10-annotations-rti/rtiddsgen.log"
+      ]
     },
     {
       "id": "10-flat-data-binding",
@@ -1487,8 +1440,7 @@
         "10-flat-data-binding.hpp",
         "10-flat-data-bindingPlugin.cxx",
         "10-flat-data-bindingPlugin.hpp"
-      ],
-      "log": "features/10-flat-data-binding/rtiddsgen.log"
+      ]
     },
     {
       "id": "11-preprocessing",
@@ -1524,8 +1476,7 @@
         "includes/common.hpp",
         "includes/commonPlugin.cxx",
         "includes/commonPlugin.hpp"
-      ],
-      "log": "features/11-preprocessing/rtiddsgen.log"
+      ]
     },
     {
       "id": "11-conditionals",
@@ -1553,8 +1504,7 @@
         "11-conditionals.hpp",
         "11-conditionalsPlugin.cxx",
         "11-conditionalsPlugin.hpp"
-      ],
-      "log": "features/11-conditionals/rtiddsgen.log"
+      ]
     },
     {
       "id": "11-macros",
@@ -1582,8 +1532,7 @@
         "11-macros.hpp",
         "11-macrosPlugin.cxx",
         "11-macrosPlugin.hpp"
-      ],
-      "log": "features/11-macros/rtiddsgen.log"
+      ]
     },
     {
       "id": "11-macro-operators",
@@ -1611,8 +1560,7 @@
         "11-macro-operators.hpp",
         "11-macro-operatorsPlugin.cxx",
         "11-macro-operatorsPlugin.hpp"
-      ],
-      "log": "features/11-macro-operators/rtiddsgen.log"
+      ]
     },
     {
       "id": "11-preprocessor-advanced",
@@ -1640,8 +1588,7 @@
         "11-preprocessor-advanced.hpp",
         "11-preprocessor-advancedPlugin.cxx",
         "11-preprocessor-advancedPlugin.hpp"
-      ],
-      "log": "features/11-preprocessor-advanced/rtiddsgen.log"
+      ]
     },
     {
       "id": "11-include-search",
@@ -1673,8 +1620,7 @@
         "includes/common.hpp",
         "includes/commonPlugin.cxx",
         "includes/commonPlugin.hpp"
-      ],
-      "log": "features/11-include-search/rtiddsgen.log"
+      ]
     },
     {
       "id": "11-comments",
@@ -1702,8 +1648,7 @@
         "11-comments.hpp",
         "11-commentsPlugin.cxx",
         "11-commentsPlugin.hpp"
-      ],
-      "log": "features/11-comments/rtiddsgen.log"
+      ]
     },
     {
       "id": "09-optional-string-sequences",
@@ -1731,8 +1676,7 @@
         "09-optional-string-sequences.hpp",
         "09-optional-string-sequencesPlugin.cxx",
         "09-optional-string-sequencesPlugin.hpp"
-      ],
-      "log": "features/09-optional-string-sequences/rtiddsgen.log"
+      ]
     },
     {
       "id": "09-optional-aggregate-member",
@@ -1760,8 +1704,7 @@
         "09-optional-aggregate-member.hpp",
         "09-optional-aggregate-memberPlugin.cxx",
         "09-optional-aggregate-memberPlugin.hpp"
-      ],
-      "log": "features/09-optional-aggregate-member/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-octet",
@@ -1789,8 +1732,7 @@
         "07-union-octet.hpp",
         "07-union-octetPlugin.cxx",
         "07-union-octetPlugin.hpp"
-      ],
-      "log": "features/07-union-octet/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-ushort",
@@ -1818,8 +1760,7 @@
         "07-union-ushort.hpp",
         "07-union-ushortPlugin.cxx",
         "07-union-ushortPlugin.hpp"
-      ],
-      "log": "features/07-union-ushort/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-ulong",
@@ -1847,8 +1788,7 @@
         "07-union-ulong.hpp",
         "07-union-ulongPlugin.cxx",
         "07-union-ulongPlugin.hpp"
-      ],
-      "log": "features/07-union-ulong/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-int8",
@@ -1876,8 +1816,7 @@
         "07-union-int8.hpp",
         "07-union-int8Plugin.cxx",
         "07-union-int8Plugin.hpp"
-      ],
-      "log": "features/07-union-int8/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-uint8",
@@ -1905,8 +1844,7 @@
         "07-union-uint8.hpp",
         "07-union-uint8Plugin.cxx",
         "07-union-uint8Plugin.hpp"
-      ],
-      "log": "features/07-union-uint8/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-int16",
@@ -1934,8 +1872,7 @@
         "07-union-int16.hpp",
         "07-union-int16Plugin.cxx",
         "07-union-int16Plugin.hpp"
-      ],
-      "log": "features/07-union-int16/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-uint16",
@@ -1963,8 +1900,7 @@
         "07-union-uint16.hpp",
         "07-union-uint16Plugin.cxx",
         "07-union-uint16Plugin.hpp"
-      ],
-      "log": "features/07-union-uint16/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-int32",
@@ -1992,8 +1928,7 @@
         "07-union-int32.hpp",
         "07-union-int32Plugin.cxx",
         "07-union-int32Plugin.hpp"
-      ],
-      "log": "features/07-union-int32/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-uint32",
@@ -2021,8 +1956,7 @@
         "07-union-uint32.hpp",
         "07-union-uint32Plugin.cxx",
         "07-union-uint32Plugin.hpp"
-      ],
-      "log": "features/07-union-uint32/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-long",
@@ -2050,8 +1984,7 @@
         "07-union-long.hpp",
         "07-union-longPlugin.cxx",
         "07-union-longPlugin.hpp"
-      ],
-      "log": "features/07-union-long/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-char-boundaries",
@@ -2079,8 +2012,7 @@
         "07-union-char-boundaries.hpp",
         "07-union-char-boundariesPlugin.cxx",
         "07-union-char-boundariesPlugin.hpp"
-      ],
-      "log": "features/07-union-char-boundaries/rtiddsgen.log"
+      ]
     },
     {
       "id": "09-optional-recursive-array",
@@ -2109,8 +2041,7 @@
         "09-optional-recursive-array.hpp",
         "09-optional-recursive-arrayPlugin.cxx",
         "09-optional-recursive-arrayPlugin.hpp"
-      ],
-      "log": "features/09-optional-recursive-array/rtiddsgen.log"
+      ]
     },
     {
       "id": "04-unbounded-string-aliases",
@@ -2139,8 +2070,7 @@
         "04-unbounded-string-aliases.hpp",
         "04-unbounded-string-aliasesPlugin.cxx",
         "04-unbounded-string-aliasesPlugin.hpp"
-      ],
-      "log": "features/04-unbounded-string-aliases/rtiddsgen.log"
+      ]
     },
     {
       "id": "05-unbounded-sequence-aliases",
@@ -2169,8 +2099,7 @@
         "05-unbounded-sequence-aliases.hpp",
         "05-unbounded-sequence-aliasesPlugin.cxx",
         "05-unbounded-sequence-aliasesPlugin.hpp"
-      ],
-      "log": "features/05-unbounded-sequence-aliases/rtiddsgen.log"
+      ]
     },
     {
       "id": "04-string-alias-chains",
@@ -2198,8 +2127,7 @@
         "04-string-alias-chains.hpp",
         "04-string-alias-chainsPlugin.cxx",
         "04-string-alias-chainsPlugin.hpp"
-      ],
-      "log": "features/04-string-alias-chains/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-string-sequence-aliases",
@@ -2227,8 +2155,7 @@
         "07-union-string-sequence-aliases.hpp",
         "07-union-string-sequence-aliasesPlugin.cxx",
         "07-union-string-sequence-aliasesPlugin.hpp"
-      ],
-      "log": "features/07-union-string-sequence-aliases/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-string-sequence-bounded-direct",
@@ -2256,8 +2183,7 @@
         "07-union-string-sequence-bounded-direct.hpp",
         "07-union-string-sequence-bounded-directPlugin.cxx",
         "07-union-string-sequence-bounded-directPlugin.hpp"
-      ],
-      "log": "features/07-union-string-sequence-bounded-direct/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-union-char-numeric-255",
@@ -2285,8 +2211,7 @@
         "07-union-char-numeric-255.hpp",
         "07-union-char-numeric-255Plugin.cxx",
         "07-union-char-numeric-255Plugin.hpp"
-      ],
-      "log": "features/07-union-char-numeric-255/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-lexical",
@@ -2309,8 +2234,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-lexical/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-duplicate-member",
@@ -2333,8 +2257,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-duplicate-member/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "03-enum-values-suffix",
@@ -2357,8 +2280,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/03-enum-values-suffix/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "05-direct-sequence-of-sequences",
@@ -2381,8 +2303,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/05-direct-sequence-of-sequences/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "10-topic-module",
@@ -2405,8 +2326,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/10-topic-module/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-missing-include",
@@ -2429,8 +2349,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-missing-include/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-malformed-condition",
@@ -2453,8 +2372,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-malformed-condition/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-unsupported-map",
@@ -2477,8 +2395,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-unsupported-map/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-invalid-annotation",
@@ -2501,8 +2418,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-invalid-annotation/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-unknown-annotation",
@@ -2530,8 +2446,7 @@
         "12-unknown-annotation.hpp",
         "12-unknown-annotationPlugin.cxx",
         "12-unknown-annotationPlugin.hpp"
-      ],
-      "log": "negative/12-unknown-annotation/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-inline-nested",
@@ -2554,8 +2469,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-inline-nested/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-legacy-name",
@@ -2583,8 +2497,7 @@
         "12-legacy-name.hpp",
         "12-legacy-namePlugin.cxx",
         "12-legacy-namePlugin.hpp"
-      ],
-      "log": "negative/12-legacy-name/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-missing-brace",
@@ -2607,8 +2520,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-missing-brace/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-missing-semicolon",
@@ -2631,8 +2543,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-missing-semicolon/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-unresolved-type",
@@ -2655,8 +2566,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-unresolved-type/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-zero-bound",
@@ -2684,8 +2594,7 @@
         "12-zero-bound.hpp",
         "12-zero-boundPlugin.cxx",
         "12-zero-boundPlugin.hpp"
-      ],
-      "log": "negative/12-zero-bound/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-enum-separator",
@@ -2708,8 +2617,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-enum-separator/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-missing-name",
@@ -2732,8 +2640,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-missing-name/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-array-bracket",
@@ -2756,8 +2663,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-array-bracket/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-const-equals",
@@ -2780,8 +2686,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-const-equals/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-truncated",
@@ -2804,8 +2709,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-truncated/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-union-without-switch",
@@ -2828,8 +2732,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-union-without-switch/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-include-cycle-a",
@@ -2852,8 +2755,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-include-cycle-a/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-include-cycle-b",
@@ -2876,8 +2778,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-include-cycle-b/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-include-cycle-root",
@@ -2900,8 +2801,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-include-cycle-root/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-malformed-preprocessor",
@@ -2924,8 +2824,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-malformed-preprocessor/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "02-forward-declarations",
@@ -2948,8 +2847,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/02-forward-declarations/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "07-union-long-long",
@@ -2972,8 +2870,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/07-union-long-long/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "02-alias-cycle",
@@ -2996,8 +2893,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/02-alias-cycle/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "05-negative-bound",
@@ -3020,8 +2916,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/05-negative-bound/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "05-overflow-bound",
@@ -3044,8 +2939,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/05-overflow-bound/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "07-invalid-discriminator",
@@ -3068,8 +2962,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/07-invalid-discriminator/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "07-duplicate-label",
@@ -3097,8 +2990,7 @@
         "07-duplicate-label.hpp",
         "07-duplicate-labelPlugin.cxx",
         "07-duplicate-labelPlugin.hpp"
-      ],
-      "log": "negative/07-duplicate-label/rtiddsgen.log"
+      ]
     },
     {
       "id": "07-duplicate-default",
@@ -3126,8 +3018,7 @@
         "07-duplicate-default.hpp",
         "07-duplicate-defaultPlugin.cxx",
         "07-duplicate-defaultPlugin.hpp"
-      ],
-      "log": "negative/07-duplicate-default/rtiddsgen.log"
+      ]
     },
     {
       "id": "08-member-id-conflict",
@@ -3155,8 +3046,7 @@
         "08-member-id-conflict.hpp",
         "08-member-id-conflictPlugin.cxx",
         "08-member-id-conflictPlugin.hpp"
-      ],
-      "log": "negative/08-member-id-conflict/rtiddsgen.log"
+      ]
     },
     {
       "id": "10-unsupported-annotations",
@@ -3179,8 +3069,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/10-unsupported-annotations/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "10-ignored-annotations",
@@ -3208,8 +3097,7 @@
         "10-ignored-annotations.hpp",
         "10-ignored-annotationsPlugin.cxx",
         "10-ignored-annotationsPlugin.hpp"
-      ],
-      "log": "negative/10-ignored-annotations/rtiddsgen.log"
+      ]
     },
     {
       "id": "10-service-annotation",
@@ -3232,8 +3120,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/10-service-annotation/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-bitmask",
@@ -3256,8 +3143,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-bitmask/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-bitset",
@@ -3280,8 +3166,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-bitset/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-fixed",
@@ -3304,8 +3189,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-fixed/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-any",
@@ -3328,8 +3212,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-any/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-interface",
@@ -3357,8 +3240,7 @@
         "12-interface.hpp",
         "12-interfacePlugin.cxx",
         "12-interfacePlugin.hpp"
-      ],
-      "log": "negative/12-interface/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-import",
@@ -3381,8 +3263,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-import/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-module-idl",
@@ -3410,8 +3291,7 @@
         "12-module-idl.hpp",
         "12-module-idlPlugin.cxx",
         "12-module-idlPlugin.hpp"
-      ],
-      "log": "negative/12-module-idl/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-union-64bit-label",
@@ -3434,8 +3314,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-union-64bit-label/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-unterminated-string",
@@ -3458,8 +3337,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-unterminated-string/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-unterminated-comment",
@@ -3482,8 +3360,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-unterminated-comment/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-macro-recursion",
@@ -3511,8 +3388,7 @@
         "12-macro-recursion.hpp",
         "12-macro-recursionPlugin.cxx",
         "12-macro-recursionPlugin.hpp"
-      ],
-      "log": "negative/12-macro-recursion/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-macro-arity-windows",
@@ -3535,8 +3411,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-macro-arity-windows/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-macro-arity-linux",
@@ -3559,8 +3434,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-macro-arity-linux/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-error-directive",
@@ -3583,8 +3457,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-error-directive/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-angle-missing",
@@ -3607,8 +3480,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-angle-missing/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-included-error",
@@ -3631,8 +3503,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-included-error/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-name-collisions",
@@ -3660,8 +3531,7 @@
         "12-name-collisions.hpp",
         "12-name-collisionsPlugin.cxx",
         "12-name-collisionsPlugin.hpp"
-      ],
-      "log": "negative/12-name-collisions/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-union-unsigned-long-long",
@@ -3684,8 +3554,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-union-unsigned-long-long/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-union-int64",
@@ -3708,8 +3577,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-union-int64/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-union-uint64",
@@ -3732,8 +3600,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-union-uint64/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-union-long-long",
@@ -3756,8 +3623,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-union-long-long/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-union-wchar-rti-limit",
@@ -3780,8 +3646,7 @@
       "adaptations": [],
       "status": "rejected-or-failed",
       "exitCode": 255,
-      "generatedFiles": [],
-      "log": "negative/12-union-wchar-rti-limit/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "13-integration",
@@ -3813,8 +3678,7 @@
         "shared/13-status.hpp",
         "shared/13-statusPlugin.cxx",
         "shared/13-statusPlugin.hpp"
-      ],
-      "log": "integration/13-integration/rtiddsgen.log"
+      ]
     },
     {
       "id": "13-modules",
@@ -3842,8 +3706,7 @@
         "13-modules.hpp",
         "13-modulesPlugin.cxx",
         "13-modulesPlugin.hpp"
-      ],
-      "log": "integration/13-modules/rtiddsgen.log"
+      ]
     },
     {
       "id": "13-alias-inheritance",
@@ -3871,8 +3734,7 @@
         "13-alias-inheritance.hpp",
         "13-alias-inheritancePlugin.cxx",
         "13-alias-inheritancePlugin.hpp"
-      ],
-      "log": "integration/13-alias-inheritance/rtiddsgen.log"
+      ]
     },
     {
       "id": "13-compositions",
@@ -3900,8 +3762,7 @@
         "13-compositions.hpp",
         "13-compositionsPlugin.cxx",
         "13-compositionsPlugin.hpp"
-      ],
-      "log": "integration/13-compositions/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-keyword-default",
@@ -3933,8 +3794,7 @@
         "12-keyword-default.hpp",
         "12-keyword-defaultPlugin.cxx",
         "12-keyword-defaultPlugin.hpp"
-      ],
-      "log": "negative/12-keyword-default/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-keyword-strict",
@@ -3962,8 +3822,7 @@
       "captureRunId": "strict-corpus-capture-7.7.0",
       "adaptations": [],
       "status": "rejected",
-      "generatedFiles": [],
-      "log": "negative/12-keyword-strict/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-case-collision-default",
@@ -3995,8 +3854,7 @@
         "12-case-collision-default.hpp",
         "12-case-collision-defaultPlugin.cxx",
         "12-case-collision-defaultPlugin.hpp"
-      ],
-      "log": "negative/12-case-collision-default/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-case-collision-strict",
@@ -4024,8 +3882,7 @@
       "captureRunId": "strict-corpus-capture-7.7.0",
       "adaptations": [],
       "status": "rejected",
-      "generatedFiles": [],
-      "log": "negative/12-case-collision-strict/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-exact-keyword",
@@ -4052,8 +3909,7 @@
       "captureRunId": "strict-corpus-capture-7.7.0",
       "adaptations": [],
       "status": "rejected",
-      "generatedFiles": [],
-      "log": "negative/12-exact-keyword/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-identifier-control",
@@ -4086,8 +3942,7 @@
         "12-identifier-control.hpp",
         "12-identifier-controlPlugin.cxx",
         "12-identifier-controlPlugin.hpp"
-      ],
-      "log": "negative/12-identifier-control/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-derived-key-strict",
@@ -4115,8 +3970,7 @@
       "captureRunId": "strict-corpus-capture-7.7.0",
       "adaptations": [],
       "status": "rejected",
-      "generatedFiles": [],
-      "log": "negative/12-derived-key-strict/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-interface-keyword-default",
@@ -4148,8 +4002,7 @@
         "12-interface-keyword-default.hpp",
         "12-interface-keyword-defaultPlugin.cxx",
         "12-interface-keyword-defaultPlugin.hpp"
-      ],
-      "log": "negative/12-interface-keyword-default/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-interface-keyword-strict",
@@ -4177,8 +4030,7 @@
       "captureRunId": "interface-corpus-capture-7.7.0",
       "adaptations": [],
       "status": "rejected",
-      "generatedFiles": [],
-      "log": "negative/12-interface-keyword-strict/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-interface-case-default",
@@ -4210,8 +4062,7 @@
         "12-interface-case-default.hpp",
         "12-interface-case-defaultPlugin.cxx",
         "12-interface-case-defaultPlugin.hpp"
-      ],
-      "log": "negative/12-interface-case-default/rtiddsgen.log"
+      ]
     },
     {
       "id": "12-interface-case-strict",
@@ -4239,8 +4090,7 @@
       "captureRunId": "interface-corpus-capture-7.7.0",
       "adaptations": [],
       "status": "rejected",
-      "generatedFiles": [],
-      "log": "negative/12-interface-case-strict/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-interface-exact-keyword",
@@ -4267,8 +4117,7 @@
       "captureRunId": "interface-corpus-capture-7.7.0",
       "adaptations": [],
       "status": "rejected",
-      "generatedFiles": [],
-      "log": "negative/12-interface-exact-keyword/rtiddsgen.log"
+      "generatedFiles": []
     },
     {
       "id": "12-interface-body-control",
@@ -4301,21 +4150,460 @@
         "12-interface-body-control.hpp",
         "12-interface-body-controlPlugin.cxx",
         "12-interface-body-controlPlugin.hpp"
+      ]
+    },
+    {
+      "id": "14-extensibility-full",
+      "category": "features",
+      "idl": "idl/features/14-extensibility-full.idl",
+      "input": "../../../idl/features/14-extensibility-full.idl",
+      "sourceSha256": "09842cb28ea368887b4d2f5eb36e9446399c1d72c8ad92afb0cb181cbd339b2e",
+      "generatedInputSha256": "09842cb28ea368887b4d2f5eb36e9446399c1d72c8ad92afb0cb181cbd339b2e",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-generateIncludeFiles",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
-      "log": "negative/12-interface-body-control/rtiddsgen.log"
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "14-extensibility-full.cxx",
+        "14-extensibility-full.hpp",
+        "14-extensibility-fullPlugin.cxx",
+        "14-extensibility-fullPlugin.hpp"
+      ],
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "cpp/features/14-extensibility-full",
+      "outputSha256": "5394f11ff77e1550c5f0dce5af6f32d6a0399e46e9351368f466466b7540526d"
+    },
+    {
+      "id": "14-autoid-scope",
+      "category": "features",
+      "idl": "idl/features/14-autoid-scope.idl",
+      "input": "../../../idl/features/14-autoid-scope.idl",
+      "sourceSha256": "b9bf886cd3c64e85d108fc2063f6ca0b1f921283de769364c9bf7744f3d00e5b",
+      "generatedInputSha256": "b9bf886cd3c64e85d108fc2063f6ca0b1f921283de769364c9bf7744f3d00e5b",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-generateIncludeFiles",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "14-autoid-scope.cxx",
+        "14-autoid-scope.hpp",
+        "14-autoid-scopePlugin.cxx",
+        "14-autoid-scopePlugin.hpp",
+        "includes/autoid-hash-include.cxx",
+        "includes/autoid-hash-include.hpp",
+        "includes/autoid-hash-includePlugin.cxx",
+        "includes/autoid-hash-includePlugin.hpp"
+      ],
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/autoid-include-reference-rti-7.7.0/capture.json",
+      "captureOutput": "cpp/features/14-autoid-scope",
+      "outputSha256": "25fd2e67ad400dae19dad8024e8b61573a0bcc5a643c5d328ae6bd32d0b495c4",
+      "includedSources": [
+        {
+          "idl": "idl/includes/autoid-hash-include.idl",
+          "sourceSha256": "6a4ba5a745de20fcb401350796eda734a611f144d90dcd09cd784c6de1af01d7",
+          "rtiddsgenVersion": "4.7.0",
+          "imageId": "sha256:94c9b9377b5d45ddb01b709c4bee239b47e8f617634e74b9286bfdf196d74987",
+          "outputSha256": "551dcc8a902d9e25bd6b97977ceb627a279b161fec6d430da08b69695e0e0865",
+          "files": [
+            {
+              "path": "includes/autoid-hash-include.cxx",
+              "sha256": "8dcb457c633018a48ed20d2eaab491fe063b90cae39e158d7a1200597b3e40d3"
+            },
+            {
+              "path": "includes/autoid-hash-include.hpp",
+              "sha256": "6b9b9465ec324532297973ee24d6c698f30af067608da5e1af7f5879129ddb66"
+            },
+            {
+              "path": "includes/autoid-hash-includePlugin.cxx",
+              "sha256": "3dfffd8cbe971bd7f62ae3e86376d6a69b7f3330bc7b7cbdc47b04d05517a644"
+            },
+            {
+              "path": "includes/autoid-hash-includePlugin.hpp",
+              "sha256": "9aa61d1b346efcca38f93102670c5575be1af2ce400cd665d643d44909b245dd"
+            }
+          ],
+          "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/include-helper-capture-licensed/capture.json"
+        }
+      ]
+    },
+    {
+      "id": "14-annotation-arguments",
+      "category": "features",
+      "idl": "idl/features/14-annotation-arguments.idl",
+      "input": "../../../idl/features/14-annotation-arguments.idl",
+      "sourceSha256": "c971b5ee06a9412c5cf28140589a87fb4207223ed081dcd04e8eee0e84780b02",
+      "generatedInputSha256": "c971b5ee06a9412c5cf28140589a87fb4207223ed081dcd04e8eee0e84780b02",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-generateIncludeFiles",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "14-annotation-arguments.cxx",
+        "14-annotation-arguments.hpp",
+        "14-annotation-argumentsPlugin.cxx",
+        "14-annotation-argumentsPlugin.hpp"
+      ],
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "cpp/features/14-annotation-arguments",
+      "outputSha256": "e2b01a487e3a8fc3bc424c16aa9b63ebeba095e8893685d1cbcf2b3d0c151ce7"
+    },
+    {
+      "id": "14-member-declarators",
+      "category": "features",
+      "idl": "idl/features/14-member-declarators.idl",
+      "input": "../../../idl/features/14-member-declarators.idl",
+      "sourceSha256": "a34be999fb2502c846ce077c4166d7cfbcd4fca363454ec6d641cf5f9b63ef02",
+      "generatedInputSha256": "a34be999fb2502c846ce077c4166d7cfbcd4fca363454ec6d641cf5f9b63ef02",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-generateIncludeFiles",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "14-member-declarators.cxx",
+        "14-member-declarators.hpp",
+        "14-member-declaratorsPlugin.cxx",
+        "14-member-declaratorsPlugin.hpp"
+      ],
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "cpp/features/14-member-declarators",
+      "outputSha256": "b8361ae68639098e6f475aa49ce9eea374b208ceb9169814c7bcdeac1e27b104"
+    },
+    {
+      "id": "14-union-label-expressions",
+      "category": "features",
+      "idl": "idl/features/14-union-label-expressions.idl",
+      "input": "../../../idl/features/14-union-label-expressions.idl",
+      "sourceSha256": "bd0356c1c7dbb81736ca9e1a3d6909fcd2267fd1cd362b999d719a3174336d12",
+      "generatedInputSha256": "bd0356c1c7dbb81736ca9e1a3d6909fcd2267fd1cd362b999d719a3174336d12",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-generateIncludeFiles",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "14-union-label-expressions.cxx",
+        "14-union-label-expressions.hpp",
+        "14-union-label-expressionsPlugin.cxx",
+        "14-union-label-expressionsPlugin.hpp"
+      ],
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "cpp/features/14-union-label-expressions",
+      "outputSha256": "7e2a7f8e5b1a20a170040d799fe16b28282a5dd579f78c4d661e3e5fd83ff8a6"
+    },
+    {
+      "id": "14-union-scoped-enum",
+      "category": "features",
+      "idl": "idl/features/14-union-scoped-enum.idl",
+      "input": "../../../idl/features/14-union-scoped-enum.idl",
+      "sourceSha256": "743c6a657056bf90521e1615500b5af589a23fce7be190072e8046e6564f8cd0",
+      "generatedInputSha256": "743c6a657056bf90521e1615500b5af589a23fce7be190072e8046e6564f8cd0",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-generateIncludeFiles",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "14-union-scoped-enum.cxx",
+        "14-union-scoped-enum.hpp",
+        "14-union-scoped-enumPlugin.cxx",
+        "14-union-scoped-enumPlugin.hpp"
+      ],
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "cpp/features/14-union-scoped-enum",
+      "outputSha256": "1f0fcc73aabbe8611f3cc7b02c01fa03785082f52f653641729bd784ebf4696c"
+    },
+    {
+      "id": "14-union-array-branch",
+      "category": "features",
+      "idl": "idl/features/14-union-array-branch.idl",
+      "input": "../../../idl/features/14-union-array-branch.idl",
+      "sourceSha256": "7b6c2cac462aacb19ec7725b2132286895a9e6bfe4c0219d80750ce6e6178d4f",
+      "generatedInputSha256": "7b6c2cac462aacb19ec7725b2132286895a9e6bfe4c0219d80750ce6e6178d4f",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-generateIncludeFiles",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "14-union-array-branch.cxx",
+        "14-union-array-branch.hpp",
+        "14-union-array-branchPlugin.cxx",
+        "14-union-array-branchPlugin.hpp"
+      ],
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "cpp/features/14-union-array-branch",
+      "outputSha256": "8e8379d4498d27218b18b343f089b2304db65cb49b99569833a55102be2b6c24"
+    },
+    {
+      "id": "14-string-expression-bound",
+      "category": "features",
+      "idl": "idl/features/14-string-expression-bound.idl",
+      "input": "../../../idl/features/14-string-expression-bound.idl",
+      "sourceSha256": "2db95cfcd1bd7fed40071e31613ca95b38b18292a8f4fdee32795201533c7b32",
+      "generatedInputSha256": "2db95cfcd1bd7fed40071e31613ca95b38b18292a8f4fdee32795201533c7b32",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-generateIncludeFiles",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "14-string-expression-bound.cxx",
+        "14-string-expression-bound.hpp",
+        "14-string-expression-boundPlugin.cxx",
+        "14-string-expression-boundPlugin.hpp"
+      ],
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "cpp/features/14-string-expression-bound",
+      "outputSha256": "c89ac42c32ad045c87329dcc1300086f833cd2de4435de4e65169cb3c5cb4110"
+    },
+    {
+      "id": "14-typed-defaults",
+      "category": "features",
+      "idl": "idl/features/14-typed-defaults.idl",
+      "input": "../../../idl/features/14-typed-defaults.idl",
+      "sourceSha256": "3fb7d35665af761c6a04d680aca84c3d356fb539fc8cd1280878b1ba744853b5",
+      "generatedInputSha256": "3fb7d35665af761c6a04d680aca84c3d356fb539fc8cd1280878b1ba744853b5",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-generateIncludeFiles",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "14-typed-defaults.cxx",
+        "14-typed-defaults.hpp",
+        "14-typed-defaultsPlugin.cxx",
+        "14-typed-defaultsPlugin.hpp"
+      ],
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "cpp/features/14-typed-defaults",
+      "outputSha256": "7ed3588dcee5a24189e2904bd3f57e04f2aa7aae19a6785a11cb679afc600113"
+    },
+    {
+      "id": "14-enum-constant",
+      "category": "features",
+      "idl": "idl/features/14-enum-constant.idl",
+      "input": "../../../idl/features/14-enum-constant.idl",
+      "sourceSha256": "6b62926cae967a8f5a4fde2397d2da23e1360fe8334963883e2567dc1f2c2782",
+      "generatedInputSha256": "6b62926cae967a8f5a4fde2397d2da23e1360fe8334963883e2567dc1f2c2782",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-generateIncludeFiles",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "14-enum-constant.cxx",
+        "14-enum-constant.hpp",
+        "14-enum-constantPlugin.cxx",
+        "14-enum-constantPlugin.hpp"
+      ],
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "cpp/features/14-enum-constant",
+      "outputSha256": "d5efc457b0f61ab80b7fbe53034d0839be558416bd787eb13dc0bdf3d3ec6052"
+    },
+    {
+      "id": "10-resolve-name-wstring-aliases",
+      "category": "features",
+      "idl": "idl/features/10-resolve-name-wstring-aliases.idl",
+      "input": "../../../idl/features/10-resolve-name-wstring-aliases.idl",
+      "sourceSha256": "f9d07a6f9a530ed9b3321258d9bf7286a69153ae58a29dde92ff08da39b8d19d",
+      "generatedInputSha256": "f9d07a6f9a530ed9b3321258d9bf7286a69153ae58a29dde92ff08da39b8d19d",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-generateIncludeFiles",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "10-resolve-name-wstring-aliases.cxx",
+        "10-resolve-name-wstring-aliases.hpp",
+        "10-resolve-name-wstring-aliasesPlugin.cxx",
+        "10-resolve-name-wstring-aliasesPlugin.hpp"
+      ],
+      "outputSha256": "dca544e7280279defdd3a39e16f7d2e0db72dd9d163572f8e67322119618dfa7",
+      "localWireOracleCapture": true
+    },
+    {
+      "id": "10-default-literal-enum-array",
+      "category": "features",
+      "idl": "idl/features/10-default-literal-enum-array.idl",
+      "input": "../../../idl/features/10-default-literal-enum-array.idl",
+      "sourceSha256": "e704952b37223339a2b3f8996ac6ca6f81032f4b30a148f7697536ab51483cce",
+      "generatedInputSha256": "e704952b37223339a2b3f8996ac6ca6f81032f4b30a148f7697536ab51483cce",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-generateIncludeFiles",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "10-default-literal-enum-array.cxx",
+        "10-default-literal-enum-array.hpp",
+        "10-default-literal-enum-arrayPlugin.cxx",
+        "10-default-literal-enum-arrayPlugin.hpp"
+      ],
+      "outputSha256": "2fb3871e70f770f9c6e35863627c48a0659b6b2b2d574c82b95636ad80d50205",
+      "localWireOracleCapture": true
+    },
+    {
+      "id": "01-int8-boundaries",
+      "category": "features",
+      "idl": "idl/features/01-int8-boundaries.idl",
+      "input": "../../../idl/features/01-int8-boundaries.idl",
+      "sourceSha256": "16789a817da0823034c0d14900332cc115e6572390678722b97a8138dbf804bc",
+      "generatedInputSha256": "16789a817da0823034c0d14900332cc115e6572390678722b97a8138dbf804bc",
+      "defines": [],
+      "options": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-generateIncludeFiles",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
+      ],
+      "adaptations": [],
+      "status": "generated",
+      "exitCode": 0,
+      "generatedFiles": [
+        "01-boundaries.cxx",
+        "01-boundaries.hpp",
+        "01-boundariesPlugin.cxx",
+        "01-boundariesPlugin.hpp"
+      ],
+      "sourceDirectory": "features/01-int8-boundaries"
     }
-    , {"id":"14-extensibility-full","category":"features","idl":"idl/features/14-extensibility-full.idl","input":"../../../idl/features/14-extensibility-full.idl","sourceSha256":"09842cb28ea368887b4d2f5eb36e9446399c1d72c8ad92afb0cb181cbd339b2e","generatedInputSha256":"09842cb28ea368887b4d2f5eb36e9446399c1d72c8ad92afb0cb181cbd339b2e","defines":[],"options":["-language","C++11","-replace","-generateIncludeFiles","-I","/work/docs/corpus/idl","-I","/work/docs/corpus/idl/includes","-I","/work/docs/corpus/idl/integration"],"adaptations":[],"status":"generated","exitCode":0,"generatedFiles":["14-extensibility-full.cxx","14-extensibility-full.hpp","14-extensibility-fullPlugin.cxx","14-extensibility-fullPlugin.hpp"],"captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"cpp/features/14-extensibility-full","outputSha256":"5394f11ff77e1550c5f0dce5af6f32d6a0399e46e9351368f466466b7540526d"}
-    , {"id":"14-autoid-scope","category":"features","idl":"idl/features/14-autoid-scope.idl","input":"../../../idl/features/14-autoid-scope.idl","sourceSha256":"b9bf886cd3c64e85d108fc2063f6ca0b1f921283de769364c9bf7744f3d00e5b","generatedInputSha256":"b9bf886cd3c64e85d108fc2063f6ca0b1f921283de769364c9bf7744f3d00e5b","defines":[],"options":["-language","C++11","-replace","-generateIncludeFiles","-I","/work/docs/corpus/idl","-I","/work/docs/corpus/idl/includes","-I","/work/docs/corpus/idl/integration"],"adaptations":[],"status":"generated","exitCode":0,"generatedFiles":["14-autoid-scope.cxx","14-autoid-scope.hpp","14-autoid-scopePlugin.cxx","14-autoid-scopePlugin.hpp","includes/autoid-hash-include.cxx","includes/autoid-hash-include.hpp","includes/autoid-hash-includePlugin.cxx","includes/autoid-hash-includePlugin.hpp"],"captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/autoid-include-reference-rti-7.7.0/capture.json","captureOutput":"cpp/features/14-autoid-scope","outputSha256":"25fd2e67ad400dae19dad8024e8b61573a0bcc5a643c5d328ae6bd32d0b495c4","includedSources":[{"idl":"idl/includes/autoid-hash-include.idl","sourceSha256":"6a4ba5a745de20fcb401350796eda734a611f144d90dcd09cd784c6de1af01d7","rtiddsgenVersion":"4.7.0","imageId":"sha256:94c9b9377b5d45ddb01b709c4bee239b47e8f617634e74b9286bfdf196d74987","outputSha256":"551dcc8a902d9e25bd6b97977ceb627a279b161fec6d430da08b69695e0e0865","files":[{"path":"includes/autoid-hash-include.cxx","sha256":"8dcb457c633018a48ed20d2eaab491fe063b90cae39e158d7a1200597b3e40d3"},{"path":"includes/autoid-hash-include.hpp","sha256":"6b9b9465ec324532297973ee24d6c698f30af067608da5e1af7f5879129ddb66"},{"path":"includes/autoid-hash-includePlugin.cxx","sha256":"3dfffd8cbe971bd7f62ae3e86376d6a69b7f3330bc7b7cbdc47b04d05517a644"},{"path":"includes/autoid-hash-includePlugin.hpp","sha256":"9aa61d1b346efcca38f93102670c5575be1af2ce400cd665d643d44909b245dd"}],"captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/include-helper-capture-licensed/capture.json"}]}
-    , {"id":"14-annotation-arguments","category":"features","idl":"idl/features/14-annotation-arguments.idl","input":"../../../idl/features/14-annotation-arguments.idl","sourceSha256":"c971b5ee06a9412c5cf28140589a87fb4207223ed081dcd04e8eee0e84780b02","generatedInputSha256":"c971b5ee06a9412c5cf28140589a87fb4207223ed081dcd04e8eee0e84780b02","defines":[],"options":["-language","C++11","-replace","-generateIncludeFiles","-I","/work/docs/corpus/idl","-I","/work/docs/corpus/idl/includes","-I","/work/docs/corpus/idl/integration"],"adaptations":[],"status":"generated","exitCode":0,"generatedFiles":["14-annotation-arguments.cxx","14-annotation-arguments.hpp","14-annotation-argumentsPlugin.cxx","14-annotation-argumentsPlugin.hpp"],"captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"cpp/features/14-annotation-arguments","outputSha256":"e2b01a487e3a8fc3bc424c16aa9b63ebeba095e8893685d1cbcf2b3d0c151ce7"}
-    , {"id":"14-member-declarators","category":"features","idl":"idl/features/14-member-declarators.idl","input":"../../../idl/features/14-member-declarators.idl","sourceSha256":"a34be999fb2502c846ce077c4166d7cfbcd4fca363454ec6d641cf5f9b63ef02","generatedInputSha256":"a34be999fb2502c846ce077c4166d7cfbcd4fca363454ec6d641cf5f9b63ef02","defines":[],"options":["-language","C++11","-replace","-generateIncludeFiles","-I","/work/docs/corpus/idl","-I","/work/docs/corpus/idl/includes","-I","/work/docs/corpus/idl/integration"],"adaptations":[],"status":"generated","exitCode":0,"generatedFiles":["14-member-declarators.cxx","14-member-declarators.hpp","14-member-declaratorsPlugin.cxx","14-member-declaratorsPlugin.hpp"],"captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"cpp/features/14-member-declarators","outputSha256":"b8361ae68639098e6f475aa49ce9eea374b208ceb9169814c7bcdeac1e27b104"}
-    , {"id":"14-union-label-expressions","category":"features","idl":"idl/features/14-union-label-expressions.idl","input":"../../../idl/features/14-union-label-expressions.idl","sourceSha256":"bd0356c1c7dbb81736ca9e1a3d6909fcd2267fd1cd362b999d719a3174336d12","generatedInputSha256":"bd0356c1c7dbb81736ca9e1a3d6909fcd2267fd1cd362b999d719a3174336d12","defines":[],"options":["-language","C++11","-replace","-generateIncludeFiles","-I","/work/docs/corpus/idl","-I","/work/docs/corpus/idl/includes","-I","/work/docs/corpus/idl/integration"],"adaptations":[],"status":"generated","exitCode":0,"generatedFiles":["14-union-label-expressions.cxx","14-union-label-expressions.hpp","14-union-label-expressionsPlugin.cxx","14-union-label-expressionsPlugin.hpp"],"captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"cpp/features/14-union-label-expressions","outputSha256":"7e2a7f8e5b1a20a170040d799fe16b28282a5dd579f78c4d661e3e5fd83ff8a6"}
-    , {"id":"14-union-scoped-enum","category":"features","idl":"idl/features/14-union-scoped-enum.idl","input":"../../../idl/features/14-union-scoped-enum.idl","sourceSha256":"743c6a657056bf90521e1615500b5af589a23fce7be190072e8046e6564f8cd0","generatedInputSha256":"743c6a657056bf90521e1615500b5af589a23fce7be190072e8046e6564f8cd0","defines":[],"options":["-language","C++11","-replace","-generateIncludeFiles","-I","/work/docs/corpus/idl","-I","/work/docs/corpus/idl/includes","-I","/work/docs/corpus/idl/integration"],"adaptations":[],"status":"generated","exitCode":0,"generatedFiles":["14-union-scoped-enum.cxx","14-union-scoped-enum.hpp","14-union-scoped-enumPlugin.cxx","14-union-scoped-enumPlugin.hpp"],"captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"cpp/features/14-union-scoped-enum","outputSha256":"1f0fcc73aabbe8611f3cc7b02c01fa03785082f52f653641729bd784ebf4696c"}
-    , {"id":"14-union-array-branch","category":"features","idl":"idl/features/14-union-array-branch.idl","input":"../../../idl/features/14-union-array-branch.idl","sourceSha256":"7b6c2cac462aacb19ec7725b2132286895a9e6bfe4c0219d80750ce6e6178d4f","generatedInputSha256":"7b6c2cac462aacb19ec7725b2132286895a9e6bfe4c0219d80750ce6e6178d4f","defines":[],"options":["-language","C++11","-replace","-generateIncludeFiles","-I","/work/docs/corpus/idl","-I","/work/docs/corpus/idl/includes","-I","/work/docs/corpus/idl/integration"],"adaptations":[],"status":"generated","exitCode":0,"generatedFiles":["14-union-array-branch.cxx","14-union-array-branch.hpp","14-union-array-branchPlugin.cxx","14-union-array-branchPlugin.hpp"],"captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"cpp/features/14-union-array-branch","outputSha256":"8e8379d4498d27218b18b343f089b2304db65cb49b99569833a55102be2b6c24"}
-    , {"id":"14-string-expression-bound","category":"features","idl":"idl/features/14-string-expression-bound.idl","input":"../../../idl/features/14-string-expression-bound.idl","sourceSha256":"2db95cfcd1bd7fed40071e31613ca95b38b18292a8f4fdee32795201533c7b32","generatedInputSha256":"2db95cfcd1bd7fed40071e31613ca95b38b18292a8f4fdee32795201533c7b32","defines":[],"options":["-language","C++11","-replace","-generateIncludeFiles","-I","/work/docs/corpus/idl","-I","/work/docs/corpus/idl/includes","-I","/work/docs/corpus/idl/integration"],"adaptations":[],"status":"generated","exitCode":0,"generatedFiles":["14-string-expression-bound.cxx","14-string-expression-bound.hpp","14-string-expression-boundPlugin.cxx","14-string-expression-boundPlugin.hpp"],"captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"cpp/features/14-string-expression-bound","outputSha256":"c89ac42c32ad045c87329dcc1300086f833cd2de4435de4e65169cb3c5cb4110"}
-    , {"id":"14-typed-defaults","category":"features","idl":"idl/features/14-typed-defaults.idl","input":"../../../idl/features/14-typed-defaults.idl","sourceSha256":"3fb7d35665af761c6a04d680aca84c3d356fb539fc8cd1280878b1ba744853b5","generatedInputSha256":"3fb7d35665af761c6a04d680aca84c3d356fb539fc8cd1280878b1ba744853b5","defines":[],"options":["-language","C++11","-replace","-generateIncludeFiles","-I","/work/docs/corpus/idl","-I","/work/docs/corpus/idl/includes","-I","/work/docs/corpus/idl/integration"],"adaptations":[],"status":"generated","exitCode":0,"generatedFiles":["14-typed-defaults.cxx","14-typed-defaults.hpp","14-typed-defaultsPlugin.cxx","14-typed-defaultsPlugin.hpp"],"captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"cpp/features/14-typed-defaults","outputSha256":"7ed3588dcee5a24189e2904bd3f57e04f2aa7aae19a6785a11cb679afc600113"}
-    , {"id":"14-enum-constant","category":"features","idl":"idl/features/14-enum-constant.idl","input":"../../../idl/features/14-enum-constant.idl","sourceSha256":"6b62926cae967a8f5a4fde2397d2da23e1360fe8334963883e2567dc1f2c2782","generatedInputSha256":"6b62926cae967a8f5a4fde2397d2da23e1360fe8334963883e2567dc1f2c2782","defines":[],"options":["-language","C++11","-replace","-generateIncludeFiles","-I","/work/docs/corpus/idl","-I","/work/docs/corpus/idl/includes","-I","/work/docs/corpus/idl/integration"],"adaptations":[],"status":"generated","exitCode":0,"generatedFiles":["14-enum-constant.cxx","14-enum-constant.hpp","14-enum-constantPlugin.cxx","14-enum-constantPlugin.hpp"],"captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"cpp/features/14-enum-constant","outputSha256":"d5efc457b0f61ab80b7fbe53034d0839be558416bd787eb13dc0bdf3d3ec6052"}
-,
-    {"id":"10-resolve-name-wstring-aliases","category":"features","idl":"idl/features/10-resolve-name-wstring-aliases.idl","input":"../../../idl/features/10-resolve-name-wstring-aliases.idl","sourceSha256":"f9d07a6f9a530ed9b3321258d9bf7286a69153ae58a29dde92ff08da39b8d19d","generatedInputSha256":"f9d07a6f9a530ed9b3321258d9bf7286a69153ae58a29dde92ff08da39b8d19d","defines":[],"options":["-language","C++11","-replace","-generateIncludeFiles","-I","/work/docs/corpus/idl","-I","/work/docs/corpus/idl/includes"],"adaptations":[],"status":"generated","exitCode":0,"generatedFiles":["10-resolve-name-wstring-aliases.cxx","10-resolve-name-wstring-aliases.hpp","10-resolve-name-wstring-aliasesPlugin.cxx","10-resolve-name-wstring-aliasesPlugin.hpp"],"log":"features/10-resolve-name-wstring-aliases/rtiddsgen.log","outputSha256":"dca544e7280279defdd3a39e16f7d2e0db72dd9d163572f8e67322119618dfa7","localWireOracleCapture":true},
-    {"id":"10-default-literal-enum-array","category":"features","idl":"idl/features/10-default-literal-enum-array.idl","input":"../../../idl/features/10-default-literal-enum-array.idl","sourceSha256":"e704952b37223339a2b3f8996ac6ca6f81032f4b30a148f7697536ab51483cce","generatedInputSha256":"e704952b37223339a2b3f8996ac6ca6f81032f4b30a148f7697536ab51483cce","defines":[],"options":["-language","C++11","-replace","-generateIncludeFiles","-I","/work/docs/corpus/idl","-I","/work/docs/corpus/idl/includes"],"adaptations":[],"status":"generated","exitCode":0,"generatedFiles":["10-default-literal-enum-array.cxx","10-default-literal-enum-array.hpp","10-default-literal-enum-arrayPlugin.cxx","10-default-literal-enum-arrayPlugin.hpp"],"log":"features/10-default-literal-enum-array/rtiddsgen.log","outputSha256":"2fb3871e70f770f9c6e35863627c48a0659b6b2b2d574c82b95636ad80d50205","localWireOracleCapture":true}
   ]
 }

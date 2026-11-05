@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "05-array-of-sequences-idl",
+  "language": "cpp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Reuse C018 output for byte-identical IDL, normalizing generated filenames to idl.* as in the other profiles.",
+  "captures": [],
+  "rawFiles": [
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/05-array-of-sequences/05-array-of-sequences.cxx",
+      "sha256": "104d1ca645a8f7db8f294f70a2cccd2fcd9c86b6efd11818fbe74c95f40ba291"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/05-array-of-sequences/05-array-of-sequences.hpp",
+      "sha256": "a81c9d0c32724f65472cd83377287dbb0c9058a107c1438acfb0a99d73c9e3a5"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/05-array-of-sequences/05-array-of-sequencesPlugin.cxx",
+      "sha256": "daad946a2aa10973b36445835571176f385ea06bd41817549b4b7aaccf7aafa9"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/05-array-of-sequences/05-array-of-sequencesPlugin.hpp",
+      "sha256": "de131fd3a84228e74ee125a2baaa1a5aac42b08e475a57041d0f56da95bae9d3"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "idl.cxx",
+      "sha256": "40f7df2d2ddb16d30f57b5ee70ad8ccc2935ed38f72980bc293136a3297e9af5"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "a81c9d0c32724f65472cd83377287dbb0c9058a107c1438acfb0a99d73c9e3a5"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "2950cfcf05e984f6a9b5d5a1cd474d85985789377bec360dae435cd285700633"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "bad6370dab990ffe07e9460f9f8bbd8b8b4e0c49420c773e9213121282c00a95"
+    }
+  ]
+}

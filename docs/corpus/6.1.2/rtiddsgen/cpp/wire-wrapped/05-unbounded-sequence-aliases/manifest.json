@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "05-unbounded-sequence-aliases",
+  "language": "cpp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "05-unbounded-sequence-aliases-cpp-05-unbounded-sequence-aliases-root",
+      "case": "05-unbounded-sequence-aliases",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/05-unbounded-sequence-aliases.idl",
+      "sourceSha256": "33fc7871a119accd22f7fdebe219f5c19c5a46eda1176ea3a1d69c17c68043f9",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-unboundedSupport",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/05-unbounded-sequence-aliases-cpp-05-unbounded-sequence-aliases-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/05-unbounded-sequence-aliases-cpp-05-unbounded-sequence-aliases-root/idl.idl"
+      ]
+    },
+    {
+      "name": "05-unbounded-sequence-aliases-cpp-05-unbounded-sequence-aliases-dependency",
+      "case": "05-unbounded-sequence-aliases",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "docs/corpus/idl/features/05-unbounded-sequence-aliases.idl",
+      "sourceSha256": "b8d45edf7759e9f72f656670b1e4cc164c8720322c872f3594a686a89ce4b58f",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-unboundedSupport",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/05-unbounded-sequence-aliases-cpp-05-unbounded-sequence-aliases-dependency/generated",
+        "/work/docs/corpus/idl/features/05-unbounded-sequence-aliases.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cxx",
+      "sha256": "22f0049dc111573625e2297bb47e46239ffac1e55200a2bb947821b68d8f4fa1"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "e91d87e2e38fecd23ccc5057fb39661eb573a2a16ae0c614896b4352019b139f"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "67ff26249e9cd13cefd99a69126060f79d038162ad51cbbd6ae2cfa8be84152c"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "c73d3d675f4bbde3a524803a448b002067bed0d7683bb6c5de6ed6c5d6c56c91"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliases.cxx",
+      "sha256": "f44a6fd8ac17331f4a57a25bde37d4393452d2c0778d15a54271d2ab5cc133bc"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliases.hpp",
+      "sha256": "ba50ae4eb2622326248296943117997ae979b9d135520b3c2fc81979dc5f7bee"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliasesPlugin.cxx",
+      "sha256": "d19a6473b31335698d9b8e1bb446185cd9ee49b09f2cf2ac3f8852e5dc1084e2"
+    },
+    {
+      "path": "features/05-unbounded-sequence-aliasesPlugin.hpp",
+      "sha256": "3827ee83024f129317332ac572bbe9df4a49cb9822ec7b8c976ab91448d0b4b6"
+    }
+  ]
+}

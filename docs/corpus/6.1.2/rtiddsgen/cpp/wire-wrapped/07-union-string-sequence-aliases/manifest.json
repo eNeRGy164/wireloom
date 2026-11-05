@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "07-union-string-sequence-aliases",
+  "language": "cpp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "07-union-string-sequence-aliases-cpp-07-union-string-sequence-aliases-root",
+      "case": "07-union-string-sequence-aliases",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/07-union-string-sequence-aliases.idl",
+      "sourceSha256": "c87a0d898d0bd4432b9194ae7482c8c7bc714adbd69509c8fca6e11fd64246ef",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/07-union-string-sequence-aliases-cpp-07-union-string-sequence-aliases-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/07-union-string-sequence-aliases-cpp-07-union-string-sequence-aliases-root/idl.idl"
+      ]
+    },
+    {
+      "name": "07-union-string-sequence-aliases-cpp-07-union-string-sequence-aliases-dependency",
+      "case": "07-union-string-sequence-aliases",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "docs/corpus/idl/features/07-union-string-sequence-aliases.idl",
+      "sourceSha256": "83e177230435753e93f34b3370809681663878620b3c1b34cd34cc087a68263e",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/07-union-string-sequence-aliases-cpp-07-union-string-sequence-aliases-dependency/generated",
+        "/work/docs/corpus/idl/features/07-union-string-sequence-aliases.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cxx",
+      "sha256": "3fbe65fdfe47634a3e9553f5be551bc8d7249fea3e13c4e2847ae5d4700eb4ef"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "9b698491b33e29aee004086789993686f44906b8b0a814d4fe7adacf2e2f56a3"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "cbf9c02afd2a16f5d1708f37575467aacf254712e393808fe01ae89e5f148d00"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "bc5716a83fc44b64981860f15c893b8d492904c2fd96f85f6aa30b647a4ecc79"
+    },
+    {
+      "path": "features/07-union-string-sequence-aliases.cxx",
+      "sha256": "3ff548a7d1368f0811996b8a4064ea692d672e40ca13ed1a0ba138bb5cc857e2"
+    },
+    {
+      "path": "features/07-union-string-sequence-aliases.hpp",
+      "sha256": "624f5bc92b070f8d3b8c28a23685697dd2d480f1a051e13a024dc596e85c66c9"
+    },
+    {
+      "path": "features/07-union-string-sequence-aliasesPlugin.cxx",
+      "sha256": "604496a2580f493b4eba16e0115c824fe5ab25335ef8a53982638ed3ebe82b75"
+    },
+    {
+      "path": "features/07-union-string-sequence-aliasesPlugin.hpp",
+      "sha256": "2c751d4040196b30d4fd04b4d793caa1e62c09fdd790a7adf32cf42350a83834"
+    }
+  ]
+}

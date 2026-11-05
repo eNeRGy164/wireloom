@@ -39,10 +39,9 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
             new StructMember("shortValue", dtf.GetPrimitiveType<short>(), id: 0),
             new StructMember("longValue", dtf.GetPrimitiveType<int>(), id: 1),
             new StructMember("longLongValue", dtf.GetPrimitiveType<long>(), id: 2),
-            new StructMember("int8Value", dtf.GetPrimitiveType<sbyte>(), id: 3),
-            new StructMember("int64Value", dtf.GetPrimitiveType<long>(), id: 4),
-            new StructMember("floatValue", dtf.GetPrimitiveType<float>(), id: 5),
-            new StructMember("doubleValue", dtf.GetPrimitiveType<double>(), id: 6)
+            new StructMember("int64Value", dtf.GetPrimitiveType<long>(), id: 3),
+            new StructMember("floatValue", dtf.GetPrimitiveType<float>(), id: 4),
+            new StructMember("doubleValue", dtf.GetPrimitiveType<double>(), id: 5)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<SampleUnmanaged>(

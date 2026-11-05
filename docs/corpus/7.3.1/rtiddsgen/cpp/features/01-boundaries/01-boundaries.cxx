@@ -35,18 +35,16 @@ namespace CorpusPrimitiveBoundaries {
         m_shortValue_ (0) ,
         m_longValue_ (0) ,
         m_longLongValue_ (0ll) ,
-        m_int8Value_ (0) ,
         m_int64Value_ (0ll) ,
         m_floatValue_ (0.0f) ,
         m_doubleValue_ (0.0)  {
 
     }   
 
-    Sample::Sample (int16_t shortValue_,int32_t longValue_,int64_t longLongValue_,int8_t int8Value_,int64_t int64Value_,float floatValue_,double doubleValue_):
+    Sample::Sample (int16_t shortValue_,int32_t longValue_,int64_t longLongValue_,int64_t int64Value_,float floatValue_,double doubleValue_):
         m_shortValue_(shortValue_), 
         m_longValue_(longValue_), 
         m_longLongValue_(longLongValue_), 
-        m_int8Value_(int8Value_), 
         m_int64Value_(int64Value_), 
         m_floatValue_(floatValue_), 
         m_doubleValue_(doubleValue_) {
@@ -58,7 +56,6 @@ namespace CorpusPrimitiveBoundaries {
         swap(m_shortValue_, other_.m_shortValue_);
         swap(m_longValue_, other_.m_longValue_);
         swap(m_longLongValue_, other_.m_longLongValue_);
-        swap(m_int8Value_, other_.m_int8Value_);
         swap(m_int64Value_, other_.m_int64Value_);
         swap(m_floatValue_, other_.m_floatValue_);
         swap(m_doubleValue_, other_.m_doubleValue_);
@@ -72,9 +69,6 @@ namespace CorpusPrimitiveBoundaries {
             return false;
         }
         if (m_longLongValue_ != other_.m_longLongValue_) {
-            return false;
-        }
-        if (m_int8Value_ != other_.m_int8Value_) {
             return false;
         }
         if (m_int64Value_ != other_.m_int64Value_) {
@@ -102,7 +96,6 @@ namespace CorpusPrimitiveBoundaries {
         o << "shortValue: " << sample.shortValue ()<<", ";
         o << "longValue: " << sample.longValue ()<<", ";
         o << "longLongValue: " << sample.longLongValue ()<<", ";
-        o << "int8Value: " << (int) sample.int8Value ()<<", ";
         o << "int64Value: " << sample.int64Value ()<<", ";
         o << "floatValue: " << std::setprecision(9) << sample.floatValue ()<<", ";
         o << "doubleValue: " << std::setprecision(15) << sample.doubleValue ();
@@ -133,7 +126,7 @@ namespace rti {
 
                 static std::atomic_bool is_initialized {false};
 
-                static DDS_TypeCode_Member Sample_g_tc_members[7]=
+                static DDS_TypeCode_Member Sample_g_tc_members[6]=
                 {
 
                     {
@@ -191,7 +184,7 @@ namespace rti {
                         RTICdrTypeCodeAnnotations_INITIALIZER
                     }, 
                     {
-                        (char *)"int8Value",/* Member name */
+                        (char *)"int64Value",/* Member name */
                         {
                             3,/* Representation ID */
                             DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -209,7 +202,7 @@ namespace rti {
                         RTICdrTypeCodeAnnotations_INITIALIZER
                     }, 
                     {
-                        (char *)"int64Value",/* Member name */
+                        (char *)"floatValue",/* Member name */
                         {
                             4,/* Representation ID */
                             DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -227,27 +220,9 @@ namespace rti {
                         RTICdrTypeCodeAnnotations_INITIALIZER
                     }, 
                     {
-                        (char *)"floatValue",/* Member name */
-                        {
-                            5,/* Representation ID */
-                            DDS_BOOLEAN_FALSE,/* Is a pointer? */
-                            -1, /* Bitfield bits */
-                            NULL/* Member type code is assigned later */
-                        },
-                        0, /* Ignored */
-                        0, /* Ignored */
-                        0, /* Ignored */
-                        NULL, /* Ignored */
-                        RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
-                        DDS_PUBLIC_MEMBER,/* Member visibility */
-                        1,
-                        NULL, /* Ignored */
-                        RTICdrTypeCodeAnnotations_INITIALIZER
-                    }, 
-                    {
                         (char *)"doubleValue",/* Member name */
                         {
-                            6,/* Representation ID */
+                            5,/* Representation ID */
                             DDS_BOOLEAN_FALSE,/* Is a pointer? */
                             -1, /* Bitfield bits */
                             NULL/* Member type code is assigned later */
@@ -274,7 +249,7 @@ namespace rti {
                         0, /* Ignored */
                         0, /* Ignored */
                         NULL, /* Ignored */
-                        7, /* Number of members */
+                        6, /* Number of members */
                         Sample_g_tc_members, /* Members */
                         DDS_VM_NONE, /* Ignored */
                         RTICdrTypeCodeAnnotations_INITIALIZER,
@@ -292,10 +267,9 @@ namespace rti {
                 Sample_g_tc_members[0]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_short;
                 Sample_g_tc_members[1]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_long;
                 Sample_g_tc_members[2]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_longlong;
-                Sample_g_tc_members[3]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_octet;
-                Sample_g_tc_members[4]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_longlong;
-                Sample_g_tc_members[5]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
-                Sample_g_tc_members[6]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_double;
+                Sample_g_tc_members[3]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_longlong;
+                Sample_g_tc_members[4]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+                Sample_g_tc_members[5]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_double;
 
                 /* Initialize the values for member annotations. */
                 Sample_g_tc_members[0]._annotations._defaultValue._d = RTI_XCDR_TK_SHORT;
@@ -316,30 +290,24 @@ namespace rti {
                 Sample_g_tc_members[2]._annotations._minValue._u.long_long_value = RTIXCdrLongLong_MIN;
                 Sample_g_tc_members[2]._annotations._maxValue._d = RTI_XCDR_TK_LONGLONG;
                 Sample_g_tc_members[2]._annotations._maxValue._u.long_long_value = RTIXCdrLongLong_MAX;
-                Sample_g_tc_members[3]._annotations._defaultValue._d = RTI_XCDR_TK_OCTET;
-                Sample_g_tc_members[3]._annotations._defaultValue._u.octet_value = 0;
-                Sample_g_tc_members[3]._annotations._minValue._d = RTI_XCDR_TK_OCTET;
-                Sample_g_tc_members[3]._annotations._minValue._u.octet_value = RTIXCdrOctet_MIN;
-                Sample_g_tc_members[3]._annotations._maxValue._d = RTI_XCDR_TK_OCTET;
-                Sample_g_tc_members[3]._annotations._maxValue._u.octet_value = RTIXCdrOctet_MAX;
-                Sample_g_tc_members[4]._annotations._defaultValue._d = RTI_XCDR_TK_LONGLONG;
-                Sample_g_tc_members[4]._annotations._defaultValue._u.long_long_value = 0ll;
-                Sample_g_tc_members[4]._annotations._minValue._d = RTI_XCDR_TK_LONGLONG;
-                Sample_g_tc_members[4]._annotations._minValue._u.long_long_value = RTIXCdrLongLong_MIN;
-                Sample_g_tc_members[4]._annotations._maxValue._d = RTI_XCDR_TK_LONGLONG;
-                Sample_g_tc_members[4]._annotations._maxValue._u.long_long_value = RTIXCdrLongLong_MAX;
-                Sample_g_tc_members[5]._annotations._defaultValue._d = RTI_XCDR_TK_FLOAT;
-                Sample_g_tc_members[5]._annotations._defaultValue._u.float_value = 0.0f;
-                Sample_g_tc_members[5]._annotations._minValue._d = RTI_XCDR_TK_FLOAT;
-                Sample_g_tc_members[5]._annotations._minValue._u.float_value = RTIXCdrFloat_MIN;
-                Sample_g_tc_members[5]._annotations._maxValue._d = RTI_XCDR_TK_FLOAT;
-                Sample_g_tc_members[5]._annotations._maxValue._u.float_value = RTIXCdrFloat_MAX;
-                Sample_g_tc_members[6]._annotations._defaultValue._d = RTI_XCDR_TK_DOUBLE;
-                Sample_g_tc_members[6]._annotations._defaultValue._u.double_value = 0.0;
-                Sample_g_tc_members[6]._annotations._minValue._d = RTI_XCDR_TK_DOUBLE;
-                Sample_g_tc_members[6]._annotations._minValue._u.double_value = RTIXCdrDouble_MIN;
-                Sample_g_tc_members[6]._annotations._maxValue._d = RTI_XCDR_TK_DOUBLE;
-                Sample_g_tc_members[6]._annotations._maxValue._u.double_value = RTIXCdrDouble_MAX;
+                Sample_g_tc_members[3]._annotations._defaultValue._d = RTI_XCDR_TK_LONGLONG;
+                Sample_g_tc_members[3]._annotations._defaultValue._u.long_long_value = 0ll;
+                Sample_g_tc_members[3]._annotations._minValue._d = RTI_XCDR_TK_LONGLONG;
+                Sample_g_tc_members[3]._annotations._minValue._u.long_long_value = RTIXCdrLongLong_MIN;
+                Sample_g_tc_members[3]._annotations._maxValue._d = RTI_XCDR_TK_LONGLONG;
+                Sample_g_tc_members[3]._annotations._maxValue._u.long_long_value = RTIXCdrLongLong_MAX;
+                Sample_g_tc_members[4]._annotations._defaultValue._d = RTI_XCDR_TK_FLOAT;
+                Sample_g_tc_members[4]._annotations._defaultValue._u.float_value = 0.0f;
+                Sample_g_tc_members[4]._annotations._minValue._d = RTI_XCDR_TK_FLOAT;
+                Sample_g_tc_members[4]._annotations._minValue._u.float_value = RTIXCdrFloat_MIN;
+                Sample_g_tc_members[4]._annotations._maxValue._d = RTI_XCDR_TK_FLOAT;
+                Sample_g_tc_members[4]._annotations._maxValue._u.float_value = RTIXCdrFloat_MAX;
+                Sample_g_tc_members[5]._annotations._defaultValue._d = RTI_XCDR_TK_DOUBLE;
+                Sample_g_tc_members[5]._annotations._defaultValue._u.double_value = 0.0;
+                Sample_g_tc_members[5]._annotations._minValue._d = RTI_XCDR_TK_DOUBLE;
+                Sample_g_tc_members[5]._annotations._minValue._u.double_value = RTIXCdrDouble_MIN;
+                Sample_g_tc_members[5]._annotations._maxValue._d = RTI_XCDR_TK_DOUBLE;
+                Sample_g_tc_members[5]._annotations._maxValue._u.double_value = RTIXCdrDouble_MAX;
 
                 Sample_g_tc._data._sampleAccessInfo = sample_access_info();
                 Sample_g_tc._data._typePlugin = type_plugin_info();    
@@ -355,7 +323,7 @@ namespace rti {
 
                 ::CorpusPrimitiveBoundaries::Sample *sample;
 
-                static RTIXCdrMemberAccessInfo Sample_g_memberAccessInfos[7] =
+                static RTIXCdrMemberAccessInfo Sample_g_memberAccessInfos[6] =
                 {RTIXCdrMemberAccessInfo_INITIALIZER};
 
                 static RTIXCdrSampleAccessInfo Sample_g_sampleAccessInfo = 
@@ -382,15 +350,12 @@ namespace rti {
                 (RTIXCdrUnsignedLong) ((char *)&sample->longLongValue() - (char *)sample);
 
                 Sample_g_memberAccessInfos[3].bindingMemberValueOffset[0] = 
-                (RTIXCdrUnsignedLong) ((char *)&sample->int8Value() - (char *)sample);
-
-                Sample_g_memberAccessInfos[4].bindingMemberValueOffset[0] = 
                 (RTIXCdrUnsignedLong) ((char *)&sample->int64Value() - (char *)sample);
 
-                Sample_g_memberAccessInfos[5].bindingMemberValueOffset[0] = 
+                Sample_g_memberAccessInfos[4].bindingMemberValueOffset[0] = 
                 (RTIXCdrUnsignedLong) ((char *)&sample->floatValue() - (char *)sample);
 
-                Sample_g_memberAccessInfos[6].bindingMemberValueOffset[0] = 
+                Sample_g_memberAccessInfos[5].bindingMemberValueOffset[0] = 
                 (RTIXCdrUnsignedLong) ((char *)&sample->doubleValue() - (char *)sample);
 
                 Sample_g_sampleAccessInfo.memberAccessInfos = 
@@ -516,7 +481,6 @@ namespace dds {
             sample.shortValue(0);
             sample.longValue(0);
             sample.longLongValue(0ll);
-            sample.int8Value(0);
             sample.int64Value(0ll);
             sample.floatValue(0.0f);
             sample.doubleValue(0.0);

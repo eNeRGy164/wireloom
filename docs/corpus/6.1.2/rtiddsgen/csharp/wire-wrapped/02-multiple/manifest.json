@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "02-multiple",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "02-multiple-csharp-02-multiple-root",
+      "case": "02-multiple",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/02-multiple.idl",
+      "sourceSha256": "3fcceae7d9b9474948968b443bbeb1157ad285d9095e2b1d4459ea8528f1136a",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/02-multiple-csharp-02-multiple-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/02-multiple-csharp-02-multiple-root/idl.idl"
+      ]
+    },
+    {
+      "name": "02-multiple-csharp-02-multiple-dependency",
+      "case": "02-multiple",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "docs/corpus/idl/features/02-multiple.idl",
+      "sourceSha256": "3fdbaac615089748dc87faa2676e7226896ace87cbdbfe075090b4501133f5f2",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/02-multiple-csharp-02-multiple-dependency/generated",
+        "/work/docs/corpus/idl/features/02-multiple.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cs",
+      "sha256": "dc9c914815e8979bea75e60cc526b47985f8375be4bc255bb2e9cf2f8d1663ae"
+    },
+    {
+      "path": "idlPlugin.cs",
+      "sha256": "d61737b40381a58ced1a92a438b16042d779ec7e75a6e49522b5595f6d9ef4df"
+    },
+    {
+      "path": "features/02-multiple.cs",
+      "sha256": "4a51bdcf5e549f87b327330ae9589a872d8caddac7615d68bb5a4b8ee439277d"
+    },
+    {
+      "path": "features/02-multiplePlugin.cs",
+      "sha256": "6c7b62e98a48eb02f226ee5c89efa22cd0e40bcbe1ae11155108157d0b0eeec3"
+    }
+  ]
+}

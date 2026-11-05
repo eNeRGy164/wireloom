@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "04-string-alias-chains",
+  "language": "cpp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "04-string-alias-chains-cpp-04-string-alias-chains-root",
+      "case": "04-string-alias-chains",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-string-alias-chains.idl",
+      "sourceSha256": "3f2be75ab14b0e35dbd840594368ece3f05f0b921c6570bf81c6d28946904e6f",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/04-string-alias-chains-cpp-04-string-alias-chains-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/04-string-alias-chains-cpp-04-string-alias-chains-root/idl.idl"
+      ]
+    },
+    {
+      "name": "04-string-alias-chains-cpp-04-string-alias-chains-dependency",
+      "case": "04-string-alias-chains",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "docs/corpus/idl/features/04-string-alias-chains.idl",
+      "sourceSha256": "7f9e546341897dd601e70652a5edcf9de8a30f4a5f771a9eb33759a7d2c8c175",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/04-string-alias-chains-cpp-04-string-alias-chains-dependency/generated",
+        "/work/docs/corpus/idl/features/04-string-alias-chains.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cxx",
+      "sha256": "2122e555cef5c4f4912d14a470bb70d00414bc1b00c774a34a96a5a325b2d959"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "41c66906c55d0c8dbcb307f914a46110d71df40280ad7d5c7df12f5ce5afec33"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "ff345e53ceebf78f4c75f756252351b05c23ba60eda8e90d825365fbb71d2117"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "37a4d96c5817e1505075bba1947d78fc578ee1b7b01fc575cfb54fc9e75dec69"
+    },
+    {
+      "path": "features/04-string-alias-chains.cxx",
+      "sha256": "83892d57e649ec16de5f565746c7c420c7637d83eef3f68b1ab25ccbf8ca1fce"
+    },
+    {
+      "path": "features/04-string-alias-chains.hpp",
+      "sha256": "4c361b26f9b6263d9afbbcebe9d25b134a6b7b7b87c1f126f8d46a940178b44a"
+    },
+    {
+      "path": "features/04-string-alias-chainsPlugin.cxx",
+      "sha256": "6fc37393870b0b70e5e5898991e0930216fd44926089478a9047bcf261dde8f2"
+    },
+    {
+      "path": "features/04-string-alias-chainsPlugin.hpp",
+      "sha256": "cb11cae802629767be9c5c2c3963b4a35cee7b93d44d1e67bafa4dd285882242"
+    }
+  ]
+}

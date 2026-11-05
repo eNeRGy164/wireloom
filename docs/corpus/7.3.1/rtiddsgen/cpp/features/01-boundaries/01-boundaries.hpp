@@ -10,8 +10,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the Code Generator User's Manual.
 */
 
-#ifndef _01_boundaries_1164299082_hpp
-#define _01_boundaries_1164299082_hpp
+#ifndef _01_boundaries_1164298997_hpp
+#define _01_boundaries_1164298997_hpp
 
 #include <iosfwd>
 
@@ -78,10 +78,6 @@ namespace CorpusPrimitiveBoundaries {
 
     static const int64_t longLongMax = 9223372036854775807LL;
 
-    static const int8_t int8Min = -128;
-
-    static const int8_t int8Max = 127;
-
     static const int64_t int64Min = -9223372036854775807LL-1LL;
 
     static const int64_t int64Max = 9223372036854775807LL;
@@ -91,7 +87,7 @@ namespace CorpusPrimitiveBoundaries {
 
         Sample();
 
-        Sample(int16_t shortValue_,int32_t longValue_,int64_t longLongValue_,int8_t int8Value_,int64_t int64Value_,float floatValue_,double doubleValue_);
+        Sample(int16_t shortValue_,int32_t longValue_,int64_t longLongValue_,int64_t int64Value_,float floatValue_,double doubleValue_);
 
         int16_t& shortValue() noexcept {
             return m_shortValue_;
@@ -130,19 +126,6 @@ namespace CorpusPrimitiveBoundaries {
         void longLongValue(int64_t value) {
 
             m_longLongValue_ = value;
-        }
-
-        int8_t& int8Value() noexcept {
-            return m_int8Value_;
-        }
-
-        const int8_t& int8Value() const noexcept {
-            return m_int8Value_;
-        }
-
-        void int8Value(int8_t value) {
-
-            m_int8Value_ = value;
         }
 
         int64_t& int64Value() noexcept {
@@ -194,7 +177,6 @@ namespace CorpusPrimitiveBoundaries {
         int16_t m_shortValue_;
         int32_t m_longValue_;
         int64_t m_longLongValue_;
-        int8_t m_int8Value_;
         int64_t m_int64Value_;
         float m_floatValue_;
         double m_doubleValue_;
@@ -289,5 +271,5 @@ namespace rti {
 #define NDDSUSERDllExport
 #endif
 
-#endif // _01_boundaries_1164299082_hpp
+#endif // _01_boundaries_1164298997_hpp
 
