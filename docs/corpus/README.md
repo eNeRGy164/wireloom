@@ -24,21 +24,21 @@ corpus/
 │   ├── negative/       rejection and diagnostic probes
 │   ├── integration/    integration entry points and support IDL
 │   └── includes/       shared IDL included by feature cases
+├── 6.1.2/              version manifest, coverage, RTI oracles, and Wireloom exports
 ├── 7.3.1/              version manifest, coverage, RTI oracles, and Wireloom exports
 ├── 7.7.0/              version manifest, coverage, RTI oracles, and Wireloom exports
 ├── scripts/            corpus evidence capture tools
 └── LTS-PROFILES.md     versioned evidence overview
 ```
 
-The root `idl/` inventory is shared by both profiles. Versioned files record
+The root `idl/` inventory is shared by all three profiles. Versioned files record
 RTI C# and C++ generation outcomes and Wireloom output independently. RTI
 outputs live under `<version>/rtiddsgen/`; Wireloom exports live under
-`<version>/generator/`. The 7.3.1 generated
-contracts compile against the exact NuGet package, and its runtime-contract
-suite passes. Complete-profile passing wire qualification is not established:
-retained full runs include failures. See the [exact-package records](../releases/README.md)
-and [current recorded limitations](FEATURE-COVERAGE.md#recorded-wire-evidence). The 7.7.0 test
-loader reads its RTI C# oracle tree from `7.7.0/rtiddsgen/csharp/`.
+`<version>/generator/`. Generated contracts compile against each profile's exact
+NuGet package. The [LTS overview](LTS-PROFILES.md) records oracle, runtime,
+package, and wire coverage by version; retained full wire runs include failures.
+See the [exact-package records](../releases/README.md) and
+[recorded limitations](FEATURE-COVERAGE.md#recorded-wire-evidence).
 Wire-matrix-specific RTI source lives in each profile's `wire-adjusted/` and
 `wire-wrapped/` trees. Adjusted sources document each correction; wrapped
 sources record the wrapper IDL, included inputs, generator version, and hashes.
@@ -48,11 +48,10 @@ compile failures are listed as `wireMatrix.excludedPeersByRtiVersion`; those
 peers are skipped before generation or compilation, while their affected
 pairings remain visible as known exceptions with the manifest reason. N/A is
 reserved for pairings outside a case's configured scope.
-C040 (`09-autoid-hash`) checks hash member IDs on both LTS profiles. The
-separate C142 (`09-must-understand`) checks `@must_understand`, which is not
-applicable to 7.3.1 and is accepted under 7.7.0. Explicitly compiling C142
-against 7.3.1 reports `DDSG0004`; this target diagnostic is not a compatibility
-failure for a feature unavailable in that release.
+C040 (`09-autoid-hash`) checks hash member IDs. C142 (`09-must-understand`)
+applies to 7.7.0; explicit use under 6.1.2 or 7.3.1 reports `DDSG0004`.
+The [applicability table](FEATURE-COVERAGE.md#annotation-case-applicability)
+records these version differences.
 
 RTI-generated oracle sources are retained as reference output from the corpus
 IDL, with exact tool versions, input/output hashes, and original file-level
@@ -141,7 +140,7 @@ separately with `runtimeSupport` (`uncertain` or an observed result) and a
 ## LTS evidence and reproduction
 
 Use the [LTS runbook](LTS-PROFILES.md) for complete, profile-specific commands
-and evidence attribution. It covers locked restore, both corpus profiles,
+and evidence attribution. It covers locked restore, all three corpus profiles,
 fresh Wireloom exports, RTI C# and C++ capture, exact-package compilation,
 runtime/package verification, and licensed wire runs. PowerShell and shell
 scripts are checked in under `scripts/`; no Python interpreter is required.
@@ -231,8 +230,8 @@ runtime and package fixtures cover the setting and generated collection
 behavior; corpus generation does not establish DDS wire qualification.
 
 The package preview and release workflows restore and run this suite before
-packing. The Quality workflow also runs both exact LTS corpus profiles and
-the runtime/package consumer matrix; see the [LTS runbook](LTS-PROFILES.md).
+packing. The Quality workflow runs generation checks for all three profiles,
+detailed oracle checks for 7.3.1 and 7.7.0, and the runtime/package matrix; see the [LTS runbook](LTS-PROFILES.md).
 
 Use the feature index to find the exact IDL, oracle files, managed status, and
 test entry points: [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md).

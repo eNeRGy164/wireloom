@@ -191,12 +191,12 @@ package's compiler integration.
 ## Check project fit
 
 - **Build baseline:** Consumer projects need .NET 8 or later, C# 12 or later,
-  and an explicit `Rti.ConnextDds` reference at version 7.3.1 or later. See
+  and an explicit `Rti.ConnextDds` reference at version 6.1.2 or later. See
   [consumer requirements](#support-and-compatibility) and the
   [generator diagnostics](src/Wireloom.Dds.Generator/README.md#diagnostics).
-- **Qualification:** Only exact RTI 7.3.1 and 7.7.0 releases have qualification
-  evidence for documented cases; mapping other versions does not qualify them.
-  See the [RTI version policy](docs/guides/support-and-compatibility.md#rti-version-qualification).
+- **Compatibility testing:** Runtime contracts, fresh-package integration, and
+  DDS wire exchanges cover exact RTI 6.1.2, 7.3.1, and 7.7.0. See the
+  [RTI version policy](docs/guides/support-and-compatibility.md#rti-version-qualification).
 - **IDL and options:** Coverage is evidence-backed, not universal. Unbounded IDL
   values default to finite limits of 100 sequence elements, 255 UTF-8 bytes
   for narrow strings, and 255 UTF-16 code units for wide strings. Opt in to

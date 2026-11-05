@@ -1,37 +1,43 @@
 # Corpus feature coverage
 
 Wireloom selects its RTI API profile from the resolved `Rti.ConnextDds`
-assembly. Versions from 7.3.1 up to, but not including, 7.7.0 use the 7.3.1
-profile; version 7.7.0 and later use the 7.7.0 profile. Only exact 7.3.1 and
-7.7.0 have qualification evidence.
+assembly. The 6.1.2 profile applies from 6.1.2 through versions below 7.3.1;
+the 7.3.1 profile applies from 7.3.1 through versions below 7.7.0; 7.7.0 and
+later use the 7.7.0 profile. Exact-version evidence and qualification status
+are recorded in the [LTS overview](LTS-PROFILES.md).
 
-The corpus contains 93 positive feature cases, 77 negative probes, and 4
+The corpus contains 94 positive feature cases, 77 negative probes, and 4
 integration entry points. “Implemented” describes Wireloom generation support;
-it does not promise RTI acceptance or runtime interoperability. C142 is not
-applicable to RTI 7.3.1. See the version pages for profile-specific behavior
+it does not promise RTI acceptance or runtime interoperability. Features unavailable in a release are N/A. See the version pages for profile-specific behavior
 and restrictions.
 
-| Feature category             | Coverage represented                                                                                                              | 7.3.1 profile                                                                         | 7.7.0 profile                                                                      |
-| :--------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------- |
-| Primitives and aliases       | Primitive values and boundaries, enums, enum-valued constants, scopes, and annotated scalar or aggregate typedef chains           | Implemented                                                                           | Implemented                                                                        |
-| Collections and aggregates   | Strings with expression bounds, sequences, arrays, nested collections, structs, inheritance, recursion, and value types           | Implemented; configurable `RtiCSharp` and `Idl` mappings                              | Implemented; configurable `RtiCSharp` and `Idl` mappings                           |
-| Unbounded sequences/strings  | Opt-in RTI-style metadata and native conversion; finite fallbacks remain the default                                              | Implemented within the documented payload/QoS scope                                   | Implemented within the documented payload/QoS scope                                |
-| Unions                       | Primitive and enum discriminators, symbolic/scoped/expression labels, defaults, aliases, and fixed-array or collection branches   | Implemented; known cross-language interoperability gaps are recorded per case         | Implemented; known cross-language interoperability gaps are recorded per case      |
-| Annotations and evolution    | Topic, boolean/named/constant arguments, member IDs, optional-member, extensibility, auto-ID, and data-representation annotations | Implemented for applicable features; `@must_understand` is N/A                        | Implemented                                                                        |
-| Preprocessing                | Includes, command-line defines, conditional branches, macros, macro operators, and platform-specific probes                       | Implemented                                                                           | Implemented                                                                        |
-| Specification validation     | Keyword and same-scope case-only names, exact reserved keywords, and derived keys, and interface-body declarations (C150–C162)    | Implemented; default naming warnings and opt-in strict rejection                      | Implemented; default naming warnings and opt-in strict rejection                   |
-| Restrictions and workarounds | Negative probes, ignored constructs, and integration cases                                                                        | Evaluated per case; rejection may come from Wireloom target checks or RTI limitations | Evaluated per case; rejection may come from Wireloom validation or RTI limitations |
+| Feature category             | Coverage represented                                                                                                              | 6.1.2 profile                                                                         | 7.3.1 profile                                                                         | 7.7.0 profile                                                                      |
+| :--------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------- |
+| Primitives and aliases       | Primitive values and boundaries, enums, enum-valued constants, scopes, and annotated scalar or aggregate typedef chains           | Implemented; RTI C# signed-int8 restrictions apply                                    | Implemented                                                                           | Implemented                                                                        |
+| Collections and aggregates   | Strings with expression bounds, sequences, arrays, nested collections, structs, inheritance, recursion, and value types           | Implemented for applicable features; optional collections and recursion are N/A       | Implemented; configurable `RtiCSharp` and `Idl` mappings                              | Implemented; configurable `RtiCSharp` and `Idl` mappings                           |
+| Unbounded sequences/strings  | Opt-in RTI-style metadata and native conversion; finite fallbacks remain the default                                              | Implemented within the documented payload/QoS scope                                   | Implemented within the documented payload/QoS scope                                   | Implemented within the documented payload/QoS scope                                |
+| Unions                       | Primitive and enum discriminators, symbolic/scoped/expression labels, defaults, aliases, and fixed-array or collection branches   | Implemented; known cross-language interoperability gaps are recorded per case         | Implemented; known cross-language interoperability gaps are recorded per case         | Implemented; known cross-language interoperability gaps are recorded per case      |
+| Annotations and evolution    | Topic, boolean/named/constant arguments, member IDs, optional-member, extensibility, auto-ID, and data-representation annotations | Implemented for applicable features; `@topic` and `@must_understand` are N/A          | Implemented for applicable features; `@must_understand` is N/A                        | Implemented                                                                        |
+| Preprocessing                | Includes, command-line defines, conditional branches, macros, macro operators, and platform-specific probes                       | Implemented                                                                           | Implemented                                                                           | Implemented                                                                        |
+| Specification validation     | Keyword and same-scope case-only names, exact reserved keywords, and derived keys, and interface-body declarations (C150–C162)    | Implemented; default naming warnings and opt-in strict rejection                      | Implemented; default naming warnings and opt-in strict rejection                      | Implemented; default naming warnings and opt-in strict rejection                   |
+| Restrictions and workarounds | Negative probes, ignored constructs, and integration cases                                                                        | Evaluated per case; rejection may come from Wireloom target checks or RTI limitations | Evaluated per case; rejection may come from Wireloom target checks or RTI limitations | Evaluated per case; rejection may come from Wireloom validation or RTI limitations |
 
 Detailed case rows, stable `C###` tags, and source/oracle links are in the
-[7.3.1 positive/negative case tables](7.3.1/FEATURE-COVERAGE.md#positive-cases)
+[6.1.2 positive/negative case tables](6.1.2/FEATURE-COVERAGE.md#positive-cases),
+[7.3.1 tables](7.3.1/FEATURE-COVERAGE.md#positive-cases)
 and [7.7.0 tables](7.7.0/FEATURE-COVERAGE.md#positive-cases).
+
+C002 covers general primitive boundaries; C175 isolates signed `int8` constants
+and endpoints across all three profiles.
 
 ## Annotation case applicability
 
-| Case                        | 7.3.1                                                               | 7.7.0              |
-| :-------------------------- | :------------------------------------------------------------------ | :----------------- |
-| C040 · `09-autoid-hash`     | Hash IDs supported                                                  | Hash IDs supported |
-| C142 · `09-must-understand` | N/A: introduced after this release; explicit use reports `DDSG0004` | Supported          |
+| Case                        | 6.1.2              | 7.3.1              | 7.7.0              |
+| :-------------------------- | :----------------- | :----------------- | :----------------- |
+| C040 · `09-autoid-hash`     | Hash IDs supported | Hash IDs supported | Hash IDs supported |
+| C142 · `09-must-understand` | N/A                | N/A                | Supported          |
+
+Explicit use of an unavailable annotation reports `DDSG0004`.
 
 ## Current grouped IDL cases
 
@@ -49,8 +55,8 @@ RTI behavior and restrictions are recorded in the corresponding feature pages.
 C173 covers RTI-style unbounded sequences and strings with explicitly selected
 XCDR1/XCDR2 fixtures. C174 adds five-phase persistent-reader growth, shrink,
 regrowth, optional/nested transitions, and confirmed fragmented reception.
-Both cases cover all nine directed peer pairings per encoding and exact LTS
-profile. The [support policy](../guides/support-and-compatibility.md)
+The 7.3.1 and 7.7.0 matrices cover all nine directed peer pairings per encoding
+for both cases. The [support policy](../guides/support-and-compatibility.md)
 defines the qualified payload and QoS scope and the distinction between
 Wireloom endpoint checks and RTI reference controls.
 

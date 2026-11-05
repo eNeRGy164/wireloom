@@ -219,9 +219,10 @@ Preserve these rules:
   missing-field restoration are different contracts; evidence for one does not
   establish the others.
 - Distinguish reference retention from independent copying. Value constructors
-  for alias wrappers can retain supplied aggregates or collections; tested copy
-  constructors copy mutable nested values. Do not assume every constructor
-  establishes independent ownership.
+  for alias wrappers can retain supplied aggregates or collections. Copy
+  ownership follows the selected RTI profile: 6.1.2 containing-value copies
+  retain collection-alias wrappers; the newer profiles copy those wrappers.
+  Do not assume every constructor establishes independent ownership.
 - Preserve collection dimensions, aliases, optional presence, union branch
   selection, and the selected mapping across managed/native conversions.
 - Respect whether native conversion may allocate or must use existing storage.

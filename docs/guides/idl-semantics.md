@@ -15,6 +15,19 @@ tool versions; it does not limit valid spellings or override the specifications.
 RTI extensions and remaining Wireloom implementation limits are identified
 separately from those language rules.
 
+## Primitive mappings
+
+The semantic model retains the signed IDL `int8` range. Its C# representation
+follows the selected RTI API profile:
+
+| IDL type | 6.1.2  | 7.3.1   | 7.7.0   |
+| :------- | :----- | :------ | :------ |
+| `int8`   | `byte` | `sbyte` | `sbyte` |
+
+The mapping applies to managed declarations, native storage, and dynamic type
+metadata. Reference-binding restrictions are listed in the
+[support policy](support-and-compatibility.md#rti-version-qualification).
+
 ## Typed values in practice
 
 For two enums with the same numeric value, identity still matters:

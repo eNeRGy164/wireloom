@@ -25,31 +25,66 @@ replace the runtime or its license.
 ## RTI version qualification
 
 The generator selects an API profile from the resolved `Rti.ConnextDds`
-assembly version. Versions below **7.3.1**, or a missing runtime reference,
-produce `DDSG0003` and no generated output. Versions from 7.3.1 up to 7.7.0
-select the 7.3.1 profile; 7.7.0 and later select the 7.7.0 profile. There is no
-target-version override: generated code follows the runtime actually resolved
-by the consumer's build.
+assembly version. A missing reference or a version below 6.1.2 produces
+`DDSG0003` and no generated output. There is no target-version override:
+generated code follows the runtime resolved by the build.
 
-Only the exact **7.3.1** and **7.7.0** LTS versions are qualification targets.
-Other versions map to the nearest profile but are not separately tested or
-qualified by that mapping. Qualification requires checking generated APIs
-against the matching RTI C# oracle, compiling and exercising generated runtime
-contracts, and reviewing wire evidence for the exact LTS toolchain. The wire
-matrix target is all nine directed pairings for each selected fixture and
-exact RTI version. See the [versioned corpus](../corpus/README.md#lts-evidence-and-reproduction)
-and [wire compatibility guide](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
+| Resolved RTI version      | API profile |
+| :------------------------ | :---------- |
+| 6.1.2 through below 7.3.1 | 6.1.2       |
+| 7.3.1 through below 7.7.0 | 7.3.1       |
+| 7.7.0 and later           | 7.7.0       |
+
+Each profile follows the corresponding RTI C# API, including primitive
+representations, copy ownership, metadata, and union defaults. See
+[generated value semantics](generated-value-semantics.md) for those contracts.
+Feature availability follows the selected release:
+
+| Feature                                           | 6.1.2 | 7.3.1                                           | 7.7.0                                           |
+| :------------------------------------------------ | :---- | :---------------------------------------------- | :---------------------------------------------- |
+| Optional sequences and arrays, including typedefs | N/A   | Supported                                       | Supported                                       |
+| Recursive aggregates                              | N/A   | Supported within the documented recursion scope | Supported within the documented recursion scope |
+| `@must_understand`                                | N/A   | N/A                                             | Supported                                       |
+| RTI `@topic` semantics                            | N/A   | Supported                                       | Supported                                       |
+
+Explicit use of unavailable optional collections, recursive aggregates, or
+`@must_understand` reports `DDSG0004` and produces no documents. These profile
+limits apply to both C# and C++ peers. RTI 6.1.2 ignores `@topic`; ordinary
+struct generation remains available.
+
+Reference-binding and runtime restrictions are recorded separately from
+feature availability:
+
+| RTI version | Restricted behavior                                                                              | Scope                                                                                                                        |
+| :---------- | :----------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 6.1.2       | Signed `int8` semantics, negative constants, and negative `min`, `max`, or `default` annotations | The C# binding uses `byte`; signed behavior is unsupported.                                                                  |
+| 6.1.2       | RTI C# aggregate members with negative default enum values                                       | The generated reference binding does not compile; enum-only generation and Wireloom-to-C++ exchanges have separate coverage. |
+| 6.1.2       | Strict RTI keyword/case-collision validation parity                                              | Wireloom applies its own name-safety checks.                                                                                 |
+| 6.1.2       | XCDR2 topic types with union-valued keys                                                         | Unsupported runtime configuration.                                                                                           |
+
+The [RTI defect catalog](../corpus/RTI-CODEGEN-DEFECTS.md) and versioned feature
+matrices record the affected cases and reference-peer corrections. Wireloom
+rejects 64-bit union discriminators for every profile. Oracle capture stages
+generated include dependencies separately where the RTI toolchain requires it.
+
+Qualification requires matching RTI C# oracle comparisons, generated runtime
+contracts, and wire evidence for the exact release. The wire matrix targets
+all nine directed peer pairings for each selected fixture.
+
+Profile selection does not qualify other versions in the mapped range. See
+the [versioned corpus](../corpus/README.md#lts-evidence-and-reproduction) and
+[wire compatibility guide](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
 
 For an upgrade, check the selected profile and its exact-version evidence before
-changing the consumer's RTI package. Crossing the 7.7.0 boundary changes the
-generated API profile; rebuild and review generated contracts when moving
+changing the consumer's RTI package. Changing between profile ranges changes the
+generated API contract; rebuild and review generated contracts when moving
 between the profiles. The [recorded wire evidence](../corpus/FEATURE-COVERAGE.md#recorded-wire-evidence)
 identifies tested revisions, reports, remaining failures, and peer adaptations.
 Qualification is specific to the documented features and peer profiles; it is
 not a claim that every scenario passed.
 
-Recursive sequence typedefs remain rejected, and mutual recursive graphs remain
-unqualified. Direct self-recursive sequence members have scoped TypeObject-v1
+For the 7.3.1 and 7.7.0 profiles, recursive sequence typedefs remain rejected,
+and mutual recursive graphs remain unqualified. Direct self-recursive sequence members have scoped TypeObject-v1
 exchange evidence with required peer adjustments. Use the
 [direct-recursion fixture setup](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#direct-recursive-sequence-matrix-fixture)
 and [active compatibility risk](../architecture/arc42/11-risks-and-technical-debt.md#r01)
@@ -59,7 +94,7 @@ for the exact boundary.
 unbounded sequences, narrow strings, and wide strings. Finite behavior remains
 the default. Corpus cases C135, C136, C173, and C174 select the unbounded mode
 for matching RTI and Wireloom peers. C173 and C174 exercise XCDR1 and XCDR2
-across all nine directed peer pairings for each exact LTS release.
+across all nine directed peer pairings for RTI 7.3.1 and 7.7.0.
 The [configuration guide](configuration.md#fixed-behavior-and-configurable-limits)
 defines precedence and allocation behavior.
 
@@ -67,7 +102,7 @@ C174 verifies five application-paced phases on persistent typed readers,
 including growth, shrink, regrowth, optional/nested transitions, and bounded
 neighbors. Each phase checks contents and returns its loan before
 acknowledgment. Fragmented fixtures verify large-payload reassembly with
-positive fragment counters and no observed drops or rejects. Across both
+positive fragment counters and no observed drops or rejects. Across the 7.3.1 and 7.7.0
 profiles, 40 of its 72 scenarios involve a Wireloom-generated endpoint; the
 other 32 are RTI-only reference controls. The direct C++ CDR storage/ownership
 probe exercises RTI-generated reference code. Scheduler tests separately
@@ -81,18 +116,19 @@ fragmentation evidence mitigates [historical D01](../architecture/arc42/11-risks
 ## Continuous LTS verification
 
 The [Quality workflow](../../.github/workflows/quality.yml) runs on pull
-requests, pushes to `main`, and manual dispatches. It checks both exact RTI
-LTS versions without requiring a licensed wire environment:
+requests, pushes to `main`, and manual dispatches. Its license-free checks
+cover the following versions and targets:
 
-| Check                                                | RTI versions | Consumer targets              | Hosts                      |
-| :--------------------------------------------------- | :----------- | :---------------------------- | :------------------------- |
-| Corpus compliance against matching retained oracles  | 7.3.1, 7.7.0 | Repository target (`net10.0`) | Ubuntu 26.04               |
-| Generated runtime contracts                          | 7.3.1, 7.7.0 | `net8.0`, `net10.0`           | Windows 2025, Ubuntu 26.04 |
-| Fresh packed-analyzer integration with C# 12         | 7.3.1, 7.7.0 | `net8.0`, `net10.0`           | Windows 2025, Ubuntu 26.04 |
-| .NET 8-only fresh-package consumer                   | 7.3.1, 7.7.0 | `net8.0`                      | Ubuntu SDK 8 container     |
-| Applicability, shard planning, and report validation | 7.3.1, 7.7.0 | Repository tooling            | Ubuntu 26.04               |
+| Check                                                | RTI versions        | Consumer targets              | Hosts                      |
+| :--------------------------------------------------- | :------------------ | :---------------------------- | :------------------------- |
+| Corpus compliance against matching retained oracles  | 7.3.1, 7.7.0        | Repository target (`net10.0`) | Ubuntu 26.04               |
+| Corpus generation and exact-runtime compilation      | 6.1.2, 7.3.1, 7.7.0 | Repository target (`net10.0`) | Ubuntu 26.04               |
+| Generated runtime contracts                          | 6.1.2, 7.3.1, 7.7.0 | `net8.0`, `net10.0`           | Windows 2025, Ubuntu 26.04 |
+| Fresh packed-analyzer integration with C# 12         | 6.1.2, 7.3.1, 7.7.0 | `net8.0`, `net10.0`           | Windows 2025, Ubuntu 26.04 |
+| .NET 8-only fresh-package consumer                   | 6.1.2, 7.3.1, 7.7.0 | `net8.0`                      | Ubuntu SDK 8 container     |
+| Applicability, shard planning, and report validation | 6.1.2, 7.3.1, 7.7.0 | Repository tooling            | Ubuntu 26.04               |
 
-All eight runtime/package combinations fail their jobs on errors, with
+All 12 runtime/package combinations fail their jobs on errors, with
 independent failure reporting and retained test output. Runtime restores use version- and
 target-specific lock files. Corpus runs select `CORPUS_RTI_PROFILE` explicitly;
 unavailable features remain N/A and contribute no compatibility failures.

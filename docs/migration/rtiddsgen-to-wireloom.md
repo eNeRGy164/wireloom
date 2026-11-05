@@ -91,9 +91,10 @@ prove DDS wire interoperability.
 The option names below follow RTI's [Code Generator command-line reference][rti-codegen-args]
 for the 7.7 release line. Wireloom does not parse or forward these switches.
 The selected RTI NuGet reference also selects Wireloom's API profile: versions
+6.1.2 through below 7.3.1 use the 6.1.2 profile; versions from
 7.3.1 through below 7.7.0 use the 7.3.1 profile, while 7.7.0 and later use
 the 7.7.0 profile. There is no profile override. Rebuild and review generated
-contracts when migrating across that boundary, and consult the
+contracts when changing profiles, and consult the
 [support and compatibility guide](../guides/support-and-compatibility.md) for
 the exact-version qualification status.
 Translate the intent into MSBuild configuration or an explicit build-process

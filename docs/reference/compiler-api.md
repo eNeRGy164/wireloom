@@ -73,9 +73,10 @@ declarations should use RTI-style unbounded sequence and string semantics. It
 defaults to `false`; includes do not inherit a root's value. Includes resolve
 only against supplied inputs; the compiler does not read from disk.
 
-Select `IdlCompilerProfile.Rti731` or `IdlCompilerProfile.Rti770` for each
-compile. `GetProfileForRuntimeVersion` maps supported runtime versions and
-throws when the version is below 7.3.1. `IdlCompilationResult.Success` is based
+Select `IdlCompilerProfile.Rti612`, `IdlCompilerProfile.Rti731`, or
+`IdlCompilerProfile.Rti770` for each compile. `GetProfileForRuntimeVersion`
+maps supported runtime versions and
+throws when the version is below 6.1.2. `IdlCompilationResult.Success` is based
 on error diagnostics, so an empty document list can be either successful or a
 failure. `DDSG0001` and unsupported-profile `DDSG0004` errors return no
 documents; warnings and informational diagnostics can accompany documents.

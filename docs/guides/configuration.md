@@ -436,15 +436,15 @@ Wireloom selects its API profile from the **resolved RTI assembly version**:
 
 | Resolved version              | Effect                           |
 | ----------------------------- | -------------------------------- |
-| Missing or below `7.3.1`      | `DDSG0003`; no generated sources |
+| Missing or below `6.1.2`      | `DDSG0003`; no generated sources |
+| `6.1.2` through below `7.3.1` | Selects the 6.1.2 API profile    |
 | `7.3.1` through below `7.7.0` | Selects the 7.3.1 API profile    |
 | `7.7.0` and later             | Selects the 7.7.0 API profile    |
 
-Changing profiles can change generated runtime API calls and feature
-availability. For example, `@must_understand` fails with `DDSG0004` under the
-7.3.1 profile and is supported under 7.7.0. Regenerate and review contracts
-when changing the RTI reference. Only exact 7.3.1 and 7.7.0 releases are
-qualification targets; a mapped version is not automatically qualified.
+Changing profiles can change generated runtime API calls, value semantics,
+and feature availability. Unavailable features report `DDSG0004` and produce
+no generated output. Regenerate and review contracts when changing the RTI
+reference. Profile selection and exact-version qualification are separate.
 See the [support policy](support-and-compatibility.md).
 
 `RootNamespace` does not override IDL module-to-C# namespace mapping.
