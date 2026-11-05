@@ -293,8 +293,8 @@
     "07-union-char-boundaries": {
       "tag": "C130",
       "rtiCSharp": {
-        "mode": "adjusted",
-        "sourceDirectory": "csharp/wire-adjusted/07-union-char-boundaries"
+        "mode": "captured",
+        "sourceDirectory": "csharp/features/07-union-char-boundaries"
       },
       "rtiCpp": {
         "mode": "captured",

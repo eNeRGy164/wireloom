@@ -43,7 +43,7 @@ namespace CorpusCharUnionBoundaries
                     case '\0':
                     sample.minimum = minimum;
                     break;
-                    case 'ÿ':
+                    case '~':
                     sample.maximum = maximum;
                     break;
                     default:
@@ -68,7 +68,7 @@ namespace CorpusCharUnionBoundaries
                     case '\0':
                     minimum = sample.minimum;
                     break;
-                    case 'ÿ':
+                    case '~':
                     maximum = sample.maximum;
                     break;
                     default:
@@ -95,7 +95,7 @@ namespace CorpusCharUnionBoundaries
                 var ChoiceStructMembers = new UnionMember[]
                 {
                     new UnionMember("minimum", dtf.GetPrimitiveType<int>(), new int[] {(int) '\0'}, id: 1),
-                    new UnionMember("maximum", dtf.GetPrimitiveType<int>(), new int[] {(int) 'ÿ'}, id: 2),
+                    new UnionMember("maximum", dtf.GetPrimitiveType<int>(), new int[] {(int) '~'}, id: 2),
                     new UnionMember("fallback", dtf.GetPrimitiveType<int>(), new int[] {(int) UnionMember.DefaultLabel}, id: 3)
                 };
 
