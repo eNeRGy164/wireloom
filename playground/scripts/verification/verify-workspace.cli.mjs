@@ -752,7 +752,7 @@ async (page, hooks = {}) => {
     );
   });
 
-  await check("multi-file examples match complete native output on both profiles", async (app) => {
+  await check("multi-file examples match complete native output on all profiles", async (app) => {
     await app.evaluate(() => {
       window.__exports = [];
       const original = URL.createObjectURL;
@@ -763,7 +763,7 @@ async (page, hooks = {}) => {
       HTMLAnchorElement.prototype.click = function () {};
     });
     for (const id of ["workspace-includes", "workspace-preprocessor"]) {
-      for (const profile of ["7.3.1", "7.7.0"]) {
+      for (const profile of ["6.1.2", "7.3.1", "7.7.0"]) {
         await app.locator("#profile").selectOption(profile);
         await settle(app);
         await app.locator("#example").selectOption(id);

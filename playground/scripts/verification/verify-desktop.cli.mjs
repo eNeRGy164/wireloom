@@ -66,7 +66,7 @@ async (page) => {
       };
     });
     for (const example of input.examples) {
-      for (const profile of ["7.3.1", "7.7.0"]) {
+      for (const profile of ["6.1.2", "7.3.1", "7.7.0"]) {
         await app.locator("#profile").selectOption(profile);
         await wait(app);
         await app.locator("#example").selectOption(example.id);

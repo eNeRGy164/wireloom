@@ -63,7 +63,11 @@ for (const [id, accepted] of selection) {
   }
   cases.push({
     id: `corpus-${id}`,
-    expectedSuccess: { "7.3.1": accepted && id !== "09-must-understand", "7.7.0": accepted },
+    expectedSuccess: {
+      "6.1.2": accepted && !["06-aggregates", "09-must-understand"].includes(id),
+      "7.3.1": accepted && id !== "09-must-understand",
+      "7.7.0": accepted,
+    },
     files,
   });
 }
@@ -72,7 +76,7 @@ for (const [id, accepted] of selection) {
 const includeCase = cases.find((value) => value.id === "corpus-14-autoid-scope");
 cases.push({
   id: "corpus-missing-include",
-  expectedSuccess: { "7.3.1": false, "7.7.0": false },
+  expectedSuccess: { "6.1.2": false, "7.3.1": false, "7.7.0": false },
   files: [includeCase.files[0]],
 });
 const output = resolve(root, "output/playwright");

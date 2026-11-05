@@ -9,6 +9,7 @@ public sealed class PlaygroundCompilerAdapterSpecs
     private static readonly JsonSerializerOptions WebJson = new(JsonSerializerDefaults.Web);
 
     [Theory]
+    [InlineData("6.1.2")]
     [InlineData("7.3.1")]
     [InlineData("7.7.0")]
     public void CompilesSelectedProfileAndPreservesTheRequestIdentity(string profile)
@@ -248,6 +249,7 @@ public sealed class PlaygroundCompilerAdapterSpecs
     }
 
     [Theory]
+    [InlineData("6.1.2")]
     [InlineData("7.3.1")]
     [InlineData("7.7.0")]
     public void AppliesWorkspaceAndDeclaringFileSettingsWithNativeParity(string profile)
@@ -278,7 +280,7 @@ public sealed class PlaygroundCompilerAdapterSpecs
                 defines: ["FEATURE=1", "DISABLED=1"], undefines: ["DISABLED"], includeDirectories: ["/workspace/a", "/workspace/z"], sequenceSize: 12, stringSize: 42, enableEscapeChar: true, unboundedSupport: true),
              new IdlInput("/workspace/a/types.idl", shared, IdlSequenceArrayMapping.Idl, generate: false, sequenceSize: 12, stringSize: 42, enableEscapeChar: true, unboundedSupport: true),
              new IdlInput("/workspace/z/types.idl", "invalid IDL", generate: false, enableEscapeChar: true)],
-            profile == "7.3.1" ? IdlCompilerProfile.Rti731 : IdlCompilerProfile.Rti770, MD5.HashData, TestContext.Current.CancellationToken);
+            IdlCompiler.GetProfileForRuntimeVersion(Version.Parse(profile)), MD5.HashData, TestContext.Current.CancellationToken);
 
         // Act
         using var response = JsonDocument.Parse(PlaygroundCompilerAdapter.Compile(
@@ -376,7 +378,7 @@ public sealed class PlaygroundCompilerAdapterSpecs
         var aliases = new Dictionary<string, string>
         {
             ["CompileRequest.ProtocolVersion"] = acceptedResponse.RootElement.GetProperty("protocolVersion").GetRawText(),
-            ["CompileRequest.Profile"] = "\"7.3.1\" | \"7.7.0\"",
+            ["CompileRequest.Profile"] = "\"6.1.2\" | \"7.3.1\" | \"7.7.0\"",
             ["FileOptions.SequenceArrayMapping"] = "\"RtiCSharp\" | \"Idl\"",
             ["FileOptions.SequenceSize"] = "number",
             ["FileOptions.StringSize"] = "number",

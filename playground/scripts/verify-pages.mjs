@@ -167,7 +167,7 @@ try {
     return { startupMs: Date.now() - started, footer };
   });
 
-  for (const profile of ["7.3.1", "7.7.0"]) {
+  for (const profile of ["6.1.2", "7.3.1", "7.7.0"]) {
     await check(`Hello sample generates under RTI profile ${profile}`, async () => {
       await page.locator("#profile").selectOption(profile);
       await current();

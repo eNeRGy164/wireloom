@@ -48,6 +48,7 @@ foreach (var testCase in cases)
 
     foreach (var profile in new[]
     {
+        (Name: "6.1.2", Value: IdlCompilerProfile.Rti612),
         (Name: "7.3.1", Value: IdlCompilerProfile.Rti731),
         (Name: "7.7.0", Value: IdlCompilerProfile.Rti770),
     })

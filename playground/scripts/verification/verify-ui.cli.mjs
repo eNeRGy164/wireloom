@@ -413,12 +413,12 @@ async (page) => {
       },
     );
     await check(
-      "all seven examples on both profiles match native generation, including the type showcase",
+      "all Playground examples on all three RTI profiles match native generation, including the type showcase",
       async () => {
         const { app, context } = await open();
         const results = [];
         try {
-          for (const profile of ["7.7.0", "7.3.1"]) {
+          for (const profile of ["7.7.0", "7.3.1", "6.1.2"]) {
             await app.locator("#profile").selectOption(profile);
             for (const example of input.examples) {
               await app.locator("#example").selectOption(example.id);

@@ -103,6 +103,7 @@ test("empty workspace creation keeps the profile and starts without files or fol
     options: defaultOptions(),
   });
   assert.equal(createEmptyWorkspace("7.3.1").profile, "7.3.1");
+  assert.equal(createEmptyWorkspace("6.1.2").profile, "6.1.2");
 });
 
 test("recovery rejects unsupported schemas, profiles, malformed workspace collections, and oversized data", () => {
@@ -562,4 +563,9 @@ test("moves require an existing destination folder and leave failed operations u
   const moved = moveEntry(workspace, "/workspace/main.idl", "/workspace/target/main.idl");
   assert.equal(moved.files[0].path, "/workspace/target/main.idl");
   assert.equal(moved.files[0].source, "source");
+});
+
+test("recovery preserves the 6.1.2 profile", () => {
+  const workspace = createEmptyWorkspace("6.1.2");
+  assert.equal(validateWorkspace(workspace).profile, "6.1.2");
 });
