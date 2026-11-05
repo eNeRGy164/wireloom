@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "07-union-char-numeric-255",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "W003/W004/W005: use the existing guarded character adapter for casts, fallback preservation, and signed label metadata.",
+  "captures": [],
+  "rawFiles": [
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/csharp/features/07-union-char-numeric-255/07-union-char-numeric-255.cs",
+      "sha256": "55e57c28c169497e4ac5e929ffdffb1e6e41608e822d53c5f5457bda93ee985c"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/csharp/features/07-union-char-numeric-255/07-union-char-numeric-255Plugin.cs",
+      "sha256": "a5093603a21f13dc26b8d18affd29889f30c6bbd2060f460c48e3c0b868c81bb"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "07-union-char-numeric-255.cs",
+      "sha256": "5235e7f8008a0aedee68d88ca84ac2dffd24a6384542bba8a12aeb30f5d7bcd5"
+    },
+    {
+      "path": "07-union-char-numeric-255Plugin.cs",
+      "sha256": "edeb90023087560989a3398b7dda1cc69bf1e72ebbfa181a0ffbe9c5a00b7578"
+    }
+  ]
+}

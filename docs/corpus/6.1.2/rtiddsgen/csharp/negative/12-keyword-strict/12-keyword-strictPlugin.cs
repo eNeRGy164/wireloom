@@ -1,0 +1,90 @@
+/*
+WARNING: THIS FILE IS AUTO-GENERATED. DO NOT MODIFY.
+
+This file was generated from 12-keyword-strict.idl
+using RTI Code Generator (rtiddsgen) version 3.1.2.
+The rtiddsgen tool is part of the RTI Connext DDS distribution.
+For more information, type 'rtiddsgen -help' at a command shell
+or consult the Code Generator User's Manual.
+*/
+
+using System;
+using System.Runtime.InteropServices;
+using Omg.Types;
+using Omg.Types.Dynamic;
+using Rti.Types;
+using Rti.Dds.Core;
+using Rti.Types.Dynamic;
+using Rti.Dds.NativeInterface.TypePlugin;
+
+namespace CorpusStrictKeyword
+{
+
+    namespace Implementation
+    {
+
+        public struct StructUnmanaged : Rti.Dds.NativeInterface.TypePlugin.INativeTopicType<CorpusStrictKeyword.Struct>
+        {
+
+            private int number;
+
+            public void Destroy(bool optionalsOnly)
+            {
+            }
+
+            public void FromNative(CorpusStrictKeyword.Struct sample, bool keysOnly = false)
+            {
+
+                sample.number = number;
+            }
+
+            public void Initialize(bool allocatePointers = true, bool allocateMemory = true)
+            {
+                number = (int) 0;
+            }
+
+            public void ToNative(CorpusStrictKeyword.Struct sample, bool keysOnly = false)
+            {
+                number = sample.number;
+            }
+        }
+
+        internal class StructPlugin : Rti.Dds.NativeInterface.TypePlugin.InterpretedTypePlugin<CorpusStrictKeyword.Struct, StructUnmanaged>
+        {
+            internal StructPlugin() : base("CorpusStrictKeyword.Struct", isKeyed: false, CreateDynamicType(isPublic: false))
+            {
+            }
+
+            public static DynamicType CreateDynamicType(bool isPublic = true)
+            {
+                var dtf = ServiceEnvironment.Instance.Internal.GetTypeFactory(isPublic);
+                var tsf = ServiceEnvironment.Instance.Internal.TypeSupportFactory;
+
+                // Struct struct
+                var StructStructMembers = new StructMember[]
+                {
+                    new StructMember("number", dtf.GetPrimitiveType<int>(), id: 0)
+                };
+
+                return tsf.CreateTypeWithAccessInfo<StructUnmanaged>(
+                    dtf.BuildStruct()
+                    .WithExtensibility(ExtensibilityKind.Extensible)
+                    .WithName("CorpusStrictKeyword::Struct")
+                    .AddMembers(StructStructMembers));
+            }
+        }
+    }
+    public class StructSupport : Rti.Dds.Topics.TypeSupport<CorpusStrictKeyword.Struct>
+    {
+        public StructSupport() : base(
+            new Implementation.StructPlugin(),
+            new Lazy<DynamicType>(() =>Implementation.StructPlugin.CreateDynamicType(isPublic: true)))
+        {
+        }
+
+        public static StructSupport Instance { get; } =
+        ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<StructSupport, CorpusStrictKeyword.Struct>();
+    }
+
+} // namespace CorpusStrictKeyword
+

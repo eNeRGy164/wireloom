@@ -12,7 +12,8 @@ cpp in the image or package access.
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('7.3.1', '7.7.0')][string]$Version,
+    [Parameter(Mandatory)][ValidateSet('6.1.2', '7.3.1', '7.7.0')][string]$Version,
+    [string]$Image,
     [string[]]$CaseId = @(),
     [ValidateSet('csharp', 'cpp')][string[]]$Language = @('csharp', 'cpp'),
     [string]$OutputDirectory,
@@ -26,7 +27,14 @@ $images = @{
     '7.3.1' = 'rticom/connext-base:7.3.1@sha256:f33a61ec6381a8fb73cbb019fbb5c081f434dc5217eb14283fad995306be0f04'
     '7.7.0' = 'rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca'
 }
-$generator = if ($Version -eq '7.3.1') { '4.3.1' } else { '4.7.0' }
+if ($Image) {
+    if ($Image -notmatch '^(sha256:[a-f0-9]{64}|.+@sha256:[a-f0-9]{64})$') {
+        throw 'Image must be an immutable local image ID or registry digest reference.'
+    }
+    $images[$Version] = $Image
+}
+if (!$images[$Version]) { throw "RTI $Version requires -Image with the local capture image ID. See docs/corpus/LTS-PROFILES.md." }
+$generator = @{ '6.1.2' = '3.1.2'; '7.3.1' = '4.3.1'; '7.7.0' = '4.7.0' }[$Version]
 $manifest = Get-Content -Raw -LiteralPath "$repo/docs/corpus/manifest.json" | ConvertFrom-Json
 $cases = @($manifest.positiveCases) + @($manifest.negativeCases) + @($manifest.integrationEntryPoints | ForEach-Object {
     [pscustomobject]@{ id = [IO.Path]::GetFileNameWithoutExtension($_); idl = $_; defines = @() }

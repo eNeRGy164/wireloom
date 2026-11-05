@@ -1,95 +1,174 @@
 #requires -Version 7.4
 <#
 .SYNOPSIS
-Exports Wireloom-generated C# sources for both supported RTI API profiles.
+Exports Wireloom-generated C# sources for the selected RTI API profiles.
 
 .DESCRIPTION
-Runs the corpus compliance project once for each RTI profile, 7.3.1 and
-7.7.0. Generated files are written to the matching profile folder:
-docs/corpus/7.3.1/generator and docs/corpus/7.7.0/generator.
+Runs the corpus compliance project for RTI 6.1.2, 7.3.1, and 7.7.0 by default.
+Sources are written to docs/corpus/<version>/generator. Every profile uses the
+same generation suite, checks all inventory entries, and compiles every exported
+case against its exact runtime. Detailed oracle comparisons are a separate suite.
 
-The script restores corpus dependencies in locked mode, then tests in Release.
-Run it from any working directory with the repository's pinned
-.NET SDK available. It stops after the first failed profile and restores the
-process environment variables CORPUS_RTI_PROFILE and
-CORPUS_GENERATOR_EXPORT_ROOT to their original values when it exits.
+The script restores dependencies in locked mode, then tests in Release using
+the repository SDK. It stops after the first failed profile and restores the
+process environment variables when it exits.
 
-Existing generated files with matching paths are overwritten. Files that no
-longer correspond to accepted generated sources are not removed automatically;
-review the working tree after exporting. Use -OutputRoot with a new directory
-for a clean comparison. A new artifact directory retains source/input/output
-hashes, SDK details, and test logs; set -EvidenceDirectory to name it explicitly.
+Existing matching files are overwritten, but obsolete files are not deleted.
+Use a new -OutputRoot for a clean comparison. A new evidence directory retains
+input/output hashes, SDK details, and test logs.
 
 .EXAMPLE
-PS> .\Export-CorpusGeneratorSources.ps1
+./Export-CorpusGeneratorSources.ps1 -Profile 6.1.2
 
-Exports both profiles from the repository root. The script also works when
-invoked by its full path from another directory.
+Exports the 6.1.2 profile through its exact-runtime generation/compilation checks.
 
-.NOTES
-See docs/corpus/README.md for corpus structure and generated-output evidence.
+.EXAMPLE
+./Export-CorpusGeneratorSources.ps1
+
+Exports all three profiles. See docs/corpus/README.md for the corpus layout.
 #>
 
 [CmdletBinding()]
 param(
-    [ValidateSet('7.3.1', '7.7.0')][string[]]$Profile = @('7.3.1', '7.7.0'),
+    [ValidateSet('6.1.2', '7.3.1', '7.7.0')]
+    [string[]]$Profile = @('6.1.2', '7.3.1', '7.7.0'),
+
     [string]$OutputRoot,
+
     [string]$EvidenceDirectory
 )
+
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/docs/corpus/scripts/Evidence.Common.ps1"
+
 $project = 'tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj'
-if (!$OutputRoot) { $OutputRoot = 'docs/corpus' }
-$output = [IO.Path]::GetFullPath($OutputRoot, $PSScriptRoot)
-if (!$EvidenceDirectory) {
-    $EvidenceDirectory = "artifacts/corpus-export-$([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ'))-$([Guid]::NewGuid().ToString('N').Substring(0,8))"
+
+if (!$OutputRoot) {
+    $OutputRoot = 'docs/corpus'
 }
+
+$output = [IO.Path]::GetFullPath($OutputRoot, $PSScriptRoot)
+
+if (!$EvidenceDirectory) {
+    $timestamp = [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ')
+    $runId = [Guid]::NewGuid().ToString('N').Substring(0, 8)
+    $EvidenceDirectory = "artifacts/corpus-export-$timestamp-$runId"
+}
+
 $evidence = [IO.Path]::GetFullPath($EvidenceDirectory, $PSScriptRoot)
-if (Test-Path -LiteralPath $evidence) { throw 'EvidenceDirectory must be new to preserve earlier runs.' }
+
+if (Test-Path -LiteralPath $evidence) {
+    throw 'EvidenceDirectory must be new to preserve earlier runs.'
+}
+
 New-Item -ItemType Directory -Force -Path $evidence | Out-Null
-$inputs = @('src/Wireloom.Dds.Compiler', 'src/Wireloom.Dds.Generator', 'tests/Wireloom.Dds.Generator.CorpusCompliance',
-    'docs/corpus/idl', 'docs/corpus/manifest.json', 'docs/corpus/scripts/Evidence.Common.ps1',
-    'Export-CorpusGeneratorSources.ps1', 'global.json', 'Directory.Build.props',
-    'Directory.Packages.props', 'tests/Directory.Build.props', 'NuGet.config')
+
+$inputs = @(
+    'src/Wireloom.Dds.Compiler'
+    'src/Wireloom.Dds.Generator'
+    'tests/Wireloom.Dds.Generator.CorpusCompliance'
+    'docs/corpus/idl'
+    'docs/corpus/manifest.json'
+    'docs/corpus/6.1.2/manifest.json'
+    'docs/corpus/7.3.1/manifest.json'
+    'docs/corpus/7.7.0/manifest.json'
+    'docs/corpus/scripts/Evidence.Common.ps1'
+    'Export-CorpusGeneratorSources.ps1'
+    'global.json'
+    'Directory.Build.props'
+    'Directory.Packages.props'
+    'tests/Directory.Build.props'
+    'NuGet.config'
+)
+
 $before = Get-EvidenceSnapshot $PSScriptRoot $inputs
 $revision = Get-EvidenceRevision $PSScriptRoot
+
 $previousProfile = [Environment]::GetEnvironmentVariable('CORPUS_RTI_PROFILE', 'Process')
 $previousExportRoot = [Environment]::GetEnvironmentVariable('CORPUS_GENERATOR_EXPORT_ROOT', 'Process')
+
 Push-Location $PSScriptRoot
+
 try {
     $sdkVersion = dotnet --version
-    if ($LASTEXITCODE -ne 0) { throw 'Cannot identify the .NET SDK version.' }
+
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Cannot identify the .NET SDK version.'
+    }
+
     $sdkVersion | Out-File "$evidence/dotnet-version.txt" -Encoding utf8
+
     $restoreOutput = & dotnet restore $project --locked-mode 2>&1
     $restoreExitCode = $LASTEXITCODE
     $restoreOutput | Tee-Object "$evidence/restore.txt"
-    if ($restoreExitCode -ne 0) { throw "Corpus locked restore failed (exit code $restoreExitCode)." }
+
+    if ($restoreExitCode -ne 0) {
+        throw "Corpus locked restore failed (exit code $restoreExitCode)."
+    }
+
     foreach ($version in $Profile | Select-Object -Unique) {
         $env:CORPUS_RTI_PROFILE = $version
         $env:CORPUS_GENERATOR_EXPORT_ROOT = Join-Path $output "$version/generator"
         $startedAt = [DateTime]::UtcNow.ToString('o')
+
+        $testArguments = @(
+            'run'
+            '--project', $project
+            '--no-restore'
+            '--configuration', 'Release'
+            '--'
+            '--filter-trait', 'CorpusSuite=Generation'
+        )
+
         Write-Host "Exporting corpus sources for RTI profile $version..."
-        dotnet run --project $project --no-restore --configuration Release | Tee-Object "$evidence/$version-tests.txt"
-        if ($LASTEXITCODE -ne 0) { throw "Corpus source export failed for RTI profile $version (exit code $LASTEXITCODE)." }
+        & dotnet @testArguments | Tee-Object "$evidence/$version-tests.txt"
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Corpus source export failed for RTI profile $version (exit code $LASTEXITCODE)."
+        }
+
         $after = Get-EvidenceSnapshot $PSScriptRoot $inputs
-        if ($after.sha256 -ne $before.sha256) { throw 'Export inputs changed during execution; do not promote this run.' }
-        Write-EvidenceJson "$evidence/$version.json" ([ordered]@{
-            schemaVersion = 1; kind = 'wireloom-corpus-export'; profile = $version
-            startedAtUtc = $startedAt; completedAtUtc = [DateTime]::UtcNow.ToString('o')
-            source = $revision; inputs = $before; configuration = 'Release'
-            sdk = $sdkVersion; testExitCode = 0
-            outputDirectory = [IO.Path]::GetRelativePath($PSScriptRoot, $env:CORPUS_GENERATOR_EXPORT_ROOT).Replace('\', '/')
-            output = Get-EvidenceSnapshot $env:CORPUS_GENERATOR_EXPORT_ROOT @(
-                Get-ChildItem -LiteralPath $env:CORPUS_GENERATOR_EXPORT_ROOT -Recurse -File -Filter '*.g.cs' |
-                    ForEach-Object { [IO.Path]::GetRelativePath($env:CORPUS_GENERATOR_EXPORT_ROOT, $_.FullName) }
-            )
+
+        if ($after.sha256 -ne $before.sha256) {
+            throw 'Export inputs changed during execution; do not promote this run.'
+        }
+
+        $outputFiles = @(
+            Get-ChildItem -LiteralPath $env:CORPUS_GENERATOR_EXPORT_ROOT -Recurse -File -Filter '*.g.cs' |
+                ForEach-Object {
+                    [IO.Path]::GetRelativePath($env:CORPUS_GENERATOR_EXPORT_ROOT, $_.FullName)
+                }
+        )
+
+        $outputSnapshot = Get-EvidenceSnapshot $env:CORPUS_GENERATOR_EXPORT_ROOT $outputFiles
+        $relativeOutput = [IO.Path]::GetRelativePath($PSScriptRoot, $env:CORPUS_GENERATOR_EXPORT_ROOT)
+        $relativeOutput = $relativeOutput.Replace([IO.Path]::DirectorySeparatorChar, [char]'/')
+
+        $exportEvidence = [ordered]@{
+            schemaVersion = 1
+            kind = 'wireloom-corpus-export'
+            profile = $version
+            startedAtUtc = $startedAt
+            completedAtUtc = [DateTime]::UtcNow.ToString('o')
+            source = $revision
+            inputs = $before
+            configuration = 'Release'
+            sdk = $sdkVersion
+            testExitCode = 0
+            testArguments = $testArguments
+            outputDirectory = $relativeOutput
+            output = $outputSnapshot
             staleOutputPolicy = 'Existing files are not deleted. Use a new OutputRoot for an uncontaminated export.'
-        })
+        }
+
+        Write-EvidenceJson "$evidence/$version.json" $exportEvidence
     }
+
     Write-Host "Export provenance and test logs: $evidence"
 }
 finally {
     Pop-Location
+
     [Environment]::SetEnvironmentVariable('CORPUS_RTI_PROFILE', $previousProfile, 'Process')
     [Environment]::SetEnvironmentVariable('CORPUS_GENERATOR_EXPORT_ROOT', $previousExportRoot, 'Process')
 }

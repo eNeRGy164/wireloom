@@ -18,7 +18,7 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
         "12-case-collision-default",
         "12-identifier-control",
         "01-primitives",
-        "01-boundaries",
+        "01-boundaries", "01-int8-boundaries",
         "01-full-widths",
         "02-names-constants",
         "02-scopes",
@@ -128,7 +128,7 @@ public sealed record CorpusCase(string Id, string SourceKind, string Idl, List<s
 
     public bool ExpectedToCompileForProfile(string? rtiProfile) =>
         ManagedAcceptedCaseIds.Contains(Id) &&
-        !(Id == "09-must-understand" && string.Equals(rtiProfile, "7.3.1", StringComparison.Ordinal));
+        !CorpusProfile.ForVersion(rtiProfile ?? "7.7.0").UnsupportedCases.ContainsKey(Id);
 
     public bool HasOracleOutput =>
         OracleSourcesRetained &&
@@ -231,12 +231,7 @@ internal static class CorpusRepository
     public static string IdlRoot => Path.Combine(CorpusRoot, "idl");
 
     /// <summary>Gets the exact LTS oracle selected for the current compliance run.</summary>
-    public static string RtiProfile => Environment.GetEnvironmentVariable("CORPUS_RTI_PROFILE") switch
-    {
-        null or "7.7.0" => "7.7.0",
-        "7.3.1" => "7.3.1",
-        var profile => throw new InvalidOperationException($"Unsupported corpus RTI profile: {profile}")
-    };
+    public static string RtiProfile => CorpusProfile.Selected.Version;
 
     public static string OracleRoot => Path.Combine(CorpusRoot, RtiProfile, "rtiddsgen", "csharp");
 
@@ -297,7 +292,7 @@ internal static class CorpusRepository
         var profileRoot = Path.Combine(corpusRoot, RtiProfile);
         Dictionary<string, OracleEntry>? capturedCases = null;
         var oracleCompileOutcomes = new Dictionary<string, string>(StringComparer.Ordinal);
-        if (RtiProfile == "7.3.1")
+        if (RtiProfile is "6.1.2" or "7.3.1")
         {
             var oracleManifest = Read<OracleManifest>(Path.Combine(profileRoot, "manifest.json"));
             capturedCases = oracleManifest.Cases.Concat(oracleManifest.CharacterizationProbes)
@@ -407,7 +402,7 @@ internal static class CorpusRepository
             entry.Idl,
             entry.Defines,
             classifications[entry.Id],
-            Path.Combine(profileRoot, capturedCase is null
+            Path.Combine(profileRoot, string.IsNullOrWhiteSpace(capturedCase?.SourceDirectory)
                 ? entry.OracleDirectory ?? Path.Combine("rtiddsgen", "csharp", sourceKind, entry.Id)
                 : capturedCase.SourceDirectory),
             mapping,

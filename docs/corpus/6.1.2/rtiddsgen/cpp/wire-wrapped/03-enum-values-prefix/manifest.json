@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "03-enum-values-prefix",
+  "language": "cpp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "03-enum-values-prefix-cpp-03-enum-values-prefix-root",
+      "case": "03-enum-values-prefix",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/03-enum-values-prefix.idl",
+      "sourceSha256": "b2c34289207a7b6afc555478940e3d8c99b89f6137515285d7fabf178bce1046",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/03-enum-values-prefix-cpp-03-enum-values-prefix-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/03-enum-values-prefix-cpp-03-enum-values-prefix-root/idl.idl"
+      ]
+    },
+    {
+      "name": "03-enum-values-prefix-cpp-03-enum-values-prefix-dependency",
+      "case": "03-enum-values-prefix",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "docs/corpus/idl/features/03-enum-values-prefix.idl",
+      "sourceSha256": "f8b78b800b862fcce26ad7ed2b95f771edfb938152aaea38e158b4bb67f99a7b",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/03-enum-values-prefix-cpp-03-enum-values-prefix-dependency/generated",
+        "/work/docs/corpus/idl/features/03-enum-values-prefix.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cxx",
+      "sha256": "c386a49460751e23bc2388185177021017e3de9faa9637b0821230994075ce90"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "ec68c038c947cbfb70fa50bbccb3afc2663863037772c4933f3eac508b8a449a"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "8e984ae135f100180a0c3d9beb37d9a04b60ea2877dabaf0847e9480018d8f28"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "4cab104673daa3f183f6af9bd59809d82e150a7c299360bebe2322eea4223fcd"
+    },
+    {
+      "path": "features/03-enum-values-prefix.cxx",
+      "sha256": "fc894064231f65bf56a29bde473bd11af364bd515f5300d50b97747bdc90d0c8"
+    },
+    {
+      "path": "features/03-enum-values-prefix.hpp",
+      "sha256": "a09b4bcaa40db5d0f995d62399b747c1a58cd496d40c1caeed82b3c1179ffc0f"
+    },
+    {
+      "path": "features/03-enum-values-prefixPlugin.cxx",
+      "sha256": "1e52085a3dc95db824fb59919a3198b3807f31df55cb0766808c0efd2fa5499c"
+    },
+    {
+      "path": "features/03-enum-values-prefixPlugin.hpp",
+      "sha256": "95beb82c1d57b211a9662692dd348a5f5223f61bfbf732b16838211fc7a306bf"
+    }
+  ]
+}

@@ -16,7 +16,6 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
     private short shortValue;
     private int longValue;
     private long longLongValue;
-    private sbyte int8Value;
     private long int64Value;
     private float floatValue;
     private double doubleValue;
@@ -41,7 +40,6 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
         sample.shortValue = shortValue;
         sample.longValue = longValue;
         sample.longLongValue = longLongValue;
-        sample.int8Value = int8Value;
         sample.int64Value = int64Value;
         sample.floatValue = floatValue;
         sample.doubleValue = doubleValue;
@@ -58,7 +56,6 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
         shortValue = 0;
         longValue = 0;
         longLongValue = 0L;
-        int8Value = 0;
         int64Value = 0L;
         floatValue = 0.0F;
         doubleValue = 0.0D;
@@ -75,7 +72,6 @@ public struct SampleUnmanaged : INativeTopicType<Sample>
         shortValue = sample.shortValue;
         longValue = sample.longValue;
         longLongValue = sample.longLongValue;
-        int8Value = sample.int8Value;
         int64Value = sample.int64Value;
         floatValue = sample.floatValue;
         doubleValue = sample.doubleValue;

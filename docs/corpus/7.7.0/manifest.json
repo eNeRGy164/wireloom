@@ -7,7 +7,7 @@
   "wireQualification": "qualified-evidence-indexed-in-root-feature-coverage",
   "generatorSourceRoot": "generator",
   "oracleRoot": "rtiddsgen/csharp",
-  "oracleCaseCount": 171,
+  "oracleCaseCount": 172,
   "characterizationProbes": [
     {
       "id": "10-resolve-name-array-bound",
@@ -108,7 +108,6 @@
         "-I",
         "/work/docs/corpus/idl/integration"
       ],
-      "log": "rtiddsgen/csharp/negative/12-keyword-default/rtiddsgen.log",
       "outputSha256": "4417f95b56f162ffa6cfb9937afd1587a8982a23a1c5480abcc63aede93a8f83"
     },
     {
@@ -134,7 +133,6 @@
         "-I",
         "/work/docs/corpus/idl/integration"
       ],
-      "log": "rtiddsgen/csharp/negative/12-keyword-strict/rtiddsgen.log",
       "outputSha256": "660440ebbf66fd9ea0259c8f7565892f6f717ee8f0b290d698e946eb76be4c5e"
     },
     {
@@ -159,7 +157,6 @@
         "-I",
         "/work/docs/corpus/idl/integration"
       ],
-      "log": "rtiddsgen/csharp/negative/12-case-collision-default/rtiddsgen.log",
       "outputSha256": "7c71a6396d0b43d91ce0a6f32ffffb6e0e117be252d9135a9edc13781c049307"
     },
     {
@@ -185,7 +182,6 @@
         "-I",
         "/work/docs/corpus/idl/integration"
       ],
-      "log": "rtiddsgen/csharp/negative/12-case-collision-strict/rtiddsgen.log",
       "outputSha256": "6135ca65bce6ff0c3b13ffa8bfb1ab93e395a098496755809058235cfa48bbc9"
     },
     {
@@ -210,7 +206,6 @@
         "-I",
         "/work/docs/corpus/idl/integration"
       ],
-      "log": "rtiddsgen/csharp/negative/12-exact-keyword/rtiddsgen.log",
       "outputSha256": "f8b33ae39851cf6314ffa57b295f376df7420bd8aa5c4521943a29129dc906d1"
     },
     {
@@ -236,7 +231,6 @@
         "-I",
         "/work/docs/corpus/idl/integration"
       ],
-      "log": "rtiddsgen/csharp/negative/12-identifier-control/rtiddsgen.log",
       "outputSha256": "d53139a854ab4f35037cef25d4242943ee8385e568aff835cbcd212d45654414"
     },
     {
@@ -262,7 +256,6 @@
         "-I",
         "/work/docs/corpus/idl/integration"
       ],
-      "log": "rtiddsgen/csharp/negative/12-derived-key-strict/rtiddsgen.log",
       "outputSha256": "b5227eead096c0fe1e5062956fdeac70da9c28199275176f0812c21d47faa965"
     },
     {
@@ -287,7 +280,6 @@
         "-I",
         "/work/docs/corpus/idl/integration"
       ],
-      "log": "rtiddsgen/csharp/negative/12-interface-keyword-default/rtiddsgen.log",
       "outputSha256": "7ead546c3f42004f04cb05f3204f6085837ffadd60f31fed669c1ca9a5f3dfa2",
       "compileOutcome": "compiled",
       "compileDiagnostics": []
@@ -315,7 +307,6 @@
         "-I",
         "/work/docs/corpus/idl/integration"
       ],
-      "log": "rtiddsgen/csharp/negative/12-interface-keyword-strict/rtiddsgen.log",
       "outputSha256": "eb2e928b374d450dc9f4e1fca61d5ba8d036853ec24d4d095541c9dbecd1b335"
     },
     {
@@ -340,7 +331,6 @@
         "-I",
         "/work/docs/corpus/idl/integration"
       ],
-      "log": "rtiddsgen/csharp/negative/12-interface-case-default/rtiddsgen.log",
       "outputSha256": "ec0b57b720a919950e56a3c6fc5cd93e35712a4e17253f40300ce118fbfb7f4e",
       "compileOutcome": "compiled",
       "compileDiagnostics": []
@@ -368,7 +358,6 @@
         "-I",
         "/work/docs/corpus/idl/integration"
       ],
-      "log": "rtiddsgen/csharp/negative/12-interface-case-strict/rtiddsgen.log",
       "outputSha256": "5b7d42fa4c8ec2e36a8f771d159e762bc17ad0afc7d262821ce2f4fa22c7f50b"
     },
     {
@@ -393,7 +382,6 @@
         "-I",
         "/work/docs/corpus/idl/integration"
       ],
-      "log": "rtiddsgen/csharp/negative/12-interface-exact-keyword/rtiddsgen.log",
       "outputSha256": "2e3a09825fc0dfb1c3d385bc4ac4cb03b59abc64fc85f9fd85faa43b1b4ac94a"
     },
     {
@@ -419,20 +407,175 @@
         "-I",
         "/work/docs/corpus/idl/integration"
       ],
-      "log": "rtiddsgen/csharp/negative/12-interface-body-control/rtiddsgen.log",
       "outputSha256": "13f2c11146767188e39d2826bd5b63dcff67a448910094a1433064cc5d0370a2",
       "compileOutcome": "compiled",
       "compileDiagnostics": []
+    },
+    {
+      "id": "14-extensibility-full",
+      "outcome": "generated",
+      "captureRunId": "implementation-corpus-7.7.0",
+      "sourceSha256": "09842cb28ea368887b4d2f5eb36e9446399c1d72c8ad92afb0cb181cbd339b2e",
+      "outputSha256": "7495411a04cfaa9ee688a10a660ebf59982957f974166b3c059bab3a6dc4d6cb",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/features/14-extensibility-full",
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "csharp/features/14-extensibility-full",
+      "compileOutcome": "compiled",
+      "compileEvidence": "artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"
+    },
+    {
+      "id": "14-autoid-scope",
+      "outcome": "generated",
+      "captureRunId": "implementation-autoid-include-7.7.0",
+      "sourceSha256": "b9bf886cd3c64e85d108fc2063f6ca0b1f921283de769364c9bf7744f3d00e5b",
+      "outputSha256": "c777165d92aacc15d3c6f90f91313eb12673767e4b72df1c466435afcd1907ea",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/features/14-autoid-scope",
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/autoid-include-reference-rti-7.7.0/capture.json",
+      "captureOutput": "csharp/features/14-autoid-scope",
+      "includedSources": [
+        {
+          "idl": "idl/includes/autoid-hash-include.idl",
+          "sourceSha256": "6a4ba5a745de20fcb401350796eda734a611f144d90dcd09cd784c6de1af01d7",
+          "rtiddsgenVersion": "4.7.0",
+          "imageId": "sha256:94c9b9377b5d45ddb01b709c4bee239b47e8f617634e74b9286bfdf196d74987",
+          "outputSha256": "6ae9c08d24eae3e0622ea3d62ed102f868d48e976ad2b147f828cfca3b4d3a90",
+          "files": [
+            {
+              "path": "includes/autoid-hash-include.cs",
+              "sha256": "3f8e65ed1a99d2f75b03c81cf26955c712e54c39d879e8323e54e886148784bb"
+            },
+            {
+              "path": "includes/autoid-hash-includePlugin.cs",
+              "sha256": "f960fe7762ab260469e3b3fb7ec10a78cc6f0c341168485316a8083d85dfbfcd"
+            }
+          ],
+          "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/include-helper-capture-licensed/capture.json"
+        }
+      ],
+      "compileOutcome": "compiled",
+      "compileEvidence": "artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"
+    },
+    {
+      "id": "14-annotation-arguments",
+      "outcome": "generated",
+      "captureRunId": "implementation-corpus-7.7.0",
+      "sourceSha256": "c971b5ee06a9412c5cf28140589a87fb4207223ed081dcd04e8eee0e84780b02",
+      "outputSha256": "de3047b518addb231986aaca6300297762dde38b92c1ac67686175a34673722c",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/features/14-annotation-arguments",
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "csharp/features/14-annotation-arguments",
+      "compileOutcome": "compiled",
+      "compileEvidence": "artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"
+    },
+    {
+      "id": "14-member-declarators",
+      "outcome": "generated",
+      "captureRunId": "implementation-corpus-7.7.0",
+      "sourceSha256": "a34be999fb2502c846ce077c4166d7cfbcd4fca363454ec6d641cf5f9b63ef02",
+      "outputSha256": "851b2d513ad45644cfbddae1a33257b617e55111ad88d8e7e5db942b2e8d6467",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/features/14-member-declarators",
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "csharp/features/14-member-declarators",
+      "compileOutcome": "compiled",
+      "compileEvidence": "artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"
+    },
+    {
+      "id": "14-union-label-expressions",
+      "outcome": "generated",
+      "captureRunId": "implementation-corpus-7.7.0",
+      "sourceSha256": "bd0356c1c7dbb81736ca9e1a3d6909fcd2267fd1cd362b999d719a3174336d12",
+      "outputSha256": "af1fb12f6d002dbe629d1b236b6574866d8ea645817d7664dd5509c1562a21f5",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/features/14-union-label-expressions",
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "csharp/features/14-union-label-expressions",
+      "compileOutcome": "compiled",
+      "compileEvidence": "artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"
+    },
+    {
+      "id": "14-union-scoped-enum",
+      "outcome": "generated",
+      "captureRunId": "implementation-corpus-7.7.0",
+      "sourceSha256": "743c6a657056bf90521e1615500b5af589a23fce7be190072e8046e6564f8cd0",
+      "outputSha256": "5800308620ddbacc4d695428b409a49f42ead94abb44bd6e3c995c12c2f7a550",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/features/14-union-scoped-enum",
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "csharp/features/14-union-scoped-enum",
+      "compileOutcome": "compiled",
+      "compileEvidence": "artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"
+    },
+    {
+      "id": "14-union-array-branch",
+      "outcome": "generated",
+      "captureRunId": "implementation-corpus-7.7.0",
+      "sourceSha256": "7b6c2cac462aacb19ec7725b2132286895a9e6bfe4c0219d80750ce6e6178d4f",
+      "outputSha256": "42b10129698e4c13664682385d9ea8d982accea91d5ac0dd4089044084a129b6",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/features/14-union-array-branch",
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "csharp/features/14-union-array-branch",
+      "compileOutcome": "compiled",
+      "compileEvidence": "artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"
+    },
+    {
+      "id": "14-string-expression-bound",
+      "outcome": "generated",
+      "captureRunId": "implementation-corpus-7.7.0",
+      "sourceSha256": "2db95cfcd1bd7fed40071e31613ca95b38b18292a8f4fdee32795201533c7b32",
+      "outputSha256": "7949ee39b80141e796bba8e7bd3cadd03297020f8aaeec06aab92aa7c4452070",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/features/14-string-expression-bound",
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "csharp/features/14-string-expression-bound",
+      "compileOutcome": "compiled",
+      "compileEvidence": "artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"
+    },
+    {
+      "id": "14-typed-defaults",
+      "outcome": "generated",
+      "captureRunId": "rti-capture-issue87-docker-7.7.0",
+      "sourceSha256": "c07e064376546f8890c4c244b2fef02d6980bc95304daf8d2962181123628663",
+      "outputSha256": "52875fcbbfe754c1b964fc53c93fb35d906035a1e5b522725857cb4c70e714b2",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/features/14-typed-defaults",
+      "captureEvidence": "artifacts/rti-capture-issue87-docker-7.7.0/capture.json",
+      "captureOutput": "csharp/features/14-typed-defaults",
+      "compileOutcome": "compiled",
+      "compileEvidence": "artifacts/rti-capture-issue87-docker-7.7.0/oracle-csharp-build.log"
+    },
+    {
+      "id": "14-enum-constant",
+      "outcome": "generated",
+      "captureRunId": "implementation-corpus-7.7.0",
+      "sourceSha256": "6b62926cae967a8f5a4fde2397d2da23e1360fe8334963883e2567dc1f2c2782",
+      "outputSha256": "1274e2d1571f24c6e74c7c170265a4eb9f54ffb526a851cc2deb01ab93ebb74b",
+      "oracleSourcesRetained": true,
+      "sourceDirectory": "rtiddsgen/csharp/features/14-enum-constant",
+      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json",
+      "captureOutput": "csharp/features/14-enum-constant",
+      "compileOutcome": "compiled",
+      "compileEvidence": "artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"
+    },
+    {
+      "id": "01-boundaries",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/01-boundaries",
+      "oracleSourcesRetained": true,
+      "sourceSha256": "f5882dee0c5a650ca862c3fdb1db453a7c118ab39ad691765f48dc5ab39891ef",
+      "compileOutcome": "compiled"
+    },
+    {
+      "id": "01-int8-boundaries",
+      "outcome": "generated",
+      "sourceDirectory": "rtiddsgen/csharp/features/01-int8-boundaries",
+      "oracleSourcesRetained": true,
+      "sourceSha256": "16789a817da0823034c0d14900332cc115e6572390678722b97a8138dbf804bc",
+      "compileOutcome": "compiled"
     }
-    , {"id":"14-extensibility-full","outcome":"generated","captureRunId":"implementation-corpus-7.7.0","sourceSha256":"09842cb28ea368887b4d2f5eb36e9446399c1d72c8ad92afb0cb181cbd339b2e","outputSha256":"7495411a04cfaa9ee688a10a660ebf59982957f974166b3c059bab3a6dc4d6cb","oracleSourcesRetained":true,"sourceDirectory":"rtiddsgen/csharp/features/14-extensibility-full","captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"csharp/features/14-extensibility-full","compileOutcome":"compiled","compileEvidence":"artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"}
-    , {"id":"14-autoid-scope","outcome":"generated","captureRunId":"implementation-autoid-include-7.7.0","sourceSha256":"b9bf886cd3c64e85d108fc2063f6ca0b1f921283de769364c9bf7744f3d00e5b","outputSha256":"c777165d92aacc15d3c6f90f91313eb12673767e4b72df1c466435afcd1907ea","oracleSourcesRetained":true,"sourceDirectory":"rtiddsgen/csharp/features/14-autoid-scope","captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/autoid-include-reference-rti-7.7.0/capture.json","captureOutput":"csharp/features/14-autoid-scope","includedSources":[{"idl":"idl/includes/autoid-hash-include.idl","sourceSha256":"6a4ba5a745de20fcb401350796eda734a611f144d90dcd09cd784c6de1af01d7","rtiddsgenVersion":"4.7.0","imageId":"sha256:94c9b9377b5d45ddb01b709c4bee239b47e8f617634e74b9286bfdf196d74987","outputSha256":"6ae9c08d24eae3e0622ea3d62ed102f868d48e976ad2b147f828cfca3b4d3a90","files":[{"path":"includes/autoid-hash-include.cs","sha256":"3f8e65ed1a99d2f75b03c81cf26955c712e54c39d879e8323e54e886148784bb"},{"path":"includes/autoid-hash-includePlugin.cs","sha256":"f960fe7762ab260469e3b3fb7ec10a78cc6f0c341168485316a8083d85dfbfcd"}],"captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/include-helper-capture-licensed/capture.json"}],"compileOutcome":"compiled","compileEvidence":"artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"}
-    , {"id":"14-annotation-arguments","outcome":"generated","captureRunId":"implementation-corpus-7.7.0","sourceSha256":"c971b5ee06a9412c5cf28140589a87fb4207223ed081dcd04e8eee0e84780b02","outputSha256":"de3047b518addb231986aaca6300297762dde38b92c1ac67686175a34673722c","oracleSourcesRetained":true,"sourceDirectory":"rtiddsgen/csharp/features/14-annotation-arguments","captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"csharp/features/14-annotation-arguments","compileOutcome":"compiled","compileEvidence":"artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"}
-    , {"id":"14-member-declarators","outcome":"generated","captureRunId":"implementation-corpus-7.7.0","sourceSha256":"a34be999fb2502c846ce077c4166d7cfbcd4fca363454ec6d641cf5f9b63ef02","outputSha256":"851b2d513ad45644cfbddae1a33257b617e55111ad88d8e7e5db942b2e8d6467","oracleSourcesRetained":true,"sourceDirectory":"rtiddsgen/csharp/features/14-member-declarators","captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"csharp/features/14-member-declarators","compileOutcome":"compiled","compileEvidence":"artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"}
-    , {"id":"14-union-label-expressions","outcome":"generated","captureRunId":"implementation-corpus-7.7.0","sourceSha256":"bd0356c1c7dbb81736ca9e1a3d6909fcd2267fd1cd362b999d719a3174336d12","outputSha256":"af1fb12f6d002dbe629d1b236b6574866d8ea645817d7664dd5509c1562a21f5","oracleSourcesRetained":true,"sourceDirectory":"rtiddsgen/csharp/features/14-union-label-expressions","captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"csharp/features/14-union-label-expressions","compileOutcome":"compiled","compileEvidence":"artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"}
-    , {"id":"14-union-scoped-enum","outcome":"generated","captureRunId":"implementation-corpus-7.7.0","sourceSha256":"743c6a657056bf90521e1615500b5af589a23fce7be190072e8046e6564f8cd0","outputSha256":"5800308620ddbacc4d695428b409a49f42ead94abb44bd6e3c995c12c2f7a550","oracleSourcesRetained":true,"sourceDirectory":"rtiddsgen/csharp/features/14-union-scoped-enum","captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"csharp/features/14-union-scoped-enum","compileOutcome":"compiled","compileEvidence":"artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"}
-    , {"id":"14-union-array-branch","outcome":"generated","captureRunId":"implementation-corpus-7.7.0","sourceSha256":"7b6c2cac462aacb19ec7725b2132286895a9e6bfe4c0219d80750ce6e6178d4f","outputSha256":"42b10129698e4c13664682385d9ea8d982accea91d5ac0dd4089044084a129b6","oracleSourcesRetained":true,"sourceDirectory":"rtiddsgen/csharp/features/14-union-array-branch","captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"csharp/features/14-union-array-branch","compileOutcome":"compiled","compileEvidence":"artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"}
-    , {"id":"14-string-expression-bound","outcome":"generated","captureRunId":"implementation-corpus-7.7.0","sourceSha256":"2db95cfcd1bd7fed40071e31613ca95b38b18292a8f4fdee32795201533c7b32","outputSha256":"7949ee39b80141e796bba8e7bd3cadd03297020f8aaeec06aab92aa7c4452070","oracleSourcesRetained":true,"sourceDirectory":"rtiddsgen/csharp/features/14-string-expression-bound","captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"csharp/features/14-string-expression-bound","compileOutcome":"compiled","compileEvidence":"artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"}
-    , {"id":"14-typed-defaults","outcome":"generated","captureRunId":"rti-capture-issue87-docker-7.7.0","sourceSha256":"c07e064376546f8890c4c244b2fef02d6980bc95304daf8d2962181123628663","outputSha256":"52875fcbbfe754c1b964fc53c93fb35d906035a1e5b522725857cb4c70e714b2","oracleSourcesRetained":true,"sourceDirectory":"rtiddsgen/csharp/features/14-typed-defaults","captureEvidence":"artifacts/rti-capture-issue87-docker-7.7.0/capture.json","captureOutput":"csharp/features/14-typed-defaults","compileOutcome":"compiled","compileEvidence":"artifacts/rti-capture-issue87-docker-7.7.0/oracle-csharp-build.log"}
-    , {"id":"14-enum-constant","outcome":"generated","captureRunId":"implementation-corpus-7.7.0","sourceSha256":"6b62926cae967a8f5a4fde2397d2da23e1360fe8334963883e2567dc1f2c2782","outputSha256":"1274e2d1571f24c6e74c7c170265a4eb9f54ffb526a851cc2deb01ab93ebb74b","oracleSourcesRetained":true,"sourceDirectory":"rtiddsgen/csharp/features/14-enum-constant","captureEvidence":"artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.7.0/capture.json","captureOutput":"csharp/features/14-enum-constant","compileOutcome":"compiled","compileEvidence":"artifacts/compatibility-review-2026-10-21/implementation/oracle-source-retention/retained-csharp-compile-final.json"}
   ]
 }

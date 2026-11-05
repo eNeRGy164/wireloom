@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "07-union-ulong",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "W016: preserve the maximum unsigned discriminator bits using unchecked conversion in signed label metadata.",
+  "captures": [],
+  "rawFiles": [
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/csharp/features/07-union-ulong/07-union-ulong.cs",
+      "sha256": "b83c4f3415543058ae7bc324ebf069bc5b2499ddc9ee273c02231358abaaf937"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/csharp/features/07-union-ulong/07-union-ulongPlugin.cs",
+      "sha256": "1abcab65ba5660fbe0f4cbcfb83f49e5c749232c2d3e731ec9ead34cb34b09df"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "07-union-ulong.cs",
+      "sha256": "b83c4f3415543058ae7bc324ebf069bc5b2499ddc9ee273c02231358abaaf937"
+    },
+    {
+      "path": "07-union-ulongPlugin.cs",
+      "sha256": "580d99872abacce759edf06522338fc6d700685ce22802c84d31b1fdb70d028b"
+    }
+  ]
+}

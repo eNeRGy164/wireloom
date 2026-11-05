@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "03-enum-values-prefix",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "03-enum-values-prefix-csharp-03-enum-values-prefix-root",
+      "case": "03-enum-values-prefix",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/03-enum-values-prefix.idl",
+      "sourceSha256": "b2c34289207a7b6afc555478940e3d8c99b89f6137515285d7fabf178bce1046",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/03-enum-values-prefix-csharp-03-enum-values-prefix-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/03-enum-values-prefix-csharp-03-enum-values-prefix-root/idl.idl"
+      ]
+    },
+    {
+      "name": "03-enum-values-prefix-csharp-03-enum-values-prefix-dependency",
+      "case": "03-enum-values-prefix",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "docs/corpus/idl/features/03-enum-values-prefix.idl",
+      "sourceSha256": "f8b78b800b862fcce26ad7ed2b95f771edfb938152aaea38e158b4bb67f99a7b",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/03-enum-values-prefix-csharp-03-enum-values-prefix-dependency/generated",
+        "/work/docs/corpus/idl/features/03-enum-values-prefix.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cs",
+      "sha256": "6f0864a714d434399ea9bd3bb656b21dff22d822dcf7f8a759eea69b1544c8fb"
+    },
+    {
+      "path": "idlPlugin.cs",
+      "sha256": "6db679d8604dbfd48680fb4090bdc893e903169066861674fdce769c7ad6a1ce"
+    },
+    {
+      "path": "features/03-enum-values-prefix.cs",
+      "sha256": "8d20b7e8d0f5f3005960bbe09a5b34f356b7ba6ea873c6e9da50af85e45788a9"
+    },
+    {
+      "path": "features/03-enum-values-prefixPlugin.cs",
+      "sha256": "124d499664190de2933d5ba0e42e258e0f24dc4d471a5b600bb9196a83ba10f3"
+    }
+  ]
+}

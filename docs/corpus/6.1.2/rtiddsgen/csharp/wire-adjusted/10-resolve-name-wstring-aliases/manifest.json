@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "10-resolve-name-wstring-aliases",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "W015: qualify both unmanaged alias references with their IDL module.",
+  "captures": [],
+  "rawFiles": [
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/csharp/features/10-resolve-name-wstring-aliases/10-resolve-name-wstring-aliases.cs",
+      "sha256": "eeec5068a161561b3cf5dbbf9ad4680adbe52b413c2947ddc77d8e0f19cab90f"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/csharp/features/10-resolve-name-wstring-aliases/10-resolve-name-wstring-aliasesPlugin.cs",
+      "sha256": "97388a62f4ffdd81802db6e6f86f4c9f98bee1c2626248b357cb8f94f64c4c95"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "10-resolve-name-wstring-aliases.cs",
+      "sha256": "eeec5068a161561b3cf5dbbf9ad4680adbe52b413c2947ddc77d8e0f19cab90f"
+    },
+    {
+      "path": "10-resolve-name-wstring-aliasesPlugin.cs",
+      "sha256": "fc9fa2cb2cbb5c90b2025e43adae3f5b777f0686ea64ca6d0913d18fb47b8c1f"
+    }
+  ]
+}

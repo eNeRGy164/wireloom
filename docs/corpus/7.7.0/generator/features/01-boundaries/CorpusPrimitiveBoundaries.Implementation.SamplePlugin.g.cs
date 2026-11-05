@@ -39,10 +39,9 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
             new StructMember("shortValue", dtf.GetPrimitiveType<short>(), id: 0),
             new StructMember("longValue", dtf.GetPrimitiveType<int>(), id: 1),
             new StructMember("longLongValue", dtf.GetPrimitiveType<long>(), id: 2),
-            new StructMember("int8Value", dtf.GetPrimitiveType<sbyte>(), id: 3),
-            new StructMember("int64Value", dtf.GetPrimitiveType<long>(), id: 4),
-            new StructMember("floatValue", dtf.GetPrimitiveType<float>(), id: 5),
-            new StructMember("doubleValue", dtf.GetPrimitiveType<double>(), id: 6)
+            new StructMember("int64Value", dtf.GetPrimitiveType<long>(), id: 3),
+            new StructMember("floatValue", dtf.GetPrimitiveType<float>(), id: 4),
+            new StructMember("doubleValue", dtf.GetPrimitiveType<double>(), id: 5)
         };
 
         var result = tsf.CreateTypeWithAccessInfo<SampleUnmanaged>(
@@ -83,22 +82,12 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
 
         {
             var annotations = new Annotations(
-                TypeKind.Int8,
-                defaultValue: new AnnotationParameterValue { Int8Value = 0 },
-                minValue: new AnnotationParameterValue { Int8Value = sbyte.MinValue },
-                maxValue: new AnnotationParameterValue { Int8Value = sbyte.MaxValue },
-                unit: null);
-            result.SetMemberAnnotations(3, annotations);
-        }
-
-        {
-            var annotations = new Annotations(
                 TypeKind.Int64,
                 defaultValue: new AnnotationParameterValue { Int64Value = 0L },
                 minValue: new AnnotationParameterValue { Int64Value = long.MinValue },
                 maxValue: new AnnotationParameterValue { Int64Value = long.MaxValue },
                 unit: null);
-            result.SetMemberAnnotations(4, annotations);
+            result.SetMemberAnnotations(3, annotations);
         }
 
         {
@@ -108,7 +97,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
                 minValue: new AnnotationParameterValue { Float32Value = float.MinValue },
                 maxValue: new AnnotationParameterValue { Float32Value = float.MaxValue },
                 unit: null);
-            result.SetMemberAnnotations(5, annotations);
+            result.SetMemberAnnotations(4, annotations);
         }
 
         {
@@ -118,7 +107,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
                 minValue: new AnnotationParameterValue { Float64Value = double.MinValue },
                 maxValue: new AnnotationParameterValue { Float64Value = double.MaxValue },
                 unit: null);
-            result.SetMemberAnnotations(6, annotations);
+            result.SetMemberAnnotations(5, annotations);
         }
 
         return result;

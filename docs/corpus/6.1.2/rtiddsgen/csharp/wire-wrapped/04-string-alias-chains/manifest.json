@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "04-string-alias-chains",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "04-string-alias-chains-csharp-04-string-alias-chains-root",
+      "case": "04-string-alias-chains",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-string-alias-chains.idl",
+      "sourceSha256": "3f2be75ab14b0e35dbd840594368ece3f05f0b921c6570bf81c6d28946904e6f",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/04-string-alias-chains-csharp-04-string-alias-chains-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/04-string-alias-chains-csharp-04-string-alias-chains-root/idl.idl"
+      ]
+    },
+    {
+      "name": "04-string-alias-chains-csharp-04-string-alias-chains-dependency",
+      "case": "04-string-alias-chains",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "docs/corpus/idl/features/04-string-alias-chains.idl",
+      "sourceSha256": "7f9e546341897dd601e70652a5edcf9de8a30f4a5f771a9eb33759a7d2c8c175",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/04-string-alias-chains-csharp-04-string-alias-chains-dependency/generated",
+        "/work/docs/corpus/idl/features/04-string-alias-chains.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cs",
+      "sha256": "8221247511390a756a2f910d4c70ef3106fb399b4013eeec1325b9fddf758db5"
+    },
+    {
+      "path": "idlPlugin.cs",
+      "sha256": "e59ca58ee414a305831a73c49bac7122cd266d551fe630d3d74a56503116d04f"
+    },
+    {
+      "path": "features/04-string-alias-chains.cs",
+      "sha256": "3076225de1a77438fad23658f115c53c9a35d61f45eebe5b5d6abfdfc7a9bff9"
+    },
+    {
+      "path": "features/04-string-alias-chainsPlugin.cs",
+      "sha256": "59ede768094482e79e017951817b92fdee96c1b749febb0fd78da866e59312aa"
+    }
+  ]
+}

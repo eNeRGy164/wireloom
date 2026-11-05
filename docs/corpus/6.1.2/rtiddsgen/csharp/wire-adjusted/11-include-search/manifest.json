@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "11-include-search",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "11-include-search-csharp-common-dependency",
+      "case": "11-include-search",
+      "kind": "wire-adjusted",
+      "language": "csharp",
+      "source": "docs/corpus/idl/includes/common.idl",
+      "sourceSha256": "87b3e6e43d5545f80c539471b4cca82e01e6f0841f2dec7f2caac65537650931",
+      "relative": "includes",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/11-include-search-csharp-common-dependency/generated",
+        "/work/docs/corpus/idl/includes/common.idl"
+      ]
+    }
+  ],
+  "rawFiles": [
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/csharp/features/11-include-search/11-include-search.cs",
+      "sha256": "ee3b52579b9b8ecd4760fb863085310f8c8dd542fd4816805f49d009f29951a4"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/csharp/features/11-include-search/11-include-searchPlugin.cs",
+      "sha256": "935bc4551a4675cf574fad5ece02b454d9b5633c61da35cd928ed35ec0b8c03d"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "11-include-search.cs",
+      "sha256": "ee3b52579b9b8ecd4760fb863085310f8c8dd542fd4816805f49d009f29951a4"
+    },
+    {
+      "path": "11-include-searchPlugin.cs",
+      "sha256": "935bc4551a4675cf574fad5ece02b454d9b5633c61da35cd928ed35ec0b8c03d"
+    },
+    {
+      "path": "includes/common.cs",
+      "sha256": "5d2a70d419c83fb6d918231e5c1602915624ae64575c0beaebd4f86bd268919a"
+    },
+    {
+      "path": "includes/commonPlugin.cs",
+      "sha256": "3eeb9549d37568299b282877e468132a7807ad420c805aa04eccf89055bf2192"
+    }
+  ]
+}

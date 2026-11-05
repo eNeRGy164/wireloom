@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "06-alias-composition",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "W002: qualify the two shadowed conversion receivers with this.sample.",
+  "captures": [],
+  "rawFiles": [
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/csharp/features/06-alias-composition/06-alias-composition.cs",
+      "sha256": "f6804de4e610bb3df9c9b329177fd1c4043d7bcdfa805451b5c9af69d17caa29"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/csharp/features/06-alias-composition/06-alias-compositionPlugin.cs",
+      "sha256": "9aabd21c5b487f413447eef6c31a960d0a92ae95ce294a69c112adc23157ba96"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "06-alias-composition.cs",
+      "sha256": "f6804de4e610bb3df9c9b329177fd1c4043d7bcdfa805451b5c9af69d17caa29"
+    },
+    {
+      "path": "06-alias-compositionPlugin.cs",
+      "sha256": "8ade807cec7366c355ba16e176571f93479f690a50fc4816222bc1cf5f11cbbf"
+    }
+  ]
+}

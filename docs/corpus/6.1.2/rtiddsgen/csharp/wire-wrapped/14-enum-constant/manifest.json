@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "14-enum-constant",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "14-enum-constant-csharp-14-enum-constant-topic-root",
+      "case": "14-enum-constant",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-enum-constant-topic.idl",
+      "sourceSha256": "7fd5d37f787a3c43b48db23de62759e59b27a3c541347283fc47b8b0827fe379",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/14-enum-constant-csharp-14-enum-constant-topic-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/14-enum-constant-csharp-14-enum-constant-topic-root/idl.idl"
+      ]
+    },
+    {
+      "name": "14-enum-constant-csharp-14-enum-constant-dependency",
+      "case": "14-enum-constant",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "docs/corpus/idl/features/14-enum-constant.idl",
+      "sourceSha256": "6b62926cae967a8f5a4fde2397d2da23e1360fe8334963883e2567dc1f2c2782",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/14-enum-constant-csharp-14-enum-constant-dependency/generated",
+        "/work/docs/corpus/idl/features/14-enum-constant.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cs",
+      "sha256": "9389bfb164d9c8da7bd994a1352e91b7c3ff79b39a06f73dab274bc6378b1eb1"
+    },
+    {
+      "path": "idlPlugin.cs",
+      "sha256": "d9eecdf66ed138788c52a94be00faf8fc948cf5a4c77d0088c52d43b52486c8f"
+    },
+    {
+      "path": "features/14-enum-constant.cs",
+      "sha256": "256d1d4fe26b2e57ddc3fe58d53e766e7c8a7eca7cfe49993ade78e3f9e37133"
+    },
+    {
+      "path": "features/14-enum-constantPlugin.cs",
+      "sha256": "4c91cea7bc692be3bf353103bacd069e0a166600f41ae8825cae4d0584cf859d"
+    }
+  ]
+}

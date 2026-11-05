@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "04-unbounded-string-aliases",
+  "language": "csharp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "04-unbounded-string-aliases-csharp-04-unbounded-string-aliases-root",
+      "case": "04-unbounded-string-aliases",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/04-unbounded-string-aliases.idl",
+      "sourceSha256": "397751b79bf34239c43fb27750a9ab935cb1c00ec7f4a55085900b830d8075cb",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-unboundedSupport",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/04-unbounded-string-aliases-csharp-04-unbounded-string-aliases-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/04-unbounded-string-aliases-csharp-04-unbounded-string-aliases-root/idl.idl"
+      ]
+    },
+    {
+      "name": "04-unbounded-string-aliases-csharp-04-unbounded-string-aliases-dependency",
+      "case": "04-unbounded-string-aliases",
+      "kind": "wire-wrapped",
+      "language": "csharp",
+      "source": "docs/corpus/idl/features/04-unbounded-string-aliases.idl",
+      "sourceSha256": "8df9c44c3d410d92eeefec78b74282229dcab5bad06ef685284250e7301e359e",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C#",
+        "-replace",
+        "-unboundedSupport",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/04-unbounded-string-aliases-csharp-04-unbounded-string-aliases-dependency/generated",
+        "/work/docs/corpus/idl/features/04-unbounded-string-aliases.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cs",
+      "sha256": "b8b14f8c0467efa2c7754e92ec0859d5b5777a18063e58aeeb258aa8c7ff7fb2"
+    },
+    {
+      "path": "idlPlugin.cs",
+      "sha256": "c40c121dd24c39f27320831f21adeb577d229005f8fd02c913c229c10f845106"
+    },
+    {
+      "path": "features/04-unbounded-string-aliases.cs",
+      "sha256": "c9aa2032db9ad689d71582c2908efd4e24ff56741ace1cec9edd5bc4b91b5ef3"
+    },
+    {
+      "path": "features/04-unbounded-string-aliasesPlugin.cs",
+      "sha256": "a32fd466189805a32ca62219b9e91b992cd9b802fe680dffa4464982c6fcbbf0"
+    }
+  ]
+}

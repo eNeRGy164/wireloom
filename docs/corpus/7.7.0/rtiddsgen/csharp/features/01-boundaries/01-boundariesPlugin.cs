@@ -29,7 +29,6 @@ namespace CorpusPrimitiveBoundaries
             private short shortValue;
             private int longValue;
             private long longLongValue;
-            private sbyte int8Value;
             private long int64Value;
             private float floatValue;
             private double doubleValue;
@@ -44,7 +43,6 @@ namespace CorpusPrimitiveBoundaries
                 sample.shortValue = shortValue;
                 sample.longValue = longValue;
                 sample.longLongValue = longLongValue;
-                sample.int8Value = int8Value;
                 sample.int64Value = int64Value;
                 sample.floatValue = floatValue;
                 sample.doubleValue = doubleValue;
@@ -55,7 +53,6 @@ namespace CorpusPrimitiveBoundaries
                 shortValue = (short) (0);
                 longValue = (int) (0);
                 longLongValue = (long) (0L);
-                int8Value = (sbyte) (0);
                 int64Value = (long) (0L);
                 floatValue = (float) (0.0f);
                 doubleValue = (double) (0.0);
@@ -66,7 +63,6 @@ namespace CorpusPrimitiveBoundaries
                 shortValue = sample.shortValue;
                 longValue = sample.longValue;
                 longLongValue = sample.longLongValue;
-                int8Value = sample.int8Value;
                 int64Value = sample.int64Value;
                 floatValue = sample.floatValue;
                 doubleValue = sample.doubleValue;
@@ -91,10 +87,9 @@ namespace CorpusPrimitiveBoundaries
                     new StructMember("shortValue", dtf.GetPrimitiveType<short>(), id: 0),
                     new StructMember("longValue", dtf.GetPrimitiveType<int>(), id: 1),
                     new StructMember("longLongValue", dtf.GetPrimitiveType<long>(), id: 2),
-                    new StructMember("int8Value", dtf.GetPrimitiveType<sbyte>(), id: 3),
-                    new StructMember("int64Value", dtf.GetPrimitiveType<long>(), id: 4),
-                    new StructMember("floatValue", dtf.GetPrimitiveType<float>(), id: 5),
-                    new StructMember("doubleValue", dtf.GetPrimitiveType<double>(), id: 6)
+                    new StructMember("int64Value", dtf.GetPrimitiveType<long>(), id: 3),
+                    new StructMember("floatValue", dtf.GetPrimitiveType<float>(), id: 4),
+                    new StructMember("doubleValue", dtf.GetPrimitiveType<double>(), id: 5)
 
                 };
 
@@ -157,23 +152,6 @@ namespace CorpusPrimitiveBoundaries
                 }
                 {
                     AnnotationParameterValue defaultValueParam = new AnnotationParameterValue();
-                    defaultValueParam.Int8Value = (sbyte) 0;
-                    AnnotationParameterValue minValueParam = new AnnotationParameterValue();
-                    minValueParam.Int8Value = (sbyte) sbyte.MinValue;
-                    AnnotationParameterValue maxValueParam = new AnnotationParameterValue();
-                    maxValueParam.Int8Value = (sbyte) sbyte.MaxValue;
-                    Annotations annotations = new Annotations(
-                        TypeKind.Int8,
-                        defaultValueParam,
-                        minValueParam,
-                        maxValueParam,
-                        null);
-                    result.SetMemberAnnotations(
-                        3,
-                        annotations);
-                }
-                {
-                    AnnotationParameterValue defaultValueParam = new AnnotationParameterValue();
                     defaultValueParam.Int64Value = (long) 0;
                     AnnotationParameterValue minValueParam = new AnnotationParameterValue();
                     minValueParam.Int64Value = (long) long.MinValue;
@@ -186,7 +164,7 @@ namespace CorpusPrimitiveBoundaries
                         maxValueParam,
                         null);
                     result.SetMemberAnnotations(
-                        4,
+                        3,
                         annotations);
                 }
                 {
@@ -203,7 +181,7 @@ namespace CorpusPrimitiveBoundaries
                         maxValueParam,
                         null);
                     result.SetMemberAnnotations(
-                        5,
+                        4,
                         annotations);
                 }
                 {
@@ -220,7 +198,7 @@ namespace CorpusPrimitiveBoundaries
                         maxValueParam,
                         null);
                     result.SetMemberAnnotations(
-                        6,
+                        5,
                         annotations);
                 }
 

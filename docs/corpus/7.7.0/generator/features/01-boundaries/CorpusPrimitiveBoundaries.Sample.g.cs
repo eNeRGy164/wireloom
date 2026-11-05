@@ -27,11 +27,6 @@ public partial class Sample : global::System.IEquatable<Sample>
     public long longLongValue { get; set; }
 
     /// <summary>
-    /// Gets or sets the <c>int8Value</c> member. Representable values are in the inclusive range <c>sbyte.MinValue</c> through <c>sbyte.MaxValue</c>.
-    /// </summary>
-    public sbyte int8Value { get; set; }
-
-    /// <summary>
     /// Gets or sets the <c>int64Value</c> member. Representable values are in the inclusive range <c>long.MinValue</c> through <c>long.MaxValue</c>.
     /// </summary>
     public long int64Value { get; set; }
@@ -59,16 +54,14 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <param name="shortValue">The value for the <c>shortValue</c> member.</param>
     /// <param name="longValue">The value for the <c>longValue</c> member.</param>
     /// <param name="longLongValue">The value for the <c>longLongValue</c> member.</param>
-    /// <param name="int8Value">The value for the <c>int8Value</c> member.</param>
     /// <param name="int64Value">The value for the <c>int64Value</c> member.</param>
     /// <param name="floatValue">The value for the <c>floatValue</c> member.</param>
     /// <param name="doubleValue">The value for the <c>doubleValue</c> member.</param>
-    public Sample(short shortValue, int longValue, long longLongValue, sbyte int8Value, long int64Value, float floatValue, double doubleValue)
+    public Sample(short shortValue, int longValue, long longLongValue, long int64Value, float floatValue, double doubleValue)
     {
         this.shortValue = shortValue;
         this.longValue = longValue;
         this.longLongValue = longLongValue;
-        this.int8Value = int8Value;
         this.int64Value = int64Value;
         this.floatValue = floatValue;
         this.doubleValue = doubleValue;
@@ -95,7 +88,6 @@ public partial class Sample : global::System.IEquatable<Sample>
         shortValue = other.shortValue;
         longValue = other.longValue;
         longLongValue = other.longLongValue;
-        int8Value = other.int8Value;
         int64Value = other.int64Value;
         floatValue = other.floatValue;
         doubleValue = other.doubleValue;
@@ -109,7 +101,6 @@ public partial class Sample : global::System.IEquatable<Sample>
         hash.Add(shortValue);
         hash.Add(longValue);
         hash.Add(longLongValue);
-        hash.Add(int8Value);
         hash.Add(int64Value);
         hash.Add(floatValue);
         hash.Add(doubleValue);
@@ -137,7 +128,6 @@ public partial class Sample : global::System.IEquatable<Sample>
         return shortValue.Equals(other.shortValue)
             && longValue.Equals(other.longValue)
             && longLongValue.Equals(other.longLongValue)
-            && int8Value.Equals(other.int8Value)
             && int64Value.Equals(other.int64Value)
             && floatValue.Equals(other.floatValue)
             && doubleValue.Equals(other.doubleValue);

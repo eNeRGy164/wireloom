@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "11-include-search",
+  "language": "cpp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "11-include-search-cpp-common-dependency",
+      "case": "11-include-search",
+      "kind": "wire-adjusted",
+      "language": "cpp",
+      "source": "docs/corpus/idl/includes/common.idl",
+      "sourceSha256": "87b3e6e43d5545f80c539471b4cca82e01e6f0841f2dec7f2caac65537650931",
+      "relative": "includes",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/11-include-search-cpp-common-dependency/generated",
+        "/work/docs/corpus/idl/includes/common.idl"
+      ]
+    }
+  ],
+  "rawFiles": [
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/11-include-search/11-include-search.cxx",
+      "sha256": "5bc0e85e210db3729ebcf2c3e82f6af6511d0550fae64a8cb5ce5eed44a22fe8"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/11-include-search/11-include-search.hpp",
+      "sha256": "457363d57c83ba7bffbaf1fbe96af5bd99ded6a45146f55e3076acfaa5b476ad"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/11-include-search/11-include-searchPlugin.cxx",
+      "sha256": "05fbdfe3e7cf638737e890b9bc44629ee88b37a458e836bd1976b60ab845d1e4"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/11-include-search/11-include-searchPlugin.hpp",
+      "sha256": "96b005aa969f25c19edd7eadcf8120c47d56c53cde6f0017d28e428dfc1a495e"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "11-include-search.cxx",
+      "sha256": "5bc0e85e210db3729ebcf2c3e82f6af6511d0550fae64a8cb5ce5eed44a22fe8"
+    },
+    {
+      "path": "11-include-search.hpp",
+      "sha256": "457363d57c83ba7bffbaf1fbe96af5bd99ded6a45146f55e3076acfaa5b476ad"
+    },
+    {
+      "path": "11-include-searchPlugin.cxx",
+      "sha256": "05fbdfe3e7cf638737e890b9bc44629ee88b37a458e836bd1976b60ab845d1e4"
+    },
+    {
+      "path": "11-include-searchPlugin.hpp",
+      "sha256": "96b005aa969f25c19edd7eadcf8120c47d56c53cde6f0017d28e428dfc1a495e"
+    },
+    {
+      "path": "common.hpp",
+      "sha256": "ec125ab901106085e74e80847402be22cd1b515eff14deaa40d20f3762b0acb2"
+    },
+    {
+      "path": "commonPlugin.hpp",
+      "sha256": "6f4104fe0a9b3bc3807bcc6a40d9e27ffbba4232d4cc33386284af523fed4a11"
+    },
+    {
+      "path": "includes/common.cxx",
+      "sha256": "ae755a81dd9640d4076f2307e7451f26973310d30f2a6b64550ea22fe61d9a3c"
+    },
+    {
+      "path": "includes/common.hpp",
+      "sha256": "ec125ab901106085e74e80847402be22cd1b515eff14deaa40d20f3762b0acb2"
+    },
+    {
+      "path": "includes/commonPlugin.cxx",
+      "sha256": "e6dea302c60614d0d5ce8e81672e4744f33fda0e034f0877e36038ac9a165e9a"
+    },
+    {
+      "path": "includes/commonPlugin.hpp",
+      "sha256": "6f4104fe0a9b3bc3807bcc6a40d9e27ffbba4232d4cc33386284af523fed4a11"
+    }
+  ]
+}

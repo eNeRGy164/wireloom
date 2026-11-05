@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "rtiVersion": "6.1.2",
+  "cases": {
+    "02-multiple": {
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/02-multiple"
+      },
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/02-multiple"
+      }
+    },
+    "03-enum-values-explicit": {
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/03-enum-values-explicit"
+      },
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/03-enum-values-explicit"
+      }
+    },
+    "03-enum-values-prefix": {
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/03-enum-values-prefix"
+      },
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/03-enum-values-prefix"
+      }
+    },
+    "04-string-alias-chains": {
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/04-string-alias-chains"
+      },
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/04-string-alias-chains"
+      }
+    },
+    "04-unbounded-string-aliases": {
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/04-unbounded-string-aliases"
+      },
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/04-unbounded-string-aliases"
+      }
+    },
+    "05-unbounded-sequence-aliases": {
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/05-unbounded-sequence-aliases"
+      },
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/05-unbounded-sequence-aliases"
+      }
+    },
+    "07-union-string-sequence-aliases": {
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/07-union-string-sequence-aliases"
+      },
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/07-union-string-sequence-aliases"
+      }
+    },
+    "11-include-search": {
+      "rtiCpp": {
+        "mode": "adjusted",
+        "sourceDirectory": "cpp/wire-adjusted/11-include-search"
+      },
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/11-include-search"
+      }
+    },
+    "11-preprocessing": {
+      "rtiCpp": {
+        "mode": "adjusted",
+        "sourceDirectory": "cpp/wire-adjusted/11-preprocessing"
+      },
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/11-preprocessing"
+      }
+    },
+    "14-autoid-scope": {
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/14-autoid-scope"
+      },
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/14-autoid-scope"
+      }
+    },
+    "14-enum-constant": {
+      "rtiCpp": {
+        "mode": "captured",
+        "sourceDirectory": "cpp/wire-wrapped/14-enum-constant"
+      },
+      "rtiCSharp": {
+        "mode": "captured",
+        "sourceDirectory": "csharp/wire-wrapped/14-enum-constant"
+      }
+    },
+    "06-alias-composition": {
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/06-alias-composition"
+      }
+    },
+    "07-union-ulong": {
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/07-union-ulong"
+      }
+    },
+    "07-union-uint32": {
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/07-union-uint32"
+      }
+    },
+    "07-union-char-numeric": {
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/07-union-char-numeric"
+      }
+    },
+    "07-union-char-numeric-255": {
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/07-union-char-numeric-255"
+      },
+      "rtiCpp": {
+        "mode": "adjusted",
+        "sourceDirectory": "cpp/wire-adjusted/07-union-char-numeric-255"
+      }
+    },
+    "10-resolve-name-wstring-aliases": {
+      "rtiCSharp": {
+        "mode": "adjusted",
+        "sourceDirectory": "csharp/wire-adjusted/10-resolve-name-wstring-aliases"
+      },
+      "rtiCpp": {
+        "mode": "adjusted",
+        "sourceDirectory": "cpp/wire-adjusted/10-resolve-name-wstring-aliases"
+      }
+    },
+    "05-array-of-sequences-idl": {
+      "rtiCpp": {
+        "mode": "adjusted",
+        "sourceDirectory": "cpp/wire-adjusted/05-array-of-sequences-idl"
+      },
+      "rtiCSharp": {
+        "mode": "known-exception",
+        "sourceDirectory": ""
+      }
+    },
+    "07-union-wchar-label": {
+      "rtiCSharp": {
+        "mode": "known-exception",
+        "sourceDirectory": ""
+      },
+      "rtiCpp": {
+        "mode": "manual",
+        "sourceDirectory": ""
+      }
+    }
+  }
+}

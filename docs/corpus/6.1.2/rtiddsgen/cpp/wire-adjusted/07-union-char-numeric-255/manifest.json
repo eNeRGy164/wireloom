@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "07-union-char-numeric-255",
+  "language": "cpp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "W005/W006: correct TypeCode label 255 to signed metadata value -1; the existing native fixture also uses -funsigned-char.",
+  "captures": [],
+  "rawFiles": [
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/07-union-char-numeric-255/07-union-char-numeric-255.cxx",
+      "sha256": "99c4403037ea13d6c1c5a057febe91996cdb789dea5b6c3b901527db729bf28c"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/07-union-char-numeric-255/07-union-char-numeric-255.hpp",
+      "sha256": "34e36306e1a4e0e51f7ddc18682cdf340477b84c558038058a37a1b038347591"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/07-union-char-numeric-255/07-union-char-numeric-255Plugin.cxx",
+      "sha256": "dbf68efc5ffa274b859f9197881005e1ffb0ef92fd514f2a568178906d02c673"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/07-union-char-numeric-255/07-union-char-numeric-255Plugin.hpp",
+      "sha256": "c28cbb4446cb985a6d986331c747e7b92eacc53ffc57d930474b4b6a7c4d212d"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "07-union-char-numeric-255.cxx",
+      "sha256": "ceca45d1b99f729b5576e511ad4101068b5f5a111cc26abd9a4ab8ced47aa2b3"
+    },
+    {
+      "path": "07-union-char-numeric-255.hpp",
+      "sha256": "34e36306e1a4e0e51f7ddc18682cdf340477b84c558038058a37a1b038347591"
+    },
+    {
+      "path": "07-union-char-numeric-255Plugin.cxx",
+      "sha256": "dbf68efc5ffa274b859f9197881005e1ffb0ef92fd514f2a568178906d02c673"
+    },
+    {
+      "path": "07-union-char-numeric-255Plugin.hpp",
+      "sha256": "c28cbb4446cb985a6d986331c747e7b92eacc53ffc57d930474b4b6a7c4d212d"
+    }
+  ]
+}

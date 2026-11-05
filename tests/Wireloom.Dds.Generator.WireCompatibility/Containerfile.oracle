@@ -1,0 +1,13 @@
+# Build the matching trimmed image first with Containerfile.wire.
+ARG WIRE_IMAGE=wireloom-wire:6.1.2-trimmed
+FROM ${WIRE_IMAGE}
+ARG RTI_VERSION=6.1.2
+ARG RTI_PACKAGE_VERSION=6.1.2.0-5-4bullseye
+RUN wget -q https://packages.rti.com/deb/official/repo.key -O /usr/share/keyrings/rti-official-archive.gpg \
+    && apt-get update -qq \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        rti-connext-dds-${RTI_VERSION}-jre=${RTI_PACKAGE_VERSION} \
+        rti-connext-dds-${RTI_VERSION}-rtiddsgen=${RTI_PACKAGE_VERSION} \
+    && rm -rf /var/lib/apt/lists/*
+ENV NDDSHOME=/opt/rti.com/rti_connext_dds-${RTI_VERSION}
+ENV PATH=${NDDSHOME}/bin:${PATH}

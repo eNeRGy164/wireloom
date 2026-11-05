@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "14-enum-constant",
+  "language": "cpp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "Generate the same topic wrapper and explicit IDL dependencies as the newer wire profiles. Preserve IDL-relative paths; duplicate include-search forwarding headers have identical bytes. No generated declarations are corrected.",
+  "captures": [
+    {
+      "name": "14-enum-constant-cpp-14-enum-constant-topic-root",
+      "case": "14-enum-constant",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "tests/Wireloom.Dds.Generator.WireCompatibility/IdlWrappers/14-enum-constant-topic.idl",
+      "sourceSha256": "7fd5d37f787a3c43b48db23de62759e59b27a3c541347283fc47b8b0827fe379",
+      "relative": "",
+      "wrapper": true,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/14-enum-constant-cpp-14-enum-constant-topic-root/generated",
+        "/work/artifacts/rti612-fair-wire/jobs/14-enum-constant-cpp-14-enum-constant-topic-root/idl.idl"
+      ]
+    },
+    {
+      "name": "14-enum-constant-cpp-14-enum-constant-dependency",
+      "case": "14-enum-constant",
+      "kind": "wire-wrapped",
+      "language": "cpp",
+      "source": "docs/corpus/idl/features/14-enum-constant.idl",
+      "sourceSha256": "6b62926cae967a8f5a4fde2397d2da23e1360fe8334963883e2567dc1f2c2782",
+      "relative": "features",
+      "wrapper": false,
+      "arguments": [
+        "-language",
+        "C++11",
+        "-replace",
+        "-I",
+        "/work/docs/corpus/idl",
+        "-I",
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration",
+        "-d",
+        "/work/artifacts/rti612-fair-wire/jobs/14-enum-constant-cpp-14-enum-constant-dependency/generated",
+        "/work/docs/corpus/idl/features/14-enum-constant.idl"
+      ]
+    }
+  ],
+  "rawFiles": [],
+  "generatedFiles": [
+    {
+      "path": "idl.cxx",
+      "sha256": "273ad957010c5c552b5823bc1dd9a0545a1446fc26bf04a2836aec7cb6d5966e"
+    },
+    {
+      "path": "idl.hpp",
+      "sha256": "157b1bd327488d3f4336f20ede96f4425f13bf90bd6a8c999dc49653edfccae8"
+    },
+    {
+      "path": "idlPlugin.cxx",
+      "sha256": "e1d32757605bdc483a02a5add927f95a66fa027cd58e05ed48cb63df100da316"
+    },
+    {
+      "path": "idlPlugin.hpp",
+      "sha256": "3200df77b43510c5e232f418794b490150a58cbd22c7d9013d33509b2ac23250"
+    },
+    {
+      "path": "features/14-enum-constant.cxx",
+      "sha256": "031b03ed7f517686831fe47505a64c6d5d167b807c999c5d37e805d14e5c4141"
+    },
+    {
+      "path": "features/14-enum-constant.hpp",
+      "sha256": "e96babae5a9b3ea93c0f7348da3831a69ae630c9957c381c54629f77ab37e4ed"
+    },
+    {
+      "path": "features/14-enum-constantPlugin.cxx",
+      "sha256": "e12eb9f2a87b5dd4126f3c7f6bf51ea43ad4594601337fac90780615767ee558"
+    },
+    {
+      "path": "features/14-enum-constantPlugin.hpp",
+      "sha256": "e718286610ab6aa890b68564155296453e86548d1272d50232f8f59d54f22c8f"
+    }
+  ]
+}

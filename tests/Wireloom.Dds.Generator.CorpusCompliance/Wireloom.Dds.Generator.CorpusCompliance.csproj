@@ -10,5 +10,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" VersionOverride="4.14.0" PrivateAssets="all" />
+    <PackageDownload Include="Rti.ConnextDds" Version="[$(Rti612CompatibilityVersion)];[$(Rti731CompatibilityVersion)];[$(Rti770CompatibilityVersion)]" />
+    <None Include="$(NuGetPackageRoot)/rti.connextdds/$(Rti612CompatibilityVersion)/lib/netstandard2.0/Rti.ConnextDds.dll"
+          Link="RuntimeReferences/6.1.2/Rti.ConnextDds.dll" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(NuGetPackageRoot)/rti.connextdds/$(Rti731CompatibilityVersion)/lib/netstandard2.0/Rti.ConnextDds.dll"
+          Link="RuntimeReferences/7.3.1/Rti.ConnextDds.dll" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(NuGetPackageRoot)/rti.connextdds/$(Rti770CompatibilityVersion)/lib/netstandard2.0/Rti.ConnextDds.dll"
+          Link="RuntimeReferences/7.7.0/Rti.ConnextDds.dll" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

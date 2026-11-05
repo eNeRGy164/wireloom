@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "profile": "6.1.2",
+  "caseId": "10-resolve-name-wstring-aliases",
+  "language": "cpp",
+  "rtiddsgenVersion": "3.1.2",
+  "imageId": "sha256:bb26f29ea69eee4da28065f1c2e668c9ca5efcb34c64c290945d69a8951171c1",
+  "adjustment": "W015: select the generated alias-tag DynamicType specializations for both wide-string aliases.",
+  "captures": [],
+  "rawFiles": [
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/10-resolve-name-wstring-aliases/10-resolve-name-wstring-aliases.cxx",
+      "sha256": "9326a9d66cdd5e166a7920c5a7da7ac1f8e802f011ced4538c26b482ce7568c1"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/10-resolve-name-wstring-aliases/10-resolve-name-wstring-aliases.hpp",
+      "sha256": "5aa812257bf2680b84ca5b91ca1a71f002da08b36a062b43f970d01b4cf15c2d"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/10-resolve-name-wstring-aliases/10-resolve-name-wstring-aliasesPlugin.cxx",
+      "sha256": "6de25fdbcc88522c0b22a5bf1f2229e264ca743c8036a1224466c4d1b131f6b2"
+    },
+    {
+      "path": "docs/corpus/6.1.2/rtiddsgen/cpp/features/10-resolve-name-wstring-aliases/10-resolve-name-wstring-aliasesPlugin.hpp",
+      "sha256": "39313fb4fa3d2ecd16e45352cb39f580069f8085c6cb36255e0c0662fb6566b5"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "10-resolve-name-wstring-aliases.cxx",
+      "sha256": "2c819532606d4bba74f640aa329151cb0cad53330301f131c799522cabd7a220"
+    },
+    {
+      "path": "10-resolve-name-wstring-aliases.hpp",
+      "sha256": "5aa812257bf2680b84ca5b91ca1a71f002da08b36a062b43f970d01b4cf15c2d"
+    },
+    {
+      "path": "10-resolve-name-wstring-aliasesPlugin.cxx",
+      "sha256": "6de25fdbcc88522c0b22a5bf1f2229e264ca743c8036a1224466c4d1b131f6b2"
+    },
+    {
+      "path": "10-resolve-name-wstring-aliasesPlugin.hpp",
+      "sha256": "39313fb4fa3d2ecd16e45352cb39f580069f8085c6cb36255e0c0662fb6566b5"
+    }
+  ]
+}
