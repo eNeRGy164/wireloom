@@ -139,7 +139,11 @@ internal static class CaseSelectionVerification
                 Check(missingWrapperRoot.Contains("requires generated topic root AutoIdScopeSample", StringComparison.Ordinal),
                     "C164 discovery fails explicitly when only an included inner type is emitted.");
 
-                var generatedRoot = Path.Combine(repositoryRoot, "docs", "corpus", version, "generator");
+                var profileRoot = Path.Combine(repositoryRoot, "docs", "corpus", version);
+                var profileManifest = ReadJson(Path.Combine(profileRoot, "manifest.json"));
+                var generatedSourceRoot = (string?)profileManifest["generatorSourceRoot"]
+                    ?? throw new InvalidDataException($"Missing generatorSourceRoot in the {version} corpus manifest.");
+                var generatedRoot = Path.Combine(profileRoot, generatedSourceRoot);
                 var discovery = Invoke(version == "7.7.0", "discover-cases", manifestPath, generatedRoot, Path.Combine(root, "discovered.json"), "09-must-understand");
                 var enumArrayDiscoveryPath = Path.Combine(root, $"discovered-enum-array-{version}.json");
                 Invoke(succeeds: true, "discover-cases", manifestPath, generatedRoot, enumArrayDiscoveryPath, "10-default-literal-enum-array");

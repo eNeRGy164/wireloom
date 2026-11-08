@@ -5,9 +5,10 @@ Exports Wireloom-generated C# sources for the selected RTI API profiles.
 
 .DESCRIPTION
 Runs the corpus compliance project for RTI 6.1.2, 7.3.1, and 7.7.0 by default.
-Sources are written to docs/corpus/<version>/generator. Every profile uses the
-same generation suite, checks all inventory entries, and compiles every exported
-case against its exact runtime. Detailed oracle comparisons are a separate suite.
+Each version manifest specifies its C# export root: generator/csharp for 7.7.0
+and generator for 6.1.2 and 7.3.1. Every profile uses the same generation suite,
+checks all inventory entries, and compiles every exported case against its exact
+runtime. Detailed oracle comparisons are a separate suite.
 
 The script restores dependencies in locked mode, then tests in Release using
 the repository SDK. It stops after the first failed profile and restores the
@@ -108,7 +109,13 @@ try {
 
     foreach ($version in $Profile | Select-Object -Unique) {
         $env:CORPUS_RTI_PROFILE = $version
-        $env:CORPUS_GENERATOR_EXPORT_ROOT = Join-Path $output "$version/generator"
+        $profileManifestPath = Join-Path $PSScriptRoot "docs/corpus/$version/manifest.json"
+        $profileManifest = Get-Content -LiteralPath $profileManifestPath -Raw | ConvertFrom-Json
+        if ([string]::IsNullOrWhiteSpace($profileManifest.generatorSourceRoot)) {
+            throw "Missing generatorSourceRoot in the $version corpus manifest."
+        }
+
+        $env:CORPUS_GENERATOR_EXPORT_ROOT = Join-Path (Join-Path $output $version) $profileManifest.generatorSourceRoot
         $startedAt = [DateTime]::UtcNow.ToString('o')
 
         $testArguments = @(

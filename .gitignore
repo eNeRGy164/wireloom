@@ -52,5 +52,8 @@ tmp/
 /docs/corpus/*/generator/export-evidence-*.json
 /docs/corpus/*/generator/export-sdk-*.txt
 /docs/corpus/*/generator/export-tests-*.txt
+/docs/corpus/7.7.0/generator/csharp/export-evidence-*.json
+/docs/corpus/7.7.0/generator/csharp/export-sdk-*.txt
+/docs/corpus/7.7.0/generator/csharp/export-tests-*.txt
 /docs/corpus/*/rtiddsgen/capture-*.json
 /docs/corpus/*/rtiddsgen/toolchain-*.txt

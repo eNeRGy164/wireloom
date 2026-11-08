@@ -85,9 +85,9 @@ When adding or changing a corpus case, follow the detailed [corpus authoring
 rules](docs/corpus/README.md). Keep each case focused on one feature, preserve
 append-only case ordering for stable `C###` tags, update the manifest and
 feature index, and respect the licensing rules for RTI-generated sources.
-Exported managed-generator sources belong under the matching version's
-`docs/corpus/<version>/generator/` folder and should be refreshed using the
-corpus guide's documented export command.
+Exported C# sources belong under the matching profile's `generatorSourceRoot`.
+Use the corpus guide's export command to refresh
+`docs/corpus/7.7.0/generator/csharp/` or the earlier profiles' `generator/` folders.
 
 ## Choose validation
 
