@@ -103,7 +103,7 @@ compilation results describe unmodified oracle sources; the wire harness
 applies only the documented reference-peer corrections. See the
 [wire-matrix guide](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
 for fixture construction, adaptations, and result interpretation, and the
-[runtime contract matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
+[runtime contract matrix](../../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md#coverage-matrix)
 for generated API behavior coverage.
 
 ## Positive cases
@@ -362,7 +362,7 @@ for generated API behavior coverage.
 
 Use the stable tag with the case name, for example `C001 / 01-primitives`.
 Data-driven corpus tests are in
-[CorpusComplianceSpecs.cs](../../../tests/Wireloom.Dds.Generator.CorpusCompliance/CorpusComplianceSpecs.cs):
+[CorpusComplianceSpecs.cs](../../../tests/Wireloom.Dds.CSharp.CorpusCompliance/CorpusComplianceSpecs.cs):
 
 - `EveryCorpusCaseMatchesItsExpectedAcceptance` exercises each positive, negative, and integration case.
 - `EveryAcceptedCorpusCasePreservesTheOracleDataContractShape` compares accepted generated output with RTI C# oracle shape.

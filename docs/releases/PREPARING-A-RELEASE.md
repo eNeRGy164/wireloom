@@ -13,12 +13,12 @@ merge a cleanup update with the actual release details.
   and the root package metadata in `playground/package-lock.json` to
   `<WireloomVersion>`. The browser build and deployment manifest read the
   version from `Directory.Build.props`.
-- Update examples in `src/Wireloom.Dds.Generator/README.md`, which ships in the
+- Update examples in `src/Wireloom.Dds.CSharp.Generator/README.md`, which ships in the
   package. Add the predicted version to `docs/releases/README.md` and create
   `docs/releases/<version>.md` with the source SHA and release details pending.
-- Review [unshipped diagnostics](../../src/Wireloom.Dds.Generator/AnalyzerReleases.Unshipped.md)
+- Review [unshipped diagnostics](../../src/Wireloom.Dds.CSharp.Generator/AnalyzerReleases.Unshipped.md)
   against the descriptor catalog. Move newly released entries into
-  [shipped diagnostic history](../../src/Wireloom.Dds.Generator/AnalyzerReleases.Shipped.md)
+  [shipped diagnostic history](../../src/Wireloom.Dds.CSharp.Generator/AnalyzerReleases.Shipped.md)
   under the chosen release; record verified changes/removals without rewriting
   earlier releases.
 - Prepare a catchy release title and a summary of changes since the previous
@@ -36,7 +36,7 @@ is available. This includes `Directory.Packages.props`,
 `samples/HelloWorld/packages.lock.json`, and examples in `README.md`,
 `docs/guides/hello-world.md`, `docs/migration/rtiddsgen-to-wireloom.md`,
 `samples/HelloWorld/README.md`, and
-`tests/Wireloom.Dds.Generator.PackageIntegration/README.md`. Quality restores
+`tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/README.md`. Quality restores
 the checked-in sample in locked mode, so advance these references after publish.
 
 ## 2. Create the release

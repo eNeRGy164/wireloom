@@ -804,7 +804,8 @@ checks.
 
 #### Shared IDL compiler
 
-The host-neutral `Wireloom.Dds.Compiler` implementation that preprocesses, parses, binds, validates, and emits C# from
+The host-neutral `Wireloom.Dds.CSharp.Compiler` implementation that uses the
+shared IDL front end and emits C# from
 IDL. Also called the **compiler core**; see its [building block](05-building-block-view.md#531-shared-idl-compiler).
 
 #### SLA

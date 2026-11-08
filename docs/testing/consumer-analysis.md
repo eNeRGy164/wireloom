@@ -40,7 +40,7 @@ items. Compiling exported documents again creates duplicate definitions.
 ## Qualification procedure
 
 1. Pack the current generator with a unique local version using the
-   [isolated-feed procedure](../../tests/Wireloom.Dds.Generator.PackageIntegration/README.md).
+   [isolated-feed procedure](../../tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/README.md).
    Record the source/input hashes and package hash so an older package cannot
    stand in for the current source.
 2. Copy the existing [Hello World consumer](../../samples/HelloWorld/README.md)

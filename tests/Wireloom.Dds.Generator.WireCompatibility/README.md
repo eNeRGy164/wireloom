@@ -2,7 +2,7 @@
 
 This project checks DDS interoperability for the wire-testable corpus. It runs
 Wireloom-generated C#, RTI-generated C#, and RTI-generated C++ peers against
-each other. It complements the [runtime contract suite](../Wireloom.Dds.Generator.RuntimeContracts/README.md),
+each other. It complements the [runtime contract suite](../Wireloom.Dds.CSharp.RuntimeContracts/README.md),
 which checks generated APIs and runtime behavior without claiming wire
 compatibility.
 

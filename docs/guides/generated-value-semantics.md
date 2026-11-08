@@ -42,7 +42,7 @@ sample.maybe = null;
 The `@optional` annotation requests optionality; check the generated
 declaration for the exact nullable member type. The
 [optional collection cases](../corpus/FEATURE-COVERAGE.md#current-grouped-idl-cases) and
-[`ScalarSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Managed/ScalarSpecs.cs)
+[`ScalarSpecs`](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/Managed/ScalarSpecs.cs)
 cover the tested defaults and optional shapes.
 
 ## Understand copying and ownership
@@ -59,9 +59,9 @@ Generated copy constructors follow the selected RTI profile:
 Mutating a retained wrapper is visible through both values. Copied containers
 have independent storage; nested aggregates use their generated copy
 constructors. See
-[`Rti612ProfileSpecs`](../../tests/Wireloom.Dds.Compiler.Tests/Compiler/Rti612ProfileSpecs.cs),
-[`SequenceCopySpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Aliases/SequenceCopySpecs.cs),
-and the [runtime contract matrix](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
+[`Rti612ProfileSpecs`](../../tests/Wireloom.Dds.CSharp.Compiler.Tests/Compiler/Rti612ProfileSpecs.cs),
+[`SequenceCopySpecs`](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/Aliases/SequenceCopySpecs.cs),
+and the [runtime contract matrix](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md#coverage-matrix)
 for the covered cases.
 
 Value constructors for alias wrappers have different ownership behavior: they
@@ -69,7 +69,7 @@ retain the supplied aggregate, sequence, or array reference. Mutating the
 original object after constructing the wrapper is observable through the
 wrapper's `Value`. Use a generated copy constructor when the tested copy
 semantics are needed; do not assume every constructor makes an independent
-copy. [`ReferenceOwnershipSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Aliases/ReferenceOwnershipSpecs.cs)
+copy. [`ReferenceOwnershipSpecs`](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/Aliases/ReferenceOwnershipSpecs.cs)
 records the reference-retention cases.
 
 A copy constructor called with `null` is also not a substitute for the default
@@ -77,8 +77,8 @@ constructor. IDL defaults expressed as member initializers remain in effect,
 while collection and aggregate allocations performed only by the parameterless
 constructor do not run on that path. Use the ordinary default constructor when
 those allocations are required. The behavior is covered by
-[`ScalarSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Managed/ScalarSpecs.cs)
-and the [runtime contract notes](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix).
+[`ScalarSpecs`](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/Managed/ScalarSpecs.cs)
+and the [runtime contract notes](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md#coverage-matrix).
 
 ## Mutate collections and optional members
 
@@ -87,7 +87,7 @@ modify the container with `Add` and `Remove`. Optional sequences can be set to
 `null` for absence; an empty sequence and an absent sequence are distinct
 states. Optional arrays can likewise be absent. Generated C# mutation does not
 necessarily enforce IDL bounds at assignment time; consult the package guide's
-[effective limits](../../src/Wireloom.Dds.Generator/README.md#effective-limits-for-unbounded-values)
+[effective limits](../../src/Wireloom.Dds.CSharp.Generator/README.md#effective-limits-for-unbounded-values)
 and runtime evidence before relying on mutation-time validation.
 
 When RTI-style unbounded semantics are enabled for a declaring file,
@@ -104,7 +104,7 @@ Assigning a union branch selects that branch. Reading a property for an
 inactive branch throws `InvalidOperationException`; read the active value
 through the union's generated `Get()` API or select a branch before reading
 its property. An explicit `Set` with an invalid discriminator throws
-`ArgumentException`. See [`UnionSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Unions/UnionSpecs.cs).
+`ArgumentException`. See [`UnionSpecs`](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/Unions/UnionSpecs.cs).
 
 ## Avoid mutable hash keys
 
@@ -132,17 +132,17 @@ select an unused discriminator.
 For enum arrays, a declared `@default_literal` initializes every element in
 Wireloom's managed and native arrays for the tested shapes. This includes typedef arrays, enum alias
 chains, and multidimensional member arrays. C148 and
-[`EnumArrayDefaultSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Managed/EnumArrayDefaultSpecs.cs)
+[`EnumArrayDefaultSpecs`](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/Managed/EnumArrayDefaultSpecs.cs)
 cover these defaults; version-specific wire differences are recorded in the
 [feature matrices](../corpus/FEATURE-COVERAGE.md). The native path is checked by
-[`EnumArrayDefaultNativeSpecs`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Native/EnumArrayDefaultNativeSpecs.cs).
+[`EnumArrayDefaultNativeSpecs`](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/Native/EnumArrayDefaultNativeSpecs.cs).
 
 ## Maintainer reference: generated storage contracts
 
 These are current emitter contracts for the covered shapes. Review their
 [architectural ownership rules](../architecture/arc42/08-crosscutting-concepts.md#84-generated-values-and-resource-ownership)
 when changing managed methods or native support. The
-[runtime contract matrix](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
+[runtime contract matrix](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md#coverage-matrix)
 owns executable coverage and gaps.
 
 ### Equality and hashing
@@ -173,7 +173,7 @@ not need an outer guard.
 Native conversion also distinguishes allocation-enabled calls from calls that
 reuse existing storage. Review conversion, initialization, and destruction
 together when changing a member shape; the
-[native emitter](../../src/Wireloom.Dds.Compiler/Compiler/Emission/Emitters/NativeTypeEmitter.cs)
+[native emitter](../../src/Wireloom.Dds.CSharp.Compiler/Compiler/Emission/Emitters/NativeTypeEmitter.cs)
 and linked runtime contracts define the supported paths.
 
 ### Diagnostic formatting

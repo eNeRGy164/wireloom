@@ -456,7 +456,7 @@ configuration; they are not Wireloom generation settings.
 
 Generator defaults are errors for `DDSG0001`–`DDSG0004`, warnings for
 `DDSG0101`–`DDSG0106` and `DDSG0108`–`DDSG0109`, and informational messages for
-`DDSG0107`. The [diagnostic reference](../../src/Wireloom.Dds.Generator/README.md#diagnostics)
+`DDSG0107`. The [diagnostic reference](../../src/Wireloom.Dds.CSharp.Generator/README.md#diagnostics)
 explains the individual causes.
 
 For example, reject unknown IDL annotations through `.editorconfig`:

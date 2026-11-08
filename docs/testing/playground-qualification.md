@@ -68,7 +68,7 @@ use different preview origins.
 reads unchanged UTF-8 inputs from the retained corpus manifest. It does not
 copy or rewrite IDL fixtures into a second maintained corpus. Expected managed
 acceptance follows the explicit map in
-[`CorpusRepository.cs`](../../tests/Wireloom.Dds.Generator.CorpusCompliance/CorpusRepository.cs),
+[`CorpusRepository.cs`](../../tests/Wireloom.Dds.CSharp.CorpusCompliance/CorpusRepository.cs),
 including the 7.3.1 rejection of `@must_understand`; RTI outcomes and manifest
 folders do not determine Wireloom acceptance. Run the full corpus-compliance
 suite for both profiles alongside this selection to keep those expectations
@@ -173,7 +173,7 @@ not a complete accessibility audit.
 
 ## Evidence boundaries
 
-The [retained corpus suite](../../tests/Wireloom.Dds.Generator.CorpusCompliance/README.md)
+The [retained corpus suite](../../tests/Wireloom.Dds.CSharp.CorpusCompliance/README.md)
 remains the compatibility source of truth. This browser selection supplements
 its coverage and does not establish complete OMG IDL support or RTI
 qualification. The package, runtime-contract, and licensed DDS wire suites

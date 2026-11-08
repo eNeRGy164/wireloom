@@ -179,7 +179,7 @@ these explicit classifications, with **zero errors**. No generator change or
 additional normal-consumer exclusion is required.
 
 Defensive null handling is supported by
-[`MatrixChainPreservesItsValueContract`](../../tests/Wireloom.Dds.Generator.RuntimeContracts/Aliases/CollectionAliasSpecs.cs)
+[`MatrixChainPreservesItsValueContract`](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/Aliases/CollectionAliasSpecs.cs)
 and the [generated-value contracts](../guides/generated-value-semantics.md).
 All inspected redundant qualifiers are `global::` qualifications, and all
 extension-call suggestions target explicitly qualified

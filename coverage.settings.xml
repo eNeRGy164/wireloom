@@ -4,7 +4,7 @@
   <CodeCoverage>
     <ModulePaths>
       <Include>
-        <ModulePath>.*Wireloom\.Dds\.(Generator|Compiler)\.dll$</ModulePath>
+        <ModulePath>.*Wireloom\.Dds\.(Generator|CSharp\.Compiler|Idl)\.dll$</ModulePath>
       </Include>
     </ModulePaths>
     <Sources>

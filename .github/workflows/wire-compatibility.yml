@@ -131,7 +131,7 @@ jobs:
           image="wireloom-wire-${WIRE_COMPATIBILITY_RTI_VERSION}:local"
           version="$(docker run --rm --entrypoint g++ "$image" -dumpfullversion -dumpversion)"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          source_hash="${{ hashFiles('tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile.wire', 'tests/Wireloom.Dds.Generator.WireCompatibility/Native/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Shared/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Runner/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/**', 'docs/corpus/manifest.json', 'docs/corpus/**/rtiddsgen/wire-oracles.json', 'docs/corpus/**/rtiddsgen/cpp/**') }}"
+          source_hash="${{ hashFiles('tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile.wire', 'tests/Wireloom.Dds.Generator.WireCompatibility/Native/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Shared/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Runner/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/**', 'src/Wireloom.Dds.Idl/**', 'docs/corpus/manifest.json', 'docs/corpus/**/rtiddsgen/wire-oracles.json', 'docs/corpus/**/rtiddsgen/cpp/**', 'docs/corpus/7.7.0/cpp-evidence/type-scope.json') }}"
           echo "source_hash=$source_hash" >> "$GITHUB_OUTPUT"
 
       - name: Prepare persistent build caches
@@ -155,7 +155,7 @@ jobs:
         uses: actions/cache/restore@v6.1.0
         with:
           path: ${{ runner.temp }}/wireloom-cache/nuget
-          key: nuget-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ hashFiles('Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json', 'src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj', 'src/Wireloom.Dds.Compiler/packages.lock.json', 'src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj', 'tests/Wireloom.Dds.Generator.WireCompatibility/Wireloom.Dds.Generator.WireCompatibility.csproj') }}
+          key: nuget-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ hashFiles('Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json', 'src/Wireloom.Dds.CSharp.Compiler/Wireloom.Dds.CSharp.Compiler.csproj', 'src/Wireloom.Dds.CSharp.Compiler/packages.lock.json', 'src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj', 'src/Wireloom.Dds.Idl/Wireloom.Dds.Idl.csproj', 'src/Wireloom.Dds.Idl/packages.lock.json', 'src/Wireloom.Dds.Cpp.Generator/Wireloom.Dds.Cpp.Generator.csproj', 'src/Wireloom.Dds.Cpp.Generator/packages.lock.json', 'tests/Wireloom.Dds.Generator.WireCompatibility/Wireloom.Dds.Generator.WireCompatibility.csproj') }}
           restore-keys: |
             nuget-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-
 
@@ -211,7 +211,7 @@ jobs:
         uses: actions/cache/save@v6.1.0
         with:
           path: ${{ runner.temp }}/wireloom-cache/nuget
-          key: nuget-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ hashFiles('Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json', 'src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj', 'src/Wireloom.Dds.Compiler/packages.lock.json', 'src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj', 'tests/Wireloom.Dds.Generator.WireCompatibility/Wireloom.Dds.Generator.WireCompatibility.csproj') }}
+          key: nuget-linux-rti-${{ env.WIRE_COMPATIBILITY_RTI_VERSION }}-${{ hashFiles('Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json', 'src/Wireloom.Dds.CSharp.Compiler/Wireloom.Dds.CSharp.Compiler.csproj', 'src/Wireloom.Dds.CSharp.Compiler/packages.lock.json', 'src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj', 'src/Wireloom.Dds.Idl/Wireloom.Dds.Idl.csproj', 'src/Wireloom.Dds.Idl/packages.lock.json', 'src/Wireloom.Dds.Cpp.Generator/Wireloom.Dds.Cpp.Generator.csproj', 'src/Wireloom.Dds.Cpp.Generator/packages.lock.json', 'tests/Wireloom.Dds.Generator.WireCompatibility/Wireloom.Dds.Generator.WireCompatibility.csproj') }}
 
       - name: Upload sanitized wire evidence
         if: always()

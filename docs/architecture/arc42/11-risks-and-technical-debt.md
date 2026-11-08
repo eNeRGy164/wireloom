@@ -108,8 +108,7 @@ For C148 on RTI 7.3.1, default-constructed Wireloom enum arrays use `Color.RED`,
 while retained RTI C# and C++ peers use `Color.GREEN`; cross-implementation
 values are asymmetric. The 7.7.0 fixture defaults agree. The
 [recorded limitation](../../corpus/FEATURE-COVERAGE.md#recorded-wire-evidence)
-and [runtime contracts](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
-distinguish Wireloom's declared-default behavior from peer behavior.
+and [runtime contracts](../../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md#coverage-matrix)
 
 **Next action / closure:** Keep this difference visible in affected adoption
 reviews. Reproduce it against the exact consumer shape and agree the required

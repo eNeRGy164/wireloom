@@ -1,5 +1,5 @@
-#:project ../../../../src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
-#:project ../../../../src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj
+#:project ../../../../src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj
+#:project ../../../../src/Wireloom.Dds.CSharp.Compiler/Wireloom.Dds.CSharp.Compiler.csproj
 #:package Microsoft.CodeAnalysis.CSharp
 #:property NoWarn=CS7022
 #:property RestorePackagesWithLockFile=false

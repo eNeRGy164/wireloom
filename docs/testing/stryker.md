@@ -13,8 +13,8 @@ and both unit-test projects before running Stryker:
 
 ```shell
 dotnet tool restore
-dotnet restore tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj --locked-mode
-dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
+dotnet restore tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CSharp.Compiler.Tests.csproj --locked-mode
+dotnet restore tests/Wireloom.Dds.CSharp.Generator.Tests/Wireloom.Dds.CSharp.Generator.Tests.csproj --locked-mode
 ```
 
 Run commands from the repository root so Stryker finds the central
@@ -74,29 +74,29 @@ check the selected current files for overlap and omissions before making a
 whole-source claim; the central config remains the full-campaign definition.
 
 Use these responsibility areas to divide production C# files. Compiler
-responsibilities belong to `Wireloom.Dds.Compiler`; adapter responsibilities
+responsibilities belong to `Wireloom.Dds.CSharp.Compiler`; adapter responsibilities
 belong to `Wireloom.Dds.Generator`.
 
-| Local batch scope          | Owning project           | Production source patterns                                                                                                                     |
-| -------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| API and Roslyn integration | `Wireloom.Dds.Generator` | `**/Api/**/*.cs`, `**/Roslyn/**/*.cs`                                                                                                          |
-| Compiler core and naming   | `Wireloom.Dds.Compiler`  | `**/Api/**/*.cs`, `**/Compiler/Compilation*.cs`, `**/Compiler/GeneratedName.cs`, `**/Compiler/IdlCompilation.cs`, `**/Compiler/Naming/**/*.cs` |
-| Preprocessing              | `Wireloom.Dds.Compiler`  | `**/Compiler/FrontEnd/Preprocessing/**/*.cs`                                                                                                   |
-| IDL parsing                | `Wireloom.Dds.Compiler`  | `**/Compiler/FrontEnd/IdlBuiltinTypeSyntax.cs`, `**/Compiler/FrontEnd/Parsing/**/*.cs`                                                         |
-| Semantic analysis          | `Wireloom.Dds.Compiler`  | `**/Compiler/FrontEnd/Semantic/**/*.cs`, `**/Compiler/FrontEnd/Symbols/**/*.cs`                                                                |
-| Emission planning          | `Wireloom.Dds.Compiler`  | `**/Compiler/Emission/Model/**/*.cs`, `**/Compiler/Emission/Planning/**/*.cs`                                                                  |
-| Emission generation        | `Wireloom.Dds.Compiler`  | `**/Compiler/Emission/Emitters/**/*.cs`, `**/Compiler/Emission/Writers/**/*.cs`, `**/Compiler/Emission/*.cs`                                   |
+| Local batch scope          | Owning project                 | Production source patterns                                                                                                                     |
+| -------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| API and Roslyn integration | `Wireloom.Dds.Generator`       | `**/Api/**/*.cs`, `**/Roslyn/**/*.cs`                                                                                                          |
+| Compiler core and naming   | `Wireloom.Dds.CSharp.Compiler` | `**/Api/**/*.cs`, `**/Compiler/Compilation*.cs`, `**/Compiler/GeneratedName.cs`, `**/Compiler/IdlCompilation.cs`, `**/Compiler/Naming/**/*.cs` |
+| Preprocessing              | `Wireloom.Dds.CSharp.Compiler` | `**/Compiler/FrontEnd/Preprocessing/**/*.cs`                                                                                                   |
+| IDL parsing                | `Wireloom.Dds.CSharp.Compiler` | `**/Compiler/FrontEnd/IdlBuiltinTypeSyntax.cs`, `**/Compiler/FrontEnd/Parsing/**/*.cs`                                                         |
+| Semantic analysis          | `Wireloom.Dds.CSharp.Compiler` | `**/Compiler/FrontEnd/Semantic/**/*.cs`, `**/Compiler/FrontEnd/Symbols/**/*.cs`                                                                |
+| Emission planning          | `Wireloom.Dds.CSharp.Compiler` | `**/Compiler/Emission/Model/**/*.cs`, `**/Compiler/Emission/Planning/**/*.cs`                                                                  |
+| Emission generation        | `Wireloom.Dds.CSharp.Compiler` | `**/Compiler/Emission/Emitters/**/*.cs`, `**/Compiler/Emission/Writers/**/*.cs`, `**/Compiler/Emission/*.cs`                                   |
 
 When files are added or moved, review the patterns against the current tree.
 Root support files and new directories may require additional selections. Set each local config's `project` to the owning
-project filename (for example, `Wireloom.Dds.Compiler.csproj`), and keep its
+project filename (for example, `Wireloom.Dds.CSharp.Compiler.csproj`), and keep its
 runner, mutation level, reporters, thresholds, and timeout values aligned with the central
 [`stryker-config.json`](../../stryker-config.json). Add only the `mutate`
 patterns for the selected scope. Stryker treats the selected config as the run
 configuration rather than inheriting the central config.
 
 After restoring the pinned tool and test project, change to
-`tests/Wireloom.Dds.Compiler.Tests`, save the temporary config outside the
+`tests/Wireloom.Dds.CSharp.Compiler.Tests`, save the temporary config outside the
 repository, and pass its path to Stryker:
 
 ```shell
@@ -109,7 +109,7 @@ the compiler project filename, and only that subsystem in its `mutate` filter:
 ```json
 {
   "stryker-config": {
-    "project": "Wireloom.Dds.Compiler.csproj",
+    "project": "Wireloom.Dds.CSharp.Compiler.csproj",
     "test-runner": "mtp",
     "additional-timeout": 4000,
     "timeout-ratio": 1.1,

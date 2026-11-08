@@ -223,7 +223,7 @@ in minor releases and must be called out because `TreatWarningsAsErrors` can
 turn them into build failures. Increasing an existing diagnostic's severity
 requires a major release; a patch may correct its detection without changing
 its declared severity. See the
-[diagnostic reference](../../src/Wireloom.Dds.Generator/README.md#diagnostics).
+[diagnostic reference](../../src/Wireloom.Dds.CSharp.Generator/README.md#diagnostics).
 
 ### Stable defaults and minimum requirements
 

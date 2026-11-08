@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <RootNamespace>Wireloom</RootNamespace>
+    <PackageId>Wireloom.Dds.Generator</PackageId>
+    <AssemblyName>Wireloom.Dds.Generator</AssemblyName>
+    <Version>$(WireloomVersion)</Version>
+    <Authors>Michaël Hompus</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>wireloom-icon.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/eNeRGy164/wireloom</PackageProjectUrl>
+    <PackageTags>DDS;IDL;RTI;Connext;Roslyn;source generator</PackageTags>
+    <Description>Generate C# from RTI Connext DDS IDL in Roslyn/MSBuild builds. Keep generation in your .NET build and use the RTI runtime.</Description>
+    <MeziantouPolyfill_IncludedPolyfills>T:System.Range|T:System.Index|T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute|T:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute|T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute|M:System.Collections.Generic.Dictionary|M:System.Linq.Enumerable.ToHashSet|M:System.Security.Cryptography.MD5.HashData(System.ReadOnlySpan{System.Byte})</MeziantouPolyfill_IncludedPolyfills>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Wireloom.Dds.CSharp.Generator.Tests" />
+    <InternalsVisibleTo Include="Wireloom.Dds.CSharp.CorpusCompliance" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Wireloom.Dds.CSharp.Compiler/Wireloom.Dds.CSharp.Compiler.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)$(AssemblyName).xml" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)Wireloom.Dds.CSharp.Compiler.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)Wireloom.Dds.CSharp.Compiler.xml" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)Wireloom.Dds.Idl.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="build/Wireloom.Dds.Generator.targets" Pack="true" PackagePath="build" />
+    <None Include="README.md" Pack="true" PackagePath="" />
+    <None Include="../../docs/assets/wireloom-icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+</Project>

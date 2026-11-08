@@ -30,16 +30,17 @@ keeps finite fallback sizes separate from RTI unbounded metadata and allocation.
 
 ## 4.2 Share one compiler and keep host integration in adapters
 
-Use one host-neutral, non-packable `netstandard2.0` compiler for the generator,
-repository callers, and Playground. It accepts in-memory inputs and an explicit
+Use one host-neutral, non-packable `netstandard2.0` C# compiler for Roslyn,
+repository callers, and the Playground. The compiler uses the internal
+`Wireloom.Dds.Idl` assembly for IDL analysis. It accepts in-memory inputs and an explicit
 RTI profile and returns generated documents and diagnostics. Host adapters own
 input discovery, platform services, and presentation; the core has no Roslyn,
 MSBuild, RTI assembly, or filesystem dependency.
 
 This keeps language behavior and generated output consistent across entry
 points and allows focused compiler tests without a build or browser host.
-The generator bundles the compiler assembly in the existing analyzer package;
-the two are built and tested as one version. Platform-dependent services such
+The existing analyzer package bundles the adapter, C# compiler, and shared
+IDL assembly. They are built and tested as one version. Platform-dependent services such
 as [MD5](12-glossary.md#md5) digest production are supplied per compilation while DDS member-ID
 semantics remain in the core. These boundaries follow
 [ADR-001](../adr/ADR-001-share-a-host-neutral-compiler-project.md) and

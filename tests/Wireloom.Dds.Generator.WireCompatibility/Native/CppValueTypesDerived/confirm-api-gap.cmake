@@ -1,0 +1,8 @@
+file(READ "${RTI_CONTRACT}/api.txt" rti_api)
+file(READ "${WIRELOOM_CONTRACT}/api.txt" wireloom_api)
+if(NOT rti_api STREQUAL "baseValue=inherited-accessor\nname=accessor\nconstructor=(int32,string_view)\nbase=CorpusValueTypes::BaseValue\ntopic-type=true\n")
+    message(FATAL_ERROR "RTI DerivedValue API evidence is unexpected")
+endif()
+if(NOT wireloom_api STREQUAL "baseValue=inherited-public-field\nname=public-field\nconstructor=(BaseValue,string)\nbase=CorpusValueTypes::BaseValue\ntopic-type=true\n")
+    message(FATAL_ERROR "Wireloom DerivedValue API evidence is unexpected")
+endif()

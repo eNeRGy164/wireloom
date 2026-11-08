@@ -178,11 +178,11 @@ constant and default assignments still require matching narrow/wide types.
 
 ## Implementation and evidence references
 
-The [parse context](../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlParseContext.cs),
-[value binder](../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlValueBinder.cs),
-and [member-ID binder](../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlMemberIdBinder.cs)
+The [parse context](../../src/Wireloom.Dds.Idl/Compiler/FrontEnd/Parsing/IdlParseContext.cs),
+[value binder](../../src/Wireloom.Dds.Idl/Compiler/FrontEnd/Semantic/IdlValueBinder.cs),
+and [member-ID binder](../../src/Wireloom.Dds.Idl/Compiler/FrontEnd/Semantic/IdlMemberIdBinder.cs)
 implement the effective semantic rules. Runtime-specific default behavior is
-covered by the [generated API contracts](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md);
+covered by the [generated API contracts](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md);
 DDS evidence remains in the
 [wire runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
 

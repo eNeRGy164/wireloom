@@ -1,7 +1,7 @@
 # IDL fuzzing
 
 Wireloom fuzzes the public IDL compiler and Roslyn generator adapter with FsCheck in
-[`FsCheckIdlCompilerFuzzingSpecs`](../../tests/Wireloom.Dds.Generator.Fuzzing.Tests/FsCheckIdlCompilerFuzzingSpecs.cs).
+[`FsCheckIdlCompilerFuzzingSpecs`](../../tests/Wireloom.Dds.CSharp.Fuzzing.Tests/FsCheckIdlCompilerFuzzingSpecs.cs).
 The property selects structured IDL strings derived from valid seeds and
 bounded insert/delete/replace mutations. The compiler property exercises the
 public in-memory API with explicit `IdlInput` options and a native MD5 provider. The
@@ -13,7 +13,7 @@ exception fails the property and FsCheck reports the reproducing input.
 
 The NuGet MSBuild target is a separate integration surface. It is exercised by
 the packed-package consumer in
-[`PackageConsumptionSpecs`](../../tests/Wireloom.Dds.Generator.PackageIntegration/PackageConsumptionSpecs.cs),
+[`PackageConsumptionSpecs`](../../tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/PackageConsumptionSpecs.cs),
 which verifies `DdsIdl` roots, project and per-root include directories,
 additional-file handling, and per-root include tracking. A full MSBuild build
 is intentionally not launched for every fuzz case.
@@ -21,9 +21,9 @@ is intentionally not launched for every fuzz case.
 Run the CI-facing fuzzing pass with:
 
 ```powershell
-dotnet restore tests/Wireloom.Dds.Generator.Fuzzing.Tests/Wireloom.Dds.Generator.Fuzzing.Tests.csproj --locked-mode
-dotnet run --project tests/Wireloom.Dds.Generator.Fuzzing.Tests/Wireloom.Dds.Generator.Fuzzing.Tests.csproj `
-  --no-restore --configuration Release -- --filter-class Wireloom.Dds.Generator.Fuzzing.Tests.FsCheckIdlCompilerFuzzingSpecs
+dotnet restore tests/Wireloom.Dds.CSharp.Fuzzing.Tests/Wireloom.Dds.CSharp.Fuzzing.Tests.csproj --locked-mode
+dotnet run --project tests/Wireloom.Dds.CSharp.Fuzzing.Tests/Wireloom.Dds.CSharp.Fuzzing.Tests.csproj `
+  --no-restore --configuration Release -- --filter-class Wireloom.Dds.CSharp.Fuzzing.Tests.FsCheckIdlCompilerFuzzingSpecs
 ```
 
 Set `WIRELOOM_FSCHECK_TESTS` to change the number of generated cases per

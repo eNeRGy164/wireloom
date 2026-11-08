@@ -2,7 +2,7 @@
 
 This document records dated Roslyn incremental-generator measurements and the
 invalidation behavior exercised by the harness. The measurement harness is
-[`IncrementalGeneratorMeasurementSpecs`](../../tests/Wireloom.Dds.Generator.Tests/Generation/IncrementalGeneratorMeasurementSpecs.cs).
+[`IncrementalGeneratorMeasurementSpecs`](../../tests/Wireloom.Dds.CSharp.Generator.Tests/Generation/IncrementalGeneratorMeasurementSpecs.cs).
 It uses `GeneratorDriver` tracking and measures both driver and generator wall
 time. Timing values are indicative; tracked-step reasons and generated-source
 counts are the authoritative invalidation evidence.
@@ -12,7 +12,7 @@ counts are the authoritative invalidation evidence.
 Run the focused measurement with the repository SDK policy and existing test dependencies:
 
 ```powershell
-dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
+dotnet run --project tests/Wireloom.Dds.CSharp.Generator.Tests/Wireloom.Dds.CSharp.Generator.Tests.csproj `
   --no-restore --configuration Release `
   -- `
   --filter-class Wireloom.Generation.Tests.IncrementalGeneratorMeasurementSpecs `

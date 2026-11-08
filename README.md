@@ -71,7 +71,7 @@ module Telemetry {
 
 The `DdsIdl` item identifies a generation root. Files included by that root are
 tracked as inputs but are not generated as independent roots. For include
-directories and preprocessing options, see the [package usage guide](src/Wireloom.Dds.Generator/README.md).
+directories and preprocessing options, see the [package usage guide](src/Wireloom.Dds.CSharp.Generator/README.md).
 
 Replace `Program.cs` with code that uses the generated API:
 
@@ -183,7 +183,7 @@ published package measurement.
 | Generated files    | Generate physical C# files and arrange their inclusion in the build                          | Roslyn generated documents; optional export for inspection |
 | Error navigation   | Surface external-tool output through your build integration                                  | Source-located compiler diagnostics for IDL and includes   |
 
-RTI's [C# getting-started guide](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/connext_dds_professional/getting_started_guide/csharp/intro_pubsub_csharp.html)
+RTI's [C# getting-started guide](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/getting_started_guide/csharp/intro_pubsub_csharp.html)
 describes generator invocation, path setup, and external preprocessing. Existing
 projects may already automate these steps; Wireloom makes them part of the
 package's compiler integration.
@@ -193,7 +193,7 @@ package's compiler integration.
 - **Build baseline:** Consumer projects need .NET 8 or later, C# 12 or later,
   and an explicit `Rti.ConnextDds` reference at version 6.1.2 or later. See
   [consumer requirements](#support-and-compatibility) and the
-  [generator diagnostics](src/Wireloom.Dds.Generator/README.md#diagnostics).
+  [generator diagnostics](src/Wireloom.Dds.CSharp.Generator/README.md#diagnostics).
 - **Compatibility testing:** Runtime contracts, fresh-package integration, and
   DDS wire exchanges cover exact RTI 6.1.2, 7.3.1, and 7.7.0. See the
   [RTI version policy](docs/guides/support-and-compatibility.md#rti-version-qualification).
@@ -229,13 +229,13 @@ Use the [record for the exact package version](docs/releases/README.md) before
 making an adoption claim. Source checks on a later commit do not retroactively
 qualify a release. Each evidence layer answers a different question:
 
-| Evidence                                                                           | What it establishes                                                                                                                                                             |
-| :--------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [Package integration](tests/Wireloom.Dds.Generator.PackageIntegration/README.md)   | The packed analyzer loads and generates usable C# in declared consumers, including the minimum SDK host.                                                                        |
-| [Feature coverage](docs/corpus/FEATURE-COVERAGE.md)                                | Accepted/rejected IDL cases and structural comparison with exact-profile RTI oracles.                                                                                           |
-| [Runtime contracts](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)       | Generated APIs, values, type support, and native lifecycle for tested shapes.                                                                                                   |
-| [Directed DDS exchanges](tests/Wireloom.Dds.Generator.WireCompatibility/README.md) | Actual sample exchange for named fixtures, exact RTI releases, peer directions, and adaptations.                                                                                |
-| [Generated-C# analysis](docs/corpus/csharp-quality.md)                             | Independent emitted-source inspections with reviewed intentional findings; separate [consumer checks](docs/testing/consumer-analysis.md) verify normal generated-code handling. |
+| Evidence                                                                                | What it establishes                                                                                                                                                             |
+| :-------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Package integration](tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/README.md) | The packed analyzer loads and generates usable C# in declared consumers, including the minimum SDK host.                                                                        |
+| [Feature coverage](docs/corpus/FEATURE-COVERAGE.md)                                     | Accepted/rejected IDL cases and structural comparison with exact-profile RTI oracles.                                                                                           |
+| [Runtime contracts](tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md)               | Generated APIs, values, type support, and native lifecycle for tested shapes.                                                                                                   |
+| [Directed DDS exchanges](tests/Wireloom.Dds.Generator.WireCompatibility/README.md)      | Actual sample exchange for named fixtures, exact RTI releases, peer directions, and adaptations.                                                                                |
+| [Generated-C# analysis](docs/corpus/csharp-quality.md)                                  | Independent emitted-source inspections with reviewed intentional findings; separate [consumer checks](docs/testing/consumer-analysis.md) verify normal generated-code handling. |
 
 The [1.0.0 release record](docs/releases/1.0.0.md) retains passing and failing
 wire outcomes and links the original archived reports. A successful source build,
@@ -249,7 +249,7 @@ unsupported `@position` use reports `DDSG0102` and a contextual `DDSG0001`
 because generation cannot continue. Correct the declaration and rebuild; then
 navigate from a handwritten C# use site to its generated type.
 
-See the [diagnostic catalog](src/Wireloom.Dds.Generator/README.md#diagnostics)
+See the [diagnostic catalog](src/Wireloom.Dds.CSharp.Generator/README.md#diagnostics)
 and [developer workflow](docs/guides/developer-workflow.md) for editor checks,
 optional source inspection, handwritten partial extensions, and analysis.
 Generated files remain compiler documents; physical exports under `obj` are
@@ -275,7 +275,7 @@ ordinary `Support.Instance` access and type-support discovery, without applicati
 bootstrapping. With RTI 7.7.0, the retained rtiddsgen 4.7.0 C# output instead
 requires plugin initialization first. Fresh-process tests check startup and
 serialization of absent, present, and nested arrays; see the
-[reproducible comparison](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#recursive-support-startup).
+[reproducible comparison](tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md#recursive-support-startup).
 Public recursive DynamicType and default recursive TypeObject discovery remain
 RTI limitations.
 

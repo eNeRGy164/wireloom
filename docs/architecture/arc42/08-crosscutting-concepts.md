@@ -107,7 +107,7 @@ semantic rejection. The
 [diagnostic policy reference](../../guides/configuration.md#control-diagnostics)
 and [strictness reference](../../guides/configuration.md#enable-strict-validation)
 own the detailed policies; the
-[package diagnostic catalog](../../../src/Wireloom.Dds.Generator/README.md#diagnostics)
+[package diagnostic catalog](../../../src/Wireloom.Dds.CSharp.Generator/README.md#diagnostics)
 owns individual IDs.
 
 Incorrect origin mapping directs users to the wrong input. Collapsing failure
@@ -209,6 +209,7 @@ that must survive representation changes:
 | State                                 | Meaning                                                                  |
 | :------------------------------------ | :----------------------------------------------------------------------- |
 | Absent optional scalar                | No scalar value is present                                               |
+| Absent optional collection            | The collection is not present                                            |
 | Present scalar with its default value | A scalar is present, even when its value is zero or another default      |
 | Present empty collection              | A collection is present with no elements; it is not an absent collection |
 
@@ -238,7 +239,7 @@ ordinary managed tests still pass.
 
 The [generated-value guide](../../guides/generated-value-semantics.md) owns
 constructor, mutation, copying, and maintainer storage details. The
-[runtime contract matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix)
+[runtime contract matrix](../../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md#coverage-matrix)
 identifies covered shapes and gaps. Mapping settings belong to
 [configuration](../../guides/configuration.md#choose-the-sequence-array-mapping);
 the policy for deliberate developer-experience improvements belongs to

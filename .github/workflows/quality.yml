@@ -16,13 +16,13 @@ concurrency:
 
 env:
   DOTNET_NOLOGO: true
-  TEST_PROJECT: tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj
-  FUZZING_TEST_PROJECT: tests/Wireloom.Dds.Generator.Fuzzing.Tests/Wireloom.Dds.Generator.Fuzzing.Tests.csproj
-  COMPILER_TEST_PROJECT: tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj
-  RUNTIME_TEST_PROJECT: tests/Wireloom.Dds.Generator.RuntimeContracts/Wireloom.Dds.Generator.RuntimeContracts.csproj
-  CORPUS_TEST_PROJECT: tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj
-  PACKAGE_PROJECT: src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
-  PACKAGE_INTEGRATION_TEST_PROJECT: tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj
+  TEST_PROJECT: tests/Wireloom.Dds.CSharp.Generator.Tests/Wireloom.Dds.CSharp.Generator.Tests.csproj
+  FUZZING_TEST_PROJECT: tests/Wireloom.Dds.CSharp.Fuzzing.Tests/Wireloom.Dds.CSharp.Fuzzing.Tests.csproj
+  COMPILER_TEST_PROJECT: tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CSharp.Compiler.Tests.csproj
+  RUNTIME_TEST_PROJECT: tests/Wireloom.Dds.CSharp.RuntimeContracts/Wireloom.Dds.CSharp.RuntimeContracts.csproj
+  CORPUS_TEST_PROJECT: tests/Wireloom.Dds.CSharp.CorpusCompliance/Wireloom.Dds.CSharp.CorpusCompliance.csproj
+  PACKAGE_PROJECT: src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj
+  PACKAGE_INTEGRATION_TEST_PROJECT: tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/Wireloom.Dds.CSharp.Generator.PackageIntegration.csproj
 
 jobs:
   scope:
@@ -239,7 +239,7 @@ jobs:
       - name: Restore fresh-package consumer
         run: >-
           dotnet restore $env:PACKAGE_INTEGRATION_TEST_PROJECT
-          --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config
+          --configfile tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/NuGet.Test.Config
           -p:WireloomDdsGeneratorPackageVersion=$env:TEST_PACKAGE_VERSION
           -p:RtiConnextDdsVersion=$env:RTI_VERSION
           -p:WireloomConsumerTargetFramework=$env:CONSUMER_FRAMEWORK
@@ -262,7 +262,7 @@ jobs:
 
       - name: Verify strict validation in the packed consumer
         run: >-
-          ./tests/Wireloom.Dds.Generator.PackageIntegration/scripts/Verify-StrictConsumer.ps1
+          ./tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/scripts/Verify-StrictConsumer.ps1
           -PackageVersion $env:TEST_PACKAGE_VERSION -RtiVersion $env:RTI_VERSION
           -Framework $env:CONSUMER_FRAMEWORK -LogPath artifacts/lts/strict-consumer.txt
         shell: pwsh
@@ -349,8 +349,8 @@ jobs:
               mkdir -p /consumer/docs/corpus/idl
               (
                 cd /source
-                find tests/Wireloom.Dds.Generator.PackageIntegration \
-                  tests/Wireloom.Dds.Generator.RuntimeContracts \
+                find tests/Wireloom.Dds.CSharp.Generator.PackageIntegration \
+                  tests/Wireloom.Dds.CSharp.RuntimeContracts \
                   tests/PackageIntegrationIncludeDirectories \
                   -type f ! -path "*/bin/*" ! -path "*/obj/*" -print0 |
                   tar --null --files-from=- -cf -
@@ -373,12 +373,12 @@ jobs:
                 echo "The consumer image contains a .NET 10 runtime." >&2
                 exit 1
               fi
-              dotnet restore tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj \
-                --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config \
+              dotnet restore tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/Wireloom.Dds.CSharp.Generator.PackageIntegration.csproj \
+                --configfile tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/NuGet.Test.Config \
                 -p:WireloomDdsGeneratorPackageVersion="$WIRELOOM_DDS_GENERATOR_PACKAGE_VERSION" \
                 -p:RtiConnextDdsVersion="$RTI_CONNEXT_DDS_VERSION" \
                 -p:WireloomConsumerTargetFramework=net8.0
-              if ! dotnet build tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj \
+              if ! dotnet build tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/Wireloom.Dds.CSharp.Generator.PackageIntegration.csproj \
                 --no-restore --configuration Release \
                 -p:WireloomDdsGeneratorPackageVersion="$WIRELOOM_DDS_GENERATOR_PACKAGE_VERSION" \
                 -p:RtiConnextDdsVersion="$RTI_CONNEXT_DDS_VERSION" \
@@ -388,9 +388,9 @@ jobs:
                 exit 1
               fi
               echo "Packed consumer build succeeded; complete build output is retained as an artifact."
-              dotnet exec tests/Wireloom.Dds.Generator.PackageIntegration/bin/Release/net8.0/Wireloom.Dds.Generator.PackageIntegration.dll |
+              dotnet exec tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/bin/Release/net8.0/Wireloom.Dds.CSharp.Generator.PackageIntegration.dll |
                 tee /artifacts/package-integration.txt
-              if dotnet build tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj \
+              if dotnet build tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/Wireloom.Dds.CSharp.Generator.PackageIntegration.csproj \
                 --no-restore --configuration Release \
                 -p:WireloomDdsGeneratorPackageVersion="$WIRELOOM_DDS_GENERATOR_PACKAGE_VERSION" \
                 -p:RtiConnextDdsVersion="$RTI_CONNEXT_DDS_VERSION" \
@@ -500,7 +500,7 @@ jobs:
           --no-restore
           --configuration Release
           --
-          --filter-class Wireloom.Dds.Generator.Fuzzing.Tests.FsCheckIdlCompilerFuzzingSpecs
+          --filter-class Wireloom.Dds.CSharp.Fuzzing.Tests.FsCheckIdlCompilerFuzzingSpecs
         shell: pwsh
         env:
           WIRELOOM_FSCHECK_TESTS: 10000

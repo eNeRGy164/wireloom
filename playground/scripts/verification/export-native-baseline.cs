@@ -1,4 +1,4 @@
-#:project ../../../src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj
+#:project ../../../src/Wireloom.Dds.CSharp.Compiler/Wireloom.Dds.CSharp.Compiler.csproj
 #:property RestorePackagesWithLockFile=false
 
 using System.Security.Cryptography;
