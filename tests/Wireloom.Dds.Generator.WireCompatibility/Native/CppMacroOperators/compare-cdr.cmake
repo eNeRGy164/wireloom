@@ -1,0 +1,10 @@
+if(NOT EXISTS "${RTI_CAPTURE}" OR NOT EXISTS "${WIRELOOM_CAPTURE}")
+    message(FATAL_ERROR "An RTI or Wireloom CDR capture is missing")
+endif()
+
+file(SHA256 "${RTI_CAPTURE}" rti_hash)
+file(SHA256 "${WIRELOOM_CAPTURE}" wireloom_hash)
+if(NOT rti_hash STREQUAL wireloom_hash)
+    message(FATAL_ERROR "RTI and Wireloom CDR capture bytes differ")
+endif()
+message(STATUS "RTI and Wireloom CDR capture bytes match")

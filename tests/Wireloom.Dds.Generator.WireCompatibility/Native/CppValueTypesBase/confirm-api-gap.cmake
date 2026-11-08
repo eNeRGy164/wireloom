@@ -1,0 +1,8 @@
+file(READ "${RTI_CONTRACT}/api.txt" rti_api)
+file(READ "${WIRELOOM_CONTRACT}/api.txt" wireloom_api)
+if(NOT rti_api STREQUAL "baseValue=accessor\nconstructor=int32\ntopic-type=true\n")
+    message(FATAL_ERROR "RTI BaseValue API evidence is unexpected")
+endif()
+if(NOT wireloom_api STREQUAL "baseValue=public-field\nconstructor=int32\ntopic-type=true\n")
+    message(FATAL_ERROR "Wireloom BaseValue API evidence is unexpected")
+endif()

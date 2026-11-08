@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Wireloom.Dds.CSharp.Generator.Tests</RootNamespace>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Wireloom.Dds.CSharp.Compiler/Wireloom.Dds.CSharp.Compiler.csproj" />
+    <ProjectReference Include="../../src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj" />
+    <ProjectReference Include="../Wireloom.Dds.CSharp.TestSupport/Wireloom.Dds.CSharp.TestSupport.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" VersionOverride="4.14.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" PrivateAssets="all" />
+    <PackageReference Include="Rti.ConnextDds" />
+    <PackageReference Include="FsCheck" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Exercise the real typed wire-fixture builders without adding a peer project dependency. -->
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility/Fixtures/ManagedFixtures.Values.cs" Link="WireFixtures/ManagedFixtures.Values.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility/Fixtures/FixtureException.cs" Link="WireFixtures/FixtureException.cs" />
+    <Compile Include="../Shared/CompilerTestSupport.cs" Link="Support/CompilerTestSupport.cs" />
+  </ItemGroup>
+</Project>

@@ -3,7 +3,7 @@
 This folder contains the multi-file workspace client, its checks, and the
 maintained worker boundary. The non-packable .NET host is in
 [`../src/Wireloom.Playground.Browser/`](../src/Wireloom.Playground.Browser/).
-The host and client share the `Wireloom.Dds.Compiler`; no main-thread compiler
+The host and client share the `Wireloom.Dds.CSharp.Compiler`; no main-thread compiler
 or fallback provider exists.
 
 The RTI selector offers the 6.1.2, 7.3.1, and 7.7.0 API profiles. Feature

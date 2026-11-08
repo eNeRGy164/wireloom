@@ -447,32 +447,40 @@ failures pass. See [native type model](Native/main.cpp.in).
 **Version:** `6.1.2`, `7.3.1`, `7.7.0`\
 **Peer:** RTI C++ reference
 
-**Applies when:** Generating ordinary C++ bindings from the shared IDL containing `@language_binding(FLAT_DATA)`.
+**Applies when:** The generic native C++ wire-comparison harness needs the
+ordinary PLAIN mapping for the shared FlatData IDL.
 
-The canonical IDL selects FlatData but leaves `Sample` with default extensibility.
-RTI requires FlatData types to be `@final` or `@mutable`:
+The canonical IDL selects FlatData and declares `Sample` as `@final`. The
+generic C++ peer in the shared wire matrix is a PLAIN-mapping reference peer,
+not a FlatData peer. That harness strips the module mapping annotation only in
+its scratch input to select ordinary C++ mapping:
 
 ```idl
 @language_binding(FLAT_DATA)
 @data_representation(XCDR2)
 module CorpusFlatDataBinding {
-    @topic struct Sample { long id; long value; };
+    @topic @final struct Sample { long id; long value; };
 };
-// Generation rejects Sample: FlatData requires @mutable or @final.
 ```
 
-[FlatData is a C++ binding](https://community.rti.com/static/documentation/connext-dds/7.4.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Using_BuiltinAnnotations.htm);
+[FlatData is a C++ binding](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Using_BuiltinAnnotations.htm);
 RTI C# ignores the annotation.
-For the reference exchange, remove the mapping annotation from scratch C++ input:
+For that generic reference exchange, remove the mapping annotation from scratch
+C++ input:
 
 ```sh
 sed '/@language_binding(FLAT_DATA)/d' "$idl_path" > "$native_dir/idl.idl"
 ```
 
-This preserves the canonical extensibility and XCDR2 sample shape while selecting
-ordinary C++ mapping. It is a reference-model deviation, not a FlatData fix.
-The canonical IDL and C# inputs are unchanged; FlatData C++ layout is unqualified.
-See [IDL adaptation](../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/NativePeerSources.cs).
+This preserves the canonical final extensibility and XCDR2 sample shape while
+selecting ordinary C++ mapping. It is a harness-specific reference-model
+adaptation and is not used by the dedicated C047 FlatData generation, consumer,
+or C# peer interoperability checks. C047's actual FlatData behavior is
+qualified for RTI 7.7.0.0 in both directions with its independent C# peer; see
+the [C++ coverage matrix](../../docs/corpus/CPP-COVERAGE.md) and
+[interop evidence](../../docs/corpus/7.7.0/cpp-evidence/C047-10-flat-data-binding.interop.json).
+The canonical IDL and C# inputs are unchanged. See
+[IDL adaptation](../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/NativePeerSources.cs).
 
 <a id="wstring-alias-typecode-tags"></a>
 <a id="w015"></a>
@@ -521,7 +529,7 @@ to record that the unmodified C# output fails compilation with `CS0400` and
 With both guarded corrections, the C147 matrix exercises all nine directed
 pairings among Wireloom C#, RTI C#, and RTI C++ for empty and exact-boundary
 values. See [the guarded edits](../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/NativePeerSources.cs) and [C147's corpus
-row](../../../docs/corpus/FEATURE-COVERAGE.md).
+row](../../docs/corpus/FEATURE-COVERAGE.md).
 
 <a id="unsigned-32-bit-union-labels"></a>
 <a id="w016"></a>

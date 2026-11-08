@@ -58,7 +58,7 @@
   <ItemGroup>
     <PackageReference Remove="Shouldly;xunit.v3.mtp-v2" />
     <PackageReference Include="Rti.ConnextDds" Version="$(WireCompatibilityRtiVersion)" />
-    <ProjectReference Include="..\..\Wireloom.Dds.Generator.TestSupport\Wireloom.Dds.Generator.TestSupport.csproj"
+    <ProjectReference Include="..\..\Wireloom.Dds.CSharp.TestSupport\Wireloom.Dds.CSharp.TestSupport.csproj"
                       Condition="'$(RtiOracleProgram)' == '../Program.cs'">
       <!-- Matrix builds isolate probe intermediates per case; keep those paths local to this project. -->
       <GlobalPropertiesToRemove>BaseIntermediateOutputPath;MSBuildProjectExtensionsPath</GlobalPropertiesToRemove>

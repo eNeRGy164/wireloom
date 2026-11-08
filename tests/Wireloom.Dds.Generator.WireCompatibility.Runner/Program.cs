@@ -12,6 +12,11 @@ if (args.SequenceEqual(["--verify-harness"]))
 
 try
 {
+    if (args.Length > 0 && args[0] is "--cpp-spike" or "--cpp-wire")
+    {
+        return await CppWireCommand.RunAsync(args[1..]);
+    }
+
     var options = MatrixOptions.FromEnvironment();
     var workspace = new MatrixWorkspace(options);
     var processes = new ProcessRunner(options.RepositoryRoot);

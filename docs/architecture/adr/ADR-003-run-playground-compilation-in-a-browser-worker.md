@@ -7,7 +7,7 @@
 ## Context
 
 The accepted issue #109 plan adds a browser Playground that calls the shared
-`Wireloom.Dds.Compiler` without duplicating preprocessing, parsing, semantic
+`Wireloom.Dds.CSharp.Compiler` without duplicating preprocessing, parsing, semantic
 validation, or emission. Browser WebAssembly compilation is synchronous and
 can block the page if it runs on the main thread. Member-ID hashing also needs
 a synchronous provider because the compiler accepts a synchronous per-call
@@ -25,7 +25,7 @@ generator package must remain unchanged.
 
 **Host the shared compiler in a dedicated .NET 10 WebAssembly module worker behind a typed TypeScript/Vite client.**
 
-The browser project references `Wireloom.Dds.Compiler`; the
+The browser project references `Wireloom.Dds.CSharp.Compiler`; the
 worker initializes .NET and the synchronous JavaScript MD5 provider in the
 worker scope. The client sends bounded immutable workspace snapshots and
 rejects responses unless protocol version, worker generation, request ID,

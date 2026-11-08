@@ -13,7 +13,7 @@ RTI C# is excluded because its direct-form binding flattens this IDL shape.
 The result covers selected fixtures, not full-profile or all-language
 qualification.
 
-See the [consumer settings](../../src/Wireloom.Dds.Generator/README.md#choose-the-array-of-sequences-mapping)
+See the [consumer settings](../../src/Wireloom.Dds.CSharp.Generator/README.md#choose-the-array-of-sequences-mapping)
 and the [wire compatibility runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
 
 ## Retained release evidence

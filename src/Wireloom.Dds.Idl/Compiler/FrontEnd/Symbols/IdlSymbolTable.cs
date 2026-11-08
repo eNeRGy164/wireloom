@@ -1,0 +1,120 @@
+using Wireloom.Compiler.FrontEnd.Semantic;
+
+namespace Wireloom.Compiler.FrontEnd.Symbols;
+
+/// <summary>Stores declaration names and lookup tables for the front end.</summary>
+internal sealed class IdlSymbolTable
+{
+    private readonly HashSet<string> names = new(StringComparer.Ordinal);
+    private readonly HashSet<string> typeNames = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, IdlEnum> enums = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, IdlClassDeclaration> classes = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, IdlUnion> unions = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, IdlTypedef> typedefs = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, IdlConstantDeclaration> constants = new(StringComparer.Ordinal);
+
+    /// <summary>Registers a declaration name and reports whether it was new.</summary>
+    public bool AddName(string name) => names.Add(name);
+
+    /// <summary>Registers a type declaration name.</summary>
+    public void AddTypeName(string name) => typeNames.Add(name);
+
+    /// <summary>Checks whether an enum has been registered.</summary>
+    private bool ContainsEnum(string name) => enums.ContainsKey(name);
+
+    /// <summary>Checks whether a type declaration has been registered.</summary>
+    public bool ContainsTypeName(string name) =>
+        typeNames.Contains(name)
+        || ContainsEnum(name)
+        || ContainsUnion(name)
+        || ContainsTypedef(name);
+
+    /// <summary>Checks whether a union has been registered.</summary>
+    public bool ContainsUnion(string name) => unions.ContainsKey(name);
+
+    /// <summary>Checks whether a typedef has been registered.</summary>
+    public bool ContainsTypedef(string name) => typedefs.ContainsKey(name);
+
+    /// <summary>Resolves an IDL type name through its enclosing module scopes.</summary>
+    public bool TryResolveTypeName(string idlType, string? currentNamespace, out string qualifiedName)
+    {
+        foreach (var candidate in IdlNames.GetTypeNameCandidates(idlType, currentNamespace))
+        {
+            if (ContainsTypeName(candidate))
+            {
+                qualifiedName = candidate;
+                return true;
+            }
+        }
+
+        qualifiedName = IdlNames.ResolveTypeName(idlType, null);
+        return false;
+    }
+
+    /// <summary>Checks whether a constant has been registered.</summary>
+    public bool ContainsConstant(string name) => constants.ContainsKey(name);
+
+    public bool TryGetConstant(string name, out IdlConstantDeclaration declaration) =>
+        constants.TryGetValue(name, out declaration!);
+
+    /// <summary>Resolves a constant name through its enclosing module scopes.</summary>
+    internal bool TryResolveConstant(string name, string? currentNamespace, out IdlConstantDeclaration declaration)
+    {
+        if (!IdlScopedName.IsValid(name))
+        {
+            declaration = null!;
+            return false;
+        }
+
+        var normalized = name.TrimStart(':').Replace("::", ".");
+        if (name.StartsWith("::", StringComparison.Ordinal))
+        {
+            return constants.TryGetValue(normalized, out declaration!);
+        }
+
+        var scope = currentNamespace;
+        while (true)
+        {
+            var candidate = scope is null ? normalized : $"{scope}.{normalized}";
+            if (constants.TryGetValue(candidate, out declaration!))
+            {
+                return true;
+            }
+
+            if (scope is null)
+            {
+                declaration = null!;
+                return false;
+            }
+
+            var separator = scope.LastIndexOf('.');
+            scope = separator < 0 ? null : scope[..separator];
+        }
+    }
+
+    public bool TryGetEnum(string name, out IdlEnum declaration) => enums.TryGetValue(name, out declaration!);
+
+    /// <summary>Gets a class declaration by its canonical qualified name.</summary>
+    public bool TryGetClass(string name, out IdlClassDeclaration declaration) => classes.TryGetValue(name, out declaration!);
+
+    /// <summary>Gets a union declaration by its canonical qualified name.</summary>
+    internal bool TryGetUnion(string name, out IdlUnion declaration) => unions.TryGetValue(name, out declaration!);
+
+    public bool TryGetTypedef(string name, out IdlTypedef declaration) => typedefs.TryGetValue(name, out declaration!);
+
+    /// <summary>Registers an enum while retaining the first declaration for binding.</summary>
+    public void AddEnum(string name, IdlEnum declaration) => enums.TryAdd(name, declaration);
+
+    /// <summary>Registers a class while retaining the first declaration for binding.</summary>
+    public void AddClass(string name, IdlClassDeclaration declaration) => classes.TryAdd(name, declaration);
+
+    /// <summary>Registers a union while retaining the first declaration for binding.</summary>
+    public void AddUnion(string name, IdlUnion declaration) => unions.TryAdd(name, declaration);
+
+    /// <summary>Registers a typedef while retaining the first declaration for binding.</summary>
+    public void AddTypedef(string name, IdlTypedef declaration) => typedefs.TryAdd(name, declaration);
+
+    /// <summary>Registers a constant while retaining the first declaration for binding.</summary>
+    public void AddConstant(string name, IdlConstantDeclaration declaration) => constants.TryAdd(name, declaration);
+
+}

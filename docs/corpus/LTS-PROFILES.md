@@ -35,7 +35,7 @@ Retain generated reference sources with their original notices and provenance.
 ## Corpus tests and source exports
 
 ```powershell
-$corpus = 'tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj'
+$corpus = 'tests/Wireloom.Dds.CSharp.CorpusCompliance/Wireloom.Dds.CSharp.CorpusCompliance.csproj'
 
 dotnet restore $corpus --locked-mode
 foreach ($version in @('6.1.2', '7.3.1', '7.7.0')) {
@@ -143,8 +143,8 @@ dotnet build $probe --no-restore --configuration Release -p:WireCompatibilityRti
 The [continuous matrix](../guides/support-and-compatibility.md#continuous-lts-verification)
 checks planning and reports for all three profiles and exercises their runtime
 contracts and fresh packages on Windows and Linux with .NET 8 and .NET 10. Local commands
-are in the [runtime guide](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#run)
-and [package guide](../../tests/Wireloom.Dds.Generator.PackageIntegration/README.md).
+are in the [runtime guide](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md#run)
+and [package guide](../../tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/README.md).
 .NET 8 execution requires its runtime alongside the repository SDK.
 
 For licensed DDS verification, dispatch **Wire compatibility** or follow the

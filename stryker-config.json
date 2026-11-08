@@ -2,12 +2,12 @@
   "stryker-config": {
     "solution": "Wireloom.slnx",
     "test-projects": [
-      "tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj",
-      "tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj"
+      "tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CSharp.Compiler.Tests.csproj",
+      "tests/Wireloom.Dds.CSharp.Generator.Tests/Wireloom.Dds.CSharp.Generator.Tests.csproj"
     ],
     "mutate": [
-      "src/Wireloom.Dds.Compiler/**/*.cs",
-      "src/Wireloom.Dds.Generator/**/*.cs"
+      "src/Wireloom.Dds.CSharp.Compiler/**/*.cs",
+      "src/Wireloom.Dds.CSharp.Generator/**/*.cs"
     ],
     "test-runner": "mtp",
     "additional-timeout": 4000,

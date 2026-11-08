@@ -140,9 +140,9 @@ as evidence of general C-preprocessor compatibility.
 
 ## Reference and tests
 
-The [compiler preprocessing tests](../tests/Wireloom.Dds.Compiler.Tests/Compiler/FrontEnd/Preprocessing/)
+The [compiler preprocessing tests](../tests/Wireloom.Dds.CSharp.Compiler.Tests/Compiler/FrontEnd/Preprocessing/)
 carry focused `PP###` traits and adversarial cases. Run them through the
-[compiler unit-test project](../tests/Wireloom.Dds.Compiler.Tests/README.md).
+[compiler unit-test project](../tests/Wireloom.Dds.CSharp.Compiler.Tests/README.md).
 The [configuration reference](guides/configuration.md) owns external defines,
 include settings, and fixed work limits; the [IDL semantic reference](guides/idl-semantics.md)
 owns binding and validation rules after preprocessing.

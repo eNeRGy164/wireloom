@@ -1,6 +1,6 @@
 # Contributing to Wireloom
 
-This guide covers repository development and maintenance. For consumer setup, see the [package usage guide](src/Wireloom.Dds.Generator/README.md).
+This guide covers repository development and maintenance. For consumer setup, see the [package usage guide](src/Wireloom.Dds.CSharp.Generator/README.md).
 
 ## Before changing code
 
@@ -25,34 +25,34 @@ architecture baseline.
 Restore and build the generator:
 
 ```shell
-dotnet restore src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj --locked-mode
-dotnet restore src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --locked-mode
-dotnet build src/Wireloom.Dds.Compiler/Wireloom.Dds.Compiler.csproj --no-restore --configuration Release
-dotnet build src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --no-restore --configuration Release
+dotnet restore src/Wireloom.Dds.CSharp.Compiler/Wireloom.Dds.CSharp.Compiler.csproj --locked-mode
+dotnet restore src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj --locked-mode
+dotnet build src/Wireloom.Dds.CSharp.Compiler/Wireloom.Dds.CSharp.Compiler.csproj --no-restore --configuration Release
+dotnet build src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj --no-restore --configuration Release
 ```
 
 Run the fast unit tests and manifest-driven corpus compliance suite:
 
 ```shell
-dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
-dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --no-restore --configuration Release
+dotnet restore tests/Wireloom.Dds.CSharp.Generator.Tests/Wireloom.Dds.CSharp.Generator.Tests.csproj --locked-mode
+dotnet run --project tests/Wireloom.Dds.CSharp.Generator.Tests/Wireloom.Dds.CSharp.Generator.Tests.csproj --no-restore --configuration Release
 
-dotnet restore tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj --locked-mode
-dotnet run --project tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj --no-restore --configuration Release
+dotnet restore tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CSharp.Compiler.Tests.csproj --locked-mode
+dotnet run --project tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CSharp.Compiler.Tests.csproj --no-restore --configuration Release
 
-dotnet restore tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --locked-mode
-dotnet run --project tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --no-restore --configuration Release
+dotnet restore tests/Wireloom.Dds.CSharp.CorpusCompliance/Wireloom.Dds.CSharp.CorpusCompliance.csproj --locked-mode
+dotnet run --project tests/Wireloom.Dds.CSharp.CorpusCompliance/Wireloom.Dds.CSharp.CorpusCompliance.csproj --no-restore --configuration Release
 ```
 
 For package integration changes, follow the isolated-feed restore and test
-procedure in the [package integration guide](tests/Wireloom.Dds.Generator.PackageIntegration/README.md).
+procedure in the [package integration guide](tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/README.md).
 The repository uses Microsoft.Testing.Platform; pass test runner options after
 `--` and use its `--filter-method`, `--filter-class`, `--filter-namespace`, or
 `--filter-trait` options. Do not use the legacy `--filter` option.
 For example, run the focused preprocessor review gate with:
 
 ```shell
-dotnet run --project tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj `
+dotnet run --project tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CSharp.Compiler.Tests.csproj `
   --no-build --configuration Release -- `
   --filter-namespace Wireloom.Compiler.FrontEnd.Preprocessing.Tests
 ```
@@ -73,7 +73,7 @@ Keep the test layers focused:
   rejected, and generated-shape evidence.
 - Package integration tests verify that the packed analyzer works in a
   consuming project.
-- [Runtime contract tests](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
+- [Runtime contract tests](tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md)
   compile focused IDL fixtures during the build and execute generated APIs
   directly against both exact RTI 7.3.1 and 7.7.0 profiles on Windows and Linux. Their behavior matrix tracks
   runtime contracts; Coveralls measures maintained compiler and generator
@@ -98,8 +98,8 @@ gates before making the corresponding claim.
 | :------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Compiler parsing, binding, validation, or emission | Compiler unit tests, both corpus profiles, generated-source exports, relevant runtime/package tests, coverage, and Qodana; wire checks for affected interoperability claims                          |
 | Roslyn adapter or incremental inputs               | Generator unit tests and incremental baseline; fresh-package checks for consumer effects                                                                                                             |
-| MSBuild targets or analyzer packaging              | [Package integration](tests/Wireloom.Dds.Generator.PackageIntegration/README.md), including minimum-host and negative diagnostic cases                                                               |
-| Generated APIs or native lifecycle                 | [Runtime contracts](tests/Wireloom.Dds.Generator.RuntimeContracts/README.md) and affected packed-consumer checks on applicable profiles/targets                                                      |
+| MSBuild targets or analyzer packaging              | [Package integration](tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/README.md), including minimum-host and negative diagnostic cases                                                        |
+| Generated APIs or native lifecycle                 | [Runtime contracts](tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md) and affected packed-consumer checks on applicable profiles/targets                                                         |
 | Robustness or error boundaries                     | [Fuzzing](docs/testing/fuzzing.md), focused regressions, and applicable compiler/adapter checks                                                                                                      |
 | Corpus, peer fixture, or report handling           | [LTS reproduction](docs/corpus/LTS-PROFILES.md), [wire harness checks](tests/Wireloom.Dds.Generator.WireCompatibility/README.md#maintainer-checks), and licensed exchanges when the claim needs them |
 | Playground client or host                          | [Frontend checks](playground/README.md#build-and-checks), [browser qualification](docs/testing/playground-qualification.md), adapter/compiler checks for their affected boundaries                   |
@@ -161,8 +161,8 @@ sites or historical-revision URLs, or replace Markdown rendering review.
 Pack the analyzer/source-generator package locally with:
 
 ```shell
-dotnet restore src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --locked-mode
-dotnet pack src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj --no-restore --configuration Release --output artifacts
+dotnet restore src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj --locked-mode
+dotnet pack src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj --no-restore --configuration Release --output artifacts
 ```
 
 Preview packages are produced from `main` and published to GitHub Packages.

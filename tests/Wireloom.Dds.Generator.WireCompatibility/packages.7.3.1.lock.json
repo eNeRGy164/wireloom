@@ -22,7 +22,7 @@
         "resolved": "7.3.1",
         "contentHash": "maorDcIdvyUcqV1OwtCtJKohu1vgkENyGPNCqXoIlDZfekWuBNHSL7RaCtzYjRcDW3TJZzoXFPiaHASqR14gWg=="
       },
-      "wireloom.dds.generator.testsupport": {
+      "wireloom.dds.csharp.testsupport": {
         "type": "Project",
         "dependencies": {
           "Rti.ConnextDds": "[7.3.1, )"

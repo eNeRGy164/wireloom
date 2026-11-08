@@ -7,7 +7,7 @@ using Rti.Dds.Publication;
 using Rti.Dds.Subscription;
 using Rti.Dds.Topics;
 using Rti.Types.Dynamic;
-using Wireloom.Dds.Generator.TestSupport;
+using Wireloom.Dds.CSharp.TestSupport;
 using Wireloom.Dds.Generator.WireCompatibility.Shared;
 using LifecyclePhaseProtocol = global::Wireloom.Dds.Generator.WireCompatibility.Shared.LifecyclePhaseProtocol;
 

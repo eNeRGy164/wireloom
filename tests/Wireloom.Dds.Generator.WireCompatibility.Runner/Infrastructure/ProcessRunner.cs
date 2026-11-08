@@ -7,7 +7,8 @@ internal sealed class ProcessRunner(string workingDirectory)
 {
     /// <summary>Executes a command, optionally retaining its diagnostics or allowing a handled nonzero exit.</summary>
     internal async Task<ProcessResult> RunAsync(string executable, IEnumerable<string> arguments,
-        string? logPath = null, TimeSpan? timeout = null, bool allowFailure = false)
+        string? logPath = null, TimeSpan? timeout = null, bool allowFailure = false,
+        Func<string, string>? sanitizeOutput = null)
     {
         var start = new ProcessStartInfo(executable)
         {
@@ -36,7 +37,10 @@ internal sealed class ProcessRunner(string workingDirectory)
             throw new TimeoutException($"{executable} exceeded its timeout.");
         }
 
-        var result = new ProcessResult(process.ExitCode, await stdout, await stderr);
+        var output = await stdout;
+        var error = await stderr;
+        var result = new ProcessResult(process.ExitCode, sanitizeOutput?.Invoke(output) ?? output,
+            sanitizeOutput?.Invoke(error) ?? error);
         if (logPath is not null)
         {
             await File.WriteAllTextAsync(logPath, result.Output + result.Error, cancellation.Token);

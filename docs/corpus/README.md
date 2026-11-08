@@ -10,7 +10,7 @@ runtime behavior, serialization bytes, wire compatibility, keyhashes, or live
 DDS communication.
 Those concerns belong in the relevant implementation and integration tests.
 Generated API runtime behavior is covered by the
-[runtime contract suite](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md).
+[runtime contract suite](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md).
 
 ## Contents
 
@@ -221,7 +221,7 @@ Keep fast unit tests separate from exact corpus comparisons:
 Run the complete manifest-driven compliance suite with:
 
 ```text
-dotnet run --project tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --no-restore --configuration Release
+dotnet run --project tests/Wireloom.Dds.CSharp.CorpusCompliance/Wireloom.Dds.CSharp.CorpusCompliance.csproj --no-restore --configuration Release
 ```
 
 C018 retains its default RTI C# flattened exports and oracle comparisons.
@@ -293,7 +293,7 @@ under `<export-root>/<source-kind>/<case-id>`.
 ```powershell
 $env:CORPUS_RTI_PROFILE = "7.7.0"
 $env:CORPUS_GENERATOR_EXPORT_ROOT = "docs/corpus/7.7.0/generator/csharp"
-dotnet run --project tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --configuration Release -- --filter-method Wireloom.Dds.Generator.CorpusCompliance.CorpusComplianceSpecs.ExportAcceptedCorpusSources
+dotnet run --project tests/Wireloom.Dds.CSharp.CorpusCompliance/Wireloom.Dds.CSharp.CorpusCompliance.csproj --configuration Release -- --filter-method Wireloom.Dds.CSharp.CorpusCompliance.CorpusGenerationSpecs.ExportAcceptedCorpusSources
 ```
 
 Rejected cases are omitted because they do not produce generated sources. Run

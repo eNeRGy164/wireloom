@@ -13,8 +13,8 @@ concurrency:
 
 env:
   DOTNET_NOLOGO: true
-  TEST_PROJECT: tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj
-  COMPILER_TEST_PROJECT: tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj
+  TEST_PROJECT: tests/Wireloom.Dds.CSharp.Generator.Tests/Wireloom.Dds.CSharp.Generator.Tests.csproj
+  COMPILER_TEST_PROJECT: tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CSharp.Compiler.Tests.csproj
 
 jobs:
   mutation:

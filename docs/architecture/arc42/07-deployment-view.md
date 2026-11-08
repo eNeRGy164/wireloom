@@ -1,6 +1,7 @@
 # 7. Deployment view
 
-Wireloom has two deployment scenarios: [.NET build integration](#71-net-build-integration)
+Wireloom ships [.NET build integration](#71-net-build-integration) for consumer
+projects and the [browser Playground](#72-browser-playground-deployment).
 for consumer projects and the [browser Playground](#72-browser-playground-deployment).
 This chapter maps the [building blocks](05-building-block-view.md) to their
 execution environments and identifies where configuration is supplied.
@@ -24,11 +25,13 @@ shared IDL compiler.
 | Developer or CI build host       | Consumer project, IDL inputs, compatible .NET SDK/compiler host, restored package and explicit RTI reference       | Runs .NET build integration and the shared IDL compiler; compiles generated documents into the application |
 | Consumer application environment | Compiled application and its selected RTI managed/native runtime assets                                            | Runs the consumer application; RTI owns DDS communication and serialization                                |
 
-The adapter and compiler target `netstandard2.0`. They are loaded together
-from the analyzer package and must have matching Wireloom versions.
-The compiler is non-packable and has no separate public package.
+The adapter, C# compiler, and shared IDL front end target `netstandard2.0`.
+The analyzer package loads all three assemblies together at matching Wireloom
+versions. The `Wireloom.Dds.CSharp.Generator` project produces the
+`Wireloom.Dds.Generator` NuGet package and analyzer assembly. The C# compiler
+and IDL front end are internal build assets.
 Package placement is defined in the
-[generator project](../../../src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj).
+[generator project](../../../src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj).
 
 The consumer build must meet the
 [framework, language, compiler-host, and RTI constraints](02-architecture-constraints.md#21-product-and-execution-boundaries).
@@ -51,7 +54,7 @@ the consuming project and its shared build configuration.
 
 | Configuration                                                                  | Location                                                                                        | Deployment or build impact                                                                                                      | Reference                                                                                                                                  |
 | :----------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------- |
-| Wireloom package version and feed                                              | Consumer `PackageReference`, central package management if used, and NuGet source configuration | Selects the adapter/compiler pair restored onto each build host; package usage sets `PrivateAssets="all"`                       | [Package usage](../../../src/Wireloom.Dds.Generator/README.md)                                                                             |
+| Wireloom package version and feed                                              | Consumer `PackageReference`, central package management if used, and NuGet source configuration | Selects the adapter/compiler pair restored onto each build host; package usage sets `PrivateAssets="all"`                       | [Package usage](../../../src/Wireloom.Dds.CSharp.Generator/README.md)                                                                      |
 | .NET SDK/compiler and IDE host selection                                       | Installed/selected consumer build or IDE tooling; consumer repository `global.json` when used   | Determines which MSBuild/Roslyn host loads the analyzer; target framework alone does not select this host                       | [Host requirements](02-architecture-constraints.md#21-product-and-execution-boundaries)                                                    |
 | Consumer framework, C# language, and RTI reference                             | Consumer project or shared MSBuild files                                                        | Sets the application target and emitted-code language requirements; resolved RTI reference selects the generation profile       | [Framework, language, and runtime](../../guides/configuration.md#select-the-consumer-framework-language-and-rti-runtime)                   |
 | Generation roots and include search                                            | `DdsIdl`/`AdditionalFiles` items, include-directory properties and root metadata                | Determines which inputs are tracked and made available to generation                                                            | [Roots and includes](../../guides/configuration.md#select-generation-roots-and-included-files)                                             |

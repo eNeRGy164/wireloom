@@ -42,7 +42,7 @@ param(
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/docs/corpus/scripts/Evidence.Common.ps1"
 
-$project = 'tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj'
+$project = 'tests/Wireloom.Dds.CSharp.CorpusCompliance/Wireloom.Dds.CSharp.CorpusCompliance.csproj'
 
 if (!$OutputRoot) {
     $OutputRoot = 'docs/corpus'
@@ -65,9 +65,10 @@ if (Test-Path -LiteralPath $evidence) {
 New-Item -ItemType Directory -Force -Path $evidence | Out-Null
 
 $inputs = @(
-    'src/Wireloom.Dds.Compiler'
-    'src/Wireloom.Dds.Generator'
-    'tests/Wireloom.Dds.Generator.CorpusCompliance'
+    'src/Wireloom.Dds.Idl'
+    'src/Wireloom.Dds.CSharp.Compiler'
+    'src/Wireloom.Dds.CSharp.Generator'
+    'tests/Wireloom.Dds.CSharp.CorpusCompliance'
     'docs/corpus/idl'
     'docs/corpus/manifest.json'
     'docs/corpus/6.1.2/manifest.json'

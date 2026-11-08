@@ -120,6 +120,6 @@ all repository callers, following ADR-001's direct-caller policy.
 - Related building block: [Shared IDL compiler](../arc42/05-building-block-view.md#531-shared-idl-compiler).
 - Related runtime flow: [Consumer build and generation](../arc42/06-runtime-view.md#611-generate-or-regenerate-application-contracts).
 - Related API contract: [Shared compiler API](../arc42/05-building-block-view.md#compiler-contract-and-payload-examples).
-- Related code: [`IdlCompiler`](../../../src/Wireloom.Dds.Compiler/Api/IdlCompiler.cs),
-  [`IdlParseContext`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlParseContext.cs),
-  and [`IdlMemberIdHash`](../../../src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlMemberIdHash.cs).
+- Related code: [`IdlCompiler`](../../../src/Wireloom.Dds.CSharp.Compiler/Api/IdlCompiler.cs),
+  [`IdlParseContext`](https://github.com/eNeRGy164/wireloom/blob/2df4b372c58f23939ef05de993e9650df45a1e83/src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlParseContext.cs),
+  and [`IdlMemberIdHash`](https://github.com/eNeRGy164/wireloom/blob/2df4b372c58f23939ef05de993e9650df45a1e83/src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlMemberIdHash.cs).

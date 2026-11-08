@@ -101,7 +101,7 @@ Topic API discovers that generated support when the application creates its
 | Generated `HelloWorld`, support, and adapter documents | Wireloom supplies these to Roslyn during compilation; inspect them in the IDE's generated-source view. |
 
 Generated documents do not need to be checked into the source tree. For
-physical copies under `obj`, see [inspecting generated source](../../src/Wireloom.Dds.Generator/README.md#inspect-generated-source).
+physical copies under `obj`, see [inspecting generated source](../../src/Wireloom.Dds.CSharp.Generator/README.md#inspect-generated-source).
 
 ## Write the publisher and subscriber
 
@@ -359,11 +359,11 @@ See RTI's tutorial for further discovery and QoS exercises.
 - Add a member to the IDL, rebuild, and inspect the updated generated API and
   IntelliSense documentation.
 - Learn [generated value semantics](generated-value-semantics.md), or move
-  shared IDL roots into a [contracts library](../../src/Wireloom.Dds.Generator/README.md#share-generated-contracts).
+  shared IDL roots into a [contracts library](../../src/Wireloom.Dds.CSharp.Generator/README.md#share-generated-contracts).
 - Follow RTI's [remaining publish/subscribe exercises][rti-tutorial] for more
   DDS concepts. Its external code-generation commands correspond to a normal
   Wireloom build; its DDS runtime concepts still apply.
 
-[rti-tutorial]: https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/connext_dds_professional/getting_started_guide/csharp/intro_pubsub_csharp.html
+[rti-tutorial]: https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/getting_started_guide/csharp/intro_pubsub_csharp.html
 [rti-license]: https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/installation_guide/license_management.html#installing-license-file-for-c-or-python
-[rti-troubleshooting]: https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/connext_dds_professional/getting_started_guide/csharp/intro_pubsub_csharp.html#troubleshooting
+[rti-troubleshooting]: https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/getting_started_guide/csharp/intro_pubsub_csharp.html#troubleshooting

@@ -1,6 +1,6 @@
 # Work with generated contracts
 
-Use this guide after the [package quick start](../../src/Wireloom.Dds.Generator/README.md#quick-start).
+Use this guide after the [package quick start](../../src/Wireloom.Dds.CSharp.Generator/README.md#quick-start).
 IDL and handwritten C# are maintained inputs. Wireloom supplies generated
 documents to the compiler during the normal build.
 

@@ -1,0 +1,8 @@
+if(NOT EXISTS "${RTI_FILE}" OR NOT EXISTS "${WIRELOOM_FILE}")
+    message(FATAL_ERROR "Both RTI and Wireloom ${REASON} evidence files must exist")
+endif()
+execute_process(COMMAND "${CMAKE_COMMAND}" -E compare_files "${RTI_FILE}" "${WIRELOOM_FILE}" RESULT_VARIABLE result)
+if(NOT result EQUAL 0)
+    message(FATAL_ERROR "RTI and Wireloom ${REASON} evidence differs")
+endif()
+message(STATUS "RTI and Wireloom ${REASON} evidence matches")

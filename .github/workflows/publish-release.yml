@@ -24,8 +24,8 @@ concurrency:
 
 env:
   DOTNET_NOLOGO: true
-  PACKAGE_PROJECT: src/Wireloom.Dds.Generator/Wireloom.Dds.Generator.csproj
-  PACKAGE_INTEGRATION_TEST_PROJECT: tests/Wireloom.Dds.Generator.PackageIntegration/Wireloom.Dds.Generator.PackageIntegration.csproj
+  PACKAGE_PROJECT: src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj
+  PACKAGE_INTEGRATION_TEST_PROJECT: tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/Wireloom.Dds.CSharp.Generator.PackageIntegration.csproj
   PACKAGE_TEST_FEED: ${{ github.workspace }}/package-test-feed
   ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
 
@@ -126,7 +126,7 @@ jobs:
           PACKAGE_VERSION: ${{ steps.gitversion.outputs.semVer }}
         run: |
           dotnet restore "$PACKAGE_INTEGRATION_TEST_PROJECT" \
-            --configfile tests/Wireloom.Dds.Generator.PackageIntegration/NuGet.Test.Config \
+            --configfile tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/NuGet.Test.Config \
             -p:WireloomDdsGeneratorPackageVersion="$PACKAGE_VERSION"
           dotnet run --project "$PACKAGE_INTEGRATION_TEST_PROJECT" --no-restore --configuration Release \
             -p:WireloomDdsGeneratorPackageVersion="$PACKAGE_VERSION" -p:LangVersion=12.0

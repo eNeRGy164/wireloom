@@ -1,7 +1,7 @@
 #nullable enable annotations
 
 using Rti.Types.Dynamic;
-using Wireloom.Dds.Generator.TestSupport;
+using Wireloom.Dds.CSharp.TestSupport;
 
 namespace Wireloom.Dds.Generator.WireCompatibility;
 

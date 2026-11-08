@@ -3,7 +3,7 @@
 This chapter records choices that shape future work and the context needed
 to avoid reopening the same questions without new evidence. Straightforward
 choices have a timeline entry. Choices needing more background have an
-expanded note; the three existing ADRs retain their full records.
+expanded note. ADRs retain the context and alternatives for each decision.
 
 Accepted ADRs retain their dated context and observations. ADR-003's
 single-root UI and timings describe the initial worker host; the

@@ -1,0 +1,95 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Wireloom.Dds.CSharp.Generator.PackageIntegration</RootNamespace>
+    <!-- Override the consumer target without retargeting the analyzer project. -->
+    <TargetFramework Condition="'$(WireloomConsumerTargetFramework)' != ''">$(WireloomConsumerTargetFramework)</TargetFramework>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <DdsIdlSequenceArrayMapping>Idl</DdsIdlSequenceArrayMapping>
+    <DdsIdlSequenceSize>11</DdsIdlSequenceSize>
+    <DdsIdlStringSize>21</DdsIdlStringSize>
+    <DdsIdlUnboundedSupport>false</DdsIdlUnboundedSupport>
+    <!-- Legacy, non-emitted interface, and permissive naming fixtures intentionally report warnings. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);DDSG0103;DDSG0105;DDSG0108</WarningsNotAsErrors>
+    <!-- Test-only switch: the negative build enables strict validation batch-wide. -->
+    <PackageIntegrationStrict Condition="'$(PackageIntegrationStrict)' == ''">false</PackageIntegrationStrict>
+    <!-- This consumer is restored only after the package-under-test is created. -->
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
+    <!-- Keep this packed-analyzer integration test isolated from stale global package contents. -->
+    <RestorePackagesPath>$(MSBuildProjectDirectory)\obj\packages\$(RtiConnextDdsVersion)</RestorePackagesPath>
+    <DdsIdlIncludeDirectories>$(MSBuildProjectDirectory)\..\..\docs\corpus\idl\integration;$(MSBuildProjectDirectory)\..\PackageIntegrationIncludeDirectories\First;$(MSBuildProjectDirectory)\..\PackageIntegrationIncludeDirectories\Second</DdsIdlIncludeDirectories>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Intentionally no ProjectReference: this test consumes the packed analyzer. -->
+    <PackageReference Include="Wireloom.Dds.Generator" Version="$(WireloomDdsGeneratorPackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="Rti.ConnextDds" Version="$(RtiConnextDdsVersion)" />
+    <PackageReference Update="Shouldly" Version="4.3.0" />
+    <PackageReference Update="xunit.v3.mtp-v2" Version="3.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Run the runtime-contract suite against the packed analyzer as well. -->
+    <Compile Include="../Wireloom.Dds.CSharp.RuntimeContracts/**/*.cs"
+             Exclude="../Wireloom.Dds.CSharp.RuntimeContracts/bin/**;../Wireloom.Dds.CSharp.RuntimeContracts/obj/**;../Wireloom.Dds.CSharp.RuntimeContracts/scripts/**"
+             Link="RuntimeContracts/%(RecursiveDir)%(Filename)%(Extension)" />
+    <DdsIdl Include="../Wireloom.Dds.CSharp.RuntimeContracts/Fixtures/*.idl" SequenceSize="100" StringSize="255" />
+    <DdsIdl Update="../Wireloom.Dds.CSharp.RuntimeContracts/Fixtures/recursive-startup.idl" UnboundedSupport="true" />
+    <DdsIdl Include="Fixtures/legacy-sequence-arrays.idl" SequenceArrayMapping="RtiCSharp" />
+    <DdsIdl Include="Fixtures/configured-limits.idl" SequenceSize="7" StringSize="19" />
+    <DdsIdl Include="Fixtures/project-limits.idl" />
+    <DdsIdl Include="Fixtures/unbounded-support.idl" SequenceSize="7" StringSize="9" UnboundedSupport="true" />
+    <DdsIdl Include="Fixtures/strict-identifiers.idl" />
+    <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-integration.idl" />
+    <DdsIdl Include="..\..\docs\corpus\idl\features\09-optional-recursive-array.idl" Condition="'$(RtiConnextDdsVersion)' != '6.1.2'" />
+    <DdsIdl Include="..\..\docs\corpus\idl\features\06-aggregates.idl" Condition="'$(RtiConnextDdsVersion)' != '6.1.2'" />
+    <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-modules.idl" />
+    <DdsIdl Include="..\..\docs\corpus\idl\integration\contracts\13-alias-inheritance.idl" />
+    <DdsIdl Include="..\..\docs\corpus\idl\integration\collections\13-compositions.idl" />
+    <DdsIdl
+      Include="..\PackageIntegrationIncludeDirectories\FirstRoot.idl"
+      Defines="PACKAGE_FEATURE"
+      Undefines="PACKAGE_DISABLED"
+      Strict="$(PackageIntegrationStrict)" />
+    <DdsIdl Include="..\PackageIntegrationIncludeDirectories\SecondRoot.idl" />
+    <DdsIdl
+      Include="..\PackageIntegrationIncludeDirectories\LateRoot.idl"
+      IncludeDirectories="$(MSBuildProjectDirectory)\..\PackageIntegrationIncludeDirectories\Late" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\docs\corpus\idl\integration\shared\13-status.idl" Generate="false" />
+    <AdditionalFiles Include="..\UnmarkedAdditionalFile.idl" Generate="false" />
+    <!-- This root is intentionally also listed as AdditionalFiles. The
+         package target must preserve its DdsIdl generation-root semantics. -->
+    <AdditionalFiles Include="..\PackageIntegrationIncludeDirectories\FirstRoot.idl" />
+  </ItemGroup>
+
+  <Target Name="VerifyPerRootIncludedIdlTracking" AfterTargets="WireloomTrackPerRootIncludedIdl" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_TrackedLateIncludedFile
+        Include="@(AdditionalFiles)"
+        Condition="'%(AdditionalFiles.Filename)%(AdditionalFiles.Extension)' == 'late-included.idl'" />
+    </ItemGroup>
+
+    <Error
+      Condition="'@(_TrackedLateIncludedFile)' == ''"
+      Text="The package target did not track the included IDL file from a late DdsIdl include directory." />
+  </Target>
+
+  <Target Name="VerifyDdsIdlBuildMetadata" AfterTargets="WireloomPrepareIdlInputs" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_MetadataRoot Include="@(AdditionalFiles)"
+                     Condition="'%(AdditionalFiles.Filename)%(AdditionalFiles.Extension)' == 'FirstRoot.idl'" />
+    </ItemGroup>
+
+    <Error
+      Condition="'@(_MetadataRoot)' == '' or '%(_MetadataRoot.Generate)' != 'true' or '%(_MetadataRoot.Strict)' != '$(PackageIntegrationStrict)' or '%(_MetadataRoot.Defines)' != 'PACKAGE_FEATURE' or '%(_MetadataRoot.Undefines)' != 'PACKAGE_DISABLED'"
+      Text="The package target did not preserve DdsIdl generation metadata." />
+  </Target>
+  <ItemGroup Condition="'$(RtiConnextDdsVersion)' == '6.1.2'">
+    <Compile Remove="OptionalRecursiveArraySpecs.cs" />
+  </ItemGroup>
+
+  <Import Project="../Wireloom.Dds.CSharp.RuntimeContracts/RuntimeContractProfile.targets" />
+</Project>

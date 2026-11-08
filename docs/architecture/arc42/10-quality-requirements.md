@@ -56,7 +56,7 @@ and [concepts](08-crosscutting-concepts.md).
   developer-experience differences and qualify behavior separately; source resemblance alone is insufficient.
 - **Validation / gaps:** [Compatibility policy](09-architectural-decisions.md#921-compatibility-policy-evolution),
   [migration contracts](../../migration/rtiddsgen-to-wireloom.md#generated-c-api-differences), and
-  [runtime contracts](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md).
+  [runtime contracts](../../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md).
   Adoption exposure is recorded in [R01](11-risks-and-technical-debt.md#r01);
   the [support policy](../../guides/support-and-compatibility.md#rti-version-qualification) defines the unbounded qualification envelope.
 
@@ -69,7 +69,7 @@ and [concepts](08-crosscutting-concepts.md).
   allocation/cleanup modes match their documented contracts. No covered ownership or lifecycle regression is acceptable.
 - **Validation / gaps:**
   [Value/resource concept](08-crosscutting-concepts.md#84-generated-values-and-resource-ownership) and
-  [runtime coverage matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix). Managed
+  [runtime coverage matrix](../../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md#coverage-matrix). Managed
   behavior, native conversion, and DDS behavior have separate evidence and gaps;
   [R02](11-risks-and-technical-debt.md#r02) records the known enum-array default mismatch.
 
@@ -475,8 +475,7 @@ Detailed current measurements and findings stay in the
 [generated-C# report](../../corpus/csharp-quality.md),
 [incremental baseline](../../performance/incremental-generator-baseline.md),
 [browser qualification](../../testing/playground-qualification.md), and
-[runtime contract matrix](../../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md#coverage-matrix).
-
+[runtime contract matrix](../../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md#coverage-matrix).
 ---
 
 [< 9. Architectural decisions](09-architectural-decisions.md) | [Index](index.md) | [11. Risks and technical debt >](11-risks-and-technical-debt.md)

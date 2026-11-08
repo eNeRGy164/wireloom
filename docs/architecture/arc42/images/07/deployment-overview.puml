@@ -8,7 +8,7 @@ cloud "NuGet feed" as feed
 node "Developer workstation or CI build agent" as build {
   folder "Restored Wireloom.Dds.Generator package" as cache {
     artifact "build/\nWireloom.Dds.Generator.targets" as targets
-    artifact "analyzers/dotnet/cs/\nWireloom.Dds.Generator.dll\nWireloom.Dds.Compiler.dll\n+ XML documentation" as dlls
+    artifact "analyzers/dotnet/cs/\nWireloom.Dds.Generator.dll\nWireloom.Dds.CSharp.Compiler.dll\nWireloom.Dds.Idl.dll\n+ XML documentation" as dlls
   }
   node "Compatible .NET SDK / MSBuild / Roslyn host" as sdk {
     rectangle ".NET build integration\nMSBuild integration + Roslyn adapter" as integration <<whitebox>>
