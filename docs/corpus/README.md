@@ -33,8 +33,9 @@ corpus/
 
 The root `idl/` inventory is shared by all three profiles. Versioned files record
 RTI C# and C++ generation outcomes and Wireloom output independently. RTI
-outputs live under `<version>/rtiddsgen/`; Wireloom exports live under
-`<version>/generator/`. Generated contracts compile against each profile's exact
+outputs live under `<version>/rtiddsgen/`. Wireloom C# exports live under
+[`7.7.0/generator/csharp/`](7.7.0/generator/csharp/) and the earlier profiles'
+`generator/` folders. Generated contracts compile against each profile's exact
 NuGet package. The [LTS overview](LTS-PROFILES.md) records oracle, runtime,
 package, and wire coverage by version; retained full wire runs include failures.
 See the [exact-package records](../releases/README.md) and
@@ -69,7 +70,7 @@ Dedicated C149, `05-array-of-sequences-idl`, uses a separately named IDL file
 whose contents match C018 (`05-array-of-sequences`). Its
 `sequenceArrayMapping: "Idl"` setting is an ordinary per-case input. Both
 profile exports retain its generated sources under
-`<version>/generator/features/05-array-of-sequences-idl/`; ordinary compliance
+`<export-root>/features/05-array-of-sequences-idl/`; ordinary compliance
 tests compare those sources with fresh generation. The case deliberately has
 no RTI C# oracle because that binding flattens this direct IDL form.
 
@@ -284,13 +285,14 @@ Prefer `Export-CorpusGeneratorSources.ps1` for locked restore and retained
 source/output hashes, SDK details, and test logs. The direct command below is
 an export-only alternative and does not create that provenance bundle.
 
-Set `CORPUS_RTI_PROFILE` to `7.3.1` or `7.7.0` and set
-`CORPUS_GENERATOR_EXPORT_ROOT` to the matching version's `generator/` folder.
-The export test writes sources under `<profile>/generator/<source-kind>/<case-id>`:
+Set `CORPUS_RTI_PROFILE` to the profile version and set
+`CORPUS_GENERATOR_EXPORT_ROOT` to its C# export folder, as defined by
+`generatorSourceRoot` in the profile manifest. The export test writes sources
+under `<export-root>/<source-kind>/<case-id>`.
 
 ```powershell
 $env:CORPUS_RTI_PROFILE = "7.7.0"
-$env:CORPUS_GENERATOR_EXPORT_ROOT = "docs/corpus/7.7.0/generator"
+$env:CORPUS_GENERATOR_EXPORT_ROOT = "docs/corpus/7.7.0/generator/csharp"
 dotnet run --project tests/Wireloom.Dds.Generator.CorpusCompliance/Wireloom.Dds.Generator.CorpusCompliance.csproj --configuration Release -- --filter-method Wireloom.Dds.Generator.CorpusCompliance.CorpusComplianceSpecs.ExportAcceptedCorpusSources
 ```
 

@@ -15,7 +15,7 @@ See [feature coverage](FEATURE-COVERAGE.md) for current compatibility limits.
 | :---------- | :------------------------------------------------------------------- | :----------------------------------- | :------------------------------------------------------------------------------------------ |
 | 6.1.2       | [Feature coverage](6.1.2/FEATURE-COVERAGE.md); C# and C++11 captures | [Retained exports](6.1.2/generator/) | Exact-version runtime and wire evidence; see profile-specific limits and recorded outcomes. |
 | 7.3.1       | [Feature coverage](7.3.1/FEATURE-COVERAGE.md); C# and C++11 captures | [Retained exports](7.3.1/generator/) | Exact-version runtime and wire evidence; see profile-specific limits and recorded outcomes. |
-| 7.7.0       | [Feature coverage](7.7.0/FEATURE-COVERAGE.md); C# and C++11 captures | [Retained exports](7.7.0/generator/) | Exact-version runtime and wire evidence; see profile-specific limits and recorded outcomes. |
+| 7.7.0       | [Feature coverage](7.7.0/FEATURE-COVERAGE.md); C# and C++11 captures | [Retained exports](7.7.0/generator/csharp/) | Exact-version runtime and wire evidence; see profile-specific limits and recorded outcomes. |
 
 The resolved RTI assembly selects the API profile. Generation, compilation,
 runtime, and wire evidence establish different results for each exact release;
@@ -60,14 +60,15 @@ and input/output hashes:
 ./Export-CorpusGeneratorSources.ps1 -OutputRoot artifacts/corpus-reproduction
 ```
 
-Use a new `-OutputRoot` for comparison. Sources go to
-`<OutputRoot>/<version>/generator/`; evidence goes to `artifacts/corpus-export-.../`.
+Use a new `-OutputRoot` for comparison. C# sources go to the profile's
+`generatorSourceRoot` under `<OutputRoot>/<version>/`. Evidence goes to
+`artifacts/corpus-export-.../`.
 Use `-Profile 6.1.2`, `-Profile 7.3.1`, or `-Profile 7.7.0` for one profile.
 Every profile selects `CorpusSuite=Generation`: the same inventory-wide
 generation, exact-runtime compilation, and export checks. Detailed oracle
 comparisons run separately with `CorpusSuite=Oracle` as shown above.
-Without `-OutputRoot`, the script updates
-`docs/corpus/<version>/generator/` but leaves obsolete files for manual review.
+Without `-OutputRoot`, the script updates the C# export root under
+`docs/corpus/<version>/` and leaves obsolete files for manual review.
 
 ## Capture RTI C# and C++ oracles
 

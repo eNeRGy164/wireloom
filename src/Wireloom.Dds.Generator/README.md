@@ -265,16 +265,16 @@ describes how bounds relate to mutation and DDS processing.
 | `union Choice switch(Kind) { case Number: long number; ... };`      | `int number`; assigning selects the branch. Reading an inactive branch throws `InvalidOperationException`.                        | Same generated branch API and guard.                                                                  | [RTI][rti-07] · [generated][wire-07] · [runtime test][union-test] |
 
 [rti-01]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/rtiddsgen/csharp/features/01-primitives/
-[wire-01]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/features/01-primitives/
+[wire-01]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/csharp/features/01-primitives/
 [rti-05]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/rtiddsgen/csharp/features/05-collections/
-[wire-05]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/features/05-collections/
+[wire-05]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/csharp/features/05-collections/
 [rti-09]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/rtiddsgen/csharp/features/09-optional-collections/
-[wire-09]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/features/09-optional-collections/
+[wire-09]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/csharp/features/09-optional-collections/
 [rti-05a]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/rtiddsgen/csharp/features/05-unbounded-sequence-aliases/
-[wire-05a]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/features/05-unbounded-sequence-aliases/
+[wire-05a]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/csharp/features/05-unbounded-sequence-aliases/
 [cov-c136]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/FEATURE-COVERAGE.md#positive-cases
 [rti-07]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/rtiddsgen/csharp/features/07-union-enum/
-[wire-07]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/features/07-union-enum/
+[wire-07]: https://github.com/eNeRGy164/wireloom/blob/main/docs/corpus/7.7.0/generator/csharp/features/07-union-enum/
 [union-test]: https://github.com/eNeRGy164/wireloom/blob/main/tests/Wireloom.Dds.Generator.RuntimeContracts/Unions/UnionSpecs.cs
 
 This is a quick reference, not a complete mapping catalog. Consult the

@@ -5,7 +5,7 @@
   "rtiddsgenVersion": "4.7.0",
   "sharedCaseInventory": "../manifest.json",
   "wireQualification": "qualified-evidence-indexed-in-root-feature-coverage",
-  "generatorSourceRoot": "generator",
+  "generatorSourceRoot": "generator/csharp",
   "oracleRoot": "rtiddsgen/csharp",
   "oracleCaseCount": 172,
   "characterizationProbes": [
