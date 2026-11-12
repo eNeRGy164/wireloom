@@ -44,7 +44,8 @@ internal sealed record SourceSnapshotEvidence(string Revision, string DirtySnaps
         var revision = RunGit(repositoryRoot, "rev-parse", "HEAD").Trim();
         var changed = ReadPorcelainStatus(RunGit(repositoryRoot, "status", "--porcelain=v1", "-z", "--untracked-files=all", "--no-renames"));
 
-        var files = changed.OrderBy(item => item.Key, StringComparer.Ordinal)
+        var files = changed.Where(item => !IsArchitectureDocumentation(item.Key))
+            .OrderBy(item => item.Key, StringComparer.Ordinal)
             .Select(item => new SourceSnapshotFile(item.Key.Replace('\\', '/'), item.Value,
                 item.Value == "deleted" ? "DELETED" : HashFile(ResolvePath(repositoryRoot, item.Key)), null))
             .ToArray();
@@ -188,6 +189,9 @@ internal sealed record SourceSnapshotEvidence(string Revision, string DirtySnaps
 
         return path;
     }
+
+    private static bool IsArchitectureDocumentation(string relativePath) =>
+        relativePath.Replace('\\', '/').StartsWith("docs/architecture/", StringComparison.Ordinal);
 
     private static string RunGit(string repositoryRoot, params string[] arguments)
     {

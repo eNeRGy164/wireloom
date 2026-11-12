@@ -11,4 +11,7 @@ public static class PeerNames
 
     /// <summary>Native RTI control peer.</summary>
     public const string RtiCpp = "RTI C++";
+
+    /// <summary>Wireloom-generated Modern C++ peer.</summary>
+    public const string WireloomCpp = "Wireloom C++";
 }

@@ -12,12 +12,22 @@ internal sealed record ManagedPeer(string TypeName, string Path, bool Available,
 /// <param name="Paths">Isolated build paths.</param>
 /// <param name="Wireloom">Wireloom managed peer.</param>
 /// <param name="Rti">RTI-generated managed control peer.</param>
-internal sealed record PreparedCase(CaseDescriptor Descriptor, CaseWorkspace Paths, ManagedPeer Wireloom, ManagedPeer Rti);
+internal sealed record PreparedCase(CaseDescriptor Descriptor, CaseWorkspace Paths, ManagedPeer Wireloom, ManagedPeer Rti,
+    bool WireloomCppAvailable, string WireloomCppFailure);
 
 /// <summary>A case that can participate in the exchange scheduler.</summary>
 /// <param name="Case">Staged case and managed peer availability.</param>
 /// <param name="NativePeer">Successfully compiled native executable.</param>
-internal sealed record BuiltCase(PreparedCase Case, string NativePeer);
+internal sealed record BuiltCase(PreparedCase Case, string NativePeer, bool NativePeerAvailable, string NativePeerFailure,
+    string? WireloomCppPeer);
+
+/// <summary>Configuration outcomes for one case's RTI and optional Wireloom C++ peers.</summary>
+internal sealed record NativePeerConfiguration(BuildOutcome RtiOutcome, BuildOutcome? WireloomCppOutcome,
+    bool WireloomCppAvailable, string WireloomCppFailure);
+
+/// <summary>Independent build outcomes for one case's RTI and optional Wireloom C++ peers.</summary>
+internal sealed record NativePeerBuildResult(BuildOutcome RtiOutcome, BuildOutcome? WireloomCppOutcome,
+    string? WireloomCppPeer);
 
 /// <summary>A case build or preparation outcome, retained independently of workflow exit status.</summary>
 /// <param name="CaseId">Corpus identifier.</param>

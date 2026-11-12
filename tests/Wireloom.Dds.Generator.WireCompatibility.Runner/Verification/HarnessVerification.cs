@@ -27,19 +27,21 @@ internal static class HarnessVerification
             VerifyReportRecovery(options);
 
             ScenarioPlanningVerification.Run(options);
+            NativePeerScopePlanningVerification.Run(options);
             PeerPairingVerification.Run(options);
             CaseDiscoveryVerification.Run(new MatrixWorkspace(options));
             FixtureCatalogVerification.Run();
             WireOracleCatalogVerification.Run(options);
+            CppOracleCatalogVerification.Run(options);
             WireloomTypeDiscoveryVerification.Run(options);
             GenerationProvenanceVerification.Run(options);
             ReportRenderingVerification.Run(options);
 
             var processes = new ProcessRunner(options.RepositoryRoot);
 
-        await CaseMetadataVerification.RunAsync(options);
-            await RtiTypeDiscoveryVerification.RunAsync(options, processes);
             await VerifyInProcessBuildsAsync(options);
+            await CaseMetadataVerification.RunAsync(options);
+            await RtiTypeDiscoveryVerification.RunAsync(options, processes);
 
             Console.WriteLine("Harness recovery and in-process build contracts passed: partial evidence, stale-artifact isolation, report failures, native build failure, empty scheduler input; no RTI license required.");
 
@@ -156,12 +158,12 @@ internal static class HarnessVerification
 
         var prepared = new PreparedCase(new CaseDescriptor("example", "Example.Type", "Example::Type", "example.idl"), paths,
             new ManagedPeer("Example.Type", paths.WireloomPeer, true, "Wireloom unavailable"),
-            new ManagedPeer("-", paths.RtiPeer, false, "RTI unavailable"));
+            new ManagedPeer("-", paths.RtiPeer, false, "RTI unavailable"), false, "Wireloom C++ is not selected for this case.");
 
         var cases = new CorpusCaseCatalog(workspace.Manifest);
         var oracles = new WireOracleCatalog(workspace.OracleManifest);
         var sources = new NativePeerSources(options, workspace, cases, oracles);
-        var nativeBuilder = new NativePeerBuilder(options, workspace, sources, processes, new WorkflowLog());
+        var nativeBuilder = new NativePeerBuilder(options, workspace, sources, cases, processes, new WorkflowLog());
 
         // Act: a nonexistent CMake tree is a handled build failure in the in-process builder.
         var build = await nativeBuilder.BuildAsync([prepared]);
@@ -169,7 +171,21 @@ internal static class HarnessVerification
 
         // Assert
         Check(build.HasIssues && !outcome.IsCompiled, "A missing CMake build tree must be reported as a handled native compilation failure.");
-        Check(outcome.CaseId == "example" && outcome.Detail == $"see {paths.NativeBuildLog}", "Native build identity and failure-log paths must survive the in-process build flow.");
+        Check(build.Cases is [{ NativePeerAvailable: false, WireloomCppPeer: null }],
+            "A case must remain schedulable when both native peers fail to build.");
+        var managedOnlyPrepared = prepared with
+        {
+            Rti = new ManagedPeer("Example.RtiType", paths.RtiPeer, true, "RTI unavailable"),
+        };
+        var retainedCaseBuild = ExchangeCaseBuild.From(build.Cases.Single() with { Case = managedOnlyPrepared });
+        Check(ExchangeScheduler.MissingPeerReason(retainedCaseBuild, "wireloom-cs", "rti-cs") is null,
+            "Native build failures must not block an available managed-only exchange.");
+        Check(ExchangeScheduler.MissingPeerReason(retainedCaseBuild, "rti-cpp", "wireloom-cpp") is not null,
+            "Only exchanges requiring a missing native peer must be marked unavailable.");
+        var retainedBuildLog = Path.Combine(workspace.Logs, "example-rti-cpp-build.log");
+        var retainedBuildLogReference = Path.GetRelativePath(options.RepositoryRoot, retainedBuildLog).Replace('\\', '/');
+        Check(outcome.CaseId == "example" && outcome.Detail == $"see {retainedBuildLogReference}"
+            && File.Exists(retainedBuildLog), "Native build identity and retained failure-log paths must survive the in-process build flow.");
 
         // Arrange
         await File.WriteAllTextAsync(workspace.Scenarios, string.Empty);
@@ -180,10 +196,37 @@ internal static class HarnessVerification
             CompileOnly = false
         };
         var exchangeRunner = new ExchangeRunner(exchangeOptions, workspace, new WorkflowLog());
-        var exchange = await exchangeRunner.RunAsync(MatrixPlan.Empty, new PeerPreparationResult([new BuiltCase(prepared, paths.NativePeer)], [], false));
+        var exchange = await exchangeRunner.RunAsync(MatrixPlan.Empty,
+            new PeerPreparationResult([new BuiltCase(prepared, paths.NativePeer, true, string.Empty, null)], [], false));
 
         // Assert
         Check(!exchange, "The in-process scheduler must accept an empty plan without launching peers.");
+
+        // Arrange: a planned row whose native configuration failed must still receive explicit failure evidence.
+        var scenario = new PlannedScenario("example", "default", PeerNames.WireloomCpp, PeerNames.RtiCpp, "7.7.0");
+        var scenarioPlan = new ScenarioPlan("7.7.0", 0, 1,
+            [new PlannedCase("example", 0, [scenario])], [scenario],
+            new HashSet<string>(StringComparer.Ordinal),
+            new HashSet<string>(["example"], StringComparer.Ordinal),
+            new HashSet<string>(StringComparer.Ordinal));
+        var matrixPlan = new MatrixPlan(["example"], new HashSet<string>(StringComparer.Ordinal), scenarioPlan);
+        var scenarioRow = new ScenarioRow("example", "", "", "", scenario.Writer, "7.7.0",
+            scenario.Reader, "7.7.0", "NOT_RUN", scenario.Fixture);
+        await File.WriteAllTextAsync(workspace.Scenarios, scenarioRow.ToTsv() + Environment.NewLine);
+        var unpreparedPeerOutcomes = new PeerPreparationResult([],
+            [new BuildOutcome("example", "cmake-configure-failed", "cmake-configure.log")], true);
+
+        // Act
+        var missingPeerExchange = await exchangeRunner.RunAsync(matrixPlan, unpreparedPeerOutcomes);
+        var updatedScenario = ScenarioRow.Parse((await File.ReadAllTextAsync(workspace.Scenarios)).Trim());
+        var failureLog = await File.ReadAllTextAsync(Path.Combine(exchangeOptions.OutputDirectory, "logs",
+            "example-default-wireloom-cpp-rti-cpp.log"));
+
+        // Assert
+        Check(missingPeerExchange && updatedScenario.Status == "FAIL",
+            "A planned exchange for an unprepared case must be marked FAIL instead of remaining NOT_RUN.");
+        Check(failureLog.Contains("cmake-configure-failed: cmake-configure.log", StringComparison.Ordinal),
+            "An unprepared exchange failure log must retain its matching native build diagnostic.");
     }
 
     private static void Check(bool condition, string message)

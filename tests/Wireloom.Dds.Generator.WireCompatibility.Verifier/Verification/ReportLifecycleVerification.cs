@@ -69,7 +69,7 @@ internal sealed class ReportLifecycleVerification
                 .Single(line => line.Contains("`sparse-omitted`", StringComparison.Ordinal));
             Check((int)sparseReport["scenarioCount"]! == 1
                 && (string?)sparseReport["scenarios"]![0]!["status"] == "NOT_RUN"
-                && sparseReportRow.Split('|').Count(cell => cell.Trim() == "N/A") == 8
+                && sparseReportRow.Split('|').Count(cell => cell.Trim() == "N/A") == 15
                 && sparseReportRow.Contains("**RTI C++ → Wireloom:**", StringComparison.Ordinal)
                 && !sparseReportRow.Contains("Wireloom → Wireloom", StringComparison.Ordinal),
                 $"Sparse report rows show only one planned NOT_RUN exchange; row: {sparseReportRow}");
@@ -77,7 +77,7 @@ internal sealed class ReportLifecycleVerification
 
         Check((int)ReadJson(baseline)["notApplicableCount"]! == 1, "Unavailable features are recorded separately from failures.");
         Check(ReadJson(baseline)["scenarios"]!.AsArray().All(item => (string?)item!["case"] != "09-must-understand"), "Unavailable features add no exchanges to the denominator.");
-        Check(File.ReadAllText(Path.Combine(merged, "results.md")).Contains("Not applicable", StringComparison.Ordinal), "The Markdown report explains unavailable features.");
+        Check(File.ReadAllText(Path.Combine(merged, "results.md")).Contains("Peer pairing exclusions", StringComparison.Ordinal), "The Markdown report explains unavailable peer scopes.");
 
         var unavailableSeed = Path.Combine(root, "unavailable.tsv");
         var unavailableRow = rows[0] with { CaseId = "09-must-understand" };

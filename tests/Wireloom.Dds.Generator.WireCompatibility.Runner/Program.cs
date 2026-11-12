@@ -27,7 +27,7 @@ try
     var planner = new MatrixPlanner(options, workspace, log);
     var managed = new ManagedPeerBuilder(options, workspace, cases, oracles, processes, log);
     var sources = new NativePeerSources(options, workspace, cases, oracles);
-    var native = new NativePeerBuilder(options, workspace, sources, processes, log);
+    var native = new NativePeerBuilder(options, workspace, sources, cases, processes, log);
     var provenance = new GenerationProvenanceRecorder(options, workspace);
     var preparation = new PeerPreparation(options, workspace, discovery, managed, native, provenance, log);
     var exchanges = new ExchangeRunner(options, workspace, log);

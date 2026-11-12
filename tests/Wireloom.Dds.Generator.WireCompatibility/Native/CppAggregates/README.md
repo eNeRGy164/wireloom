@@ -29,5 +29,5 @@ cmake --build artifacts/cpp-native-aggregates --config Release
 ctest --test-dir artifacts/cpp-native-aggregates -C Release --output-on-failure
 ```
 
-See [C019 native evidence](../../../../../docs/corpus/7.7.0/cpp-evidence/C019-06-aggregates.windows-x64.json)
-and the [C++ coverage matrix](../../../../../docs/corpus/CPP-COVERAGE.md).
+See [RTI 7.7.0 corpus profile](../../../../docs/corpus/7.7.0/FEATURE-COVERAGE.md)
+and the [Modern C++ generator guide](../../../../src/Wireloom.Dds.Cpp.Generator/README.md).

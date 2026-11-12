@@ -2,7 +2,7 @@
 
 namespace Wireloom.Dds.Generator.WireCompatibility;
 
-/// <summary>Builds character unions without DynamicData discriminator coercion.</summary>
+/// <summary>Builds boundary unions without DynamicData discriminator coercion.</summary>
 internal static partial class ManagedFixtures
 {
 #if WIRE_COMPATIBILITY_NUMERIC_CHAR_UNION

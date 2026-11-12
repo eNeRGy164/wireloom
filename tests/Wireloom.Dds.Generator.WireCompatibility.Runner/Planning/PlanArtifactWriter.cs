@@ -25,6 +25,8 @@ internal static class PlanArtifactWriter
             rtiVersion = plan.RtiVersion,
             shardCount = plan.ShardCount,
             expectedScenarioCount = plan.TotalScenarioCount,
+            wireloomCppCases = plan.WireloomCppCases.Order(StringComparer.Ordinal).ToArray(),
+            nativePeerScopeCases = plan.NativePeerScopeCases.Order(StringComparer.Ordinal).ToArray(),
             cases = plan.Cases.Select(item => new
             {
                 id = item.CaseId,

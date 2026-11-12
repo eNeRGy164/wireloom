@@ -9,6 +9,7 @@ internal static class ReportProblemReader
         var peerIds = new Dictionary<string, string>
         {
             ["Wireloom C#"] = "wireloom-cs",
+            ["Wireloom C++"] = "wireloom-cpp",
             ["RTI C#"] = "rti-cs",
             ["RTI C++"] = "rti-cpp",
         };

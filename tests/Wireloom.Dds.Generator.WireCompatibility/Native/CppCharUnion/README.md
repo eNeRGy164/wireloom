@@ -16,5 +16,5 @@ CTest compares each full RTI and Wireloom capture byte for byte.
 This qualifies local metadata, registration, and CDR only for this exact IDL
 shape. It does not test live DDS exchange or qualify other char-discriminator
 forms. See the
-[`07-union-char.windows-x64.json`](../../../../docs/corpus/7.7.0/cpp-evidence/07-union-char.windows-x64.json)
-report and the [C++ coverage matrix](../../../../docs/corpus/CPP-COVERAGE.md).
+[RTI 7.7.0 corpus profile](../../../../docs/corpus/7.7.0/FEATURE-COVERAGE.md)
+report and the [Modern C++ generator guide](../../../../src/Wireloom.Dds.Cpp.Generator/README.md).

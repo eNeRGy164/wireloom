@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Wireloom.Dds.Generator.WireCompatibility.Runner;
 
 namespace Wireloom.Dds.Generator.WireCompatibility.Verifier.Verification;
 
@@ -29,7 +30,14 @@ internal sealed class ReportProvenanceVerification
 
         var idlScenarios = ReadJson(baseline)["scenarios"]!.AsArray()
             .Where(item => (string?)item!["case"] == "05-array-of-sequences-idl").ToArray();
-        Check(idlScenarios.Length == 16 && idlScenarios.All(item =>
+        var idlDefinition = ReadJson(manifestPath)["positiveCases"]!.AsArray()
+            .Single(item => (string?)item!["id"] == "05-array-of-sequences-idl")!;
+        var idlFixtures = new[] { "sequence-empty", "sequence-unequal", "sequence-mixed-empty", "sequence-boundary" };
+        var excludedManagedPeer = PeerNames.RtiCSharp;
+        var expectedIdlScenarioCount = idlFixtures.Sum(fixture =>
+            PeerPairingPolicy.GetPairings(idlDefinition, fixture, rtiVersion, includeWireloomCpp: true)
+                .Count(pairing => pairing.Writer != excludedManagedPeer && pairing.Reader != excludedManagedPeer));
+        Check(idlScenarios.Length == expectedIdlScenarioCount && idlScenarios.All(item =>
                 (string?)item!["generationProvenance"]!["sequenceArrayMapping"] == "Idl"
                 && (string?)item["generationProvenance"]!["rtiVersion"] == rtiVersion
                 && item["generationProvenance"]!["generatedSources"]!.AsArray().Count > 0),
@@ -73,9 +81,9 @@ internal sealed class ReportProvenanceVerification
             })
             .ToArray();
         Check(idlMarkdownRows.Length == 4 && idlMarkdownRows.All(line =>
-                line.Split("N/A").Length == 6
+                new[] { 4, 6, 7, 8, 17 }.All(index => line.Split('|', StringSplitOptions.TrimEntries)[index] == "N/A")
                 && !line.Contains("❔", StringComparison.Ordinal)),
-            "Each IDL-preserving fixture reports five excluded RTI C# pairings as N/A rather than missing exchanges.");
+            "Each IDL-preserving fixture reports every excluded RTI C# pairing as N/A rather than missing exchanges.");
 
         // Arrange / Act / Assert: missing or different generation provenance must not qualify.
         var provenanceFile = Path.Combine(merged, "logs", "05-array-of-sequences-idl-generation.json");

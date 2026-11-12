@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "case": "01-primitives",
+      "liveDds": [
+        {
+          "fixture": "default",
+          "pairings": [
+            "RTI C++|Wireloom C++",
+            "Wireloom C++|RTI C++"
+          ]
+        }
+      ]
+    }
+  ]
+}

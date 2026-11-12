@@ -1,0 +1,20 @@
+enum Color { RED, GREEN, BLUE };
+typedef long LongAlias;
+typedef Color ColorAlias;
+typedef sequence<long, 4> BoundedLongs;
+typedef string<16> BoundedLabel;
+
+struct CollectionSample {
+    long fixed_values[3];
+    sequence<long, 4> values;
+    BoundedLongs aliased_values;
+    string<16> label;
+    BoundedLabel aliased_label;
+    sequence<string<16>, 2> labels;
+    Color color;
+    sequence<Color, 2> colors;
+    LongAlias alias_value;
+    ColorAlias alias_color;
+    @optional long optional_value;
+    @optional string<16> optional_label;
+};

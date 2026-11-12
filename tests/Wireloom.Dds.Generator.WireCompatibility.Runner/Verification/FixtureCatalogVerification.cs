@@ -46,6 +46,8 @@ internal static class FixtureCatalogVerification
             }
         }
 
+        VerifyCppGeneratorArguments();
+
         // Act: alternate profile queries so a previous lookup cannot leak its sparse fixture.
         var newer = WireCompatibilityCaseCatalog.FixturesFor("14-typed-defaults", "7.7.0");
         var older = WireCompatibilityCaseCatalog.FixturesFor("14-typed-defaults", "7.3.1");
@@ -57,6 +59,29 @@ internal static class FixtureCatalogVerification
         Check(newerAgain.SequenceEqual(newer, StringComparer.Ordinal), "Fixture lookups must remain independent across profiles.");
 
         Console.WriteLine("Fixture catalog passed: defaults, named fixture order, RTI-only controls, and sparse typed-default profile isolation; no utility subprocess required.");
+    }
+
+    private static void VerifyCppGeneratorArguments()
+    {
+        // Arrange
+        var metadata = new CaseMetadata("features/sample.idl", "RtiCSharp", ["FEATURE_X"], ["-unboundedSupport"], []);
+        var includeDirectories = new[] { "corpus/idl", "tests/IdlWrappers" };
+
+        foreach (var version in new[] { "6.1.2", "7.3.1", "7.7.0" })
+        {
+            // Act
+            var arguments = NativePeerBuilder.CreateCppGeneratorArguments(
+                "Wireloom.Dds.Cpp.dll", version, "sample.idl", "generated", metadata, includeDirectories);
+
+            // Assert
+            var versionIndex = Array.IndexOf(arguments.ToArray(), "--rti-version");
+            Check(versionIndex >= 0 && arguments[versionIndex + 1] == version,
+                $"Wireloom C++ generation must receive exact RTI profile {version}.");
+            Check(arguments.Contains("--define") && arguments.Contains("FEATURE_X") &&
+                  arguments.Contains("--include-directory") && arguments.Contains("corpus/idl") &&
+                  arguments.Contains("--unbounded-support"),
+                "Profile propagation must retain the case's defines, include directories, and unbounded-support option.");
+        }
     }
 
     private static void Check(bool condition, string message)

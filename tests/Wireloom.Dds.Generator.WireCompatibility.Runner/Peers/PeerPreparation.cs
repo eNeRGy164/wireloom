@@ -11,6 +11,7 @@ internal sealed class PeerPreparation(MatrixOptions options, MatrixWorkspace wor
         var hasIssues = managedBatch.HasIssues;
 
         var prepared = new List<PreparedCase>();
+        var unconfiguredCases = new List<BuiltCase>();
         var outcomes = new List<BuildOutcome>();
 
         for (var index = 0; index < plan.CaseIds.Count; index++)
@@ -24,9 +25,21 @@ internal sealed class PeerPreparation(MatrixOptions options, MatrixWorkspace wor
                 var item = await PrepareCaseAsync(caseId, plan, managedBatch);
                 hasIssues |= item.HasManagedIssues;
 
-                if (!item.NativeOutcome.IsConfigured)
+                if (!item.Configuration.RtiOutcome.IsConfigured)
                 {
-                    outcomes.Add(item.NativeOutcome);
+                    outcomes.Add(item.Configuration.RtiOutcome);
+                    if (item.Configuration.WireloomCppOutcome is not null)
+                    {
+                        outcomes.Add(item.Configuration.WireloomCppOutcome);
+                    }
+                    var unconfiguredCase = item.Case with
+                    {
+                        WireloomCppAvailable = false,
+                        WireloomCppFailure = item.Configuration.WireloomCppFailure,
+                    };
+                    unconfiguredCases.Add(new BuiltCase(unconfiguredCase, item.Case.Paths.NativePeer,
+                        NativePeerAvailable: false, NativePeerFailure: item.Configuration.RtiOutcome.Detail,
+                        WireloomCppPeer: null));
                     hasIssues = true;
                     continue;
                 }
@@ -49,7 +62,8 @@ internal sealed class PeerPreparation(MatrixOptions options, MatrixWorkspace wor
         PeerBuildFiles.WriteCompilation(workspace.CppResults, outcomes);
         log.Phase("peer-preparation", $"wireloom-cases={plan.CaseIds.Count} native-peers={nativeBatch.Cases.Count}");
 
-        return new PeerPreparationResult(nativeBatch.Cases, outcomes, hasIssues || nativeBatch.HasIssues);
+        return new PeerPreparationResult([.. nativeBatch.Cases, .. unconfiguredCases], outcomes,
+            hasIssues || nativeBatch.HasIssues);
     }
 
     private async Task<PreparedCaseResult> PrepareCaseAsync(string caseId, MatrixPlan plan, ManagedBuildBatch managedBatch)
@@ -58,10 +72,14 @@ internal sealed class PeerPreparation(MatrixOptions options, MatrixWorkspace wor
         Directory.CreateDirectory(paths.Native);
         Directory.CreateDirectory(paths.WireloomBin);
 
+        var usesNativePeerScope = plan.NativePeerScopeCases.Contains(caseId);
         var wireloomAvailable = managedBatch.Outcomes.TryGetValue(caseId, out var build) && build.IsCompiled;
-        var descriptor = DescribeCase(paths, plan.RtiOnlyCases.Contains(caseId), wireloomAvailable, build?.Detail);
+        var descriptor = usesNativePeerScope
+            ? native.DescribeNativePeerScopeCase(caseId)
+            : DescribeCase(paths, plan.RtiOnlyCases.Contains(caseId), wireloomAvailable, build?.Detail);
 
-        var wireloomPeer = new ManagedPeer(descriptor.WireloomType, paths.WireloomPeer, wireloomAvailable, $"Wireloom C# build failed for {caseId}");
+        var wireloomPeer = new ManagedPeer(descriptor.WireloomType, paths.WireloomPeer, wireloomAvailable,
+            usesNativePeerScope ? $"Wireloom C# peer is outside the selected native peer scope for {caseId}" : $"Wireloom C# build failed for {caseId}");
         var rtiPeer = new ManagedPeer("-", paths.RtiPeer, false, $"RTI C# peer is unavailable for {caseId}");
         var needsRti = !options.CompileOnly && plan.RequiresPeer(caseId, PeerNames.RtiCSharp);
         if (needsRti)
@@ -69,10 +87,12 @@ internal sealed class PeerPreparation(MatrixOptions options, MatrixWorkspace wor
             rtiPeer = await managed.BuildRtiAsync(descriptor, paths);
         }
 
-        var prepared = new PreparedCase(descriptor, paths, wireloomPeer, rtiPeer);
-        var nativeOutcome = await native.ConfigureAsync(descriptor, paths);
+        var needsWireloomCpp = plan.RequiresPeer(caseId, PeerNames.WireloomCpp);
+        var configuration = await native.ConfigureAsync(descriptor, paths, needsWireloomCpp);
+        var prepared = new PreparedCase(descriptor, paths, wireloomPeer, rtiPeer,
+            configuration.WireloomCppAvailable, configuration.WireloomCppFailure);
 
-        return new PreparedCaseResult(prepared, nativeOutcome, needsRti && !rtiPeer.Available);
+        return new PreparedCaseResult(prepared, configuration, needsRti && !rtiPeer.Available);
     }
 
     private CaseDescriptor DescribeCase(CaseWorkspace paths, bool rtiOnly, bool wireloomAvailable, string? buildLog)
@@ -94,5 +114,5 @@ internal sealed class PeerPreparation(MatrixOptions options, MatrixWorkspace wor
         return discovery.Discover(paths.WireloomGenerated, [paths.CaseId]).Single();
     }
 
-    private sealed record PreparedCaseResult(PreparedCase Case, BuildOutcome NativeOutcome, bool HasManagedIssues);
+    private sealed record PreparedCaseResult(PreparedCase Case, NativePeerConfiguration Configuration, bool HasManagedIssues);
 }

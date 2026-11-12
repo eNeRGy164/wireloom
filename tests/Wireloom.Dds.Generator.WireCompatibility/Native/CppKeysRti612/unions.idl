@@ -1,0 +1,4 @@
+union Choice switch(long) {
+    case 0: long number;
+    default: string<16> text;
+};

@@ -7,7 +7,7 @@ internal sealed class VerifierWorkspace : IDisposable
 
     internal VerifierWorkspace(string temporaryRoot)
     {
-        this.temporaryRoot = Path.GetFullPath(temporaryRoot);
+        this.temporaryRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(temporaryRoot));
 
         Root = Path.Combine(this.temporaryRoot, "wireloom-shards-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Root);

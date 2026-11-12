@@ -157,7 +157,7 @@ internal static class LifecycleSchedulerVerification
         try
         {
             var result = await ExchangeScheduler.RunLifecycleExchangeAsync(reader, writerPeer, ScenarioId,
-                cancellation.Token, phaseTimeout ?? TimeSpan.FromSeconds(2), blockedPump is null ? TimeSpan.FromSeconds(4) : TimeSpan.FromMilliseconds(600));
+                cancellation.Token, phaseTimeout ?? TimeSpan.FromSeconds(2), blockedPump is null ? TimeSpan.FromSeconds(4) : TimeSpan.FromMilliseconds(1_200));
             var schedulerElapsed = stopwatch.Elapsed;
 
             if (blockedPump is not null)

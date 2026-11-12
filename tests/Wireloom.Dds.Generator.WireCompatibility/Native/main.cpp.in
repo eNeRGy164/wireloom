@@ -135,7 +135,7 @@ int main(int argc, char **argv)
         }
 #endif
         dds::domain::DomainParticipant participant(domain_id, participant_qos);
-#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS) || defined(WIRELOOM_TYPED_C173_UNBOUNDED_SUPPORT) || defined(WIRELOOM_TYPED_C174_UNBOUNDED_RECEIVE_LIFECYCLE)
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_COLLECTIONS_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS) || defined(WIRELOOM_TYPED_C173_UNBOUNDED_SUPPORT) || defined(WIRELOOM_TYPED_C174_UNBOUNDED_RECEIVE_LIFECYCLE)
         if (case_id == "14-unbounded-receive-lifecycle"
             && fixture.rfind("fragmented-", 0) == 0) {
             const auto effective_qos = participant.qos();
@@ -150,7 +150,8 @@ int main(int argc, char **argv)
             std::cout << "LIFECYCLE_PARTICIPANT_QOS transport_udp_only=true message_size_max="
                       << size_limit.value() << std::endl;
         }
-        if (case_id == "09-optional-string-sequences"
+        if (case_id == "09-optional-collections"
+            || case_id == "09-optional-string-sequences"
             || case_id == "04-strings" || case_id == "04-boundaries"
             || case_id == "09-optional-aggregate-member" || case_id == "09-optional-recursive-array") {
             const bool needs_wide_sequence_workaround = case_id == "09-optional-string-sequences"

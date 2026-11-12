@@ -14,9 +14,12 @@ namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 /// <param name="ManifestPath">Corpus source of truth.</param>
 /// <param name="RepositoryRoot">Root used to validate canonical IDL and wrapper bytes.</param>
 /// <param name="ExecutionProvenancePath">Retained source identity captured before peer builds.</param>
+/// <param name="WireloomCppCases">Exact invocation case IDs selecting Wireloom C++ endpoints.</param>
+/// <param name="NativePeerScopeCases">Exact invocation case IDs selected for the RTI C++ / Wireloom C++ peer scope.</param>
 internal sealed record ReportRequest(string RtiVersion, int ExpectedScenarioCount, string ScenarioPath, string JsonPath,
     string MarkdownPath, string LogsDirectory, string ExclusionsPath, string ManifestPath, string RepositoryRoot,
-    string? ExecutionProvenancePath = null);
+    string? ExecutionProvenancePath = null, IReadOnlySet<string>? WireloomCppCases = null,
+    IReadOnlySet<string>? NativePeerScopeCases = null);
 
 /// <summary>Validated report evidence shared by the JSON and Markdown writers without a file handoff.</summary>
 /// <param name="RtiVersion">Exact runtime profile.</param>
@@ -27,6 +30,7 @@ internal sealed record ReportRequest(string RtiVersion, int ExpectedScenarioCoun
 /// <param name="KnownExceptions">Reported profile-specific peer exceptions.</param>
 /// <param name="Manifest">Corpus metadata used for presentation.</param>
 /// <param name="ExecutionProvenance">Immutable source identity captured before the exchanges.</param>
+/// <param name="NativePeerScopeCases">Cases selected for the exact RTI C++ / Wireloom C++ exchange scope.</param>
 internal sealed record ReportData(string RtiVersion, int ExpectedScenarioCount, List<ReportFields> Scenarios,
     JsonArray NotImplemented, JsonArray NotApplicable, JsonObject[] KnownExceptions, JsonNode Manifest,
-    SourceSnapshotEvidence ExecutionProvenance);
+    SourceSnapshotEvidence ExecutionProvenance, HashSet<string> WireloomCppCases, HashSet<string> NativePeerScopeCases);

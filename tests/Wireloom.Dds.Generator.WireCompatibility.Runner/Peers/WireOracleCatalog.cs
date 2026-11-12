@@ -9,6 +9,24 @@ internal sealed class WireOracleCatalog(string manifestPath)
     private readonly Lazy<JsonNode> manifest = new(() => JsonNode.Parse(File.ReadAllText(manifestPath))!);
     private readonly string oracleRoot = Path.GetDirectoryName(Path.GetFullPath(manifestPath))!;
 
+    /// <summary>Reports whether the profile manifest explicitly controls this peer/case selection.</summary>
+    internal bool HasExplicitPolicy(string caseId, string peer) => manifest.Value["cases"]?[caseId]?[peer] is not null;
+
+    /// <summary>Returns only an explicitly configured capture and never applies a conventional fallback.</summary>
+    internal string? FindConfiguredSource(string caseId, string peer)
+    {
+        ArgumentNullException.ThrowIfNull(caseId);
+        ArgumentNullException.ThrowIfNull(peer);
+
+        var entry = manifest.Value["cases"]?[caseId]?[peer];
+        if (entry is null || (string?)entry["mode"] is not ("captured" or "adjusted"))
+        {
+            return null;
+        }
+
+        return (string?)entry["sourceDirectory"] ?? "";
+    }
+
     /// <summary>Returns a configured or existing conventional relative source path, or null when unavailable.</summary>
     /// <remarks>Explicit non-capture modes suppress fallback. An explicit empty capture path remains empty.</remarks>
     internal string? FindSource(string caseId, string peer)

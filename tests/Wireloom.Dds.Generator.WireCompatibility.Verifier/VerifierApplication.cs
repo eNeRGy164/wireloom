@@ -15,18 +15,20 @@ internal static class VerifierApplication
         var verifierAssembly = typeof(VerifierApplication).Assembly.Location;
         var repositoryRoot = FindRepositoryRoot(verifierAssembly);
 
-        using var workspace = new VerifierWorkspace(Path.Combine(repositoryRoot, "tmp"));
+        using var workspace = new VerifierWorkspace(Path.GetTempPath());
 
         var context = new VerificationContext(verifierAssembly, repositoryRoot, workspace.Root, Environment.GetEnvironmentVariable("WIRE_COMPATIBILITY_RTI_VERSION") ?? "7.7.0");
 
         try
         {
+            WireMatrixGateVerification.Run(context);
+            NativePeerScopeMergeVerification.Run(context);
             CaseSelectionVerification.Run(context);
 
             var scenarios = ShardScenarioBuilder.Build(context);
             var report = ShardReportVerification.Run(context, scenarios);
 
-        ShardIntegrityVerification.Run(context, scenarios, report);
+            ShardIntegrityVerification.Run(context, scenarios, report);
 
             Console.WriteLine($"Shard verification passed: {context.CheckCount} checks, {scenarios.Rows.Count} exchanges, no RTI license required.");
 
@@ -34,7 +36,7 @@ internal static class VerifierApplication
         }
         catch (Exception exception)
         {
-            Console.Error.WriteLine(exception.Message);
+            Console.Error.WriteLine(exception);
             return 2;
         }
     }

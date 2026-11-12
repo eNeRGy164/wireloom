@@ -5,9 +5,18 @@
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
+#include <type_traits>
 #include <utility>
 
-#ifdef WIRELOOM_RTI_LEGACY_API
+#ifdef WIRELOOM_CPP_GENERATED_PEER
+#define WIRELOOM_SET_TYPED_STRING(member, value) expected.member = value
+#define WIRELOOM_SET_TYPED_STRING_ON(object, member, value) object.member = value
+#define WIRELOOM_SET_TYPED_MEMBER(member, value) expected.member = value
+#define WIRELOOM_SET_TYPED_MEMBER_ON(object, member, value) object.member = value
+#define WIRELOOM_TYPED_MEMBER(object, member) object.member
+#define WIRELOOM_SET_MEMBER_ON(object, member, value) object.member = value
+#define WIRELOOM_BOUNDED_SEQUENCE ::omg::types::bounded_sequence
+#elif defined(WIRELOOM_RTI_LEGACY_API)
 #define WIRELOOM_SET_TYPED_STRING(member, value) expected.member(value)
 #define WIRELOOM_SET_TYPED_STRING_ON(object, member, value) object.member(value)
 #define WIRELOOM_SET_TYPED_MEMBER(member, value) expected.member(value)
@@ -25,7 +34,7 @@
 #define WIRELOOM_BOUNDED_SEQUENCE ::omg::types::bounded_sequence
 #endif
 
-#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES) || defined(WIRELOOM_TYPED_DEFAULT_LITERAL_ENUM_ARRAY) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS) || defined(WIRELOOM_TYPED_IDL_GAPS_FIXTURE) || defined(WIRELOOM_TYPED_C173_UNBOUNDED_SUPPORT) || defined(WIRELOOM_TYPED_C174_UNBOUNDED_RECEIVE_LIFECYCLE)
+#if defined(WIRELOOM_TYPED_STRING_SEQUENCE_FIXTURE) || defined(WIRELOOM_TYPED_WIDE_STRINGS_FIXTURE) || defined(WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_COLLECTIONS_FIXTURE) || defined(WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE) || defined(WIRELOOM_TYPED_UNBOUNDED_STRING_ALIASES) || defined(WIRELOOM_TYPED_RESOLVE_NAME_WSTRING_ALIASES) || defined(WIRELOOM_TYPED_DEFAULT_LITERAL_ENUM_ARRAY) || defined(WIRELOOM_TYPED_NUMERIC_CHAR_UNION) || defined(WIRELOOM_TYPED_STRING_ALIAS_CHAINS) || defined(WIRELOOM_TYPED_UNBOUNDED_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_ALIASES) || defined(WIRELOOM_TYPED_UNION_STRING_SEQUENCE_BOUNDED) || defined(WIRELOOM_TYPED_SEQUENCE_ARRAYS) || defined(WIRELOOM_TYPED_IDL_GAPS_FIXTURE) || defined(WIRELOOM_TYPED_C173_UNBOUNDED_SUPPORT) || defined(WIRELOOM_TYPED_C174_UNBOUNDED_RECEIVE_LIFECYCLE)
 
 // RTI's generated DynamicData API omits some string template instantiations.
 // Use RTI-generated typed C++ endpoints for these fixtures and compare the
@@ -39,6 +48,13 @@ static int run_typed_fixture_peer(
     const std::string &fixture)
 {
     DdsType expected;
+#ifdef WIRELOOM_TYPED_DEFAULT_LITERAL_ENUM_ARRAY
+    // RTI 6.1.2's generated enum typedef array starts at GREEN, while Wireloom
+    // applies @default_literal and starts at RED. Use one explicit wire payload
+    // here; generated constructor defaults are covered independently.
+    auto &color_array = WIRELOOM_TYPED_MEMBER(expected, colorArray);
+    std::fill(color_array.begin(), color_array.end(), ::CorpusDefaultLiteralEnumArray::Color::GREEN);
+#endif
     const bool lifecycle_case = case_id == "14-unbounded-receive-lifecycle";
     const bool fragmented_fixture = fixture.rfind("fragmented-", 0) == 0;
     const bool xcdr2_fixture = fixture.size() >= 5
@@ -105,7 +121,7 @@ static int run_typed_fixture_peer(
         WIRELOOM_SET_TYPED_STRING_ON(sample, boundedText, bounded.str());
 
         if (empty) {
-#ifdef WIRELOOM_RTI_LEGACY_API
+#if defined(WIRELOOM_RTI_LEGACY_API) && !defined(WIRELOOM_CPP_GENERATED_PEER)
             ::rti::topic::reset_sample(sample.optionalState());
 #else
             sample.optionalState.reset();
@@ -121,7 +137,7 @@ static int run_typed_fixture_peer(
                     + std::to_string(index) + "-" + pattern(phase == 4 ? 32 : 7, phase + index));
             }
             if (phase == 2) {
-#ifdef WIRELOOM_RTI_LEGACY_API
+#if defined(WIRELOOM_RTI_LEGACY_API) && !defined(WIRELOOM_CPP_GENERATED_PEER)
                 ::rti::topic::reset_sample(optional_state.note());
 #else
                 optional_state.note.reset();
@@ -130,7 +146,7 @@ static int run_typed_fixture_peer(
                 std::string optional_note = "optional-" + std::to_string(phase) + "-note";
                 WIRELOOM_SET_TYPED_STRING_ON(optional_state, note, optional_note);
             }
-#ifdef WIRELOOM_RTI_LEGACY_API
+#if defined(WIRELOOM_RTI_LEGACY_API) && !defined(WIRELOOM_CPP_GENERATED_PEER)
             sample.optionalState(::dds::core::optional<::CorpusUnboundedReceiveLifecycle::OptionalState>(std::move(optional_state)));
 #else
             sample.optionalState = std::move(optional_state);
@@ -637,6 +653,42 @@ static int run_typed_fixture_peer(
     }
 #endif
 
+#ifdef WIRELOOM_TYPED_OPTIONAL_COLLECTIONS_FIXTURE
+    if (case_id == "09-optional-collections") {
+        if (fixture != "optional-absent" && fixture != "optional-empty"
+            && fixture != "optional-single" && fixture != "optional-multiple") {
+            throw std::runtime_error("Unknown optional collections fixture: " + fixture);
+        }
+
+        using Sequence = typename std::decay<decltype(WIRELOOM_TYPED_MEMBER(expected, values).value())>::type;
+        Sequence sequence{};
+        if (fixture == "optional-single") {
+            sequence.push_back(9501);
+        } else if (fixture == "optional-multiple") {
+            sequence.push_back(9501);
+            sequence.push_back(9502);
+            sequence.push_back(9503);
+        }
+        if (fixture != "optional-absent") {
+            WIRELOOM_SET_TYPED_MEMBER(values, std::move(sequence));
+        }
+
+        if (fixture == "optional-single" || fixture == "optional-multiple") {
+            using Array = typename std::decay<decltype(WIRELOOM_TYPED_MEMBER(expected, items).value())>::type;
+            Array items{};
+            items[0] = 9511;
+            items[1] = 9512;
+            WIRELOOM_SET_TYPED_MEMBER(items, std::move(items));
+        }
+
+        const auto& values = WIRELOOM_TYPED_MEMBER(expected, values);
+        const auto& items = WIRELOOM_TYPED_MEMBER(expected, items);
+        std::cout << "OPTIONAL_COLLECTIONS_STATE values_present=" << values.has_value()
+                  << " values_size=" << (values.has_value() ? values.value().size() : 0)
+                  << " items_present=" << items.has_value() << std::endl;
+    }
+#endif
+
 #ifdef WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE
     if (fixture != "optional-absent" && fixture != "optional-present" && fixture != "optional-nested") {
         throw std::runtime_error("Unknown optional recursive array fixture: " + fixture);
@@ -650,14 +702,14 @@ static int run_typed_fixture_peer(
             ::dds::core::array<DdsType, 2> grandchildren;
             WIRELOOM_SET_TYPED_MEMBER_ON(grandchildren[0], value, 9821);
             WIRELOOM_SET_TYPED_MEMBER_ON(grandchildren[1], value, 9822);
-#ifdef WIRELOOM_RTI_LEGACY_API
+#if defined(WIRELOOM_RTI_LEGACY_API) && !defined(WIRELOOM_CPP_GENERATED_PEER)
             children[0].children(::dds::core::optional<::dds::core::array<DdsType, 2>>(
                 std::move(grandchildren)));
 #else
             children[0].children = std::move(grandchildren);
 #endif
         }
-#ifdef WIRELOOM_RTI_LEGACY_API
+#if defined(WIRELOOM_RTI_LEGACY_API) && !defined(WIRELOOM_CPP_GENERATED_PEER)
         expected.children(::dds::core::optional<::dds::core::array<DdsType, 2>>(std::move(children)));
 #else
         expected.children = std::move(children);
@@ -840,7 +892,11 @@ static int run_typed_fixture_peer(
                             }
                             ++valid_samples;
                             if (!(sample.data() == expected)) {
-                                throw std::runtime_error("Lifecycle sample differs from expected phase " + std::to_string(phase));
+                                std::ostringstream mismatch;
+                                mismatch << "Lifecycle sample differs from expected phase " << phase
+                                         << "; expected=" << expected
+                                         << "; received=" << sample.data();
+                                throw std::runtime_error(mismatch.str());
                             }
                             const auto identity = sample.info().delegate().publication_virtual_sample_identity();
                             std::ostringstream guid_text;
@@ -938,6 +994,35 @@ static int run_typed_fixture_peer(
 
                 bool sample_matches = sample.data() == expected;
                 std::string optional_mismatch;
+#ifdef WIRELOOM_TYPED_OPTIONAL_COLLECTIONS_FIXTURE
+                if (case_id == "09-optional-collections") {
+                    const auto& actual = sample.data();
+                    const auto& actual_values = WIRELOOM_TYPED_MEMBER(actual, values);
+                    const auto& expected_values = WIRELOOM_TYPED_MEMBER(expected, values);
+                    const auto& actual_items = WIRELOOM_TYPED_MEMBER(actual, items);
+                    const auto& expected_items = WIRELOOM_TYPED_MEMBER(expected, items);
+                    std::cout << "OPTIONAL_COLLECTIONS_RECEIVED values_present="
+                              << actual_values.has_value()
+                              << " values_size=" << (actual_values.has_value()
+                                    ? actual_values.value().size() : 0)
+                              << " items_present=" << actual_items.has_value() << std::endl;
+                    if (actual_values.has_value() != expected_values.has_value()) {
+                        sample_matches = false;
+                        optional_mismatch = "values presence differs";
+                    } else if (actual_values.has_value()
+                        && actual_values.value() != expected_values.value()) {
+                        sample_matches = false;
+                        optional_mismatch = "values sequence differs";
+                    } else if (actual_items.has_value() != expected_items.has_value()) {
+                        sample_matches = false;
+                        optional_mismatch = "items presence differs";
+                    } else if (actual_items.has_value()
+                        && actual_items.value() != expected_items.value()) {
+                        sample_matches = false;
+                        optional_mismatch = "items array differs";
+                    }
+                }
+#endif
 #ifdef WIRELOOM_TYPED_NUMERIC_CHAR_UNION
                 if (case_id == "07-union-char-numeric" || case_id == "07-union-char-numeric-255") {
                     const auto &actual = sample.data();

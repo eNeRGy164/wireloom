@@ -4,7 +4,9 @@
 #:property NoWarn=CS7022
 #:property RestorePackagesWithLockFile=false
 
-using Wireloom;
+using Wireloom.Dds.Idl;
+using Wireloom.Dds.CSharp.Compiler;
+using Wireloom.Dds.Generator;
 
 if (args.Length < 2)
 {

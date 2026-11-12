@@ -6,7 +6,7 @@ namespace Wireloom.Dds.Generator.WireCompatibility;
 // The remaining partial declarations are compiled by the wire-compatibility project, which Qodana excludes.
 internal static partial class ManagedFixtures
 {
-    /// <summary>Preserves the generated constructor defaults for the enum-array wire fixture.</summary>
+    /// <summary>Sets one common array payload while preserving native defaults as a separate contract.</summary>
     // ReSharper disable once UnusedMember.Global
     // Selected by the typed fixture dispatcher in ManagedFixtures.Create.
     internal static T CreateEnumArrayDefaultFixture<T>(string fixture)
@@ -16,7 +16,23 @@ internal static partial class ManagedFixtures
             throw new FixtureException($"Unknown enum array default fixture '{fixture}'.");
         }
 
-        return Activator.CreateInstance<T>()!;
+        // RTI 6.1.2 initializes this enum typedef array to its first literal (GREEN),
+        // while Wireloom follows @default_literal (RED). Keep the wire payload equal
+        // across peers; constructor-default behavior has separate generator coverage.
+        var sample = Activator.CreateInstance<T>()!;
+        var colorArray = typeof(T).GetProperty("colorArray")?.GetValue(sample)
+            ?? throw new FixtureException("The enum-array fixture has no initialized colorArray member.");
+        var values = colorArray.GetType().GetProperty("Value")?.GetValue(colorArray) as Array
+            ?? throw new FixtureException("The enum-array fixture has no initialized Value array.");
+        var elementType = values.GetType().GetElementType()
+            ?? throw new FixtureException("The enum-array fixture has no element type.");
+        var green = Enum.Parse(elementType, "GREEN");
+        for (var index = 0; index < values.Length; index++)
+        {
+            values.SetValue(green, index);
+        }
+
+        return sample;
     }
 
     /// <summary>Sets only the non-default members, preserving the declared enum constructor default.</summary>

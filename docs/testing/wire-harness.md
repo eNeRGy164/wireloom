@@ -54,6 +54,13 @@ internal planning and build handoffs use typed in-memory records.
 Planning creates the complete expected exchange set before peer builds.
 Applicability exclusions differ from unimplemented cases and observed failures.
 Selected fixture pairings determine which peers actually need building.
+RTI 7.7.0 also adds the Wireloom Modern C++ peer for cases listed with live-DDS
+types in the versioned C++ type-scope registry. The runner builds the generator
+once per invocation, generates each selected case's C++ types from the corpus
+IDL, then compiles a peer against the same RTI DDS runtime used by the RTI C++
+peer. This gives each qualified case exchanges in both directions between
+Wireloom C++ and every configured peer, including its self-pair. Earlier RTI
+profiles and cases outside that live-DDS scope retain their existing pairings.
 
 The coordinator warms shared managed references with one case, then prepares
 other case peers through bounded queues. Case-specific generated/intermediate/

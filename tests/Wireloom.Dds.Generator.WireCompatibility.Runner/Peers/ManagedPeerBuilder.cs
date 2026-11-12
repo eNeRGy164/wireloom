@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Globalization;
+using System.Security.Cryptography;
 
 namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 
@@ -9,18 +10,21 @@ internal sealed class ManagedPeerBuilder(MatrixOptions options, MatrixWorkspace 
     /// <summary>Restores once, builds shared references once, then queues the remaining Wireloom peers.</summary>
     internal async Task<ManagedBuildBatch> BuildWireloomAsync(MatrixPlan plan)
     {
-        await RestoreAsync(workspace.WireloomProject);
+        var outcomes = new Dictionary<string, BuildOutcome>(StringComparer.Ordinal);
+        var requests = new List<ManagedBuildRequest>();
 
-        if (!options.CompileOnly)
+        var cases = plan.ManagedCaseIds;
+        if (cases.Count > 0)
+        {
+            await RestoreAsync(workspace.WireloomProject);
+        }
+
+        if (!options.CompileOnly && plan.CaseIds.Any(caseId => plan.RequiresPeer(caseId, PeerNames.RtiCSharp)))
         {
             await RestoreAsync(workspace.RtiProject);
         }
 
-        var outcomes = new Dictionary<string, BuildOutcome>(StringComparer.Ordinal);
-        var requests = new List<ManagedBuildRequest>();
-
-        var cases = plan.CaseIds.Where(caseId => !plan.RtiOnlyCases.Contains(caseId)).ToArray();
-        if (cases.Length > 0)
+        if (cases.Count > 0)
         {
             var bootstrap = workspace.ForCase(cases[0]);
             outcomes[bootstrap.CaseId] = await BuildBootstrapAsync(bootstrap);
@@ -78,7 +82,8 @@ internal sealed class ManagedPeerBuilder(MatrixOptions options, MatrixWorkspace 
         var rtiBin = Path.GetDirectoryName(paths.RtiPeer)!;
         Directory.CreateDirectory(rtiBin);
 
-        var buildLog = Path.Combine(paths.Directory, "rti-csharp-build.log");
+        Directory.CreateDirectory(workspace.Logs);
+        var buildLog = Path.Combine(workspace.Logs, descriptor.CaseId + "-rti-csharp-build.log");
 
         var result = await processes.RunAsync("dotnet",
             [
@@ -288,8 +293,19 @@ internal sealed class ManagedPeerBuilder(MatrixOptions options, MatrixWorkspace 
             Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(source, directory)));
         }
 
-        foreach (var file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
+        var copiedSourceHashes = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories)
+            .OrderBy(file => Path.GetRelativePath(source, file), StringComparer.Ordinal))
         {
+            if (string.Equals(Path.GetExtension(file), ".cs", StringComparison.OrdinalIgnoreCase))
+            {
+                var hash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(file)));
+                if (!copiedSourceHashes.Add(hash))
+                {
+                    continue;
+                }
+            }
+
             var target = Path.Combine(destination, Path.GetRelativePath(source, file));
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
 

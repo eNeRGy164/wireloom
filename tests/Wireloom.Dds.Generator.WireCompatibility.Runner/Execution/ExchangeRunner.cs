@@ -11,20 +11,20 @@ internal sealed class ExchangeRunner(MatrixOptions options, MatrixWorkspace work
     /// <summary>Runs prepared cases and returns whether any exchange failed.</summary>
     internal async Task<bool> RunAsync(MatrixPlan plan, PeerPreparationResult peers)
     {
-        if (options.CompileOnly || peers.BuiltCases.Count == 0)
+        if (options.CompileOnly)
         {
             return false;
         }
 
         log.Phase("exchange-run", $"built-cases={peers.BuiltCases.Count} planned-exchanges={plan.ExpectedScenarioCount}");
         var caseBuilds = peers.BuiltCases.ToDictionary(i => i.Case.Descriptor.CaseId, ExchangeCaseBuild.From, StringComparer.Ordinal);
-        var scenarios = File.ReadLines(workspace.Scenarios)
+        var pendingScenarios = File.ReadLines(workspace.Scenarios)
             .Where(line => line.Length > 0)
             .Select(ScenarioRow.Parse)
-            .Where(row => row.Status == "NOT_RUN" && caseBuilds.ContainsKey(row.CaseId))
+            .Where(row => row.Status == "NOT_RUN")
             .ToArray();
 
-        if (scenarios.Length == 0)
+        if (pendingScenarios.Length == 0)
         {
             Console.WriteLine("No pending exchanges for built cases.");
             return false;
@@ -33,27 +33,43 @@ internal sealed class ExchangeRunner(MatrixOptions options, MatrixWorkspace work
         Directory.CreateDirectory(options.OutputDirectory);
         Directory.CreateDirectory(options.ScratchDirectory);
 
-        var scheduler = new ExchangeScheduler(options, caseBuilds);
+        var schedulable = pendingScenarios.Where(row => caseBuilds.ContainsKey(row.CaseId)).ToArray();
+        var unprepared = pendingScenarios.Except(schedulable).ToArray();
+        var completed = new List<(ScenarioRow Row, ExchangeResult Result)>(pendingScenarios.Length);
 
-        var results = await scheduler.RunAsync(scenarios);
+        if (schedulable.Length > 0)
+        {
+            var scheduler = new ExchangeScheduler(options, caseBuilds);
+            var results = await scheduler.RunAsync(schedulable);
+            completed.AddRange(schedulable.Zip(results));
+        }
 
-        UpdateScenarioFile(caseBuilds, scenarios, results);
+        foreach (var scenario in unprepared)
+        {
+            var diagnostic = PreparationFailure(scenario, peers.NativeOutcomes);
+            WritePreparationFailureLog(scenario, diagnostic);
+            completed.Add((scenario, new ExchangeResult("FAIL")));
+        }
 
-        var failures = results.Count(result => result.Status == "FAIL");
+        UpdateScenarioFile(caseBuilds, completed);
 
-        Console.WriteLine($"WIRE_EXCHANGE_MATRIX planned={results.Length} passed={results.Length - failures} failed={failures} max_concurrency={options.ExchangeConcurrency}");
+        var failures = completed.Count(item => item.Result.Status == "FAIL");
+        var notRun = completed.Count(item => item.Result.Status == "NOT_RUN");
+        var passed = completed.Count - failures - notRun;
+        Console.WriteLine($"WIRE_EXCHANGE_MATRIX planned={pendingScenarios.Length} passed={passed} failed={failures} not_run={notRun} unprepared={unprepared.Length} max_concurrency={options.ExchangeConcurrency}");
 
-        return failures > 0;
+        return failures > 0 || notRun > 0;
     }
 
-    private void UpdateScenarioFile(Dictionary<string, ExchangeCaseBuild> caseBuilds, ScenarioRow[] selectedRows, ExchangeResult[] results)
+    private void UpdateScenarioFile(Dictionary<string, ExchangeCaseBuild> caseBuilds,
+        IReadOnlyList<(ScenarioRow Row, ExchangeResult Result)> completed)
     {
         var remaining = File.ReadLines(workspace.Scenarios)
             .Where(line => line.Length > 0)
             .Select(ScenarioRow.Parse)
             .ToArray();
 
-        foreach (var (row, result) in selectedRows.Zip(results))
+        foreach (var (row, result) in completed)
         {
             var index = Array.FindIndex(remaining, candidate => ScenarioKey(candidate) == ScenarioKey(row));
             if (index < 0 || remaining[index].Status != "NOT_RUN")
@@ -61,14 +77,18 @@ internal sealed class ExchangeRunner(MatrixOptions options, MatrixWorkspace work
                 throw new InvalidDataException($"The exchange plan changed while running {row.CaseId} [{row.Fixture}] {row.Writer} -> {row.Reader}.");
             }
 
-            var build = caseBuilds[row.CaseId];
-            remaining[index] = row with
+            var updated = row with { Status = result.Status };
+            if (caseBuilds.TryGetValue(row.CaseId, out var build))
             {
-                WireloomType = build.WireloomType,
-                RtiCSharpType = build.RtiType,
-                RtiCppType = build.CppType,
-                Status = result.Status,
-            };
+                updated = updated with
+                {
+                    WireloomType = build.WireloomType,
+                    RtiCSharpType = build.RtiType,
+                    RtiCppType = build.CppType,
+                };
+            }
+
+            remaining[index] = updated;
         }
 
         var temporary = $"{workspace.Scenarios}.updated";
@@ -77,7 +97,39 @@ internal sealed class ExchangeRunner(MatrixOptions options, MatrixWorkspace work
         File.Move(temporary, workspace.Scenarios, overwrite: true);
     }
 
+    private void WritePreparationFailureLog(ScenarioRow scenario, string diagnostic)
+    {
+        var resultLog = Path.Combine(options.OutputDirectory, "logs",
+            $"{scenario.CaseId}-{scenario.Fixture}-{PeerId(scenario.Writer)}-{PeerId(scenario.Reader)}.log");
+        Directory.CreateDirectory(Path.GetDirectoryName(resultLog)!);
+        File.WriteAllText(resultLog,
+            $"FAIL_DETAIL {diagnostic}{Environment.NewLine}EXCHANGE_TELEMETRY case={scenario.CaseId} fixture={scenario.Fixture} reader_started=false reader_ready=false writer_started=false endpoints_completed=false elapsed_ms=0{Environment.NewLine}");
+    }
+
+    private static string PreparationFailure(ScenarioRow scenario, IReadOnlyList<BuildOutcome> outcomes)
+    {
+        var caseOutcomes = outcomes.Where(outcome => outcome.CaseId == scenario.CaseId
+            || outcome.CaseId == "wireloom-cpp:" + scenario.CaseId).ToArray();
+        if (caseOutcomes.Length == 0)
+        {
+            return $"Peer preparation did not produce a runnable case for {scenario.CaseId}; no matching native build outcome was retained.";
+        }
+
+        var details = caseOutcomes.Select(outcome =>
+            $"{outcome.CaseId} {outcome.Status}: {outcome.Detail}").Distinct(StringComparer.Ordinal);
+        return $"Peer preparation did not produce a runnable case for {scenario.CaseId}. {string.Join("; ", details)}";
+    }
+
     private static string ScenarioKey(ScenarioRow row) => string.Join('\t', row.CaseId, row.Fixture, row.Writer, row.Reader);
+
+    private static string PeerId(string peer) => peer switch
+    {
+        PeerNames.WireloomCSharp => "wireloom-cs",
+        PeerNames.RtiCSharp => "rti-cs",
+        PeerNames.RtiCpp => "rti-cpp",
+        PeerNames.WireloomCpp => "wireloom-cpp",
+        _ => throw new InvalidDataException($"Unknown wire peer '{peer}'."),
+    };
 }
 
 /// <summary>Peer artifacts needed to launch one corpus case in an exchange.</summary>
@@ -93,16 +145,19 @@ internal sealed class ExchangeRunner(MatrixOptions options, MatrixWorkspace work
 /// <param name="RtiAvailable">Whether the RTI managed peer built.</param>
 /// <param name="RtiFailure">RTI peer build diagnostic.</param>
 internal sealed record ExchangeCaseBuild(string WireloomType, string RtiType, string CppType,
-    string CaseDirectory, string WireloomPeer, string RtiPeer, string CppPeer,
-    bool WireloomAvailable, string WireloomFailure, bool RtiAvailable, string RtiFailure)
+    string CaseDirectory, string WireloomPeer, string RtiPeer, string CppPeer, bool CppAvailable, string CppFailure, string? WireloomCppPeer,
+    bool WireloomAvailable, string WireloomFailure, bool RtiAvailable, string RtiFailure,
+    string WireloomCppFailure)
 {
     internal static ExchangeCaseBuild From(BuiltCase built)
     {
         var item = built.Case;
 
         return new ExchangeCaseBuild(item.Wireloom.TypeName, item.Rti.TypeName, item.Descriptor.CppType,
-            item.Paths.Directory, item.Wireloom.Path, item.Rti.Path, built.NativePeer,
-            item.Wireloom.Available, item.Wireloom.Failure, item.Rti.Available, item.Rti.Failure);
+            item.Paths.Directory, item.Wireloom.Path, item.Rti.Path, built.NativePeer, built.NativePeerAvailable,
+            built.NativePeerFailure, built.WireloomCppPeer,
+            item.Wireloom.Available, item.Wireloom.Failure, item.Rti.Available, item.Rti.Failure,
+            item.WireloomCppFailure);
     }
 }
 
