@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+  <IncludeTestAssembly>True</IncludeTestAssembly>
+  <CodeCoverage>
+    <ModulePaths>
+      <Include>
+        <ModulePath>.*Wireloom\.Dds\.Cpp(\.Compiler)?\.dll$</ModulePath>
+      </Include>
+    </ModulePaths>
+    <Sources>
+      <Exclude>
+        <Source>.*[\\/]obj[\\/].*</Source>
+        <Source>.*[\\/][Jj]et[Bb]rains\.[Aa]nnotations\.[Ss]ources[\\/].*</Source>
+      </Exclude>
+    </Sources>
+  </CodeCoverage>
+</Configuration>

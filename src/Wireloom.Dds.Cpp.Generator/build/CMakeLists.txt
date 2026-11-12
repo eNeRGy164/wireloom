@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.20)
+project(WireloomCppPackage LANGUAGES NONE)
+
+set(WIRELOOM_CPP_PUBLISH_DIR "" CACHE PATH "Path to the NativeAOT publish directory")
+if(NOT WIRELOOM_CPP_PUBLISH_DIR)
+    message(FATAL_ERROR "Set WIRELOOM_CPP_PUBLISH_DIR to the NativeAOT publish output directory.")
+endif()
+
+if(CMAKE_HOST_WIN32 AND CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64|amd64)$")
+    set(_wireloom_binary "${WIRELOOM_CPP_PUBLISH_DIR}/Wireloom.Dds.Cpp.exe")
+elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64|amd64)$")
+    set(_wireloom_binary "${WIRELOOM_CPP_PUBLISH_DIR}/Wireloom.Dds.Cpp")
+else()
+    message(FATAL_ERROR "Wireloom C++ generator has no native tool for host ${CMAKE_HOST_SYSTEM_NAME}/${CMAKE_HOST_SYSTEM_PROCESSOR}.")
+endif()
+
+if(NOT EXISTS "${_wireloom_binary}")
+    message(FATAL_ERROR "NativeAOT executable is missing: ${_wireloom_binary}")
+endif()
+
+install(FILES WireloomCppConfig.cmake DESTINATION lib/cmake/WireloomCpp)
+if(CMAKE_HOST_WIN32)
+    install(PROGRAMS "${_wireloom_binary}" DESTINATION tools/win-x64)
+else()
+    install(PROGRAMS "${_wireloom_binary}" DESTINATION tools/linux-x64)
+endif()
