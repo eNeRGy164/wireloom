@@ -67,7 +67,7 @@ async (page) => {
     });
     for (const example of input.examples) {
       for (const profile of ["6.1.2", "7.3.1", "7.7.0"]) {
-        await app.locator("#profile").selectOption(profile);
+        await app.locator(`#profile button[data-profile="${profile}"]`).click();
         await wait(app);
         await app.locator("#example").selectOption(example.id);
         await app.locator("#load-example").click();
@@ -148,12 +148,15 @@ async (page) => {
   await check("UTF-8 import, recovery, failure clearing, diagnostic focus and reset", async (app) => {
     await importSource(app, "// café\r\nstruct Imported { long value; };\r\n");
     assert((await app.locator("#file-list").textContent()).includes("Imported.g.cs"), "Import did not compile");
-    await app.locator("#profile").selectOption("7.3.1");
+    await app.locator('#profile button[data-profile="7.3.1"]').click();
     await wait(app);
     await app.waitForTimeout(600);
     await app.reload();
     await wait(app);
-    assert((await app.locator("#profile").inputValue()) === "7.3.1", "Restored profile differs");
+    assert(
+      (await app.locator('#profile button[data-profile="7.3.1"]').getAttribute("aria-pressed")) === "true",
+      "Restored profile differs",
+    );
     assert((await app.locator("#file-list").textContent()).includes("Imported.g.cs"), "Restored source differs");
     await importSource(app, "// café\r\nstruct Broken { long value;\r\n");
     assert((await app.locator("#result-state").textContent()) === "Failed", "Invalid source succeeded");

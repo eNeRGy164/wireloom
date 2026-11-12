@@ -1,8 +1,10 @@
+using FileOptions = Wireloom.Playground.Browser.FileOptions;
+using Wireloom.Playground.Browser;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace Wireloom.Compiler.Tests.Playground;
+namespace Wireloom.Dds.CSharp.Compiler.Tests.Playground;
 
 public sealed class PlaygroundCompilerAdapterSpecs
 {
@@ -32,9 +34,31 @@ public sealed class PlaygroundCompilerAdapterSpecs
         response.RootElement.GetProperty("requestId").GetInt64().ShouldBe(4);
         response.RootElement.GetProperty("workerGeneration").GetInt32().ShouldBe(2);
         response.RootElement.GetProperty("workspaceRevision").GetInt64().ShouldBe(8);
+        response.RootElement.GetProperty("target").GetString().ShouldBe("csharp");
         response.RootElement.GetProperty("profile").GetString().ShouldBe(profile);
         response.RootElement.GetProperty("documents").GetArrayLength().ShouldBeGreaterThan(0);
         hashCalls.ShouldBeGreaterThan(0);
+    }
+
+    [Theory]
+    [InlineData("6.1.2")]
+    [InlineData("7.3.1")]
+    [InlineData("7.7.0")]
+    public void CompilesModernCppAndPreservesItsTargetIdentity(string profile)
+    {
+        // Arrange
+        var request = RequestObject("struct Sample { long value; };");
+        request["target"] = "cpp";
+        request["profile"] = profile;
+
+        // Act
+        using var response = JsonDocument.Parse(Compile(request));
+
+        // Assert
+        response.RootElement.GetProperty("target").GetString().ShouldBe("cpp");
+        response.RootElement.GetProperty("success").GetBoolean().ShouldBeTrue();
+        var documents = response.RootElement.GetProperty("documents").EnumerateArray().ToArray();
+        documents.ShouldContain(document => document.GetProperty("name").GetString()!.EndsWith(".hpp", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -69,6 +93,17 @@ public sealed class PlaygroundCompilerAdapterSpecs
         // Arrange
         var request = RequestObject("struct Sample { long value; };");
         request[property] = value;
+
+        // Act and Assert
+        Should.Throw<ArgumentException>(() => Compile(request));
+    }
+
+    [Fact]
+    public void RejectsAnUnrecognizedTarget()
+    {
+        // Arrange
+        var request = RequestObject("struct Sample { long value; };");
+        request["target"] = "rust";
 
         // Act and Assert
         Should.Throw<ArgumentException>(() => Compile(request));
@@ -210,7 +245,7 @@ public sealed class PlaygroundCompilerAdapterSpecs
     public void ReturnsALimitResponseWhenDocumentCountExceeds512()
     {
         // Arrange
-        var request = new CompileRequest(3, 1, 1, 1, "7.7.0", [], new WorkspaceOptions());
+        var request = new CompileRequest(5, 1, 1, 1, "csharp", "7.7.0", [], new WorkspaceOptions());
         var tooMany = Enumerable.Range(0, 513).Select(index => new DocumentDto($"{index}.cs", "x")).ToArray();
         var diagnostics = Array.Empty<DiagnosticDto>();
 
@@ -226,7 +261,7 @@ public sealed class PlaygroundCompilerAdapterSpecs
     public void ReturnsALimitResponseWhenGeneratedOutputExceeds16MiB()
     {
         // Arrange
-        var request = new CompileRequest(3, 1, 1, 1, "7.7.0", [], new WorkspaceOptions());
+        var request = new CompileRequest(5, 1, 1, 1, "csharp", "7.7.0", [], new WorkspaceOptions());
         var tooLarge = new[] { new DocumentDto("large.cs", new string('x', 16 * 1024 * 1024 + 1)) };
         var diagnostics = Array.Empty<DiagnosticDto>();
 
@@ -271,7 +306,7 @@ public sealed class PlaygroundCompilerAdapterSpecs
             IncludeDirectories = ["/workspace/z", "/workspace/a"],
             EnableEscapeChar = true,
         };
-        var request = new CompileRequest(4, 1, 1, 1, profile,
+        var request = new CompileRequest(5, 1, 1, 1, "csharp", profile,
             [new WorkspaceFile("/workspace/main.idl", root, true, new FileOptions { Defines = ["FEATURE=1", "DISABLED=1"], Undefines = ["DISABLED"], Strict = true }),
              new WorkspaceFile("/workspace/a/types.idl", shared, false),
              new WorkspaceFile("/workspace/z/types.idl", "invalid IDL", false)], options);
@@ -379,6 +414,8 @@ public sealed class PlaygroundCompilerAdapterSpecs
         {
             ["CompileRequest.ProtocolVersion"] = acceptedResponse.RootElement.GetProperty("protocolVersion").GetRawText(),
             ["CompileRequest.Profile"] = "\"6.1.2\" | \"7.3.1\" | \"7.7.0\"",
+            ["CompileRequest.Target"] = "\"csharp\" | \"cpp\"",
+            ["CompileResponse.Target"] = "string",
             ["FileOptions.SequenceArrayMapping"] = "\"RtiCSharp\" | \"Idl\"",
             ["FileOptions.SequenceSize"] = "number",
             ["FileOptions.StringSize"] = "number",
@@ -455,10 +492,11 @@ public sealed class PlaygroundCompilerAdapterSpecs
     {
         return new Dictionary<string, object?>
         {
-            ["protocolVersion"] = 4,
+            ["protocolVersion"] = 5,
             ["workerGeneration"] = 2,
             ["requestId"] = 4,
             ["workspaceRevision"] = 8,
+            ["target"] = "csharp",
             ["profile"] = "7.7.0",
             ["files"] = new[] { File("/workspace/main.idl", source, true) },
             ["options"] = new WorkspaceOptions(),

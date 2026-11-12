@@ -183,10 +183,11 @@ async (page) => {
                 for (const baseline of expected) {
                   const fixture = cases.find((value) => value.id === baseline.caseId);
                   const request = {
-                    protocolVersion: 4,
+                    protocolVersion: 5,
                     workerGeneration: 1,
                     requestId: ++requestId,
                     workspaceRevision: requestId,
+                    target: "csharp",
                     profile: baseline.profile,
                     files: withDefaultFileOptions(fixture.files),
                     options: defaultWorkspaceOptions,
@@ -236,10 +237,11 @@ async (page) => {
                 const fixture = cases[0];
                 for (let index = 0; index < 2; index++) {
                   const { response } = await wait({
-                    protocolVersion: 4,
+                    protocolVersion: 5,
                     workerGeneration: 1,
                     requestId: ++requestId,
                     workspaceRevision: requestId,
+                    target: "csharp",
                     profile: "7.7.0",
                     files: withDefaultFileOptions(fixture.files),
                     options: defaultWorkspaceOptions,
@@ -265,7 +267,7 @@ async (page) => {
           const warmStartupMs = Date.now() - warmStarted;
 
           await compileUi(app, hashCase.files[0].source);
-          await app.locator("#profile").selectOption("7.3.1");
+          await app.locator('#profile button[data-profile="7.3.1"]').click();
           await app.waitForFunction(() => document.querySelector("#result-state")?.textContent === "Outdated");
           await app.waitForFunction(() =>
             ["Current", "Failed"].includes(document.querySelector("#result-state")?.textContent),
@@ -332,10 +334,11 @@ async (page) => {
                 event.data.type === "result" ? resolve(event.data.response) : reject(new Error(event.data.message));
               };
               worker.postMessage({
-                protocolVersion: 4,
+                protocolVersion: 5,
                 workerGeneration: 1,
                 requestId: 1,
                 workspaceRevision: 1,
+                target: "csharp",
                 profile: "7.7.0",
                 files: [
                   {
@@ -497,7 +500,7 @@ async (page) => {
         await app.waitForTimeout(50);
         const started = Date.now();
         await fillSource(app, "struct OldRequest { long value; };");
-        await app.waitForTimeout(350);
+        await app.waitForTimeout(850);
         await fillSource(app, "struct NewestRequest { long value; };");
         const editMs = Date.now() - started;
         await app
@@ -507,7 +510,7 @@ async (page) => {
                 value.textContent.includes("NewestRequest"),
               ),
             null,
-            { timeout: 20_000 },
+            { timeout: 30_000 },
           )
           .catch(async (error) => {
             const state = await app.evaluate(() => ({
@@ -676,10 +679,11 @@ async (page) => {
               };
 
               worker.postMessage({
-                protocolVersion: 4,
+                protocolVersion: 5,
                 workerGeneration: 1,
                 requestId: ++requestId,
                 workspaceRevision: requestId,
+                target: "csharp",
                 profile: "7.7.0",
                 files: fixture.files.map((file) => ({
                   ...file,

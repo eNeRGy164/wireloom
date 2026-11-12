@@ -47,10 +47,12 @@ export class WorkerRequestState {
     return request;
   }
 
-  isCurrent(request, workspaceRevision, profile) {
+  isCurrent(request, workspaceRevision, target, profile) {
     return (
       this.#latestRequest !== null &&
       request.workspaceRevision === workspaceRevision &&
+      request.target === target &&
+      request.target === this.#latestRequest.target &&
       request.profile === profile &&
       request.protocolVersion === this.#latestRequest.protocolVersion &&
       request.workerGeneration === this.#generation &&
@@ -60,25 +62,28 @@ export class WorkerRequestState {
     );
   }
 
-  isCurrentWorkspaceRequest(request, workspaceRevision, profile) {
+  isCurrentWorkspaceRequest(request, workspaceRevision, target, profile) {
     return (
       this.#latestRequest !== null &&
       request.protocolVersion === this.#latestRequest.protocolVersion &&
       request.requestId === this.#latestRequest.requestId &&
       request.workspaceRevision === workspaceRevision &&
       request.workspaceRevision === this.#latestRequest.workspaceRevision &&
+      request.target === target &&
+      request.target === this.#latestRequest.target &&
       request.profile === profile &&
       request.profile === this.#latestRequest.profile
     );
   }
 
-  matchesResponse(request, response, workspaceRevision, profile) {
+  matchesResponse(request, response, workspaceRevision, target, profile) {
     return (
-      this.isCurrent(request, workspaceRevision, profile) &&
+      this.isCurrent(request, workspaceRevision, target, profile) &&
       response.protocolVersion === request.protocolVersion &&
       response.workerGeneration === request.workerGeneration &&
       response.requestId === request.requestId &&
       response.workspaceRevision === request.workspaceRevision &&
+      response.target === request.target &&
       response.profile === request.profile
     );
   }

@@ -8,7 +8,7 @@ try {
   postMessage({ type: "ready" });
   onmessage = ({ data }) => {
     try {
-      const json = api.Wireloom.PlaygroundCompiler.Compile(JSON.stringify(data));
+      const json = api.Wireloom.Playground.Browser.PlaygroundCompiler.Compile(JSON.stringify(data));
       postMessage({ type: "result", response: JSON.parse(json) });
     } catch (error) {
       postMessage({ type: "error", requestId: data.requestId, message: String(error) });

@@ -31,6 +31,7 @@ class FakeWorker {
           workerGeneration: request.workerGeneration,
           requestId: request.requestId,
           workspaceRevision: request.workspaceRevision,
+          target: request.target,
           profile: request.profile,
           kind: "compiler",
           success: true,
@@ -79,6 +80,7 @@ function installFakeTimers(t) {
 function snapshot(revision) {
   return {
     workspaceRevision: revision,
+    target: "csharp",
     profile: "7.7.0",
     files: [{ path: "/workspace/main.idl", source: `struct Sample${revision} {};`, isGenerationRoot: true }],
     options: {},
@@ -96,7 +98,7 @@ test("restarting an active compiler settles old work and drains the newest reque
   const results = [];
   const failures = [];
   const callbacks = {
-    current: () => ({ revision: 2, profile: "7.7.0" }),
+    current: () => ({ revision: 2, target: "csharp", profile: "7.7.0" }),
     status: () => {},
     result: (response) => results.push(response),
     failure: (message) => failures.push(message),
@@ -146,7 +148,7 @@ test("restarting during startup ignores old worker events and settles the old st
   const failures = [];
   const client = new CompilerClient(
     {
-      current: () => ({ revision: 0, profile: "7.7.0" }),
+      current: () => ({ revision: 0, target: "csharp", profile: "7.7.0" }),
       status: () => {},
       result: () => {},
       failure: (message) => failures.push(message),
@@ -179,7 +181,7 @@ test("startup errors stop the worker and are reported once", async (t) => {
   const failures = [];
   const client = new CompilerClient(
     {
-      current: () => ({ revision: 0, profile: "7.7.0" }),
+      current: () => ({ revision: 0, target: "csharp", profile: "7.7.0" }),
       status: () => {},
       result: () => {},
       failure: (message) => failures.push(message),
@@ -210,7 +212,7 @@ test("startup errors without a message use the fallback explanation", async (t) 
   const failures = [];
   const client = new CompilerClient(
     {
-      current: () => ({ revision: 0, profile: "7.7.0" }),
+      current: () => ({ revision: 0, target: "csharp", profile: "7.7.0" }),
       status: () => {},
       result: () => {},
       failure: (message) => failures.push(message),
@@ -239,7 +241,7 @@ test("startup timeout reports failure and terminates the worker", async (t) => {
   const failures = [];
   const client = new CompilerClient(
     {
-      current: () => ({ revision: 0, profile: "7.7.0" }),
+      current: () => ({ revision: 0, target: "csharp", profile: "7.7.0" }),
       status: () => {},
       result: () => {},
       failure: (message) => failures.push(message),
@@ -269,7 +271,7 @@ test("worker creation failures are reported without a startup timer", async (t) 
   const failures = [];
   const client = new CompilerClient(
     {
-      current: () => ({ revision: 0, profile: "7.7.0" }),
+      current: () => ({ revision: 0, target: "csharp", profile: "7.7.0" }),
       status: () => {},
       result: () => {},
       failure: (message) => failures.push(message),
@@ -294,7 +296,7 @@ test("worker errors reject the current request and synchronous posting errors cl
   const failures = [];
   const client = new CompilerClient(
     {
-      current: () => ({ revision: 1, profile: "7.7.0" }),
+      current: () => ({ revision: 1, target: "csharp", profile: "7.7.0" }),
       status: () => {},
       result: () => {},
       failure: (message) => failures.push(message),
@@ -336,7 +338,7 @@ test("a compilation timeout starts a replacement and settles the timed out reque
   const failures = [];
   const client = new CompilerClient(
     {
-      current: () => ({ revision: 1, profile: "7.7.0" }),
+      current: () => ({ revision: 1, target: "csharp", profile: "7.7.0" }),
       status: () => {},
       result: () => {},
       failure: (message) => failures.push(message),
@@ -372,7 +374,7 @@ test("a request queued before startup is sent when the worker becomes ready", as
   const workers = [];
   const client = new CompilerClient(
     {
-      current: () => ({ revision: 1, profile: "7.7.0" }),
+      current: () => ({ revision: 1, target: "csharp", profile: "7.7.0" }),
       status: () => {},
       result: () => {},
       failure: () => {},
@@ -402,7 +404,7 @@ test("drains a request queued while another request is in flight", async (t) => 
   const results = [];
   const client = new CompilerClient(
     {
-      current: () => ({ revision: 2, profile: "7.7.0" }),
+      current: () => ({ revision: 2, target: "csharp", profile: "7.7.0" }),
       status: () => {},
       result: (response) => results.push(response.workspaceRevision),
       failure: (message) => assert.fail(message),

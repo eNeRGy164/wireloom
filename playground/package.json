@@ -10,10 +10,10 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "format:check": "prettier --check \"src/**/*.{ts,mjs}\" \"scripts/**/*.mjs\" \"*.mjs\" vite.config.ts",
+    "format:check": "prettier --check \"src/**/*.{ts,mjs,css}\" \"scripts/**/*.mjs\" \"*.mjs\" vite.config.ts",
     "build": "node scripts/clean-wasm.mjs && dotnet publish ../src/Wireloom.Playground.Browser/Wireloom.Playground.Browser.csproj --configuration Release -p:RestoreLockedMode=true && node scripts/copy-wasm.mjs && vite build",
     "test": "node --test src/*.test.mjs scripts/pages-manifest.test.mjs",
-    "coverage": "c8 --all --include src/md5.mjs --include src/worker-state.mjs --include src/workspace.ts --include src/source-archive.ts --include src/compiler-client.ts --include src/recovery-saver.ts --include src/xml-comment.ts --include src/msbuild-escape.ts --reports-dir coverage/unit --reporter=text --reporter=json --reporter=json-summary --check-coverage --branches 98 --lines 99 --functions 80 node --test src/*.test.mjs",
+    "coverage": "c8 --all --include src/md5.mjs --include src/worker-state.mjs --include src/workspace.ts --include src/source-archive.ts --include src/compiler-client.ts --include src/recovery-saver.ts --include src/xml-comment.ts --include src/msbuild-escape.ts --include src/cpp-project-preview.ts --include src/documentation.ts --include src/file-icon-kind.ts --include src/quick-open-search.ts --reports-dir coverage/unit --reporter=text --reporter=json --reporter=json-summary --check-coverage --branches 98 --lines 99 --functions 80 node --test src/*.test.mjs",
     "build:coverage": "vite build --sourcemap hidden --outDir dist-coverage",
     "coverage:browser": "node scripts/browser-coverage.mjs",
     "test:md5": "node --test src/md5.test.mjs",

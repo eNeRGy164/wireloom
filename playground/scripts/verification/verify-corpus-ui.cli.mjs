@@ -39,7 +39,7 @@ async (page) => {
       try {
         await app.locator("#reset").click();
         await app.waitForFunction(() => document.querySelector("#result-state").textContent === "Empty");
-        await app.locator("#profile").selectOption(expected.profile);
+        await app.locator(`#profile button[data-profile="${expected.profile}"]`).click();
         await app.waitForFunction(() =>
           ["Current", "Failed", "Empty"].includes(document.querySelector("#result-state")?.textContent),
         );

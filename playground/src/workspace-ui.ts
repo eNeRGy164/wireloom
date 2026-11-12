@@ -1,19 +1,5 @@
-import {
-  addFolder,
-  createFile,
-  deleteEntry,
-  hasPath,
-  isWithin,
-  maxSourceBytes,
-  moveEntry,
-  parentPath,
-  putFile,
-  validatePath,
-  validateWorkspace,
-  workspaceRoot,
-  type Workspace,
-} from "./workspace";
-import { askPath, choose, settingsDialog } from "./workspace-dialogs";
+import { hasPath, parentPath, validatePath, validateWorkspace, workspaceRoot, type Workspace } from "./workspace";
+import { WorkspaceFileActions } from "./workspace-file-actions";
 
 interface Callbacks {
   current(): { workspace: Workspace; activeId?: string; revision: number };
@@ -30,21 +16,37 @@ export class SourceWorkbench {
   private knownFolders = new Set<string>();
   private menu?: HTMLElement;
   private draggedPath?: string;
-  private importTicket = 0;
   private openFiles = new Set<string>();
   private knownFiles = new Set<string>();
+  private readonly actions: WorkspaceFileActions;
 
   constructor(
     private tree: HTMLElement,
     private tabs: HTMLElement,
     private callbacks: Callbacks,
   ) {
-    document.getElementById("new-file")!.addEventListener("click", () => void this.create(false));
-    document.getElementById("new-folder")!.addEventListener("click", () => void this.create(true));
+    this.actions = new WorkspaceFileActions({
+      current: () => {
+        const { workspace, revision } = this.callbacks.current();
+        return { workspace, revision };
+      },
+      change: this.callbacks.change,
+      notice: this.callbacks.notice,
+      destination: () => this.destination(),
+      selectedPath: () => this.selected,
+      selectPath: (path) => {
+        this.selected = path;
+        this.focusedPath = path;
+      },
+      expand: (path) => this.expanded.add(path),
+      revealSourceGroup: () => this.revealSourceGroup(),
+    });
+    document.getElementById("new-file")!.addEventListener("click", () => void this.actions.create(false));
+    document.getElementById("new-folder")!.addEventListener("click", () => void this.actions.create(true));
     document
       .getElementById("source-actions")!
       .addEventListener("click", (event) => this.contextMenu(event as MouseEvent));
-    document.getElementById("workspace-settings")!.addEventListener("click", () => void this.settings());
+    document.getElementById("workspace-settings")!.addEventListener("click", () => void this.actions.settings());
     this.tabs.addEventListener("contextmenu", (event) => this.tabStripMenu(event as MouseEvent));
     this.tree.addEventListener("keydown", (event) => this.navigate(event));
     const explorerContent = document.getElementById("explorer-content")!;
@@ -181,7 +183,7 @@ export class SourceWorkbench {
         event.preventDefault();
         const source = this.draggedPath;
         this.draggedPath = undefined;
-        if (source && !file) void this.move(source, `${path}/${source.split("/").pop()}`);
+        if (source && !file) void this.actions.move(source, `${path}/${source.split("/").pop()}`);
       });
       nodes.push(row);
       if (!file && this.expanded.has(path)) {
@@ -364,7 +366,7 @@ export class SourceWorkbench {
     menu.setAttribute("role", "menu");
     menu.setAttribute("aria-label", `Actions for ${file.path}`);
     for (const [label, action] of [
-      ["Properties…", () => void this.settings(file.id)],
+      ["Properties…", () => void this.actions.settings(file.id)],
       ["Close", () => this.closeFile(file.id)],
       ["Close All", () => this.closeAllFiles()],
     ] as const) {
@@ -470,15 +472,15 @@ export class SourceWorkbench {
     const actions: [string, () => void][] = [];
     if (!file)
       actions.push(
-        ["New File…", () => void this.create(false)],
-        ["New Folder…", () => void this.create(true)],
+        ["New File…", () => void this.actions.create(false)],
+        ["New Folder…", () => void this.actions.create(true)],
         ["Import Files…", () => document.getElementById("import")!.click()],
       );
     if (selected !== workspaceRoot)
       actions.push(
-        ["Rename…", () => void this.rename()],
-        ["Move to…", () => void this.move(selected)],
-        ["Delete", () => void this.delete()],
+        ["Rename…", () => void this.actions.rename()],
+        ["Move to…", () => void this.actions.move(selected)],
+        ["Delete", () => void this.actions.delete()],
       );
     if (!file) {
       const folder = selected;
@@ -491,7 +493,7 @@ export class SourceWorkbench {
     if (file)
       actions.push(
         [file.isGenerationRoot ? "Mark as Include-only" : "Mark as Root", () => this.toggleRoot(file.id)],
-        ["Properties…", () => void this.settings(file.id)],
+        ["Properties…", () => void this.actions.settings(file.id)],
       );
     for (const [label, action] of actions) {
       const button = document.createElement("button");
@@ -530,189 +532,11 @@ export class SourceWorkbench {
     menu.querySelector("button")?.focus();
   }
 
-  private async create(folder: boolean) {
-    const destination = this.destination();
-    const name = await askPath(folder ? "New Folder" : "New File", "Name", folder ? "folder" : "untitled.idl");
-    if (name === undefined) return;
-    try {
-      if (name.includes("/")) throw new Error("Enter one name. Select its parent folder in the Explorer.");
-      const path = `${destination}/${name}`;
-      const { workspace } = this.callbacks.current();
-      const next = folder ? addFolder(workspace, path) : putFile(workspace, path, "");
-      this.selected = path;
-      this.focusedPath = path;
-      this.expanded.add(destination);
-      this.revealSourceGroup();
-      this.callbacks.change(next, next.files.find((file) => file.path === path)?.id);
-    } catch (error) {
-      this.callbacks.notice(String(error), "error");
-    }
-  }
-
-  private async rename() {
-    const path = this.selected;
-    if (!path || path === workspaceRoot) return;
-    const name = await askPath("Rename", "New name", path.split("/").pop()!);
-    if (name !== undefined) {
-      if (name.includes("/")) {
-        this.callbacks.notice("Use Move to… to change the parent folder.", "error");
-        return;
-      }
-      await this.move(path, `${parentPath(path)}/${name}`);
-    }
-  }
-
-  private async move(path: string, destination?: string) {
-    const { workspace, revision } = this.callbacks.current();
-    try {
-      destination ??= await askPath(
-        "Move to",
-        "Destination folder (relative to workspace; leave blank for root)",
-        this.relativePath(this.destination()),
-        false,
-      ).then((folder) =>
-        folder === undefined ? undefined : `${this.resolveRelativePath(folder)}/${path.split("/").pop()}`,
-      );
-      if (destination === undefined) return;
-      let replace = false;
-      while (hasPath(workspace, destination) && destination !== path) {
-        const choice = await choose(
-          "Path conflict",
-          `${this.relativePath(destination)} already exists. Replacing a folder removes its contents.`,
-          ["Replace", "Rename"],
-        );
-        if (!choice) return;
-        if (choice === "Replace") {
-          replace = true;
-          break;
-        }
-        const renamed = await askPath(
-          "Rename destination",
-          "Full destination path relative to workspace",
-          this.relativePath(destination),
-        );
-        if (renamed === undefined) return;
-        destination = this.resolveRelativePath(renamed);
-      }
-      if (revision !== this.callbacks.current().revision)
-        throw new Error("The workspace changed while the dialog was open. Try the move again.");
-      const next = moveEntry(workspace, path, destination, replace);
-      this.selected = destination;
-      this.focusedPath = destination;
-      this.expanded.add(parentPath(destination));
-      this.callbacks.change(next);
-    } catch (error) {
-      this.callbacks.notice(String(error), "error");
-    }
-  }
-
-  private async delete() {
-    const path = this.selected;
-    if (!path || path === workspaceRoot) return;
-    const { workspace, revision } = this.callbacks.current();
-    const nonempty =
-      workspace.files.some((file) => file.path !== path && isWithin(file.path, path)) ||
-      workspace.folders.some((folder) => folder !== path && isWithin(folder, path));
-    const displayPath = this.relativePath(path);
-    const choice = await choose(
-      "Delete",
-      nonempty ? `Delete ${displayPath} and all its contents?` : `Delete ${displayPath}?`,
-      ["Delete"],
-    );
-    if (!choice) return;
-    try {
-      if (revision !== this.callbacks.current().revision) throw new Error("The workspace changed. Try deleting again.");
-      this.callbacks.change(deleteEntry(workspace, path));
-    } catch (error) {
-      this.callbacks.notice(String(error), "error");
-    }
-  }
-
-  private async settings(fileId?: string) {
-    const { workspace, revision } = this.callbacks.current();
-    const next = await settingsDialog(workspace, fileId);
-    if (!next) return;
-    if (revision !== this.callbacks.current().revision) {
-      this.callbacks.notice("The workspace changed while settings were open. Apply the settings again.", "error");
-      return;
-    }
-    this.callbacks.change(next);
-  }
-
   cancelImport() {
-    this.importTicket++;
+    this.actions.cancelImport();
   }
 
   async import(files: File[]) {
-    if (!files.length) return;
-    const ticket = ++this.importTicket;
-    const { workspace, revision } = this.callbacks.current();
-    const destination = this.destination();
-    try {
-      if (
-        files.length > 512 ||
-        files.some((file) => file.size > maxSourceBytes) ||
-        files.reduce((total, file) => total + file.size, 0) > maxSourceBytes
-      )
-        throw new Error("Choose at most 512 files with at most 256 KiB of UTF-8 source in total.");
-      const imported = await Promise.all(
-        files.map(async (file) => ({
-          name: file.name,
-          source: new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer()),
-        })),
-      );
-      const draft = structuredClone(workspace);
-      let activeId: string | undefined;
-      for (const file of imported) {
-        if (ticket !== this.importTicket) return;
-        if (file.name.includes("/") || file.name.includes("\\")) throw new Error("Import uses file basenames only.");
-        let path = `${destination}/${file.name}`;
-        let skip = false;
-        while (hasPath(draft, path)) {
-          const choice = await choose(
-            "Import conflict",
-            `${path} already exists. Replacing a folder removes its contents.`,
-            ["Replace", "Skip", "Rename"],
-          );
-          if (!choice) return;
-          if (choice === "Skip") {
-            skip = true;
-            break;
-          }
-          if (choice === "Replace") break;
-          const name = await askPath("Rename import", "New basename", path.split("/").pop()!);
-          if (name === undefined) return;
-          if (name.includes("/") || name.includes("\\")) throw new Error("Import uses file basenames only.");
-          path = `${destination}/${name}`;
-        }
-        if (skip) continue;
-        validatePath(path);
-        const existing = draft.files.find((entry) => entry.path === path);
-        if (existing) {
-          existing.source = file.source;
-          activeId = existing.id;
-        } else {
-          draft.files = draft.files.filter((entry) => !isWithin(entry.path, path));
-          draft.folders = draft.folders.filter((folder) => !isWithin(folder, path));
-          draft.options.includeDirectories = draft.options.includeDirectories.filter(
-            (folder) => !isWithin(folder, path),
-          );
-          const added = createFile(path, file.source);
-          draft.files.push(added);
-          activeId = added.id;
-        }
-      }
-      if (ticket !== this.importTicket) return;
-      if (revision !== this.callbacks.current().revision)
-        throw new Error("The workspace changed during import. Import again to use the latest workspace.");
-      this.expanded.add(destination);
-      this.revealSourceGroup();
-      if (!draft.files.some((file) => file.id === draft.activeFileId)) delete draft.activeFileId;
-      this.callbacks.change(validateWorkspace(draft), activeId);
-      this.callbacks.notice(`Imported files into ${destination}. Changes remain in this browser.`);
-    } catch (error) {
-      if (ticket === this.importTicket)
-        this.callbacks.notice(`Could not import files. ${String(error)} Your workspace is unchanged.`, "error");
-    }
+    await this.actions.import(files);
   }
 }

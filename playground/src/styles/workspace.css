@@ -1,0 +1,387 @@
+.explorer-group + .explorer-group {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.explorer-group-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 30px;
+  padding-right: 7px;
+  background: var(--subtle);
+}
+.explorer-group-header h2 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--heading);
+}
+.explorer-group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  min-height: 30px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+}
+.explorer-group-toggle .count {
+  margin-left: auto;
+}
+.explorer-chevron {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+.explorer-chevron:before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+}
+[aria-expanded="true"] > .explorer-chevron:before {
+  transform: rotate(45deg);
+}
+.source-heading {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.source-heading > span {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.source-controls {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+}
+.source-controls button {
+  min-height: 29px;
+  font-size: 11px;
+  padding: 4px 7px;
+}
+.source-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+#source-explorer-panel:hover .source-tools,
+#source-explorer-panel:focus-within .source-tools {
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (hover: none) {
+  .source-tools {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+.source-tools button {
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  min-height: 23px;
+  padding: 3px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--muted);
+}
+.source-tools button:hover,
+.source-tools button:focus-visible {
+  background: var(--subtle);
+  color: var(--heading);
+}
+.source-tools svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#source-actions circle {
+  fill: currentColor;
+  stroke: none;
+}
+.source-tree-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 31px;
+  padding-right: 8px;
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.source-tree-item:hover {
+  background: var(--subtle);
+}
+.source-tree-item[aria-selected="true"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.source-tree-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.source-role {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 9px;
+  padding-left: 8px;
+}
+.source-tab-strip {
+  display: flex;
+  height: 39px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+#source-tabs {
+  flex: 1;
+  min-width: 0;
+  scrollbar-width: none;
+}
+#source-tabs::-webkit-scrollbar {
+  display: none;
+}
+.source-editor-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+#source {
+  width: 100%;
+}
+.source-context-menu {
+  width: max-content;
+  max-width: min(380px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  position: fixed;
+  z-index: 1100;
+  min-width: 195px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: 0 6px 24px #10232d40;
+}
+.source-context-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  padding: 7px 12px;
+  min-height: 32px;
+}
+.workspace-dialog {
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 22px;
+  width: min(540px, calc(100vw - 40px));
+  max-height: 85vh;
+  overflow: auto;
+  box-shadow: 0 12px 60px #0005;
+}
+.workspace-dialog::backdrop {
+  background: #0005;
+}
+.workspace-dialog h2 {
+  font-size: 16px;
+  margin: 0 0 18px;
+  overflow-wrap: anywhere;
+}
+.workspace-dialog form > label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+.workspace-dialog .property-size-group {
+  margin-bottom: 16px;
+}
+.workspace-dialog .property-size-group > label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+.workspace-dialog .property-reset-link {
+  display: block;
+  width: max-content;
+  min-height: auto;
+  margin: 4px 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 11px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.workspace-dialog .property-reset-link:hover {
+  background: none;
+  color: var(--heading);
+}
+.workspace-dialog .property-reset-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.workspace-dialog .property-reset-link[hidden] {
+  display: none;
+}
+.workspace-dialog input:not([type="checkbox"]),
+.workspace-dialog textarea,
+.workspace-dialog select {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--subtle);
+  color: inherit;
+  border: 1px solid var(--border);
+  padding: 8px;
+  border-radius: 4px;
+  font: inherit;
+}
+.workspace-dialog input[type="checkbox"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.workspace-dialog .checkbox-field {
+  display: grid;
+  grid-template-columns: 1.1rem minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 10px;
+}
+.workspace-dialog .checkbox-field input {
+  grid-column: 1;
+  grid-row: 1;
+}
+.workspace-dialog .checkbox-field .setting-hint {
+  grid-column: 2;
+}
+.workspace-dialog .setting-hint {
+  display: block;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.workspace-dialog input:disabled {
+  background: var(--border);
+  color: var(--muted);
+  border-style: dashed;
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.workspace-dialog label:has(input:disabled) {
+  color: var(--muted);
+}
+.workspace-dialog fieldset {
+  max-height: 180px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  margin: 0 0 16px;
+}
+.workspace-dialog fieldset label {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 8px;
+  font-size: 12px;
+  padding: 5px 0;
+  overflow-wrap: anywhere;
+}
+.workspace-dialog legend {
+  font-size: 12px;
+  padding: 0 5px;
+}
+.workspace-dialog p {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.workspace-dialog button {
+  margin: 6px 6px 0 0;
+}
+.workspace-dialog .property-toggle {
+  border: 0;
+  padding: 0;
+  overflow: visible;
+  max-height: none;
+}
+.workspace-dialog .property-toggle legend {
+  padding: 0;
+  margin-bottom: 7px;
+}
+.property-toggle-options {
+  display: flex;
+  width: min(100%, 16rem);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.workspace-dialog .property-toggle label {
+  display: block;
+  flex: 1;
+  position: relative;
+  padding: 0;
+}
+.property-toggle label + label {
+  border-left: 1px solid var(--border);
+}
+.workspace-dialog .property-toggle input[type="radio"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  overflow: hidden;
+}
+.property-toggle-options span {
+  display: block;
+  padding: 9px 12px;
+  text-align: center;
+  background: var(--subtle);
+  cursor: pointer;
+}
+.property-toggle input:checked + span {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.property-toggle input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.dialog-error {
+  color: #bf3345;
+}

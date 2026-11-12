@@ -2,7 +2,7 @@ import type { CompileRequest, CompileResponse, WorkerMessage } from "./protocol"
 import { WorkerRequestState } from "./worker-state.mjs";
 
 interface Callbacks {
-  current(): { revision: number; profile: string };
+  current(): { revision: number; target: string; profile: string };
   status(message: string, retry: boolean): void;
   result(response: CompileResponse): void;
   failure(message: string): void;
@@ -105,7 +105,7 @@ export class CompilerClient {
   enqueue(snapshot: Omit<CompileRequest, "protocolVersion" | "workerGeneration" | "requestId">) {
     this.state.enqueue({
       ...snapshot,
-      protocolVersion: 4,
+      protocolVersion: 5,
       workerGeneration: this.state.generation,
       requestId: ++this.requestId,
     });
@@ -157,11 +157,11 @@ export class CompilerClient {
         try {
           const response = await this.submit(request);
           const current = this.callbacks.current();
-          if (this.state.matchesResponse(request, response, current.revision, current.profile))
+          if (this.state.matchesResponse(request, response, current.revision, current.target, current.profile))
             this.callbacks.result(response);
         } catch (error) {
           const current = this.callbacks.current();
-          if (this.state.isCurrentWorkspaceRequest(request, current.revision, current.profile)) {
+          if (this.state.isCurrentWorkspaceRequest(request, current.revision, current.target, current.profile)) {
             this.callbacks.failure(String(error));
             this.callbacks.status(
               "Compiler request failed. Edit the source or restart the compiler to try again.",

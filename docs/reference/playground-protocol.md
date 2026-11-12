@@ -1,4 +1,4 @@
-# Playground worker protocol v4
+# Playground worker protocol v5
 
 The canonical contract is the .NET adapter DTOs in
 [`PlaygroundCompilerAdapter.cs`](../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs).
@@ -6,10 +6,11 @@ The canonical contract is the .NET adapter DTOs in
 types. Adapter tests in Quality verify parity. The client and worker ship in
 one static release, so no cross-release protocol compatibility window is
 supported. Compile requests with a different protocol version are rejected.
-Accepted profile values are `6.1.2`, `7.3.1`, and `7.7.0`.
-Workspace records use version 4. Valid version-3 records are upgraded with
-unbounded support disabled; other versions remain unsupported. Workspace
-schema migration does not provide compatibility with older workers.
+Accepted targets are `csharp` and `cpp`; accepted profile values are `6.1.2`,
+`7.3.1`, and `7.7.0`. Workspace records use version 5. Valid version-3 and
+version-4 records migrate to C# mode; version-3 records also receive the
+version-4 unbounded-support migration. Other versions remain unsupported.
+Workspace schema migration does not provide compatibility with older workers.
 
 This engine protocol is internal. The Playground's generation behavior,
 settings, and forward workspace migration follow the
@@ -17,10 +18,11 @@ settings, and forward workspace migration follow the
 
 ```json
 {
-  "protocolVersion": 4,
+  "protocolVersion": 5,
   "workerGeneration": 1,
   "requestId": 1,
   "workspaceRevision": 1,
+  "target": "csharp",
   "profile": "7.7.0",
   "files": [
     {
@@ -45,7 +47,9 @@ settings, and forward workspace migration follow the
 }
 ```
 
-Root file options carry `Defines`, `Undefines`, and `Strict`, matching
+The target selects the compiler backend and is part of request and response
+identity. Switching targets invalidates outstanding results. Root file options
+carry `Defines`, `Undefines`, and `Strict`, matching
 `DdsIdl` item metadata. Workspace settings carry project sequence defaults,
 unbounded support, escape-character behavior, and include directories. File
 `unboundedSupport` is an optional Boolean override: omitted inherits the project
@@ -66,7 +70,7 @@ supplied text and virtual paths; it never opens a host file.
 | Generated output | 512 documents and 16 MiB UTF-8 text                                                                  |
 
 Client validation preserves the existing workspace when an operation fails.
-The adapter independently rejects invalid identity/version/profile, paths,
+The adapter independently rejects invalid identity/version/target/profile, paths,
 settings, source bounds, or a request without a Root. Host errors are explicit
 worker errors; they do not invent compiler diagnostic IDs or source locations.
 Compiler errors preserve original diagnostic paths and offsets. Generated-output

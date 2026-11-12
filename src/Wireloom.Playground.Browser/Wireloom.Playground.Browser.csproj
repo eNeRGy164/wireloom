@@ -4,6 +4,7 @@
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <RuntimeFrameworkVersion>10.0.13</RuntimeFrameworkVersion>
     <OutputType>Exe</OutputType>
+    <RootNamespace>Wireloom.Playground.Browser</RootNamespace>
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <WasmBuildNative>false</WasmBuildNative>
@@ -12,5 +13,9 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Wireloom.Dds.CSharp.Compiler/Wireloom.Dds.CSharp.Compiler.csproj" />
+    <ProjectReference Include="../../src/Wireloom.Dds.Cpp.Compiler/Wireloom.Dds.Cpp.Compiler.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Wireloom.Dds.CSharp.Compiler" />
   </ItemGroup>
 </Project>

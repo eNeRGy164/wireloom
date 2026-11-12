@@ -26,6 +26,12 @@
         "resolved": "10.0.13",
         "contentHash": "ubHnmRGy11HvoU/sIjtAWm4JOsqYcgvU+AKsWcebHo4vhi/qozAMMBCeN1URpdjwSdbUBzgD1spXak7oKOql7A=="
       },
+      "wireloom.dds.cpp.compiler": {
+        "type": "Project",
+        "dependencies": {
+          "Wireloom.Dds.Idl": "[1.0.0, )"
+        }
+      },
       "wireloom.dds.csharp.compiler": {
         "type": "Project",
         "dependencies": {

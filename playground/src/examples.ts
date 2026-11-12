@@ -4,7 +4,7 @@ export const examples = [
   {
     id: "hello",
     title: "Hello, Wireloom",
-    description: "A keyed temperature reading. Generate C# types and DDS support from a few lines of IDL.",
+    description: "A keyed temperature reading. Generate types and DDS support from a few lines of IDL.",
     source: `module Hello {
     struct Reading {
         @key long sensor_id;

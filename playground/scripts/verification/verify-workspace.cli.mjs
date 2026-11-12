@@ -293,7 +293,7 @@ async (page, hooks = {}) => {
   });
 
   await check("Explorer groups collapse independently and actions appear on hover or keyboard focus", async (app) => {
-    await app.locator("#profile").focus();
+    await app.locator('#profile button[data-profile="7.7.0"]').focus();
     await app.locator(".intro").hover();
     if (!(await app.evaluate(() => matchMedia("(hover: none)").matches)))
       assert(
@@ -764,7 +764,7 @@ async (page, hooks = {}) => {
     });
     for (const id of ["workspace-includes", "workspace-preprocessor"]) {
       for (const profile of ["6.1.2", "7.3.1", "7.7.0"]) {
-        await app.locator("#profile").selectOption(profile);
+        await app.locator(`#profile button[data-profile="${profile}"]`).click();
         await settle(app);
         await app.locator("#example").selectOption(id);
         await app.locator("#load-example").click();
