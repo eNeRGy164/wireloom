@@ -1,9 +1,10 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-11-05T07:01:08.6222099Z
+  generated_at: 2026-11-12T10:28:14.4102993+00:00
   arc42_home: docs/architecture/arc42
   format: yaml-only
+  human_memory_enabled: false
 sources:
   arc42:
     - docs/architecture/arc42/index.md
@@ -23,177 +24,188 @@ sources:
     - docs/architecture/adr/ADR-001-share-a-host-neutral-compiler-project.md
     - docs/architecture/adr/ADR-002-inject-member-id-md5-per-compilation.md
     - docs/architecture/adr/ADR-003-run-playground-compilation-in-a-browser-worker.md
+    - docs/architecture/adr/ADR-004-share-idl-analysis-across-generators.md
+    - docs/architecture/adr/ADR-005-deliver-native-cpp-generator-through-nuget.md
+    - docs/architecture/adr/ADR-006-use-stl-aware-sample-access-for-modern-cpp.md
+    - docs/architecture/adr/ADR-007-stage-modern-cpp-type-registration.md
   contracts:
     - docs/guides/configuration.md
     - docs/guides/developer-workflow.md
+    - docs/guides/hello-world.md
     - docs/guides/support-and-compatibility.md
+    - docs/releases/PREPARING-A-RELEASE.md
     - docs/guides/idl-semantics.md
     - docs/guides/generated-value-semantics.md
+    - docs/guides/cpp-generated-value-semantics.md
     - docs/guides/playground-workspaces.md
     - docs/guides/playground-deployment.md
     - docs/reference/compiler-api.md
+    - src/Wireloom.Dds.Cpp.Generator/README.md
     - docs/reference/playground-protocol.md
     - docs/guides/reporting-issues.md
     - docs/corpus/README.md
     - docs/corpus/FEATURE-COVERAGE.md
     - docs/corpus/LTS-PROFILES.md
-    - tests/Wireloom.Dds.Generator.RuntimeContracts/README.md
+    - tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md
     - tests/Wireloom.Dds.Generator.WireCompatibility/README.md
-  evidence:
-    - docs/corpus/csharp-quality.md
-    - docs/testing/consumer-analysis.md
-    - docs/performance/incremental-generator-baseline.md
-    - docs/testing/playground-qualification.md
-    - .github/workflows/quality.yml
-    - .github/workflows/wire-compatibility.yml
-    - .github/workflows/publish-playground.yml
-    - CONTRIBUTING.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppFullWidths/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppNamesConstants/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppScopes/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppConstantExpressions/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppAliasCollections/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppOptionalCollections/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppStringBoundaries/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppArraySequences/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppAliasAggregate/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppAggregates/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppUnions/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppEnumUnion/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppScopedUnion/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppMultiLabelUnion/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppShortUnion/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppShortBoundariesUnion/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppCharUnion/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppNumericCharUnion/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppBooleanUnion/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppUnionAliases/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppKeys/README.md
+    - tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppNestedKeys/README.md
   defaults:
     - AGENTS.md
     - global.json
     - Directory.Build.props
     - Directory.Packages.props
     - src/Wireloom.Playground.Browser/Wireloom.Playground.Browser.csproj
+    - src/Wireloom.Dds.Idl/Wireloom.Dds.Idl.csproj
+    - src/Wireloom.Dds.CSharp.Compiler/Wireloom.Dds.CSharp.Compiler.csproj
+    - src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj
+    - src/Wireloom.Dds.Cpp.Compiler/Wireloom.Dds.Cpp.Compiler.csproj
+    - src/Wireloom.Dds.Cpp.Generator/Wireloom.Dds.Cpp.Generator.csproj
 summary:
   goals:
     text: >-
-      Drop-in RTI C# generation replacement for supported IDL: preserve working
-      application APIs and DDS behavior. Normal restore/build needs no external
-      generator or machine-specific wiring. Generated C# remains inspectable,
-      extensible, outside source control, and free of preventable analysis noise.
-      The local Playground is a supporting demo/evaluation tool.
-    sources: [docs/architecture/arc42/01-introduction-and-goals.md]
+      Wireloom provides a drop-in RTI C# generation replacement for supported
+      IDL and a Modern C++ generator as a product feature. The first C++ release
+      targets a stable public contract within an evidence-backed scope;
+      release qualification is pending. C++ generation, consumer compatibility,
+      CDR, and live DDS remain separate claims.
+    sources: [docs/architecture/arc42/01-introduction-and-goals.md, docs/guides/support-and-compatibility.md, src/Wireloom.Dds.Cpp.Generator/README.md]
   constraints:
     text: >-
-      Honor separate consumer and producer baselines below. Generation and
-      report verification need no RTI license secret; live DDS needs the
-      selected RTI runtime/license. IDL stays local in the Playground.
-      Retain exact-scope evidence/provenance without licenses or credentials.
-    sources: [docs/architecture/arc42/02-architecture-constraints.md]
+      C# consumer SDK/runtime requirements do not apply to native C++ generator
+      hosts, which need no installed .NET SDK/runtime. Native applications use
+      the selected RTI SDK. Generation and report verification need no RTI
+      license; live DDS does. Preserve exact-scope evidence and provenance.
+      Playground source remains local to the browser.
+    sources: [docs/architecture/arc42/02-architecture-constraints.md, docs/guides/support-and-compatibility.md]
   context:
     text: >-
-      One product contains build integration and Playground. Consumers, RTI
-      runtime, .NET hosts, feeds, and hosting are external; DDS traffic is
-      outside Wireloom. Human roles: .NET DDS application developer, Build and
-      CI engineer, Wireloom maintainer, Playground user. RTI support is external.
+      Wireloom contains the C# and Modern C++ build entry points and the local
+      Playground. Consumer applications, RTI runtime, package feeds, and DDS
+      traffic remain outside the product boundary.
     sources: [docs/architecture/arc42/03-context-and-scope.md]
   strategy:
     text: >-
-      Managed Roslyn incremental adapter plus one host-neutral compiler shared
-      with browser callers. OMG IDL/XTypes define meaning; profile-specific
-      support is emitted from resolved semantics. Per-call platform services
-      include MD5. Unbounded semantics are opt-in and resolved by declaring
-      file, separate from finite fallback sizes. Developer-experience improvements may differ observably
-      when working application usage and DDS wire behavior are preserved.
-    sources: [docs/architecture/arc42/04-solution-strategy.md]
+      Share preprocessing, binding, and IDL/XTypes semantics through
+      Wireloom.Dds.Idl; expose target-neutral declarations and annotations to
+      backends while keeping parser, binder, and symbol-table machinery
+      internal. Standardize compiler hosts on an immutable request carrying
+      input snapshots, MD5 provider, and cancellation, plus a generic result;
+      keep profiles and output types backend-specific. Qualify by exact shape
+      and RTI profile. Unbounded behavior is opt-in and distinct from finite fallback.
+    sources: [docs/architecture/arc42/04-solution-strategy.md, docs/architecture/adr/ADR-004-share-idl-analysis-across-generators.md, docs/architecture/adr/ADR-002-inject-member-id-md5-per-compilation.md]
   building_blocks:
     text: >-
-      Shared IDL compiler: coordination, input processing, language analysis,
-      C# generation. .NET integration: MSBuild and Roslyn adapter. Playground:
-      browser client and compilation host. Interfaces/models belong to blocks;
-      Runner, Verifier, and Shared qualification tooling are outside the product.
-    sources: [docs/architecture/arc42/05-building-block-view.md]
+      Wireloom.Dds.Idl exposes the bound model through IdlAnalyzer and shared
+      request/result contracts while keeping front-end implementation internal.
+      C# and Modern C++ compiler facades own separate profiles, output types,
+      projections, and integrations.
+      Namespaces follow ownership: Wireloom.Dds.Idl, Wireloom.Dds.CSharp.Compiler,
+      Wireloom.Dds.Generator, Wireloom.Dds.Cpp, and Wireloom.Dds.Cpp.Generator;
+      the browser host is Wireloom.Playground.Browser.
+      The Playground selects C# or C++ per workspace and previews the matching
+      MSBuild project or CMake project. Its browser client composes focused
+      UI modules for generated-file state and tabs, search, notices, and pane layout
+      virtual-file dialogs and mutation workflows are coordinated separately from
+      source-tree rendering and navigation.
+      while keeping the existing client/worker boundary. Styles are grouped by
+      UI responsibility and use native nesting.
+      The native C++ NuGet supplies MSBuild and CMake entry points; its supported
+      shapes and qualification are recorded in the generator guide and corpus.
+    sources: [docs/architecture/arc42/05-building-block-view.md, src/Wireloom.Dds.Idl/Api/IdlCompilationRequest.cs, src/Wireloom.Dds.Idl/Api/IdlCompilationResult.cs, src/Wireloom.Dds.CSharp.Compiler/Api/Compiler.cs, src/Wireloom.Dds.Cpp.Compiler/Api/Compiler.cs, src/Wireloom.Dds.Cpp.Generator/README.md]
   runtime:
     text: >-
-      No roots skips adapter applicability checks. Expected IDL failures return
-      diagnostics/no documents; empty success is distinct. Caller/provider faults
-      and cancellation propagate. Browser output requires current worker/request/
-      revision/profile identity; keep one active and newest unsubmitted request.
-      Compilation timeout replaces the worker without replaying in-flight work;
-      startup failures/timeouts and uncaught faults require Retry. Per-request
-      failure can retain a ready worker.
-    sources: [docs/architecture/arc42/06-runtime-view.md]
+      Expected IDL failures return diagnostics; caller/provider faults and
+      cancellation propagate. Browser results must match the current workspace
+      revision, target, and profile. The v5 worker contract carries target identity.
+      C++ value APIs, RTI registration, local CDR, and live peer
+      exchange remain separate evidence levels.
+    sources: [docs/architecture/arc42/06-runtime-view.md, docs/corpus/7.7.0/FEATURE-COVERAGE.md]
   deployment:
     text: >-
-      One analyzer package bundles matching generator/compiler versions under
-      analyzers/dotnet/cs; generated code adds no Wireloom application dependency.
-      SDK/IDE selection differs from target framework. Playground uses a complete
-      same-origin static bundle and browser workers. Package publishers reuse
-      exact-SHA Quality evidence and test the versioned package bytes. Release
-      publication also requires retained wire reports. Pages promotes validated
-      bytes, verifies live HTTPS, and supports manual eligible rollback.
-      Changed base paths require matching bundles; changed origins affect storage.
-    sources: [docs/architecture/arc42/07-deployment-view.md]
+      The C# analyzer package bundles the matching compiler and IDL assemblies.
+      Modern C++ ships as host-native AOT NuGet assets for Windows and Linux x64,
+      with native MSBuild and CMake integration. Publishers select one revision
+      and version for both packages, require native consumer checks on both
+      hosts, and publish retained attested bytes. Consumers pin the package
+      separately from the RTI profile. Delivery and feature qualification remain
+      distinct gates.
+      CMake records successful completion separately from emitted text; edits
+      with unchanged output settle, while missing outputs and failures retry.
+    sources: [docs/architecture/arc42/07-deployment-view.md, docs/architecture/adr/ADR-005-deliver-native-cpp-generator-through-nuget.md]
   cross_cutting:
     text: >-
-      Preserve typed IDL identity and declaring-file options across outputs;
-      roots may share includes and included files may also be roots. Retain
-      original UTF-16 origins. Unbounded mode preserves RTI sequence/string
-      metadata with zero initial capacity; finite fallback sizes are ignored,
-      and explicit IDL bounds remain finite. Isolate snapshots/state; bound work/output, not
-      process memory. Distinct macro outputs and unique hints matter. Preserve
-      optional presence, profile-specific copy ownership, allocation, and native cleanup.
-      RTI 6.1.2 retains collection-alias wrappers when copying members, union
-      branches, and alias chains; newer profiles copy those wrappers.
-      Workspace edits are atomic; source backup is independent of generation.
-      Restore cannot overwrite edits; serialize saves/deletes, with no resurrection
-      after successful reset deletion. Workspace v3 upgrades to v4 with
-      unbounded mode disabled; failed persistence cannot block reading source.
-      Browser storage is fallible.
-    sources: [docs/architecture/arc42/08-crosscutting-concepts.md, docs/guides/playground-workspaces.md]
+      Preserve IDL identity, source origins, and declaring-file options.
+      Keep optional presence, copy ownership, allocation, and cleanup explicit.
+      C++ unions retain always-live branch storage. Module auto-ID follows the
+      annotated block in current targets; its standards interpretation remains
+      open. Scope annotation state to each compilation. Workspace edits and
+      recovery are atomic; target selection is persisted and older workspace
+      records migrate to C# mode. Browser storage remains fallible.
+    sources: [docs/architecture/arc42/08-crosscutting-concepts.md, docs/guides/cpp-generated-value-semantics.md, docs/guides/idl-semantics.md, docs/guides/playground-workspaces.md]
   decisions:
     text: >-
-      Accepted: ADR-001 shared compiler, ADR-002 per-compilation MD5 delegate,
-      ADR-003 browser worker. The 1.x contract protects public consumer behavior,
-      defaults, and minimums; patches contain corrections only and may require
-      coordinated upgrades for faulty output. Direct compiler APIs and Playground
-      engine/protocol remain internal. ADR contexts/measurements are historical snapshots.
-      C# wire orchestration reduces maintained languages/scripts. Consult chapter 9
-      for evidence-qualified history and rationale; do not invent past approvals.
-    sources: [docs/architecture/arc42/09-architectural-decisions.md, docs/guides/support-and-compatibility.md]
+      ADR-001 through ADR-007 are accepted. The C++ decisions cover shared IDL
+      analysis boundaries, native AOT delivery, profile-specific sample-access
+      adapters, and staged metadata/plugin initialization. Applying existing
+      strategy does not require a new ADR; value mappings and compatibility
+      details belong in their guides.
+    sources: [docs/architecture/arc42/09-architectural-decisions.md, docs/architecture/adr/ADR-004-share-idl-analysis-across-generators.md, docs/architecture/adr/ADR-005-deliver-native-cpp-generator-through-nuget.md, docs/architecture/adr/ADR-006-use-stl-aware-sample-access-for-modern-cpp.md, docs/architecture/adr/ADR-007-stage-modern-cpp-type-registration.md]
   quality:
     text: >-
-      Prioritize compatibility, build integration, generated C#, diagnostics,
-      maintainability. Require VS Code/C# tooling and Visual Studio 2026; desktop
-      Chrome/Edge/Firefox with keyboard/focus/label/noncolor-error behavior;
-      WebKit checks do not qualify Safari.
-      Compiler gates: 90% branches/95% lines; Node gates: 98%/99%, distinct from
-      broader UI coverage. Quality runs independent coverage and compatibility
-      jobs. Licensed CI uses the running repository's license; incoming
-      fork PRs use the license-free harness. Profile mapping, corpus, API/runtime, wire, and analysis
-      evidence establish different facts. Numerical latency/memory/footprint
-      budgets and formal accessibility level remain open; observations are not
-      acceptance targets.
-    sources: [docs/architecture/arc42/10-quality-requirements.md, docs/testing/quality.md]
+      Keep IDL acceptance, generated API shape, package integration, runtime,
+      CDR, and live DDS as separate claims. Use case-specific tests and retained
+      corpus evidence; unsupported operations fail closed. C++ tests separate
+      compiler, corpus, fuzzing, generator package, and generator responsibilities.
+      Combined compiler/corpus/generator coverage preserves branch data in one
+      collector; fuzzing remains outside coverage. The first stable C++
+      release requires exact-package host checks, named native application
+      configurations, public-contract regression, and retained capability-level
+      evidence before publication.
+    sources: [docs/architecture/arc42/10-quality-requirements.md, docs/releases/PREPARING-A-RELEASE.md, docs/testing/quality.md, docs/corpus/7.7.0/FEATURE-COVERAGE.md]
   risks:
     text: >-
-      D01 is mitigated and historical: C174 establishes unbounded receive
-      lifecycle and fragmentation behavior for both exact RTI LTS profiles
-      within the support guide's payload/QoS envelope. Distinguish Wireloom
-      endpoint checks from RTI reference controls. Finite fallbacks are the
-      default. RTI 7.3.1 C148 enum-array defaults differ.
-      Recursive sequence typedefs are rejected; direct self-recursive wire scope
-      needs TypeObject v1, while mutual graphs remain unqualified. Build after
-      IDL edits; use explicit refresh for stale IntelliSense. Automatic IDL
-      refresh is optional. Named IDE/profile workflows pass; recheck the final packed
-      candidate. Named consumer
-      Qodana/SonarQube profiles pass controls and regeneration; custom rules
-      remain unqualified. Named Windows Chrome/Edge/Firefox checks and public
-      deployment/rollback readiness pass. Broader UI branch coverage remains a
-      separate follow-up; other platforms and formal
-      accessibility remain unqualified. Collected output invalidation is
-      batch-wide; optimize on evidence.
-      Numerical budgets remain open. Reporting guidance and a
-      compatibility issue template exist; qualification remains open.
-      RTI profile availability and reference restrictions are in the support guide;
-      generation does not qualify excluded reference behavior.
-      Priorities constrain affected claims, not all uses.
-    sources: [docs/architecture/arc42/11-risks-and-technical-debt.md, docs/guides/support-and-compatibility.md]
+      C# compatibility and Modern C++ behavior are RTI-profile-specific. The
+      C++ generator depends on RTI-version-sensitive native plugin/interpreter
+      interfaces; claims are limited to explicitly qualified shapes. Unsupported
+      recursive or nested graphs remain fail-closed or unqualified.
+    sources: [docs/architecture/arc42/11-risks-and-technical-debt.md, docs/guides/support-and-compatibility.md, src/Wireloom.Dds.Cpp.Generator/README.md]
   glossary:
     text: >-
       Use chapter 1 role names and chapter 5 block names; chapter 12 defines
-      jargon/aliases with linkable terms. Compiler core means Shared IDL compiler;
-      browser workers include separate compiler and editor workers.
+      linkable architecture terminology.
     sources: [docs/architecture/arc42/12-glossary.md]
 defaults:
   repository:
-    root_namespace: {value: Wireloom, source: Directory.Build.props, status: explicit}
+    root_namespace: {value: Wireloom.Dds, source: Directory.Build.props, status: explicit}
     target_framework: {value: net10.0, source: Directory.Build.props, status: explicit}
     sdk: {value: 10.0.400, source: global.json, status: explicit}
     sdk_policy: {value: {roll_forward: latestFeature, allow_prerelease: false}, source: global.json, status: explicit}
     consumer_baseline: {value: {minimum_framework: net8.0, minimum_csharp: 12, minimum_roslyn: 4.8.0}, source: chapter-2, status: explicit}
-    compiler_targets: {value: {generator: netstandard2.0, compiler: netstandard2.0}, source: chapter-4, status: explicit}
-    compiler_packaging: {value: "non-packable; bundled with generator at matching version", source: chapter-7, status: explicit}
+    compiler_targets: {value: {generator: netstandard2.0, compiler: netstandard2.0, idl: netstandard2.0, cpp: net10.0}, source: chapter-4, status: explicit}
+    compiler_packaging: {value: "non-packable compiler and IDL assemblies bundled with generator at matching version", source: chapter-7, status: explicit}
+    cpp_integration: {value: "native AOT NuGet for win-x64/linux-x64; MSBuild and CMake; shape/profile-specific qualification with generation, consumer, CDR, and live DDS kept distinct", source: [docs/architecture/arc42/07-deployment-view.md, src/Wireloom.Dds.Cpp.Generator/README.md], status: explicit}
+    cpp_native_runtime: {value: 10.0.14, source: Directory.Packages.props, status: explicit}
     package_type: {value: nuget-analyzer-source-generator, source: chapter-7, status: explicit}
     configuration_scope: {value: "preprocessing/strictness/escaping batch-wide; mapping/sizes declaring-file-owned", source: chapter-8, status: explicit}
     strict_validation: {value: false, source: docs/guides/configuration.md, status: explicit}

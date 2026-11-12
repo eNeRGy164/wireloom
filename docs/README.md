@@ -6,19 +6,21 @@ with the [architecture introduction](architecture/arc42/01-introduction-and-goal
 
 ## Use Wireloom
 
-| Task                                                    | Start here                                                                                               |
-| :------------------------------------------------------ | :------------------------------------------------------------------------------------------------------- |
-| Try generation without installation                     | [Playground](https://energy164.github.io/wireloom/) · [workspace guide](guides/playground-workspaces.md) |
-| Generate contracts in a .NET project                    | [Package quick start](../src/Wireloom.Dds.CSharp.Generator/README.md#quick-start)                        |
-| Build a publisher and subscriber                        | [Hello World tutorial](guides/hello-world.md) · [repository sample](../samples/HelloWorld/README.md)     |
-| Replace an existing RTI generation step                 | [Migration procedure](migration/rtiddsgen-to-wireloom.md)                                                |
-| Edit, inspect, extend, and analyze generated code       | [Developer workflow](guides/developer-workflow.md)                                                       |
-| Configure roots, includes, symbols, mappings, or bounds | [Configuration reference](guides/configuration.md)                                                       |
-| Understand initialization, copying, and ownership       | [Generated value semantics](guides/generated-value-semantics.md)                                         |
-| Look up annotations or a diagnostic                     | [Package reference](../src/Wireloom.Dds.CSharp.Generator/README.md#annotation-reference)                 |
-| Check support, versions, and known limits               | [Support policy](guides/support-and-compatibility.md) · [feature coverage](corpus/FEATURE-COVERAGE.md)   |
-| Report a mismatch or integration failure                | [Reporting guide](guides/reporting-issues.md)                                                            |
-| Find a term or abbreviation                             | [Glossary](architecture/arc42/12-glossary.md)                                                            |
+| Task                                                    | Start here                                                                                                                                                                   |
+| :------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Try generation without installation                     | [Playground](https://energy164.github.io/wireloom/) · [workspace guide](guides/playground-workspaces.md)                                                                     |
+| Generate contracts in a .NET project                    | [Package quick start](../src/Wireloom.Dds.CSharp.Generator/README.md#quick-start)                                                                                            |
+| Build a publisher and subscriber                        | [C# walkthrough](guides/hello-world.md) · [C++ walkthrough](guides/hello-world.md#modern-c-walkthrough) · [C# repository sample](../samples/HelloWorld/README.md)                         |
+| Replace an existing RTI generation step                 | [Migration procedure](migration/rtiddsgen-to-wireloom.md)                                                                                                                    |
+| Edit, inspect, extend, and analyze generated code       | [Developer workflow](guides/developer-workflow.md)                                                                                                                           |
+| Configure roots, includes, symbols, mappings, or bounds | [Configuration reference](guides/configuration.md)                                                                                                                           |
+| Understand initialization, copying, and ownership       | [C# value semantics](guides/generated-value-semantics.md) · [C++ value semantics](guides/cpp-generated-value-semantics.md)                                                   |
+| Look up annotations or a diagnostic                     | [Package reference](../src/Wireloom.Dds.CSharp.Generator/README.md#annotation-reference)                                                                                     |
+| Evaluate the first Modern C++ release                   | [C++ support and stability contract](guides/support-and-compatibility.md#modern-c-support-and-compatibility)                                                                 |
+| Obtain, pin, update, or roll back the C++ generator     | [C++ package installation](../src/Wireloom.Dds.Cpp.Generator/README.md#obtain-and-pin-the-generator)                                                                         |
+| Check support, versions, and known limits               | [Support policy](guides/support-and-compatibility.md) · [feature coverage](corpus/FEATURE-COVERAGE.md) · [Modern C++ generator](../src/Wireloom.Dds.Cpp.Generator/README.md) |
+| Report a mismatch or integration failure                | [Reporting guide](guides/reporting-issues.md)                                                                                                                                |
+| Find a term or abbreviation                             | [Glossary](architecture/arc42/12-glossary.md)                                                                                                                                |
 
 ## Maintain and qualify Wireloom
 

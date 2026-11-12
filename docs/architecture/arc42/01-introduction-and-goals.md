@@ -23,10 +23,16 @@ to the selected tools in that setup. Wireloom removes the consumer build's depen
 generation tools. Teams can keep them installed and use them for other purposes.
 
 The browser Playground is a supporting demo and evaluation tool. It offers a
-high-quality preview of generated C# and diagnostics without installing
+high-quality preview of generated C# or C++ and diagnostics without installing
 Wireloom, while keeping IDL source local to the browser. The project's primary
 goals concern the .NET development experience; browser previews do not establish
 RTI runtime or DDS wire compatibility.
+
+Wireloom also provides a Modern C++ generator through a standalone native
+package with MSBuild and CMake integrations. This adds C++ generation without
+changing Wireloom's primary C# drop-in compatibility claim. The C++ generator's
+supported IDL and RTI profile are documented in the [generator guide](../../../src/Wireloom.Dds.Cpp.Generator/README.md);
+package integration checks are described in the [package verification guide](../../../tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md).
 
 ## 1.1 Requirements overview
 
@@ -96,7 +102,7 @@ role to its interactions with the system.
 | .NET DDS application developer | Maintain IDL and application code; adopt or upgrade Wireloom and check application compatibility | Existing applications keep working with the same supported IDL; generated types remain extensible without source-control or analysis noise |
 | Build and CI engineer          | Configure developer and CI builds and their quality-analysis pipelines                           | Reproducible generation through normal restore and build, with small tooling and no generation-specific machine setup or custom scripts    |
 | Wireloom maintainer            | Evolve the compiler, integrations, and package; verify and document compatibility                | Focused tests, actionable diagnostics, and attributable API, runtime-contract, and DDS wire evidence for named RTI versions                |
-| Playground user                | Try examples or supplied IDL and inspect generated C# and diagnostics                            | A reliable local demo without installing Wireloom or sending IDL source to a service                                                       |
+| Playground user                | Try examples or supplied IDL and inspect generated C# or C++ and diagnostics                    | A reliable local demo without installing Wireloom or sending IDL source to a service                                                       |
 
 ---
 

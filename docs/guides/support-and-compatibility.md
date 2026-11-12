@@ -2,17 +2,23 @@
 
 This page defines Wireloom's support boundary, RTI version qualification,
 compatibility evidence, and decision guidance. Wireloom is an independent
-project with no official relationship to RTI. It generates C# source and
-participates in the consumer build; the RTI Connext DDS runtime remains
-responsible for DDS behavior and communication.
+project with no official relationship to RTI. It generates C# and Modern C++
+source and participates in the consumer build; the RTI Connext DDS runtime
+remains responsible for DDS behavior and communication.
+
+The .NET prerequisites, automatic profile selection, and 1.x consumer API
+rules below describe the C# analyzer package. The
+[Modern C++ section](#modern-c-support-and-compatibility) defines its native
+requirements, first-release targets, and stability contract. The support
+boundary and separation of evidence levels apply to both targets.
 
 ## Support boundary
 
 Wireloom support is best effort and has no response-time or resolution
 commitment. Open Wireloom defects and requests in the
 [GitHub issue tracker](https://github.com/eNeRGy164/wireloom/issues). Wireloom's
-scope is generated code, samples, plugins, and integration into the .NET build
-and IDE, including MSBuild and compiler integration. Use the
+scope is generated code, samples, plugins, and integration into .NET and native
+builds, including IDE, MSBuild, CMake, and compiler integration. Use the
 [reporting guide](reporting-issues.md) and [compatibility issue template](https://github.com/eNeRGy164/wireloom/issues/new?template=compatibility.md)
 for a reproducible contract or integration failure.
 
@@ -242,8 +248,9 @@ advance independently while preserving those consumer requirements.
 
 ### Playground compatibility
 
-The Playground's IDL generation, generated C#, and generation settings follow
-the same public contract for the selected compiler version and RTI profile.
+The Playground's IDL generation, generated C# or C++, and generation settings
+follow the selected target's public contract for that compiler version and RTI
+profile: the C# rules above or the [C++ contract](#modern-c-support-and-compatibility).
 Its engine and browser worker protocol are internal and may change together.
 
 Later 1.x Playground versions support forward migration of valid saved
@@ -260,6 +267,159 @@ Corrections target the latest 1.x release line. Backports to older minor lines
 are considered when warranted, on a best-effort basis. There is no fixed support
 period or commitment to maintain every minor line. A backported patch contains
 corrections relevant to that line without unrelated features.
+
+## Modern C++ support and compatibility
+
+Wireloom started by improving the C# development experience around RTI Connext
+DDS. Modern C++ extends that work with native build integration and generated
+typed contracts. The original C# compatibility goal remains separate from the
+C++ API and runtime qualification described here.
+
+This section defines the **first stable C++ release contract**. Its package
+version and exact release qualification are pending. It defines what must be
+delivered; it does not certify the current branch or an unpublished package.
+Use the [record for the exact released version](../releases/README.md) for
+verified configurations, capabilities, and remaining limits.
+
+### Who this release serves
+
+The first release serves teams building RTI Connext DDS Modern C++ applications
+with CMake or native Visual Studio/MSBuild. They maintain IDL and application
+code, restore the generator package, and generate contracts during ordinary
+builds. RTI still supplies the native SDK, DDS runtime, configuration, and
+applicable licenses.
+
+The generation tool is a native executable and needs no installed .NET runtime
+or SDK. A native RTI SDK is required to compile and link generated applications;
+live DDS execution requires the applicable RTI license. Package acquisition
+tools retain their own prerequisites.
+
+### The release promise
+
+For unchanged supported IDL, documented configuration, and a qualified RTI
+profile and platform, the package will:
+
+- Generate deterministic C++11 value types and the associated RTI support
+  sources through the documented CMake, native MSBuild, and CLI entry points.
+- Preserve the documented names, types, defaults, bounds, member IDs, optional
+  presence, union behavior, and topic traits for released capabilities.
+- Regenerate when supported inputs or settings change and skip unchanged
+  generation. Included IDL is part of the input contract.
+- Report invalid or unsupported input with actionable, source-located
+  diagnostics. Unsupported native operations must fail explicitly rather
+  than entering an incompatible runtime path.
+- Provide a complete, package-based getting-started example that builds and
+  exchanges samples on each advertised native application platform.
+
+C++ adoption follows the documented generated API. For example, Wireloom
+structs expose public fields where RTI output commonly exposes accessors; see
+[C++ value semantics](cpp-generated-value-semantics.md). Compatibility of a
+particular API, serialized representation, or DDS exchange needs its own evidence.
+
+### Platforms and RTI profiles
+
+The generator's **build host** runs the executable. The **application target**
+compiles and runs generated C++. These are separate compatibility claims.
+
+| Role                   | First-release target                                                | Qualification required before publication                                                                                                                            |
+| :--------------------- | :------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows generator host | Windows x64; the package workflow uses `windows-2025`               | Run the exact native package without .NET on PATH; verify CLI, CMake, and native MSBuild restore/generation. Name the tested Windows versions in the release record. |
+| Linux generator host   | Ubuntu 24.04 x64 baseline; the package workflow uses `ubuntu-24.04` | Run the exact native package without .NET on PATH; verify executable permissions, native dependencies, CLI, and CMake generation.                                    |
+| Windows application    | Windows x64 with MSVC and the selected RTI native SDK               | Record OS, compiler/toolset, RTI SDK build, RTI platform identifier, build configuration, and successful consumer/runtime checks.                                    |
+| Linux application      | Linux x64 with GCC and the selected RTI native SDK                  | Record distribution/image digest, compiler, RTI SDK build, RTI platform identifier, build configuration, and successful consumer/runtime checks.                     |
+
+The CI runner names describe existing qualification baselines, not a promise
+for every Windows version or Linux distribution. The first release must name
+its actual tested configurations. A generation test with `Platform=ARM64` on
+an x64 host establishes host selection; it does not qualify an ARM64 application.
+macOS, ARM generator hosts, 32-bit hosts, and other native compiler/platform
+combinations are outside the initial promise unless separately qualified and
+added to the release record.
+
+The first release targets the three implemented RTI profiles:
+
+| Exact RTI release | Implementation path                                                         | Where to check candidate scope                                                                                                                       |
+| :---------------- | :-------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 6.1.2             | Dedicated legacy native adapter                                             | [Versioned evidence](../corpus/6.1.2/FEATURE-COVERAGE.md), with native C++ results identified separately from C# results.                            |
+| 7.3.1             | Profile-specific native integration, including the STL-aware bridge         | [Versioned evidence](../corpus/7.3.1/FEATURE-COVERAGE.md), with exact Wireloom C++ capabilities and peer directions.                                 |
+| 7.7.0             | Profile-specific native integration, including STL-aware and FlatData paths | [Versioned evidence](../corpus/7.7.0/FEATURE-COVERAGE.md) and [native fixture guides](../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/). |
+
+First-release qualification is pending for these targets. The CLI and build
+integration select the C++ RTI version explicitly; they do not discover it
+from a `Rti.ConnextDds` assembly. Mapping another SDK version to an implemented
+profile does not qualify that version. The native SDK used to compile the
+application must match the advertised profile and ABI requirements.
+
+### Which IDL capabilities are released
+
+The generator covers scalar and enum values, aliases, strings, collections,
+aggregates, keys, unions, optional members, and additional documented shapes.
+These families are an adoption index, not a claim that every composition has
+the same runtime support. Use the
+[generator reference](../../src/Wireloom.Dds.Cpp.Generator/README.md) for accepted
+shapes and options, and the release record for their qualification.
+
+Every advertised capability must identify the exact type/shape, RTI profile,
+platform, relevant configuration, and highest established evidence level:
+
+| Evidence level   | What a release record may claim                                                                                        |
+| :--------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| Generation       | Accepted input and deterministic emitted sources/diagnostics.                                                          |
+| Consumer/API     | Generated headers and sources compile/link against the exact SDK; named value and metadata operations execute.         |
+| Plugin/lifecycle | Named registration, allocation, cleanup, endpoint, or loan operations execute safely for the tested states.            |
+| Local CDR        | Named XCDR1/XCDR2 serialization and round trips pass, with complete RTI-reference byte comparisons where claimed.      |
+| Live DDS         | Named independent writer/reader implementations exchange and verify samples under the recorded QoS and representation. |
+
+Generation-only or metadata-only shapes must be labeled that way and cannot
+be presented as released DDS topic support. Same-plugin loopback is not a
+substitute for independent-peer interoperability. Cross-language claims must
+name the actual C# and C++ peer implementations and directions tested.
+
+Advanced cases such as recursion, optional collections, unbounded storage,
+FlatData, and private TypeCode annotations retain their exact-shape and platform
+limits. The [qualification risks](../architecture/arc42/11-risks-and-technical-debt.md#116-modern-c-qualification-risks)
+include the C114 Linux wide-string failures and the narrow C047 FlatData scope.
+
+### Public stability contract
+
+Stability begins with the first stable C++ package and applies within its
+major release line. For unchanged supported inputs and environment, it covers:
+
+- Documented generated value APIs, public header names, topic traits, and value
+  behavior for released capabilities.
+- Documented CLI commands/options and failure categories, CMake functions and
+  arguments, and native MSBuild items/properties and their scope.
+- Documented defaults, including finite fallback bounds of 100 sequence
+  elements and 255 for source-unbounded strings. Explicit IDL bounds remain
+  effective; unbounded support stays opt-in and separately qualified.
+
+The existing [release rules and defect-correction exception](#release-rules)
+govern changes to this C++ contract. Corrections that require regeneration,
+consumer changes, or coordinated peer upgrades must describe that impact.
+Adding support does not silently change the profile of an existing consumer.
+
+Generated implementation details, plugin callbacks, sample-access metadata,
+and private RTI ABI integration are not application extension points. Internal
+compiler APIs, source formatting, and private file organization may change
+while preserving the documented build and public-header contracts. RTI SDK
+upgrades require renewed qualification of version-sensitive native adapters.
+
+### Native support and problem reports
+
+The shared [support boundary](#support-boundary) covers the C++ generator,
+generated contracts, samples, and documented native build integration.
+Consumers provision RTI and own their application QoS, deployment, and
+validation beyond the published scope. NuGet is the initial C++ package
+channel; additional channels are separate delivery work rather than
+prerequisites for this release.
+
+For a native problem report, include the Wireloom version, IDL/include closure,
+generator host and application target, compiler, exact RTI SDK/platform,
+CLI/CMake/MSBuild settings, and the failing evidence boundary. Follow the
+[reporting guide](reporting-issues.md) and keep private IDL, credentials, and
+license files out of reports.
+
+For publication gates and evidence ownership, see the [first Modern C++ release checklist](../releases/PREPARING-A-RELEASE.md#first-modern-c-release).
 
 ## Choosing a generation path
 

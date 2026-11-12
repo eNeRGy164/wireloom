@@ -6,6 +6,9 @@ store generated values. It does not establish RTI wire compatibility for every
 IDL shape; use the [wire compatibility evidence](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
 for tested cross-language exchanges.
 
+For Modern C++ optional presence and union behavior, see
+[Generated C++ value semantics](cpp-generated-value-semantics.md).
+
 ## Initialize values
 
 Required sequences start empty, required arrays are allocated, and required
@@ -173,7 +176,7 @@ not need an outer guard.
 Native conversion also distinguishes allocation-enabled calls from calls that
 reuse existing storage. Review conversion, initialization, and destruction
 together when changing a member shape; the
-[native emitter](../../src/Wireloom.Dds.CSharp.Compiler/Compiler/Emission/Emitters/NativeTypeEmitter.cs)
+[native emitter](../../src/Wireloom.Dds.CSharp.Compiler/Emission/Emitters/NativeTypeEmitter.cs)
 and linked runtime contracts define the supported paths.
 
 ### Diagnostic formatting

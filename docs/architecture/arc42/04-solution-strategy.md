@@ -144,6 +144,30 @@ workspace models are in the
 [browser concepts](08-crosscutting-concepts.md#86-workspace-consistency).
 Browser evidence belongs in the [qualification guide](../../testing/playground-qualification.md).
 
+## 4.8 Keep C# and C++ generation separate
+
+Share preprocessing, binding, and IDL/XTypes semantics through
+`Wireloom.Dds.Idl`. Each backend owns its language mapping, supported-shape
+validation, RTI integration, and source emission. C++ planning uses bound IDL
+capabilities rather than corpus filenames.
+
+Deliver Modern C++ generation as a host-native AOT CLI through a separate
+NuGet package with MSBuild and CMake integration. This keeps native build
+requirements out of the C# analyzer and Playground. See
+[ADR-004](../adr/ADR-004-share-idl-analysis-across-generators.md) and
+[ADR-005](../adr/ADR-005-deliver-native-cpp-generator-through-nuget.md).
+
+Keep generated typed value APIs separate from profile-specific plugin
+implementation. STL-backed values require compatible sample access; the
+generic C-layout path cannot safely serve every C++ graph.
+[ADR-006](../adr/ADR-006-use-stl-aware-sample-access-for-modern-cpp.md)
+records the guarded RTI bridge and open internal-interface/licensing review.
+
+Generation, consumer/API compatibility, local CDR, and live DDS remain separate
+claims. The [generator guide](../../../src/Wireloom.Dds.Cpp.Generator/README.md)
+and [native fixtures](../../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/)
+define supported shapes and qualification scope.
+
 ---
 
 [< 3. Context and scope](03-context-and-scope.md) | [Index](index.md) | [5. Building block view >](05-building-block-view.md)

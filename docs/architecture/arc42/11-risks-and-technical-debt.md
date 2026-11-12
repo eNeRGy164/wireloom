@@ -109,6 +109,7 @@ while retained RTI C# and C++ peers use `Color.GREEN`; cross-implementation
 values are asymmetric. The 7.7.0 fixture defaults agree. The
 [recorded limitation](../../corpus/FEATURE-COVERAGE.md#recorded-wire-evidence)
 and [runtime contracts](../../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md#coverage-matrix)
+distinguish Wireloom's declared-default behavior from peer behavior.
 
 **Next action / closure:** Keep this difference visible in affected adoption
 reviews. Reproduce it against the exact consumer shape and agree the required
@@ -279,10 +280,12 @@ sample-value allocation and the [unbounded qualification envelope](../../guides/
 
 ## 11.3 Existing debt and capability gaps
 
-| ID                          | Existing shortfall                                                      | Impact                                                                                    | Priority | Next action and completion evidence                                                                                                                                                        |
-| :-------------------------- | :---------------------------------------------------------------------- | :---------------------------------------------------------------------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <a id="d02"></a>[D02](#d02) | Collected incremental output batch invalidates unrelated roots together | Coarser regeneration can increase edit/build cost; no agreed budget breach is established | Low      | Extend the [incremental baseline](../../performance/incremental-generator-baseline.md) to representative workloads; introduce finer caching only when measurement justifies its complexity |
-| <a id="d03"></a>[D03](#d03) | Broader combined browser UI branch-coverage target remains unmet        | UI-only branches have less regression coverage than the declared broader target           | Medium   | Add meaningful checks for remaining UI branches, preserve the direct Node and browser gates, and review CI results. |
+| ID                          | Existing shortfall                                                                         | Impact                                                                                                        | Priority | Next action and completion evidence                                                                                                                                                                                    |
+| :-------------------------- | :----------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------ | :------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <a id="d02"></a>[D02](#d02) | Collected incremental output batch invalidates unrelated roots together                    | Coarser regeneration can increase edit/build cost; no agreed budget breach is established                     | Low      | Extend the [incremental baseline](../../performance/incremental-generator-baseline.md) to representative workloads; introduce finer caching only when measurement justifies its complexity                             |
+| <a id="d03"></a>[D03](#d03) | Broader combined browser UI branch-coverage target remains unmet                           | UI-only branches have less regression coverage than the declared broader target                               | Medium   | Add meaningful checks for remaining UI branches, preserve the direct Node and browser gates, and review CI results.                                                                                                    |
+| <a id="d04"></a>[D04](#d04) | C142 must-understand behavior is qualified only at generation                              | Consumer, RTI plugin, CDR, and wire behavior remain unknown                                                   | Medium   | Keep C142 generation scope narrow; qualify downstream evidence separately before making those claims.                                                                                                                  |
+| <a id="d05"></a>[D05](#d05) | The standards interpretation of module `@autoid(HASH)` across reopened blocks remains open | Current analyzer, C#, and C++ evidence agree on block-scoped IDs, but the normative reading remains uncertain | Medium   | Keep the behavior evidenced and review the documented scope against OMG DDS-XTypes 1.3 §7.3.1.2.1.1 and IDL 4.2 §7.4.1.4.2 before treating it as a general standards resolution. Preserve regression and RTI evidence. |
 
 **D03:** The [qualification report](../../testing/playground-qualification.md#current-local-results)
 records the current scopes and gates. Combined UI coverage passes the enforced
@@ -292,6 +295,15 @@ storage/preferences fallback paths, workspace import/cancellation and alternate
 actions, and dialog validation. The direct Node gate remains separate. Closing
 D03 requires meaningful checks and current local/CI results for those branches;
 the release decision does not lower its target.
+
+**D04:** The [C++ coverage record](../../corpus/7.7.0/FEATURE-COVERAGE.md)
+retains C142's generation-only scope. Downstream API, plugin, CDR, and wire
+qualification remain separate work.
+
+**D05:** The [module auto-ID scope reference](../../guides/idl-semantics.md#module-auto-id-scope)
+records current block-scoped behavior, exact RTI IDs, and the open standards
+question. Changing that scope can change member IDs and compatibility; the
+observed agreement does not settle the normative interpretation.
 
 ## 11.4 Open decisions
 
@@ -331,6 +343,43 @@ checks from RTI reference controls. Unrestricted sample sizes and general RTI
 runtime cleanup guarantees are outside this debt item's closure criterion.
 The ongoing compatibility and resource risks remain in [R01](#r01) and
 [R09](#r09).
+
+## 11.6 Modern C++ qualification risks
+
+C++ generation does not imply consumer, plugin, CDR, or live-wire support for
+every accepted shape. The [generator guide](../../../src/Wireloom.Dds.Cpp.Generator/README.md)
+and [native fixtures](../../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/)
+define supported shapes and checks. Qualification requires exact run reports.
+
+| Risk                               | Consequence                                                                                                              | Mitigation / next step                                                                                                                                             |
+| :--------------------------------- | :----------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Version-sensitive RTI integration  | SDK changes can invalidate private TypeCode layout, sample-access, interpreter, and plugin ABI assumptions.              | Keep exact-version guards and shape gates; revalidate native consumers and wire behavior before extending a profile.                                               |
+| C-layout versus STL-backed storage | A generated value or inspectable DynamicType can still fail during registration, lifecycle, or serialization.            | Select compatible sample access and keep unsupported operations fail-closed under [ADR-006](../adr/ADR-006-use-stl-aware-sample-access-for-modern-cpp.md).         |
+| Recursive and composed type graphs | Metadata may work while plugin initialization or TypeObject registration remains unsupported.                            | Preserve staged initialization and explicit rejection; qualify each operation independently under [ADR-007](../adr/ADR-007-stage-modern-cpp-type-registration.md). |
+| C++ API differences                | Public optional fields and other mapping differences can require consumer changes despite usable metadata.               | Keep differences explicit and verify actual consumer usage; see [C++ optional-member semantics](../../guides/cpp-generated-value-semantics.md#optional-members).   |
+| Qualification overreach            | A local CDR pass, adjusted oracle, or single-platform result can be mistaken for general interoperability.               | Preserve exact scope and platform failures in retained reports; require independent mixed-peer evidence for wire claims.                                           |
+| Native AOT delivery                | Embedded runtime fixes require new packages; two host payloads do not qualify other architectures or Linux environments. | Service pinned payloads and verify packaged tools on each supported host under [ADR-005](../adr/ADR-005-deliver-native-cpp-generator-through-nuget.md).            |
+
+Internal RTI interface support/licensing review remains open under
+[ADR-006](../adr/ADR-006-use-stl-aware-sample-access-for-modern-cpp.md).
+Feed publication, signing, and release qualification remain separate C++ release
+tasks. Changes to shared IDL assembly composition also require C# analyzer and
+Playground package/bundle checks.
+
+Recorded platform limits remain material: the C114 optional-string-sequence
+Linux rerun crashed in both RTI and Wireloom for wide-string states; zero-byte
+comparisons after those failures are invalid. Windows success does not qualify
+those Linux states. The [fixture](../../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppOptionalStringSequences/README.md)
+defines the exercised shape.
+
+C047's recorded FlatData interoperability is limited to RTI 7.7.0.0 and the
+final, unkeyed, fixed-size two-`long`, XCDR2-only sample. Same-plugin UDP and
+two-way RTI C# peer exchanges do not qualify other FlatData shapes or profiles;
+the private plugin/interface dependency remains under
+[ADR-006](../adr/ADR-006-use-stl-aware-sample-access-for-modern-cpp.md).
+
+These risks refine [R01](#r01)'s compatibility boundary. Detailed fixture
+results remain in their run reports rather than being repeated here.
 
 ---
 

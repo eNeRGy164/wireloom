@@ -100,8 +100,9 @@ different enums. See [IDL meaning](08-crosscutting-concepts.md#81-idl-meaning-an
 
 #### Browser compilation preview
 
-Generated C# and diagnostics produced locally from IDL in the Playground. It does not compile that C# against RTI or
-establish runtime or wire compatibility.
+Generated C# or C++ documents and diagnostics produced locally from IDL in the
+Playground. It does not compile generated code against RTI or establish runtime
+or wire compatibility.
 
 #### Browser worker
 
@@ -534,7 +535,8 @@ A browser worker loaded as a JavaScript module, allowing module imports. The Pla
 
 #### Monaco
 
-The browser editor library used to edit IDL and display generated C# in the Playground.
+The browser editor library used to edit IDL and display generated C#, C++, and
+project preview files in the Playground.
 
 #### MSBuild
 
@@ -619,8 +621,8 @@ A participating process or implementation in a DDS exchange, such as generated W
 
 #### Playground
 
-Wireloom's supporting browser demo/evaluation application for editing IDL and inspecting locally generated C# and
-diagnostics.
+Wireloom's supporting browser demo/evaluation application for editing IDL and
+inspecting locally generated C# or C++ and diagnostics.
 
 #### PR
 

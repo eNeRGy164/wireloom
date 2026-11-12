@@ -102,4 +102,4 @@ covered inputs.
 - Related building block: [Shared IDL compiler](../arc42/05-building-block-view.md#531-shared-idl-compiler).
 - Related runtime flow: [Consumer build and generation](../arc42/06-runtime-view.md#611-generate-or-regenerate-application-contracts).
 - Related concept: [Diagnostics and source locations](../arc42/08-crosscutting-concepts.md#82-source-provenance-and-failure-reporting).
-- Related code: [`IdlCompilation`](../../../src/Wireloom.Dds.CSharp.Compiler/Compiler/IdlCompilation.cs).
+- Related code: [`IdlCompilation`](../../../src/Wireloom.Dds.CSharp.Compiler/IdlCompilation.cs).

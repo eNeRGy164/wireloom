@@ -33,7 +33,7 @@ prove DDS wire interoperability.
    `Rti.ConnextDds` package reference at the runtime version selected for the
    application. Declare intended roots with `DdsIdl`; use project properties
    or root metadata for include directories and preprocessor symbols. See the
-   [package guide](../../src/Wireloom.Dds.Generator/README.md).
+   [package guide](../../src/Wireloom.Dds.CSharp.Generator/README.md).
 
    For example, translate an RTI command such as
    `rtiddsgen -language C# -I Contracts\Shared -D PRODUCT=Widget Telemetry.idl`
@@ -113,7 +113,7 @@ add future support.
 | `-generateIncludeFiles`                                              | Fixed        | Included IDL files participate in the root's generation graph and are tracked inputs. Wireloom does not select separate output per include file.                                                                                                                                                                                                                                                                     |
 | `-create typefiles`, `-update typefiles`, `-replace`                 | Fixed        | Successful roots generate the package's supported C# contract and support sources during compilation. There is no overwrite mode or selectable type-file set.                                                                                                                                                                                                                                                        |
 | `-create examplefiles`, `-create makefiles`, `-example`, `-platform` | Ignored      | Wireloom generates neither application examples nor RTI platform project/make files. Keep or replace those application/build steps separately.                                                                                                                                                                                                                                                                       |
-| `-sequenceSize`, `-stringSize`                                       | Configurable | Use `DdsIdlSequenceSize` / `DdsIdlStringSize` project properties or declaring-file `SequenceSize` / `StringSize` metadata. Finite fallbacks default to 100 elements and 255 UTF-8 bytes for narrow strings or UTF-16 code units for wide strings; validated but ignored when unbounded support is enabled. See [effective limits](../../src/Wireloom.Dds.Generator/README.md#effective-limits-for-unbounded-values). |
+| `-sequenceSize`, `-stringSize`                                       | Configurable | Use `DdsIdlSequenceSize` / `DdsIdlStringSize` project properties or declaring-file `SequenceSize` / `StringSize` metadata. Finite fallbacks default to 100 elements and 255 UTF-8 bytes for narrow strings or UTF-16 code units for wide strings; validated but ignored when unbounded support is enabled. See [effective limits](../../src/Wireloom.Dds.CSharp.Generator/README.md#effective-limits-for-unbounded-values). |
 | `-enableEscapeChar`                                                  | Configurable | Set `DdsIdlEnableEscapeChar` to `true` to remove one leading underscore from each IDL identifier across the project generation batch. Default is `false`; there is no per-file override. Normalization changes semantic names and can change `@autoid(HASH)` member IDs. See [escape leading underscores](../guides/configuration.md#escape-leading-underscores).                                                    |
 | `-unboundedSupport`                                                  | Configurable | Use `DdsIdlUnboundedSupport` or declaring-file `UnboundedSupport`. Explicit IDL bounds remain authoritative; validated finite fallback sizes are ignored in this mode. See the [support policy](../guides/support-and-compatibility.md) for exact-profile evidence and qualification limits.                                                                                                                         |
 | `-strict`                                                            | Mapped       | Use `Strict="true"` for keyword, same-scope case-only, and derived-key validation. Naming violations warn with `DDSG0108` by default. The [configuration reference](../guides/configuration.md#enable-strict-validation) records the differences from RTI.                                                                                                                                                           |
@@ -148,7 +148,7 @@ is a historical Wireloom upgrade concern, separate from replacing RTI output.
 The table describes known source-level differences against the retained RTI
 7.7.0 oracle. It does not imply that every RTI version emits the same API. See
 the [feature coverage matrix](../corpus/FEATURE-COVERAGE.md) and
-[runtime contract coverage](../../tests/Wireloom.Dds.Generator.RuntimeContracts/README.md)
+[runtime contract coverage](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md)
 for the specific evidence. A C# API difference is not by itself a DDS wire
 difference.
 

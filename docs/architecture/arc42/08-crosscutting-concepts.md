@@ -48,6 +48,10 @@ Preserve these rules:
   binding, collision checks,
   metadata, and implicit member-ID hashing. Generated C# spelling is a
   projection of that identity, not an independent naming authority.
+- Keep annotation scope state within one compilation. Module `@autoid(HASH)`
+  currently follows the annotated declaration block in both targets; its
+  [semantic reference](../../guides/idl-semantics.md#module-auto-id-scope)
+  records the compatibility evidence and open standards interpretation.
 - Preserve the ownership of effective options. Batch settings and
   declaring-file settings have different scopes; reaching a declaration
   through another root or include must not silently transfer option ownership.
@@ -125,7 +129,7 @@ concurrent call must not change that meaning.
 For example, the compiler API copies an input's definition list:
 
 ```csharp
-using Wireloom;
+using Wireloom.Dds.Idl;
 
 var defines = new List<string> { "FEATURE" };
 var input = new IdlInput("sample.idl", "struct Sample { long value; };", defines);
@@ -215,6 +219,15 @@ that must survive representation changes:
 
 Preserve these rules:
 
+- Preserve absent versus present-empty optional collections in C++ value
+  storage, metadata, and sample access. The
+  [C++ value guide](../../guides/cpp-generated-value-semantics.md#optional-members)
+  records the representation; [native fixture guides](../../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/)
+  define the checked shapes. Qualification remains platform-specific.
+- C++ unions retain ordinary typed storage for every branch, following the
+  retained RTI mapping. The discriminator controls logical activity rather
+  than member lifetime; branch access and value operations must preserve the
+  [documented semantics](../../guides/cpp-generated-value-semantics.md#union-values).
 - Apply resolved defaults consistently to the initialization and metadata paths
   that support them. Managed construction, native initialization, and RTI
   missing-field restoration are different contracts; evidence for one does not
@@ -237,8 +250,10 @@ Breaking these rules can produce shared mutable state where a caller expects
 a copy, lose optional presence, or corrupt native resource handling while
 ordinary managed tests still pass.
 
-The [generated-value guide](../../guides/generated-value-semantics.md) owns
-constructor, mutation, copying, and maintainer storage details. The
+The [C# generated-value guide](../../guides/generated-value-semantics.md) owns
+managed constructor, mutation, copying, and maintainer storage details. The
+[C++ value guide](../../guides/cpp-generated-value-semantics.md) records union
+storage and optional presence behavior. The
 [runtime contract matrix](../../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md#coverage-matrix)
 identifies covered shapes and gaps. Mapping settings belong to
 [configuration](../../guides/configuration.md#choose-the-sequence-array-mapping);
@@ -312,6 +327,7 @@ For example, compare the workspace with a successful incoming result:
 | Compared value     | Current workspace | Incoming result |
 | :----------------- | :---------------- | :-------------- |
 | Workspace revision | 13                | 12              |
+| Target             | C++               | C#              |
 | RTI profile        | 7.7.0             | 7.7.0           |
 
 The profile matches, but the result belongs to older source or settings. It
@@ -327,8 +343,8 @@ Preserve these rules:
 - Validate an entire proposed workspace change before applying it. Rejected or
   canceled operations leave the prior workspace intact. A path change must not
   silently rewrite IDL source.
-- Accept a result only when worker generation, request, workspace revision, and
-  profile match the dispatched snapshot and current workspace. Obsolete success
+- Accept a result only when worker generation, request, workspace revision,
+  target, and profile match the dispatched snapshot and current workspace. Obsolete success
   and failure responses cannot replace current state.
 - Permit generated export only for a current successful result with documents.
   Source backup represents the live workspace and remains independent of
