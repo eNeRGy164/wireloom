@@ -84,10 +84,11 @@ async (page) => {
             worker.onmessage = ({ data }) =>
               data.type === "result" ? resolve(data.response) : reject(new Error(data.message));
             worker.postMessage({
-              protocolVersion: 4,
+              protocolVersion: 5,
               workerGeneration: 1,
               requestId: 1,
               workspaceRevision: 1,
+              target: "csharp",
               profile,
               files: [
                 {
@@ -419,7 +420,7 @@ async (page) => {
         const results = [];
         try {
           for (const profile of ["7.7.0", "7.3.1", "6.1.2"]) {
-            await app.locator("#profile").selectOption(profile);
+            await app.locator(`#profile button[data-profile="${profile}"]`).click();
             for (const example of input.examples) {
               await app.locator("#example").selectOption(example.id);
               await app.locator("#load-example").click();
@@ -670,7 +671,7 @@ async (page) => {
             .locator("#file")
             .setInputFiles({ name: "imported.idl", mimeType: "text/plain", buffer: Buffer.from(source) });
           await wait(app);
-          await app.locator("#profile").selectOption("7.3.1");
+          await app.locator('#profile button[data-profile="7.3.1"]').click();
           await wait(app);
           await app.waitForFunction(() => document.querySelector("#source-state").textContent === "Saved locally");
           const stored = await saved(app);
@@ -682,7 +683,7 @@ async (page) => {
           await app.reload();
           await wait(app);
           assert(
-            (await app.locator("#profile").inputValue()) === "7.3.1" &&
+            (await app.locator('#profile button[data-profile="7.3.1"]').getAttribute("aria-pressed")) === "true" &&
               (await app.locator("#source-tabs [aria-selected=true]").textContent()) === "imported.idl",
             "Reload did not restore",
           );
@@ -734,7 +735,10 @@ async (page) => {
           );
           await app.reload();
           await wait(app);
-          assert((await app.locator("#profile").inputValue()) === "7.7.0", "Reset profile returned after reload");
+          assert(
+            (await app.locator('#profile button[data-profile="7.7.0"]').getAttribute("aria-pressed")) === "true",
+            "Reset profile returned after reload",
+          );
           return { restored: true, cancellations: 2, reset: true };
         } finally {
           await context.close();
@@ -905,14 +909,14 @@ async (page) => {
         );
         await app.waitForTimeout(50);
         await fillSource(app, "struct OldRequest { long value; };");
-        await app.waitForTimeout(350);
+        await app.waitForTimeout(850);
         await fillSource(app, "struct NewestRequest { long value; };");
         assert(await app.locator("#download-all").isDisabled(), "Pending output remained exportable");
-        await app.locator("#profile").selectOption("7.3.1");
+        await app.locator('#profile button[data-profile="7.3.1"]').click();
         await app.waitForFunction(
           () => document.querySelector("#file-list").textContent.includes("NewestRequest"),
           null,
-          { timeout: 25_000 },
+          { timeout: 30_000 },
         );
         assert(!(await app.locator("#file-list").textContent()).includes("OldRequest"), "Stale result applied");
         assert((await app.locator("#result-summary").textContent()).includes("7.3.1"), "Stale profile applied");

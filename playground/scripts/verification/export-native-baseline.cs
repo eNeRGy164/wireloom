@@ -4,7 +4,8 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Wireloom;
+using Wireloom.Dds.Idl;
+using Wireloom.Dds.CSharp.Compiler;
 
 if (args.Length != 2)
 {

@@ -69,7 +69,7 @@ try {
   const combinations = [];
   for (const example of examples) {
     for (const profile of ["7.3.1", "7.7.0"]) {
-      await page.locator("#profile").selectOption(profile);
+      await page.locator(`#profile button[data-profile="${profile}"]`).click();
       await waitForTerminal(page);
       await page.locator("#example").selectOption(example.id);
       await page.locator("#load-example").click();

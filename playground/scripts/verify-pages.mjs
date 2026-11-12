@@ -169,7 +169,7 @@ try {
 
   for (const profile of ["6.1.2", "7.3.1", "7.7.0"]) {
     await check(`Hello sample generates under RTI profile ${profile}`, async () => {
-      await page.locator("#profile").selectOption(profile);
+      await page.locator(`#profile button[data-profile="${profile}"]`).click();
       await current();
       await page.locator("#copy").click();
       const text = await page.evaluate(() => navigator.clipboard.readText());

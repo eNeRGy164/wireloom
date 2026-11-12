@@ -1,14 +1,16 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using CppCompiler = Wireloom.Dds.Cpp.CppCompiler;
+using CppCompilerProfile = Wireloom.Dds.Cpp.CppCompilerProfile;
 
-namespace Wireloom;
+namespace Wireloom.Playground.Browser;
 
 /// <summary>Adapts immutable browser workspace snapshots to the shared compiler.</summary>
 internal static class PlaygroundCompilerAdapter
 {
     /// <summary>The worker protocol shipped atomically with this adapter.</summary>
-    private const int ProtocolVersion = 4;
+    private const int ProtocolVersion = 5;
     private const int MaxSourceBytes = 256 * 1024;
     private const int MaxDocuments = 512;
     private const int MaxGeneratedBytes = 16 * 1024 * 1024;
@@ -26,7 +28,8 @@ internal static class PlaygroundCompilerAdapter
         if (request.ProtocolVersion != ProtocolVersion
             || request.RequestId <= 0
             || request.WorkerGeneration <= 0
-            || request.WorkspaceRevision < 0)
+            || request.WorkspaceRevision < 0
+            || request.Target is not ("csharp" or "cpp"))
         {
             throw new ArgumentException("Request identity or protocol version is invalid.", nameof(requestJson));
         }
@@ -118,15 +121,24 @@ internal static class PlaygroundCompilerAdapter
             throw new ArgumentException("Workspace must include a generation root.", nameof(requestJson));
         }
 
-        var profile = request.Profile switch
+        var profiles = request.Profile switch
         {
-            "6.1.2" => IdlCompilerProfile.Rti612,
-            "7.3.1" => IdlCompilerProfile.Rti731,
-            "7.7.0" => IdlCompilerProfile.Rti770,
+            "6.1.2" => (CSharp: IdlCompilerProfile.Rti612, Cpp: CppCompilerProfile.Rti612),
+            "7.3.1" => (CSharp: IdlCompilerProfile.Rti731, Cpp: CppCompilerProfile.Rti731),
+            "7.7.0" => (CSharp: IdlCompilerProfile.Rti770, Cpp: CppCompilerProfile.Rti770),
             _ => throw new ArgumentException("Profile must be 6.1.2, 7.3.1, or 7.7.0.", nameof(requestJson)),
         };
-        var result = IdlCompiler.Compile(files, profile, computeMd5);
-        var documents = result.Documents.Select(document => new DocumentDto(document.HintName, document.Source)).ToArray();
+        var compilationRequest = new IdlCompilationRequest(files, computeMd5);
+        CompilerResult result;
+        if (request.Target == "csharp")
+        {
+            result = CompileCSharp(compilationRequest, profiles.CSharp);
+        }
+        else
+        {
+            result = CompileCpp(compilationRequest, profiles.Cpp);
+        }
+
         var diagnostics = result.Diagnostics
             .Select(diagnostic => new DiagnosticDto(
                 diagnostic.Id,
@@ -137,8 +149,22 @@ internal static class PlaygroundCompilerAdapter
                 0))
             .ToArray();
 
-        return SerializeResult(request, result.Success, documents, diagnostics);
+        return SerializeResult(request, result.Success, result.Documents, diagnostics);
     }
+
+    private static CompilerResult CompileCSharp(IdlCompilationRequest request, IdlCompilerProfile profile)
+    {
+        var result = IdlCompiler.Compile(request, profile);
+        return new CompilerResult(result.Success, result.Documents.Select(document => new DocumentDto(document.HintName, document.Source)).ToArray(), result.Diagnostics);
+    }
+
+    private static CompilerResult CompileCpp(IdlCompilationRequest request, CppCompilerProfile profile)
+    {
+        var result = CppCompiler.Compile(request, profile);
+        return new CompilerResult(result.Success, result.Documents.Select(document => new DocumentDto(document.FileName, document.Source)).ToArray(), result.Diagnostics);
+    }
+
+    private sealed record CompilerResult(bool Success, DocumentDto[] Documents, IReadOnlyList<IdlDiagnostic> Diagnostics);
 
     private static bool ValidPath(string? path, bool allowRoot = false)
     {
@@ -221,6 +247,7 @@ internal sealed record CompileRequest(
     int WorkerGeneration,
     long RequestId,
     long WorkspaceRevision,
+    string Target,
     string Profile,
     WorkspaceFile?[] Files,
     WorkspaceOptions Options);
@@ -304,6 +331,7 @@ internal sealed record DiagnosticDto(
 /// <param name="WorkerGeneration">The worker generation used by the request.</param>
 /// <param name="RequestId">The request identity.</param>
 /// <param name="WorkspaceRevision">The immutable workspace revision.</param>
+/// <param name="Target">The selected compiler backend.</param>
 /// <param name="Profile">The selected RTI API profile.</param>
 /// <param name="Kind">The result kind, `compiler` or `limit`.</param>
 /// <param name="Success">Whether the compiler result succeeded.</param>
@@ -315,6 +343,7 @@ internal sealed record CompileResponse(
     int WorkerGeneration,
     long RequestId,
     long WorkspaceRevision,
+    string Target,
     string Profile,
     string Kind,
     bool Success,
@@ -339,6 +368,7 @@ internal sealed record CompileResponse(
             request.WorkerGeneration,
             request.RequestId,
             request.WorkspaceRevision,
+            request.Target,
             request.Profile,
             "compiler",
             success,
@@ -358,6 +388,7 @@ internal sealed record CompileResponse(
             request.WorkerGeneration,
             request.RequestId,
             request.WorkspaceRevision,
+            request.Target,
             request.Profile,
             "limit",
             false,

@@ -1,8 +1,9 @@
 # Playground workspaces
 
 The Source Explorer organizes a virtual `/workspace/` tree. Source tabs open in
-the left IDL editor; generated C# opens in the right read-only editor. Each
-source has its own editor model, selection, and undo history. Renaming or moving
+the left IDL editor; generated C# or C++ opens in the right read-only editor.
+Choose a backend with the **Target** selector; the selection is saved with the
+workspace. Each source has its own editor model, selection, and undo history. Renaming or moving
 a file preserves that history for the current session.
 
 The desktop layout fits a viewport of at least 1300 × 985 pixels without a
@@ -88,6 +89,10 @@ alphabetical order, so the first matching folder takes precedence.
 See the
 [compiler configuration guide](configuration.md#settings-at-a-glance).
 
+The sequence-array mapping setting applies to C# generation. C++ mode omits that
+control and uses the shared size, unbounded-support, escape-character, include,
+define, undefine, and strict settings supported by the C++ generator.
+
 The **Workspace: Root and includes** and **Workspace: preprocessor settings**
 examples demonstrate these controls. Existing single-file examples remain
 available. Selecting a diagnostic opens the corresponding source tab at its
@@ -102,18 +107,20 @@ covers generation behavior and settings. Later 1.x versions migrate valid
 earlier 1.x workspaces and source exports forward, preserving source and settings;
 internal engine and worker protocol versions may change.
 
-Source, path, role, settings, and profile changes invalidate the current result.
+Source, path, role, target, settings, and profile changes invalidate the current
+result.
 Previous output is visibly outdated while a new request is pending and cannot
 be exported. Current failures clear output. The Generated pane's Copy, Download,
-and ZIP controls export the current successful C# documents.
+and ZIP controls export the current successful documents for the selected target.
 
 The IDL pane's **Copy** and **Download** buttons save the active file's current
 source, including unfinished or invalid IDL. They are disabled when no source
 file is open. Download uses the virtual basename and preserves the source text.
 
 The Source pane's **ZIP** button saves `wireloom-sources.zip`, including current
-source text under `workspace/`, a `Wireloom.csproj` preview in that folder,
-explicit empty folders, and a `workspace.json` record containing source, profile,
+source text under `workspace/`, a target-specific project preview in that
+folder (`Wireloom.csproj` for C# or `CMakeLists.txt` for C++), explicit empty
+folders, and a `workspace.json` record containing source, target, profile,
 roles, and settings. The project preview uses paths relative to `workspace/` and
 reflects the current generator settings. Source backup remains
 available for unfinished, oversized, rootless, and empty workspaces; it does
@@ -123,20 +130,21 @@ host files.
 Failed operations use a red notice with an **Error** label and alert semantics
 in both themes. Notices can be dismissed; hovering or focusing pauses their timer.
 
-The `wireloom-playground` IndexedDB database stores a version-4
+The `wireloom-playground` IndexedDB database stores a version-5
 workspace record: file identities, paths, sources, file settings, roles,
-explicit folders, active file, workspace settings, and profile. Valid version-3
-records are upgraded in memory with unbounded support disabled and file modes
-inherited. The restored workspace is saved in version-4 format through the
+explicit folders, active file, workspace settings, profile, and target. Valid
+version-3 records are upgraded in memory with unbounded support disabled and
+file modes inherited; version-3 and version-4 records default to C# mode. The
+restored workspace is saved in version-5 format through the
 normal recovery-save path; a failed save does not prevent reading the source.
 Other versions and malformed records report a recovery error and leave editing
-available. Reload regenerates output. Source ZIP exports use version 4, which
-older clients reject instead of ignoring unbounded settings.
+available. Reload regenerates output. Source ZIP exports use version 5, which
+older clients reject instead of ignoring backend selection.
 
 ## Editor services and preferences
 
-Monaco supplies lexical IDL/C# colors, models, markers, and UTF-16 position
-mapping; it supplies no semantic IDL or C# service. The compiler remains the
+Monaco supplies lexical IDL, C#, C++, and CMake colors, models, markers, and
+UTF-16 position mapping; it supplies no semantic IDL or generated-code service. The compiler remains the
 authority on language validity and profile behavior.
 
 Editor font size is an optional localStorage preference (10–20 px, default
@@ -157,7 +165,7 @@ The workspace accepts at most 512 source files, 512 explicit folders, and
 compilation is ineligible. See the [protocol limits](../reference/playground-protocol.md)
 for path/settings validation and host rejection rules.
 
-## Worker contract v4
+## Worker contract v5
 
 The browser client and compiler worker ship together. Their request/response
 schema, validation limits, and failure categories are documented in the

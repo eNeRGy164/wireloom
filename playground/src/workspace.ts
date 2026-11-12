@@ -7,6 +7,7 @@ export const maxFolders = 512;
 export const maxPathLength = 1024;
 export const maxPathDepth = 32;
 export type Profile = CompileRequest["profile"];
+export type Target = CompileRequest["target"];
 
 /** Stable identities keep editor models and undo history through virtual moves. */
 export interface SourceFile extends WorkspaceFile {
@@ -15,9 +16,10 @@ export interface SourceFile extends WorkspaceFile {
 }
 
 export interface Workspace {
-  version: 4;
+  version: 5;
   files: SourceFile[];
   folders: string[];
+  target: Target;
   profile: Profile;
   options: WorkspaceOptions;
   activeFileId?: string;
@@ -44,21 +46,23 @@ export function createFile(path: string, source = ""): SourceFile {
   };
 }
 
-export function createWorkspace(source = "", profile: Profile = "7.7.0"): Workspace {
+export function createWorkspace(source = "", profile: Profile = "7.7.0", target: Target = "csharp"): Workspace {
   return {
-    version: 4,
+    version: 5,
     files: [createFile(`${workspaceRoot}/main.idl`, source)],
     folders: [],
+    target,
     profile,
     options: defaultOptions(),
   };
 }
 
-export function createEmptyWorkspace(profile: Profile = "7.7.0"): Workspace {
+export function createEmptyWorkspace(profile: Profile = "7.7.0", target: Target = "csharp"): Workspace {
   return {
-    version: 4,
+    version: 5,
     files: [],
     folders: [],
+    target,
     profile,
     options: defaultOptions(),
   };
@@ -149,14 +153,28 @@ function validateFileOptions(value: unknown): asserts value is FileOptions {
 
 export function validateWorkspace(value: unknown): Workspace {
   const raw = value as
-    | (Omit<Workspace, "version"> & { version: number; options: WorkspaceOptions & { unboundedSupport?: boolean } })
+    | (Omit<Workspace, "version" | "target"> & {
+        version: number;
+        target?: Target;
+        options: WorkspaceOptions & { unboundedSupport?: boolean };
+      })
     | null;
-  const item = (
-    raw?.version === 3 ? { ...raw, version: 4 as const, options: { ...raw.options, unboundedSupport: false } } : raw
-  ) as Workspace | null;
+  const item =
+    raw && raw.version >= 3 && raw.version <= 4
+      ? {
+          ...raw,
+          version: 5 as const,
+          target: "csharp" as const,
+          options: {
+            ...raw.options,
+            ...(raw.version === 3 ? { unboundedSupport: false } : {}),
+          },
+        }
+      : (raw as Workspace | null);
   if (
     !item ||
-    item.version !== 4 ||
+    item.version !== 5 ||
+    !["csharp", "cpp"].includes(item.target) ||
     !["6.1.2", "7.3.1", "7.7.0"].includes(item.profile) ||
     !Array.isArray(item.files) ||
     item.files.length > maxFiles ||

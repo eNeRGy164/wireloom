@@ -9,7 +9,7 @@ export class WorkerRequestState {
   enqueue(request: CompileRequest): void;
   shouldDrain(running: boolean): boolean;
   takePending(): CompileRequest | null;
-  isCurrent(request: CompileRequest, workspaceRevision: number, profile: string): boolean;
-  isCurrentWorkspaceRequest(request: CompileRequest, workspaceRevision: number, profile: string): boolean;
-  matchesResponse(request: CompileRequest, response: CompileResponse, workspaceRevision: number, profile: string): boolean;
+  isCurrent(request: CompileRequest, workspaceRevision: number, target: string, profile: string): boolean;
+  isCurrentWorkspaceRequest(request: CompileRequest, workspaceRevision: number, target: string, profile: string): boolean;
+  matchesResponse(request: CompileRequest, response: CompileResponse, workspaceRevision: number, target: string, profile: string): boolean;
 }

@@ -26,10 +26,11 @@ export interface WorkspaceOptions {
 }
 
 export interface CompileRequest {
-  protocolVersion: 4;
+  protocolVersion: 5;
   workerGeneration: number;
   requestId: number;
   workspaceRevision: number;
+  target: "csharp" | "cpp";
   profile: "6.1.2" | "7.3.1" | "7.7.0";
   files: WorkspaceFile[];
   options: WorkspaceOptions;
@@ -54,6 +55,7 @@ export interface CompileResponse {
   workerGeneration: number;
   requestId: number;
   workspaceRevision: number;
+  target: string;
   profile: string;
   kind: "compiler" | "limit";
   success: boolean;

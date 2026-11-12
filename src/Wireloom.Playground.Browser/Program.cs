@@ -3,7 +3,7 @@ using System.Runtime.Versioning;
 
 [assembly: SupportedOSPlatform("browser")]
 
-namespace Wireloom;
+namespace Wireloom.Playground.Browser;
 
 /// <summary>Composes the browser compiler adapter with worker-local JavaScript interop.</summary>
 public static partial class PlaygroundCompiler

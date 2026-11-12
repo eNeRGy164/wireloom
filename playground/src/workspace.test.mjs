@@ -61,7 +61,8 @@ test("recovery preserves the selected profile, file identity, and exact source",
 
   const restored = validateWorkspace(original);
 
-  assert.equal(restored.version, 4);
+  assert.equal(restored.version, 5);
+  assert.equal(restored.target, "csharp");
 
   assert.equal(restored.profile, original.profile);
 
@@ -89,16 +90,18 @@ test("legacy recovery remains readable when migration persistence is unavailable
   const workspace = await restored.open();
 
   // Assert
-  assert.equal(workspace.version, 4);
+  assert.equal(workspace.version, 5);
+  assert.equal(workspace.target, "csharp");
   assert.equal(workspace.options.unboundedSupport, false);
   assert.equal(workspace.files[0].source, "struct Legacy { long value; };");
 });
 
 test("empty workspace creation keeps the profile and starts without files or folders", () => {
   assert.deepEqual(createEmptyWorkspace(), {
-    version: 4,
+    version: 5,
     files: [],
     folders: [],
+    target: "csharp",
     profile: "7.7.0",
     options: defaultOptions(),
   });
@@ -271,15 +274,27 @@ test("v4 recovery supports empty and rootless workspaces, nested files, and empt
   assert.equal(sourceBytes(createWorkspace("\u00e9")), 2);
 });
 
-test("v3 workspace migration defaults unbounded support off and emits the v4 form", () => {
+test("v3 workspace migration defaults unbounded support off and emits the v5 C# form", () => {
   const legacy = { ...createWorkspace("struct Legacy { long value; };"), version: 3 };
   delete legacy.options.unboundedSupport;
 
   const upgraded = validateWorkspace(legacy);
 
-  assert.equal(upgraded.version, 4);
+  assert.equal(upgraded.version, 5);
+  assert.equal(upgraded.target, "csharp");
   assert.equal(upgraded.options.unboundedSupport, false);
   assert.equal(upgraded.files[0].source, legacy.files[0].source);
+});
+
+test("v4 workspace migration defaults to C# and preserves settings", () => {
+  const legacy = { ...createWorkspace("struct Legacy { long value; };"), version: 4 };
+  delete legacy.target;
+
+  const upgraded = validateWorkspace(legacy);
+
+  assert.equal(upgraded.version, 5);
+  assert.equal(upgraded.target, "csharp");
+  assert.equal(upgraded.options.unboundedSupport, false);
 });
 
 test("virtual paths are normalized and bounded without interpreting source folders", () => {
@@ -319,7 +334,7 @@ test("workspace validation rejects malformed identities, settings, collisions, a
 
   for (const mutation of [
     (w) => {
-      w.version = 5;
+      w.version = 6;
     },
     (w) => {
       w.profile = "unknown";

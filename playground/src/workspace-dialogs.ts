@@ -344,17 +344,20 @@ export function settingsDialog(workspace: Workspace, fileId?: string): Promise<W
         };
       };
     } else {
-      const mapping = toggleChoice(
-        form,
-        "Sequence-array mapping",
-        [
-          ["RtiCSharp", "RTI C#"],
-          ["Idl", "IDL"],
-        ],
-        draft.options.sequenceArrayMapping,
-        undefined,
-        "For arrays of sequences, RTI C# flattens the outer array to match RTI's C# mapping. IDL preserves the array and its separate sequences.",
-      );
+      const mapping =
+        draft.target === "csharp"
+          ? toggleChoice(
+              form,
+              "Sequence-array mapping",
+              [
+                ["RtiCSharp", "RTI C#"],
+                ["Idl", "IDL"],
+              ],
+              draft.options.sequenceArrayMapping,
+              undefined,
+              "For arrays of sequences, RTI C# flattens the outer array to match RTI's C# mapping. IDL preserves the array and its separate sequences.",
+            )
+          : { value: () => draft.options.sequenceArrayMapping };
       const unbounded = document.createElement("input");
       unbounded.type = "checkbox";
       unbounded.checked = draft.options.unboundedSupport;

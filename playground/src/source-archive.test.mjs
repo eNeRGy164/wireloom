@@ -18,7 +18,7 @@ test("source backups preserve exact UTF-8 text, virtual folders, roles, and sett
 
   // Act
   const projectFile = '<Project Sdk="Microsoft.NET.Sdk" />\n';
-  const entries = unzipSync(sourceArchive(workspace, projectFile));
+  const entries = unzipSync(sourceArchive(workspace, "Wireloom.csproj", projectFile));
 
   // Assert
   for (const file of workspace.files) assert.equal(strFromU8(entries[file.path.slice(1)]), file.source);
@@ -46,15 +46,33 @@ test("source backups remain available for empty, rootless, and oversized unfinis
   const workspace = createWorkspace("broken source");
   workspace.files[0].isGenerationRoot = false;
   const projectFile = "<Project />\n";
-  assert.equal(strFromU8(unzipSync(sourceArchive(workspace, projectFile))["workspace/main.idl"]), "broken source");
-  assert.equal(strFromU8(unzipSync(sourceArchive(workspace, projectFile))["workspace/Wireloom.csproj"]), projectFile);
+  assert.equal(
+    strFromU8(unzipSync(sourceArchive(workspace, "Wireloom.csproj", projectFile))["workspace/main.idl"]),
+    "broken source",
+  );
+  assert.equal(
+    strFromU8(unzipSync(sourceArchive(workspace, "Wireloom.csproj", projectFile))["workspace/Wireloom.csproj"]),
+    projectFile,
+  );
   workspace.files[0].source = "é".repeat(131073);
   assert.equal(
-    strFromU8(unzipSync(sourceArchive(workspace, projectFile))["workspace/main.idl"]),
+    strFromU8(unzipSync(sourceArchive(workspace, "Wireloom.csproj", projectFile))["workspace/main.idl"]),
     workspace.files[0].source,
   );
   workspace.files = [];
-  const empty = unzipSync(sourceArchive(workspace, projectFile));
+  const empty = unzipSync(sourceArchive(workspace, "Wireloom.csproj", projectFile));
   assert.deepEqual(Object.keys(empty).sort(), ["workspace.json", "workspace/", "workspace/Wireloom.csproj"].sort());
   assert.deepEqual(JSON.parse(strFromU8(empty["workspace.json"])).files, []);
+});
+
+test("C++ source backups use the CMake project filename", () => {
+  const workspace = createWorkspace("struct Sample { long value; };");
+  workspace.target = "cpp";
+  const projectFile = "project(WireloomPlayground LANGUAGES CXX)\n";
+
+  const entries = unzipSync(sourceArchive(workspace, "CMakeLists.txt", projectFile));
+
+  assert.equal(strFromU8(entries["workspace/CMakeLists.txt"]), projectFile);
+  assert.equal(JSON.parse(strFromU8(entries["workspace.json"])).target, "cpp");
+  assert.equal("workspace/Wireloom.csproj" in entries, false);
 });

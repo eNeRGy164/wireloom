@@ -1,11 +1,15 @@
 import * as monaco from "monaco-editor/editor/editor.api.js";
 import "monaco-editor/editor/contrib/folding/browser/folding.js";
+import "monaco-editor/editor/contrib/hover/browser/hoverContribution.js";
 import "monaco-editor/languages/definitions/csharp/register.js";
+import { language as csharpLanguage } from "monaco-editor/languages/definitions/csharp/csharp.js";
+import "monaco-editor/languages/definitions/cpp/register.js";
 import EditorWorker from "monaco-editor/editor/editor.worker.js?worker";
 import type { Diagnostic } from "./protocol";
 import type { SourceFile } from "./workspace";
 import { onThemeChange } from "./theme";
 import { xmlCommentEnd } from "./xml-comment";
+import { collectLeadingDocumentation, findDocumentationSymbol, formatDocumentation } from "./documentation.ts";
 
 self.MonacoEnvironment = { getWorker: () => new EditorWorker() };
 monaco.languages.register({ id: "idl" });
@@ -84,6 +88,96 @@ monaco.languages.setLanguageConfiguration("idl", {
     { open: "(", close: ")" },
     { open: '"', close: '"' },
   ],
+});
+
+const richCsharpLanguage = {
+  ...(csharpLanguage as monaco.languages.IMonarchLanguage),
+  tokenizer: {
+    ...(csharpLanguage as monaco.languages.IMonarchLanguage).tokenizer,
+    root: [
+      [/^\s*\/\/\/.*/, "comment.doc"],
+      [/\[[A-Za-z_]\w*/, "annotation"],
+      [/\b[A-Za-z_]\w*(?=\s*\{\s*(?:get|set|init)\b)/, "property"],
+      [
+        /@?[A-Za-z_]\w*(?=\s*\()/,
+        {
+          cases: {
+            "@keywords": { token: "keyword.$0", next: "@qualified" },
+            "@default": { token: "function", next: "@qualified" },
+          },
+        },
+      ],
+      [/\b[A-Z]\w*/, "type.identifier"],
+      ...(csharpLanguage as monaco.languages.IMonarchLanguage).tokenizer.root,
+    ],
+  },
+};
+monaco.languages.setMonarchTokensProvider("csharp", richCsharpLanguage as monaco.languages.IMonarchLanguage);
+
+function documentationHover(
+  model: monaco.editor.ITextModel,
+  position: monaco.Position,
+): monaco.languages.Hover | undefined {
+  const word = model.getWordAtPosition(position);
+  if (!word) return;
+  const line = model.getLineContent(position.lineNumber).trim();
+  const symbol = findDocumentationSymbol(line);
+  if (!symbol || word.word !== symbol) return;
+  const docs = collectLeadingDocumentation((lineNumber) => model.getLineContent(lineNumber), position.lineNumber - 1);
+  if (!docs.length) return;
+
+  const documentation = formatDocumentation(docs, model.getLanguageId());
+  if (!documentation.length) return;
+  return {
+    range: new monaco.Range(position.lineNumber, word.startColumn, position.lineNumber, word.endColumn),
+    contents: [
+      { value: `\`\`\`${model.getLanguageId()}\n${line}\n\`\`\`` },
+      ...documentation.map((value) => ({ value })),
+    ],
+  };
+}
+
+for (const language of ["cpp", "csharp"])
+  monaco.languages.registerHoverProvider(language, { provideHover: documentationHover });
+
+for (const [name, base, colors] of [
+  [
+    "wireloom-dark",
+    "vs-dark",
+    { type: "4EC9B0", function: "DCDCAA", property: "9CDCFE", annotation: "DCDCAA", doc: "6A9955" },
+  ],
+  [
+    "wireloom-light",
+    "vs",
+    { type: "267F99", function: "795E26", property: "001080", annotation: "795E26", doc: "008000" },
+  ],
+] as const) {
+  monaco.editor.defineTheme(name, {
+    base,
+    inherit: true,
+    rules: [
+      { token: "type.identifier", foreground: colors.type },
+      { token: "function", foreground: colors.function },
+      { token: "property", foreground: colors.property },
+      { token: "annotation", foreground: colors.annotation },
+      { token: "comment.doc", foreground: colors.doc },
+    ],
+    colors: {},
+  });
+}
+
+monaco.languages.register({ id: "cmake" });
+monaco.languages.setMonarchTokensProvider("cmake", {
+  tokenizer: {
+    root: [
+      [/#.*$/, "comment"],
+      [/\$\{[^}]+\}/, "variable"],
+      [/[A-Za-z_][\w]*(?=\s*\()/, "keyword"],
+      [/"([^"\\]|\\.)*"/, "string"],
+      [/\b\d+\b/, "number"],
+      [/[()]/, "delimiter"],
+    ],
+  },
 });
 
 monaco.languages.register({ id: "xml" });
@@ -166,6 +260,7 @@ const common: monaco.editor.IStandaloneEditorConstructionOptions = {
   folding: true,
   showFoldingControls: "always",
   fixedOverflowWidgets: true,
+  hover: { enabled: "on", delay: 350, sticky: true },
 };
 
 export class Editors {
@@ -185,7 +280,7 @@ export class Editors {
       model: null,
       readOnly: true,
       domReadOnly: true,
-      ariaLabel: "Generated C# editor",
+      ariaLabel: "Generated code editor",
     });
     input.addEventListener(
       "keydown",
@@ -199,7 +294,7 @@ export class Editors {
       },
       true,
     );
-    onThemeChange((theme) => monaco.editor.setTheme(theme === "dark" ? "vs-dark" : "vs"));
+    onThemeChange((theme) => monaco.editor.setTheme(theme === "dark" ? "wireloom-dark" : "wireloom-light"));
   }
 
   private moveByWord(direction: -1 | 1, extend: boolean) {
@@ -328,20 +423,90 @@ export class Editors {
   }
 
   setOutputs(documents: { name: string; source: string }[]) {
-    this.output.setModel(null);
-    for (const model of this.outputs.values()) model.dispose();
-    this.outputs.clear();
-    this.views.clear();
-    this.active = undefined;
-    for (const doc of documents)
+    const names = new Set(documents.map(({ name }) => name));
+    for (const [name, model] of this.outputs) {
+      if (names.has(name)) continue;
+      if (this.active === name) this.output.setModel(null);
+      model.dispose();
+      this.outputs.delete(name);
+      this.views.delete(name);
+    }
+    for (const doc of documents) {
+      const existing = this.outputs.get(doc.name);
+      if (existing) {
+        if (existing.getValue(monaco.editor.EndOfLinePreference.TextDefined) !== doc.source)
+          existing.setValue(doc.source);
+        continue;
+      }
       this.outputs.set(
         doc.name,
         monaco.editor.createModel(
           doc.source,
-          doc.name.toLowerCase().endsWith(".csproj") ? "xml" : "csharp",
+          doc.name.toLowerCase().endsWith(".csproj")
+            ? "xml"
+            : doc.name === "CMakeLists.txt"
+              ? "cmake"
+              : /\.(hpp|h|cxx|cpp)$/i.test(doc.name)
+                ? "cpp"
+                : "csharp",
           monaco.Uri.parse(`inmemory://generated/${encodeURIComponent(doc.name)}`),
         ),
       );
+    }
+  }
+
+  captureOutputAnchor() {
+    const model = this.output.getModel();
+    const position = this.output.getPosition();
+    if (!model || !position || !this.active) return undefined;
+    return {
+      name: this.active,
+      line: position.lineNumber,
+      column: position.column,
+      scrollTop: this.output.getScrollTop(),
+      token: model.getWordAtPosition(position)?.word,
+    };
+  }
+
+  locateOutputAnchor(
+    anchor: { name: string; line: number; column: number; scrollTop: number; token?: string },
+    documents: { name: string; source: string }[],
+  ) {
+    const exact = documents.find(({ name }) => name === anchor.name);
+    if (!anchor.token || anchor.token.length < 3)
+      return exact ? { name: exact.name, line: anchor.line, column: anchor.column } : undefined;
+    const escaped = anchor.token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const matches = documents.flatMap((doc) => {
+      const lines = doc.source.split("\n");
+      const found: { name: string; line: number; column: number }[] = [];
+      lines.forEach((text, index) => {
+        for (const match of text.matchAll(new RegExp(`\\b${escaped}\\b`, "g")))
+          found.push({ name: doc.name, line: index + 1, column: (match.index ?? 0) + 1 });
+      });
+      return found;
+    });
+    matches.sort((left, right) => {
+      const leftScore =
+        Math.abs(left.line - anchor.line) +
+        (left.name === anchor.name ? -100 : /(?:\.cs|\.cpp|\.hpp|\.h)$/i.test(left.name) ? 0 : 30);
+      const rightScore =
+        Math.abs(right.line - anchor.line) +
+        (right.name === anchor.name ? -100 : /(?:\.cs|\.cpp|\.hpp|\.h)$/i.test(right.name) ? 0 : 30);
+      return leftScore - rightScore;
+    });
+    if (matches[0]) return matches[0];
+    return exact ? { name: exact.name, line: anchor.line, column: anchor.column } : undefined;
+  }
+
+  restoreOutputAnchor(match: { name: string; line: number; column: number }, scrollTop?: number) {
+    const model = this.outputs.get(match.name);
+    if (!model) return;
+    const line = Math.max(1, Math.min(match.line, model.getLineCount()));
+    const column = Math.max(1, Math.min(match.column, model.getLineMaxColumn(line)));
+    this.output.setPosition({ lineNumber: line, column });
+    this.output.revealPositionInCenter({ lineNumber: line, column });
+    if (scrollTop !== undefined)
+      this.output.setScrollTop(Math.max(0, Math.min(scrollTop, this.output.getScrollHeight())));
   }
 
   select(name: string) {
