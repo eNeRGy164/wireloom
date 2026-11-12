@@ -7,7 +7,7 @@ corpus-compliance suites; it does not replace them.
 ## Prerequisites
 
 Use the repository-pinned .NET SDK from [`global.json`](../../global.json).
-The Stryker.NET 5.0.0 tool is pinned in
+The Stryker.NET 5.1.0 tool is pinned in
 [`dotnet-tools.json`](../../.config/dotnet-tools.json). Restore the local tool
 and both unit-test projects before running Stryker:
 
@@ -15,6 +15,9 @@ and both unit-test projects before running Stryker:
 dotnet tool restore
 dotnet restore tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CSharp.Compiler.Tests.csproj --locked-mode
 dotnet restore tests/Wireloom.Dds.CSharp.Generator.Tests/Wireloom.Dds.CSharp.Generator.Tests.csproj --locked-mode
+dotnet restore tests/Wireloom.Dds.Idl.Tests/Wireloom.Dds.Idl.Tests.csproj --locked-mode
+dotnet restore tests/Wireloom.Dds.Cpp.Compiler.Tests/Wireloom.Dds.Cpp.Compiler.Tests.csproj --locked-mode
+dotnet restore tests/Wireloom.Dds.Cpp.Generator.Tests/Wireloom.Dds.Cpp.Generator.Tests.csproj --locked-mode
 ```
 
 Run commands from the repository root so Stryker finds the central
@@ -29,11 +32,11 @@ dotnet stryker
 ```
 
 [`stryker-config.json`](../../stryker-config.json) targets both maintained
-projects through the committed [`Wireloom.slnx`](../../Wireloom.slnx). Its
-test-project list includes the dedicated compiler and generator unit-test
-projects.
-The advisory workflow runs one combined campaign using
-Microsoft.Testing.Platform. Mutation thresholds are zero because this run
+backends and the shared IDL front end through the committed
+[`Wireloom.slnx`](../../Wireloom.slnx). Its mutation filters cover IDL, C# and
+C++ compiler and generator sources; solution context discovers their test
+projects. The advisory workflow runs the combined campaign using
+Microsoft.Testing.Platform. Mutation thresholds are zero because the run
 inspects test strength rather than gates CI. Stryker writes reports below
 `StrykerOutput/`.
 
@@ -43,7 +46,7 @@ The [Mutation testing workflow](../../.github/workflows/mutation.yml) is an
 advisory, manually dispatched workflow. Open the repository's Actions tab,
 select **Mutation testing**, and choose **Run workflow** for the branch to
 analyze. It restores the pinned .NET SDK dependencies and Stryker tool, then
-runs the combined campaign against the adapter and compiler core. The workflow
+runs the combined campaign against both backends. The workflow
 has a six-hour job limit and appends the latest Stryker `mutation-report.md` to
 the run summary. It also uploads `StrykerOutput/**/reports/*` as a
 `mutation-reports` artifact, retained for 14 days; open `mutation-report.html`
@@ -80,12 +83,12 @@ belong to `Wireloom.Dds.Generator`.
 | Local batch scope          | Owning project                 | Production source patterns                                                                                                                     |
 | -------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | API and Roslyn integration | `Wireloom.Dds.Generator`       | `**/Api/**/*.cs`, `**/Roslyn/**/*.cs`                                                                                                          |
-| Compiler core and naming   | `Wireloom.Dds.CSharp.Compiler` | `**/Api/**/*.cs`, `**/Compiler/Compilation*.cs`, `**/Compiler/GeneratedName.cs`, `**/Compiler/IdlCompilation.cs`, `**/Compiler/Naming/**/*.cs` |
-| Preprocessing              | `Wireloom.Dds.CSharp.Compiler` | `**/Compiler/FrontEnd/Preprocessing/**/*.cs`                                                                                                   |
-| IDL parsing                | `Wireloom.Dds.CSharp.Compiler` | `**/Compiler/FrontEnd/IdlBuiltinTypeSyntax.cs`, `**/Compiler/FrontEnd/Parsing/**/*.cs`                                                         |
-| Semantic analysis          | `Wireloom.Dds.CSharp.Compiler` | `**/Compiler/FrontEnd/Semantic/**/*.cs`, `**/Compiler/FrontEnd/Symbols/**/*.cs`                                                                |
-| Emission planning          | `Wireloom.Dds.CSharp.Compiler` | `**/Compiler/Emission/Model/**/*.cs`, `**/Compiler/Emission/Planning/**/*.cs`                                                                  |
-| Emission generation        | `Wireloom.Dds.CSharp.Compiler` | `**/Compiler/Emission/Emitters/**/*.cs`, `**/Compiler/Emission/Writers/**/*.cs`, `**/Compiler/Emission/*.cs`                                   |
+| Compiler core and naming   | `Wireloom.Dds.CSharp.Compiler` | `**/Api/**/*.cs`, `**/Compilation*.cs`, `**/GeneratedName.cs`, `**/IdlCompilation.cs`, `**/Naming/**/*.cs`                                     |
+| Preprocessing              | `Wireloom.Dds.Idl`            | `**/Compiler/FrontEnd/Preprocessing/**/*.cs`                                                                                                   |
+| IDL parsing                | `Wireloom.Dds.Idl`            | `**/Compiler/FrontEnd/IdlBuiltinTypeSyntax.cs`, `**/Compiler/FrontEnd/Parsing/**/*.cs`                                                         |
+| Semantic analysis          | `Wireloom.Dds.Idl`            | `**/Compiler/FrontEnd/Semantic/**/*.cs`, `**/Compiler/FrontEnd/Symbols/**/*.cs`                                                                |
+| Emission planning          | `Wireloom.Dds.CSharp.Compiler` | `**/Emission/Model/**/*.cs`, `**/Emission/Planning/**/*.cs`                                                                                     |
+| Emission generation        | `Wireloom.Dds.CSharp.Compiler` | `**/Emission/Emitters/**/*.cs`, `**/Emission/Writers/**/*.cs`, `**/Emission/*.cs`                                                              |
 
 When files are added or moved, review the patterns against the current tree.
 Root support files and new directories may require additional selections. Set each local config's `project` to the owning
