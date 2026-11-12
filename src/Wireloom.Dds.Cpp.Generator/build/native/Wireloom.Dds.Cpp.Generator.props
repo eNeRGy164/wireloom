@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <WireloomCppPackageRoot Condition="'$(WireloomCppPackageRoot)' == ''">$(MSBuildThisFileDirectory)../../</WireloomCppPackageRoot>
+    <WireloomCppToolName Condition="'$(WireloomCppHostRid)' == 'win-x64'">Wireloom.Dds.Cpp.exe</WireloomCppToolName>
+    <WireloomCppToolName Condition="'$(WireloomCppHostRid)' == 'linux-x64'">Wireloom.Dds.Cpp</WireloomCppToolName>
+    <WireloomCppTool Condition="'$(WireloomCppTool)' == '' and '$(WireloomCppHostRid)' != ''">$(WireloomCppPackageRoot)/tools/$(WireloomCppHostRid)/$(WireloomCppToolName)</WireloomCppTool>
+    <WireloomCppGeneratedDir Condition="'$(WireloomCppGeneratedDir)' == ''">$(IntDir)wireloom</WireloomCppGeneratedDir>
+    <WireloomCppRtiVersion Condition="'$(WireloomCppRtiVersion)' == ''">7.7.0</WireloomCppRtiVersion>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(WireloomCppGeneratedDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>

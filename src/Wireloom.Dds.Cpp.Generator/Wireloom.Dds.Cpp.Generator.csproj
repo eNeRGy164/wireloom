@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Wireloom.Dds.Cpp.Generator</RootNamespace>
+    <AssemblyName>Wireloom.Dds.Cpp</AssemblyName>
+    <UseAppHost>false</UseAppHost>
+    <IsPackable>true</IsPackable>
+    <Version>$(WireloomVersion)</Version>
+    <PackageId>Wireloom.Dds.Cpp.Generator</PackageId>
+    <Description>Native AOT C++ IDL generator and CMake build integration for Wireloom.</Description>
+    <PackageTags>Wireloom;C++;IDL;NativeAOT;native</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <WireloomCppPackageRoot Condition="'$(WireloomCppPackageRoot)' == ''">$(MSBuildThisFileDirectory)..\..\artifacts\cpp-native-package</WireloomCppPackageRoot>
+    <WireloomCppPackageRoot Condition="'$(WireloomCppPackageRoot)' != ''">$([System.IO.Path]::GetFullPath('$(WireloomCppPackageRoot)', '$(MSBuildProjectDirectory)'))</WireloomCppPackageRoot>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(WireloomCppNativeAot)' == 'true'">
+    <PublishAot>true</PublishAot>
+    <UseAppHost>true</UseAppHost>
+    <SelfContained>true</SelfContained>
+    <DebugType>none</DebugType>
+    <RuntimeIdentifier>$(WireloomCppRuntimeIdentifier)</RuntimeIdentifier>
+    <RuntimeFrameworkVersion>$(NativeAotRuntimeVersion)</RuntimeFrameworkVersion>
+    <NuGetLockFilePath>$(MSBuildProjectDirectory)/packages.$(WireloomCppRuntimeIdentifier).lock.json</NuGetLockFilePath>
+    <RestoreLockedMode>true</RestoreLockedMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Wireloom.Dds.Cpp.Compiler/Wireloom.Dds.Cpp.Compiler.csproj" PrivateAssets="all" />
+    <ProjectReference Include="../Wireloom.Dds.Idl/Wireloom.Dds.Idl.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Wireloom.Dds.Cpp.Generator.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" />
+    <None Include="build/CMakeLists.txt" Pack="true" PackagePath="build/cmake/CMakeLists.txt" />
+    <None Include="build/WireloomCppConfig.cmake" Pack="true" PackagePath="build/cmake/WireloomCppConfig.cmake" />
+    <None Include="build/native/**/*" Pack="true" PackagePath="build/native/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- Add native binaries only during packing. The Linux executable's .Cpp
+       suffix otherwise makes IDE/analysis hosts interpret its bytes as C++. -->
+  <Target Name="IncludeWireloomCppNativePayload" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <None Include="$(WireloomCppPackageRoot)/tools/win-x64/Wireloom.Dds.Cpp.exe" Pack="true" PackagePath="tools/win-x64/Wireloom.Dds.Cpp.exe" />
+      <None Include="$(WireloomCppPackageRoot)/tools/linux-x64/Wireloom.Dds.Cpp" Pack="true" PackagePath="tools/linux-x64/Wireloom.Dds.Cpp" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ValidateWireloomCppPackagePayload" BeforeTargets="GenerateNuspec">
+    <ItemGroup>
+      <_WireloomCppManagedArtifact Include="$(WireloomCppPackageRoot)/tools/**/*.dll;$(WireloomCppPackageRoot)/tools/**/*.pdb;$(WireloomCppPackageRoot)/tools/**/*.deps.json;$(WireloomCppPackageRoot)/tools/**/*.runtimeconfig.json" />
+    </ItemGroup>
+    <Error Condition="!Exists('$(WireloomCppPackageRoot)/tools/win-x64/Wireloom.Dds.Cpp.exe')" Text="Missing NativeAOT payload for win-x64 under $(WireloomCppPackageRoot). Run scripts/Publish-WireloomCppNative.ps1 for both supported RIDs." />
+    <Error Condition="!Exists('$(WireloomCppPackageRoot)/tools/linux-x64/Wireloom.Dds.Cpp')" Text="Missing NativeAOT payload for linux-x64 under $(WireloomCppPackageRoot). Run scripts/Publish-WireloomCppNative.ps1 for both supported RIDs." />
+    <Error Condition="'@(_WireloomCppManagedArtifact)' != ''" Text="Native tool directories must not contain managed assemblies, PDBs, deps files, or runtimeconfig files: @(_WireloomCppManagedArtifact)" />
+  </Target>
+</Project>

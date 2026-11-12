@@ -1,0 +1,123 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Wireloom.Dds.Cpp.Generator.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Wireloom.Dds.Cpp.Compiler/Wireloom.Dds.Cpp.Compiler.csproj" Aliases="global,CppCompilerAssembly" />
+    <ProjectReference Include="../../src/Wireloom.Dds.Cpp.Generator/Wireloom.Dds.Cpp.Generator.csproj" />
+    <ProjectReference Include="../../src/Wireloom.Dds.Idl/Wireloom.Dds.Idl.csproj" />
+    <Using Include="Wireloom.Dds.Idl" />
+    <Using Include="Wireloom.Dds.Cpp.Generator" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../docs/corpus/idl/features/01-primitives.idl" Link="Corpus/01-primitives.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/01-boundaries.idl" Link="Corpus/01-boundaries.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/01-int8-boundaries.idl" Link="Corpus/01-int8-boundaries.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/01-full-widths.idl" Link="Corpus/01-full-widths.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/02-names-constants.idl" Link="Corpus/02-names-constants.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/02-formatting.idl" Link="Corpus/02-formatting.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/02-multiple.idl" Link="Corpus/02-multiple.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/02-scopes.idl" Link="Corpus/02-scopes.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/02-constant-expressions.idl" Link="Corpus/02-constant-expressions.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/03-enum-values-explicit.idl" Link="Corpus/03-enum-values-explicit.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/03-enum-values-prefix.idl" Link="Corpus/03-enum-values-prefix.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/03-alias-aggregate.idl" Link="Corpus/03-alias-aggregate.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/03-enums-aliases.idl" Link="Corpus/03-enums-aliases.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/03-alias-collections.idl" Link="Corpus/03-alias-collections.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/04-strings.idl" Link="Corpus/04-strings.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/04-boundaries.idl" Link="Corpus/04-boundaries.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/04-unbounded-string-aliases.idl" Link="Corpus/04-unbounded-string-aliases.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/04-string-alias-chains.idl" Link="Corpus/04-string-alias-chains.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/05-collections.idl" Link="Corpus/05-collections.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/05-unbounded-sequence-aliases.idl" Link="Corpus/05-unbounded-sequence-aliases.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/05-shapes.idl" Link="Corpus/05-shapes.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/05-array-of-sequences.idl" Link="Corpus/05-array-of-sequences.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/05-array-of-sequences-idl.idl" Link="Corpus/05-array-of-sequences-idl.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/11-conditionals.idl" Link="Corpus/11-conditionals.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/11-comments.idl" Link="Corpus/11-comments.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/10-flat-data-binding.idl" Link="Corpus/10-flat-data-binding.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/11-macros.idl" Link="Corpus/11-macros.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/11-preprocessing.idl" Link="Corpus/11-preprocessing.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/includes/common.idl" Link="Corpus/includes/common.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/11-macro-operators.idl" Link="Corpus/11-macro-operators.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/11-preprocessor-advanced.idl" Link="Corpus/11-preprocessor-advanced.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/11-include-search.idl" Link="Corpus/11-include-search.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/10-annotations.idl" Link="Corpus/10-annotations.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/10-annotations-rti.idl" Link="Corpus/10-annotations-rti.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/06-aggregates.idl" Link="Corpus/06-aggregates.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/06-valuetypes.idl" Link="Corpus/06-valuetypes.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/06-alias-composition.idl" Link="Corpus/06-alias-composition.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-unions.idl" Link="Corpus/07-unions.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-enum.idl" Link="Corpus/07-union-enum.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-scoped.idl" Link="Corpus/07-union-scoped.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-multilabel.idl" Link="Corpus/07-union-multilabel.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-short.idl" Link="Corpus/07-union-short.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-short-boundaries.idl" Link="Corpus/07-union-short-boundaries.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-octet.idl" Link="Corpus/07-union-octet.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-ushort.idl" Link="Corpus/07-union-ushort.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-ulong.idl" Link="Corpus/07-union-ulong.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-int8.idl" Link="Corpus/07-union-int8.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-uint8.idl" Link="Corpus/07-union-uint8.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-int16.idl" Link="Corpus/07-union-int16.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-uint16.idl" Link="Corpus/07-union-uint16.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-int32.idl" Link="Corpus/07-union-int32.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-uint32.idl" Link="Corpus/07-union-uint32.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-char-boundaries.idl" Link="Corpus/07-union-char-boundaries.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-char.idl" Link="Corpus/07-union-char.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-boolean.idl" Link="Corpus/07-union-boolean.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-aliases.idl" Link="Corpus/07-union-aliases.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-wchar-label.idl" Link="Corpus/07-union-wchar-label.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-long.idl" Link="Corpus/07-union-long.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-string-sequence-bounded-direct.idl" Link="Corpus/07-union-string-sequence-bounded-direct.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-string-sequence-aliases.idl" Link="Corpus/07-union-string-sequence-aliases.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-string-sequence-aliases.idl" Link="Corpus/07-union-string-sequence-aliases.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/14-enum-constant.idl" Link="Corpus/14-enum-constant.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/08-keys.idl" Link="Corpus/08-keys.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/08-key-nested.idl" Link="Corpus/08-key-nested.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/08-key-inherited.idl" Link="Corpus/08-key-inherited.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/08-key-boundaries.idl" Link="Corpus/08-key-boundaries.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/08-key-union.idl" Link="Corpus/08-key-union.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/09-default.idl" Link="Corpus/09-default.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/10-default-literal-enum-array.idl" Link="Corpus/10-default-literal-enum-array.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/10-resolve-name-wstring-aliases.idl" Link="Corpus/10-resolve-name-wstring-aliases.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/09-id-gaps.idl" Link="Corpus/09-id-gaps.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/09-autoid-hash.idl" Link="Corpus/09-autoid-hash.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/14-autoid-scope.idl" Link="Corpus/14-autoid-scope.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/includes/autoid-hash-include.idl" Link="Corpus/includes/autoid-hash-include.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/09-extensibility.idl" Link="Corpus/09-extensibility.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/14-extensibility-full.idl" Link="Corpus/14-extensibility-full.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/14-annotation-arguments.idl" Link="Corpus/14-annotation-arguments.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/14-member-declarators.idl" Link="Corpus/14-member-declarators.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/14-union-label-expressions.idl" Link="Corpus/14-union-label-expressions.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/14-union-scoped-enum.idl" Link="Corpus/14-union-scoped-enum.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/14-union-array-branch.idl" Link="Corpus/14-union-array-branch.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/14-string-expression-bound.idl" Link="Corpus/14-string-expression-bound.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/14-typed-defaults.idl" Link="Corpus/14-typed-defaults.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/14-unbounded-support.idl" Link="Corpus/14-unbounded-support.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/14-unbounded-receive-lifecycle.idl" Link="Corpus/14-unbounded-receive-lifecycle.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/09-evolution-optional.idl" Link="Corpus/09-evolution-optional.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/09-optional-collections.idl" Link="Corpus/09-optional-collections.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/09-optional-aggregate-member.idl" Link="Corpus/09-optional-aggregate-member.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/09-optional-string-sequences.idl" Link="Corpus/09-optional-string-sequences.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/08-key-boundaries.idl" Link="Corpus/08-key-boundaries.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-char-numeric.idl" Link="Corpus/07-union-char-numeric.idl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/corpus/idl/features/07-union-char-numeric-255.idl" Link="Corpus/07-union-char-numeric-255.idl" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <!-- Keep ordinary suites separate. The coverage-only build hosts all three
+       suites so the collector retains exact branch data without XML merging. -->
+  <PropertyGroup Condition="'$(WireloomCppCombinedCoverage)' == 'true'">
+    <OutputPath>bin/$(Configuration)/combined/</OutputPath>
+    <IntermediateOutputPath>obj/$(Configuration)/combined/</IntermediateOutputPath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(WireloomCppCombinedCoverage)' == 'true'">
+    <Compile Include="../Wireloom.Dds.Cpp.Compiler.Tests/**/*.cs"
+             Exclude="../Wireloom.Dds.Cpp.Compiler.Tests/bin/**;../Wireloom.Dds.Cpp.Compiler.Tests/obj/**"
+             Link="Compiler/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../Wireloom.Dds.Cpp.CorpusCompliance/**/*.cs"
+             Exclude="../Wireloom.Dds.Cpp.CorpusCompliance/bin/**;../Wireloom.Dds.Cpp.CorpusCompliance/obj/**"
+             Link="Corpus/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

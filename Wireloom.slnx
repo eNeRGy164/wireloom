@@ -2,10 +2,16 @@
   <Folder Name="/src/">
     <Project Path="src/Wireloom.Dds.CSharp.Compiler/Wireloom.Dds.CSharp.Compiler.csproj" />
     <Project Path="src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj" />
+    <Project Path="src/Wireloom.Dds.Cpp.Compiler/Wireloom.Dds.Cpp.Compiler.csproj" />
+    <Project Path="src/Wireloom.Dds.Cpp.Generator/Wireloom.Dds.Cpp.Generator.csproj" />
     <Project Path="src/Wireloom.Dds.Idl/Wireloom.Dds.Idl.csproj" />
     <Project Path="src/Wireloom.Playground.Browser/Wireloom.Playground.Browser.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Wireloom.Dds.Idl.Tests/Wireloom.Dds.Idl.Tests.csproj" />
+    <Project Path="tests/Wireloom.Dds.Cpp.Compiler.Tests/Wireloom.Dds.Cpp.Compiler.Tests.csproj" />
+    <Project Path="tests/Wireloom.Dds.Cpp.Generator.Tests/Wireloom.Dds.Cpp.Generator.Tests.csproj" />
+    <Project Path="tests/Wireloom.Dds.Cpp.Fuzzing.Tests/Wireloom.Dds.Cpp.Fuzzing.Tests.csproj" />
     <Project Path="tests/Wireloom.Dds.Generator.WireCompatibility.Shared/Wireloom.Dds.Generator.WireCompatibility.Shared.csproj" />
     <Project Path="tests/Wireloom.Dds.Generator.WireCompatibility.Runner/Wireloom.Dds.Generator.WireCompatibility.Runner.csproj" />
     <Project Path="tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/Wireloom.Dds.Generator.WireCompatibility.Verifier.csproj" />

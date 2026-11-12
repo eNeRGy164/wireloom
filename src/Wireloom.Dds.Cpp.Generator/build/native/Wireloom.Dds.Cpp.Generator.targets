@@ -1,0 +1,79 @@
+<Project>
+  <ItemGroup>
+    <AvailableItemName Include="WireloomIdl" />
+    <ClCompile Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename).cxx')" />
+    <ClInclude Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename).hpp')" />
+    <ClCompile Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.cxx')" />
+    <ClInclude Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.hpp')" />
+  </ItemGroup>
+
+  <UsingTask TaskName="WireloomDetectCppBuildHost" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <HostRid ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Runtime.InteropServices" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            && RuntimeInformation.OSArchitecture == Architecture.X64)
+        {
+            HostRid = "win-x64";
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+            && RuntimeInformation.OSArchitecture == Architecture.X64)
+        {
+            HostRid = "linux-x64";
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="WireloomCppDetectBuildHost" Condition="'$(WireloomCppHostRid)' == '' and '@(WireloomIdl)' != ''">
+    <WireloomDetectCppBuildHost>
+      <Output TaskParameter="HostRid" PropertyName="WireloomCppHostRid" />
+    </WireloomDetectCppBuildHost>
+    <PropertyGroup>
+      <WireloomCppToolName Condition="'$(WireloomCppHostRid)' == 'win-x64'">Wireloom.Dds.Cpp.exe</WireloomCppToolName>
+      <WireloomCppToolName Condition="'$(WireloomCppHostRid)' == 'linux-x64'">Wireloom.Dds.Cpp</WireloomCppToolName>
+      <WireloomCppTool Condition="'$(WireloomCppTool)' == '' and '$(WireloomCppHostRid)' != ''">$(WireloomCppPackageRoot)/tools/$(WireloomCppHostRid)/$(WireloomCppToolName)</WireloomCppTool>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="WireloomCppValidateTool" BeforeTargets="WireloomCppGenerate" DependsOnTargets="WireloomCppDetectBuildHost" Condition="'@(WireloomIdl)' != ''">
+    <Error Condition="'$(WireloomCppHostRid)' == '' and '$(WireloomCppTool)' == ''"
+           Text="Wireloom C++ generation does not support this build host. Supported hosts are Windows x64 and Linux x64. Set WireloomCppTool to an executable for this host to override the packaged tool." />
+    <Error Condition="!Exists('$(WireloomCppTool)')"
+           Text="Wireloom C++ generator is missing at '$(WireloomCppTool)'. Restore the Wireloom.Dds.Cpp.Generator NuGet package or set WireloomCppTool to its host-native executable." />
+  </Target>
+
+  <Target Name="WireloomCppPrepareLinuxTool" BeforeTargets="WireloomCppValidateTool" DependsOnTargets="WireloomCppDetectBuildHost" Condition="'$(WireloomCppHostRid)' == 'linux-x64' and Exists('$(WireloomCppTool)')">
+    <Exec Command="chmod +x &quot;$(WireloomCppTool)&quot;" />
+  </Target>
+
+  <Target Name="WireloomCppWriteProfileStamp" BeforeTargets="WireloomCppGenerate" Condition="'@(WireloomIdl)' != ''">
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <WriteLinesToFile File="$(IntermediateOutputPath)wireloom-cpp-rti-version.txt"
+                      Lines="$(WireloomCppRtiVersion)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+  </Target>
+
+  <Target Name="WireloomCppGenerate"
+          BeforeTargets="ClCompile"
+          DependsOnTargets="WireloomCppValidateTool;WireloomCppWriteProfileStamp"
+          Inputs="@(WireloomIdl);$(WireloomCppTool);$(IntermediateOutputPath)wireloom-cpp-rti-version.txt"
+          Outputs="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename).hpp');@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename).cxx');@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.hpp');@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.cxx')">
+    <Exec Command="&quot;$(WireloomCppTool)&quot; generate &quot;%(WireloomIdl.FullPath)&quot; &quot;$(WireloomCppGeneratedDir)/.&quot; --rti-version &quot;$(WireloomCppRtiVersion)&quot;"
+          WorkingDirectory="$(MSBuildProjectDirectory)"
+          IgnoreExitCode="false" />
+  </Target>
+
+  <Target Name="WireloomCppTrackGeneratedFiles" BeforeTargets="ClCompile;Clean" Condition="'@(WireloomIdl)' != ''">
+    <ItemGroup>
+      <FileWrites Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename).hpp')" />
+      <FileWrites Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename).cxx')" />
+      <FileWrites Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.hpp')" />
+      <FileWrites Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.cxx')" />
+    </ItemGroup>
+  </Target>
+</Project>
