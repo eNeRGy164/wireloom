@@ -2,7 +2,7 @@
 
 Wireloom ships [.NET build integration](#71-net-build-integration) for consumer
 projects and the [browser Playground](#72-browser-playground-deployment).
-for consumer projects and the [browser Playground](#72-browser-playground-deployment).
+This chapter also describes the [Modern C++ build integration](#73-modern-c-build-integration).
 This chapter maps the [building blocks](05-building-block-view.md) to their
 execution environments and identifies where configuration is supplied.
 Collaboration and recovery flows are described in [chapter 6](06-runtime-view.md).
@@ -169,6 +169,45 @@ Supporting test and DDS qualification infrastructure is documented in the
 [contribution guide](../../../CONTRIBUTING.md) and
 [wire runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
 Its execution flows are in [chapter 6](06-runtime-view.md#63-supporting-verification).
+
+## 7.3 Modern C++ build integration
+
+The `Wireloom.Dds.Cpp.Generator` NuGet package contains Native AOT executables
+under `tools/win-x64/` and `tools/linux-x64/`, native MSBuild assets under
+`build/native/`, and a CMake configuration under `build/cmake/`. Generation
+requires no installed .NET runtime or SDK. Native `.vcxproj` consumers use
+`packages.config` and declare `WireloomIdl` items; CMake consumers use
+`find_package(WireloomCpp CONFIG REQUIRED)` and `wireloom_add_idl`.
+
+Both integrations choose the executable for the build host independently of
+the C++ target architecture, add generated sources and include paths, and
+regenerate when the IDL or tool changes. A compatible native RTI SDK supplies
+headers, libraries, and DDS runtime behavior. Live DDS requires its license.
+
+CMake tracks successful generation with a completion stamp before the four
+generated source outputs. An input edit that preserves emitted text advances
+the stamp once; subsequent unchanged builds skip generation. The source
+outputs remain tracked so deleting one reruns generation. A failed generator
+invocation does not advance the completion stamp.
+
+The reusable [C++ package workflow](../../../.github/workflows/cpp-package.yml)
+publishes native payloads on matching Windows and Linux hosts, assembles both
+into one versioned NuGet candidate, and verifies that candidate on both hosts.
+Windows verifies real NuGet restore and native MSBuild generation. The preview
+and release publishers select a trusted source revision and one version, call
+that workflow, then attest and publish its tested package alongside C#.
+Publication retries download the retained package artifacts and verify their
+hashes before pushing; they do not rebuild the candidates.
+Consumer projects pin an exact package version and retain the previous version
+for rollback; package acquisition is separate from the RTI SDK selection.
+Producer builds use the centrally pinned AOT runtime and RID-specific locks. See the
+[delivery decision](../adr/ADR-005-deliver-native-cpp-generator-through-nuget.md).
+
+The [package verification guide](../../../tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md)
+describes NuGet/MSBuild and CMake generation checks. Native consumer and wire
+fixtures use the same generator; the [C044 regression](../../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppSpike/README.md)
+covers keyed updates and disposal. Package checks establish deployment and
+generation; licensed consumer and wire checks establish DDS behavior.
 
 ---
 

@@ -106,6 +106,13 @@ getting-started flow, with generation supplied by the Wireloom package. For a
 ready-to-build repository project, see the [checked-in publisher/subscriber
 sample](samples/HelloWorld/README.md).
 
+The [Modern C++ generator](src/Wireloom.Dds.Cpp.Generator/README.md) is a
+Wireloom feature, packaged for native MSBuild and CMake builds.
+Follow the [C++ Hello World walkthrough](docs/guides/hello-world.md#modern-c-walkthrough)
+to install its package, build a native application, and run both DDS roles.
+Its [wire harness fixtures](tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
+record the case-specific consumer and interoperability checks.
+
 ## Why Wireloom?
 
 - **Keep build images and developer machines lean.** Restore a small NuGet

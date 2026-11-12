@@ -110,7 +110,7 @@ and [concepts](08-crosscutting-concepts.md).
   source locations match for the compared scope. Host-specific failures remain distinguishable from compiler findings;
   preview success does not claim RTI compilation or wire interoperability.
 - **Validation / gaps:** [Shared compilation](06-runtime-view.md#64-c1-compile-an-in-memory-idl-batch),
-  [workspace contract](../../guides/playground-workspaces.md#worker-contract-v4), and
+  [workspace contract](../../guides/playground-workspaces.md#worker-contract-v5), and
   [browser qualification](../../testing/playground-qualification.md). Corpus counts are evidence inventory, not
   permanent acceptance targets.
 
@@ -362,7 +362,7 @@ and [concepts](08-crosscutting-concepts.md).
   failure can retain a ready worker. Retry can compile the current eligible workspace; failed in-flight work
   is not automatically replayed.
 - **Validation / gaps:** [Host recovery flow](06-runtime-view.md#625-recover-browser-compilation-after-a-host-failure),
-  [worker contract](../../guides/playground-workspaces.md#worker-contract-v4), and injected-fault checks. Watchdog
+  [worker contract](../../guides/playground-workspaces.md#worker-contract-v5), and injected-fault checks. Watchdog
   settings are failure-detection mechanisms, not accepted startup/response-time budgets.
 
 ### 10.2.7 Browser usability and portability
@@ -476,6 +476,66 @@ Detailed current measurements and findings stay in the
 [incremental baseline](../../performance/incremental-generator-baseline.md),
 [browser qualification](../../testing/playground-qualification.md), and
 [runtime contract matrix](../../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md#coverage-matrix).
+
+## 10.4 Modern C++ quality requirements
+
+The [C++ support contract](../../guides/support-and-compatibility.md#modern-c-support-and-compatibility)
+defines public stability and platform/profile targets. The
+[first C++ release checklist](../../releases/PREPARING-A-RELEASE.md#first-modern-c-release)
+owns the qualification gates. Targets become release claims only through the
+exact-version record; missing evidence must be resolved or the advertised
+scope narrowed before publication.
+
+C++ qualification is independent of the C# adoption claim. Record generation,
+consumer/API, plugin/lifecycle, local CDR, and live-DDS results separately.
+[Native fixture guides](../../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/)
+define checked shapes; retained reports establish exact outcomes.
+
+Compiler, corpus, and generator-host checks live in separate C++ test projects.
+Collect their combined coverage before applying the existing 90% branch and 95% line
+thresholds; splitting projects must not drop compiler or CLI coverage. A
+coverage-only generator-host build links the compiler and corpus test sources
+into one instrumented run, preserving exact branch counters without adding a
+coverage-merging dependency. Normal test projects remain independent. Run
+fuzzing independently, and retain native package and SDK/runtime qualification
+as separate evidence levels.
+
+### C++ positive corpus acceptance
+
+- Generate supported shapes from bound IDL without corpus-name branches;
+  unsupported declarations fail with source-located diagnostics.
+- Retain or deterministically verify the complete generated source set.
+  Preserve declared alias identity, bounds, defaults, member IDs, optional
+  presence, and union behavior in the projections that support them.
+- Compile applicable consumer APIs against the selected RTI SDK. Check
+  metadata, registration, lifecycle, and local XCDR1/XCDR2 round trips with
+  complete RTI-oracle byte comparisons.
+- Use mixed-peer exchanges for live DDS claims. Metadata access, local CDR,
+  and same-plugin loopback do not qualify untested peers or shapes.
+- Keep unsupported runtime paths fail-closed even where value/metadata APIs
+  are usable.
+- Retain exact host/SDK, commands, hashes, outcomes, and oracle adjustments.
+  Mark inapplicable or unavailable checks explicitly.
+
+Generated C++ uses LF line endings and a shared source writer. Lines are at
+most 120 columns except unbroken Doxygen `@see` URLs, which may reach 220
+columns and must pin an RTI version rather than use `/current/`.
+Public value APIs have concise Doxygen documentation; private plugin
+implementation details remain undocumented.
+
+The native package candidate contains Windows/Linux x64 executables and
+MSBuild/CMake assets. Checks execute generation without .NET on PATH, verify
+host selection independently of target architecture, skip unchanged generation,
+and regenerate after IDL/tool changes. Windows checks exercise real native
+NuGet restore and MSBuild integration. The
+[package verification guide](../../../tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md)
+owns exact scenarios. Native compilation and DDS behavior require separate
+RTI SDK qualification.
+
+Shared-front-end changes must also preserve C# corpus output and pass packed
+analyzer, runtime-contract, and Playground checks. New C++ evidence does not
+replace those regression checks.
+
 ---
 
 [< 9. Architectural decisions](09-architectural-decisions.md) | [Index](index.md) | [11. Risks and technical debt >](11-risks-and-technical-debt.md)

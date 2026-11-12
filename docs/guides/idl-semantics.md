@@ -56,11 +56,8 @@ readers apply those definitions while retaining target-specific semantic and
 compatibility behavior. It distinguishes an absent boolean annotation from an
 explicit `false`; shorthand
 and full-form extensibility annotations resolve to the same model. A bare
-`@autoid` selects `HASH`. Module auto-ID applies within that module block,
-reopened blocks are resolved independently, and a declaration-local setting
-does not leak to sibling declarations or included top-level declarations.
-Profile-specific annotation availability is checked at the compilation and
-emission boundary.
+`@autoid` selects `HASH`. Profile-specific annotation availability is checked
+at the compilation and emission boundary.
 
 Known applications reject repeated named argument keys and invalid argument
 shapes. Type prefixes, members, enum literals, and union branches consume
@@ -97,6 +94,43 @@ form. MUTABLE is invalid for enumerated types. Applying extensibility more
 than once is an error, including equivalent shorthand and full-form uses.
 These rules follow [DDS-XTypes 1.3 sections 7.2.2.4.1 and 7.3.1.2.1.8](https://www.omg.org/spec/DDS-XTypes/1.3/PDF).
 
+### Module auto-ID scope
+
+The current shared analyzer applies a module's `@autoid(HASH)` policy to
+declarations in the module declaration block carrying the annotation. Both
+C# and C++ output preserve that result. A later reopened block without
+`@autoid` uses its own enclosing policy; included and top-level declarations
+retain their own lexical scope. Do not merge auto-ID annotations solely
+because separate module blocks share a qualified name. The C++ planner selects
+the latest enclosing module block in declaration order for this policy.
+
+The retained [C164 input](../corpus/idl/features/14-autoid-scope.idl) gives:
+
+| Declaration                                             | IDs for `first` and `second` |
+| :------------------------------------------------------ | :--------------------------- |
+| `AutoIds::Hashed`, inside the annotated block           | 64291979 and 182907049       |
+| `AutoIds::Reopened`, inside the later unannotated block | 0 and 1                      |
+| `Included`, from the separate include                   | 0 and 1                      |
+| `Sequential`, a top-level sibling                       | 0 and 1                      |
+
+The [RTI 7.7.0 C++ TypeCode](../corpus/7.7.0/rtiddsgen/cpp/features/14-autoid-scope/14-autoid-scope.cxx)
+and retained RTI C# captures for
+[6.1.2](../corpus/6.1.2/rtiddsgen/csharp/features/14-autoid-scope/),
+[7.3.1](../corpus/7.3.1/rtiddsgen/csharp/features/14-autoid-scope/), and
+[7.7.0](../corpus/7.7.0/rtiddsgen/csharp/features/14-autoid-scope/)
+agree on these IDs. The
+[C++ generation regression](../../tests/Wireloom.Dds.Cpp.Generator.Tests/Generation/GenerationSpecs.cs)
+checks the annotated, reopened, included, and top-level boundaries. These
+metadata results do not themselves qualify plugin execution, CDR, or DDS wire
+behavior.
+
+Whether annotations should instead apply to the logical module across all
+reopened blocks remains an open standards-review question under
+[OMG IDL 4.2, §7.4.1.4.2](https://www.omg.org/spec/IDL/4.2/PDF) and
+[DDS-XTypes 1.3, §7.3.1.2.1.1](https://www.omg.org/spec/DDS-XTypes/1.3/PDF).
+The block-scoped behavior above records current compatibility; it does not
+claim a normative resolution or decide the scope of every module annotation.
+
 ## Constants, type identity, and member IDs
 
 Quoted literal contents do not terminate declaration bodies or annotation
@@ -126,6 +160,11 @@ for duplicates after evaluation before emission.
 Direct fixed-array union branches remain arrays in the semantic and emission
 models, and use the same initialization, copying, conversion, and destruction
 paths as other arrays.
+
+For C148, the Modern C++ projection initializes every enum-array element with
+the enum's declared `@default_literal` value, even when that literal is not the
+first enumerator. This is generation-only evidence; it does not qualify RTI
+plugin execution or wire behavior.
 
 ## Defaults and runtime observations
 

@@ -15,7 +15,7 @@ Run the focused measurement with the repository SDK policy and existing test dep
 dotnet run --project tests/Wireloom.Dds.CSharp.Generator.Tests/Wireloom.Dds.CSharp.Generator.Tests.csproj `
   --no-restore --configuration Release `
   -- `
-  --filter-class Wireloom.Generation.Tests.IncrementalGeneratorMeasurementSpecs `
+  --filter-class Wireloom.Dds.Generator.Tests.IncrementalGeneratorMeasurementSpecs `
   --show-live-output on --output Detailed
 ```
 

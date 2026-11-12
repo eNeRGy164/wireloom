@@ -12,18 +12,19 @@ Supporting verification is identified separately from product use. Ordinary
 consumer-application DDS operation remains outside the product boundary;
 the wire scenario below concerns qualification peers.
 
-| Flow                                                                                         | Main initiator                                          | Intended outcome                                                       |
-| :------------------------------------------------------------------------------------------- | :------------------------------------------------------ | :--------------------------------------------------------------------- |
-| [1. Generate or regenerate contracts](#611-generate-or-regenerate-application-contracts)     | .NET DDS application developer or Build and CI engineer | Generated C# reflects current IDL and project inputs                   |
-| [2. Diagnose and correct generation problems](#612-diagnose-and-correct-generation-problems) | .NET DDS application developer                          | Correct the relevant IDL or configuration and obtain an updated result |
-| [3. Preview the current workspace](#621-preview-the-current-workspace)                       | Playground user                                         | See current generated documents or diagnostics                         |
-| [4. Change a workspace safely](#622-change-a-workspace-safely)                               | Playground user                                         | Apply an accepted workspace change consistently                        |
-| [5. Export source or generated output](#623-export-source-or-current-generated-output)       | Playground user                                         | Obtain the intended local source/output artifact                       |
-| [6. Restore or reset a workspace](#624-restore-or-reset-the-local-workspace)                 | Playground user                                         | Recover saved work or retain a reset/current workspace                 |
-| [7. Recover browser compilation](#625-recover-browser-compilation-after-a-host-failure)      | Playground user or host failure                         | Restore usable compilation with the correct current request            |
-| [8. Verify a change](#631-verify-a-compiler-or-integration-change)                           | Wireloom maintainer                                     | Establish attributable results for the affected contracts              |
-| [9. Qualify DDS exchanges and reports](#632-qualify-dds-exchanges-and-retained-reports)      | Wireloom maintainer                                     | Review exact-scope exchange results and trustworthy evidence           |
-| [C1. Compile an IDL batch](#64-c1-compile-an-in-memory-idl-batch)                            | A compiler host                                         | Obtain documents and diagnostics from supplied inputs                  |
+| Flow                                                                                            | Main initiator                                          | Intended outcome                                                       |
+| :---------------------------------------------------------------------------------------------- | :------------------------------------------------------ | :--------------------------------------------------------------------- |
+| [1. Generate or regenerate contracts](#611-generate-or-regenerate-application-contracts)        | .NET DDS application developer or Build and CI engineer | Generated C# reflects current IDL and project inputs                   |
+| [2. Diagnose and correct generation problems](#612-diagnose-and-correct-generation-problems)    | .NET DDS application developer                          | Correct the relevant IDL or configuration and obtain an updated result |
+| [3. Preview the current workspace](#621-preview-the-current-workspace)                          | Playground user                                         | See current generated documents or diagnostics                         |
+| [4. Change a workspace safely](#622-change-a-workspace-safely)                                  | Playground user                                         | Apply an accepted workspace change consistently                        |
+| [5. Export source or generated output](#623-export-source-or-current-generated-output)          | Playground user                                         | Obtain the intended local source/output artifact                       |
+| [6. Restore or reset a workspace](#624-restore-or-reset-the-local-workspace)                    | Playground user                                         | Recover saved work or retain a reset/current workspace                 |
+| [7. Recover browser compilation](#625-recover-browser-compilation-after-a-host-failure)         | Playground user or host failure                         | Restore usable compilation with the correct current request            |
+| [8. Verify a change](#631-verify-a-compiler-or-integration-change)                              | Wireloom maintainer                                     | Establish attributable results for the affected contracts              |
+| [9. Qualify DDS exchanges and reports](#632-qualify-dds-exchanges-and-retained-reports)         | Wireloom maintainer                                     | Review exact-scope exchange results and trustworthy evidence           |
+| [10. Compare generated C++ sample serialization](#633-qualify-generated-c-sample-serialization) | Wireloom maintainer                                     | Compare typed sample CDR behavior with the RTI oracle                  |
+| [C1. Compile an IDL batch](#64-c1-compile-an-in-memory-idl-batch)                               | A compiler host                                         | Obtain documents and diagnostics from supplied inputs                  |
 
 ## 6.1 Application contract generation
 
@@ -105,8 +106,8 @@ owns severity controls and strictness settings.
 
 ### 6.2.1 Preview the current workspace
 
-**Intent:** Show generated C# or diagnostics for the user's current IDL,
-settings, and profile.
+**Intent:** Show generated C# or C++ documents, or diagnostics, for the user's
+current IDL, target, settings, and RTI profile.
 
 **Participants:** Playground user, browser client, browser compilation host,
 and shared IDL compiler.
@@ -114,19 +115,21 @@ and shared IDL compiler.
 ![Compile a current workspace and accept only a matching result.](images/06/preview-workspace.png)
 
 1. **Capture the current workspace.**  
-   Editing, example selection, or a settings/profile change updates the
+   Editing, example selection, or a target/settings/profile change updates the
    workspace identity. The client invalidates current export eligibility
    and old diagnostic positions.
 2. **Compile the workspace snapshot.**  
    The client supplies an eligible workspace snapshot to the compilation host.
    The host validates/maps the protocol payload and invokes
-   [C1](#64-c1-compile-an-in-memory-idl-batch).
+   [C1](#64-c1-compile-an-in-memory-idl-batch). The host selects the matching
+   C# or C++ compiler facade from the request target.
 3. **Return an identified outcome.**  
    The host returns documents, diagnostics, or a host outcome with request and
    workspace identity.
 4. **Accept only the current result.**  
    The client accepts only the result matching the current request, workspace,
-   profile, and worker identity, and presents current documents/diagnostics.
+   target, profile, and worker identity, and presents current
+   documents/diagnostics.
 5. **Navigate to the source.**  
    Selecting a source-located diagnostic opens the matching source editor
    and position.
@@ -139,7 +142,7 @@ zero documents remains distinct from failure. Host faults use
 [flow 7](#625-recover-browser-compilation-after-a-host-failure).
 
 Payloads are in [chapter 5](05-building-block-view.md#533-playground);
-the [worker contract](../../guides/playground-workspaces.md#worker-contract-v4)
+the [worker contract](../../guides/playground-workspaces.md#worker-contract-v5)
 owns identity, validation, and bounds.
 
 ### 6.2.2 Change a workspace safely
@@ -357,19 +360,43 @@ The
 [wire infrastructure runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#github-actions)
 defines secret configuration, fork behavior, and manual dispatch.
 
+### 6.3.3 Qualify generated C++ sample serialization
+
+**Intent:** Compare generated typed C++ behavior with the selected RTI oracle.
+
+**Participants:** Wireloom maintainer, native consumer fixture, generated
+Wireloom/RTI sources, and the recorded RTI SDK and host.
+
+1. **Build both implementations.** Compile the same consumer checks against
+   the retained oracle and fresh Wireloom output.
+2. **Exercise the contract.** Check applicable APIs, metadata, registration,
+   and lifecycle; round-trip declared sample states under XCDR1/XCDR2 and
+   compare complete values and CDR bytes.
+3. **Separate evidence levels.** Record consumer/API and local CDR results
+   independently. Run mixed-peer exchanges when live DDS is in scope.
+4. **Retain the result.** Record commands, versions, hashes, failures, and any
+   oracle adjustments with the case.
+
+Metadata access, endpoint creation, and local byte parity establish their
+exercised contracts. They do not establish live DDS interoperability.
+[Native fixture guides](../../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/)
+define checked shapes. Retained reports must keep platform-specific failures
+and unavailable checks visible.
+
 ## 6.4 C1: Compile an in-memory IDL batch
 
 **Intent:** Produce documents and diagnostics from supplied IDL inputs for any
-supported compiler host.
+supported compiler backend.
 
-**Participants:** Calling host, compilation coordination, input processing,
-language analysis, and C# code generation.
+**Participants:** Calling host, backend facade, shared input processing and
+language analysis, and selected-backend code generation.
 
 ![Shared compilation responsibilities and their main collaboration.](images/06/compile-idl-batch.png)
 
 1. **Capture compilation inputs.**  
-   Compilation coordination snapshots supplied inputs and establishes the
-   profile, host services, cancellation, and per-compilation state.
+   The host creates one immutable `IdlCompilationRequest`, which snapshots
+   supplied inputs and carries its MD5 provider and cancellation token. The
+   selected backend facade supplies its own profile and per-compilation state.
 2. **Process roots and includes.**  
    Input processing traverses generation roots and reachable supplied includes.
    Preprocessing, include traversal, and parsing callbacks share context.
@@ -377,10 +404,10 @@ language analysis, and C# code generation.
 3. **Bind and validate.**  
    Language analysis binds declarations and applies semantic validation.
    Coordination also checks applicability of the selected RTI API profile.
-4. **Generate C# documents.**  
-   C# code generation provides profile/mapping plans and generated documents.
-   Planning and rendering share implementation rather than requiring a
-   separate immutable-plan stage.
+4. **Generate backend documents.**
+   The selected backend applies its profile and mapping rules, then emits
+   target-specific documents. Planning and rendering share implementation
+   rather than requiring a separate immutable-plan stage.
 5. **Return the compilation result.**  
    The public compiler boundary returns the combined documents and diagnostics.
 
@@ -399,6 +426,36 @@ Annotation/value algorithms and mapping rules belong in
 Acceptance criteria belong in [chapter 10](10-quality-requirements.md);
 [qualification risks and mitigations](11-risks-and-technical-debt.md#r01)
 and the linked evidence retain the current limitations and measured results.
+
+<a id="64-generate-and-consume-modern-c-contracts"></a>
+
+## 6.5 Generate and consume Modern C++ contracts
+
+**Intent:** Generate and build native contracts through the installed package.
+
+The MSBuild consumer restores the native NuGet package; the CMake consumer
+locates its configuration. A target declares an IDL root, and its build rules
+invoke the executable selected for the build host.
+
+The CLI discovers the root and includes, calls the C++ compiler and shared
+IDL analysis, and writes successful documents into the build directory.
+Unsupported declarations return source diagnostics and a failing exit status.
+The native compiler builds output against the selected RTI SDK. Input/tool
+changes rerun generation; the CMake helper accepts one root per target.
+The [package guide](../../../tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md)
+owns setup and incremental-build checks.
+
+At application runtime, generated support initializes type shells and member
+metadata before eligible plugins. Selected DynamicType accessors stop at the
+metadata stage; registration, lifecycle, and CDR operations require their
+supported plugin path. Unsupported operations fail closed.
+[ADR-007](../adr/ADR-007-stage-modern-cpp-type-registration.md) records the
+initialization rationale; the [C++ value guide](../../guides/cpp-generated-value-semantics.md)
+describes union transitions and optional presence.
+
+The wire runner builds its native peer through the same installed package.
+Package integration, local CDR, and live exchange outcomes remain separate
+evidence under [section 6.3](#63-supporting-verification).
 
 ---
 

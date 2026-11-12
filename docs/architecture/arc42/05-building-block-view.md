@@ -48,6 +48,13 @@ The shared compiler has one place in the tree. Its callers depend on it.
 Interfaces, data models, and generated documents are described with their
 owning blocks. Supporting verification tooling is outside the product tree.
 
+Source namespaces follow project ownership: the shared front end is
+`Wireloom.Dds.Idl`, the C# compiler is `Wireloom.Dds.CSharp.Compiler`, and the
+C# generator is `Wireloom.Dds.Generator`. The native backend uses
+`Wireloom.Dds.Cpp` for its compiler and `Wireloom.Dds.Cpp.Generator` for its
+CLI; the browser host uses `Wireloom.Playground.Browser`. The NuGet packages
+are `Wireloom.Dds.Generator` for C# and `Wireloom.Dds.Cpp.Generator` for C++.
+
 The views use the shared [Wireloom theme](images/wireloom-theme.puml) and the
 chapter-specific [structural legend](images/05/legend.puml).
 
@@ -55,11 +62,11 @@ chapter-specific [structural legend](images/05/legend.puml).
 
 ![Wireloom product blocks and external neighbors.](images/05/level-1-overview.png)
 
-| Block                  | Function and ownership                                                   | Interfaces and dependencies                                                                              | Implementation reference                                                                                                                                                     |
-| :--------------------- | :----------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Shared IDL compiler    | Own IDL meaning, diagnostics, and generated C#                           | Provides the in-memory compiler contract; requires explicit inputs, profile, and host services           | [Compiler entry point](../../../src/Wireloom.Dds.CSharp.Compiler/Api/IdlCompiler.cs)                                                                                         |
-| .NET build integration | Adapt consumer projects and compiler results to .NET build/IDE contracts | Provides project configuration and analyzer integration; requires MSBuild/Roslyn and the shared compiler | [Generator](../../../src/Wireloom.Dds.CSharp.Generator/Api/Generator.cs), [MSBuild targets](../../../src/Wireloom.Dds.CSharp.Generator/build/Wireloom.Dds.Generator.targets) |
-| Playground             | Provide local interactive evaluation of generated C# and diagnostics     | Provides workspace/editor interfaces; requires browser APIs and the shared compiler                      | [Browser client composition](../../../playground/src/main.ts), [compiler adapter](../../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs)                     |
+| Block                  | Function and ownership                                                      | Interfaces and dependencies                                                                              | Implementation reference                                                                                                                                                                                                        |
+| :--------------------- | :-------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Shared IDL compiler    | Own IDL meaning, diagnostics, and target-neutral analysis                   | Provides shared request/result contracts and analysis; backend facades own profile and output            | [Compilation request](../../../src/Wireloom.Dds.Idl/Api/IdlCompilationRequest.cs), [C# facade](../../../src/Wireloom.Dds.CSharp.Compiler/Api/Compiler.cs), [C++ facade](../../../src/Wireloom.Dds.Cpp.Compiler/Api/Compiler.cs) |
+| .NET build integration | Adapt consumer projects and compiler results to .NET build/IDE contracts    | Provides project configuration and analyzer integration; requires MSBuild/Roslyn and the shared compiler | [Generator](../../../src/Wireloom.Dds.CSharp.Generator/Api/Generator.cs), [MSBuild targets](../../../src/Wireloom.Dds.CSharp.Generator/build/Wireloom.Dds.Generator.targets)                                                    |
+| Playground             | Provide local interactive evaluation of generated C# or C++ and diagnostics | Provides target-aware workspace/editor interfaces; requires browser APIs and both compiler backends      | [Browser client composition](../../../playground/src/main.ts), [compiler adapter](../../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs)                                                                        |
 
 The human neighbors are the four roles defined in
 [chapter 1](01-introduction-and-goals.md#13-stakeholders). .NET build/IDE
@@ -74,30 +81,27 @@ interfaces and is described separately in [section 5.5](#55-supporting-verificat
 
 ![Shared compiler and its four children.](images/05/level-2-shared-compiler.png)
 
-| Child                        | Function and ownership                                                           | Provided and required interfaces                                                                                     | Implementation reference                                                                                                                                                                               |
-| :--------------------------- | :------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Compilation coordination** | Own one compilation's configuration, state, diagnostics, and document collection | Provides `IdlCompiler.Compile`; requires the input, analysis, and generation interfaces                              | [IdlCompiler](../../../src/Wireloom.Dds.CSharp.Compiler/Api/IdlCompiler.cs), [IdlCompilation](../../../src/Wireloom.Dds.CSharp.Compiler/Compiler/IdlCompilation.cs)                                    |
-| **Input processing**         | Own supplied roots/includes, preprocessing, and source-origin information        | Requires supplied `IdlInput` values and settings; provides text/origin data through a parsing callback               | [IdlInputGraph](../../../src/Wireloom.Dds.Idl/Compiler/FrontEnd/Preprocessing/IdlInputGraph.cs)                                                                                                        |
-| **Language analysis**        | Own declarations, symbols, bound meaning, and semantic findings                  | Requires source text/origins and semantic policy; provides declarations, symbols, values, and diagnostics            | [IdlDeclarationParser](../../../src/Wireloom.Dds.Idl/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs), [IdlParseContext](../../../src/Wireloom.Dds.Idl/Compiler/FrontEnd/Parsing/IdlParseContext.cs) |
-| **C# code generation**       | Own generated API/storage shapes and source documents                            | Requires semantic declarations, type resolution, profile, and mapping settings; provides `GeneratedIdlSource` values | [IdlDeclarationEmitter](../../../src/Wireloom.Dds.CSharp.Compiler/Compiler/Emission/IdlDeclarationEmitter.cs)                                                                                          |
+| Child                        | Function and ownership                                                            | Provided and required interfaces                                                                                     | Implementation reference                                                                                                                                                                                                     |
+| :--------------------------- | :-------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Compilation coordination** | Own one backend compilation's configuration, diagnostics, and document collection | Each backend facade accepts the shared `IdlCompilationRequest` and returns a typed `IdlCompilationResult<TDocument>` | [C# facade](../../../src/Wireloom.Dds.CSharp.Compiler/Api/Compiler.cs), [C++ facade](../../../src/Wireloom.Dds.Cpp.Compiler/Api/Compiler.cs), [shared contracts](../../../src/Wireloom.Dds.Idl/Api/IdlCompilationRequest.cs) |
+| **Input processing**         | Own supplied roots/includes, preprocessing, and source-origin information         | Requires supplied `IdlInput` values and settings; provides text/origin data through a parsing callback               | [IdlInputGraph](../../../src/Wireloom.Dds.Idl/Compiler/FrontEnd/Preprocessing/IdlInputGraph.cs)                                                                                                                              |
+| **Language analysis**        | Own declarations, symbols, bound meaning, and semantic findings                   | Requires source text/origins and semantic policy; provides declarations, symbols, values, and diagnostics            | [IdlDeclarationParser](../../../src/Wireloom.Dds.Idl/Compiler/FrontEnd/Parsing/IdlDeclarationParser.cs), [IdlParseContext](../../../src/Wireloom.Dds.Idl/Compiler/FrontEnd/Parsing/IdlParseContext.cs)                       |
+| **C# code generation**       | Own generated API/storage shapes and source documents                             | Requires semantic declarations, type resolution, profile, and mapping settings; provides `GeneratedIdlSource` values | [IdlDeclarationEmitter](../../../src/Wireloom.Dds.CSharp.Compiler/Emission/IdlDeclarationEmitter.cs)                                                                                                                         |
 
 The compiler's neighbors are .NET build integration, the browser compilation
-host, and direct verification callers. The diagrams describe the logical C#
-compilation path. The input processing and language analysis blocks live in
-`Wireloom.Dds.Idl`. Compilation coordination for C# and source generation live
-in `Wireloom.Dds.CSharp.Compiler`.
+host, and direct verification callers. The input processing and language
+analysis blocks live in `Wireloom.Dds.Idl`. C# and C++ compilation
+coordination and source generation live in their respective backend projects.
 
 #### Compiler contract and payload examples
 
-The provided interface is defined by
-[IdlCompiler](../../../src/Wireloom.Dds.CSharp.Compiler/Api/IdlCompiler.cs):
+The shared request and result types are defined in `Wireloom.Dds.Idl`. Backend
+facades keep target-specific profiles and document types:
 
 ```csharp
-IdlCompilationResult Compile(
-    IReadOnlyList<IdlInput> inputs,
-    IdlCompilerProfile profile,
-    Func<byte[], byte[]> computeMd5,
-    CancellationToken cancellationToken = default);
+var request = new IdlCompilationRequest(inputs, computeMd5, cancellationToken);
+IdlCompilationResult<GeneratedIdlSource> csharp = IdlCompiler.Compile(request, csharpProfile);
+IdlCompilationResult<GeneratedCppSource> cpp = CppCompiler.Compile(request, cppProfile);
 ```
 
 Example input values contain complete source text, including supplied include
@@ -125,9 +129,14 @@ IdlCompilerProfile profile = IdlCompilerProfile.Rti770;
 
 The required MD5 delegate accepts UTF-8 bytes and returns a complete 16-byte
 digest, as specified in [ADR-002](../adr/ADR-002-inject-member-id-md5-per-compilation.md).
-The result contract contains `Documents`, `Diagnostics`, and `Success`.
-Each [generated document](../../../src/Wireloom.Dds.CSharp.Compiler/Api/GeneratedIdlSource.cs)
-contains a deterministic `HintName` and complete C# `Source`.
+The generic result contract contains `Documents`, `Diagnostics`, and `Success`.
+Each [generated document](../../../src/Wireloom.Dds.CSharp.Compiler/Api/GeneratedSource.cs)
+contains a deterministic `HintName` and complete C# `Source`. The C++ facade
+returns `GeneratedCppSource` values with a `FileName` and complete C++ `Source`.
+Each facade is a thin backend entry point over composition-based request and
+result values. There is no shared compiler interface or inheritance hierarchy:
+the backends are not interchangeable at the document/profile level, and no
+runtime plugin registry currently requires polymorphism.
 
 An example [diagnostic payload](../../../src/Wireloom.Dds.Idl/Api/IdlDiagnostic.cs)
 is represented by the actual compiler type:
@@ -187,7 +196,7 @@ override; it is resolved per declaring file by the input factory.
 | Child                        | Function and ownership                                                                          | Provided and required interfaces                                                                                                            | Implementation reference                                                                                                                       |
 | :--------------------------- | :---------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Browser client**           | Own workspace interaction, editor/result presentation, request coordination, and local recovery | Provides the user interface and typed workspace requests; requires browser APIs, editor/archive libraries, and the browser compilation host | [Client composition](../../../playground/src/main.ts), [protocol mirror](../../../playground/src/protocol.ts)                                  |
-| **Browser compilation host** | Own the browser-compatible compiler boundary and its platform services                          | Provides the workspace compile contract; requires .NET browser runtime/interop and the shared compiler                                      | [Worker bridge](../../../playground/src/worker.mjs), [compiler adapter](../../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs) |
+| **Browser compilation host** | Own the browser-compatible compiler boundary and its platform services                          | Provides the target-aware workspace compile contract; requires .NET browser runtime/interop and both compiler facades                       | [Worker bridge](../../../playground/src/worker.mjs), [compiler adapter](../../../src/Wireloom.Playground.Browser/PlaygroundCompilerAdapter.cs) |
 
 The shared compiler is the Playground's sibling. Its implementation has one
 owner in the product tree. The Playground user, browser APIs, and .NET browser
@@ -196,15 +205,16 @@ runtime are neighbors of this view.
 #### Workspace protocol payload examples
 
 The .NET adapter DTOs own the JSON contract; TypeScript mirrors it.
-[The workspace guide](../../guides/playground-workspaces.md#worker-contract-v4)
+[The workspace guide](../../guides/playground-workspaces.md#worker-contract-v5)
 is the authoritative protocol reference. Example request payload:
 
 ```json
 {
-  "protocolVersion": 4,
+  "protocolVersion": 5,
   "workerGeneration": 1,
   "requestId": 1,
   "workspaceRevision": 1,
+  "target": "csharp",
   "profile": "7.7.0",
   "files": [
     {
@@ -235,10 +245,11 @@ diagnostic fields. The worker message union wraps this payload in
 
 ```json
 {
-  "protocolVersion": 4,
+  "protocolVersion": 5,
   "workerGeneration": 1,
   "requestId": 1,
   "workspaceRevision": 1,
+  "target": "csharp",
   "profile": "7.7.0",
   "kind": "compiler",
   "success": false,
@@ -260,7 +271,7 @@ diagnostic fields. The worker message union wraps this payload in
 Compiler diagnostics have no span length in the current core API; the browser
 DTO's `length` is zero. Host outcome variants are documented in
 [chapter 6](06-runtime-view.md#621-preview-the-current-workspace); protocol rules
-are in the [worker contract](../../guides/playground-workspaces.md#worker-contract-v4).
+are in the [worker contract](../../guides/playground-workspaces.md#worker-contract-v5).
 
 ## 5.4 Level 3: Selected child blocks
 
@@ -299,17 +310,17 @@ Annotation and expression details are maintained in the
 
 ![Emission planning and source emission.](images/05/level-3-code-generation.png)
 
-| Child                 | Function and ownership                                                                 | Provided and required interfaces                                                                                                       | Implementation reference                                                                                                                                                                                                                                                                                                              |
-| :-------------------- | :------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Emission planning** | Own generated API/storage shapes, metadata, defaults, and member policies              | Requires bound declarations, type facts, profile, and mappings; provides emission models, member plans, and shared rendering contracts | [EmissionTypeProjector](../../../src/Wireloom.Dds.CSharp.Compiler/Compiler/Emission/Planning/EmissionTypeProjector.cs), [MemberEmissionPlan](../../../src/Wireloom.Dds.CSharp.Compiler/Compiler/Emission/Planning/EmissionMemberPlan.cs)                                                                                              |
-| **Source emission**   | Own deterministic C# documents for managed types, native interop, and RTI type support | Requires declarations, plans, and type resolution; provides `GeneratedIdlSource` values                                                | [IdlDeclarationEmitter](../../../src/Wireloom.Dds.CSharp.Compiler/Compiler/Emission/IdlDeclarationEmitter.cs), [GeneratedSourceWriter](../../../src/Wireloom.Dds.CSharp.Compiler/Compiler/Emission/Writers/GeneratedSourceWriter.cs), [EmissionResult](../../../src/Wireloom.Dds.CSharp.Compiler/Compiler/Emission/EmissionResult.cs) |
+| Child                 | Function and ownership                                                                 | Provided and required interfaces                                                                                                       | Implementation reference                                                                                                                                                                                                                                                                                   |
+| :-------------------- | :------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Emission planning** | Own generated API/storage shapes, metadata, defaults, and member policies              | Requires bound declarations, type facts, profile, and mappings; provides emission models, member plans, and shared rendering contracts | [EmissionTypeProjector](../../../src/Wireloom.Dds.CSharp.Compiler/Emission/Planning/EmissionTypeProjector.cs), [MemberEmissionPlan](../../../src/Wireloom.Dds.CSharp.Compiler/Emission/Planning/EmissionMemberPlan.cs)                                                                                     |
+| **Source emission**   | Own deterministic C# documents for managed types, native interop, and RTI type support | Requires declarations, plans, and type resolution; provides `GeneratedIdlSource` values                                                | [IdlDeclarationEmitter](../../../src/Wireloom.Dds.CSharp.Compiler/Emission/IdlDeclarationEmitter.cs), [GeneratedSourceWriter](../../../src/Wireloom.Dds.CSharp.Compiler/Emission/Writers/GeneratedSourceWriter.cs), [EmissionResult](../../../src/Wireloom.Dds.CSharp.Compiler/Emission/EmissionResult.cs) |
 
 Planning and source emission share implementation and rendering helpers.
 Their boundary is a set of model/helper contracts, rather than a standalone
 frozen-plan artifact. Generated native interop support is C#; C++ peer tooling
 belongs to supporting qualification.
 
-The output payload is defined by [GeneratedIdlSource](../../../src/Wireloom.Dds.CSharp.Compiler/Api/GeneratedIdlSource.cs):
+The output payload is defined by [GeneratedIdlSource](../../../src/Wireloom.Dds.CSharp.Compiler/Api/GeneratedSource.cs):
 `HintName` identifies the document, and `Source` contains its complete C#.
 The [option-ownership concept](08-crosscutting-concepts.md#81-idl-meaning-and-identity)
 and [mapping reference](../../guides/configuration.md#choose-the-sequence-array-mapping)
@@ -319,15 +330,17 @@ define the scope and effect of the selected emission settings.
 
 ![Browser client responsibilities and interfaces.](images/05/level-3-browser-client.png)
 
-| Child                                | Function and ownership                                                                        | Provided and required interfaces                                                                                                         | Implementation reference                                                                                                                                                                                                           |
-| :----------------------------------- | :-------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Workspace management**             | Own virtual files/folders, roles/settings, and validated workspace changes, including imports | Provides workspace values and edit operations; requires source/path/settings data                                                        | [Workspace model and operations](../../../playground/src/workspace.ts), [workbench integration](../../../playground/src/workspace-ui.ts)                                                                                           |
-| **Editing and result presentation**  | Own editor models, selection/undo, diagnostics, generated-document views, and exports         | Provides user-facing editor/result interfaces; requires workspace operations, compile results, browser APIs, Monaco, and archive helpers | [Editors](../../../playground/src/editors.ts), [SourceWorkbench](../../../playground/src/workspace-ui.ts), [application composition](../../../playground/src/main.ts), [source archive](../../../playground/src/source-archive.ts) |
-| **Compilation request coordination** | Own the browser client's worker connection and request/result identity                        | Provides the client compile/status contract; requires workspace snapshots, Worker APIs, and the browser compilation host                 | [CompilerClient](../../../playground/src/compiler-client.ts), [protocol types](../../../playground/src/protocol.ts)                                                                                                                |
-| **Local recovery**                   | Own persisted workspace snapshots and save/reset consistency                                  | Provides recovery load/save/delete interfaces; requires the workspace schema and IndexedDB                                               | [RecoveryStore](../../../playground/src/workspace.ts), [RecoverySaver](../../../playground/src/recovery-saver.ts)                                                                                                                  |
+| Child                                | Function and ownership                                                                        | Provided and required interfaces                                                                                                         | Implementation reference                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| :----------------------------------- | :-------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Workspace management**             | Own virtual files/folders, roles/settings, and validated workspace changes, including imports | Provides workspace values and edit operations; requires source/path/settings data                                                        | [Workspace model and operations](../../../playground/src/workspace.ts), [workbench integration](../../../playground/src/workspace-ui.ts), [file actions](../../../playground/src/workspace-file-actions.ts)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| **Editing and result presentation**  | Own editor models, selection/undo, diagnostics, generated-document views, and exports         | Provides user-facing editor/result interfaces; requires workspace operations, compile results, browser APIs, Monaco, and archive helpers | [Editors](../../../playground/src/editors.ts), [SourceWorkbench](../../../playground/src/workspace-ui.ts), [application composition](../../../playground/src/main.ts), [generated-file view](../../../playground/src/ui/generated-files-view.ts), [project preview](../../../playground/src/project/project-preview.ts), [quick-open](../../../playground/src/ui/quick-open.ts), [notice center](../../../playground/src/ui/notice-center.ts), [pane layout](../../../playground/src/ui/pane-layout.ts), [output tab strip](../../../playground/src/ui/output-tab-strip.ts), [styles entry](../../../playground/src/style.css), [source archive](../../../playground/src/source-archive.ts) |
+| **Compilation request coordination** | Own the browser client's worker connection and request/result identity                        | Provides the client compile/status contract; requires workspace snapshots, Worker APIs, and the browser compilation host                 | [CompilerClient](../../../playground/src/compiler-client.ts), [protocol types](../../../playground/src/protocol.ts)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| **Local recovery**                   | Own persisted workspace snapshots and save/reset consistency                                  | Provides recovery load/save/delete interfaces; requires the workspace schema and IndexedDB                                               | [RecoveryStore](../../../playground/src/workspace.ts), [RecoverySaver](../../../playground/src/recovery-saver.ts)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
-These are logical responsibilities. `main.ts` composes several of them, and `workspace.ts` contains both workspace
-operations and the recovery-store implementation. Import/export ownership is distributed across the relevant
+These are logical responsibilities. `main.ts` composes the client and delegates focused presentation behavior to UI
+modules; it retains cross-feature workspace and compilation orchestration. `workspace.ts` contains the workspace model,
+validated operations, and recovery-store implementation. Dialog-driven file operations are coordinated by
+`workspace-file-actions.ts`. Import/export ownership is distributed across the relevant
 workspace and presentation code. The workspace model and worker payload have different purposes;
 the [workspace guide](../../guides/playground-workspaces.md) defines their fields. Runtime request scheduling
 and recovery scenarios belong in [chapter 6](06-runtime-view.md#62-playground-evaluation).
@@ -356,9 +369,59 @@ hierarchy.
 | **Compiler, corpus, package, runtime, and browser verification** | Verify public/internal contracts through focused tests, retained fixtures, real analyzer consumption, and browser protocol/UI interfaces | [Contribution guide](../../../CONTRIBUTING.md#tests-and-fixtures), [evidence scope](08-crosscutting-concepts.md#85-compatibility-and-evidence), [Playground qualification](../../testing/playground-qualification.md) |
 | **Wire qualification tooling**                                   | Own fixture/peer preparation and evidence/report contracts through the Runner and Verifier applications and their shared library         | [Wire harness code map](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#code-map), [report contracts](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#read-the-results)           |
 
+The C# and C++ test trees separate compiler contracts, corpus compliance,
+fuzzing, generator-host behavior, and packed-package consumption. C++ compiler
+tests exercise the in-memory API and planning/emission primitives; C++ generator
+tests own command parsing, filesystem generation, and executable behavior.
+The C++ corpus suite checks its supported generation subset independently of
+native SDK and wire qualification. Native package checks remain CMake/PowerShell
+consumers of the assembled package. Fuzzing runs separately from coverage.
 Harness execution scenarios belong in [chapter 6](06-runtime-view.md#632-qualify-dds-exchanges-and-retained-reports);
 its execution environments are documented in the
 [wire runbook](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#github-actions).
+
+## 5.6 Shared IDL front end and C++ generator
+
+The diagrams above show the C# and Playground paths. Modern C++ uses the
+same IDL front end through an independent compiler and native build entry point.
+
+| Block                        | Responsibility and interface                                                                                                                                                                       |
+| :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Wireloom.Dds.Idl`           | Exposes the bound declaration and annotation model to both backends; keeps parsing, binding, and symbol-table machinery internal. [Analysis API](../../../src/Wireloom.Dds.Idl/Api/IdlAnalyzer.cs) |
+| `Wireloom.Dds.Cpp.Compiler`  | Provides `CppCompiler` over the shared request/result contract, validates C++ capabilities, builds a language/SDK mapping plan, and returns C++ files or source diagnostics.                       |
+| `Wireloom.Dds.Cpp.Generator` | Owns CLI file discovery, diagnostics, output writing, and native packaging. MSBuild/CMake invoke its host-native executable.                                                                       |
+
+The C# compiler keeps a narrow friend hook for target checks interleaved with
+shared analysis. The C++ CLI keeps one for preprocessing while resolving its
+filesystem-backed include closure. Both compilers consume the public bound
+model for target planning and emission.
+
+The C# compiler supplies its compatibility policy where legacy C# mapping
+affects analysis. The C++ compiler owns its target-specific policy. Neither
+backend selects behavior by corpus case name.
+
+C++ emitters own value declarations, value operations, topic traits, and
+native support. They consume bound IDL facts and the C++ plan; a shared source
+writer owns deterministic LF output, indentation, and documentation primitives.
+The [generator guide](../../../src/Wireloom.Dds.Cpp.Generator/README.md) owns
+supported shapes and build usage.
+
+Generated value types and topic traits are application-facing API. Plugin
+callbacks, sample-access metadata, and DynamicType construction are
+profile-specific implementation ABI. Canonical structs/unions own their type
+and plugin contexts; typedef chains preserve alias metadata without owning
+independent contexts.
+
+Type initialization creates shells, completes member metadata in dependency
+order, then creates eligible plugins. Selected shapes separate metadata lookup
+from lazy plugin creation to avoid re-entry and unsupported eager operations.
+[ADR-006](../adr/ADR-006-use-stl-aware-sample-access-for-modern-cpp.md)
+and [ADR-007](../adr/ADR-007-stage-modern-cpp-type-registration.md)
+retain the sample-access and initialization rationale. The
+[C++ value guide](../../guides/cpp-generated-value-semantics.md) documents
+union storage and optional presence.
+Individual [native fixture guides](../../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/)
+define their checked shapes; exact outcomes belong in retained run reports.
 
 ---
 
