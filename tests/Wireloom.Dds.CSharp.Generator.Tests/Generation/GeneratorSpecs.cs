@@ -1,12 +1,12 @@
 using System.Collections.Immutable;
 using System.Text;
-using Wireloom.Compiler.Emission;
+using Wireloom.Dds.CSharp.Compiler.Emission;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Wireloom.Generation.Tests;
+namespace Wireloom.Dds.Generator.Tests;
 
 public sealed class GeneratorSpecs
 {
@@ -1463,7 +1463,7 @@ public sealed class GeneratorSpecs
         valueProperty.GetValue(copiedItem).ShouldBe(17);
     }
 
-    private static (IdlCompilationResult Compiler, GeneratorRunResult Adapter) CompileThroughBothBoundaries(
+    private static (IdlCompilationResult<GeneratedIdlSource> Compiler, GeneratorRunResult Adapter) CompileThroughBothBoundaries(
         string source,
         IdlCompilerProfile profile,
         string runtimeVersion)
@@ -1471,7 +1471,7 @@ public sealed class GeneratorSpecs
         var compilerResult = IdlCompiler.Compile(
             [new IdlInput("sample.idl", source)],
             profile,
-            Compiler.Tests.CompilerTestSupport.ComputeMd5,
+            CSharp.Compiler.Tests.CompilerTestSupport.ComputeMd5,
             TestContext.Current.CancellationToken);
         var adapterResult = Run(
             source,
@@ -1483,7 +1483,7 @@ public sealed class GeneratorSpecs
         return (compilerResult, adapterResult);
     }
 
-    private static void AssertEquivalentResults(IdlCompilationResult compilerResult, GeneratorRunResult adapterResult)
+    private static void AssertEquivalentResults(IdlCompilationResult<GeneratedIdlSource> compilerResult, GeneratorRunResult adapterResult)
     {
         var compilerDocuments = compilerResult.Documents
             .Select(document => (document.HintName, document.Source))

@@ -1,6 +1,6 @@
-using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
 /// <summary>Parses declared names in non-emitted interface bodies without binding types.</summary>
 /// <param name="context">The destination for source-mapped identifier facts.</param>

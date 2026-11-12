@@ -1,11 +1,9 @@
 using System.Globalization;
 using Microsoft.CodeAnalysis.CSharp;
-using Wireloom.Compiler.FrontEnd.Semantic;
-using Wireloom.Compiler.FrontEnd.Symbols;
 
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.FrontEnd.Parsing;
 
 public sealed class IdlConstantSpecs
 {
@@ -672,7 +670,7 @@ public sealed class IdlConstantSpecs
     {
         // Arrange
         var input = Input("missing-array-dimensions.idl", string.Empty);
-        var context = new IdlParseContext(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5, diagnostics: null);
+        var context = new IdlParseContext(new IdlSymbolTable(), CancellationToken.None, Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.ComputeMd5, diagnostics: null);
 
         // Act
         var exception = Should.Throw<IdlException>(() => context.TypeParser.ParseDimensions(input, 0, string.Empty, currentNamespace: null));
@@ -960,7 +958,7 @@ public sealed class IdlConstantSpecs
 
         // Act
         var documents = CompileSources(input);
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.ComputeMd5);
         parser.Parse(input.Text, input, baseOffset: 0, currentNamespace: null);
         parser.Bind();
         parser.Validate(strict: false);

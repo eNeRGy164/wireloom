@@ -1,6 +1,6 @@
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.FrontEnd.Parsing;
 
 public sealed class ScalarIdentityAndExtensibilitySpecs
 {
@@ -17,14 +17,14 @@ public sealed class ScalarIdentityAndExtensibilitySpecs
             const {{type}} Selected = {{literal}};
             union Choice switch({{type}}) { case Selected: long value; default: long other; };
             """);
-        var parser = new IdlDeclarationParser(new Symbols.IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.ComputeMd5);
         parser.Parse(input.Text, input, baseOffset: 0, currentNamespace: null);
 
         // Act
         parser.Bind();
 
         // Assert
-        var choice = parser.Declarations.OfType<Semantic.IdlUnionDeclaration>().Single();
+        var choice = parser.Declarations.OfType<IdlUnionDeclaration>().Single();
         choice.Declaration.Branches[0].Labels.ShouldBe([expectedLabel]);
     }
 

@@ -1,8 +1,10 @@
+using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Xml.Linq;
-using Wireloom.Compiler.Emission;
+using Wireloom.Dds.CSharp.Compiler;
+using Wireloom.Dds.CSharp.Compiler.Emission;
+using Wireloom.Dds.Idl;
 
 namespace Wireloom.Dds.CSharp.CorpusCompliance;
 

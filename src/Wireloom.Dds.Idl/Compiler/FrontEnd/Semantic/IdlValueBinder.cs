@@ -1,6 +1,6 @@
-using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Binds constant values, typedef defaults, and member annotation values in dependency order.</summary>
 internal sealed class IdlValueBinder(IdlSymbolTable symbols, CancellationToken cancellationToken)

@@ -1,0 +1,59 @@
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.CSharp.Compiler.Emission.Model;
+using Wireloom.Dds.CSharp.Compiler.Naming;
+
+namespace Wireloom.Dds.CSharp.Compiler.Emission.Emitters;
+
+/// <summary>Emits RTI type-support registration for a collection or value typedef.</summary>
+internal static class CollectionAliasTypeSupportEmitter
+{
+    /// <summary>Emits the typedef type-support document.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName)
+    {
+        var typeName = names.ManagedTypeName;
+        var fallback = AliasFormattingEmitter.RequiresFallback(plan);
+        var writer = EmissionSupport.CreateSource(declaration.Namespace, EmissionSupport.TypeSupportUsings, sourceIdlFileName);
+
+        writer.WriteXmlSummary($"Provides RTI Connext DDS type support for <see cref=\"{typeName}\"/>.");
+        writer.OpenBlock($"public class {typeName}Support : TypeSupport<{typeName}>");
+
+        writer.WriteXmlSummary($"Initializes a new instance of the <see cref=\"{typeName}Support\"/> class.");
+        writer.WriteLine($"public {typeName}Support() : base(");
+        writer.Indent();
+        writer.WriteLine($"new Implementation.{typeName}Plugin(),");
+        writer.WriteLine($"new global::System.Lazy<DynamicType>(() => Implementation.{typeName}Plugin.CreateDynamicType(isPublic: true)))");
+        writer.Unindent();
+        writer.OpenBrace();
+        writer.CloseBlock();
+        writer.BlankLine();
+
+        var instanceAccessors = plan.IsRecursiveUnboundedSequenceElement ? "{ get; private set; }" : "{ get; }";
+        writer.WriteXmlSummary("Gets the shared type-support instance for formatting, serialization, and dynamic-type utilities for this typedef.");
+        writer.WriteXmlRemarks("The generated plugin and unmanaged type are runtime implementation details; application code should use this support class and the managed typedef.");
+        writer.WriteLine($"public static {typeName}Support Instance {instanceAccessors} =");
+        writer.Indent();
+        writer.WriteLine($"ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{typeName}Support, {typeName}>();");
+        writer.Unindent();
+
+        if (plan.IsRecursiveUnboundedSequenceElement)
+        {
+            writer.BlankLine();
+            writer.WriteXmlSummary("Gets or creates the recursive sequence type-support instance without forcing its public dynamic type.");
+            writer.OpenBlock($"internal static {typeName}Support GetOrCreateInstanceImpl()");
+            writer.WriteLine($"Instance ??= ServiceEnvironment.Instance.Internal.TypeSupportFactory.CreateTypeSupport<{typeName}Support, {typeName}>();");
+            writer.BlankLine();
+            writer.WriteLine("return Instance;");
+            writer.CloseBlock();
+        }
+
+        if (fallback)
+        {
+            writer.BlankLine();
+            AliasFormattingEmitter.EmitSupportFormatter(writer, declaration, plan);
+        }
+
+        writer.CloseBlock();
+
+        return [new GeneratedIdlSource(names.Support.HintName, writer.ToString())];
+    }
+}

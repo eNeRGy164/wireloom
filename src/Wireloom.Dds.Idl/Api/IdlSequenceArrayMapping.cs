@@ -1,4 +1,4 @@
-namespace Wireloom;
+namespace Wireloom.Dds.Idl;
 
 /// <summary>Selects the generated mapping for direct IDL arrays of sequences.</summary>
 [PublicAPI]

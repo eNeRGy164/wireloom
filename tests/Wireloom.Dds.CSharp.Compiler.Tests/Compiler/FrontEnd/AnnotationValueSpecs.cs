@@ -1,8 +1,6 @@
-using Wireloom.Compiler.FrontEnd.Parsing;
-using Wireloom.Compiler.FrontEnd.Symbols;
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.FrontEnd.Semantic;
 
 /// <summary>Verifies annotation literals and expressions at parser and binding boundaries.</summary>
 public sealed class AnnotationValueSpecs
@@ -163,7 +161,7 @@ public sealed class AnnotationValueSpecs
                 @must_understand(value={{literal}}) long understood;
             };
             """);
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Compiler.Tests.CompilerTestSupport.ComputeMd5);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), CancellationToken.None, Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.ComputeMd5);
 
         // Act
         parser.Parse(input.Text, input, baseOffset: 0, currentNamespace: null);

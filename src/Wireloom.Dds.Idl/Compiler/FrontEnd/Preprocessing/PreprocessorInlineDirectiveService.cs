@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Consumes inline include probes and pragma forms embedded in expanded text.</summary>
 internal sealed class PreprocessorInlineDirectiveService(

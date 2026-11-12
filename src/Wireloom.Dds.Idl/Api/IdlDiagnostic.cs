@@ -1,4 +1,4 @@
-namespace Wireloom;
+namespace Wireloom.Dds.Idl;
 
 /// <summary>Represents a diagnostic produced while compiling IDL.</summary>
 /// <param name="id">The stable diagnostic identifier.</param>

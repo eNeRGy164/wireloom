@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>
 /// Processes the deterministic preprocessing subset used by IDL inputs.

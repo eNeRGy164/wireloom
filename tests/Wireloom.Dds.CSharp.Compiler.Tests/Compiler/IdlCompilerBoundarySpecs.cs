@@ -1,8 +1,8 @@
 using Microsoft.CodeAnalysis.CSharp;
-using Wireloom.Compiler.Naming;
-using Wireloom.Compiler.Emission.Planning;
+using Wireloom.Dds.CSharp.Compiler.Naming;
+using Wireloom.Dds.CSharp.Compiler.Emission.Planning;
 
-namespace Wireloom.Compiler.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.Tests;
 
 public sealed class IdlCompilerBoundarySpecs
 {

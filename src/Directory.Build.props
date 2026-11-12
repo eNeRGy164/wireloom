@@ -15,6 +15,7 @@
   <ItemGroup>
     <Using Include="JetBrains.Annotations.PublicAPIAttribute" Alias="PublicAPI" />
     <Using Include="System.Numerics" />
+    <Using Include="Wireloom.Dds.Idl" />
   </ItemGroup>
 
 </Project>

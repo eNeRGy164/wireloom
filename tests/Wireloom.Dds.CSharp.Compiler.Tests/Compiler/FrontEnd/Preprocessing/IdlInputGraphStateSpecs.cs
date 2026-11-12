@@ -1,6 +1,6 @@
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
 
-namespace Wireloom.Compiler.FrontEnd.Preprocessing.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.FrontEnd.Preprocessing;
 
 public sealed class IdlInputGraphStateSpecs
 {

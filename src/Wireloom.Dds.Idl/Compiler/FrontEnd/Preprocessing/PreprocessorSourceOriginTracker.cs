@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Tracks expanded-text origins and compresses them into source spans.</summary>
 internal sealed class PreprocessorSourceOriginTracker(

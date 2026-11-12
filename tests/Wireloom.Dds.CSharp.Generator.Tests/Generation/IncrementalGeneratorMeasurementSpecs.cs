@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Wireloom.Generation.Tests;
+namespace Wireloom.Dds.Generator.Tests;
 
 /// <summary>Measures current Roslyn incremental-generator invalidation behavior.</summary>
 public sealed class IncrementalGeneratorMeasurementSpecs(ITestOutputHelper output)

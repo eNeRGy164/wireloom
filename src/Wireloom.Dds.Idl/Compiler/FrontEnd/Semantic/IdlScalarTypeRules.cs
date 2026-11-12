@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Validates scalar values against their declared IDL ranges.</summary>
 internal static class IdlScalarTypeRules

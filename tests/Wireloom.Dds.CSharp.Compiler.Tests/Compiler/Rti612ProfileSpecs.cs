@@ -2,7 +2,7 @@ using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Wireloom.Compiler.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.Tests;
 
 public sealed class Rti612ProfileSpecs
 {

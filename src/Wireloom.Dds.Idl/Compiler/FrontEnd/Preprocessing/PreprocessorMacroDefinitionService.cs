@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Parses and registers object-like and function-like macro definitions.</summary>
 internal sealed class PreprocessorMacroDefinitionService(

@@ -1,0 +1,373 @@
+using Wireloom.Dds.CSharp.Compiler.Emission.Model;
+using Wireloom.Dds.CSharp.Compiler.Emission.Planning;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.CSharp.Compiler.Naming;
+using BigInt = System.Numerics.BigInteger;
+
+namespace Wireloom.Dds.CSharp.Compiler.Emission.Emitters;
+
+/// <summary>Emits managed collection and value typedef declarations.</summary>
+internal static class CollectionAliasManagedEmitter
+{
+    /// <summary>Emits the managed typedef document.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, GeneratedTypeNames names, CollectionAliasEmissionPlan plan, string sourceIdlFileName, RtiApiProfile profile)
+    {
+        var typeName = names.ManagedTypeName;
+        string? resolvedElement;
+        if (plan.IsString)
+        {
+            resolvedElement = "string";
+        }
+        else
+        {
+            resolvedElement = plan.ElementType;
+        }
+
+        var elementReference = IdlNaming.TypeReference(resolvedElement, declaration.Namespace);
+        var requiresNullForgivingValueInitializer = !declaration.IsCollection && plan is { IsAggregate: true, IsPrimitive: false, IsEnum: false };
+        var writer = EmissionSupport.CreateSource(
+            declaration.Namespace,
+            EmissionSupport.GetManagedTypeUsings([plan.ElementPlan], usesOmgTypes: plan.IsSequence || declaration.Bound is not null || plan.IsString, usesSequence: plan.IsSequence),
+            sourceIdlFileName);
+
+        if (plan.IsSequenceArrayElement)
+        {
+            writer.WriteXmlSummary($"Represents one independently sized sequence in an IDL array declared in <c>{sourceIdlFileName}</c>.");
+        }
+        else
+        {
+            writer.WriteXmlSummary($"Represents the <c>{declaration.Name}</c> IDL typedef declared in <c>{sourceIdlFileName}</c>.");
+        }
+        writer.OpenBlock($"public partial class {typeName} : global::System.IEquatable<{typeName}>");
+
+        if (plan.IsSequence)
+        {
+            var sequenceSummary = plan.IsUnboundedSequence
+                ? "Gets the sequence value represented by this typedef. The sequence has no IDL maximum length."
+                : $"Gets the sequence value represented by this typedef. Its maximum number of elements is <c>{plan.SequenceBound}</c>.";
+            var elementConstraints = MemberEmissionRenderer.NestedCollectionConstraintSummary(plan.ElementPlan);
+            if (elementConstraints is not null)
+            {
+                sequenceSummary += $" {elementConstraints}";
+            }
+            writer.WriteXmlSummary(sequenceSummary);
+            var sequenceRemarks = "Use the mutable sequence instance to add or remove elements; the property itself is getter-only.";
+            if (declaration.Bound is null && !plan.IsUnboundedSequence)
+            {
+                sequenceRemarks += $" For an unbounded IDL sequence, an effective limit of {plan.SequenceBound} elements is set. RTI uses the bound from the type metadata when processing DDS data.";
+            }
+
+            writer.WriteXmlRemarks(sequenceRemarks);
+            writer.WriteXmlSeeAlso(RtiCSharpDocumentation.OmgTypes(profile), $"RTI Connext {profile.RtiVersion} ISequence API");
+
+            if (!plan.IsUnboundedSequence)
+            {
+                writer.WriteLine($"[Bound({plan.SequenceBound})]");
+            }
+
+            writer.WriteLine($"public ISequence<{elementReference}> Value {{ get; }} = null!;");
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Initializes an empty sequence typedef.");
+            writer.OpenBlock($"public {typeName}()");
+            writer.WriteLine($"Value = new Sequence<{elementReference}>();");
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Initializes the typedef with a sequence value.");
+            writer.WriteXmlParam("value", "The sequence value to store.");
+            writer.WriteXmlRemarks("The typedef stores the supplied sequence reference; it does not make a copy.");
+            writer.OpenBlock($"public {typeName}(ISequence<{elementReference}> value)");
+            writer.WriteLine("Value = value;");
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Initializes a copy of another sequence typedef.");
+            writer.WriteXmlParam("other", "The typedef to copy.");
+            writer.WriteXmlRemarks("The constructor creates a new sequence container. If <paramref name=\"other\"/> is null, it returns without creating the sequence and <see cref=\"Value\"/> remains null.");
+            writer.OpenBlock($"public {typeName}({typeName}? other)");
+            writer.OpenBlock("if (other is null)");
+            writer.WriteLine("return;");
+            writer.CloseBlock();
+            writer.BlankLine();
+            var copiedSequence = plan.CollectionElementIsAggregate
+                ? $"global::System.Linq.Enumerable.Select(other.Value, element => new {elementReference}(element))"
+                : "other.Value";
+            writer.WriteLine($"Value = new Sequence<{elementReference}>({copiedSequence});");
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlInheritdoc();
+            writer.OpenBlock("public override int GetHashCode()");
+            writer.WriteLine("var hash = new global::System.HashCode();");
+            writer.BlankLine();
+            writer.WriteLine("hash.Add(Value.Count);");
+            writer.BlankLine();
+            writer.WriteLine("return hash.ToHashCode();");
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Determines whether this typedef has the same sequence values as <paramref name=\"other\"/>.");
+            writer.WriteXmlParam("other", "The typedef to compare.");
+            writer.WriteXmlReturns("<see langword=\"true\"/> when both sequences contain equal values in the same order; otherwise, <see langword=\"false\"/>.");
+            writer.OpenBlock($"public bool Equals({typeName}? other)");
+            writer.WriteLine("return other is not null");
+            writer.Indent();
+            writer.WriteLine("&& (global::System.Object.ReferenceEquals(this, other) || global::System.Linq.Enumerable.SequenceEqual(Value, other.Value));");
+            writer.Unindent();
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlInheritdoc();
+            writer.WriteLine($"public override bool Equals(object? obj) => Equals(obj as {typeName});");
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Formats this typedef as readable text.");
+            writer.WriteXmlReturns("A readable string formatted by this typedef's type-support instance.");
+            writer.WriteLine($"public override string ToString() => {typeName}Support.Instance.ToString(this);");
+        }
+        else if (plan.IsArray)
+        {
+            var arrayElementIsAggregate = plan.CollectionElementIsAggregate;
+            var enumElementType = ArraySourceEmitter.EnumElementType(plan.ElementPlan);
+            var hasNonzeroEnumDefault = enumElementType is { DefaultValue: not 0 };
+            var arrayType = $"{elementReference}[{new string(',', declaration.Dimensions.Count - 1)}]";
+
+            writer.WriteXmlSummary("Gets or sets the array value represented by this typedef.");
+            writer.WriteLine($"public {arrayType} Value {{ get; set; }} = new {elementReference}[{string.Join(", ", declaration.Dimensions)}];");
+            writer.BlankLine();
+
+            var arrayElementCount = declaration.Dimensions.Aggregate(BigInt.One, (count, dimension) => count * dimension);
+            var arrayDefaultDescription = hasNonzeroEnumDefault
+                ? $"each element starts as {enumElementType!.DefaultMemberName}"
+                : "each element starts at its default value";
+            writer.WriteXmlSummary($"Initializes a fixed-size array typedef with dimensions {string.Join(" × ", declaration.Dimensions)} ({arrayElementCount} elements); {arrayDefaultDescription}.");
+            writer.OpenBlock($"public {typeName}()");
+
+            if (arrayElementIsAggregate)
+            {
+                ArraySourceEmitter.EmitAggregateInitialization(writer, "Value", elementReference, declaration.Dimensions);
+            }
+            else if (hasNonzeroEnumDefault)
+            {
+                ArraySourceEmitter.EmitEnumDefaultInitialization(writer, "Value", enumElementType!, declaration.Dimensions, declaration.Namespace);
+            }
+
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Initializes the typedef with an array value.");
+            writer.WriteXmlParam("value", "The array value to store.");
+            writer.WriteXmlRemarks("The typedef stores the supplied array reference; it does not make a copy.");
+            writer.OpenBlock($"public {typeName}({arrayType} value)");
+            writer.WriteLine("Value = value;");
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Initializes a copy of another array typedef.");
+            writer.WriteXmlParam("other", "The typedef to copy.");
+            writer.WriteXmlRemarks($"The constructor creates a new array container{(arrayElementIsAggregate ? " and copies aggregate elements into new instances" : string.Empty)}. When <paramref name=\"other\"/> is null, the initially allocated array remains in place.");
+            writer.OpenBlock($"public {typeName}({typeName}? other)");
+            writer.OpenBlock("if (other is null)");
+            if (hasNonzeroEnumDefault)
+            {
+                ArraySourceEmitter.EmitEnumDefaultInitialization(writer, "Value", enumElementType!, declaration.Dimensions, declaration.Namespace);
+            }
+
+            writer.WriteLine("return;");
+            writer.CloseBlock();
+            writer.BlankLine();
+            writer.WriteLine($"Value = ({arrayType})other.Value.Clone();");
+
+            if (arrayElementIsAggregate)
+            {
+                ArraySourceEmitter.EmitAggregateCopy(writer, "Value", "other.Value", elementReference, declaration.Dimensions);
+            }
+
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            var firstElementIndex = string.Join(", ", declaration.Dimensions.Select(_ => "0"));
+            writer.WriteXmlInheritdoc();
+            writer.OpenBlock("public override int GetHashCode()");
+            writer.WriteLine("var hash = new global::System.HashCode();");
+            writer.BlankLine();
+            writer.WriteLine($"hash.Add(Value[{firstElementIndex}]);");
+            writer.BlankLine();
+            writer.WriteLine("return hash.ToHashCode();");
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Determines whether this typedef has the same array values as <paramref name=\"other\"/>.");
+            writer.WriteXmlParam("other", "The typedef to compare.");
+            writer.WriteXmlReturns("<see langword=\"true\"/> when both arrays have the same dimensions and equal values; otherwise, <see langword=\"false\"/>.");
+            writer.OpenBlock($"public bool Equals({typeName}? other)");
+            writer.OpenBlock("if (other is null)");
+            writer.WriteLine("return false;");
+            writer.CloseBlock();
+            writer.BlankLine();
+            writer.OpenBlock("if (global::System.Object.ReferenceEquals(this, other))");
+            writer.WriteLine("return true;");
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            if (declaration.Dimensions.Count == 1)
+            {
+                writer.WriteLine("return global::System.Linq.Enumerable.SequenceEqual(Value, other.Value);");
+            }
+            else
+            {
+                writer.WriteLine("return Value.Rank == other.Value.Rank");
+                writer.Indent();
+                writer.WriteLine("&& global::System.Linq.Enumerable.All(global::System.Linq.Enumerable.Range(0, Value.Rank), dimension => Value.GetLength(dimension) == other.Value.GetLength(dimension))");
+                writer.WriteLine($"&& global::System.Linq.Enumerable.SequenceEqual(global::System.Linq.Enumerable.Cast<{elementReference}>(Value), global::System.Linq.Enumerable.Cast<{elementReference}>(other.Value));");
+                writer.Unindent();
+            }
+
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlInheritdoc();
+            writer.WriteLine($"public override bool Equals(object? obj) => Equals(obj as {typeName});");
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Formats this typedef as readable text.");
+            writer.WriteXmlReturns("A readable string formatted by this typedef's type-support instance.");
+            writer.WriteLine($"public override string ToString() => {typeName}Support.Instance.ToString(this);");
+        }
+        else
+        {
+            var valueSummary = "Gets or sets the value represented by this typedef.";
+            if (plan.IsStringBounded)
+            {
+                valueSummary += $" Its IDL bound is <c>{plan.StringBound}</c> {MemberEmissionRenderer.StringBoundUnit(plan.IsWideString)}.";
+            }
+
+            writer.WriteXmlSummary(valueSummary);
+
+            if (plan.IsString)
+            {
+                var stringKind = plan.IsWideString ? "wide" : "narrow";
+                var unit = MemberEmissionRenderer.StringBoundUnit(plan.IsWideString);
+                var stringRemarks = plan.IsStringBounded
+                    ? $"The bound on this {stringKind} IDL string is measured in {unit}. The generated C# property does not check the bound when assigned."
+                    : plan.IsUnboundedString
+                        ? $"This {stringKind} IDL string is unbounded."
+                        : $"This unbounded {stringKind} IDL string has an effective limit of {plan.StringBound} {unit}. The generated C# property does not enforce the effective limit when assigned.";
+                writer.WriteXmlRemarks(stringRemarks);
+                writer.WriteXmlSeeAlso($"https://community.rti.com/static/documentation/connext-dds/{profile.RtiVersion}/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm", $"RTI Connext {profile.RtiVersion} string and wide-string bounds");
+            }
+
+            if (plan.IsString)
+            {
+                writer.WriteLine($"[Bound({plan.StringBound})]");
+            }
+
+            string valueInitializer;
+            if (plan is { IsString: true, ManagedDefaultLiteral: null })
+            {
+                valueInitializer = " = string.Empty;";
+            }
+            else if (requiresNullForgivingValueInitializer)
+            {
+                valueInitializer = " = null!;";
+            }
+            else
+            {
+                valueInitializer = string.Empty;
+            }
+
+            writer.WriteLine($"public {elementReference} Value {{ get; set; }}{valueInitializer}");
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Initializes the typedef value to its default value.");
+            writer.OpenBlock($"public {typeName}()");
+            if (plan.IsAggregate)
+            {
+                writer.WriteLine($"Value = new {elementReference}();");
+            }
+            else if (plan.ManagedDefaultLiteral is { } defaultLiteral)
+            {
+                writer.WriteLine($"Value = {defaultLiteral};");
+            }
+
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Initializes the typedef with a value.");
+            writer.WriteXmlParam("value", "The value to store.");
+            if (requiresNullForgivingValueInitializer || plan.IsString)
+            {
+                writer.WriteXmlRemarks("The constructor stores the supplied reference as provided; it does not make a copy.");
+            }
+            writer.OpenBlock($"public {typeName}({elementReference} value)");
+            writer.WriteLine("Value = value;");
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Initializes a copy of another typedef value.");
+            writer.WriteXmlParam("other", "The typedef to copy.");
+            var nullCopyRemarks = plan is { IsString: true, ManagedDefaultLiteral: not null }
+                ? "When <paramref name=\"other\"/> is null, the constructor keeps the declared default. An aggregate value is copied through its generated copy constructor."
+                : "When <paramref name=\"other\"/> is null, the constructor keeps the declared default and property initializer. An aggregate value is copied through its generated copy constructor.";
+            if (plan.SharesCollectionAliasValue)
+            {
+                nullCopyRemarks = "When <paramref name=\"other\"/> is null, the constructor keeps the declared default and property initializer. A nested collection-alias value retains the same wrapper instance, matching the RTI 6.1.2 profile.";
+            }
+
+            writer.WriteXmlRemarks(nullCopyRemarks);
+            writer.OpenBlock($"public {typeName}({typeName}? other){(plan.ManagedDefaultLiteral is not null ? " : this()" : string.Empty)}");
+            writer.OpenBlock("if (other is not null)");
+            if (plan is { IsAggregate: true, SharesCollectionAliasValue: false })
+            {
+                writer.WriteLine($"Value = new {elementReference}(other.Value);");
+            }
+            else
+            {
+                writer.WriteLine("Value = other.Value;");
+            }
+
+            writer.CloseBlock();
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlInheritdoc();
+            writer.OpenBlock("public override int GetHashCode()");
+            writer.WriteLine("var hash = new global::System.HashCode();");
+            writer.BlankLine();
+            writer.WriteLine("hash.Add(Value);");
+            writer.BlankLine();
+            writer.WriteLine("return hash.ToHashCode();");
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Determines whether this typedef has the same value as <paramref name=\"other\"/>.");
+            writer.WriteXmlParam("other", "The typedef to compare.");
+            writer.WriteXmlReturns("<see langword=\"true\"/> when both typedefs have equal values; otherwise, <see langword=\"false\"/>.");
+            writer.OpenBlock($"public bool Equals({typeName}? other)");
+            writer.OpenBlock("if (other is null)");
+            writer.WriteLine("return false;");
+            writer.CloseBlock();
+            writer.BlankLine();
+            writer.OpenBlock("if (global::System.Object.ReferenceEquals(this, other))");
+            writer.WriteLine("return true;");
+            writer.CloseBlock();
+            writer.BlankLine();
+            writer.WriteLine("return Value.Equals(other.Value);");
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            writer.WriteXmlInheritdoc();
+            writer.WriteLine($"public override bool Equals(object? obj) => Equals(obj as {typeName});");
+            writer.BlankLine();
+
+            writer.WriteXmlSummary("Formats this typedef as readable text.");
+            writer.WriteXmlReturns("A readable string formatted by this typedef's type-support instance.");
+            writer.WriteLine($"public override string ToString() => {typeName}Support.Instance.ToString(this);");
+        }
+        writer.CloseBlock();
+
+        return [new GeneratedIdlSource(names.Managed.HintName, writer.ToString())];
+    }
+
+}

@@ -1,0 +1,99 @@
+using Wireloom.Dds.CSharp.Compiler.Emission.Planning;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
+
+namespace Wireloom.Dds.CSharp.Compiler.Emission.Model;
+
+/// <summary>Resolved facts shared by every emitter for one IDL typedef.</summary>
+internal sealed class CollectionAliasEmissionPlan(
+    EmissionTypePlan elementPlan,
+    bool isSequence,
+    bool isArray,
+    bool nativeValueRequiresCast,
+    string? elementNativeType = null,
+    int? sequenceBound = null,
+    RtiApiProfile? profile = null,
+    bool isSequenceArrayElement = false,
+    IdlMemberValueMetadata? valueMetadata = null,
+    bool isRecursiveUnboundedSequenceElement = false,
+    int effectiveSequenceBound = 100,
+    bool isUnboundedSequence = false)
+{
+    /// <summary>Gets whether the wrapper is generated for an anonymous sequence-array element.</summary>
+    internal bool IsSequenceArrayElement { get; } = isSequenceArrayElement;
+
+    /// <summary>Gets whether this unbounded sequence contains an element in a recursive sequence component.</summary>
+    internal bool IsRecursiveUnboundedSequenceElement { get; } = isRecursiveUnboundedSequenceElement;
+
+    private RtiApiProfile Profile { get; } = profile ?? RtiApiProfile.Rtiddsgen470;
+    public EmissionTypePlan ElementPlan { get; } = elementPlan;
+    /// <summary>Gets the effective typed default resolved for this alias.</summary>
+    public IdlMemberValueMetadata? ValueMetadata { get; } = valueMetadata;
+
+    /// <summary>Gets the C# literal used to initialize an alias value, or null when no default is declared.</summary>
+    public string? ManagedDefaultLiteral => IsCollection ? null : ScalarValue.ManagedDefaultLiteral;
+
+    /// <summary>Gets the shared scalar initialization and annotation decisions.</summary>
+    internal ScalarValueEmissionPlan ScalarValue { get; } = new(elementPlan, valueMetadata);
+
+    public string ElementType => ElementPlan.CSharpType;
+
+    public string ElementNativeType { get; } = elementNativeType ?? elementPlan.CSharpType;
+
+    public bool IsSequence { get; } = isSequence;
+    public bool IsUnboundedSequence { get; } = isUnboundedSequence;
+
+    /// <summary>Gets the effective sequence limit shared by managed, native, and metadata emission.</summary>
+    public int SequenceBound { get; } = sequenceBound ?? effectiveSequenceBound;
+    public string SequenceBoundArgument => IsUnboundedSequence ? "SequenceType.Unbounded" : SequenceBound.ToString();
+    public string SequenceInitialSize => IsUnboundedSequence ? "0" : SequenceBound.ToString();
+    public bool IsUnboundedString => EmissionTypeProjector.UnwrapValueEmissionType(ElementPlan) is StringEmissionType { IsUnbounded: true };
+    public string StringBoundArgument => IsUnboundedString
+        ? IsWideString ? "WideStringType.Unbounded" : "StringType.Unbounded"
+        : StringBound.ToString();
+    public string StringInitialSize => IsUnboundedString ? "0" : StringBound.ToString();
+
+    public bool IsArray { get; } = isArray;
+
+    public bool IsCollection => IsSequence || IsArray;
+
+    public bool IsString => ElementPlan.Shape.IsString;
+
+    public bool IsPrimitive => ElementPlan.Shape.IsPrimitive;
+
+    public bool IsEnum => ElementPlan.Shape.IsEnum;
+
+    public bool IsAggregate => ElementPlan.Shape.IsAggregate;
+
+    /// <summary>Gets whether copying this alias retains its nested collection-alias value.</summary>
+    internal bool SharesCollectionAliasValue => CollectionElementCopyPolicy.RetainsAliasReference(ElementPlan, Profile);
+
+    public bool IsUnion => ElementPlan.Shape.IsUnion;
+
+    public bool NativeValueRequiresCast { get; } = nativeValueRequiresCast;
+
+    public bool CollectionElementIsAggregate => CollectionElementCopyPolicy.RequiresManagedCopy(ElementPlan);
+
+    public bool IsWideString => ElementPlan.IsWideString;
+
+    public bool IsStringBounded =>
+        EmissionTypeProjector.UnwrapValueEmissionType(ElementPlan) is StringEmissionType { IsBounded: true };
+
+    public int StringBound => ElementPlan.Bound ?? 255;
+
+    /// <summary>Gets the RTI dynamic-type primitive name for a primitive element.</summary>
+    public string PrimitiveDynamicType
+    {
+        get
+        {
+            var element = EmissionTypeProjector.UnwrapValueEmissionType(ElementPlan);
+
+            if (element is not PrimitiveEmissionType primitive)
+            {
+                throw new InvalidOperationException("Expected a primitive collection element.");
+            }
+
+            var mapping = primitive.Mapping;
+            return primitive.IdlName == "octet" ? Profile.OctetDynamicType : mapping.DynamicType;
+        }
+    }
+}

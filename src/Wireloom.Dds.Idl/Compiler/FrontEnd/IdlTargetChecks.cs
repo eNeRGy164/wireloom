@@ -1,6 +1,6 @@
-using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
-namespace Wireloom.Compiler.FrontEnd;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd;
 
 /// <summary>Describes the IDL declaration at a target validation site.</summary>
 internal enum IdlDeclarationKind

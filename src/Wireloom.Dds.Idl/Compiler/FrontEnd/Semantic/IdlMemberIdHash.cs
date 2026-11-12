@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Computes the shared hash-based DDS identity of struct and union members.</summary>
 internal static class IdlMemberIdHash

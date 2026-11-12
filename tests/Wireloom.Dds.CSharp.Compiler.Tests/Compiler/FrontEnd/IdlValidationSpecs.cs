@@ -1,6 +1,6 @@
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.FrontEnd.Semantic;
 
 public sealed class IdlValidationSpecs
 {
@@ -567,6 +567,63 @@ public sealed class IdlValidationSpecs
 
         // Assert
         exception.Message.ShouldContain("Forward-declared struct 'Missing' has no definition");
+    }
+
+    [Theory]
+    [InlineData("@topic struct Node;")]
+    [InlineData("@appendable struct Node;")]
+    [InlineData("@autoid(HASH) struct Node;")]
+    public void RejectsAnnotationsOnStructForwardDeclarations(string source)
+    {
+        // Arrange
+        var input = Input("annotated-struct-forward.idl", source);
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Annotations are not supported on struct forward declarations");
+    }
+
+    [Fact]
+    public void RejectsStructDeclarationsWithoutAClosingBrace()
+    {
+        // Arrange
+        var input = Input("unterminated-struct.idl", "struct Node { long value;");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Unterminated struct declaration");
+    }
+
+    [Fact]
+    public void RequiresASemicolonAfterAStructDeclaration()
+    {
+        // Arrange
+        var input = Input("struct-without-semicolon.idl", "struct Node { long value; }");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Struct declaration must end with a semicolon");
+    }
+
+    [Fact]
+    public void RejectsInlineMembersOfForwardDeclaredStructs()
+    {
+        // Arrange
+        var input = Input(
+            "inline-forward-struct-member.idl",
+            "struct Node; struct Holder { Node value; }; struct Node { long value; };");
+
+        // Act
+        var exception = Should.Throw<IdlException>(() => Compile(input));
+
+        // Assert
+        exception.Message.ShouldContain("Forward-declared struct member 'value' must use a sequence, @optional, or @external indirection");
     }
 
     [Fact]

@@ -1,6 +1,6 @@
-using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Owns front-end validation that does not produce target code.</summary>
 internal sealed class IdlSemanticValidator(IdlSymbolTable symbols)

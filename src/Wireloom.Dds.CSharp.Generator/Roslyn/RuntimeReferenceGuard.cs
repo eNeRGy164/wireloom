@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis;
 
-namespace Wireloom.Roslyn;
+namespace Wireloom.Dds.Generator.Roslyn;
 
 /// <summary>Checks whether the consuming compilation references a supported RTI runtime.</summary>
 internal static class RuntimeReferenceGuard

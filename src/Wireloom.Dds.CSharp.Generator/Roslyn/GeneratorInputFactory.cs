@@ -2,7 +2,7 @@ using System.Globalization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Wireloom.Roslyn;
+namespace Wireloom.Dds.Generator.Roslyn;
 
 /// <summary>Creates compiler inputs from Roslyn additional files and metadata.</summary>
 internal static class GeneratorInputFactory

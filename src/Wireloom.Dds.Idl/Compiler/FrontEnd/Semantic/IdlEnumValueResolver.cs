@@ -1,6 +1,6 @@
-using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Resolves enum values while preserving alias identity and absolute IDL scopes.</summary>
 internal static class IdlEnumValueResolver

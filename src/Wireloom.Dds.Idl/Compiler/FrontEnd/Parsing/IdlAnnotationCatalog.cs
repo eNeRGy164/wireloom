@@ -1,6 +1,6 @@
-using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
 /// <summary>IDL syntax target categories used by the built-in annotation catalog.</summary>
 [Flags]

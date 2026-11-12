@@ -1,0 +1,118 @@
+using Wireloom.Dds.CSharp.Compiler.Naming;
+
+namespace Wireloom.Dds.CSharp.Compiler.Emission.Model;
+
+/// <summary>Target-specific type projection used by source emitters after semantic resolution.</summary>
+internal abstract class EmissionTypePlan(string cSharpType)
+{
+    public string CSharpType { get; } = cSharpType;
+    public abstract EmissionShape Shape { get; }
+    public bool IsEnum => Shape.IsEnum;
+    public virtual int? Bound => null;
+    public virtual string? SupportType => null;
+    public virtual EmissionTypePlan? Element => null;
+    public virtual IReadOnlyList<int> Dimensions => [];
+    public virtual bool IsWideString => false;
+}
+
+/// <summary>Preserves the target-independent type wrapped by an optional field.</summary>
+internal sealed class OptionalEmissionType(EmissionTypePlan target, string cSharpType)
+    : EmissionTypePlan(cSharpType)
+{
+    public EmissionTypePlan Target { get; } = target;
+    public override EmissionShape Shape => Target.Shape;
+    public override int? Bound => Target.Bound;
+    public override string? SupportType => Target.SupportType;
+    public override EmissionTypePlan? Element => Target.Element;
+    public override IReadOnlyList<int> Dimensions => Target.Dimensions;
+    public override bool IsWideString => Target.IsWideString;
+}
+
+/// <summary>Represents an IDL primitive projected to a C# type.</summary>
+internal sealed class PrimitiveEmissionType(string idlName, string cSharpType, RtiApiProfile? profile = null)
+    : EmissionTypePlan(cSharpType)
+{
+    public string IdlName { get; } = idlName;
+
+    /// <summary>Gets the primitive representation selected for this emission profile.</summary>
+    internal PrimitiveTypeMapping Mapping { get; } = PrimitiveTypeMapping.Resolve(idlName, profile);
+
+    public override EmissionShape Shape { get; } = new(EmissionShapeKind.Primitive);
+}
+
+/// <summary>Represents a bounded IDL string projected to C#.</summary>
+internal sealed class StringEmissionType(bool isWide, int bound, bool isBounded, bool isUnbounded = false)
+    : EmissionTypePlan("string")
+{
+    public override EmissionShape Shape { get; } = new(EmissionShapeKind.String);
+    public bool IsWide { get; } = isWide;
+    public bool IsBounded { get; } = isBounded;
+    public bool IsUnbounded { get; } = isUnbounded;
+    public override bool IsWideString => IsWide;
+    public override int? Bound { get; } = isUnbounded ? -1 : bound;
+}
+
+/// <summary>Represents an IDL enum projected to a C# type.</summary>
+internal sealed class EnumEmissionType(string cSharpType, int defaultValue, string defaultMemberName, string? supportType = null)
+    : EmissionTypePlan(cSharpType)
+{
+    public int DefaultValue { get; } = defaultValue;
+    public string DefaultMemberName { get; } = defaultMemberName;
+    public override string? SupportType { get; } = supportType;
+    public override EmissionShape Shape { get; } = new(EmissionShapeKind.Enum);
+}
+
+/// <summary>Represents an IDL struct projected to a C# type.</summary>
+internal sealed class StructEmissionType(string cSharpType, string? supportType = null)
+    : EmissionTypePlan(cSharpType)
+{
+    public override string? SupportType { get; } = supportType;
+    public override EmissionShape Shape { get; } = new(EmissionShapeKind.Struct);
+}
+
+/// <summary>Represents an IDL union projected to a C# type.</summary>
+internal sealed class UnionEmissionType(string cSharpType, string? supportType = null)
+    : EmissionTypePlan(cSharpType)
+{
+    public override string? SupportType { get; } = supportType;
+    public override EmissionShape Shape { get; } = new(EmissionShapeKind.Union);
+}
+
+/// <summary>Represents an IDL alias and its projected target type.</summary>
+internal sealed class AliasEmissionType(string qualifiedName, EmissionTypePlan target, string cSharpType, string? supportType = null, bool isAnonymousSequence = false)
+    : EmissionTypePlan(cSharpType)
+{
+    private string QualifiedName { get; } = qualifiedName;
+    private string? ResolvedSupportType { get; } = supportType;
+    public EmissionTypePlan Target { get; } = target;
+    /// <summary>Gets whether this wrapper represents an anonymous sequence element on the wire.</summary>
+    internal bool IsAnonymousSequence { get; } = isAnonymousSequence;
+    public override EmissionShape Shape { get; } = new(EmissionShapeKind.Alias, target.Shape);
+    public override int? Bound => Target.Bound;
+    public override string SupportType => ResolvedSupportType ?? IdlNaming.EscapeQualifiedIdentifier(QualifiedName);
+    public override EmissionTypePlan? Element => Target.Element;
+    public override IReadOnlyList<int> Dimensions => Target.Dimensions;
+    public override bool IsWideString => Target.IsWideString;
+}
+
+/// <summary>Represents a bounded IDL sequence projected to a C# type.</summary>
+internal sealed class SequenceEmissionType(EmissionTypePlan element, int bound, string cSharpType, IReadOnlyList<int>? dimensions = null, bool isBounded = true, bool isUnbounded = false)
+    : EmissionTypePlan(cSharpType)
+{
+    public override EmissionShape Shape { get; } = new(EmissionShapeKind.Sequence, element.Shape);
+    public override int? Bound { get; } = isUnbounded ? null : bound;
+    /// <summary>Gets whether the IDL declares an explicit sequence bound.</summary>
+    public bool IsBounded { get; } = isBounded;
+    public bool IsUnbounded { get; } = isUnbounded;
+    public override EmissionTypePlan Element { get; } = element;
+    public override IReadOnlyList<int> Dimensions { get; } = dimensions ?? [];
+}
+
+/// <summary>Represents a fixed-size IDL array projected to a C# type.</summary>
+internal sealed class ArrayEmissionType(EmissionTypePlan element, IReadOnlyList<int> dimensions, string cSharpType)
+    : EmissionTypePlan(cSharpType)
+{
+    public override EmissionShape Shape { get; } = new(EmissionShapeKind.Array, element.Shape);
+    public override EmissionTypePlan Element { get; } = element;
+    public override IReadOnlyList<int> Dimensions { get; } = dimensions;
+}

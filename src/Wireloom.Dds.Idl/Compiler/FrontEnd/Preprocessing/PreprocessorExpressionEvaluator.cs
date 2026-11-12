@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Evaluates preprocessor conditions using explicit macro and lexical dependencies.</summary>
 internal sealed class PreprocessorExpressionEvaluator(

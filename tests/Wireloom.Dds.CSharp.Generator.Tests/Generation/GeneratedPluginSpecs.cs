@@ -1,8 +1,8 @@
 using Wireloom.Dds.CSharp.Generator.Tests;
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
-using Wireloom.Compiler.Emission;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
+using Wireloom.Dds.CSharp.Compiler.Emission;
 
-namespace Wireloom.Generation.Tests;
+namespace Wireloom.Dds.Generator.Tests;
 
 public sealed class GeneratedPluginSpecs
 {
@@ -29,7 +29,7 @@ public sealed class GeneratedPluginSpecs
         var profile = GetEmissionProfile(Version.Parse(version));
 
         // Act
-        var documents = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, profile);
+        var documents = Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, profile);
 
         // Assert
         documents["Choice.g.cs"].Source.ShouldContain($"DefaultDiscriminator = {expected};");
@@ -58,7 +58,7 @@ public sealed class GeneratedPluginSpecs
         var profile = GetEmissionProfile(Version.Parse(version));
 
         // Act
-        var documents = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, profile);
+        var documents = Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, profile);
 
         // Assert
         documents["Choice.g.cs"].Source.ShouldContain($"DefaultDiscriminator = (E){expected};");
@@ -227,7 +227,7 @@ public sealed class GeneratedPluginSpecs
             "enum Kind { First, Second }; @default(Second) typedef Kind Selected;");
 
         // Act
-        var documents = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
+        var documents = Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
             [input], null, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen470);
 
         // Assert
@@ -384,8 +384,8 @@ public sealed class GeneratedPluginSpecs
         var diagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var oldProfileOutputs = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen431);
-        var currentProfileOutputs = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen470);
+        var oldProfileOutputs = Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen431);
+        var currentProfileOutputs = Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], null, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen470);
 
         // Assert
         oldProfileOutputs.ShouldBeEmpty();

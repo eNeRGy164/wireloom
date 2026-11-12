@@ -1,8 +1,8 @@
-using Wireloom.Compiler.FrontEnd.Preprocessing;
-using Wireloom.Compiler.FrontEnd.Semantic;
-using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
 /// <summary>Provides the shared state and services used while parsing one IDL compilation.</summary>
 internal sealed class IdlParseContext

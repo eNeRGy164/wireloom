@@ -1,4 +1,4 @@
-namespace Wireloom;
+namespace Wireloom.Dds.Idl;
 
 /// <summary>
 /// Describes a deterministic IDL compilation failure and its source location.
@@ -9,7 +9,7 @@ namespace Wireloom;
 /// <param name="input">The input in which the failure occurred.</param>
 /// <param name="offset">The zero-based character offset of the failure.</param>
 /// <param name="message">The failure description.</param>
-internal sealed class IdlException(IdlInput input, int offset, string message) : Exception(message)
+public sealed class IdlException(IdlInput input, int offset, string message) : Exception(message)
 {
     /// <summary>
     /// Gets the input in which the failure occurred.

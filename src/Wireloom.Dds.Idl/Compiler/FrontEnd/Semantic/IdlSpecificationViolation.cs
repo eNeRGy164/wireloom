@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Identifies specification rules independently of diagnostic severity.</summary>
 internal enum IdlSpecificationRule

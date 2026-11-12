@@ -1,6 +1,6 @@
-using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
 /// <summary>Captures an annotation application without interpreting its arguments.</summary>
 internal sealed class IdlAnnotationApplicationSyntax(string name, string text, int offset, int length)

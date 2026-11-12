@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Builds source-line indexes used by logical location expansion.</summary>
 internal static class PreprocessorSourceOrigin

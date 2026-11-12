@@ -1,6 +1,6 @@
-using Wireloom.Compiler.FrontEnd.Parsing;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
-namespace Wireloom.Compiler.FrontEnd;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd;
 
 /// <summary>Normalizes and resolves lexical IDL type names.</summary>
 internal static class IdlNames

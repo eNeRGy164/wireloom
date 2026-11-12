@@ -1,6 +1,6 @@
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
 
-namespace Wireloom.Generation.IdlDeclarations.Tests;
+namespace Wireloom.Dds.Generator.Tests.IdlDeclarations;
 
 /// <summary>Checks formatter selection while preserving RTI aggregate support.</summary>
 public sealed class AliasFormattingSpecs

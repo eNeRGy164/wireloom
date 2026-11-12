@@ -1,9 +1,9 @@
-using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
-using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
-using static Wireloom.Compiler.FrontEnd.IdlNames;
+using static Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing.IdlGrammar;
+using static Wireloom.Dds.Idl.Compiler.FrontEnd.IdlNames;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
 /// <summary>Parses IDL typedef declarations.</summary>
 internal sealed class IdlTypedefParser
@@ -14,7 +14,14 @@ internal sealed class IdlTypedefParser
         this.context = context;
 
     /// <summary>Parses a typedef declaration when one begins at the current position.</summary>
-    internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, IdlAnnotationApplicationSyntax? defaultApplication, ref int position)
+    internal bool TryParse(
+        string declarations,
+        IdlInput input,
+        int baseOffset,
+        string? currentNamespace,
+        IdlAnnotationApplicationSyntax? defaultApplication,
+        ref int position,
+        IReadOnlyList<IdlAnnotationApplicationSyntax>? leadingApplications = null)
     {
         if (defaultApplication is not null && (SequenceTypedefPattern.IsMatch(declarations.Substring(position)) || ArrayTypedefPattern.IsMatch(declarations.Substring(position))))
         {
@@ -48,7 +55,9 @@ internal sealed class IdlTypedefParser
             bound?.AddConsumer(parsedSequence.SetBound);
             stringBound?.AddConsumer(parsedSequence.SetStringBound);
             context.AddTypedef(qualified, parsedSequence, input, baseOffset + position);
-            context.Declarations.Add(new IdlTypedefDeclaration(parsedSequence, Path.GetFileName(input.Path)));
+            var sequenceDeclaration = new IdlTypedefDeclaration(parsedSequence, Path.GetFileName(input.Path));
+            SetAnnotationApplications(sequenceDeclaration, leadingApplications, defaultApplication);
+            context.Declarations.Add(sequenceDeclaration);
 
             position += sequenceTypedef.Length;
 
@@ -85,7 +94,9 @@ internal sealed class IdlTypedefParser
                 isUnboundedStringElement: stringBound is null && input.UnboundedSupport);
             stringBound?.AddConsumer(parsedArray.SetStringBound);
             context.AddTypedef(qualified, parsedArray, input, baseOffset + position);
-            context.Declarations.Add(new IdlTypedefDeclaration(parsedArray, Path.GetFileName(input.Path)));
+            var arrayDeclaration = new IdlTypedefDeclaration(parsedArray, Path.GetFileName(input.Path));
+            SetAnnotationApplications(arrayDeclaration, leadingApplications, defaultApplication);
+            context.Declarations.Add(arrayDeclaration);
 
             position += arrayTypedef.Length;
 
@@ -129,12 +140,7 @@ internal sealed class IdlTypedefParser
             bound?.AddConsumer(parsedStringTypedef.SetStringBound);
             context.AddTypedef(typeName, parsedStringTypedef, input, baseOffset + position);
             var typedefDeclarationModel = new IdlTypedefDeclaration(parsedStringTypedef, Path.GetFileName(input.Path));
-
-            if (defaultApplication is not null)
-            {
-                typedefDeclarationModel.SetAnnotationApplications([defaultApplication]);
-            }
-
+            SetAnnotationApplications(typedefDeclarationModel, leadingApplications, defaultApplication);
             context.Declarations.Add(typedefDeclarationModel);
 
             position += typedefDeclaration.Length;
@@ -153,17 +159,26 @@ internal sealed class IdlTypedefParser
             targetWasEscaped: targetWasEscaped);
         context.AddTypedef(typeName, parsedTypedef, input, baseOffset + position);
         var typedefModel = new IdlTypedefDeclaration(parsedTypedef, Path.GetFileName(input.Path));
-
-        if (defaultApplication is not null)
-        {
-            typedefModel.SetAnnotationApplications([defaultApplication]);
-        }
-
+        SetAnnotationApplications(typedefModel, leadingApplications, defaultApplication);
         context.Declarations.Add(typedefModel);
 
         position += typedefDeclaration.Length;
 
         return true;
+    }
+
+    private static void SetAnnotationApplications(
+        IdlTypedefDeclaration declaration,
+        IReadOnlyList<IdlAnnotationApplicationSyntax>? leadingApplications,
+        IdlAnnotationApplicationSyntax? defaultApplication)
+    {
+        var applications = leadingApplications ?? [];
+        if (defaultApplication is not null && !applications.Contains(defaultApplication))
+        {
+            applications = applications.Concat([defaultApplication]).ToArray();
+        }
+
+        declaration.SetAnnotationApplications(applications);
     }
 
 }

@@ -1,6 +1,6 @@
-using Wireloom.Compiler.Emission.Model;
+using Wireloom.Dds.CSharp.Compiler.Emission.Model;
 
-namespace Wireloom.Compiler.Emission.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.Emission;
 
 public sealed class EmissionSupportSpecs
 {

@@ -1,10 +1,10 @@
 using System.Text.RegularExpressions;
-using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
-using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
-using static Wireloom.Compiler.FrontEnd.IdlNames;
+using static Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing.IdlGrammar;
+using static Wireloom.Dds.Idl.Compiler.FrontEnd.IdlNames;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
 /// <summary>Parses IDL union declarations and branches.</summary>
 internal sealed class IdlUnionParser
@@ -15,7 +15,15 @@ internal sealed class IdlUnionParser
         this.context = context;
 
     /// <summary>Parses a union declaration when one begins at the current position.</summary>
-    internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, bool useHashIds, ref int position, IdlAnnotationApplicationSyntax? localAutoId = null)
+    internal bool TryParse(
+        string declarations,
+        IdlInput input,
+        int baseOffset,
+        string? currentNamespace,
+        bool useHashIds,
+        ref int position,
+        IdlAnnotationApplicationSyntax? localAutoId = null,
+        IReadOnlyList<IdlAnnotationApplicationSyntax>? leadingApplications = null)
     {
         var prefix = IdlTypeAnnotationPrefix.Read(declarations, position, input, context, baseOffset, useHashIds, localAutoId is not null);
         var declarationStart = prefix.DeclarationStart;
@@ -83,11 +91,7 @@ internal sealed class IdlUnionParser
             context.IsEscapedIdentifier(discriminatorSourceOffset));
         context.Symbols.AddUnion(qualified, parsedUnion);
         var unionDeclarationModel = new IdlUnionDeclaration(parsedUnion, Path.GetFileName(input.Path));
-
-        if (localAutoId is not null)
-        {
-            unionDeclarationModel.SetAnnotationApplications([localAutoId]);
-        }
+        unionDeclarationModel.SetAnnotationApplications((leadingApplications ?? []).Concat(prefix.Applications).ToArray());
 
         context.Declarations.Add(unionDeclarationModel);
 

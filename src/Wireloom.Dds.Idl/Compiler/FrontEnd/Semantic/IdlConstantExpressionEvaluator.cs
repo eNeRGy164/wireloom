@@ -1,7 +1,7 @@
 using System.Globalization;
-using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Evaluates the integral subset of IDL constant expressions.</summary>
 internal sealed class IdlConstantExpressionEvaluator

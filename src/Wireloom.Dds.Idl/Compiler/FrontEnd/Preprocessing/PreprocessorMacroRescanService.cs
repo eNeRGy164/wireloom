@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Coordinates replacement rescanning, suffix continuation, and suffix-origin offsets.</summary>
 internal sealed class PreprocessorMacroRescanService(

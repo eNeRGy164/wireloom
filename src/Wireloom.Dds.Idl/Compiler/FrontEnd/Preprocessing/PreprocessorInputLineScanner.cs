@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Enumerates logical input lines while retaining their output and source boundaries.</summary>
 internal sealed class PreprocessorInputLineScanner

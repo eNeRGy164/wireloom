@@ -1,5 +1,5 @@
 
-namespace Wireloom.Compiler.FrontEnd;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd;
 
 /// <summary>Classifies built-in generic and string IDL type spellings.</summary>
 internal static class IdlBuiltinTypeSyntax

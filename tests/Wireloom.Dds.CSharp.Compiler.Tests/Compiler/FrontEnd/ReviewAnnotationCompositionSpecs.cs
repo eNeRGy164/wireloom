@@ -1,9 +1,7 @@
-using Wireloom.Compiler.FrontEnd.Semantic;
-using Wireloom.Compiler.FrontEnd.Symbols;
 
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.FrontEnd.Parsing;
 
 public sealed class ReviewAnnotationCompositionSpecs
 {
@@ -87,7 +85,7 @@ public sealed class ReviewAnnotationCompositionSpecs
     {
         // Arrange
         const string source = "@autoid(value=SEQUENTIAL) struct Sample { long value; }; @default(value=7) typedef long Count; @autoid(HASH) union Choice switch(long) { case 0: long value; }; @autoid(SEQUENTIAL) module Scope { struct Nested { long value; }; };";
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, Compiler.Tests.CompilerTestSupport.ComputeMd5);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.ComputeMd5);
 
         // Act
         parser.Parse(source, Input("targeted-annotations.idl", source), 0, null);
@@ -107,7 +105,7 @@ public sealed class ReviewAnnotationCompositionSpecs
     {
         // Arrange
         const string source = "const string Text = \"long\"; @default(Text) typedef string<3> Alias;";
-        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, Compiler.Tests.CompilerTestSupport.ComputeMd5);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.ComputeMd5);
         var input = Input("typedef-default-binding.idl", source);
         parser.Parse(source, input, 0, null);
 

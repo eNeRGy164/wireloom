@@ -1,3 +1,6 @@
+using Wireloom.Dds.CSharp.Compiler;
+using Wireloom.Dds.Idl;
+
 namespace Wireloom.Dds.CSharp.CorpusCompliance;
 
 /// <summary>Describes the compiler and unavailable corpus features for an exact RTI profile.</summary>

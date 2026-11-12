@@ -1,9 +1,9 @@
-using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
-using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
-using static Wireloom.Compiler.FrontEnd.IdlNames;
+using static Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing.IdlGrammar;
+using static Wireloom.Dds.Idl.Compiler.FrontEnd.IdlNames;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
 /// <summary>Parses IDL constant declarations and validates their values.</summary>
 internal sealed class IdlConstantParser
@@ -13,7 +13,13 @@ internal sealed class IdlConstantParser
     internal IdlConstantParser(IdlParseContext context)
         => this.context = context;
 
-    internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, ref int position)
+    internal bool TryParse(
+        string declarations,
+        IdlInput input,
+        int baseOffset,
+        string? currentNamespace,
+        ref int position,
+        IReadOnlyList<IdlAnnotationApplicationSyntax>? leadingApplications = null)
     {
         var constant = ConstantPattern.Match(declarations[position..]);
         if (!constant.Success)
@@ -36,6 +42,7 @@ internal sealed class IdlConstantParser
         var declarationOffset = context.MapOffset(baseOffset + position);
         context.DeferGeneratedDeclarationNameValidation(input, declarationOffset, name, IdlDeclarationKind.Constant);
         var declaration = new IdlConstantDeclaration(name, type, expression, currentNamespace, Path.GetFileName(input.Path), value: null, input, declarationOffset, typeWasEscaped, expressionWasEscaped);
+        declaration.SetAnnotationApplications(leadingApplications ?? []);
 
         context.Symbols.AddConstant(qualified, declaration);
         context.Declarations.Add(declaration);

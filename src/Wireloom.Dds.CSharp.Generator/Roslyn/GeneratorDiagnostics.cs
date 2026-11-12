@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Wireloom.Roslyn;
+namespace Wireloom.Dds.Generator.Roslyn;
 
 /// <summary>Defines and reports diagnostics raised by the Roslyn generator adapter.</summary>
 internal static class GeneratorDiagnostics
@@ -26,22 +26,25 @@ internal static class GeneratorDiagnostics
         {
             var text = SourceText.From(diagnostic.Input.Text);
             var span = new TextSpan(Math.Min(diagnostic.Offset, text.Length), 0);
-            var descriptor = diagnostic.Id switch
-            {
-                "DDSG0001" => GenerationError,
-                "DDSG0004" => profileCompatibilityError,
-                "DDSG0102" => unsupportedAnnotationWarning,
-                "DDSG0103" => ignoredInterfaceWarning,
-                "DDSG0104" => macroArityWarning,
-                "DDSG0105" => arrayOfSequenceWarning,
-                "DDSG0106" => preprocessorWarning,
-                "DDSG0107" => preprocessorMessage,
-                "DDSG0108" => identifierNamingWarning,
-                "DDSG0109" => escapedBooleanIdentifierWarning,
-                _ => unknownAnnotationWarning
-            };
+            var descriptor = GetDescriptor(diagnostic.Id);
 
             production.ReportDiagnostic(Diagnostic.Create(descriptor, Location.Create(diagnostic.Input.Path, span, text.Lines.GetLinePositionSpan(span)), diagnostic.Message));
         }
     }
+
+    /// <summary>Gets the published descriptor for an IDL diagnostic identifier.</summary>
+    internal static DiagnosticDescriptor GetDescriptor(string id) => id switch
+    {
+        "DDSG0001" => GenerationError,
+        "DDSG0004" => profileCompatibilityError,
+        "DDSG0102" => unsupportedAnnotationWarning,
+        "DDSG0103" => ignoredInterfaceWarning,
+        "DDSG0104" => macroArityWarning,
+        "DDSG0105" => arrayOfSequenceWarning,
+        "DDSG0106" => preprocessorWarning,
+        "DDSG0107" => preprocessorMessage,
+        "DDSG0108" => identifierNamingWarning,
+        "DDSG0109" => escapedBooleanIdentifierWarning,
+        _ => unknownAnnotationWarning
+    };
 }

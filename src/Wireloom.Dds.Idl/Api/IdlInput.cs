@@ -1,4 +1,4 @@
-namespace Wireloom;
+namespace Wireloom.Dds.Idl;
 
 /// <summary>
 /// Represents one IDL file available to the compiler.

@@ -1,8 +1,8 @@
-using Wireloom.Compiler.Emission;
+using Wireloom.Dds.CSharp.Compiler.Emission;
 
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
 
-namespace Wireloom.Generation.Tests;
+namespace Wireloom.Dds.Generator.Tests;
 
 public sealed class UnionSpecs
 {
@@ -278,7 +278,7 @@ public sealed class UnionSpecs
         var input = new IdlInput("union-sequence-array-branch.idl", source, IdlSequenceArrayMapping.Idl);
 
         // Act
-        var documents = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken);
+        var documents = Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken);
 
         // Assert
         var managed = documents["Choice.g.cs"].Source;
@@ -306,7 +306,7 @@ public sealed class UnionSpecs
         var diagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var documents = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
+        var documents = Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
             [input], diagnostics, TestContext.Current.CancellationToken, RtiApiProfile.Rtiddsgen470);
 
         // Assert

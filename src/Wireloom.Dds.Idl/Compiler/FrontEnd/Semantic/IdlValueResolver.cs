@@ -1,8 +1,8 @@
 using System.Text;
-using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols;
 using BigInt = System.Numerics.BigInteger;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Resolves typed scalar values and member constraints against the complete symbol graph.</summary>
 internal sealed class IdlValueResolver(IdlSymbolTable symbols)

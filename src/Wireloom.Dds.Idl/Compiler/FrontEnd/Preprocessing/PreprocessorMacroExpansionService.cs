@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Owns the recursive macro-expansion scan and delegates replacement rescanning.</summary>
 internal sealed class PreprocessorMacroExpansionService(

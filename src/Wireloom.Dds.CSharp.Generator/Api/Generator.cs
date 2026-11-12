@@ -3,9 +3,9 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using Wireloom.Roslyn;
+using Wireloom.Dds.Generator.Roslyn;
 
-namespace Wireloom;
+namespace Wireloom.Dds.Generator;
 
 /// <summary>
 /// Generates C# source from <c>DdsIdl</c> roots and their tracked include
@@ -54,11 +54,11 @@ public sealed class Generator : IIncrementalGenerator
                 return;
             }
 
-            var result = IdlCompiler.Compile(
+            var request = new IdlCompilationRequest(
                 files.Select(file => file.Input).ToArray(),
-                profile,
                 static bytes => MD5.HashData(bytes),
                 production.CancellationToken);
+            var result = IdlCompiler.Compile(request, profile);
             GeneratorDiagnostics.Report(production, result.Diagnostics);
 
             if (!result.Success)

@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Binds macro arguments and performs only the prescans allowed by replacement syntax.</summary>
 internal sealed class PreprocessorMacroArgumentBinder(

@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Parses the integer expression grammar used by conditional directives.</summary>
 internal sealed class PreprocessorConditionalExpressionParser(string text)

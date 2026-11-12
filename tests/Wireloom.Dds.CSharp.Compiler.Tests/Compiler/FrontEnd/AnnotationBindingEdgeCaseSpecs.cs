@@ -1,6 +1,6 @@
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.FrontEnd.Parsing;
 
 public sealed class AnnotationBindingEdgeCaseSpecs
 {
@@ -13,7 +13,7 @@ public sealed class AnnotationBindingEdgeCaseSpecs
         var diagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var exception = Should.Throw<IdlException>(() => Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
+        var exception = Should.Throw<IdlException>(() => Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
             [input], diagnostics, TestContext.Current.CancellationToken));
 
         // Assert
@@ -31,7 +31,7 @@ public sealed class AnnotationBindingEdgeCaseSpecs
         var unsupportedDiagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var unsupportedException = Should.Throw<IdlException>(() => Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
+        var unsupportedException = Should.Throw<IdlException>(() => Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
             [unsupportedInput], unsupportedDiagnostics, TestContext.Current.CancellationToken));
 
         // Assert
@@ -49,7 +49,7 @@ public sealed class AnnotationBindingEdgeCaseSpecs
         var unknownDiagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var documents = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
+        var documents = Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
             [unknownInput], unknownDiagnostics, TestContext.Current.CancellationToken);
 
         // Assert
@@ -105,7 +105,7 @@ public sealed class AnnotationBindingEdgeCaseSpecs
         var diagnostics = new List<IdlDiagnostic>();
 
         // Act
-        Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([root, included], diagnostics, TestContext.Current.CancellationToken);
+        Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([root, included], diagnostics, TestContext.Current.CancellationToken);
 
         // Assert
         var diagnostic = diagnostics.ShouldHaveSingleItem();
@@ -167,12 +167,12 @@ public sealed class AnnotationBindingEdgeCaseSpecs
         // Arrange
         const string source = "struct Sample { @hashid(\"abcd\") long direct; @hashid(\"ab\" \"cd\") long adjacent; };";
         var input = Input("adjacent-hashid-strings.idl", source);
-        var parser = new IdlDeclarationParser(new Symbols.IdlSymbolTable(), TestContext.Current.CancellationToken, Compiler.Tests.CompilerTestSupport.ComputeMd5);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.ComputeMd5);
 
         // Act
         parser.Parse(source, input, 0, currentNamespace: null);
         var members = parser.Declarations
-            .OfType<Semantic.IdlClassDeclaration>()
+            .OfType<IdlClassDeclaration>()
             .Single()
             .Fields
             .ToDictionary(field => field.Name, StringComparer.Ordinal);
@@ -285,13 +285,13 @@ public sealed class AnnotationBindingEdgeCaseSpecs
     {
         // Arrange
         const string source = "struct Sample { @id(010) long octal; @id(10) long decimal; @id(0xA) long hexadecimal; };";
-        var parser = new IdlDeclarationParser(new Symbols.IdlSymbolTable(), TestContext.Current.CancellationToken, Compiler.Tests.CompilerTestSupport.ComputeMd5);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.ComputeMd5);
 
         // Act
         parser.Parse(source, Input("member-id-integer-literals.idl", source), 0, currentNamespace: null);
         parser.Bind();
         var members = parser.Declarations
-            .OfType<Semantic.IdlClassDeclaration>()
+            .OfType<IdlClassDeclaration>()
             .Single()
             .Fields
             .ToDictionary(member => member.Name, StringComparer.Ordinal);
@@ -311,13 +311,13 @@ public sealed class AnnotationBindingEdgeCaseSpecs
     {
         // Arrange
         var source = $"struct Sample {{ {annotation} long value; }};";
-        var parser = new IdlDeclarationParser(new Symbols.IdlSymbolTable(), TestContext.Current.CancellationToken, Compiler.Tests.CompilerTestSupport.ComputeMd5);
+        var parser = new IdlDeclarationParser(new IdlSymbolTable(), TestContext.Current.CancellationToken, Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.ComputeMd5);
 
         // Act
         parser.Parse(source, Input("decoded-unit-annotation.idl", source), 0, currentNamespace: null);
         parser.Bind();
         var member = parser.Declarations
-            .OfType<Semantic.IdlClassDeclaration>()
+            .OfType<IdlClassDeclaration>()
             .Single()
             .Fields
             .Single();
@@ -330,11 +330,11 @@ public sealed class AnnotationBindingEdgeCaseSpecs
     public void RejectsNumericExpressionDispatchForUnsupportedScalarTypes()
     {
         // Arrange
-        var symbols = new Symbols.IdlSymbolTable();
+        var symbols = new IdlSymbolTable();
 
         // Act
         var exception = Should.Throw<FormatException>(() =>
-            Semantic.IdlTypedExpressionEvaluator.Evaluate("1", "boolean", symbols, currentNamespace: null));
+            IdlTypedExpressionEvaluator.Evaluate("1", "boolean", symbols, currentNamespace: null));
 
         // Assert
         exception.Message.ShouldContain("expressions of type 'boolean' are not supported");
@@ -346,8 +346,8 @@ public sealed class AnnotationBindingEdgeCaseSpecs
     public void ResolvesBooleanAnnotationLiteralsDirectly(string expression, bool expected)
     {
         // Arrange
-        var resolver = new Semantic.IdlValueResolver(
-            new Symbols.IdlSymbolTable());
+        var resolver = new IdlValueResolver(
+            new IdlSymbolTable());
 
         // Act
         var actual = resolver.ResolveBooleanAnnotation(Input("boolean-literal.idl", ""), 0, null, expression, "key");

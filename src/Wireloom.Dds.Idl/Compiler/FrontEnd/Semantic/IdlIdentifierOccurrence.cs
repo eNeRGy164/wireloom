@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Identifies the lexical scopes used for name validation.</summary>
 internal enum IdlIdentifierScopeKind

@@ -1,5 +1,5 @@
 
-namespace Wireloom.Compiler.Naming.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.Naming;
 
 public sealed class GeneratedIdentitySetSpecs
 {

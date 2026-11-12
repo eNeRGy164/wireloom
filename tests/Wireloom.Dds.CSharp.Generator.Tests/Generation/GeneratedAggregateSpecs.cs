@@ -1,10 +1,11 @@
 using Wireloom.Dds.CSharp.Generator.Tests;
+using Wireloom.Dds.CSharp.Compiler.Emission;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
 
-namespace Wireloom.Generation.Tests;
+namespace Wireloom.Dds.Generator.Tests;
 
 public sealed class GeneratedAggregateSpecs
 {
@@ -22,6 +23,31 @@ public sealed class GeneratedAggregateSpecs
         documents["ExtensibilitySummary.FinalSample.g.cs"].Source.ShouldContain("The type's members and layout cannot be extended compatibly.");
         documents["ExtensibilitySummary.AppendableSample.g.cs"].Source.ShouldContain("New members may be appended while preserving the existing member order for compatible type evolution.");
         documents["ExtensibilitySummary.MutableSample.g.cs"].Source.ShouldContain("Members may be identified and reordered by DDS member IDs during compatible type evolution.");
+    }
+
+    [Theory]
+    [InlineData("6.1.2", "ExtensibilityKind.Extensible")]
+    [InlineData("7.3.1", "ExtensibilityKind.Extensible")]
+    [InlineData("7.7.0", "ExtensibilityKind.Final")]
+    public void FlatDataModuleUsesTheSelectedRtiCSharpFinalTypeMetadata(string version, string expectedKind)
+    {
+        // Arrange
+        var input = Input("flat-data-extensibility.idl",
+            "@language_binding(FLAT_DATA) module Flat { @final struct Sample { long value; }; }; module Ordinary { @final struct Sample { long value; }; };");
+        var profile = version switch
+        {
+            "6.1.2" => RtiApiProfile.Rtiddsgen312,
+            "7.3.1" => RtiApiProfile.Rtiddsgen431,
+            _ => RtiApiProfile.Rtiddsgen470,
+        };
+
+        // Act
+        var documents = CompileSourcesWithDiagnostics(
+            [input], null, TestContext.Current.CancellationToken, profile);
+
+        // Assert
+        documents["Flat.Implementation.SamplePlugin.g.cs"].Source.ShouldContain(expectedKind);
+        documents["Ordinary.Implementation.SamplePlugin.g.cs"].Source.ShouldContain("ExtensibilityKind.Final");
     }
 
     [Theory]

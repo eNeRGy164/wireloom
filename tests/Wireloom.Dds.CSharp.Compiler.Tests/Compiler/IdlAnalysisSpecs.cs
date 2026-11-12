@@ -1,7 +1,5 @@
-using Wireloom.Compiler.FrontEnd;
-using Wireloom.Compiler.FrontEnd.Semantic;
 
-namespace Wireloom.Compiler.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.Tests;
 
 /// <summary>Protects the language-independent model shared by the two generators.</summary>
 public sealed class IdlAnalysisSpecs
@@ -37,6 +35,45 @@ public sealed class IdlAnalysisSpecs
         foreach (var annotation in annotations)
         {
             annotation.Offset.ShouldBe(source.IndexOf($"@{annotation.Name}", StringComparison.Ordinal));
+            source.Substring(annotation.Offset, annotation.Length).ShouldBe(annotation.Text);
+        }
+    }
+
+    /// <summary>Retains declaration annotations across every supported declaration kind.</summary>
+    [Fact]
+    public void RetainsAnnotationsOnEnumsUnionsTypedefsAndConstants()
+    {
+        // Arrange
+        var source = """
+            @language_binding(PLAIN) enum Color { RED };
+            @language_binding(PLAIN) union Choice switch(long) { case 0: long number; };
+            @language_binding(PLAIN) typedef long Number;
+            @language_binding(PLAIN) const long Limit = 10;
+            """;
+        var input = new IdlInput("declaration-annotations.idl", source);
+
+        // Act
+        var analysis = IdlAnalysis.Analyze([input], CompilerTestSupport.ComputeMd5,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        var enumDeclaration = analysis.Declarations.OfType<IdlEnumDeclaration>().ShouldHaveSingleItem();
+        var unionDeclaration = analysis.Declarations.OfType<IdlUnionDeclaration>().ShouldHaveSingleItem();
+        var typedefDeclaration = analysis.Declarations.OfType<IdlTypedefDeclaration>().ShouldHaveSingleItem();
+        var constantDeclaration = analysis.Declarations.OfType<IdlConstantDeclaration>().ShouldHaveSingleItem();
+        var declarations = new IdlDeclaration[]
+        {
+            enumDeclaration,
+            unionDeclaration,
+            typedefDeclaration,
+            constantDeclaration
+        };
+
+        foreach (var declaration in declarations)
+        {
+            var annotation = declaration.AnnotationApplications.ShouldHaveSingleItem(declaration.GetType().Name);
+            annotation.Name.ShouldBe("language_binding");
+            annotation.Offset.ShouldBe(source.IndexOf("@language_binding", annotation.Offset, StringComparison.Ordinal));
             source.Substring(annotation.Offset, annotation.Length).ShouldBe(annotation.Text);
         }
     }

@@ -1,6 +1,6 @@
-using Wireloom.Compiler.Tests;
+using Wireloom.Dds.CSharp.Compiler.Tests;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.FrontEnd.Semantic;
 
 public sealed class IdlInterfaceValidationSpecs
 {

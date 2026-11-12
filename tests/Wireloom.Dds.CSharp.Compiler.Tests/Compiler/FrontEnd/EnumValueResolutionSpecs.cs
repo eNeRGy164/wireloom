@@ -1,6 +1,6 @@
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.FrontEnd.Semantic;
 
 public sealed class EnumValueResolutionSpecs
 {

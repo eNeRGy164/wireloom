@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Detects IDL naming violations without choosing their severity.</summary>
 internal static class IdlIdentifierValidator

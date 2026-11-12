@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <IsRoslynComponent>true</IsRoslynComponent>
-    <RootNamespace>Wireloom</RootNamespace>
+    <RootNamespace>Wireloom.Dds.Generator</RootNamespace>
     <PackageId>Wireloom.Dds.Generator</PackageId>
     <AssemblyName>Wireloom.Dds.Generator</AssemblyName>
     <Version>$(WireloomVersion)</Version>
@@ -43,5 +43,8 @@
     <None Include="build/Wireloom.Dds.Generator.targets" Pack="true" PackagePath="build" />
     <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="../../docs/assets/wireloom-icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Wireloom.Dds.CSharp.Compiler" />
   </ItemGroup>
 </Project>

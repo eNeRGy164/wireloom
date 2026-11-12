@@ -1,6 +1,6 @@
-using Wireloom.Compiler.Emission;
+using Wireloom.Dds.CSharp.Compiler.Emission;
 
-namespace Wireloom.Compiler.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.Tests;
 
 /// <summary>Protects opt-in array semantics and unchanged default generation.</summary>
 public sealed class SequenceArrayMappingSpecs

@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Resolves aggregate member IDs after constants and inheritance have been bound.</summary>
 internal static class IdlMemberIdBinder

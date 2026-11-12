@@ -5,6 +5,19 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Wireloom.Dds.CSharp.Compiler/Wireloom.Dds.CSharp.Compiler.csproj" />
+    <ProjectReference Include="../../src/Wireloom.Dds.Cpp.Compiler/Wireloom.Dds.Cpp.Compiler.csproj" />
+    <ProjectReference Include="../../src/Wireloom.Dds.Idl/Wireloom.Dds.Idl.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Wireloom.Dds.Cpp" />
+    <Using Include="Wireloom.Dds.CSharp.Compiler" />
+    <Using Include="Wireloom.Dds.Idl" />
+    <Using Include="Wireloom.Dds.Idl.Compiler.FrontEnd" />
+    <Using Include="Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing" />
+    <Using Include="Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing" />
+    <Using Include="Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic" />
+    <Using Include="Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols" />
   </ItemGroup>
 
   <ItemGroup>
