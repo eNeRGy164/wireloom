@@ -39,10 +39,11 @@ they do not update the public website or receive a separate preview URL.
 [`publish-playground.yml`](../../.github/workflows/publish-playground.yml)
 starts after Quality completes on `main`. It independently checks the run's
 repository, workflow path, event, branch, full source SHA, and successful
-conclusion, then waits for `coverage/coveralls (push)` to succeed. Qodana and
-the other Quality jobs must already have passed. Automatic publication skips
-a superseded source revision, including a second check just before deployment.
-Deployments are serialized.
+conclusion. Qodana and the other Quality jobs must already have passed.
+Coveralls still reports coverage changes, but a decrease in aggregate coverage
+does not block publication. Automatic publication skips a superseded source
+revision, including a second check just before deployment. Deployments are
+serialized.
 
 The publisher downloads that specific run's candidate and verifies every file
 against `deployment.json`: full source SHA, displayed revision, Wireloom
@@ -116,8 +117,9 @@ publication because artifact retention is finite.
 
 1. Choose a successful **push** Quality run from this repository's `main`
    branch whose `playground-pages` artifact still exists. Check its SHA and
-   original verification evidence. Keep the base path compatible with the
-   currently configured hostname.
+   original Quality evidence. Review the Coveralls report for context, but a
+   coverage decrease does not block publication. Keep the base path compatible
+   with the currently configured hostname.
 2. In **Actions > Publish Playground > Run workflow**, select `main` and enter
    that Quality run ID. Alternatively:
 
@@ -125,9 +127,9 @@ publication because artifact retention is finite.
    gh workflow run publish-playground.yml --ref main -f quality_run_id=RUN_ID
    ```
 
-3. The same provenance, Coveralls, hash, base-path, environment, and live
-   verification gates apply. Manual runs explicitly allow an older validated
-   source revision. Inspect the public verification report and displayed SHA.
+3. The same provenance, hash, base-path, environment, and live verification
+   gates apply. Manual runs explicitly allow an older validated source
+   revision. Inspect the public verification report and displayed SHA.
 4. If the artifact expired or uses an obsolete base path, prepare a reviewed
    revert on `main` and let a new successful Quality run build and publish it.
 
