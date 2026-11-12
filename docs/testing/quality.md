@@ -20,6 +20,28 @@ qualification consume the same Release WASM and bundle artifact on separate
 runners. Coveralls waits for the .NET and browser coverage files. A main push
 also retains the validated Pages candidate for the separate publisher.
 
+## Test-layer ownership
+
+Keep behavioral tests in the layer that owns the contract. The C# and C++
+projects share the compiler, corpus, fuzzing, and package-consumer boundaries;
+their generator layers differ because C# exposes a Roslyn analyzer while C++
+exposes a command-line generator.
+
+| Layer                   | C#                                                                                            | C++                                                                                        | Evidence owned by the layer                                                           |
+| :---------------------- | :-------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| IDL front end           | [IDL tests](../../tests/Wireloom.Dds.Idl.Tests/README.md)                                     | Shared through compiler tests                                                              | Direct preprocessing, parsing, and shared front-end behavior                          |
+| Compiler                | [C# compiler tests](../../tests/Wireloom.Dds.CSharp.Compiler.Tests/README.md)                 | [Compiler tests](../../tests/Wireloom.Dds.Cpp.Compiler.Tests/README.md)                    | Backend type mapping, emission behavior, diagnostics, and focused regressions         |
+| Generator adapter / CLI | [Generator tests](../../tests/Wireloom.Dds.CSharp.Generator.Tests/README.md)                  | [Generator tests](../../tests/Wireloom.Dds.Cpp.Generator.Tests/README.md)                  | Roslyn discovery and incremental behavior for C#; CLI and filesystem behavior for C++ |
+| Corpus                  | [Corpus compliance](../../tests/Wireloom.Dds.CSharp.CorpusCompliance/README.md)               | [Corpus compliance](../../tests/Wireloom.Dds.Cpp.CorpusCompliance/README.md)               | Manifest-driven profile behavior and retained oracle comparisons                      |
+| Fuzzing                 | [Fuzzing tests](../../tests/Wireloom.Dds.CSharp.Fuzzing.Tests/README.md)                      | [Fuzzing tests](../../tests/Wireloom.Dds.Cpp.Fuzzing.Tests/README.md)                      | Bounded property checks and crash or invalid-output discovery                         |
+| Package consumer        | [Package integration](../../tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/README.md) | [Package integration](../../tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md) | Fresh-package build and consumer integration                                          |
+| Runtime contracts       | [Runtime contracts](../../tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md)               | —                                                                                          | Generated managed runtime lifecycle and API contracts                                 |
+
+These layers are separate evidence. Corpus, fuzzing, runtime-contract, and
+package-consumer checks do not add counters to the unit-test coverage reports.
+Use `Wireloom.Dds.CSharp.TestSupport` for genuinely shared C# test helpers; keep
+domain assertions with the layer that owns them.
+
 The workflow stays present on all PRs. For changes limited to the explicit
 narrative Markdown allowlist, Quality skips product tests and still runs Qodana
 and dependency review. A missing diff or unknown path runs the full suite.
@@ -39,16 +61,33 @@ root with `global.json` visible. The command below reuses the host NuGet global
 packages cache. Qodana's Linux restore outputs are kept in ignored directories
 under `.qodana`; do not let them overwrite the Windows `obj` or `bin` folders.
 
+The packaged Linux executable ends in `.Cpp`; treating that binary as C++
+source can crash the inspection/report writer. The C++ project adds native
+payload items only during packing so IDE and analysis hosts never load them
+as project source. Native package generation and
+consumer builds are verified by the
+[C++ package checks](../../tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md).
+
 ```powershell
 $nugetCache = Join-Path $env:USERPROFILE '.nuget\packages'
 $qodanaObj = Join-Path $PWD '.qodana\obj'
 $qodanaBin = Join-Path $PWD '.qodana\bin'
 $qodanaCompilerObj = Join-Path $PWD '.qodana\compiler-obj'
 $qodanaCompilerBin = Join-Path $PWD '.qodana\compiler-bin'
+$qodanaIdlObj = Join-Path $PWD '.qodana\idl-obj'
+$qodanaIdlBin = Join-Path $PWD '.qodana\idl-bin'
+$qodanaCppObj = Join-Path $PWD '.qodana\cpp-obj'
+$qodanaCppBin = Join-Path $PWD '.qodana\cpp-bin'
+$qodanaCppCompilerObj = Join-Path $PWD '.qodana\cpp-compiler-obj'
+$qodanaCppCompilerBin = Join-Path $PWD '.qodana\cpp-compiler-bin'
 $qodanaBrowserObj = Join-Path $PWD '.qodana\browser-obj'
 $qodanaBrowserBin = Join-Path $PWD '.qodana\browser-bin'
 $qodanaCompilerTestsObj = Join-Path $PWD '.qodana\compiler-tests-obj'
 $qodanaCompilerTestsBin = Join-Path $PWD '.qodana\compiler-tests-bin'
+$qodanaIdlTestsObj = Join-Path $PWD '.qodana\idl-tests-obj'
+$qodanaIdlTestsBin = Join-Path $PWD '.qodana\idl-tests-bin'
+$qodanaCppGeneratorTestsObj = Join-Path $PWD '.qodana\cpp-generator-tests-obj'
+$qodanaCppGeneratorTestsBin = Join-Path $PWD '.qodana\cpp-generator-tests-bin'
 $qodanaGeneratorTestsObj = Join-Path $PWD '.qodana\generator-tests-obj'
 $qodanaGeneratorTestsBin = Join-Path $PWD '.qodana\generator-tests-bin'
 $qodanaFuzzingTestsObj = Join-Path $PWD '.qodana\fuzzing-tests-obj'
@@ -63,10 +102,20 @@ $qodanaWireRunnerObj = Join-Path $PWD '.qodana\wire-runner-obj'
 $qodanaWireRunnerBin = Join-Path $PWD '.qodana\wire-runner-bin'
 $qodanaWireVerifierObj = Join-Path $PWD '.qodana\wire-verifier-obj'
 $qodanaWireVerifierBin = Join-Path $PWD '.qodana\wire-verifier-bin'
+$qodanaCppCompilerTestsObj = Join-Path $PWD '.qodana\cpp-compiler-tests-obj'
+$qodanaCppCompilerTestsBin = Join-Path $PWD '.qodana\cpp-compiler-tests-bin'
+$qodanaCppFuzzingTestsObj = Join-Path $PWD '.qodana\cpp-fuzzing-tests-obj'
+$qodanaCppFuzzingTestsBin = Join-Path $PWD '.qodana\cpp-fuzzing-tests-bin'
 New-Item -ItemType Directory -Force -Path `
   $qodanaObj, $qodanaBin, $qodanaCompilerObj, $qodanaCompilerBin, `
+  $qodanaIdlObj, $qodanaIdlBin, $qodanaCppObj, $qodanaCppBin, `
+  $qodanaCppCompilerObj, $qodanaCppCompilerBin, `
   $qodanaBrowserObj, $qodanaBrowserBin, `
   $qodanaCompilerTestsObj, $qodanaCompilerTestsBin, `
+  $qodanaIdlTestsObj, $qodanaIdlTestsBin, `
+  $qodanaCppGeneratorTestsObj, $qodanaCppGeneratorTestsBin, `
+  $qodanaCppCompilerTestsObj, $qodanaCppCompilerTestsBin, `
+  $qodanaCppFuzzingTestsObj, $qodanaCppFuzzingTestsBin, `
   $qodanaGeneratorTestsObj, $qodanaGeneratorTestsBin, `
   $qodanaFuzzingTestsObj, $qodanaFuzzingTestsBin, `
   $qodanaRuntimeTestsObj, $qodanaRuntimeTestsBin, `
@@ -78,22 +127,36 @@ New-Item -ItemType Directory -Force -Path `
 docker run --rm `
   --volume "${PWD}:/data/project" `
   --volume "${PWD}\.qodana\cache:/data/cache" `
-  --volume "${qodanaObj}:/data/project/src/Wireloom.Dds.Generator/obj" `
-  --volume "${qodanaBin}:/data/project/src/Wireloom.Dds.Generator/bin" `
-  --volume "${qodanaCompilerObj}:/data/project/src/Wireloom.Dds.Compiler/obj" `
-  --volume "${qodanaCompilerBin}:/data/project/src/Wireloom.Dds.Compiler/bin" `
+  --volume "${qodanaObj}:/data/project/src/Wireloom.Dds.CSharp.Generator/obj" `
+  --volume "${qodanaBin}:/data/project/src/Wireloom.Dds.CSharp.Generator/bin" `
+  --volume "${qodanaCompilerObj}:/data/project/src/Wireloom.Dds.CSharp.Compiler/obj" `
+  --volume "${qodanaCompilerBin}:/data/project/src/Wireloom.Dds.CSharp.Compiler/bin" `
+  --volume "${qodanaIdlObj}:/data/project/src/Wireloom.Dds.Idl/obj" `
+  --volume "${qodanaIdlBin}:/data/project/src/Wireloom.Dds.Idl/bin" `
+  --volume "${qodanaCppObj}:/data/project/src/Wireloom.Dds.Cpp.Generator/obj" `
+  --volume "${qodanaCppBin}:/data/project/src/Wireloom.Dds.Cpp.Generator/bin" `
+  --volume "${qodanaCppCompilerObj}:/data/project/src/Wireloom.Dds.Cpp.Compiler/obj" `
+  --volume "${qodanaCppCompilerBin}:/data/project/src/Wireloom.Dds.Cpp.Compiler/bin" `
   --volume "${qodanaBrowserObj}:/data/project/src/Wireloom.Playground.Browser/obj" `
   --volume "${qodanaBrowserBin}:/data/project/src/Wireloom.Playground.Browser/bin" `
-  --volume "${qodanaCompilerTestsObj}:/data/project/tests/Wireloom.Dds.Compiler.Tests/obj" `
-  --volume "${qodanaCompilerTestsBin}:/data/project/tests/Wireloom.Dds.Compiler.Tests/bin" `
-  --volume "${qodanaGeneratorTestsObj}:/data/project/tests/Wireloom.Dds.Generator.Tests/obj" `
-  --volume "${qodanaGeneratorTestsBin}:/data/project/tests/Wireloom.Dds.Generator.Tests/bin" `
-  --volume "${qodanaFuzzingTestsObj}:/data/project/tests/Wireloom.Dds.Generator.Fuzzing.Tests/obj" `
-  --volume "${qodanaFuzzingTestsBin}:/data/project/tests/Wireloom.Dds.Generator.Fuzzing.Tests/bin" `
-  --volume "${qodanaRuntimeTestsObj}:/data/project/tests/Wireloom.Dds.Generator.RuntimeContracts/obj" `
-  --volume "${qodanaRuntimeTestsBin}:/data/project/tests/Wireloom.Dds.Generator.RuntimeContracts/bin" `
-  --volume "${qodanaTestSupportObj}:/data/project/tests/Wireloom.Dds.Generator.TestSupport/obj" `
-  --volume "${qodanaTestSupportBin}:/data/project/tests/Wireloom.Dds.Generator.TestSupport/bin" `
+  --volume "${qodanaCompilerTestsObj}:/data/project/tests/Wireloom.Dds.CSharp.Compiler.Tests/obj" `
+  --volume "${qodanaCompilerTestsBin}:/data/project/tests/Wireloom.Dds.CSharp.Compiler.Tests/bin" `
+  --volume "${qodanaIdlTestsObj}:/data/project/tests/Wireloom.Dds.Idl.Tests/obj" `
+  --volume "${qodanaIdlTestsBin}:/data/project/tests/Wireloom.Dds.Idl.Tests/bin" `
+  --volume "${qodanaCppGeneratorTestsObj}:/data/project/tests/Wireloom.Dds.Cpp.Generator.Tests/obj" `
+  --volume "${qodanaCppGeneratorTestsBin}:/data/project/tests/Wireloom.Dds.Cpp.Generator.Tests/bin" `
+  --volume "${qodanaCppCompilerTestsObj}:/data/project/tests/Wireloom.Dds.Cpp.Compiler.Tests/obj" `
+  --volume "${qodanaCppCompilerTestsBin}:/data/project/tests/Wireloom.Dds.Cpp.Compiler.Tests/bin" `
+  --volume "${qodanaCppFuzzingTestsObj}:/data/project/tests/Wireloom.Dds.Cpp.Fuzzing.Tests/obj" `
+  --volume "${qodanaCppFuzzingTestsBin}:/data/project/tests/Wireloom.Dds.Cpp.Fuzzing.Tests/bin" `
+  --volume "${qodanaGeneratorTestsObj}:/data/project/tests/Wireloom.Dds.CSharp.Generator.Tests/obj" `
+  --volume "${qodanaGeneratorTestsBin}:/data/project/tests/Wireloom.Dds.CSharp.Generator.Tests/bin" `
+  --volume "${qodanaFuzzingTestsObj}:/data/project/tests/Wireloom.Dds.CSharp.Fuzzing.Tests/obj" `
+  --volume "${qodanaFuzzingTestsBin}:/data/project/tests/Wireloom.Dds.CSharp.Fuzzing.Tests/bin" `
+  --volume "${qodanaRuntimeTestsObj}:/data/project/tests/Wireloom.Dds.CSharp.RuntimeContracts/obj" `
+  --volume "${qodanaRuntimeTestsBin}:/data/project/tests/Wireloom.Dds.CSharp.RuntimeContracts/bin" `
+  --volume "${qodanaTestSupportObj}:/data/project/tests/Wireloom.Dds.CSharp.TestSupport/obj" `
+  --volume "${qodanaTestSupportBin}:/data/project/tests/Wireloom.Dds.CSharp.TestSupport/bin" `
   --volume "${qodanaWireSharedObj}:/data/project/tests/Wireloom.Dds.Generator.WireCompatibility.Shared/obj" `
   --volume "${qodanaWireSharedBin}:/data/project/tests/Wireloom.Dds.Generator.WireCompatibility.Shared/bin" `
   --volume "${qodanaWireRunnerObj}:/data/project/tests/Wireloom.Dds.Generator.WireCompatibility.Runner/obj" `
@@ -148,41 +211,75 @@ source.
 ## Coverage and scan scope
 
 The local and CI configurations scan the committed `Wireloom.slnx`, which
-contains the compiler, generator, compiler and generator unit-test projects,
-runtime contract tests, shared test support, and the wire Shared, Runner, and
-Verifier projects. Loading both production
-projects through the solution lets InspectCode resolve their project
-reference. The managed wire-peer and package-integration consumers remain
-outside this solution and are verified separately.
+contains the shared IDL front end, C# compiler, Roslyn generator, C++ CLI,
+IDL, compiler and generator unit tests, C# and C++ fuzzing suites, runtime contract
+tests, shared test support, and the wire Shared, Runner, and Verifier projects.
+Loading the solution lets
+InspectCode resolve the project references. The managed wire-peer and package-
+integration consumers remain outside this solution and are verified separately.
 
-Generate local Cobertura coverage after restoring both unit-test projects. The
-commands match the CI coverage invocation and write separate compiler and
-generator reports:
+Generate local Cobertura coverage after restoring the unit-test projects. The
+commands match the CI coverage invocations and write isolated C# compiler,
+Roslyn generator, shared IDL, and C++ backend reports:
 
 ```shell
-dotnet restore tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj --locked-mode
-dotnet restore tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj --locked-mode
-dotnet restore tests/Wireloom.Dds.Generator.Fuzzing.Tests/Wireloom.Dds.Generator.Fuzzing.Tests.csproj --locked-mode
-dotnet run --project tests/Wireloom.Dds.Generator.Tests/Wireloom.Dds.Generator.Tests.csproj `
+dotnet restore tests/Wireloom.Dds.CSharp.Generator.Tests/Wireloom.Dds.CSharp.Generator.Tests.csproj --locked-mode
+dotnet restore tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CSharp.Compiler.Tests.csproj --locked-mode
+dotnet restore tests/Wireloom.Dds.Idl.Tests/Wireloom.Dds.Idl.Tests.csproj --locked-mode
+dotnet restore tests/Wireloom.Dds.CSharp.Fuzzing.Tests/Wireloom.Dds.CSharp.Fuzzing.Tests.csproj --locked-mode
+dotnet restore tests/Wireloom.Dds.Cpp.Generator.Tests/Wireloom.Dds.Cpp.Generator.Tests.csproj --locked-mode
+dotnet restore tests/Wireloom.Dds.Cpp.Compiler.Tests/Wireloom.Dds.Cpp.Compiler.Tests.csproj --locked-mode
+dotnet restore tests/Wireloom.Dds.Cpp.CorpusCompliance/Wireloom.Dds.Cpp.CorpusCompliance.csproj --locked-mode
+dotnet restore tests/Wireloom.Dds.Cpp.Fuzzing.Tests/Wireloom.Dds.Cpp.Fuzzing.Tests.csproj --locked-mode
+dotnet run --project tests/Wireloom.Dds.CSharp.Generator.Tests/Wireloom.Dds.CSharp.Generator.Tests.csproj `
   --no-restore `
   --configuration Release `
   -- `
   --results-directory coverage `
   --coverage `
-  --coverage-settings coverage.settings.xml `
+  --coverage-settings coverage.generator.settings.xml `
   --coverage-output generator.cobertura.xml `
   --coverage-output-format cobertura
-dotnet run --project tests/Wireloom.Dds.Compiler.Tests/Wireloom.Dds.Compiler.Tests.csproj `
+dotnet run --project tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CSharp.Compiler.Tests.csproj `
   --no-restore `
   --configuration Release `
   -- `
   --results-directory coverage `
   --coverage `
-  --coverage-settings coverage.settings.xml `
+  --coverage-settings coverage.compiler.settings.xml `
   --coverage-output compiler.cobertura.xml `
+  --coverage-output-format cobertura
+dotnet run --project tests/Wireloom.Dds.Idl.Tests/Wireloom.Dds.Idl.Tests.csproj `
+  --no-restore `
+  --configuration Release `
+  -- `
+  --results-directory coverage `
+  --coverage `
+  --coverage-settings coverage.idl.settings.xml `
+  --coverage-output idl.cobertura.xml `
+  --coverage-output-format cobertura
+dotnet run --project tests/Wireloom.Dds.Cpp.Generator.Tests/Wireloom.Dds.Cpp.Generator.Tests.csproj `
+  -p:WireloomCppCombinedCoverage=true `
+  --no-restore `
+  --configuration Release `
+  -- `
+  --results-directory coverage `
+  --coverage `
+  --coverage-settings tests/Wireloom.Dds.Cpp.Generator.Tests/coverage.settings.xml `
+  --coverage-output cpp.cobertura.xml `
   --coverage-output-format cobertura
 ```
 
+The C++ command uses `WireloomCppCombinedCoverage=true` to link the compiler
+and corpus test sources into an isolated coverage-only generator test host.
+Normal builds of all three projects remain independent. One collector preserves
+exact branch counters; binary/Cobertura merging is not used because the
+installed merger can lose branch information. Fuzzing stays outside coverage.
+The combined output retains the existing `cpp.cobertura.xml` name and 90%
+branch / 95% line gates. Require a positive `branches-valid` count as well.
+
+Run the independent suites with their normal project paths when investigating
+compiler, corpus, or CLI failures; see [the C++ test-layer map](../../tests/Wireloom.Dds.Cpp.Generator.Tests/README.md).
 Each Cobertura report must contain both branch and line rates and a positive
 `branches-valid` count. Check its counters with:
 
@@ -191,17 +288,20 @@ Each Cobertura report must contain both branch and line rates and a positive
 $coverageReport.coverage | Select-Object branch-rate, line-rate, branches-covered, branches-valid, lines-covered, lines-valid
 ```
 
-The compiler report must meet 90% branch coverage and 95% line coverage. The
-fuzzing suite lives in its own test project and runs without instrumentation;
-its purpose is to find crashes and invalid generated code, not to contribute
-coverage:
+The C# compiler and combined C++ backend reports retain their existing local
+90% branch / 95% line checks. Coveralls evaluates the uploaded coverage reports
+as the repository's aggregate coverage job. The Playground adapter has a
+focused report check for its source class and positive branch/line counters so
+a stale filter cannot yield an empty passing report. Fuzzing lives in its own
+test project and runs without instrumentation; its purpose is to find crashes
+and invalid generated code, not to contribute coverage:
 
 ```shell
-dotnet run --project tests/Wireloom.Dds.Generator.Fuzzing.Tests/Wireloom.Dds.Generator.Fuzzing.Tests.csproj `
+dotnet run --project tests/Wireloom.Dds.CSharp.Fuzzing.Tests/Wireloom.Dds.CSharp.Fuzzing.Tests.csproj `
   --no-restore `
   --configuration Release `
   -- `
-  --filter-class Wireloom.Dds.Generator.Fuzzing.Tests.FsCheckIdlCompilerFuzzingSpecs
+  --filter-class Wireloom.Dds.CSharp.Fuzzing.Tests.FsCheckIdlCompilerFuzzingSpecs
 ```
 
 Coverage validation also requires the local coverage command to succeed and the

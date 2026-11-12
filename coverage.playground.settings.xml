@@ -4,7 +4,7 @@
   <CodeCoverage>
     <ModulePaths>
       <Include>
-        <ModulePath>.*Wireloom\.Dds\.Compiler\.Tests\.dll$</ModulePath>
+        <ModulePath>.*Wireloom\.Dds\.CSharp\.Compiler\.Tests\.dll$</ModulePath>
       </Include>
     </ModulePaths>
     <Sources>
