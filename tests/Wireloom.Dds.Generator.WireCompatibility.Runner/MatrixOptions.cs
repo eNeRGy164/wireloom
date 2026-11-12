@@ -7,6 +7,8 @@ namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 /// <param name="RtiVersion">Exact RTI release selected for the run.</param>
 /// <param name="CompileOnly">Whether to stop after peer compilation.</param>
 /// <param name="CaseFilter">Optional comma-separated selection of corpus cases.</param>
+/// <param name="WireloomCppCaseFilter">Optional explicit selection of Wireloom C++ peers.</param>
+/// <param name="NativePeerScopeCaseFilter">Optional explicit case selection for the RTI C++ / Wireloom C++ peer scope, independent of managed applicability.</param>
 /// <param name="ShardIndex">Zero-based shard selected by the planner.</param>
 /// <param name="ShardCount">Number of whole-case shards.</param>
 /// <param name="ManagedBuildConcurrency">Maximum simultaneous managed builds.</param>
@@ -20,6 +22,8 @@ internal sealed record MatrixOptions(
     string RtiVersion,
     bool CompileOnly,
     string? CaseFilter,
+    string? WireloomCppCaseFilter,
+    string? NativePeerScopeCaseFilter,
     int ShardIndex,
     int ShardCount,
     int ManagedBuildConcurrency,
@@ -43,6 +47,8 @@ internal sealed record MatrixOptions(
             Environment.GetEnvironmentVariable("WIRE_COMPATIBILITY_RTI_VERSION") ?? "7.7.0",
             Environment.GetEnvironmentVariable("WIRE_COMPATIBILITY_CPP_COMPILE_ONLY") == "1",
             Environment.GetEnvironmentVariable("WIRE_COMPATIBILITY_CASE_FILTER"),
+            Environment.GetEnvironmentVariable("WIRE_COMPATIBILITY_CPP_CASE_FILTER"),
+            ReadNativePeerScopeCaseFilter(),
             ReadInteger("WIRE_COMPATIBILITY_SHARD_INDEX", 0),
             ReadInteger("WIRE_COMPATIBILITY_SHARD_COUNT", 1),
             ReadInteger("WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY", 4),
@@ -84,6 +90,14 @@ internal sealed record MatrixOptions(
         }
 
         return result;
+    }
+
+    private static string? ReadNativePeerScopeCaseFilter()
+    {
+        var value = Environment.GetEnvironmentVariable("WIRE_COMPATIBILITY_NATIVE_PEER_SCOPE_CASE_FILTER");
+        return string.IsNullOrWhiteSpace(value)
+            ? Environment.GetEnvironmentVariable("WIRE_COMPATIBILITY_CPP_ONLY_CASE_FILTER")
+            : value;
     }
 
     private static string FindRepositoryRoot()

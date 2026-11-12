@@ -7,8 +7,11 @@ namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 /// <param name="Cases">Full case assignment in selection order, shared by all shards.</param>
 /// <param name="Scenarios">Selected shard exchanges in fixture and pairing order.</param>
 /// <param name="RtiOnlyCases">Implementation gaps restricted to RTI control peers.</param>
+/// <param name="WireloomCppCases">Explicit or qualified cases requiring Wireloom C++ peers.</param>
+/// <param name="NativePeerScopeCases">Explicit cases planned in the RTI C++ / Wireloom C++ peer scope.</param>
 internal sealed record ScenarioPlan(string RtiVersion, int ShardIndex, int ShardCount,
-    IReadOnlyList<PlannedCase> Cases, IReadOnlyList<PlannedScenario> Scenarios, IReadOnlySet<string> RtiOnlyCases)
+    IReadOnlyList<PlannedCase> Cases, IReadOnlyList<PlannedScenario> Scenarios, IReadOnlySet<string> RtiOnlyCases,
+    IReadOnlySet<string> WireloomCppCases, IReadOnlySet<string> NativePeerScopeCases)
 {
     /// <summary>Case IDs selected for this shard, ready for peer preparation.</summary>
     internal IReadOnlyList<string> CaseIds => [.. Cases.Where(item => item.Shard == ShardIndex).Select(item => item.CaseId)];

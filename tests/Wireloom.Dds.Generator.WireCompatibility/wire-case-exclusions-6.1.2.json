@@ -1,15 +1,15 @@
 {
   "notImplementedCases": [],
   "notApplicableCases": [
-    { "id": "06-aggregates", "reason": "Recursive aggregates are unavailable in this RTI profile." },
-    { "id": "09-optional-collections", "reason": "Optional sequences and arrays are unavailable in this RTI profile." },
-    { "id": "09-optional-string-sequences", "reason": "Optional sequences are unavailable in this RTI profile." },
-    { "id": "09-optional-recursive-array", "reason": "Optional arrays and recursive aggregates are unavailable in this RTI profile." },
-    { "id": "09-must-understand", "reason": "The must-understand annotation is unavailable in this RTI profile." },
-    { "id": "01-primitives", "reason": "The fixture includes signed int8 values outside the supported RTI C# binding scope." },
-    { "id": "01-int8-boundaries", "reason": "Signed int8 semantics and negative constants are outside the supported RTI C# binding scope." },
-    { "id": "01-full-widths", "reason": "The fixture includes signed int8 values outside the supported RTI C# binding scope." },
-    { "id": "07-union-int8", "reason": "Signed int8 discriminator semantics are outside the supported RTI C# binding scope." },
-    { "id": "08-key-union", "reason": "XCDR2 topic types with union-valued keys are outside the supported runtime scope (CODEGENII-2018)." }
+    { "id": "06-aggregates", "reason": "Recursive aggregate cases are outside the managed peer wire-matrix scope for this profile." },
+    { "id": "09-optional-collections", "reason": "Optional sequences and arrays are outside the managed peer wire-matrix scope for this profile." },
+    { "id": "09-optional-string-sequences", "reason": "Optional string sequence cases are outside the managed peer wire-matrix scope for this profile." },
+    { "id": "09-optional-recursive-array", "reason": "Optional recursive array cases are outside the managed peer wire-matrix scope for this profile." },
+    { "id": "09-must-understand", "reason": "Must-understand annotation cases are outside the managed peer wire-matrix scope for this profile." },
+    { "id": "01-primitives", "reason": "Signed int8 cases are outside the managed RTI C# peer wire-matrix scope for this profile." },
+    { "id": "01-int8-boundaries", "reason": "Signed int8 boundary cases are outside the managed RTI C# peer wire-matrix scope for this profile." },
+    { "id": "01-full-widths", "reason": "Signed int8 cases are outside the managed RTI C# peer wire-matrix scope for this profile." },
+    { "id": "07-union-int8", "reason": "Signed int8 union discriminator cases are outside the managed RTI C# peer wire-matrix scope for this profile." },
+    { "id": "08-key-union", "reason": "XCDR2 topic types with union-valued keys are outside the managed RTI C# peer wire-matrix scope for this profile (CODEGENII-2018)." }
   ]
 }

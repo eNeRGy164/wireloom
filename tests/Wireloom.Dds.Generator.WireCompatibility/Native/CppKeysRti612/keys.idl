@@ -1,0 +1,6 @@
+module Keys {
+    struct Direct { @key long id; long payload; };
+    struct Composite { @key long tenant; @key string<12> name; long payload; };
+    struct Coordinates { @key long coordinates[2]; long payload; };
+    struct Unkeyed { long value; };
+};

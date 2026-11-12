@@ -30,6 +30,9 @@ internal sealed class MatrixWorkspace(MatrixOptions options)
     /// <summary>Authored native peer templates.</summary>
     internal string NativeTemplates => Path.Combine(TestRoot, "Native");
 
+    /// <summary>Wireloom C++ generator used to prepare native peers.</summary>
+    internal string CppGeneratorProject => Path.Combine(options.RepositoryRoot, "src", "Wireloom.Dds.Cpp.Generator", "Wireloom.Dds.Cpp.Generator.csproj");
+
     /// <summary>Canonical retained scenario evidence, updated directly by the exchange scheduler.</summary>
     internal string Scenarios => Output("scenarios.tsv");
 
@@ -126,6 +129,15 @@ internal sealed record CaseWorkspace(string CaseId, string Directory)
 
     /// <summary>Published RTI-generated managed peer.</summary>
     internal string RtiPeer => Path.Combine(Directory, "rti-bin", "WireCompatibility.RtiOracleProbe.dll");
+
+    /// <summary>Generated Wireloom Modern C++ sources.</summary>
+    internal string WireloomCppGenerated => Path.Combine(Directory, "wireloom-cpp-generated");
+
+    /// <summary>Wireloom C++ peer entry source.</summary>
+    internal string WireloomCppMain => Path.Combine(Native, "wireloom-cpp-main.cpp");
+
+    /// <summary>Wireloom C++ peer executable.</summary>
+    internal string WireloomCppPeer => Path.Combine(NativeBuild, "wire-peer-wireloom-cpp");
 
     /// <summary>Staged C++ sources.</summary>
     internal string Native => Path.Combine(Directory, "native");

@@ -33,6 +33,7 @@ internal sealed record NativePeerProfile(string CppType, IReadOnlyList<string> O
         ["14-unbounded-receive-lifecycle"] = "WIRELOOM_TYPED_C174_UNBOUNDED_RECEIVE_LIFECYCLE",
         ["04-boundaries"] = "WIRELOOM_TYPED_STRING_BOUNDARIES_FIXTURE",
         ["09-optional-aggregate-member"] = "WIRELOOM_TYPED_OPTIONAL_AGGREGATE_FIXTURE",
+        ["09-optional-collections"] = "WIRELOOM_TYPED_OPTIONAL_COLLECTIONS_FIXTURE",
         ["09-optional-recursive-array"] = "WIRELOOM_TYPED_OPTIONAL_RECURSIVE_ARRAY_FIXTURE",
     };
 

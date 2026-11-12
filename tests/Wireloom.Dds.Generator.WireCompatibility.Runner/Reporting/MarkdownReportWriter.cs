@@ -40,6 +40,15 @@ internal static class MarkdownReportWriter
         ("RTI C++", "Wireloom C#"),
         ("RTI C++", "RTI C#"),
         ("RTI C++", "RTI C++"),
+
+        ("Wireloom C++", "Wireloom C#"),
+        ("Wireloom C++", "RTI C#"),
+        ("Wireloom C++", "RTI C++"),
+        ("Wireloom C++", "Wireloom C++"),
+
+        ("Wireloom C#", "Wireloom C++"),
+        ("RTI C#", "Wireloom C++"),
+        ("RTI C++", "Wireloom C++"),
     ];
 
     private static string FormatScenarioCell(ReportFields? item)
@@ -109,7 +118,7 @@ internal static class MarkdownReportWriter
         var lines = new List<string>
         {
             $"# {rtiVersion} Wire compatibility results", "",
-            $"**{scenarios.Count}** DDS exchanges · **{passed}** passed · **{failed.Length}** failed · **{notRunCount}** not run · **{knownExceptionCount}** known peer exception(s) · **{unsupported.Count}** case(s) not implemented · **{notApplicable.Count}** case(s) not applicable", "",
+            $"**{scenarios.Count}** DDS exchanges · **{passed}** passed · **{failed.Length}** failed · **{notRunCount}** not run · **{knownExceptionCount}** known peer exception(s) · **{unsupported.Count}** case(s) not implemented · **{notApplicable.Count}** case(s) with peer exclusions", "",
             "Each cell is a writer → reader exchange. A `\"` repeats the IDL from the previous row. Observed errors are quoted from sanitized logs.", "",
             "| Legend | Meaning |",
             "| :----: | :------ |",
@@ -133,9 +142,9 @@ internal static class MarkdownReportWriter
         if (notApplicable.Count > 0)
         {
             lines.AddRange([
-                "## Not applicable",
+                "## Peer pairing exclusions",
                 "",
-                "Unavailable features are N/A and excluded from exchange counts.",
+                "The listed peer scopes are N/A and excluded from exchange counts.",
                 "",
                 "| Case | Reason |",
                 "| :--- | :----- |",
@@ -175,7 +184,7 @@ internal static class MarkdownReportWriter
                 var qualification = (string?)configuration["qualification"] ?? "";
                 var generation = options.Any() ? $"generation adds {string.Join(", ", options)}" : "uses the default generation flags";
                 var adaptation = idlAdaptations.Any() ? $" IDL adaptations: {string.Join(", ", idlAdaptations)}." : "";
-                lines.Add($"- **{id}**: RTI C++ {generation}.{adaptation} {qualification} {WorkaroundLink(id)}".TrimEnd());
+                lines.Add($"- **{id}**: RTI C++ {generation}.{adaptation} {qualification} {WorkaroundLink(id, rtiVersion)}".TrimEnd());
 
                 if (scenarios.First(i => (string)i["case"]! == id).TryGetValue("generationConfiguration", out var generationConfiguration))
                 {
@@ -249,26 +258,39 @@ internal static class MarkdownReportWriter
         var rtiVersion = data.RtiVersion;
         var pairings = Pairings;
         var caseItem = FindCase(manifest, id);
-        var plannedPairings = unsupportedCase is null
-            ? PeerPairingPolicy.GetPairings(caseItem, fixture).Select(pair => (pair.Writer, pair.Reader)).ToHashSet()
-            : [.. pairings];
+        var includeWireloomCpp = data.WireloomCppCases.Contains(id);
+        var plannedPairings = PeerPairingPolicy.GetPairings(caseItem, fixture, rtiVersion, includeWireloomCpp)
+            .Select(pair => (pair.Writer, pair.Reader)).ToHashSet();
         var baseExcludedPeers = caseItem["wireMatrix"]?["excludedPeers"]?.AsObject() ?? [];
         var profileExceptions = caseItem["wireMatrix"]?["excludedPeersByRtiVersion"]?[rtiVersion]?.AsObject() ?? [];
+        var notApplicableCase = data.NotApplicable.Any(item => (string?)item?["id"] == id);
+        var nativePeerScopeCase = data.NativePeerScopeCases.Contains(id);
         var cells = new List<string>();
 
         foreach (var pairing in pairings)
         {
-            if (!plannedPairings.Contains(pairing) || baseExcludedPeers.ContainsKey(pairing.Writer) || baseExcludedPeers.ContainsKey(pairing.Reader))
+            if (nativePeerScopeCase && !IsNativePeerPair(pairing))
             {
                 cells.Add("N/A");
+                continue;
             }
-            else if (profileExceptions.ContainsKey(pairing.Writer) || profileExceptions.ContainsKey(pairing.Reader))
+
+            if (profileExceptions.ContainsKey(pairing.Writer) || profileExceptions.ContainsKey(pairing.Reader))
             {
                 cells.Add("⚠️ Exception");
             }
-            else if (unsupportedCase is not null && UsesWireloom(pairing))
+            else if (!plannedPairings.Contains(pairing)
+                || baseExcludedPeers.ContainsKey(pairing.Writer) || baseExcludedPeers.ContainsKey(pairing.Reader))
+            {
+                cells.Add("N/A");
+            }
+            else if (unsupportedCase is not null && UsesCSharpWireloom(pairing))
             {
                 cells.Add("⚫");
+            }
+            else if (notApplicableCase && row.GetValueOrDefault(pairing) is null)
+            {
+                cells.Add("N/A");
             }
             else
             {
@@ -276,14 +298,23 @@ internal static class MarkdownReportWriter
             }
         }
 
-        var adaptationText = FormatAdaptations(row, id);
-        var problemText = FormatProblemDetails(fixtureRow, plannedPairings, baseExcludedPeers, profileExceptions);
+        var adaptationText = FormatAdaptations(row, id, rtiVersion);
+        var problemText = FormatProblemDetails(
+            fixtureRow, plannedPairings, baseExcludedPeers, profileExceptions, notApplicableCase, nativePeerScopeCase);
+        var fixtureNote = (string?)caseItem["wireMatrix"]?["fixtureNotesByRtiVersion"]?[rtiVersion]?[fixture];
+        if (!string.IsNullOrWhiteSpace(fixtureNote))
+        {
+            var escapedNote = fixtureNote.Replace("|", "\\|");
+            problemText = problemText == "—"
+                ? $"**Profile note:** {escapedNote}"
+                : $"{problemText}<br><br>**Profile note:** {escapedNote}";
+        }
         var (Tag, Theme) = featureLabels[id];
         var caseCell = $"**{Tag}** · `{id}`<br>{FormatExplanation(Theme)}";
         return $"| {caseCell} | `{fixture}` | {string.Join(" | ", cells)} | {(adaptationText.Length == 0 ? "—" : adaptationText)} | {problemText} |";
     }
 
-    private static string FormatAdaptations(Dictionary<PeerPair, ReportFields> row, string id)
+    private static string FormatAdaptations(Dictionary<PeerPair, ReportFields> row, string id, string rtiVersion)
     {
         // Render a shared adjustment once, with all affected peers beside it.
         var adaptationPeers = new Dictionary<string, List<string>>(StringComparer.Ordinal);
@@ -321,13 +352,19 @@ internal static class MarkdownReportWriter
         var adaptationText = string.Join("<br><br>", adaptationNotes);
         if (adaptationText.Length > 0)
         {
-            adaptationText += $"<br><br>{WorkaroundLink(id)}";
+            adaptationText += $"<br><br>{WorkaroundLink(id, rtiVersion)}";
         }
 
         return adaptationText;
     }
 
-    private static string FormatProblemDetails(FixtureRow fixtureRow, HashSet<PeerPair> plannedPairings, JsonObject baseExcludedPeers, JsonObject profileExceptions)
+    private static string FormatProblemDetails(
+        FixtureRow fixtureRow,
+        HashSet<PeerPair> plannedPairings,
+        JsonObject baseExcludedPeers,
+        JsonObject profileExceptions,
+        bool notApplicableCase,
+        bool nativePeerScopeCase)
     {
         var (_, _, row, unsupportedCase) = fixtureRow;
         var pairings = Pairings;
@@ -335,9 +372,7 @@ internal static class MarkdownReportWriter
 
         foreach (var pair in pairings)
         {
-            if (!plannedPairings.Contains(pair)
-                || (unsupportedCase is not null && UsesWireloom(pair))
-                || baseExcludedPeers.ContainsKey(pair.Writer) || baseExcludedPeers.ContainsKey(pair.Reader))
+            if (nativePeerScopeCase && !IsNativePeerPair(pair))
             {
                 continue;
             }
@@ -351,7 +386,19 @@ internal static class MarkdownReportWriter
                 continue;
             }
 
+            if (!plannedPairings.Contains(pair)
+                || (unsupportedCase is not null && UsesCSharpWireloom(pair))
+                || baseExcludedPeers.ContainsKey(pair.Writer) || baseExcludedPeers.ContainsKey(pair.Reader))
+            {
+                continue;
+            }
+
             var item = row.GetValueOrDefault(pair);
+            if (notApplicableCase && item is null)
+            {
+                continue;
+            }
+
             if (item is null || (string)item["status"]! is "FAIL" or "NOT_RUN")
             {
                 var detail = "scenario did not run";
@@ -384,7 +431,12 @@ internal static class MarkdownReportWriter
         return problemParts.Count == 0 ? "—" : string.Join("<br><br>", problemParts);
     }
 
-    private static bool UsesWireloom(PeerPair pairing) => pairing.Writer == "Wireloom C#" || pairing.Reader == "Wireloom C#";
+    private static bool UsesCSharpWireloom(PeerPair pairing) =>
+        pairing.Writer == "Wireloom C#" || pairing.Reader == "Wireloom C#";
+
+    private static bool IsNativePeerPair(PeerPair pairing) =>
+        (pairing.Writer == "RTI C++" || pairing.Writer == "Wireloom C++")
+        && (pairing.Reader == "RTI C++" || pairing.Reader == "Wireloom C++");
 
     // Peer IDs remain stable in JSON and exclusion registries; labels can be shorter.
     private static string DisplayPeer(string peer)
@@ -394,12 +446,22 @@ internal static class MarkdownReportWriter
             return "Wireloom";
         }
 
+        if (peer == "Wireloom C++")
+        {
+            return "Wireloom C++";
+        }
+
         return peer;
     }
 
-    private static string DisplayPeerHeader(string peer) => peer == "Wireloom C#" ? "🧵" : peer;
+    private static string DisplayPeerHeader(string peer) => peer switch
+    {
+        "Wireloom C#" => "🧵 C#",
+        "Wireloom C++" => "🧵 C++",
+        _ => peer,
+    };
 
-    private static string WorkaroundLink(string? caseId = null)
+    private static string WorkaroundLink(string? caseId = null, string? rtiVersion = null)
     {
         var workaroundIds = caseId switch
         {
@@ -412,7 +474,7 @@ internal static class MarkdownReportWriter
             "04-unbounded-string-aliases" or "05-unbounded-sequence-aliases"
                 or "14-unbounded-support" or "14-unbounded-receive-lifecycle" => ["W010"],
             "07-union-wchar-label" => ["W013"],
-            "10-flat-data-binding" => ["W014"],
+            "10-flat-data-binding" when rtiVersion is "6.1.2" or "7.3.1" => ["W014"],
             "10-resolve-name-wstring-aliases" => ["W015"],
             "07-union-ulong" or "07-union-uint32" => ["W016"],
             "07-union-char-boundaries" => ["W017"],

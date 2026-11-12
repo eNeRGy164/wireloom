@@ -51,16 +51,32 @@ internal static class CaseSelectionVerification
                 var expectedCount = version switch { "6.1.2" => 84, "7.3.1" => 93, _ => 94 };
                 Check(selected.Length == expectedCount, "Only applicable positive cases are selected.");
                 Check(selected.Contains("01-boundaries"), "Primitive boundaries without int8 apply to every profile.");
+                var primitivePairings = Invoke(succeeds: true, "case-pairings", manifestPath, "01-primitives", "default", version)
+                    .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                Check(primitivePairings.Contains("Wireloom C++|RTI C++")
+                    && primitivePairings.Contains("RTI C++|Wireloom C++"),
+                    "Wireloom Modern C++ primitive exchanges are planned for all three supported RTI profiles.");
                 Check(selected.Contains("01-int8-boundaries") == (version != "6.1.2"), "Signed-int8 boundary support follows the selected profile.");
                 Check(selected.Contains("09-optional-collections") == (version != "6.1.2"), "Optional-collection applicability follows the selected profile.");
                 Check(selected.Contains("05-array-of-sequences-idl"), "The IDL mapping is an independently selected corpus case.");
-                Check(Invoke(succeeds: true, "case-pairings", manifestPath, "05-array-of-sequences-idl")
+                Check(Invoke(succeeds: true, "case-pairings", manifestPath, "05-array-of-sequences-idl", "default", version)
                         .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .SequenceEqual(["Wireloom C#|Wireloom C#", "Wireloom C#|RTI C++", "RTI C++|Wireloom C#", "RTI C++|RTI C++"]),
-                    "The IDL case schedules four pairings and explicitly excludes flattened RTI C#.");
-                Check(Invoke(succeeds: true, "case-pairings", manifestPath, "14-typed-defaults", "sparse-omitted").Trim()
+                        .SequenceEqual([
+                            "Wireloom C#|Wireloom C#", "Wireloom C#|RTI C++", "Wireloom C#|Wireloom C++",
+                            "RTI C++|Wireloom C#", "RTI C++|RTI C++", "RTI C++|Wireloom C++",
+                            "Wireloom C++|Wireloom C#", "Wireloom C++|RTI C++", "Wireloom C++|Wireloom C++"
+                        ]),
+                    "The IDL case schedules the full nine-pair matrix among supported peers and excludes flattened RTI C#.");
+                Check(Invoke(succeeds: true, "case-pairings", manifestPath, "05-array-of-sequences", "default", version)
+                        .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .SequenceEqual([
+                            "RTI C++|RTI C++", "RTI C++|Wireloom C++",
+                            "Wireloom C++|RTI C++", "Wireloom C++|Wireloom C++"
+                        ]),
+                    "The direct arrays-of-sequences fixture must retain only all four C++ pairings in every profile.");
+                Check(Invoke(succeeds: true, "case-pairings", manifestPath, "14-typed-defaults", "sparse-omitted", version).Trim()
                         == "RTI C++|Wireloom C#",
-                    "C171's sparse fixture records only its focused writer-to-reader pairing.");
+                    "C171's explicit sparse fixture pairing remains a one-way exception in every profile.");
                 Check(Invoke(succeeds: true, "case-field", manifestPath, "05-array-of-sequences-idl", "idl").Trim()
                         == "idl/features/05-array-of-sequences-idl.idl"
                     && Invoke(succeeds: true, "case-field", manifestPath, "05-array-of-sequences-idl", "sequence-array-mapping").Trim() == "Idl"

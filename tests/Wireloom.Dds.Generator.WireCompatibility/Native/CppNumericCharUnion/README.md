@@ -16,5 +16,5 @@ The API check also compares RTI and Wireloom swap behavior between values on
 different branches, using the RTI two-pass active-branch algorithm. This
 qualifies local API, metadata, registration, and CDR only for this exact IDL
 shape. It makes no live DDS or Linux claim. See the
-[`C137 evidence report`](../../../../docs/corpus/7.7.0/cpp-evidence/C137-07-union-char-numeric.windows-x64.json)
-and [C++ coverage matrix](../../../../docs/corpus/CPP-COVERAGE.md).
+[RTI 7.7.0 corpus profile](../../../../docs/corpus/7.7.0/FEATURE-COVERAGE.md)
+and [Modern C++ generator guide](../../../../src/Wireloom.Dds.Cpp.Generator/README.md).

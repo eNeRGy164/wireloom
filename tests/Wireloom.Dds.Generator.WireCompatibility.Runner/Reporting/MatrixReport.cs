@@ -24,7 +24,7 @@ internal sealed class MatrixReport(MatrixOptions options, MatrixWorkspace worksp
                 hasIssues |= summary.Recorded != run.Plan.ExpectedScenarioCount;
             }
 
-            WriteArtifacts(run.Plan.ExpectedScenarioCount);
+            WriteArtifacts(run.Plan.ExpectedScenarioCount, run.Plan);
 
             var outcome = FinalizationOutcome.Resolve(run.ExecutionExitCode, 0, hasIssues ? 1 : 0, options.CompileOnly);
 
@@ -52,7 +52,7 @@ internal sealed class MatrixReport(MatrixOptions options, MatrixWorkspace worksp
         }
     }
 
-    private void WriteArtifacts(int expectedCount)
+    private void WriteArtifacts(int expectedCount, MatrixPlan plan)
     {
         if (!workspace.HasRunArtifacts || !Directory.Exists(options.OutputDirectory) || !File.Exists(workspace.Scenarios))
         {
@@ -79,7 +79,9 @@ internal sealed class MatrixReport(MatrixOptions options, MatrixWorkspace worksp
             ExclusionsPath: workspace.Exclusions,
             ManifestPath: workspace.Manifest,
             RepositoryRoot: options.RepositoryRoot,
-            ExecutionProvenancePath: workspace.ExecutionProvenance));
+            ExecutionProvenancePath: workspace.ExecutionProvenance,
+            WireloomCppCases: plan.WireloomCppCases,
+            NativePeerScopeCases: plan.NativePeerScopeCases));
     }
 
     private bool VerifyExecutionSourceIntegrity()
@@ -122,9 +124,16 @@ internal sealed class MatrixReport(MatrixOptions options, MatrixWorkspace worksp
 
     private void PrintCompilationSummary(PeerPreparationResult peers)
     {
-        var compiled = peers.NativeOutcomes.Count(outcome => outcome.IsCompiled);
+        var rtiOutcomes = peers.NativeOutcomes.Where(outcome => !outcome.CaseId.StartsWith("wireloom-cpp:", StringComparison.Ordinal)).ToArray();
+        var rtiCompiled = rtiOutcomes.Count(outcome => outcome.IsCompiled);
+        Console.WriteLine($"RTI C++ compile sweep: {rtiCompiled} compiled, {rtiOutcomes.Length - rtiCompiled} failed; see {options.OutputDirectory}/cpp-compilation.tsv.");
 
-        Console.WriteLine($"RTI C++ compile sweep: {compiled} compiled, {peers.NativeOutcomes.Count - compiled} failed; see {options.OutputDirectory}/cpp-compilation.tsv.");
+        var wireloomOutcomes = peers.NativeOutcomes.Where(outcome => outcome.CaseId.StartsWith("wireloom-cpp:", StringComparison.Ordinal)).ToArray();
+        if (wireloomOutcomes.Length > 0)
+        {
+            var wireloomCompiled = wireloomOutcomes.Count(outcome => outcome.IsCompiled);
+            Console.WriteLine($"Wireloom C++ compile sweep: {wireloomCompiled} compiled, {wireloomOutcomes.Length - wireloomCompiled} failed; see {options.OutputDirectory}/cpp-compilation.tsv.");
+        }
     }
 
     private void PrintExchangeSummary(MatrixPlan plan, ScenarioSummary summary, bool hasIssues)

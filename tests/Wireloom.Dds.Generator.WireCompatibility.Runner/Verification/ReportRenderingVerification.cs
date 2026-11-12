@@ -18,6 +18,11 @@ internal static class ReportRenderingVerification
 
     private static void VerifyProfile(MatrixOptions options, string version)
     {
+        var flatDataEndpoint = ReportEndpointPolicy.Create("10-flat-data-binding", "non-default", "RTI C++", version, isWriter: true);
+        var hasLegacyPlainMappingAdaptation = flatDataEndpoint.ContainsKey("adaptation");
+        Check(hasLegacyPlainMappingAdaptation == (version != "7.7.0"),
+            "W014 must describe only legacy PLAIN-mapping RTI C++ reference profiles.");
+
         // Arrange
         var root = Path.Combine(options.ScratchDirectory, "report-verification", version);
         var reportOptions = options with
@@ -48,7 +53,8 @@ internal static class ReportRenderingVerification
         File.WriteAllText(Path.Combine(workspace.Logs, "01-boundaries-non-default-rti-cpp-rti-cpp.log"), "NOT_RUN_DETAIL Native peer was unavailable.\n");
 
         var request = new ReportRequest(version, rows.Length, workspace.Scenarios, workspace.Output("results.json"),
-            workspace.Output("results.md"), workspace.Logs, workspace.Exclusions, workspace.Manifest, options.RepositoryRoot);
+            workspace.Output("results.md"), workspace.Logs, workspace.Exclusions, workspace.Manifest, options.RepositoryRoot,
+            WireloomCppCases: new HashSet<string>(StringComparer.Ordinal));
 
         // Act
         WireReportRenderer.Render(request);
@@ -169,6 +175,107 @@ internal static class ReportRenderingVerification
         WireReportRenderer.Render(request with { ExpectedScenarioCount = 1 });
 
         Check((int)JsonNode.Parse(File.ReadAllText(request.JsonPath))!["scenarioCount"]! == 1, "Unrun exchanges must remain reportable without generation provenance.");
+
+        if (version == "6.1.2")
+        {
+            // Arrange / Act: explicitly selected peer scope uses invocation scope, not the 7.7.0 qualification catalog.
+            var cppRow = new ScenarioRow("01-boundaries", "Example.Sample", "Example.Sample", "::Example::Sample",
+                "Wireloom C++", version, "RTI C++", version, "NOT_RUN", "non-default");
+            File.WriteAllText(workspace.Scenarios, cppRow.ToTsv() + "\n");
+            var explicitCppRequest = request with
+            {
+                ExpectedScenarioCount = 1,
+                WireloomCppCases = new HashSet<string>(["01-boundaries"], StringComparer.Ordinal),
+            };
+            WireReportRenderer.Render(explicitCppRequest);
+
+            // Assert
+            var explicitCppReport = JsonNode.Parse(File.ReadAllText(request.JsonPath))!;
+            Check((string?)explicitCppReport["scenarios"]![0]!["writer"]!["implementation"] == "Wireloom"
+                  && (string?)explicitCppReport["scenarios"]![0]!["writer"]!["language"] == "C++",
+                "An explicit 6.1.2 native peer scope must render under its selected exact RTI profile.");
+
+            VerifyNativePeerScopeReport(request);
+        }
+
+        // Arrange / Act / Assert: FlatData workaround labels follow the selected RTI C++ oracle profile.
+        var flatDataRow = new ScenarioRow("10-flat-data-binding", "CorpusFlatDataBinding.Sample", "CorpusFlatDataBinding.Sample",
+            "::CorpusFlatDataBinding::Sample", "RTI C++", version, "RTI C++", version, "PASS", "non-default");
+        File.WriteAllText(workspace.Scenarios, flatDataRow.ToTsv() + "\n");
+
+        WireReportRenderer.Render(request with { ExpectedScenarioCount = 1 });
+
+        var flatDataMarkdown = File.ReadAllText(request.MarkdownPath);
+        Check(flatDataMarkdown.Contains("Workaround W014", StringComparison.Ordinal) == (version != "7.7.0"),
+            "W014 must be reported only for legacy PLAIN-mapping RTI C++ reference profiles.");
+    }
+
+    private static void VerifyNativePeerScopeReport(ReportRequest request)
+    {
+        // Arrange
+        const string caseId = "09-optional-collections";
+        var fixtures = WireCompatibilityCaseCatalog.FixturesFor(caseId, "6.1.2");
+        var rows = fixtures.SelectMany(fixture => new[]
+        {
+            new ScenarioRow(caseId, "CorpusOptionalCollections.Sample", "", "::CorpusOptionalCollections::Sample",
+                PeerNames.RtiCpp, "6.1.2", PeerNames.WireloomCpp, "6.1.2", "NOT_RUN", fixture),
+            new ScenarioRow(caseId, "CorpusOptionalCollections.Sample", "", "::CorpusOptionalCollections::Sample",
+                PeerNames.WireloomCpp, "6.1.2", PeerNames.RtiCpp, "6.1.2", "NOT_RUN", fixture),
+        }).ToArray();
+        File.WriteAllLines(request.ScenarioPath, rows.Select(row => row.ToTsv()));
+        var nativeRequest = request with
+        {
+            ExpectedScenarioCount = rows.Length,
+            WireloomCppCases = new HashSet<string>([caseId], StringComparer.Ordinal),
+            NativePeerScopeCases = new HashSet<string>([caseId], StringComparer.Ordinal),
+        };
+
+        // Act
+        WireReportRenderer.Render(nativeRequest);
+        var report = JsonNode.Parse(File.ReadAllText(nativeRequest.JsonPath))!;
+        var scenarios = report["scenarios"]!.AsArray();
+        var markdown = File.ReadAllText(nativeRequest.MarkdownPath);
+        var fixtureRow = markdown.Split('\n').Single(line =>
+            line.Contains($"`{caseId}`", StringComparison.Ordinal)
+            && line.Contains($"| `{fixtures[0]}` |", StringComparison.Ordinal));
+
+        // Assert
+        Check((int)report["scenarioCount"]! == fixtures.Count * 2,
+            "Native peer-scope reports must include both directed C++ exchanges for every fixture.");
+        Check(scenarios.All(scenario => (string?)scenario!["writer"]!["language"] == "C++"
+            && (string?)scenario["reader"]!["language"] == "C++"),
+            "Native peer-scope report scenarios must contain only C++ endpoints.");
+        var fixtureCells = fixtureRow.Split('|', StringSplitOptions.TrimEntries);
+        Check(fixtureCells.Count(cell => cell == "N/A") == 14,
+            $"Native peer-scope report must mark 14 managed peer cells N/A; row was: {fixtureRow}");
+        Check(fixtureCells.Count(cell => cell == "❔") == 2,
+            "Native peer-scope report must retain both selected C++ cells as unknown before execution.");
+        Check(report["notApplicableCases"]!.AsArray().Any(item => (string?)item!["id"] == caseId
+            && ((string?)item["reason"])!.Contains("managed peer pairing scope", StringComparison.Ordinal)
+            && ((string?)item["reason"])!.Contains("native peer-scope RTI C++ / Wireloom C++ exchanges are included", StringComparison.Ordinal)),
+            "Native peer-scope exclusions must explain the managed peer pairing scope.");
+        Check(markdown.Contains("managed peer pairing scope", StringComparison.Ordinal)
+            && markdown.Contains("native peer-scope RTI C++ / Wireloom C++ exchanges are included", StringComparison.Ordinal)
+            && markdown.Contains("case(s) with peer exclusions", StringComparison.Ordinal)
+            && markdown.Contains("The listed peer scopes are N/A and excluded from exchange counts.", StringComparison.Ordinal),
+            "Native peer-scope markdown must describe the selected C++ scope and excluded managed peer cells.");
+
+        // Arrange / Act / Assert: an ordinary C++ peer selection does not authorize a profile-excluded case.
+        CheckRejected<InvalidDataException>(() => WireReportRenderer.Render(nativeRequest with { NativePeerScopeCases = null }),
+            "A profile-excluded case must require explicit native peer-scope selection.");
+
+        // Arrange / Act / Assert: a native peer-scope report must retain both directions for every fixture.
+        File.WriteAllLines(nativeRequest.ScenarioPath, rows.Where(row => row.Writer == PeerNames.RtiCpp).Select(row => row.ToTsv()));
+        CheckRejected<InvalidDataException>(() => WireReportRenderer.Render(nativeRequest with { ExpectedScenarioCount = fixtures.Count }),
+            "Native peer-scope report finalization must reject a missing directed C++ pairing.");
+
+        // Arrange / Act / Assert: managed and same-peer C++ exchanges cannot enter a native peer-scope report.
+        var invalidRows = rows.ToList();
+        invalidRows.Add(new ScenarioRow(caseId, "CorpusOptionalCollections.Sample", "", "::CorpusOptionalCollections::Sample",
+            PeerNames.RtiCpp, "6.1.2", PeerNames.RtiCpp, "6.1.2", "NOT_RUN", fixtures[0]));
+        File.WriteAllLines(nativeRequest.ScenarioPath, invalidRows.Select(row => row.ToTsv()));
+        CheckRejected<InvalidDataException>(() => WireReportRenderer.Render(nativeRequest with { ExpectedScenarioCount = invalidRows.Count }),
+            "Native peer-scope report finalization must reject pairings outside RTI C++ / Wireloom C++.");
     }
 
     private static ScenarioRow Row(string version, string writer, string reader, string status) =>

@@ -6,6 +6,8 @@ namespace Wireloom.Dds.Generator.WireCompatibility.Verifier.Verification;
 /// <summary>Provides shared paths, command access, and assertion accounting for a verifier run.</summary>
 internal sealed class VerificationContext(string verifierAssembly, string repositoryRoot, string root, string rtiVersion)
 {
+    private const int CommandTimeoutMilliseconds = 60_000;
+
     internal string VerifierAssembly { get; } = verifierAssembly;
     internal string RepositoryRoot { get; } = repositoryRoot;
     internal string Root { get; } = root;
@@ -31,10 +33,10 @@ internal sealed class VerificationContext(string verifierAssembly, string reposi
         var output = process.StandardOutput.ReadToEndAsync();
         var error = process.StandardError.ReadToEndAsync();
 
-        if (!process.WaitForExit(30000))
+        if (!process.WaitForExit(CommandTimeoutMilliseconds))
         {
             process.Kill(entireProcessTree: true);
-            throw new TimeoutException("Verifier command exceeded 30 seconds.");
+            throw new TimeoutException($"Verifier command '{command[0]}' exceeded {CommandTimeoutMilliseconds / 1000} seconds.");
         }
 
         Task.WaitAll(output, error);

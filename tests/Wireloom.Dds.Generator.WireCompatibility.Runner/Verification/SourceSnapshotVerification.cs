@@ -6,7 +6,7 @@ internal static class SourceSnapshotVerification
 {
     internal static void Run(string directory)
     {
-        // Arrange: create a tiny repository with one modified, one deleted, and one Unicode untracked path.
+        // Arrange: create a tiny repository with modified, deleted, untracked, and architecture-document paths.
         var repository = Path.Combine(directory, "source-snapshot-repository");
         Directory.CreateDirectory(repository);
         RunGit(repository, "init", "--quiet");
@@ -19,6 +19,9 @@ internal static class SourceSnapshotVerification
         File.WriteAllText(Path.Combine(repository, "modified.txt"), "changed bytes\r\n");
         File.Delete(Path.Combine(repository, "deleted.txt"));
         File.WriteAllText(Path.Combine(repository, "untracked-Ω.txt"), "new bytes\n");
+        var architectureNote = Path.Combine(repository, "docs", "architecture", "adr", "ADR.md");
+        Directory.CreateDirectory(Path.GetDirectoryName(architectureNote)!);
+        File.WriteAllText(architectureNote, "concurrent documentation update\n");
 
         var retained = Path.Combine(directory, "retained-execution");
 
@@ -34,6 +37,8 @@ internal static class SourceSnapshotVerification
         Check(loaded.Files.Single(file => file.Path == "deleted.txt").Sha256 == "DELETED", "Deleted paths must remain explicit in the manifest.");
         Check(loaded.Files.Single(file => file.Path == "modified.txt").Status == "modified", "Modified source paths must be classified.");
         Check(loaded.Files.Single(file => file.Path == "untracked-Ω.txt").Status == "added", "UTF-8 untracked paths must be retained safely.");
+        Check(loaded.Files.All(file => !file.Path.StartsWith("docs/architecture/", StringComparison.Ordinal)),
+            "Architecture-only documentation changes must not invalidate live wire execution evidence.");
         Check(loaded.MatchesCurrent(repository), "The captured manifest must match the unchanged execution checkout.");
 
         var priorPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;

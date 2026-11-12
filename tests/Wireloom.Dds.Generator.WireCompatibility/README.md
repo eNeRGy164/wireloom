@@ -2,18 +2,32 @@
 
 This project checks DDS interoperability for the wire-testable corpus. It runs
 Wireloom-generated C#, RTI-generated C#, and RTI-generated C++ peers against
-each other. It complements the [runtime contract suite](../Wireloom.Dds.CSharp.RuntimeContracts/README.md),
+each other. On RTI 7.7.0 it also runs Wireloom-generated Modern C++ for the
+cases whose [corpus manifest entries](../../docs/corpus/manifest.json) include
+the C++ peer in their wire matrix.
+It complements the [runtime contract suite](../Wireloom.Dds.CSharp.RuntimeContracts/README.md),
 which checks generated APIs and runtime behavior without claiming wire
 compatibility.
 
 The matrix targets the exact RTI Connext releases 6.1.2, 7.3.1, and 7.7.0. Each
 fixture is an independent exchange across the nine directed writer/reader
-pairings among the three peers, unless an explicit corpus case records a
-narrower peer scope and its exclusion reasons. A reader must receive
+pairings among the three baseline peers. RTI 7.7.0 fixtures add Wireloom C++
+and its directed pairings for each case configured in the corpus manifest.
+Explicit corpus rules can narrow those pairings. A reader must receive
 a valid sample and match
 the full expected fixture; discovery or lifecycle notifications alone do not
 count as a pass. These runs provide evidence for the selected corpus cases,
 not qualification of every feature or RTI release.
+
+`WIRE_COMPATIBILITY_NATIVE_PEER_SCOPE_CASE_FILTER` adds explicit cases using
+only the two directed RTI C++ / Wireloom C++ exchanges for each fixture. This
+invocation-level peer selection is independent of the default managed
+applicability registry and can qualify a native C++ backport without claiming
+that an RTI C# oracle exists for the same case. Keep these IDs out of
+`WIRE_COMPATIBILITY_CASE_FILTER`; overlapping selections fail before peer
+preparation so this mode cannot silently change the managed matrix. The
+combined report retains the exact native peer directions and fixture outcomes.
+`WIRE_COMPATIBILITY_CPP_ONLY_CASE_FILTER` remains accepted as a legacy alias.
 
 | RTI version | Wire runner       | Evidence                                                                                   |
 | :---------- | :---------------- | :----------------------------------------------------------------------------------------- |
@@ -189,17 +203,18 @@ capture does not imply that a licensed exchange ran.
 
 Useful runner settings:
 
-| Variable                                      | Purpose                                                                           | Default                        |
-| --------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------ |
-| `WIRE_COMPATIBILITY_RTI_VERSION`              | Selects the exact RTI NuGet package, exclusions, and toolchain expectation.       | `7.7.0`                        |
-| `WIRE_COMPATIBILITY_OUTPUT_DIR`               | Directory for scenario reports, logs, and shard metadata.                         | `artifacts/wire-compatibility` |
-| `WIRE_COMPATIBILITY_CASE_FILTER`              | Comma-separated corpus case IDs for a focused run.                                | All eligible cases             |
-| `WIRE_COMPATIBILITY_SHARD_INDEX`              | Zero-based shard to execute. Set together with shard count.                       | `0`                            |
-| `WIRE_COMPATIBILITY_SHARD_COUNT`              | Number of deterministic shards. Use the same count and case filter across shards. | `1`                            |
-| `WIRE_COMPATIBILITY_CPP_COMPILE_ONLY`         | Compile C++ peers without starting DDS exchanges when set to `1`.                 | `0`                            |
-| `WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY` | Maximum concurrent case-specific Wireloom C# builds.                              | `4`                            |
-| `WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY`   | Maximum concurrent native C++ builds; each build uses two compiler jobs.          | `2`                            |
-| `WIRE_COMPATIBILITY_MAX_CONCURRENCY`          | Maximum independent exchanges active across all built cases in a shard.           | `16`                           |
+| Variable                                           | Purpose                                                                                                         | Default                        |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `WIRE_COMPATIBILITY_RTI_VERSION`                   | Selects the exact RTI NuGet package, exclusions, and toolchain expectation.                                     | `7.7.0`                        |
+| `WIRE_COMPATIBILITY_OUTPUT_DIR`                    | Directory for scenario reports, logs, and shard metadata.                                                       | `artifacts/wire-compatibility` |
+| `WIRE_COMPATIBILITY_CASE_FILTER`                   | Comma-separated corpus case IDs for a focused run.                                                              | All eligible cases             |
+| `WIRE_COMPATIBILITY_NATIVE_PEER_SCOPE_CASE_FILTER` | Comma-separated case IDs to run in the RTI C++ / Wireloom C++ peer scope, independent of managed applicability. | Empty                          |
+| `WIRE_COMPATIBILITY_SHARD_INDEX`                   | Zero-based shard to execute. Set together with shard count.                                                     | `0`                            |
+| `WIRE_COMPATIBILITY_SHARD_COUNT`                   | Number of deterministic shards. Use the same count and case filter across shards.                               | `1`                            |
+| `WIRE_COMPATIBILITY_CPP_COMPILE_ONLY`              | Compile C++ peers without starting DDS exchanges when set to `1`.                                               | `0`                            |
+| `WIRE_COMPATIBILITY_CSHARP_BUILD_CONCURRENCY`      | Maximum concurrent case-specific Wireloom C# builds.                                                            | `4`                            |
+| `WIRE_COMPATIBILITY_CASE_BUILD_CONCURRENCY`        | Maximum concurrent native C++ builds; each build uses two compiler jobs.                                        | `2`                            |
+| `WIRE_COMPATIBILITY_MAX_CONCURRENCY`               | Maximum concurrent exchanges per shard; lifecycle exchanges are capped at two.                                  | `16`                           |
 
 Each shard needs its own working copy and output directory when run locally in
 parallel. Case-specific managed outputs are isolated, but restore assets and

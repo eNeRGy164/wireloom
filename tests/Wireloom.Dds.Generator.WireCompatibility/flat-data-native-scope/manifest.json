@@ -1,0 +1,1 @@
+{ "positiveCases": [ { "id": "10-flat-data-binding", "wireMatrix": { "excludedPeersByRtiVersion": { "6.1.2": { "Wireloom C++": "FlatData API is RTI 7.7-only." }, "7.3.1": { "Wireloom C++": "FlatData API is RTI 7.7-only." } } } } ] }

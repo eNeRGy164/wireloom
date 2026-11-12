@@ -15,9 +15,18 @@ internal static class ReportEvidenceBuilder
         var expectedCount = request.ExpectedScenarioCount;
         var exclusions = ReadJson(request.ExclusionsPath);
         var manifest = ReadJson(request.ManifestPath);
+        var cppCases = request.WireloomCppCases is not null
+            ? request.WireloomCppCases.ToHashSet(StringComparer.Ordinal)
+            : manifest["positiveCases"]!.AsArray()
+                .Where(item => PeerPairingPolicy.GetPeers(item!, version, includeWireloomCpp: true)
+                    .Contains(PeerNames.WireloomCpp, StringComparer.Ordinal))
+                .Select(item => (string)item!["id"]!)
+                .ToHashSet(StringComparer.Ordinal);
         var notImplemented = exclusions["notImplementedCases"]!.AsArray();
         var notApplicable = exclusions["notApplicableCases"]?.AsArray() ?? [];
         var unavailableIds = notApplicable.Select(item => (string)item!["id"]!).ToHashSet(StringComparer.Ordinal);
+        var nativePeerScopeCases = request.NativePeerScopeCases?.ToHashSet(StringComparer.Ordinal)
+            ?? new HashSet<string>(StringComparer.Ordinal);
         var wireMatrixConfiguration = manifest["positiveCases"]!.AsArray()
             .Where(item => item!["wireMatrix"] is not null)
             .ToDictionary(item => (string)item!["id"]!, item => item!["wireMatrix"]!, StringComparer.Ordinal);
@@ -25,8 +34,25 @@ internal static class ReportEvidenceBuilder
             ?? Path.Combine(Path.GetDirectoryName(Path.GetFullPath(request.ScenarioPath))!, "execution-provenance.json");
         var sourceSnapshot = SourceSnapshotEvidence.Read(provenancePath);
 
-        var scenarios = ReadScenarioRows(request.ScenarioPath)
-            .Select(row => BuildScenario(row, request, manifest, unavailableIds, wireMatrixConfiguration, sourceSnapshot)).ToList();
+        var scenarioRows = ReadScenarioRows(request.ScenarioPath);
+        ValidateNativePeerScopeRows(scenarioRows, version, unavailableIds, nativePeerScopeCases);
+        var reportedNativePeerScopeUnavailableCases = scenarioRows
+            .Where(row => unavailableIds.Contains(row.CaseId) && nativePeerScopeCases.Contains(row.CaseId))
+            .Select(row => row.CaseId)
+            .ToHashSet(StringComparer.Ordinal);
+        var reportNotApplicable = new JsonArray(notApplicable.Select(item =>
+        {
+            var copy = (JsonObject)item!.DeepClone();
+            if (reportedNativePeerScopeUnavailableCases.Contains((string)copy["id"]!))
+            {
+                copy["reason"] = "The managed peer pairing scope excludes this case because it exercises optional sequences and arrays. Explicit native peer-scope RTI C++ / Wireloom C++ exchanges are included; managed peer exchanges remain excluded.";
+            }
+
+            return copy;
+        }).ToArray());
+
+        var scenarios = scenarioRows
+            .Select(row => BuildScenario(row, request, manifest, unavailableIds, nativePeerScopeCases, wireMatrixConfiguration, sourceSnapshot, cppCases)).ToList();
 
         var reportedCaseIds = scenarios.Select(scenario => (string)scenario["case"]!).ToHashSet(StringComparer.Ordinal);
         var knownExceptions = wireMatrixConfiguration
@@ -40,10 +66,51 @@ internal static class ReportEvidenceBuilder
                 }))
             .ToArray();
 
-        return new ReportData(version, expectedCount, scenarios, notImplemented, notApplicable, knownExceptions, manifest, sourceSnapshot);
+        return new ReportData(version, expectedCount, scenarios, notImplemented, reportNotApplicable, knownExceptions, manifest, sourceSnapshot, cppCases,
+            nativePeerScopeCases);
     }
 
-    private static ReportFields BuildScenario(ScenarioRow row, ReportRequest request, JsonNode manifest, HashSet<string> unavailableIds, Dictionary<string, JsonNode> wireMatrixConfiguration, SourceSnapshotEvidence sourceSnapshot)
+    private static void ValidateNativePeerScopeRows(IReadOnlyList<ScenarioRow> rows, string version,
+        HashSet<string> unavailableIds, HashSet<string> nativePeerScopeCases)
+    {
+        foreach (var row in rows.Where(row => unavailableIds.Contains(row.CaseId)))
+        {
+            if (!nativePeerScopeCases.Contains(row.CaseId))
+            {
+                throw new InvalidDataException($"Case {row.CaseId} is not applicable to RTI {version} and cannot contribute exchanges.");
+            }
+        }
+
+        foreach (var caseGroup in rows.Where(row => nativePeerScopeCases.Contains(row.CaseId))
+                     .GroupBy(row => row.CaseId, StringComparer.Ordinal))
+        {
+            var expectedFixtures = WireCompatibilityCaseCatalog.FixturesFor(caseGroup.Key, version)
+                .ToHashSet(StringComparer.Ordinal);
+            var fixtureGroups = caseGroup.GroupBy(row => row.Fixture, StringComparer.Ordinal).ToArray();
+            if (!fixtureGroups.Select(group => group.Key).ToHashSet(StringComparer.Ordinal).SetEquals(expectedFixtures))
+            {
+                throw new InvalidDataException($"Native peer-scope case {caseGroup.Key} must report every expected {version} fixture.");
+            }
+
+            foreach (var fixtureGroup in fixtureGroups)
+            {
+                var pairings = fixtureGroup.Select(row => (row.Writer, row.Reader)).ToHashSet();
+                var expectedPairings = new HashSet<(string Writer, string Reader)>
+                {
+                    (PeerNames.RtiCpp, PeerNames.WireloomCpp),
+                    (PeerNames.WireloomCpp, PeerNames.RtiCpp),
+                };
+                if (fixtureGroup.Any(row => row.WriterVersion != version || row.ReaderVersion != version)
+                    || fixtureGroup.Count() != expectedPairings.Count || !pairings.SetEquals(expectedPairings))
+                {
+                    throw new InvalidDataException($"Native peer-scope case {caseGroup.Key} [{fixtureGroup.Key}] must contain exactly the directed RTI C++ / Wireloom C++ pairings for RTI {version}.");
+                }
+            }
+        }
+    }
+
+    private static ReportFields BuildScenario(ScenarioRow row, ReportRequest request, JsonNode manifest, HashSet<string> unavailableIds,
+        HashSet<string> nativePeerScopeCases, Dictionary<string, JsonNode> wireMatrixConfiguration, SourceSnapshotEvidence sourceSnapshot, HashSet<string> cppCases)
     {
         var version = request.RtiVersion;
         var logsPath = request.LogsDirectory;
@@ -51,7 +118,7 @@ internal static class ReportEvidenceBuilder
         var provenanceInvalid = !sourceSnapshot.VerifiedUnchanged;
         var status = provenanceInvalid && rowStatus == "PASS" ? "FAIL" : rowStatus;
 
-        if (unavailableIds.Contains(id))
+        if (unavailableIds.Contains(id) && !nativePeerScopeCases.Contains(id))
         {
             throw new InvalidDataException($"Case {id} is not applicable to RTI {version} and cannot contribute exchanges.");
         }
@@ -76,12 +143,14 @@ internal static class ReportEvidenceBuilder
         }
 
         var corpusCase = FindCase(manifest, id);
-        if (!PeerPairingPolicy.GetPeers(corpusCase, version).Contains(writer) || !PeerPairingPolicy.GetPeers(corpusCase, version).Contains(reader))
+        var includeWireloomCpp = cppCases.Contains(id);
+        if (!PeerPairingPolicy.GetPeers(corpusCase, version, includeWireloomCpp).Contains(writer)
+            || !PeerPairingPolicy.GetPeers(corpusCase, version, includeWireloomCpp).Contains(reader))
         {
             throw new InvalidDataException($"Exchange uses an excluded peer for {id}.");
         }
 
-        if (!PeerPairingPolicy.GetPairings(corpusCase, fixture, version).Contains(new DirectedPeerPair(writer, reader)))
+        if (!PeerPairingPolicy.GetPairings(corpusCase, fixture, version, includeWireloomCpp).Contains(new DirectedPeerPair(writer, reader)))
         {
             throw new InvalidDataException($"Exchange uses an excluded pairing for {id} [{fixture}].");
         }
@@ -118,6 +187,7 @@ internal static class ReportEvidenceBuilder
                 ["Wireloom C#"] = wireType,
                 ["RTI C#"] = rtiType,
                 ["RTI C++"] = cppType,
+                ["Wireloom C++"] = cppType,
             };
         }
 
@@ -156,6 +226,7 @@ internal static class ReportEvidenceBuilder
     private static string PeerLogId(string peer) => peer switch
     {
         "Wireloom C#" => "wireloom-cs",
+        "Wireloom C++" => "wireloom-cpp",
         "RTI C#" => "rti-cs",
         "RTI C++" => "rti-cpp",
         _ => throw new InvalidDataException($"Unknown wire peer '{peer}'."),

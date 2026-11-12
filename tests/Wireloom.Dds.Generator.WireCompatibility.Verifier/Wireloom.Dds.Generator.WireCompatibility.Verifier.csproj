@@ -20,6 +20,8 @@
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Infrastructure/CaseRegistry.cs" Link="MatrixTools/Infrastructure/CaseRegistry.cs" />
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Planning/CorpusCaseCatalog.cs" Link="MatrixTools/Planning/CorpusCaseCatalog.cs" />
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Planning/PeerPairingPolicy.cs" Link="MatrixTools/Planning/PeerPairingPolicy.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Planning/WireloomCppScope.cs" Link="MatrixTools/Planning/WireloomCppScope.cs" />
+    <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Planning/WireCompatibilityCaseCatalog.cs" Link="MatrixTools/Planning/WireCompatibilityCaseCatalog.cs" />
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Infrastructure/IdlSourceResolver.cs" Link="MatrixTools/Infrastructure/IdlSourceResolver.cs" />
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Evidence/GenerationProvenance.cs" Link="MatrixTools/Evidence/GenerationProvenance.cs" />
     <Compile Include="../Wireloom.Dds.Generator.WireCompatibility.Runner/Evidence/GenerationProvenanceBuilder.cs" Link="MatrixTools/Evidence/GenerationProvenanceBuilder.cs" />

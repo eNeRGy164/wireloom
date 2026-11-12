@@ -8,8 +8,8 @@ internal static class ShardScenarioBuilder
 {
     internal static ShardScenarioFixture Build(VerificationContext context)
     {
-        var repositoryRoot = context.RepositoryRoot;
         var root = context.Root;
+        var repositoryRoot = context.RepositoryRoot;
         var rtiVersion = context.RtiVersion;
         var manifestPath = context.ManifestPath;
 
@@ -65,17 +65,27 @@ internal static class ShardScenarioBuilder
         var rows = new List<ScenarioRow>();
         var definitions = ReadJson(manifestPath)["positiveCases"]!.AsArray()
             .ToDictionary(item => (string)item!["id"]!, item => item!, StringComparer.Ordinal);
+        var cppCases = cases.Keys.Where(caseId => PeerPairingPolicy.GetPeers(definitions[caseId], rtiVersion,
+                includeWireloomCpp: true).Contains(PeerNames.WireloomCpp, StringComparer.Ordinal))
+            .ToHashSet(StringComparer.Ordinal);
 
         foreach (var item in cases)
         {
-            var availablePeers = PeerPairingPolicy.GetPeers(definitions[item.Key], rtiVersion);
-            var pairings = availablePeers.SelectMany(writer => availablePeers.Select(reader => (Writer: writer, Reader: reader))).ToArray();
+            var includeWireloomCpp = cppCases.Contains(item.Key);
 
             foreach (var fixture in item.Value)
             {
+                var pairings = PeerPairingPolicy.GetPairings(definitions[item.Key], fixture, rtiVersion, includeWireloomCpp);
                 foreach (var (writer, reader) in pairings)
                 {
                     if (item.Key == "05-array-of-sequences-idl" && (writer == peers[1] || reader == peers[1]))
+                    {
+                        continue;
+                    }
+
+                    if (item.Key == "05-array-of-sequences"
+                        && (writer is PeerNames.WireloomCSharp or PeerNames.RtiCSharp
+                            || reader is PeerNames.WireloomCSharp or PeerNames.RtiCSharp))
                     {
                         continue;
                     }
@@ -86,12 +96,7 @@ internal static class ShardScenarioBuilder
                     }
 
                     var status = "PASS";
-                    if (item.Key == "05-array-of-sequences"
-                        && ((writer == peers[0] && reader == peers[2]) || (writer == peers[2] && reader == peers[0])))
-                    {
-                        status = "FAIL";
-                    }
-                    else if (item.Key == "07-union-ulong" && (writer == peers[1] || reader == peers[1]))
+                    if (item.Key == "07-union-ulong" && (writer == peers[1] || reader == peers[1]))
                     {
                         status = "FAIL";
                     }
@@ -122,7 +127,7 @@ internal static class ShardScenarioBuilder
               "notApplicableCases": [
                 {
                   "id": "09-must-understand",
-                  "reason": "RTI feature unavailable in this test profile"
+                  "reason": "Case outside the managed peer wire-matrix scope for this profile"
                 }
               ]
             }
@@ -178,6 +183,7 @@ internal static class ShardScenarioBuilder
                     [peers[0]] = "wireloom-cs",
                     [peers[1]] = "rti-cs",
                     [peers[2]] = "rti-cpp",
+                    [PeerNames.WireloomCpp] = "wireloom-cpp",
                 };
 
                 var logText = "FAIL_DETAIL retained symptom: NullReferenceException\n";
@@ -198,6 +204,8 @@ internal static class ShardScenarioBuilder
 
                 File.WriteAllText(Path.Combine(logs, $"{row.CaseId}-{row.Fixture}-{peerIds[row.Writer]}-{peerIds[row.Reader]}.log"), logText);
             }
+
+            File.WriteAllText(Path.Combine(logs, "wireloom-cpp-generator-build.log"), $"Synthetic C++ generator build log for shard {index}.\n");
 
             var count = File.ReadAllLines(Path.Combine(directory, "scenarios.tsv")).Length.ToString();
 

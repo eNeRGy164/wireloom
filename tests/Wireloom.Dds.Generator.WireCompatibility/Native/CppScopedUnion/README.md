@@ -17,5 +17,5 @@ complete RTI and Wireloom capture byte for byte.
 This is local metadata, registration, and CDR evidence for this corpus shape.
 The fixture does not test live DDS exchange or qualify other aggregate or
 collection-bearing union forms. See
-[`C024-07-union-scoped.windows-x64.json`](../../../../docs/corpus/7.7.0/cpp-evidence/C024-07-union-scoped.windows-x64.json)
-and the [C++ coverage matrix](../../../../docs/corpus/CPP-COVERAGE.md).
+[RTI 7.7.0 corpus profile](../../../../docs/corpus/7.7.0/FEATURE-COVERAGE.md)
+and the [Modern C++ generator guide](../../../../src/Wireloom.Dds.Cpp.Generator/README.md).

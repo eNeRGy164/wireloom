@@ -1,15 +1,16 @@
-# Modern C++ feasibility spike
+# C044 Modern C++ wire regression
 
-The spike generates an RTI Modern C++ topic from the existing
+This fixture generates an RTI Modern C++ topic from the existing
 [C044 IDL](../../../../docs/corpus/idl/features/10-annotations.idl). The
 application uses typed RTI topics, readers, and writers. The Wireloom
 plugin describes the sample's layout and key to the generic type plugin
 factory in the RTI SDK. RTI supplies the serialization and DDS transport.
 
-The spike covers the C044 two-field scalar shape on **RTI Connext DDS
-7.7.0 on Linux x64**. It uses an SDK-specific plugin API. Broader IDL coverage,
-complete RTI-generated API parity and other SDKs
-are future qualification work.
+This fixture covers the C044 two-field scalar shape on **RTI Connext DDS
+7.7.0 on Linux x64** and exercises a profile-specific plugin API. It is one
+regression case in the broader Modern C++ feature; supported shapes and their
+qualification are described in the [generator guide](../../../../src/Wireloom.Dds.Cpp.Generator/README.md)
+and [RTI 7.7.0 corpus profile](../../../../docs/corpus/7.7.0/FEATURE-COVERAGE.md).
 
 ## Refresh the retained output
 
@@ -42,7 +43,7 @@ patched AOT runtime; a Windows executable cannot run in this container.
 ```powershell
 $license = (Resolve-Path -LiteralPath $env:RTI_LICENSE_FILE).Path
 $evidence = (New-Item -ItemType Directory -Path (
-  Join-Path $PWD ('artifacts/cpp-spike/' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'))
+  Join-Path $PWD ('artifacts/cpp-wire-regression/' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'))
 )).FullName
 $image = 'wireloom-wire:7.7.0-trimmed'
 docker image inspect $image --format '{{.Id}}' |
@@ -62,7 +63,8 @@ docker run --rm --workdir /workspace `
   '
 ```
 
-CMake uses the same installed integration as the [consumer project](../../../../samples/consumer-cpp/README.md).
+CMake uses the same installed integration described in the
+[package verification guide](../../../Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md).
 It compiles the same peer source against fresh Wireloom output and the
 [retained RTI control](../../../../docs/corpus/7.7.0/rtiddsgen/cpp/features/10-annotations/).
 The runner checks that fresh generation matches the

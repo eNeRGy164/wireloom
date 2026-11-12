@@ -34,6 +34,7 @@ internal static partial class ManagedFixtures
             "09-optional-string-sequences" => CreateOptionalStringSequenceFixture<T>(options.Fixture),
             "09-optional-aggregate-member" => CreateOptionalAggregateMemberFixture<T>(options.Fixture),
             "07-union-char-boundaries" => CreateCharacterUnionFixture<T>(options.Fixture),
+            "07-union-int8" => CreateCharacterUnionFixture<T>(options.Fixture),
 #if WIRE_COMPATIBILITY_UNBOUNDED_SEQUENCE_ALIASES
             "05-unbounded-sequence-aliases" => CreateUnboundedSequenceAliasesFixture<T>(options.Fixture),
 #endif

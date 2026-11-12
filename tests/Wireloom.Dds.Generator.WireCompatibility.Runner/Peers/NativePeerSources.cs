@@ -5,35 +5,51 @@ namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 /// <summary>Owns native oracle layout, IDL adaptation, and guarded RTI source corrections.</summary>
 internal sealed class NativePeerSources(MatrixOptions options, MatrixWorkspace workspace, CorpusCaseCatalog catalog, WireOracleCatalog oracles)
 {
+    private readonly CppOracleCatalog cppOracles = new(
+        Path.Combine(options.RepositoryRoot, "docs", "corpus", options.RtiVersion, "rtiddsgen", "cpp", "manifest.json"),
+        options.RepositoryRoot);
+
+    /// <summary>Resolves a case's exact native peer topic type from its hash-verified RTI C++ oracle.</summary>
+    internal string DiscoverNativePeerScopeType(string caseId)
+        => cppOracles.FindTopicType(caseId, catalog.Get(caseId), options.RtiVersion);
+
     /// <summary>Stages the selected oracle, returning false when the required capture is missing.</summary>
     internal bool Stage(CaseDescriptor descriptor, CaseWorkspace paths)
     {
         StageIdl(descriptor, paths);
 
-        var oracle = oracles.FindSource(descriptor.CaseId, "rtiCpp");
+        var hasExplicitPolicy = oracles.HasExplicitPolicy(descriptor.CaseId, "rtiCpp");
+        var oracle = hasExplicitPolicy
+            ? oracles.FindConfiguredSource(descriptor.CaseId, "rtiCpp")
+            : cppOracles.FindSource(descriptor.CaseId, catalog.Get(descriptor.CaseId), options.RtiVersion);
         if (!string.IsNullOrEmpty(oracle))
         {
             StageCapturedOracle(descriptor.CaseId, workspace.OracleDirectory(oracle), paths.Native);
 
+            if (descriptor.CaseId == "10-flat-data-binding" && options.RtiVersion != "7.7.0")
+            {
+                ApplyLegacyFlatDataExtensibilityCorrection(paths.Native);
+            }
+
+            var evidence = hasExplicitPolicy
+                ? Path.GetRelativePath(options.RepositoryRoot, workspace.OracleManifest).Replace('\\', '/')
+                : Path.GetRelativePath(options.RepositoryRoot, Path.Combine(options.RepositoryRoot, "docs", "corpus", options.RtiVersion, "rtiddsgen", "cpp", "manifest.json")).Replace('\\', '/');
             File.WriteAllText(Path.Combine(workspace.Logs, descriptor.CaseId + "-rti-cpp-oracle.log"),
-                $"Using checked-in RTI C++ oracle ({oracle}; selection and adjustments are recorded in {Path.GetRelativePath(options.RepositoryRoot, workspace.OracleManifest).Replace('\\', '/')}).{Environment.NewLine}");
+                $"Using checked-in RTI C++ oracle ({oracle}; selection and output hashes are verified from {evidence}).{Environment.NewLine}");
         }
-        else if (descriptor.CaseId != "07-union-wchar-label")
-        {
-            return false;
-        }
+        var available = !string.IsNullOrEmpty(oracle) || descriptor.CaseId == "07-union-wchar-label";
 
         if (descriptor.CaseId == "06-aggregates")
         {
             File.Copy(Path.Combine(workspace.NativeTemplates, "recursive-sequence-peer.cpp"), Path.Combine(paths.Native, "recursive-sequence-peer.cpp"), overwrite: true);
         }
 
-        if (string.IsNullOrEmpty(oracle))
+        if (string.IsNullOrEmpty(oracle) && available)
         {
             ApplyFallbackCorrections(descriptor.CaseId, paths.Native);
         }
 
-        return true;
+        return available;
     }
 
     /// <summary>Writes authored peer sources around the selected native type.</summary>
@@ -49,6 +65,15 @@ internal sealed class NativePeerSources(MatrixOptions options, MatrixWorkspace w
         File.Copy(Path.Combine(workspace.NativeTemplates, "CMakeLists.txt"), Path.Combine(paths.Native, "CMakeLists.txt"), overwrite: true);
     }
 
+    /// <summary>Writes a C++ peer entry point against generated Wireloom sources.</summary>
+    internal void WriteWireloomCppTemplate(CaseWorkspace paths, string cppType, string idlBase)
+    {
+        var main = File.ReadAllText(Path.Combine(workspace.NativeTemplates, "main.cpp.in"))
+            .Replace("@IDL_BASE@", idlBase, StringComparison.Ordinal)
+            .Replace("@CPP_TYPE@", cppType, StringComparison.Ordinal);
+        File.WriteAllText(paths.WireloomCppMain, main);
+    }
+
     private void StageIdl(CaseDescriptor descriptor, CaseWorkspace paths)
     {
         var source = IdlSourceResolver.ResolveOracleIdl(options.RepositoryRoot, descriptor.CaseId, workspace.CorpusFile(descriptor.Idl));
@@ -60,9 +85,12 @@ internal sealed class NativePeerSources(MatrixOptions options, MatrixWorkspace w
             return;
         }
 
-        if (descriptor.CaseId == "10-flat-data-binding")
+        if (descriptor.CaseId == "10-flat-data-binding" && options.RtiVersion != "7.7.0")
         {
-            File.WriteAllText(target, Regex.Replace(File.ReadAllText(source), @"language_binding\(FLAT_DATA\)", string.Empty));
+            var idl = File.ReadAllText(source);
+            idl = Regex.Replace(idl, @"(?m)^.*@language_binding\(FLAT_DATA\).*\r?\n", string.Empty);
+            idl = idl.Replace("@topic @final struct Sample", "@topic struct Sample", StringComparison.Ordinal);
+            File.WriteAllText(target, idl);
             return;
         }
 
@@ -76,6 +104,29 @@ internal sealed class NativePeerSources(MatrixOptions options, MatrixWorkspace w
         }
 
         File.Copy(source, target, overwrite: true);
+    }
+
+    private static void ApplyLegacyFlatDataExtensibilityCorrection(string nativeDirectory)
+    {
+        var typeCodePath = Path.Combine(nativeDirectory, "idl.cxx");
+        var typeCode = File.ReadAllText(typeCodePath);
+        const string finalTypeCode = "DDS_TK_STRUCT| DDS_TK_FINAL_EXTENSIBILITY";
+        if (!typeCode.Contains(finalTypeCode, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException("The retained legacy FlatData RTI C++ oracle has no final TypeCode marker to adapt.");
+        }
+
+        File.WriteAllText(typeCodePath, typeCode.Replace(finalTypeCode, "DDS_TK_STRUCT", StringComparison.Ordinal));
+
+        var headerPath = Path.Combine(nativeDirectory, "idl.hpp");
+        var header = File.ReadAllText(headerPath);
+        const string finalTrait = "::dds::core::xtypes::ExtensibilityKind::FINAL";
+        if (!header.Contains(finalTrait, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException("The retained legacy FlatData RTI C++ oracle has no final extensibility trait to adapt.");
+        }
+
+        File.WriteAllText(headerPath, header.Replace(finalTrait, "::dds::core::xtypes::ExtensibilityKind::EXTENSIBLE", StringComparison.Ordinal));
     }
 
     private void StageCapturedOracle(string caseId, string source, string destination)

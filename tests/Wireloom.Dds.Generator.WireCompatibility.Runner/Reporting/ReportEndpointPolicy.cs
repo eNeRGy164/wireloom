@@ -8,6 +8,7 @@ internal static class ReportEndpointPolicy
     private static readonly Dictionary<string, (string Implementation, string Language)> PeerData = new()
         {
             ["Wireloom C#"] = ("Wireloom", "C#"),
+            ["Wireloom C++"] = ("Wireloom", "C++"),
             ["RTI C#"] = ("RTI", "C#"),
             ["RTI C++"] = ("RTI", "C++"),
         };
@@ -47,7 +48,7 @@ internal static class ReportEndpointPolicy
             return "custom-test-adaptation";
         }
 
-        if (peer == "Wireloom C#")
+        if (peer is "Wireloom C#" or "Wireloom C++")
         {
             return "wireloom-generated";
         }
@@ -149,9 +150,9 @@ internal static class ReportEndpointPolicy
             return "Manual DynamicType reference; rtiddsgen rejects the wchar discriminator.";
         }
 
-        if (id == "10-flat-data-binding")
+        if (id == "10-flat-data-binding" && peerVersion != "7.7.0")
         {
-            return "Plain C++ reference: remove @language_binding(FLAT_DATA); canonical extensibility is incompatible with FlatData. FlatData layout is unqualified.";
+            return "Legacy RTI C++ reference uses retained PLAIN-mapping output; its staged TypeCode is aligned to the RTI C# Extensible mapping for this generic exchange. FlatData runtime behavior is unqualified for this profile.";
         }
 
         return null;

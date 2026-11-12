@@ -21,7 +21,7 @@ Raw captured RTI oracle sources are not edited; corrections live in versioned
 - [W011 · Recursive type generation](#w011)
 - [W012 · Recursive type-name qualification](#w012)
 - [W013 · Wide-character union reference](#w013)
-- [W014 · FlatData reference input](#w014)
+- [W014 · Legacy FlatData PLAIN reference](#w014)
 - [W015 · Wstring alias peer corrections](#w015)
 - [W016 · Unsigned 32-bit union labels](#w016)
 - [W017 · ASCII character label capture](#w017)
@@ -441,19 +441,20 @@ failures pass. See [native type model](Native/main.cpp.in).
 <a id="flatdata-reference-input"></a>
 <a id="w014"></a>
 
-## W014 · FlatData reference input
+## W014 · Legacy FlatData PLAIN reference
 
 **Scope:** C047 `10-flat-data-binding`\
-**Version:** `6.1.2`, `7.3.1`, `7.7.0`\
+**Version:** `6.1.2`, `7.3.1`\
 **Peer:** RTI C++ reference
 
-**Applies when:** The generic native C++ wire-comparison harness needs the
-ordinary PLAIN mapping for the shared FlatData IDL.
+**Applies when:** The legacy wire profiles use their retained PLAIN-mapping
+RTI C++ output for the shared FlatData IDL. FlatData runtime behavior is not
+qualified for those profiles.
 
-The canonical IDL selects FlatData and declares `Sample` as `@final`. The
-generic C++ peer in the shared wire matrix is a PLAIN-mapping reference peer,
-not a FlatData peer. That harness strips the module mapping annotation only in
-its scratch input to select ordinary C++ mapping:
+The canonical IDL selects FlatData and declares `Sample` as `@final`. For these
+legacy profiles, the retained RTI C++ output uses ordinary PLAIN mapping. The
+harness removes the module mapping annotation from its scratch IDL input to
+keep the reference input consistent with that retained peer:
 
 ```idl
 @language_binding(FLAT_DATA)
@@ -472,13 +473,13 @@ C++ input:
 sed '/@language_binding(FLAT_DATA)/d' "$idl_path" > "$native_dir/idl.idl"
 ```
 
-This preserves the canonical final extensibility and XCDR2 sample shape while
-selecting ordinary C++ mapping. It is a harness-specific reference-model
-adaptation and is not used by the dedicated C047 FlatData generation, consumer,
-or C# peer interoperability checks. C047's actual FlatData behavior is
-qualified for RTI 7.7.0.0 in both directions with its independent C# peer; see
-the [C++ coverage matrix](../../docs/corpus/CPP-COVERAGE.md) and
-[interop evidence](../../docs/corpus/7.7.0/cpp-evidence/C047-10-flat-data-binding.interop.json).
+This preserves the canonical final extensibility and XCDR2 sample shape. RTI
+7.7.0 uses its captured FlatData C++ output, including `rti::flat` sample and
+offset types; W014 does not apply to that profile. The dedicated C047 FlatData
+consumer and two-way RTI C# peer interoperability checks qualify that modern
+binding; see
+the [Modern C++ generator guide](../../src/Wireloom.Dds.Cpp.Generator/README.md) and
+[RTI 7.7.0 corpus profile](../../docs/corpus/7.7.0/FEATURE-COVERAGE.md).
 The canonical IDL and C# inputs are unchanged. See
 [IDL adaptation](../Wireloom.Dds.Generator.WireCompatibility.Runner/Peers/NativePeerSources.cs).
 

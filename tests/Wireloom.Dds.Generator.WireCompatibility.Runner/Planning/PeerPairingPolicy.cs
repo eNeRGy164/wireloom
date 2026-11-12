@@ -7,7 +7,7 @@ namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 internal static class PeerPairingPolicy
 {
     /// <summary>Returns configured or default peers after exact-profile exclusions.</summary>
-    internal static string[] GetPeers(JsonNode definition, string? version = null)
+    internal static string[] GetPeers(JsonNode definition, string? version = null, bool includeWireloomCpp = false)
     {
         ArgumentNullException.ThrowIfNull(definition);
 
@@ -15,25 +15,47 @@ internal static class PeerPairingPolicy
             ? configuredPeers.Select(peer => (string)peer!).ToList()
             : [PeerNames.WireloomCSharp, PeerNames.RtiCSharp, PeerNames.RtiCpp];
 
+        foreach (var exclusion in definition["wireMatrix"]?["excludedPeers"]?.AsObject() ?? [])
+        {
+            peers.Remove(exclusion.Key);
+        }
+
         foreach (var exclusion in definition["wireMatrix"]?["excludedPeersByRtiVersion"]?[version ?? ""]?.AsObject() ?? [])
         {
             peers.Remove(exclusion.Key);
         }
 
+        var excludedPeers = definition["wireMatrix"]?["excludedPeers"]?.AsObject();
+        var profileExcludedPeers = definition["wireMatrix"]?["excludedPeersByRtiVersion"]?[version ?? ""]?.AsObject();
+        if (includeWireloomCpp
+            && excludedPeers?.ContainsKey(PeerNames.WireloomCpp) != true
+            && profileExcludedPeers?.ContainsKey(PeerNames.WireloomCpp) != true
+            && !peers.Contains(PeerNames.WireloomCpp, StringComparer.Ordinal))
+        {
+            peers.Add(PeerNames.WireloomCpp);
+        }
+
         return [.. peers];
     }
 
-    /// <summary>Applies a directed fixture override or expands the ordered Cartesian peer product.</summary>
-    internal static DirectedPeerPair[] GetPairings(JsonNode definition, string? fixture = null, string? version = null)
+    /// <summary>Expands the ordered Cartesian product for a full C++ matrix; otherwise applies an exact fixture override.</summary>
+    internal static DirectedPeerPair[] GetPairings(JsonNode definition, string? fixture = null, string? version = null,
+        bool includeWireloomCpp = false, IReadOnlyList<DirectedPeerPair>? qualifiedWireloomCppPairings = null)
     {
-        var peers = GetPeers(definition, version);
+        var fixtureExclusions = fixture is null
+            ? null
+            : definition["wireMatrix"]?["excludedPeersByFixtureByRtiVersion"]?[version ?? ""]?[fixture]?.AsObject()
+                ?? definition["wireMatrix"]?["excludedPeersByFixture"]?[fixture]?.AsObject();
+        var peers = GetPeers(definition, version, includeWireloomCpp)
+            .Where(peer => fixtureExclusions?.ContainsKey(peer) != true)
+            .ToArray();
+        includeWireloomCpp &= peers.Contains(PeerNames.WireloomCpp, StringComparer.Ordinal);
 
-        if (fixture is null || definition["wireMatrix"]?["fixturePairings"]?[fixture] is not JsonArray configuredPairings)
-        {
-            return [.. peers.SelectMany(writer => peers.Select(reader => new DirectedPeerPair(writer, reader)))];
-        }
-
-        var pairings = configuredPairings.Select(value =>
+        var configuredPairings = fixture is null
+            ? null
+            : definition["wireMatrix"]?["fixturePairingsByRtiVersion"]?[version ?? ""]?[fixture]?.AsArray()
+                ?? definition["wireMatrix"]?["fixturePairings"]?[fixture]?.AsArray();
+        var parsedPairings = configuredPairings?.Select(value =>
         {
             var endpoints = ((string)value!).Split('|');
             if (endpoints.Length != 2 || !peers.Contains(endpoints[0]) || !peers.Contains(endpoints[1]))
@@ -43,12 +65,50 @@ internal static class PeerPairingPolicy
 
             return new DirectedPeerPair(endpoints[0], endpoints[1]);
         }).ToArray();
-
-        if (pairings.Length == 0 || pairings.Distinct().Count() != pairings.Length)
+        if (parsedPairings is { } configured && (configured.Length == 0 || configured.Distinct().Count() != configured.Length))
         {
             throw new InvalidDataException($"Fixture pairings for {fixture} must be non-empty and unique.");
         }
 
-        return pairings;
+        var result = new List<DirectedPeerPair>();
+        if (parsedPairings is not null)
+        {
+            // A fixture-specific list is an exact documented exception to the
+            // profile's default full matrix, including Wireloom C++ pairings.
+            result.AddRange(parsedPairings);
+        }
+        else
+        {
+            result.AddRange(peers.SelectMany(writer => peers.Select(reader => new DirectedPeerPair(writer, reader))));
+        }
+
+        if (includeWireloomCpp && parsedPairings is null)
+        {
+            foreach (var otherPeer in peers.Where(peer => peer != PeerNames.WireloomCpp))
+            {
+                result.Add(new DirectedPeerPair(PeerNames.WireloomCpp, otherPeer));
+                result.Add(new DirectedPeerPair(otherPeer, PeerNames.WireloomCpp));
+            }
+            result.Add(new DirectedPeerPair(PeerNames.WireloomCpp, PeerNames.WireloomCpp));
+        }
+
+        if (qualifiedWireloomCppPairings is not null)
+        {
+            var availablePeers = GetPeers(definition, version, includeWireloomCpp: true)
+                .Where(peer => fixtureExclusions?.ContainsKey(peer) != true)
+                .ToHashSet(StringComparer.Ordinal);
+            foreach (var pairing in qualifiedWireloomCppPairings)
+            {
+                if (!availablePeers.Contains(pairing.Writer) || !availablePeers.Contains(pairing.Reader)
+                    || pairing.Writer != PeerNames.WireloomCpp && pairing.Reader != PeerNames.WireloomCpp)
+                {
+                    throw new InvalidDataException($"Invalid qualified Wireloom C++ pairing for {fixture}.");
+                }
+
+                result.Add(pairing);
+            }
+        }
+
+        return [.. result.Distinct()];
     }
 }

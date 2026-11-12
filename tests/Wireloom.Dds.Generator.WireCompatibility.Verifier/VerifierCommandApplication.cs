@@ -12,7 +12,7 @@ internal static class VerifierCommandApplication
 {
     internal static int Run(string[] args)
     {
-        const string usage = "Usage: Wireloom.Dds.Generator.WireCompatibility.Verifier <repository-root|list-cases|case-field|case-pairings|discover-cases|generation-provenance|partition-shard|merge-shards|render-report|adapt-rti-characters> ...";
+        const string usage = "Usage: Wireloom.Dds.Generator.WireCompatibility.Verifier <repository-root|list-cases|case-field|case-pairings|discover-cases|generation-provenance|partition-shard|merge-shards|render-report|check-results|adapt-rti-characters> ...";
         var jsonOptions = new JsonSerializerOptions
         {
             WriteIndented = true,
@@ -61,13 +61,17 @@ internal static class VerifierCommandApplication
                 }
                 case "case-pairings":
                 {
-                    if (args.Length is not (3 or 4))
+                    if (args.Length is < 3 or > 5)
                     {
                         throw new ArgumentException(usage);
                     }
 
-                    var item = FindCase(ReadJson(args[1]), args[2]);
-                    foreach (var (writer, reader) in CasePairings(item, args.Length == 4 ? args[3] : null))
+                    var manifestPath = Path.GetFullPath(args[1]);
+                    var item = FindCase(ReadJson(manifestPath), args[2]);
+                    var fixture = args.Length >= 4 ? args[3] : null;
+                    var version = args.Length == 5 ? args[4] : null;
+                    var includeWireloomCpp = version is "6.1.2" or "7.3.1" or "7.7.0";
+                    foreach (var (writer, reader) in CasePairings(item, fixture, version, includeWireloomCpp))
                     {
                         Console.WriteLine($"{writer}|{reader}");
                     }
@@ -90,6 +94,9 @@ internal static class VerifierCommandApplication
                     break;
                 case "merge-shards":
                     MergeShards(args);
+                    break;
+                case "check-results":
+                    CheckResults(args);
                     break;
                 default:
                     throw new ArgumentException(usage);
@@ -118,8 +125,9 @@ internal static class VerifierCommandApplication
         }
 
         // Preserves the standalone tuple contract through the shared pairing policy.
-        PeerPair[] CasePairings(JsonNode item, string? fixture = null) =>
-            PeerPairingPolicy.GetPairings(item, fixture: fixture).Select(pair => (pair.Writer, pair.Reader)).ToArray();
+        PeerPair[] CasePairings(JsonNode item, string? fixture = null, string? version = null, bool includeWireloomCpp = false) =>
+            PeerPairingPolicy.GetPairings(item, fixture: fixture, version: version, includeWireloomCpp: includeWireloomCpp)
+                .Select(pair => (pair.Writer, pair.Reader)).ToArray();
 
         // Captures generation evidence using the runner's shared in-process implementation.
         void WriteGenerationProvenance(string[] commandArgs)
@@ -177,6 +185,10 @@ internal static class VerifierCommandApplication
                 rtiVersion = version,
                 shardCount = count,
                 expectedScenarioCount = rows.Count,
+                wireloomCppCases = cases.Where(item => item.Any(row =>
+                        row.Writer == PeerNames.WireloomCpp || row.Reader == PeerNames.WireloomCpp))
+                    .Select(item => item.Key).Order(StringComparer.Ordinal).ToArray(),
+                nativePeerScopeCases = Array.Empty<string>(),
                 cases = cases.Select(item => new
                 {
                     id = item.Key,
@@ -216,7 +228,7 @@ internal static class VerifierCommandApplication
             SourceSnapshotEvidence? sharedProvenance = null;
             var indices = new HashSet<int>();
             var exchanges = new Dictionary<string, ScenarioRow>(StringComparer.Ordinal);
-            var logFiles = new List<string>();
+            var logFiles = new List<(int ShardIndex, string Path)>();
             foreach (var metadataFile in metadataFiles.Order(StringComparer.Ordinal))
             {
                 var directory = Path.GetDirectoryName(metadataFile)!;
@@ -288,13 +300,28 @@ internal static class VerifierCommandApplication
                 var logs = Path.Combine(directory, "logs");
                 if (Directory.Exists(logs))
                 {
-                    logFiles.AddRange(Directory.GetFiles(logs, "*.log"));
-                    logFiles.AddRange(Directory.GetFiles(logs, "*-generation.json"));
+                    logFiles.AddRange(Directory.GetFiles(logs, "*.log").Select(path => (index, path)));
+                    logFiles.AddRange(Directory.GetFiles(logs, "*-generation.json").Select(path => (index, path)));
                 }
             }
 
             var orderedKeys = sharedPlan!["cases"]!.AsArray().SelectMany(item => item!["scenarioKeys"]!.AsArray())
                 .Select(item => (string)item!).ToArray();
+            var wireloomCppCases = (sharedPlan["wireloomCppCases"]?.AsArray() ?? [])
+                .Select(item => (string)item!)
+                .ToHashSet(StringComparer.Ordinal);
+            var nativePeerScopeCases = (sharedPlan["nativePeerScopeCases"]?.AsArray() ?? [])
+                .Select(item => (string)item!)
+                .ToHashSet(StringComparer.Ordinal);
+            var plannedCaseIds = sharedPlan["cases"]!.AsArray()
+                .Select(item => (string)item!["id"]!)
+                .ToHashSet(StringComparer.Ordinal);
+            if (!wireloomCppCases.IsSubsetOf(plannedCaseIds)
+                || !nativePeerScopeCases.IsSubsetOf(wireloomCppCases)
+                || !nativePeerScopeCases.IsSubsetOf(plannedCaseIds))
+            {
+                throw new InvalidDataException("Shard peer-scope selections must be subsets of the shared case plan.");
+            }
             var expectedCount = (int)sharedPlan["expectedScenarioCount"]!;
             if (orderedKeys.Length != expectedCount || exchanges.Count != expectedCount
                 || orderedKeys.Distinct(StringComparer.Ordinal).Count() != expectedCount)
@@ -302,21 +329,55 @@ internal static class VerifierCommandApplication
                 throw new InvalidDataException("Combined shards do not cover the complete scenario plan exactly once.");
             }
 
-            Directory.CreateDirectory(destination);
+            var sourceDirectory = Path.GetFullPath(source);
+            var destinationDirectory = Path.GetFullPath(destination);
+            if (string.Equals(sourceDirectory, destinationDirectory, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException("Shard source and merged destination must be different directories.");
+            }
+
+            Directory.CreateDirectory(destinationDirectory);
             CopyExecutionProvenance(Path.Combine(Path.GetDirectoryName(metadataFiles[0])!, "execution-provenance.json"), destination);
             var logsDestination = Path.Combine(destination, "logs");
-            Directory.CreateDirectory(logsDestination);
-            foreach (var file in logFiles)
+            if (Directory.Exists(logsDestination))
             {
-                File.Copy(file, Path.Combine(logsDestination, Path.GetFileName(file)), overwrite: false);
+                Directory.Delete(logsDestination, recursive: true);
+            }
+            Directory.CreateDirectory(logsDestination);
+            foreach (var (shardIndex, file) in logFiles)
+            {
+                CopyMergedLog(file, logsDestination, shardIndex);
             }
             var rowsDestination = Path.Combine(destination, "scenarios.tsv");
             File.WriteAllLines(rowsDestination, orderedKeys.Select(key => exchanges[key].ToTsv()));
             File.WriteAllText(Path.Combine(destination, "plan.json"), sharedPlan.ToJsonString(jsonOptions) + "\n");
             RenderReport(["render-report", version, expectedCount.ToString(), rowsDestination,
                 Path.Combine(destination, "results.json"), Path.Combine(destination, "results.md"), logsDestination, commandArgs[5],
-                Path.Combine(FindRepositoryRoot(commandArgs[5]), "docs", "corpus", "manifest.json")]);
+                Path.Combine(FindRepositoryRoot(commandArgs[5]), "docs", "corpus", "manifest.json")], wireloomCppCases, nativePeerScopeCases);
             Console.WriteLine($"Merged {count} shards: {expectedCount} exchanges verified exactly once.");
+        }
+
+        void CheckResults(string[] commandArgs)
+        {
+            RequireArgs(2);
+            var report = ReadJson(commandArgs[1]);
+            var expectedCount = (int)report["expectedScenarioCount"]!;
+            var scenarios = report["scenarios"]!.AsArray();
+            if ((int)report["scenarioCount"]! != scenarios.Count || expectedCount != scenarios.Count)
+            {
+                throw new InvalidDataException(
+                    $"Combined wire report contains {scenarios.Count} rows; expected {expectedCount}.");
+            }
+
+            var issue = scenarios.FirstOrDefault(scenario => (string?)scenario!["status"] != "PASS");
+            if (issue is not null)
+            {
+                throw new InvalidDataException(
+                    $"First non-passing wire row: {(string?)issue["status"]} "
+                    + $"{(string?)issue["case"]} [{(string?)issue["fixture"]}].");
+            }
+
+            Console.WriteLine($"All {expectedCount} combined wire rows passed.");
         }
 
         List<ScenarioRow> ReadScenarioRows(string path)
@@ -392,15 +453,23 @@ internal static class VerifierCommandApplication
         }
 
         // Build structured evidence first, then render the same scenarios as Markdown.
-        void RenderReport(string[] commandArgs)
+        void RenderReport(string[] commandArgs, IReadOnlySet<string>? wireloomCppCases = null,
+            IReadOnlySet<string>? nativePeerScopeCases = null)
         {
-            if (commandArgs.Length != 9)
+            if (commandArgs.Length is not (9 or 10))
             {
                 throw new ArgumentException(usage);
             }
 
+            var selectedNativePeerScopeCases = nativePeerScopeCases
+                ?? (commandArgs.Length == 10
+                    ? commandArgs[9].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet(StringComparer.Ordinal)
+                    : new HashSet<string>(StringComparer.Ordinal));
+            var selectedCppCases = wireloomCppCases
+                ?? (commandArgs.Length == 10 ? selectedNativePeerScopeCases : null);
             var request = new ReportRequest(commandArgs[1], int.Parse(commandArgs[2]), commandArgs[3],
-                commandArgs[4], commandArgs[5], commandArgs[6], commandArgs[7], commandArgs[8], FindRepositoryRoot(commandArgs[8]));
+                commandArgs[4], commandArgs[5], commandArgs[6], commandArgs[7], commandArgs[8], FindRepositoryRoot(commandArgs[8]),
+                WireloomCppCases: selectedCppCases, NativePeerScopeCases: selectedNativePeerScopeCases);
             WireReportRenderer.Render(request);
         }
 
@@ -419,6 +488,46 @@ internal static class VerifierCommandApplication
                     Directory.CreateDirectory(Path.GetDirectoryName(target)!);
                     File.Copy(file, target, overwrite: true);
                 }
+            }
+        }
+
+        void CopyMergedLog(string sourcePath, string logsDirectory, int shardIndex)
+        {
+            var fileName = Path.GetFileName(sourcePath);
+            var primaryPath = Path.Combine(logsDirectory, fileName);
+            if (CopyIfAbsentOrIdentical(sourcePath, primaryPath))
+            {
+                return;
+            }
+
+            var shardDirectory = Path.Combine(logsDirectory, $"shard-{shardIndex}");
+            Directory.CreateDirectory(shardDirectory);
+            var shardPath = Path.Combine(shardDirectory, fileName);
+            if (CopyIfAbsentOrIdentical(sourcePath, shardPath))
+            {
+                return;
+            }
+
+            var extension = Path.GetExtension(fileName);
+            var stem = Path.GetFileNameWithoutExtension(fileName);
+            for (var suffix = 2; ; suffix++)
+            {
+                var uniquePath = Path.Combine(shardDirectory, $"{stem}-{suffix}{extension}");
+                if (CopyIfAbsentOrIdentical(sourcePath, uniquePath))
+                {
+                    return;
+                }
+            }
+
+            static bool CopyIfAbsentOrIdentical(string source, string target)
+            {
+                if (!File.Exists(target))
+                {
+                    File.Copy(source, target, overwrite: false);
+                    return true;
+                }
+
+                return File.ReadAllBytes(source).AsSpan().SequenceEqual(File.ReadAllBytes(target));
             }
         }
 

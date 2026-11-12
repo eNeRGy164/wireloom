@@ -69,6 +69,9 @@ internal static class ReceivedSampleVerifier
             case "07-union-string-sequence-aliases":
                 VerifyTypedValue(expected, sample, context);
                 break;
+            case "07-union-int8":
+                VerifyInt8UnionValue(expected!, sample!, options.Fixture, context);
+                break;
             default:
                 IndependentSampleVerifier.Verify(expectedDynamic!, sample!, context);
                 break;
@@ -81,5 +84,46 @@ internal static class ReceivedSampleVerifier
         {
             throw new InvalidDataException($"Expected {expected}; received {actual} for {context}.");
         }
+    }
+
+    private static void VerifyInt8UnionValue<T>(T expected, T actual, string fixture, string context)
+    {
+        var discriminatorProperty = typeof(T).GetProperty("Discriminator")
+            ?? throw new InvalidDataException($"The signed int8 union has no discriminator property for {context}.");
+        var expectedDiscriminator = NormalizeInt8Discriminator(discriminatorProperty.GetValue(expected));
+        var actualDiscriminator = NormalizeInt8Discriminator(discriminatorProperty.GetValue(actual));
+        if (expectedDiscriminator != actualDiscriminator)
+        {
+            throw new InvalidDataException(
+                $"Expected signed int8 discriminator {expectedDiscriminator}; received {actualDiscriminator} for {context}.");
+        }
+
+        var branch = fixture switch
+        {
+            "union-minimum" => "minimum",
+            "union-maximum" => "maximum",
+            "union-default" => "fallback",
+            _ => throw new FixtureException($"Unknown signed int8 union fixture '{fixture}'.")
+        };
+        var branchProperty = typeof(T).GetProperty(branch)
+            ?? throw new InvalidDataException($"The signed int8 union has no '{branch}' branch for {context}.");
+        var expectedValue = branchProperty.GetValue(expected);
+        var actualValue = branchProperty.GetValue(actual);
+        if (!Equals(expectedValue, actualValue))
+        {
+            throw new InvalidDataException(
+                $"Expected '{branch}' value {expectedValue}; received {actualValue} for {context}.");
+        }
+    }
+
+    private static long NormalizeInt8Discriminator(object? value)
+    {
+        if (value is null)
+        {
+            throw new InvalidDataException("The signed int8 union discriminator is null.");
+        }
+
+        var numericValue = Convert.ToInt64(value, System.Globalization.CultureInfo.InvariantCulture);
+        return numericValue > sbyte.MaxValue ? numericValue - (sbyte.MaxValue - sbyte.MinValue + 1L) : numericValue;
     }
 }

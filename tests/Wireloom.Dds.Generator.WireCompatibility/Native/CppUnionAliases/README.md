@@ -17,5 +17,5 @@ complete RTI and Wireloom capture files byte for byte.
 This qualifies the exact typedef-chain case for local API, metadata,
 registration, and CDR only. It does not establish live DDS or qualify other
 union alias or aggregate shapes. See the
-[`07-union-aliases.linux-x64.json`](../../../../docs/corpus/7.7.0/cpp-evidence/07-union-aliases.linux-x64.json)
-report and the [C++ coverage matrix](../../../../docs/corpus/CPP-COVERAGE.md).
+[RTI 7.7.0 corpus profile](../../../../docs/corpus/7.7.0/FEATURE-COVERAGE.md)
+report and the [Modern C++ generator guide](../../../../src/Wireloom.Dds.Cpp.Generator/README.md).

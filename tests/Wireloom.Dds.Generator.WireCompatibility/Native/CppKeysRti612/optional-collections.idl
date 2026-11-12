@@ -1,0 +1,4 @@
+struct OptionalCollections {
+    @optional sequence<long, 4> values;
+    @optional long items[2];
+};

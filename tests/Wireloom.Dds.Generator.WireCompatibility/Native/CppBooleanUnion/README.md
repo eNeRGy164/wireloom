@@ -16,7 +16,7 @@ enabled, and nonempty-disabled states.
 This qualifies the exact boolean union shape for local metadata, registration,
 and CDR only. It does not test live DDS exchange or qualify other union shapes.
 See the Windows
-[`07-union-boolean.windows-x64.json`](../../../../docs/corpus/7.7.0/cpp-evidence/07-union-boolean.windows-x64.json)
+[RTI 7.7.0 corpus profile](../../../../docs/corpus/7.7.0/FEATURE-COVERAGE.md)
 and Linux
-[`07-union-boolean.linux-x64.json`](../../../../docs/corpus/7.7.0/cpp-evidence/07-union-boolean.linux-x64.json)
-reports and the [C++ coverage matrix](../../../../docs/corpus/CPP-COVERAGE.md).
+[RTI 7.7.0 corpus profile](../../../../docs/corpus/7.7.0/FEATURE-COVERAGE.md)
+reports and the [Modern C++ generator guide](../../../../src/Wireloom.Dds.Cpp.Generator/README.md).

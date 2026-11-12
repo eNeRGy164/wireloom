@@ -15,5 +15,5 @@ byte.
 
 This is local metadata, registration, and CDR evidence for this exact corpus
 shape. It does not test live DDS exchange or qualify other union forms. See
-[`C025-07-union-multilabel.windows-x64.json`](../../../../docs/corpus/7.7.0/cpp-evidence/C025-07-union-multilabel.windows-x64.json)
-and the [C++ coverage matrix](../../../../docs/corpus/CPP-COVERAGE.md).
+[RTI 7.7.0 corpus profile](../../../../docs/corpus/7.7.0/FEATURE-COVERAGE.md)
+and the [Modern C++ generator guide](../../../../src/Wireloom.Dds.Cpp.Generator/README.md).

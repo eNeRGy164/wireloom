@@ -5,6 +5,16 @@ namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 /// <summary>Discovers eligible corpus cases directly from the manifest and exact-profile exclusions.</summary>
 internal static class CorpusCaseDiscovery
 {
+    /// <summary>Reads positive case IDs for an explicit native peer-scope selection, including managed-inapplicable cases.</summary>
+    [PublicAPI]
+    internal static IReadOnlyList<string> ReadPositiveCaseIds(string manifestPath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(manifestPath);
+
+        using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        return ReadIds(manifest.RootElement, "positiveCases", requiredCollection: true);
+    }
+
     /// <summary>Reads case selection in manifest order, retaining RTI-only controls in exclusion order.</summary>
     internal static DiscoveredCases Read(string manifestPath, string exclusionsPath)
     {
@@ -64,18 +74,24 @@ internal static class CorpusCaseDiscovery
 internal sealed record DiscoveredCases(IReadOnlyList<string> WireloomCases, IReadOnlyList<string> RtiOnlyCases)
 {
     /// <summary>Applies an optional ordered case filter and rejects empty, duplicate, or ineligible selections.</summary>
-    internal IReadOnlyList<string> Select(string? caseFilter)
+    internal IReadOnlyList<string> Select(string? caseFilter, IReadOnlySet<string>? nativePeerScopeCases = null)
     {
         var available = WireloomCases.Concat(RtiOnlyCases).ToArray();
         var selected = string.IsNullOrEmpty(caseFilter)
             ? available
             : caseFilter.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        if (selected.Length == 0 || selected.Distinct(StringComparer.Ordinal).Count() != selected.Length ||
-            selected.Any(caseId => !available.Contains(caseId, StringComparer.Ordinal)))
+        if (selected.Length == 0 || selected.Distinct(StringComparer.Ordinal).Count() != selected.Length)
         {
             throw new InvalidDataException("The selected case filter is empty, duplicated, unknown, or inapplicable for this RTI profile.");
         }
 
-        return selected;
+        var managedCases = selected.Where(caseId => available.Contains(caseId, StringComparer.Ordinal)).ToArray();
+        var excludedCases = selected.Except(managedCases, StringComparer.Ordinal);
+        if (excludedCases.Any(caseId => nativePeerScopeCases?.Contains(caseId) != true))
+        {
+            throw new InvalidDataException("The selected case filter is empty, duplicated, unknown, or inapplicable for this RTI profile.");
+        }
+
+        return managedCases;
     }
 }

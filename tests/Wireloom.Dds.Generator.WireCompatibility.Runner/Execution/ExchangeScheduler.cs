@@ -11,42 +11,83 @@ namespace Wireloom.Dds.Generator.WireCompatibility.Runner;
 internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictionary<string, ExchangeCaseBuild> caseBuilds)
 {
     private const int FirstDomainId = 20;
+    private const int LifecycleExchangeConcurrency = 2;
     private readonly SemaphoreSlim concurrency = new(options.ExchangeConcurrency, options.ExchangeConcurrency);
+    private readonly SemaphoreSlim lifecycleConcurrency = new(LifecycleExchangeConcurrency, LifecycleExchangeConcurrency);
     private readonly System.Collections.Concurrent.ConcurrentBag<int> availableDomains = new(Enumerable.Range(FirstDomainId, options.ExchangeConcurrency));
     private int completedExchanges;
 
     internal async Task<ExchangeResult[]> RunAsync(ScenarioRow[] scenarios)
     {
         using var cancellation = new ConsoleCancellationScope();
+        using var failFast = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token);
 
         var tasks = scenarios.Select(async scenario =>
         {
-            var result = await RunWithLeaseAsync(scenario, cancellation.Token);
-            var completed = Interlocked.Increment(ref completedExchanges);
-            Console.WriteLine($"WIRE_EXCHANGE_PROGRESS completed={completed}/{scenarios.Length}");
-            return result;
+            try
+            {
+                var result = await RunWithLeaseAsync(scenario, failFast);
+
+                var completed = Interlocked.Increment(ref completedExchanges);
+                Console.WriteLine($"WIRE_EXCHANGE_PROGRESS completed={completed}/{scenarios.Length}");
+                return result;
+            }
+            catch (OperationCanceledException) when (failFast.IsCancellationRequested)
+            {
+                return new ExchangeResult("NOT_RUN");
+            }
         }).ToArray();
 
         return await Task.WhenAll(tasks);
     }
 
-    private async Task<ExchangeResult> RunWithLeaseAsync(ScenarioRow scenario, CancellationToken cancellationToken)
+    private async Task<ExchangeResult> RunWithLeaseAsync(ScenarioRow scenario, CancellationTokenSource failFast)
     {
-        await concurrency.WaitAsync(cancellationToken);
-        if (!availableDomains.TryTake(out var domainId))
+        var lifecycleExchange = scenario.CaseId == "14-unbounded-receive-lifecycle";
+        // Lifecycle peers run large DDS processes. Limit those exchanges separately
+        // without reducing concurrency for unrelated cases in the same shard.
+        if (lifecycleExchange)
         {
-            concurrency.Release();
-            throw new InvalidOperationException("The DDS domain pool is exhausted while a scheduler slot is available.");
+            await lifecycleConcurrency.WaitAsync(failFast.Token);
         }
 
         try
         {
-            return await RunExchangeAsync(scenario, domainId, cancellationToken);
+            await concurrency.WaitAsync(failFast.Token);
+            if (failFast.IsCancellationRequested)
+            {
+                concurrency.Release();
+                throw new OperationCanceledException(failFast.Token);
+            }
+
+            if (!availableDomains.TryTake(out var domainId))
+            {
+                concurrency.Release();
+                throw new InvalidOperationException("The DDS domain pool is exhausted while a scheduler slot is available.");
+            }
+
+            try
+            {
+                var result = await RunExchangeAsync(scenario, domainId, failFast.Token);
+                if (result.Status == "FAIL")
+                {
+                    await failFast.CancelAsync();
+                }
+
+                return result;
+            }
+            finally
+            {
+                availableDomains.Add(domainId);
+                concurrency.Release();
+            }
         }
         finally
         {
-            availableDomains.Add(domainId);
-            concurrency.Release();
+            if (lifecycleExchange)
+            {
+                lifecycleConcurrency.Release();
+            }
         }
     }
 
@@ -65,6 +106,7 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
         Directory.CreateDirectory(Path.GetDirectoryName(resultLog)!);
 
         var fixture = scenario.Fixture;
+        var exchangeTimer = Stopwatch.StartNew();
         var wireloomType = caseBuild.WireloomType;
         var rtiType = caseBuild.RtiType;
         if (scenario.CaseId == "06-aggregates" && fixture == "direct-recursive-sequence")
@@ -76,18 +118,26 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
         var unavailable = MissingPeerReason(caseBuild, writerId, readerId);
         if (unavailable is not null)
         {
-            await File.WriteAllTextAsync(resultLog, $"FAIL_DETAIL {unavailable}{Environment.NewLine}", cancellationToken);
+            await File.WriteAllTextAsync(resultLog,
+                $"FAIL_DETAIL {unavailable}{Environment.NewLine}EXCHANGE_TELEMETRY case={scenario.CaseId} fixture={fixture} reader_started=false reader_ready=false writer_started=false endpoints_completed=false elapsed_ms={exchangeTimer.ElapsedMilliseconds}{Environment.NewLine}",
+                cancellationToken);
             return new ExchangeResult("FAIL");
         }
 
         RunningPeer? reader = null;
         RunningPeer? writer = null;
         LifecycleCoordinationResult? lifecycleOutcome = null;
+        var readerStarted = false;
+        var readerReady = false;
+        var writerStarted = false;
+        var endpointsCompleted = false;
         var failure = false;
         try
         {
             reader = StartPeer(caseBuild, scenario.Reader, "reader", scenario, topic, domainId, wireloomType, rtiType, readerLog);
-            if (!await WaitForReaderReadyAsync(reader, TimeSpan.FromSeconds((int)MatrixOptions.ExchangeTimeout.TotalSeconds)))
+            readerStarted = true;
+            readerReady = await WaitForReaderReadyAsync(reader, TimeSpan.FromSeconds((int)MatrixOptions.ExchangeTimeout.TotalSeconds));
+            if (!readerReady)
             {
                 failure = true;
                 await KillIfRunningAsync(reader.Process);
@@ -96,6 +146,7 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
             else
             {
                 writer = StartPeer(caseBuild, scenario.Writer, "writer", scenario, topic, domainId, wireloomType, rtiType, writerLog);
+                writerStarted = true;
                 bool completed;
                 if (IsLifecycleFixture(scenario))
                 {
@@ -107,6 +158,7 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
                     completed = await WaitForEndpointsAsync(writer.Process, reader.Process,
                         TimeSpan.FromSeconds((int)MatrixOptions.ExchangeTimeout.TotalSeconds + 5));
                 }
+                endpointsCompleted = completed;
                 if (!completed)
                 {
                     failure = true;
@@ -120,7 +172,8 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
             var writerPassed = EndpointPassed(writerId, "writer", scenario, writer?.Output);
             var readerPassed = EndpointPassed(readerId, "reader", scenario, reader.Output);
             failure |= writerExit != 0 || readerExit != 0 || !writerPassed || !readerPassed;
-            await WriteSanitizedLogAsync(resultLog, writerLog, readerLog, writerId, writerExit, readerId, readerExit, domainId, topic);
+            await WriteSanitizedLogAsync(resultLog, writerLog, readerLog, scenario.CaseId,
+                writerId, writerExit, readerId, readerExit, domainId, topic);
             if (lifecycleOutcome is not null)
             {
                 await File.AppendAllTextAsync(resultLog,
@@ -140,13 +193,22 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
                 $"FAIL_DETAIL {exception.Message.Replace(Environment.NewLine, " ", StringComparison.Ordinal)}{Environment.NewLine}", CancellationToken.None);
         }
 
+        await File.AppendAllTextAsync(resultLog,
+            $"EXCHANGE_TELEMETRY case={scenario.CaseId} fixture={fixture} reader_started={readerStarted.ToString().ToLowerInvariant()} reader_ready={readerReady.ToString().ToLowerInvariant()} writer_started={writerStarted.ToString().ToLowerInvariant()} endpoints_completed={endpointsCompleted.ToString().ToLowerInvariant()} elapsed_ms={exchangeTimer.ElapsedMilliseconds}{Environment.NewLine}",
+            CancellationToken.None);
+
         var status = failure ? "FAIL" : "PASS";
         Console.WriteLine($"{status} {scenario.CaseId} [{fixture}] {scenario.Writer} -> {scenario.Reader} domain={domainId}");
         return new ExchangeResult(status);
     }
 
-    private static string? MissingPeerReason(ExchangeCaseBuild build, string writerId, string readerId)
+    internal static string? MissingPeerReason(ExchangeCaseBuild build, string writerId, string readerId)
     {
+        if ((writerId == "rti-cpp" || readerId == "rti-cpp") && !build.CppAvailable)
+        {
+            return build.CppFailure;
+        }
+
         if ((writerId == "rti-cs" || readerId == "rti-cs") && !build.RtiAvailable)
         {
             return build.RtiFailure;
@@ -155,6 +217,11 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
         if ((writerId == "wireloom-cs" || readerId == "wireloom-cs") && !build.WireloomAvailable)
         {
             return build.WireloomFailure;
+        }
+
+        if ((writerId == "wireloom-cpp" || readerId == "wireloom-cpp") && build.WireloomCppPeer is null)
+        {
+            return build.WireloomCppFailure;
         }
 
         return null;
@@ -167,7 +234,8 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
             return false;
         }
 
-        if (peerId == "rti-cpp" && scenario is not { CaseId: "06-aggregates", Fixture: "direct-recursive-sequence" })
+        if ((peerId == "rti-cpp" && scenario is not { CaseId: "06-aggregates", Fixture: "direct-recursive-sequence" })
+            || peerId == "wireloom-cpp")
         {
             var successLine = role == "writer" ? "SENT" : "RECEIVED";
             return output.Contains(successLine, StringComparer.Ordinal);
@@ -193,6 +261,7 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
                 FileName = peerId switch
                 {
                     "wireloom-cs" or "rti-cs" => "dotnet",
+                    "wireloom-cpp" => caseBuild.WireloomCppPeer!,
                     "rti-cpp" when recursiveFixture => Path.Combine(caseBuild.CaseDirectory, "native", "build", "wire-peer-recursive-sequence"),
                     "rti-cpp" => caseBuild.CppPeer,
                     _ => throw new InvalidOperationException($"Unknown peer {peer}."),
@@ -231,7 +300,7 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
         var writer = new StreamWriter(logPath, append: false, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         var writerLock = new SemaphoreSlim(1, 1);
 
-        async Task PumpAsync(StreamReader source, bool protocolStream)
+        async Task PumpAsync(StreamReader source, string streamName, bool protocolStream)
         {
             while (await source.ReadLineAsync() is { } line)
             {
@@ -249,7 +318,7 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
                 await writerLock.WaitAsync();
                 try
                 {
-                    await writer.WriteLineAsync(line);
+                    await writer.WriteLineAsync($"{streamName} {line}");
                     await writer.FlushAsync();
                 }
                 finally
@@ -265,8 +334,8 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
             throw new InvalidOperationException($"Could not start {role} process for {scenario.CaseId}.");
         }
 
-        var standardOutput = PumpAsync(process.StandardOutput, protocolStream: true);
-        var standardError = PumpAsync(process.StandardError, protocolStream: false);
+        var standardOutput = PumpAsync(process.StandardOutput, "PEER_STDOUT", protocolStream: true);
+        var standardError = PumpAsync(process.StandardError, "PEER_STDERR", protocolStream: false);
         _ = Task.WhenAll(standardOutput, standardError).ContinueWith(
             _ => lifecycleEvents.Writer.TryComplete(),
             CancellationToken.None,
@@ -614,7 +683,7 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
     }
 
     private static async Task WriteSanitizedLogAsync(string resultLog, string writerLog, string readerLog,
-        string writerId, int writerExit, string readerId, int readerExit, int domainId, string topic)
+        string caseId, string writerId, int writerExit, string readerId, int readerExit, int domainId, string topic)
     {
         var statusPrefixes = new[]
         {
@@ -634,29 +703,43 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
 
             foreach (var line in await File.ReadAllLinesAsync(path))
             {
-                if (statusPrefixes.Any(prefix => line.StartsWith(prefix + " ", StringComparison.Ordinal) || line == prefix))
+                var stream = line.StartsWith("PEER_STDOUT ", StringComparison.Ordinal) ? "stdout"
+                    : line.StartsWith("PEER_STDERR ", StringComparison.Ordinal) ? "stderr"
+                    : null;
+                var outputLine = stream is null ? line : line[(stream == "stdout" ? "PEER_STDOUT " : "PEER_STDERR ").Length..];
+                var isLicenseBanner = outputLine.StartsWith("[RTI LICENSE]", StringComparison.Ordinal)
+                    || outputLine.StartsWith("Expires on ", StringComparison.Ordinal)
+                    || outputLine.StartsWith("Please contact support@rti.com ", StringComparison.Ordinal);
+                if (caseId == "10-flat-data-binding" && !isLicenseBanner)
                 {
                     var endpoint = path == writerLog ? "writer" : "reader";
-                    var needsEndpoint = !line.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                    var retainedOutput = outputLine.Length <= 2_000 ? outputLine : outputLine[..2_000] + " [truncated]";
+                    await output.WriteLineAsync($"PEER_OUTPUT endpoint={endpoint} stream={stream ?? "unknown"} text={retainedOutput}");
+                }
+
+                if (statusPrefixes.Any(prefix => outputLine.StartsWith(prefix + " ", StringComparison.Ordinal) || outputLine == prefix))
+                {
+                    var endpoint = path == writerLog ? "writer" : "reader";
+                    var needsEndpoint = !outputLine.Split(' ', StringSplitOptions.RemoveEmptyEntries)
                         .Any(field => field.StartsWith("endpoint=", StringComparison.Ordinal));
-                    var retainedLine = needsEndpoint && (line.StartsWith("LIFECYCLE_PARTICIPANT_QOS ", StringComparison.Ordinal)
-                        || line.StartsWith("LIFECYCLE_WRITER_QOS ", StringComparison.Ordinal)
-                        || line.StartsWith("LIFECYCLE_READER_QOS ", StringComparison.Ordinal)
-                        || line.StartsWith("LIFECYCLE_NATIVE_CDR ", StringComparison.Ordinal))
-                            ? $"{line} endpoint={endpoint}"
-                            : line;
+                    var retainedLine = needsEndpoint && (outputLine.StartsWith("LIFECYCLE_PARTICIPANT_QOS ", StringComparison.Ordinal)
+                        || outputLine.StartsWith("LIFECYCLE_WRITER_QOS ", StringComparison.Ordinal)
+                        || outputLine.StartsWith("LIFECYCLE_READER_QOS ", StringComparison.Ordinal)
+                        || outputLine.StartsWith("LIFECYCLE_NATIVE_CDR ", StringComparison.Ordinal))
+                            ? $"{outputLine} endpoint={endpoint}"
+                            : outputLine;
                     await output.WriteLineAsync(retainedLine);
                 }
-                else if (line.Contains("not assignable", StringComparison.OrdinalIgnoreCase)
-                    || line.Contains("type consistency", StringComparison.OrdinalIgnoreCase)
-                    || line.Contains("typeobject", StringComparison.OrdinalIgnoreCase)
-                    || line.Contains("type object", StringComparison.OrdinalIgnoreCase)
-                    || line.Contains("incompatible", StringComparison.OrdinalIgnoreCase)
-                    || line.Contains("data representation", StringComparison.OrdinalIgnoreCase)
-                    || line.Contains("qos policy", StringComparison.OrdinalIgnoreCase)
-                    || line.Contains("representation", StringComparison.OrdinalIgnoreCase))
+                else if (outputLine.Contains("not assignable", StringComparison.OrdinalIgnoreCase)
+                    || outputLine.Contains("type consistency", StringComparison.OrdinalIgnoreCase)
+                    || outputLine.Contains("typeobject", StringComparison.OrdinalIgnoreCase)
+                    || outputLine.Contains("type object", StringComparison.OrdinalIgnoreCase)
+                    || outputLine.Contains("incompatible", StringComparison.OrdinalIgnoreCase)
+                    || outputLine.Contains("data representation", StringComparison.OrdinalIgnoreCase)
+                    || outputLine.Contains("qos policy", StringComparison.OrdinalIgnoreCase)
+                    || outputLine.Contains("representation", StringComparison.OrdinalIgnoreCase))
                 {
-                    diagnostics.Add("RTI_DIAGNOSTIC " + line);
+                    diagnostics.Add("RTI_DIAGNOSTIC " + outputLine);
                 }
             }
         }
@@ -699,6 +782,7 @@ internal sealed class ExchangeScheduler(MatrixOptions options, IReadOnlyDictiona
     private static string PeerId(string peer) => peer switch
     {
         "Wireloom C#" => "wireloom-cs",
+        "Wireloom C++" => "wireloom-cpp",
         "RTI C#" => "rti-cs",
         "RTI C++" => "rti-cpp",
         _ => throw new InvalidDataException($"Unknown wire peer '{peer}'."),

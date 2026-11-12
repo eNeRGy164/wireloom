@@ -94,6 +94,8 @@ jobs:
             rti_package_version: 7.7.0.0-1-1bookworm
     env:
       WIRE_COMPATIBILITY_RTI_VERSION: ${{ matrix.rti_version }}
+      WIRE_COMPATIBILITY_CPP_CASE_FILTER: ''
+      WIRE_COMPATIBILITY_NATIVE_PEER_SCOPE_CASE_FILTER: ${{ matrix.rti_version == '6.1.2' && '09-optional-collections' || '' }}
       WIRE_COMPATIBILITY_OUTPUT_DIR: artifacts/wire-compatibility-rti-${{ matrix.rti_version }}
       WIRE_COMPATIBILITY_SHARD_INDEX: ${{ matrix.shard }}
       WIRE_COMPATIBILITY_SHARD_COUNT: ${{ needs.plan.outputs.count }}
@@ -131,7 +133,7 @@ jobs:
           image="wireloom-wire-${WIRE_COMPATIBILITY_RTI_VERSION}:local"
           version="$(docker run --rm --entrypoint g++ "$image" -dumpfullversion -dumpversion)"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          source_hash="${{ hashFiles('tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile.wire', 'tests/Wireloom.Dds.Generator.WireCompatibility/Native/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Shared/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Runner/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/**', 'src/Wireloom.Dds.Idl/**', 'docs/corpus/manifest.json', 'docs/corpus/**/rtiddsgen/wire-oracles.json', 'docs/corpus/**/rtiddsgen/cpp/**', 'docs/corpus/7.7.0/cpp-evidence/type-scope.json') }}"
+          source_hash="${{ hashFiles('tests/Wireloom.Dds.Generator.WireCompatibility/Containerfile.wire', 'tests/Wireloom.Dds.Generator.WireCompatibility/Native/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Shared/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Runner/**', 'tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/**', 'tests/Wireloom.Dds.Generator.WireCompatibility/wireloom-cpp-live-scope-7.7.0.json', 'src/Wireloom.Dds.Idl/**', 'docs/corpus/manifest.json', 'docs/corpus/**/rtiddsgen/wire-oracles.json', 'docs/corpus/**/rtiddsgen/cpp/**') }}"
           echo "source_hash=$source_hash" >> "$GITHUB_OUTPUT"
 
       - name: Prepare persistent build caches
@@ -189,6 +191,8 @@ jobs:
             --env CCACHE_DIR=/root/.cache/ccache \
             --env CCACHE_MAXSIZE=2G \
             --env WIRE_COMPATIBILITY_RTI_VERSION="$WIRE_COMPATIBILITY_RTI_VERSION" \
+            --env WIRE_COMPATIBILITY_CPP_CASE_FILTER="$WIRE_COMPATIBILITY_CPP_CASE_FILTER" \
+            --env WIRE_COMPATIBILITY_NATIVE_PEER_SCOPE_CASE_FILTER="$WIRE_COMPATIBILITY_NATIVE_PEER_SCOPE_CASE_FILTER" \
             --env WIRE_COMPATIBILITY_OUTPUT_DIR="$WIRE_COMPATIBILITY_OUTPUT_DIR" \
             --env WIRE_COMPATIBILITY_SHARD_INDEX="$WIRE_COMPATIBILITY_SHARD_INDEX" \
             --env WIRE_COMPATIBILITY_SHARD_COUNT="$WIRE_COMPATIBILITY_SHARD_COUNT" \
@@ -289,3 +293,10 @@ jobs:
           path: artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/
           if-no-files-found: error
           retention-days: 14
+
+      - name: Fail on first non-passing exchange row
+        if: success()
+        run: >-
+          dotnet run --project tests/Wireloom.Dds.Generator.WireCompatibility.Verifier/Wireloom.Dds.Generator.WireCompatibility.Verifier.csproj
+          --configuration Release -- check-results
+          artifacts/wire-compatibility-rti-${{ matrix.rti_version }}/results.json

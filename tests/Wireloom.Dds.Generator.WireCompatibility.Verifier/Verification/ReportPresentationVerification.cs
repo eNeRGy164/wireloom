@@ -38,7 +38,7 @@ internal sealed class ReportPresentationVerification
         {
             var scalarScenarios = ReadJson(baseline)["scenarios"]!.AsArray()
                 .Where(item => (string?)item!["case"] == caseId).ToArray();
-            Check(scalarScenarios.Length == 9, "All scalar adaptation pairings remain in the report.");
+            Check(scalarScenarios.Length == 16, "All 16 scalar adaptation pairings remain in the report.");
 
             foreach (var scenario in scalarScenarios)
             {
@@ -58,9 +58,10 @@ internal sealed class ReportPresentationVerification
             "The report title identifies the tested profile.");
 
         var header = scalarMarkdown.Split('\n').Single(line => line.StartsWith("| Corpus feature | Variation |", StringComparison.Ordinal));
-        Check(header.Contains("🧵 → 🧵", StringComparison.Ordinal)
+        Check(header.Contains("🧵 C# → 🧵 C#", StringComparison.Ordinal)
+            && header.Contains("🧵 C++ → 🧵 C++", StringComparison.Ordinal)
             && !header.Contains("Wireloom C#", StringComparison.Ordinal),
-            "Table headings use the compact Wireloom symbol without changing RTI peer labels.");
+            "Table headings use compact Wireloom language labels without changing RTI peer labels.");
 
         var boundaryRow = FindReportRow(scalarMarkdown, "01-boundaries", "non-default");
         Check(!boundaryRow.Contains("Typed fixture:", StringComparison.Ordinal),
@@ -72,7 +73,8 @@ internal sealed class ReportPresentationVerification
             "Compiler flags, API identifiers, and discriminator values use code spans.");
 
         var recursiveRow = FindReportRow(scalarMarkdown, "09-optional-recursive-array", "optional-absent");
-        Check(recursiveRow.Contains("**Wireloom, RTI C#, RTI C++:**", StringComparison.Ordinal)
+        Check(new[] { "Wireloom", "RTI C#", "RTI C++", "Wireloom C++" }
+                .All(peer => recursiveRow.Contains(peer, StringComparison.Ordinal))
             && recursiveRow.Split("pool_buffer_max_size=4096").Length == 2
             && recursiveRow.Contains("**RTI C#:** Bootstrap", StringComparison.Ordinal)
             && recursiveRow.Contains("**RTI C++:** Forward", StringComparison.Ordinal),
@@ -81,7 +83,7 @@ internal sealed class ReportPresentationVerification
         Check(scalarMarkdown.Contains("`NullReferenceException`", StringComparison.Ordinal),
             "Technical exception names in explanations use code spans.");
 
-        Check(scalarMarkdown.Contains("“retained symptom: NullReferenceException”", StringComparison.Ordinal),
+        Check(scalarMarkdown.Contains("“RTI-generated C# peer failed to compile; CS0221”", StringComparison.Ordinal),
             "Observed error bodies are quoted without changing their content.");
 
         Check(!scalarMarkdown.Contains("``", StringComparison.Ordinal),
@@ -96,7 +98,7 @@ internal sealed class ReportPresentationVerification
         var sequenceScenarios = ReadJson(baseline)["scenarios"]!.AsArray()
             .Where(item => (string?)item!["case"] == "07-union-string-sequence-aliases")
             .ToArray();
-        Check(sequenceScenarios.Length == 54 && sequenceScenarios.All(item =>
+        Check(sequenceScenarios.Length == 96 && sequenceScenarios.All(item =>
             new[] { "writer", "reader" }.All(role => item![role]!["adaptation"] is null)),
             "Normal generated-sample construction is not an adaptation for union sequence aliases.");
 
@@ -133,7 +135,7 @@ internal sealed class ReportPresentationVerification
 
         var numericScenarios = ReadJson(baseline)["scenarios"]!.AsArray()
             .Where(item => (string?)item!["case"] is "07-union-char-numeric" or "07-union-char-numeric-255").ToArray();
-        Check(numericScenarios.Length == 36 && numericScenarios.All(item => item is { } scenario
+        Check(numericScenarios.Length == 64 && numericScenarios.All(item => item is { } scenario
             && new[] { "writer", "reader" }.Where(role => (string?)scenario[role]?["peer"] == "RTI C++")
                 .All(role => (scenario[role]?["adaptation"] is not null) == ((string?)scenario["case"] == "07-union-char-numeric-255"))),
             "Only the high-label C++ binding needs compiler and label-metadata corrections.");
@@ -143,7 +145,9 @@ internal sealed class ReportPresentationVerification
 
         var recursiveScenarios = ReadJson(baseline)["scenarios"]!.AsArray()
             .Where(item => (string?)item!["case"] == "09-optional-recursive-array").ToArray();
-        Check(recursiveScenarios.Length == 27, "All recursive array exchanges are retained.");
+        var expectedRecursiveScenarioCount = rtiVersion == "7.7.0" ? 27 : 48;
+        Check(recursiveScenarios.Length == expectedRecursiveScenarioCount,
+            $"RTI {rtiVersion} retains the {expectedRecursiveScenarioCount} recursive optional-array pairings supported by its peer matrix.");
 
         foreach (var scenario in recursiveScenarios)
         {
@@ -178,10 +182,10 @@ internal sealed class ReportPresentationVerification
         var unsignedScenarios = ReadJson(Path.Combine(merged, "results.json"))["scenarios"]!.AsArray()
             .Where(item => (string?)item!["case"] == "07-union-ulong").ToArray();
         Check(unsignedScenarios.Count(item => (string?)item!["status"] == "FAIL"
-            && ((string?)item["observedProblem"])!.Contains("CS0221", StringComparison.Ordinal)) == 15,
+            && ((string?)item["observedProblem"])!.Contains("CS0221", StringComparison.Ordinal)) == 21,
             "All RTI C# build-blocked pairings retain failure status and compiler evidence.");
 
-        Check(unsignedScenarios.Count(item => (string?)item!["status"] == "PASS") == 12,
+        Check(unsignedScenarios.Count(item => (string?)item!["status"] == "PASS") == 27,
             "Wireloom and C++ controls remain passing when the RTI C# peer cannot compile.");
 
         var markdownLines = File.ReadAllLines(Path.Combine(merged, "results.md"));
@@ -189,7 +193,9 @@ internal sealed class ReportPresentationVerification
         var compilerPairings = new[]
         {
             "Wireloom → RTI C#",
+            "Wireloom C++ → RTI C#",
             "RTI C# → Wireloom",
+            "RTI C# → Wireloom C++",
             "RTI C# → RTI C#",
             "RTI C# → RTI C++",
             "RTI C++ → RTI C#",
@@ -199,16 +205,19 @@ internal sealed class ReportPresentationVerification
             && compilerPairings.All(pairing => line.Contains(pairing, StringComparison.Ordinal))),
             "Each row shows one compiler message and identifies all five affected pairings.");
 
-        var arrayRow = FindReportRow(string.Join('\n', markdownLines), "05-array-of-sequences", "default");
-        Check(arrayRow.Split("retained symptom").Length == 2
-            && arrayRow.Contains("**Wireloom → RTI C++, RTI C++ → Wireloom:**", StringComparison.Ordinal),
-            "Pairings with the same observed failure are grouped together.");
-
         var report = ReadJson(Path.Combine(merged, "results.json"));
+        var arrayRow = FindReportRow(string.Join('\n', markdownLines), "05-array-of-sequences", "default");
+        var arrayScenarios = report["scenarios"]!.AsArray()
+            .Where(item => (string?)item!["case"] == "05-array-of-sequences").ToArray();
+        Check(arrayScenarios.Length == 4
+            && arrayScenarios.All(item => (string?)item!["status"] == "PASS")
+            && !arrayRow.Contains("retained symptom", StringComparison.Ordinal),
+            "The direct arrays-of-sequences report retains its four supported C++ pairings without synthetic failure details.");
+
         var aliasScenarios = report["scenarios"]!.AsArray()
             .Where(item => (string?)item!["case"] == "10-resolve-name-wstring-aliases").ToArray();
-        Check(aliasScenarios.Length == 18 && aliasScenarios.All(item => (string?)item!["status"] == "PASS"),
-            "C147 reports all 18 empty and boundary exchanges passing across its three peers.");
+        Check(aliasScenarios.Length == 32 && aliasScenarios.All(item => (string?)item!["status"] == "PASS"),
+            "C147 reports all 32 empty and boundary exchanges passing across its four peers.");
 
         var aliasReport = File.ReadAllText(Path.Combine(merged, "results.md"));
         Check(aliasReport.Contains("Workaround W015", StringComparison.Ordinal)
