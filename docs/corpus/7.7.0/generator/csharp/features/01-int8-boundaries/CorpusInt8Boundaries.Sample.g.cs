@@ -9,16 +9,19 @@ namespace CorpusInt8Boundaries;
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>01-int8-boundaries.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets or sets the <c>minimum</c> member. Representable values are in the inclusive range <c>sbyte.MinValue</c> through <c>sbyte.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public sbyte minimum { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>maximum</c> member. Representable values are in the inclusive range <c>sbyte.MinValue</c> through <c>sbyte.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public sbyte maximum { get; set; }
 
     /// <summary>

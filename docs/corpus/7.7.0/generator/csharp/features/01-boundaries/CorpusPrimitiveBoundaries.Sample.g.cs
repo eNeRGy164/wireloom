@@ -9,36 +9,43 @@ namespace CorpusPrimitiveBoundaries;
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>01-boundaries.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets or sets the <c>shortValue</c> member. Representable values are in the inclusive range <c>short.MinValue</c> through <c>short.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public short shortValue { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>longValue</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public int longValue { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>longLongValue</c> member. Representable values are in the inclusive range <c>long.MinValue</c> through <c>long.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public long longLongValue { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>int64Value</c> member. Representable values are in the inclusive range <c>long.MinValue</c> through <c>long.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public long int64Value { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>floatValue</c> member. Finite values are in the inclusive range <c>float.MinValue</c> through <c>float.MaxValue</c>. NaN and positive or negative infinity are also representable.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public float floatValue { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>doubleValue</c> member. Finite values are in the inclusive range <c>double.MinValue</c> through <c>double.MaxValue</c>. NaN and positive or negative infinity are also representable.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public double doubleValue { get; set; }
 
     /// <summary>

@@ -577,5 +577,31 @@
       "sourceSha256": "16789a817da0823034c0d14900332cc115e6572390678722b97a8138dbf804bc",
       "compileOutcome": "compiled"
     }
+  ],
+  "oracleCaptures": [
+    {
+      "id": "10-flat-data-binding",
+      "capturedAtUtc": "2026-11-07T00:33:50.5121424Z",
+      "sourceSha256": "8d52a1283fff07011105aaa9ccedd1d962f68d8917deb2e975630d5e9c1aba1d",
+      "rtiProduct": "RTI Connext DDS 7.7.0.0",
+      "rtiddsgenVersion": "4.7.0",
+      "cppLanguage": "C++11",
+      "cppCommand": "C:\\Program Files\\rti_connext_dds-7.7.0\\bin\\rtiddsgen.bat -language C++11 -replace -ppDisable -generateIncludeFiles -d artifacts/c047-rti-flatdata-capture/provenance-cpp docs/corpus/idl/features/10-flat-data-binding.idl",
+      "cppOutputSha256": {
+        "10-flat-data-binding.cxx": "29446d3778ee36527425d16e947985e368d13a79f5167dac6546353e6cc0bb4f",
+        "10-flat-data-binding.hpp": "2dcafde9fe23a845bc1c062e747961b766b4d253288cece755e8d403db00e3cf",
+        "10-flat-data-bindingPlugin.cxx": "5129ffb977d2b9968bb2b42e34065a2e33dc66c387f0340f0acb416a2c27b373",
+        "10-flat-data-bindingPlugin.hpp": "8aaf295fc4d0ed161b244ad743c290fd163d320cb7d0693b420240c36e5e137c"
+      },
+      "csharpCapturedAtUtc": "2026-11-07T00:33:51.3551393Z",
+      "csharpCommand": "C:\\Program Files\\rti_connext_dds-7.7.0\\bin\\rtiddsgen.bat -language C# -replace -ppDisable -d artifacts/c047-rti-csharp-capture/provenance-csharp docs/corpus/idl/features/10-flat-data-binding.idl",
+      "csharpOutputSha256": {
+        "10-flat-data-binding.cs": "e1810123a5f8443f5cff67bcb0d920e000b07a5179439eb189d6bf87d532ffdf",
+        "10-flat-data-bindingPlugin.cs": "947997b1030b837325d7bc2d9caee1f970c3baf20c994cd42a3fbfe10c599244"
+      },
+      "csharpWarning": "RTI warns FLAT_DATA is ignored for C#; generated C# extensibility is Final",
+      "adaptations": [],
+      "evidenceJson": "docs/corpus/7.7.0/cpp-evidence/C047-10-flat-data-binding.generation.json"
+    }
   ]
 }

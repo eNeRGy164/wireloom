@@ -9,16 +9,19 @@ namespace AutoIds;
 /// <summary>
 /// Represents the <c>Hashed</c> DDS type declared in <c>14-autoid-scope.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 C# ExtensibilityKind API</seealso>
 public partial class Hashed : global::System.IEquatable<Hashed>
 {
     /// <summary>
     /// Gets or sets the <c>first</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. Its DDS member ID is generated from the hash of <c>first</c> through <c>@autoid(HASH)</c>. Its DDS member ID is <c>64291979</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/class_rti_1_1_types_1_1_dynamic_1_1_struct_member.html">RTI Connext 6.1.2 C# dynamic member metadata API</seealso>
     public int first { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>second</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. Its DDS member ID is generated from the hash of <c>second</c> through <c>@autoid(HASH)</c>. Its DDS member ID is <c>182907049</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/class_rti_1_1_types_1_1_dynamic_1_1_struct_member.html">RTI Connext 6.1.2 C# dynamic member metadata API</seealso>
     public int second { get; set; }
 
     /// <summary>

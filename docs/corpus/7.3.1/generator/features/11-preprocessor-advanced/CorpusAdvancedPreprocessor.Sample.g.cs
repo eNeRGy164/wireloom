@@ -9,6 +9,7 @@ namespace CorpusAdvancedPreprocessor;
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>11-preprocessor-advanced.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.3.1 C# ExtensibilityKind API</seealso>
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>

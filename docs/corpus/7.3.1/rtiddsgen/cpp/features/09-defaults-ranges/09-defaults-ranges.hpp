@@ -10,8 +10,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the Code Generator User's Manual.
 */
 
-#ifndef _09_defaults_ranges_492397801_hpp
-#define _09_defaults_ranges_492397801_hpp
+#ifndef _09_defaults_ranges_492397813_hpp
+#define _09_defaults_ranges_492397813_hpp
 
 #include <iosfwd>
 
@@ -244,5 +244,5 @@ namespace rti {
 #define NDDSUSERDllExport
 #endif
 
-#endif // _09_defaults_ranges_492397801_hpp
+#endif // _09_defaults_ranges_492397813_hpp
 

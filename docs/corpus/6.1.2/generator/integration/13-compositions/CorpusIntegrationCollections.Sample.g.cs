@@ -12,13 +12,14 @@ namespace CorpusIntegrationCollections;
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>13-compositions.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 C# ExtensibilityKind API</seealso>
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets the <c>unboundedItems</c> member. Its maximum number of elements is <c>100</c>.
     /// </summary>
     /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. For an unbounded IDL sequence, an effective limit of 100 elements is set. RTI uses the bound from the type metadata when processing DDS data.</remarks>
-    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 6.1.2 ISequence API</seealso>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 ISequence API</seealso>
     /// <example>
     /// <code>
     /// var sample = new Sample();
@@ -33,7 +34,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// Gets the <c>boundedItems</c> member. Its maximum number of elements is <c>2</c>.
     /// </summary>
     /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound.</remarks>
-    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 6.1.2 ISequence API</seealso>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 ISequence API</seealso>
     /// <example>
     /// <code>
     /// var sample = new Sample();
@@ -58,7 +59,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// Gets the <c>sequenceOfArrays</c> member. Its maximum number of elements is <c>2</c>. Each array element has dimensions 2. Each element's representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound.</remarks>
-    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 6.1.2 ISequence API</seealso>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 ISequence API</seealso>
     /// <example>
     /// <code>
     /// var sample = new Sample();

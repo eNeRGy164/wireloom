@@ -12,11 +12,13 @@ namespace CorpusOptionalStringSequences;
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>09-optional-string-sequences.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets or sets the <c>narrowValues</c> member. This member is optional. Its maximum number of elements is <c>4</c>. Each narrow IDL string element is limited to <c>16</c> UTF-8 bytes. A <see langword="null"/> value means absent; an empty collection is present with no elements. Its DDS member ID is <c>1</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.7.0 C# dynamic member metadata API</seealso>
     /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
     /// <example>
@@ -40,6 +42,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Gets or sets the <c>wideValues</c> member. This member is optional. Its maximum number of elements is <c>4</c>. Each wide IDL string element is limited to <c>16</c> UTF-16 code units. A <see langword="null"/> value means absent; an empty collection is present with no elements. Its DDS member ID is <c>2</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.7.0 C# dynamic member metadata API</seealso>
     /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound.</remarks>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 ISequence API</seealso>
     /// <example>

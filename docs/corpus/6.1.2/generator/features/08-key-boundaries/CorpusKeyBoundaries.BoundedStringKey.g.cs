@@ -11,11 +11,13 @@ namespace CorpusKeyBoundaries;
 /// <summary>
 /// Represents the <c>BoundedStringKey</c> DDS type declared in <c>08-key-boundaries.idl</c>. Its key members identify a DDS instance across samples; they do not determine whether two complete samples are equal. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 C# ExtensibilityKind API</seealso>
 public partial class BoundedStringKey : global::System.IEquatable<BoundedStringKey>
 {
     /// <summary>
     /// Gets or sets the <c>name</c> member. This member forms part of the DDS instance key. Its maximum length is <c>12</c> UTF-8 bytes.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/class_rti_1_1_types_1_1_dynamic_1_1_struct_member.html">RTI Connext 6.1.2 C# dynamic member metadata API</seealso>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 6.1.2 string and wide-string bounds</seealso>
     /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>
     [Key]

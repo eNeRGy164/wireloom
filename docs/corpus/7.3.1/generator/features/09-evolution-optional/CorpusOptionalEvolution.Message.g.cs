@@ -11,16 +11,19 @@ namespace CorpusOptionalEvolution;
 /// <summary>
 /// Represents the <c>Message</c> DDS type declared in <c>09-evolution-optional.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.3.1 C# ExtensibilityKind API</seealso>
 public partial class Message : global::System.IEquatable<Message>
 {
     /// <summary>
     /// Gets or sets the <c>requiredValue</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. Its DDS member ID is <c>1</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.3.1 C# dynamic member metadata API</seealso>
     public int requiredValue { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>optionalValue</c> member. This member is optional. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. A <see langword="null"/> value means the member is absent. Its DDS member ID is <c>2</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.3.1 C# dynamic member metadata API</seealso>
     /// <example>
     /// <code>
     /// var sample = new Message();
@@ -33,6 +36,7 @@ public partial class Message : global::System.IEquatable<Message>
     /// <summary>
     /// Gets or sets the <c>optionalText</c> member. This member is optional. Its maximum length is <c>16</c> UTF-8 bytes. A <see langword="null"/> value means the member is absent. Its DDS member ID is <c>3</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.3.1 C# dynamic member metadata API</seealso>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.3.1 string and wide-string bounds</seealso>
     /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>
     /// <example>

@@ -9,6 +9,7 @@ namespace CorpusDefaultsAndRanges;
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>09-defaults-ranges.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class Sample : global::System.IEquatable<Sample>
 {
     private int _value;
@@ -17,6 +18,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Gets or sets the <c>value</c> member. Valid values are in the inclusive range <c>0</c> through <c>100</c>. Its default value is <c>50</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     /// <exception cref="global::System.ArgumentOutOfRangeException">The assigned value is outside the inclusive range 0 through 100.</exception>
     public int value
     {
@@ -33,6 +35,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Gets or sets the <c>ranged</c> member. Valid values are in the inclusive range <c>-32</c> through <c>31</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     /// <exception cref="global::System.ArgumentOutOfRangeException">The assigned value is outside the inclusive range -32 through 31.</exception>
     public int ranged
     {
@@ -49,6 +52,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Gets or sets the <c>color</c> member. Its default value is <c>BLUE</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public Color color { get; set; }
 
     /// <summary>

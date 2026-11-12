@@ -10,8 +10,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the Code Generator User's Manual.
 */
 
-#ifndef _10_flat_data_bindingPlugin_532422587_h
-#define _10_flat_data_bindingPlugin_532422587_h
+#ifndef _10_flat_data_bindingPlugin_532422593_h
+#define _10_flat_data_bindingPlugin_532422593_h
 
 #include "10-flat-data-binding.hpp"
 
@@ -195,5 +195,5 @@ namespace CorpusFlatDataBinding {
 #define NDDSUSERDllExport
 #endif
 
-#endif /* _10_flat_data_bindingPlugin_532422587_h */
+#endif /* _10_flat_data_bindingPlugin_532422593_h */
 

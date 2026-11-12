@@ -12,6 +12,7 @@ namespace CorpusUnboundedReceiveLifecycle;
 /// <summary>
 /// Represents the <c>OptionalState</c> DDS type declared in <c>14-unbounded-receive-lifecycle.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.3.1 C# ExtensibilityKind API</seealso>
 public partial class OptionalState : global::System.IEquatable<OptionalState>
 {
     /// <summary>
@@ -22,6 +23,7 @@ public partial class OptionalState : global::System.IEquatable<OptionalState>
     /// <summary>
     /// Gets or sets the <c>note</c> member. This member is optional. This string has no IDL maximum length. A <see langword="null"/> value means the member is absent.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.3.1 C# dynamic member metadata API</seealso>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.3.1 string and wide-string bounds</seealso>
     /// <remarks>This narrow IDL string is unbounded.</remarks>
     /// <example>

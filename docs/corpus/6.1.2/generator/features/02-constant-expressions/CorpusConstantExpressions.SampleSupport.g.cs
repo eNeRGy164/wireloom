@@ -14,7 +14,8 @@ namespace CorpusConstantExpressions;
 /// Provides application-facing formatting, serialization, and dynamic-type utilities for <see cref="Sample"/>. RTI uses its internal plugin and native representation to process samples.
 /// </summary>
 /// <remarks>The referenced API documentation targets RTI Connext 6.1.2; verify API details against the runtime version used by the consuming project.</remarks>
-/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/classRti_1_1Dds_1_1Topics_1_1TypeSupport.html">RTI Connext C# TypeSupport API (6.1.2)</seealso>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/class_rti_1_1_dds_1_1_topics_1_1_type_support.html">RTI Connext C# TypeSupport API (6.1.2)</seealso>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/class_rti_1_1_types_1_1_dynamic_1_1_dynamic_data.html">RTI Connext 6.1.2 C# DynamicData API</seealso>
 /// <example>
 /// <code>
 /// var sample = new Sample();

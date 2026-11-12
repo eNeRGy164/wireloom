@@ -15,6 +15,7 @@ namespace CorpusInterfaceControl;
 /// </summary>
 /// <remarks>The referenced API documentation targets RTI Connext 7.3.1; verify API details against the runtime version used by the consuming project.</remarks>
 /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/classRti_1_1Dds_1_1Topics_1_1TypeSupport.html">RTI Connext C# TypeSupport API (7.3.1)</seealso>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1DynamicData.html">RTI Connext 7.3.1 C# DynamicData API</seealso>
 /// <example>
 /// <code>
 /// var sample = new Sample();

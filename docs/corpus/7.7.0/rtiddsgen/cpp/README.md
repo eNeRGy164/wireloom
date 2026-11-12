@@ -8,11 +8,11 @@ shared corpus.
 
 The generator may require case-specific options such as
 `-unboundedSupport`; these are recorded in the manifest. `10-flat-data-binding`
-removes the FlatData annotation to generate a plain C++ reference with the
-canonical extensibility, matching the wire harness adaptation. The input lacks
-the `@final` or `@mutable` extensibility required for FlatData; this reference
-does not qualify FlatData layout. C++ generation results do not establish that
-the generated code compiles or that the feature is wire-compatible.
+uses a final fixed-size struct because RTI requires final or mutable
+extensibility for FlatData. The RTI 7.7.0 C++ capture retains the FlatData
+binding; previous PLAIN captures are not FlatData evidence. C++ generation
+results do not establish that the generated code compiles or that the feature
+is wire-compatible.
 
 RTI-generated sources are third-party reference material and may be subject to
 RTI license terms. Retain file-level notices and do not redistribute outside

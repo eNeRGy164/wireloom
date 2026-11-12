@@ -4,7 +4,7 @@ module CorpusDefaultsAndRanges {
         @default_literal RED,
         BLUE
     };
-    struct Sample {
+    @appendable struct Sample {
         @min(0) @max(100) @default(50) long value;
         @range(min = -32, max = 31) long ranged;
         @default(BLUE) Color color;

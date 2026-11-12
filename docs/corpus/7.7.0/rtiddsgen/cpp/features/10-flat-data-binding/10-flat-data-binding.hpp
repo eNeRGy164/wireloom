@@ -10,8 +10,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the Code Generator User's Manual.
 */
 
-#ifndef _10_flat_data_binding_532422587_hpp
-#define _10_flat_data_binding_532422587_hpp
+#ifndef _10_flat_data_binding_532422622_hpp
+#define _10_flat_data_binding_532422622_hpp
 
 #include <iosfwd>
 
@@ -53,6 +53,8 @@ or consult the Code Generator User's Manual.
 #include "rti/domain/PluginSupport.hpp"
 #endif
 
+#include "rti/topic/flat/FlatData.hpp"
+
 #if defined(NDDS_USER_DLL_EXPORT) || defined(NDDS_USER_SYMBOL_EXPORT)
 #undef RTIUSERDllExport
 #define RTIUSERDllExport
@@ -70,21 +72,85 @@ or consult the Code Generator User's Manual.
 
 namespace CorpusFlatDataBinding {
 
-    struct NDDSUSERDllExport Sample {
+    class NDDSUSERDllExport SampleConstOffset 
+    : public ::rti::flat::FinalOffset< SampleConstOffset > {
+      public:
+        enum { required_alignment = 4 };
+
+        static ::rti::flat::offset_t serialized_size(::rti::flat::offset_t initial_position)
+        {
+            static const ::rti::flat::offset_t sizes[] = {8, 8, 8, 8};
+            return sizes[initial_position % 4];
+        }
+
+        // Null offset
+        SampleConstOffset()
+        {
+        }
+
+        // Constructor is for internal use only
+        SampleConstOffset(
+            const ::rti::flat::SampleBase *sample, 
+            ::rti::flat::offset_t offset)
+            : ::rti::flat::FinalOffset< SampleConstOffset >(const_cast< ::rti::flat::SampleBase * >(sample), offset)
+        {
+        }
+
+        int32_t id() const; 
+        int32_t value() const; 
+    };
+    class NDDSUSERDllExport SampleOffset 
+    : public ::rti::flat::FinalOffset< SampleOffset > {
+      public:
+        typedef SampleConstOffset ConstOffset;
+
+        enum { required_alignment = 4 };
+
+        static ::rti::flat::offset_t serialized_size(::rti::flat::offset_t initial_position)
+        {
+            static const ::rti::flat::offset_t sizes[] = {8, 8, 8, 8};
+            return sizes[initial_position % 4];
+        }
+
+        // Null offset
+        SampleOffset()
+        {
+        }
+
+        // Constructor is for internal use only
+        SampleOffset(
+            ::rti::flat::SampleBase *sample, 
+            ::rti::flat::offset_t offset)
+            : ::rti::flat::FinalOffset< SampleOffset >(sample, offset)
+        {
+        }
+
+        // Const accessors
+        int32_t id() const; 
+        int32_t value() const; 
+
+        // Modifiers
+        bool id(int32_t value);
+        bool value(int32_t value);
+    };
+
+    typedef ::rti::flat::Sample< SampleOffset > Sample;
+
+    struct NDDSUSERDllExport SamplePlainHelper {
         int32_t id {};
         int32_t value {};
 
-        Sample();
+        SamplePlainHelper();
 
-        Sample(int32_t id_,int32_t value_);
+        SamplePlainHelper(int32_t id_,int32_t value_);
 
     };
 
-    NDDSUSERDllExport bool operator == (const Sample& a, const Sample& b);
-    NDDSUSERDllExport bool operator != (const Sample& a, const Sample& b);
-    NDDSUSERDllExport void swap(Sample& a, Sample& b)  noexcept;
+    NDDSUSERDllExport bool operator == (const SamplePlainHelper& a, const SamplePlainHelper& b);
+    NDDSUSERDllExport bool operator != (const SamplePlainHelper& a, const SamplePlainHelper& b);
+    NDDSUSERDllExport void swap(SamplePlainHelper& a, SamplePlainHelper& b)  noexcept;
 
-    NDDSUSERDllExport std::ostream& operator<<(std::ostream& o, const Sample& sample);
+    NDDSUSERDllExport std::ostream& operator<<(std::ostream& o, const SamplePlainHelper& sample);
 
 } // namespace CorpusFlatDataBinding  
 
@@ -98,6 +164,8 @@ namespace rti {
 namespace rti {
     namespace flat {
         namespace topic {
+            template<>
+            struct is_flat_data_type_only< ::CorpusFlatDataBinding::Sample > : public ::dds::core::true_type {};
         }
     }
 }
@@ -139,6 +207,41 @@ namespace dds {
             static const ::rti::topic::TypePluginKind::type type_plugin_kind = 
             ::rti::topic::TypePluginKind::STL;
         };
+        template<>
+        struct topic_type_name< ::CorpusFlatDataBinding::SamplePlainHelper > {
+            NDDSUSERDllExport static std::string value() {
+                return "CorpusFlatDataBinding::SamplePlainHelper";
+            }
+        };
+
+        template<>
+        struct is_topic_type< ::CorpusFlatDataBinding::SamplePlainHelper > : public ::dds::core::true_type {};
+
+        template<>
+        struct topic_type_support< ::CorpusFlatDataBinding::SamplePlainHelper > {
+            NDDSUSERDllExport 
+            static void register_type(
+                ::dds::domain::DomainParticipant& participant,
+                const std::string & type_name);
+
+            NDDSUSERDllExport 
+            static std::vector<char>& to_cdr_buffer(
+                std::vector<char>& buffer, 
+                const ::CorpusFlatDataBinding::SamplePlainHelper& sample,
+                ::dds::core::policy::DataRepresentationId representation 
+                = ::dds::core::policy::DataRepresentation::auto_id());
+
+            NDDSUSERDllExport 
+            static void from_cdr_buffer(::CorpusFlatDataBinding::SamplePlainHelper& sample, const std::vector<char>& buffer);
+            NDDSUSERDllExport 
+            static void reset_sample(::CorpusFlatDataBinding::SamplePlainHelper& sample);
+
+            NDDSUSERDllExport 
+            static void allocate_sample(::CorpusFlatDataBinding::SamplePlainHelper& sample, int, int);
+
+            static const ::rti::topic::TypePluginKind::type type_plugin_kind = 
+            ::rti::topic::TypePluginKind::STL;
+        };
     }
 }
 
@@ -154,10 +257,51 @@ namespace rti {
         template <>
         struct extensibility< ::CorpusFlatDataBinding::Sample > {
             static const ::dds::core::xtypes::ExtensibilityKind::type kind =
-            ::dds::core::xtypes::ExtensibilityKind::EXTENSIBLE;    };
+            ::dds::core::xtypes::ExtensibilityKind::FINAL;    };
+
+        template<>
+        struct dynamic_type< ::CorpusFlatDataBinding::SamplePlainHelper > {
+            typedef ::dds::core::xtypes::StructType type;
+            NDDSUSERDllExport static const ::dds::core::xtypes::StructType& get();
+        };
+
+        template <>
+        struct extensibility< ::CorpusFlatDataBinding::SamplePlainHelper > {
+            static const ::dds::core::xtypes::ExtensibilityKind::type kind =
+            ::dds::core::xtypes::ExtensibilityKind::FINAL;    };
 
     }
 }
+
+namespace rti { namespace xcdr {
+        template <>
+        struct type_programs< ::CorpusFlatDataBinding::Sample > {
+            static RTIXCdrInterpreterPrograms * get();
+        };
+    } }
+
+namespace rti { namespace flat {
+
+        template <>
+        struct flat_type_traits< ::CorpusFlatDataBinding::Sample > {
+            typedef ::CorpusFlatDataBinding::SamplePlainHelper plain_type;
+            typedef ::CorpusFlatDataBinding::SampleOffset offset;
+        };
+
+        template <>
+        struct flat_type_traits< ::CorpusFlatDataBinding::SampleOffset > {
+            typedef ::CorpusFlatDataBinding::Sample flat_type;
+            typedef ::CorpusFlatDataBinding::SamplePlainHelper plain_type;
+        };
+
+        template <>
+        struct flat_type_traits< ::CorpusFlatDataBinding::SampleConstOffset > 
+        : flat_type_traits< ::CorpusFlatDataBinding::SampleOffset > {
+        };
+
+    } } // namespace ::rti::flat
+
+#include "rti/flat/FlatSampleImpl.hpp"
 
 #endif // NDDS_STANDALONE_TYPE
 #if defined(NDDS_USER_DLL_EXPORT) || defined(NDDS_USER_SYMBOL_EXPORT)
@@ -165,4 +309,4 @@ namespace rti {
 #define NDDSUSERDllExport
 #endif
 
-#endif // _10_flat_data_binding_532422587_hpp
+#endif // _10_flat_data_binding_532422622_hpp

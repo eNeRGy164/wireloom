@@ -13,6 +13,8 @@ namespace RuntimeUnionStringSequences;
 /// <summary>
 /// Provides RTI Connext DDS type support for <see cref="DirectStringSequences"/>.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Dds_1_1Topics_1_1TypeSupport.html">RTI Connext C# TypeSupport API (7.7.0)</seealso>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1DynamicData.html">RTI Connext 7.7.0 C# DynamicData API</seealso>
 public class DirectStringSequencesSupport : TypeSupport<DirectStringSequences>
 {
     /// <summary>

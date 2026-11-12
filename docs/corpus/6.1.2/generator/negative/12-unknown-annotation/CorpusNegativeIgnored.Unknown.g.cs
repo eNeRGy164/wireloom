@@ -9,6 +9,7 @@ namespace CorpusNegativeIgnored;
 /// <summary>
 /// Represents the <c>Unknown</c> DDS type declared in <c>12-unknown-annotation.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 C# ExtensibilityKind API</seealso>
 public partial class Unknown : global::System.IEquatable<Unknown>
 {
     /// <summary>

@@ -11,11 +11,13 @@ namespace CorpusKeyBoundaries;
 /// <summary>
 /// Represents the <c>ArrayKey</c> DDS type declared in <c>08-key-boundaries.idl</c>. Its key members identify a DDS instance across samples; they do not determine whether two complete samples are equal. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.3.1 C# ExtensibilityKind API</seealso>
 public partial class ArrayKey : global::System.IEquatable<ArrayKey>
 {
     /// <summary>
     /// Gets or sets the <c>coordinates</c> member. This member forms part of the DDS instance key. It is a fixed array with dimensions 2.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.3.1 C# dynamic member metadata API</seealso>
     [Key]
     public int[] coordinates { get; set; } = null!;
 
