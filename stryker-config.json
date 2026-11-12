@@ -1,17 +1,16 @@
 {
   "stryker-config": {
     "solution": "Wireloom.slnx",
-    "test-projects": [
-      "tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CSharp.Compiler.Tests.csproj",
-      "tests/Wireloom.Dds.CSharp.Generator.Tests/Wireloom.Dds.CSharp.Generator.Tests.csproj"
-    ],
     "mutate": [
       "src/Wireloom.Dds.CSharp.Compiler/**/*.cs",
-      "src/Wireloom.Dds.CSharp.Generator/**/*.cs"
+      "src/Wireloom.Dds.CSharp.Generator/**/*.cs",
+      "src/Wireloom.Dds.Idl/**/*.cs",
+      "src/Wireloom.Dds.Cpp.Compiler/**/*.cs",
+      "src/Wireloom.Dds.Cpp.Generator/**/*.cs"
     ],
     "test-runner": "mtp",
-    "additional-timeout": 4000,
-    "timeout-ratio": 1.1,
+    "additional-timeout": 2000,
+    "timeout-ratio": 1.05,
     "reporters": [ "html", "json", "markdown", "progress" ],
     "report-file-name": "mutation-report",
     "thresholds": {
