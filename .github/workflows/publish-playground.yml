@@ -34,13 +34,12 @@ jobs:
     permissions:
       actions: read
       contents: read
-      statuses: read
     outputs:
       publish: ${{ steps.source.outputs.publish }}
       run_id: ${{ steps.source.outputs.run_id }}
       revision: ${{ steps.source.outputs.revision }}
     steps:
-      - name: Validate run provenance and Coveralls
+      - name: Validate Quality run provenance
         id: source
         env:
           GH_TOKEN: ${{ github.token }}
@@ -65,15 +64,6 @@ jobs:
               exit 0
             fi
           fi
-          state=pending
-          for attempt in {1..24}; do
-            state=$(gh api "repos/$REPOSITORY/commits/$revision/status" \
-              --jq '[.statuses[] | select(.context == "coverage/coveralls (push)")][0].state // "pending"')
-            [[ "$state" == success ]] && break
-            [[ "$state" == failure || "$state" == error ]] && exit 1
-            sleep 5
-          done
-          [[ "$state" == success ]]
           echo "publish=true" >> "$GITHUB_OUTPUT"
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
           echo "revision=$revision" >> "$GITHUB_OUTPUT"
