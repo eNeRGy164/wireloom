@@ -30,18 +30,19 @@ env:
   ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
 
 jobs:
-  package:
-    name: Build and publish release
+  select:
+    name: Select qualified release
     if: >-
       github.repository == 'eNeRGy164/wireloom' &&
       (github.event_name == 'push' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-26.04
-    timeout-minutes: 20
+    timeout-minutes: 10
     permissions:
       actions: read
-      contents: write
-      id-token: write
-      attestations: write
+      contents: read
+    outputs:
+      revision: ${{ steps.source.outputs.revision }}
+      version: ${{ steps.gitversion.outputs.semVer }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v7.0.1
@@ -77,7 +78,7 @@ jobs:
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$wire_run/artifacts?per_page=100" |
             jq -e '
               [.artifacts[] | select(.expired == false) | .name]
-              | contains(["wire-compatibility-rti-7.3.1", "wire-compatibility-rti-7.7.0"])
+              | contains(["wire-compatibility-rti-6.1.2", "wire-compatibility-rti-7.3.1", "wire-compatibility-rti-7.7.0"])
             '
 
       - name: Set up .NET
@@ -110,12 +111,53 @@ jobs:
             exit 1
           fi
 
+      - name: Retain selected source revision
+        id: source
+        run: echo "revision=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  cpp:
+    name: Build and verify native package
+    needs: select
+    if: needs.select.outputs.revision != ''
+    permissions:
+      contents: read
+    uses: ./.github/workflows/cpp-package.yml
+    with:
+      revision: ${{ needs.select.outputs.revision }}
+      package_version: ${{ needs.select.outputs.version }}
+
+  package:
+    name: Build and attest release
+    needs: [select, cpp]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Check out selected revision
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ needs.select.outputs.revision }}
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6.1.0
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: |
+            global.json
+            **/packages*.lock.json
+
       - name: Restore generator dependencies
         run: dotnet restore "$PACKAGE_PROJECT" --locked-mode
 
       - name: Pack versioned candidate
         env:
-          PACKAGE_VERSION: ${{ steps.gitversion.outputs.semVer }}
+          PACKAGE_VERSION: ${{ needs.select.outputs.version }}
         run: >-
           dotnet pack "$PACKAGE_PROJECT" --no-restore --configuration Release
           --output "$PACKAGE_TEST_FEED" -p:Version="$PACKAGE_VERSION" -p:PackageVersion="$PACKAGE_VERSION"
@@ -123,7 +165,7 @@ jobs:
       - name: Smoke-test the exact candidate package with C# 12
         env:
           NUGET_PACKAGES: ${{ runner.temp }}/candidate-nuget-packages
-          PACKAGE_VERSION: ${{ steps.gitversion.outputs.semVer }}
+          PACKAGE_VERSION: ${{ needs.select.outputs.version }}
         run: |
           dotnet restore "$PACKAGE_INTEGRATION_TEST_PROJECT" \
             --configfile tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/NuGet.Test.Config \
@@ -135,6 +177,19 @@ jobs:
         run: |
           mkdir -p "$ARTIFACTS_DIR"
           cp "$PACKAGE_TEST_FEED"/*.nupkg "$ARTIFACTS_DIR"/
+
+      - name: Stage the tested native package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_VERSION: ${{ needs.select.outputs.version }}
+        run: |
+          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name cpp-nuget --dir "$ARTIFACTS_DIR"
+          test -f "$ARTIFACTS_DIR/Wireloom.Dds.Cpp.Generator.$PACKAGE_VERSION.nupkg"
+
+      - name: Retain exact package hashes
+        run: |
+          cd "$ARTIFACTS_DIR"
+          sha256sum ./*.nupkg > SHA256SUMS
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0.24.3
@@ -161,10 +216,41 @@ jobs:
       - name: Upload release artifacts
         uses: actions/upload-artifact@v7.0.2
         with:
-          name: wireloom-dds-generator-release-${{ steps.gitversion.outputs.semVer }}
+          name: wireloom-dds-generator-release-${{ needs.select.outputs.version }}
           path: ${{ env.ARTIFACTS_DIR }}
           if-no-files-found: error
           retention-days: 90
+
+  publish:
+    name: Publish tested release packages
+    needs: [select, package]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - name: Check out selected revision
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ needs.select.outputs.revision }}
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Download and verify retained publication bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_VERSION: ${{ needs.select.outputs.version }}
+        run: |
+          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --name "wireloom-dds-generator-release-$PACKAGE_VERSION" --dir "$ARTIFACTS_DIR"
+          cd "$ARTIFACTS_DIR"
+          sha256sum --check SHA256SUMS
 
       - name: Exchange GitHub OIDC token for NuGet credential
         uses: NuGet/login@v1.2.0
@@ -172,15 +258,20 @@ jobs:
         with:
           user: ${{ secrets.NUGET_USER }}
 
-      - name: Publish release to NuGet.org
-        run: |
-          $package = Get-ChildItem -LiteralPath $env:ARTIFACTS_DIR -Filter '*.nupkg' | Select-Object -First 1
-          if ($null -eq $package) { throw 'No NuGet package was produced.' }
-          $pushArguments = @(
-            $package.FullName,
-            '--source', 'https://api.nuget.org/v3/index.json',
-            '--api-key', '${{ steps.nuget-login.outputs.NUGET_API_KEY }}',
-            '--skip-duplicate'
-          )
-          dotnet nuget push @pushArguments
+      - name: Publish release packages to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         shell: pwsh
+        run: |
+          $packages = @(Get-ChildItem -LiteralPath $env:ARTIFACTS_DIR -Filter '*.nupkg')
+          if ($packages.Count -ne 2) { throw 'Expected the tested C# and C++ packages.' }
+          foreach ($package in $packages) {
+            $pushArguments = @(
+              $package.FullName,
+              '--source', 'https://api.nuget.org/v3/index.json',
+              '--api-key', $env:NUGET_API_KEY,
+              '--skip-duplicate'
+            )
+            dotnet nuget push @pushArguments
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
