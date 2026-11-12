@@ -54,7 +54,7 @@ For example, run the focused preprocessor review gate with:
 ```shell
 dotnet run --project tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CSharp.Compiler.Tests.csproj `
   --no-build --configuration Release -- `
-  --filter-namespace Wireloom.Compiler.FrontEnd.Preprocessing.Tests
+  --filter-namespace Wireloom.Dds.CSharp.Compiler.FrontEnd.Preprocessing.Tests
 ```
 
 ## Tests and fixtures
@@ -80,6 +80,21 @@ Keep the test layers focused:
   source while excluding generated fixtures and test-project code.
   Keep known failures visible and distinguish API behavior from serialization
   and DDS wire evidence.
+
+C++ follows the same test-layer layout as C#:
+
+| Layer             | C++ suite                                                                                                             |
+| :---------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| Compiler          | [In-memory API, planning, and source primitives](tests/Wireloom.Dds.Cpp.Compiler.Tests/README.md)                     |
+| Corpus            | [Supported generation-corpus checks](tests/Wireloom.Dds.Cpp.CorpusCompliance/README.md)                               |
+| Fuzzing           | [Copied C# IDL seeds with C++ compiler assertions](tests/Wireloom.Dds.Cpp.Fuzzing.Tests/README.md)                    |
+| Generator package | [Native package consumption through CMake and MSBuild](tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md) |
+| Generator         | [CLI, filesystem generation, and emitted surfaces](tests/Wireloom.Dds.Cpp.Generator.Tests/README.md)                  |
+
+The native package layer uses PowerShell/CMake rather than a managed test
+project. C++ corpus generation checks do not replace native SDK, CDR, or live
+DDS qualification. The compiler, generator, and fuzzing projects are in the
+main solution; corpus and package consumers remain independently runnable.
 
 When adding or changing a corpus case, follow the detailed [corpus authoring
 rules](docs/corpus/README.md). Keep each case focused on one feature, preserve
@@ -125,7 +140,8 @@ Licensed DDS wire qualification remains a separate manual workflow.
 
 Generator-quality changes require successful build and relevant tests, branch
 and line coverage review, Community Qodana, and a passing CI Coveralls check.
-The compiler gates are 90% branches and 95% lines. Follow the complete
+The existing C# compiler and combined C++ backend coverage checks use 90%
+branches and 95% lines; Coveralls evaluates the uploaded reports. Follow the complete
 [quality procedure](docs/testing/quality.md) for commands, report freshness,
 Qodana isolation, and result interpretation.
 

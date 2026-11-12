@@ -38,6 +38,24 @@ bounded property test rather than a grammar-complete IDL generator; corpus
 compliance remains the inventory for supported and explicitly rejected
 feature cases.
 
+## Modern C++ fuzzing
+
+The [C++ fuzzing suite](../../tests/Wireloom.Dds.Cpp.Fuzzing.Tests/README.md)
+uses a copy of the same seeds, mutation characters, and mutation logic. Keep
+that input content identical to C#; assertions remain backend-specific.
+
+```shell
+dotnet restore tests/Wireloom.Dds.Cpp.Fuzzing.Tests/Wireloom.Dds.Cpp.Fuzzing.Tests.csproj --locked-mode
+dotnet run --project tests/Wireloom.Dds.Cpp.Fuzzing.Tests/Wireloom.Dds.Cpp.Fuzzing.Tests.csproj --no-restore --configuration Release
+```
+
+C++ checks deterministic files/diagnostics, unique file names, LF output, and
+fail-closed diagnostics for malformed or unsupported input. Each implemented
+RTI profile runs the property: 6.1.2, 7.3.1, and 7.7.0. The same
+`WIRELOOM_FSCHECK_TESTS` setting applies per profile, giving 3,000 cases locally
+and 30,000 in CI. This is compiler-boundary evidence, not native C++ compilation
+or runtime qualification.
+
 ## Defects exposed by the fuzzing gate
 
 The fuzzing gate has exposed and led to regression tests for:

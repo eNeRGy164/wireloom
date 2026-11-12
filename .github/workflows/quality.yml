@@ -19,6 +19,11 @@ env:
   TEST_PROJECT: tests/Wireloom.Dds.CSharp.Generator.Tests/Wireloom.Dds.CSharp.Generator.Tests.csproj
   FUZZING_TEST_PROJECT: tests/Wireloom.Dds.CSharp.Fuzzing.Tests/Wireloom.Dds.CSharp.Fuzzing.Tests.csproj
   COMPILER_TEST_PROJECT: tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CSharp.Compiler.Tests.csproj
+  IDL_TEST_PROJECT: tests/Wireloom.Dds.Idl.Tests/Wireloom.Dds.Idl.Tests.csproj
+  CPP_COMPILER_TEST_PROJECT: tests/Wireloom.Dds.Cpp.Compiler.Tests/Wireloom.Dds.Cpp.Compiler.Tests.csproj
+  CPP_GENERATOR_TEST_PROJECT: tests/Wireloom.Dds.Cpp.Generator.Tests/Wireloom.Dds.Cpp.Generator.Tests.csproj
+  CPP_CORPUS_TEST_PROJECT: tests/Wireloom.Dds.Cpp.CorpusCompliance/Wireloom.Dds.Cpp.CorpusCompliance.csproj
+  CPP_FUZZING_TEST_PROJECT: tests/Wireloom.Dds.Cpp.Fuzzing.Tests/Wireloom.Dds.Cpp.Fuzzing.Tests.csproj
   RUNTIME_TEST_PROJECT: tests/Wireloom.Dds.CSharp.RuntimeContracts/Wireloom.Dds.CSharp.RuntimeContracts.csproj
   CORPUS_TEST_PROJECT: tests/Wireloom.Dds.CSharp.CorpusCompliance/Wireloom.Dds.CSharp.CorpusCompliance.csproj
   PACKAGE_PROJECT: src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj
@@ -437,6 +442,11 @@ jobs:
         run: |
           dotnet restore $env:TEST_PROJECT --locked-mode
           dotnet restore $env:COMPILER_TEST_PROJECT --locked-mode
+          dotnet restore $env:IDL_TEST_PROJECT --locked-mode
+          dotnet restore $env:CPP_COMPILER_TEST_PROJECT --locked-mode
+          dotnet restore $env:CPP_GENERATOR_TEST_PROJECT --locked-mode
+          dotnet restore $env:CPP_CORPUS_TEST_PROJECT --locked-mode
+          dotnet restore $env:CPP_FUZZING_TEST_PROJECT --locked-mode
           dotnet restore $env:FUZZING_TEST_PROJECT --locked-mode
         shell: pwsh
 
@@ -448,7 +458,7 @@ jobs:
           --
           --results-directory coverage
           --coverage
-          --coverage-settings coverage.settings.xml
+          --coverage-settings coverage.generator.settings.xml
           --coverage-output generator.cobertura.xml
           --coverage-output-format cobertura
         shell: pwsh
@@ -461,10 +471,84 @@ jobs:
           --
           --results-directory coverage
           --coverage
-          --coverage-settings coverage.settings.xml
+          --coverage-settings coverage.compiler.settings.xml
           --coverage-output compiler.cobertura.xml
           --coverage-output-format cobertura
         shell: pwsh
+
+      - name: Test shared IDL front end with coverage
+        run: >-
+          dotnet run --project $env:IDL_TEST_PROJECT
+          --no-restore
+          --configuration Release
+          --
+          --results-directory coverage
+          --coverage
+          --coverage-settings coverage.idl.settings.xml
+          --coverage-output idl-front-end.cobertura.xml
+          --coverage-output-format cobertura
+        shell: pwsh
+
+      - name: Test shared IDL coverage through compiler tests
+        run: >-
+          dotnet run --project $env:COMPILER_TEST_PROJECT
+          --no-restore
+          --configuration Release
+          --
+          --results-directory coverage
+          --coverage
+          --coverage-settings coverage.idl.settings.xml
+          --coverage-output idl-compiler.cobertura.xml
+          --coverage-output-format cobertura
+        shell: pwsh
+
+      - name: Merge shared IDL coverage reports
+        run: |
+          $toolPath = Join-Path $env:RUNNER_TEMP 'dotnet-tools'
+          # Keep aligned with Microsoft.Testing.Extensions.CodeCoverage in Directory.Packages.props.
+          dotnet tool install dotnet-coverage --tool-path $toolPath --version 18.1.0 --configfile NuGet.config
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $coverageTool = Join-Path $toolPath 'dotnet-coverage'
+          & $coverageTool merge `
+            coverage/idl-front-end.cobertura.xml `
+            coverage/idl-compiler.cobertura.xml `
+            --output coverage/idl.cobertura.xml `
+            --output-format cobertura `
+            --nologo
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        shell: pwsh
+
+      - name: Build independent C++ compiler and corpus suites
+        shell: pwsh
+        run: |
+          dotnet build $env:CPP_COMPILER_TEST_PROJECT --no-restore --configuration Release
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          dotnet build $env:CPP_CORPUS_TEST_PROJECT --no-restore --configuration Release
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      - name: Test C++ compiler, corpus, and generator with combined coverage
+        run: >-
+          dotnet run --project $env:CPP_GENERATOR_TEST_PROJECT -p:WireloomCppCombinedCoverage=true
+          --no-restore
+          --configuration Release
+          --
+          --results-directory coverage
+          --coverage
+          --coverage-settings tests/Wireloom.Dds.Cpp.Generator.Tests/coverage.settings.xml
+          --coverage-output cpp.cobertura.xml
+          --coverage-output-format cobertura
+        shell: pwsh
+
+      - name: Enforce C++ backend branch and line coverage
+        shell: pwsh
+        run: |
+          [xml]$report = Get-Content -LiteralPath 'coverage/cpp.cobertura.xml'
+          if ([int]$report.coverage.GetAttribute('branches-valid') -le 0 -or
+              [double]$report.coverage.GetAttribute('branch-rate') -lt 0.90 -or
+              [double]$report.coverage.GetAttribute('line-rate') -lt 0.95) {
+            throw 'C++ backend coverage must reach 90% branches and 95% lines.'
+          }
 
       - name: Enforce compiler branch and line coverage
         run: |
@@ -481,18 +565,22 @@ jobs:
         shell: pwsh
 
       - name: Test Playground adapter with coverage
-        run: >-
-          dotnet run --project $env:COMPILER_TEST_PROJECT
-          --no-restore
-          --configuration Release
-          --
-          --results-directory coverage
-          --filter-class Wireloom.Compiler.Tests.Playground.PlaygroundCompilerAdapterSpecs
-          --coverage
-          --coverage-settings coverage.playground.settings.xml
-          --coverage-output playground.cobertura.xml
-          --coverage-output-format cobertura
+        run: |
+          dotnet run --project $env:COMPILER_TEST_PROJECT --no-restore --configuration Release -- --results-directory coverage --filter-class Wireloom.Dds.CSharp.Compiler.Tests.Playground.PlaygroundCompilerAdapterSpecs --coverage --coverage-settings coverage.playground.settings.xml --coverage-output playground.cobertura.xml --coverage-output-format cobertura
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         shell: pwsh
+
+      - name: Validate Playground adapter coverage report
+        shell: pwsh
+        run: |
+          [xml]$report = Get-Content -LiteralPath 'coverage/playground.cobertura.xml'
+          $adapter = $report.SelectSingleNode("/coverage/packages/package/classes/class[@name='Wireloom.Playground.Browser.PlaygroundCompilerAdapter']")
+          if ($null -eq $adapter -or
+              [int]$report.coverage.GetAttribute('branches-valid') -le 0 -or
+              [int]$report.coverage.GetAttribute('lines-valid') -le 0) {
+            throw 'Playground adapter tests must produce a non-empty source coverage report.'
+          }
+          Write-Host 'Playground adapter coverage report contains source and branch counters.'
 
       - name: Run IDL FsCheck fuzzing gate
         run: >-
@@ -501,6 +589,14 @@ jobs:
           --configuration Release
           --
           --filter-class Wireloom.Dds.CSharp.Fuzzing.Tests.FsCheckIdlCompilerFuzzingSpecs
+        shell: pwsh
+        env:
+          WIRELOOM_FSCHECK_TESTS: 10000
+
+      - name: Run C++ FsCheck fuzzing gate
+        run: >-
+          dotnet run --project $env:CPP_FUZZING_TEST_PROJECT
+          --no-restore --configuration Release
         shell: pwsh
         env:
           WIRELOOM_FSCHECK_TESTS: 10000
@@ -765,7 +861,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           format: cobertura
-          files: coverage/generator.cobertura.xml coverage/compiler.cobertura.xml coverage/playground.cobertura.xml playground/coverage/cobertura-coverage.xml
+          files: coverage/generator.cobertura.xml coverage/compiler.cobertura.xml coverage/idl.cobertura.xml coverage/cpp.cobertura.xml coverage/playground.cobertura.xml playground/coverage/cobertura-coverage.xml
 
   qodana:
     name: Qodana community scan
