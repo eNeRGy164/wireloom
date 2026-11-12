@@ -11,16 +11,19 @@ namespace CorpusExtensibility;
 /// <summary>
 /// Represents the <c>Mutable</c> DDS type declared in <c>09-extensibility.idl</c>. It is marked as <c>mutable</c>. Members may be identified and reordered by DDS member IDs during compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 C# ExtensibilityKind API</seealso>
 public partial class Mutable : global::System.IEquatable<Mutable>
 {
     /// <summary>
     /// Gets or sets the <c>id</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. Its DDS member ID is <c>1</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/class_rti_1_1_types_1_1_dynamic_1_1_struct_member.html">RTI Connext 6.1.2 C# dynamic member metadata API</seealso>
     public int id { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>optionalValue</c> member. This member is optional. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. A <see langword="null"/> value means the member is absent. Its DDS member ID is <c>2</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/class_rti_1_1_types_1_1_dynamic_1_1_struct_member.html">RTI Connext 6.1.2 C# dynamic member metadata API</seealso>
     /// <example>
     /// <code>
     /// var sample = new Mutable();

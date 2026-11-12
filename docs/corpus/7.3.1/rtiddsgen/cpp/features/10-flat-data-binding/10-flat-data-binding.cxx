@@ -137,7 +137,7 @@ namespace rti {
 
                 static DDS_TypeCode Sample_g_tc =
                 {{
-                        DDS_TK_STRUCT, /* Kind */
+                        DDS_TK_STRUCT| DDS_TK_FINAL_EXTENSIBILITY, /* Kind */
                         DDS_BOOLEAN_FALSE, /* Ignored */
                         -1, /*Ignored*/
                         (char *)"CorpusFlatDataBinding::Sample", /* Name */

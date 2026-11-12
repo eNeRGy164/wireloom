@@ -9,11 +9,13 @@ namespace CorpusAnnotationVariants;
 /// <summary>
 /// Represents the <c>NestedValue</c> DDS type declared in <c>10-annotations-extended.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class NestedValue : global::System.IEquatable<NestedValue>
 {
     /// <summary>
     /// Gets or sets the <c>value</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public int value { get; set; }
 
     /// <summary>

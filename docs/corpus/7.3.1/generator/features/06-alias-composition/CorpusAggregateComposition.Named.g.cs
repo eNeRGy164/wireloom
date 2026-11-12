@@ -9,6 +9,7 @@ namespace CorpusAggregateComposition;
 /// <summary>
 /// Represents the <c>Named</c> DDS type declared in <c>06-alias-composition.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.3.1 C# ExtensibilityKind API</seealso>
 public partial class Named : global::System.IEquatable<Named>
 {
     /// <summary>

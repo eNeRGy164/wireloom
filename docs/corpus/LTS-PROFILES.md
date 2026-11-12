@@ -11,11 +11,11 @@ See [feature coverage](FEATURE-COVERAGE.md) for current compatibility limits.
 | 7.3.1       | `Rtiddsgen431` | 4.3.1     | `rticom/connext-base:7.3.1@sha256:f33a61ec6381a8fb73cbb019fbb5c081f434dc5217eb14283fad995306be0f04`               |
 | 7.7.0       | `Rtiddsgen470` | 4.7.0     | `rticom/connext-base:7.7.0@sha256:efe4d35807a4aadaa59f0e84545d4c6b70328af5b0c0ca0498e63ecc1e16e1ca`               |
 
-| RTI package | Feature and oracle evidence                                          | Wireloom source exports              | Runtime / DDS wire evidence                                                                 |
-| :---------- | :------------------------------------------------------------------- | :----------------------------------- | :------------------------------------------------------------------------------------------ |
-| 6.1.2       | [Feature coverage](6.1.2/FEATURE-COVERAGE.md); C# and C++11 captures | [Retained exports](6.1.2/generator/) | Exact-version runtime and wire evidence; see profile-specific limits and recorded outcomes. |
-| 7.3.1       | [Feature coverage](7.3.1/FEATURE-COVERAGE.md); C# and C++11 captures | [Retained exports](7.3.1/generator/) | Exact-version runtime and wire evidence; see profile-specific limits and recorded outcomes. |
-| 7.7.0       | [Feature coverage](7.7.0/FEATURE-COVERAGE.md); C# and C++11 captures | [Retained exports](7.7.0/generator/csharp/) | Exact-version runtime and wire evidence; see profile-specific limits and recorded outcomes. |
+| RTI package | Feature and oracle evidence                                          | Wireloom source exports                                           | Runtime / DDS wire evidence                                                                 |
+| :---------- | :------------------------------------------------------------------- | :---------------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
+| 6.1.2       | [Feature coverage](6.1.2/FEATURE-COVERAGE.md); C# and C++11 captures | [Retained exports](6.1.2/generator/)                              | Exact-version runtime and wire evidence; see profile-specific limits and recorded outcomes. |
+| 7.3.1       | [Feature coverage](7.3.1/FEATURE-COVERAGE.md); C# and C++11 captures | [Retained exports](7.3.1/generator/)                              | Exact-version runtime and wire evidence; see profile-specific limits and recorded outcomes. |
+| 7.7.0       | [Feature coverage](7.7.0/FEATURE-COVERAGE.md); C# and C++11 captures | [C#](7.7.0/generator/csharp/), [Modern C++](7.7.0/generator/cpp/) | Exact-version runtime and wire evidence; see profile-specific limits and recorded outcomes. |
 
 The resolved RTI assembly selects the API profile. Generation, compilation,
 runtime, and wire evidence establish different results for each exact release;

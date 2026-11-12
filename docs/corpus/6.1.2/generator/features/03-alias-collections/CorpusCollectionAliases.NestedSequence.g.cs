@@ -18,7 +18,7 @@ public partial class NestedSequence : global::System.IEquatable<NestedSequence>
     /// Gets the sequence value represented by this typedef. Its maximum number of elements is <c>2</c>. Each nested sequence is limited to <c>3</c> elements. Each element's representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     /// <remarks>Use the mutable sequence instance to add or remove elements; the property itself is getter-only.</remarks>
-    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 6.1.2 ISequence API</seealso>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 ISequence API</seealso>
     [Bound(2)]
     public ISequence<LongSequence> Value { get; } = null!;
 

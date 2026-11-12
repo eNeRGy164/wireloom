@@ -503,7 +503,8 @@
       "generatorSourceDirectory": "generator/features/10-flat-data-binding",
       "unsupportedScopes": [
         "topic-annotation-semantics"
-      ]
+      ],
+      "oracleSourceStatus": "Retained RTI C# output predates the canonical @final addition and still reports ExtensibilityKind.Extensible. RTI SDK 6.1.2/7.3.1 was unavailable locally and container access was denied; recapture/revalidation is pending. The current Wireloom C# output is regenerated and reports Final."
     },
     {
       "id": "11-preprocessing",

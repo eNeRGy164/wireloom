@@ -18,7 +18,7 @@ public partial class BoundedWideTexts : global::System.IEquatable<BoundedWideTex
     /// Gets the sequence value represented by this typedef. Its maximum number of elements is <c>3</c>. Each wide IDL string element is limited to <c>4</c> UTF-16 code units.
     /// </summary>
     /// <remarks>Use the mutable sequence instance to add or remove elements; the property itself is getter-only.</remarks>
-    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 6.1.2 ISequence API</seealso>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 ISequence API</seealso>
     [Bound(3)]
     public ISequence<string> Value { get; } = null!;
 

@@ -11,16 +11,19 @@ namespace CorpusOptionalRecursiveArray;
 /// <summary>
 /// Represents the <c>Node</c> DDS type declared in <c>09-optional-recursive-array.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class Node : global::System.IEquatable<Node>
 {
     /// <summary>
     /// Gets or sets the <c>value</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public int value { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>children</c> member. This member is optional. It is a fixed array with dimensions 2. A <see langword="null"/> value means absent; an empty collection is present with no elements.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.7.0 C# dynamic member metadata API</seealso>
     /// <example>
     /// <code>
     /// var sample = new Node();

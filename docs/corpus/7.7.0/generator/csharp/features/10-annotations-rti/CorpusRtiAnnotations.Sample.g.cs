@@ -11,6 +11,7 @@ namespace CorpusRtiAnnotations;
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>10-annotations-rti.idl</c>. Its key members identify a DDS instance across samples; they do not determine whether two complete samples are equal. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution. It is marked for use as a DDS topic data type; the annotation does not create a Topic or publish data.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class Sample : global::System.IEquatable<Sample>
 {
     private int _value;
@@ -18,12 +19,15 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Gets or sets the <c>id</c> member. This member forms part of the DDS instance key. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.7.0 C# dynamic member metadata API</seealso>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     [Key]
     public int id { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>value</c> member. Valid values are in the inclusive range <c>-32</c> through <c>31</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     /// <exception cref="global::System.ArgumentOutOfRangeException">The assigned value is outside the inclusive range -32 through 31.</exception>
     public int value
     {
@@ -40,6 +44,7 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Gets or sets the <c>text</c> member. Its maximum length is <c>16</c> UTF-8 bytes.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
     /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(16)]
@@ -48,6 +53,8 @@ public partial class Sample : global::System.IEquatable<Sample>
     /// <summary>
     /// Gets or sets the <c>externalText</c> member. Its maximum length is <c>16</c> UTF-8 bytes.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.7.0 C# dynamic member metadata API</seealso>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
     /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(16)]

@@ -1,4 +1,4 @@
-module CorpusAutoId {
+@autoid(HASH) module CorpusAutoId {
     @autoid(HASH) @appendable struct Sample {
         @hashid("stable_id") long id;
         @hashid string<16> text;

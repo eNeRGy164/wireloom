@@ -12,6 +12,7 @@ namespace CorpusUnboundedReceiveLifecycle;
 /// <summary>
 /// Represents the <c>OptionalState</c> DDS type declared in <c>14-unbounded-receive-lifecycle.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 C# ExtensibilityKind API</seealso>
 public partial class OptionalState : global::System.IEquatable<OptionalState>
 {
     /// <summary>
@@ -22,6 +23,7 @@ public partial class OptionalState : global::System.IEquatable<OptionalState>
     /// <summary>
     /// Gets or sets the <c>note</c> member. This member is optional. This string has no IDL maximum length. A <see langword="null"/> value means the member is absent.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/class_rti_1_1_types_1_1_dynamic_1_1_struct_member.html">RTI Connext 6.1.2 C# dynamic member metadata API</seealso>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 6.1.2 string and wide-string bounds</seealso>
     /// <remarks>This narrow IDL string is unbounded.</remarks>
     /// <example>
@@ -38,7 +40,7 @@ public partial class OptionalState : global::System.IEquatable<OptionalState>
     /// Gets the <c>labels</c> member.
     /// </summary>
     /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound. This IDL sequence is unbounded.</remarks>
-    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 6.1.2 ISequence API</seealso>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 ISequence API</seealso>
     /// <example>
     /// <code>
     /// var sample = new OptionalState();

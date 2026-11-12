@@ -11,16 +11,21 @@ namespace CorpusExtensibility;
 /// <summary>
 /// Represents the <c>Mutable</c> DDS type declared in <c>09-extensibility.idl</c>. It is marked as <c>mutable</c>. Members may be identified and reordered by DDS member IDs during compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class Mutable : global::System.IEquatable<Mutable>
 {
     /// <summary>
     /// Gets or sets the <c>id</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. Its DDS member ID is <c>1</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.7.0 C# dynamic member metadata API</seealso>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public int id { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>optionalValue</c> member. This member is optional. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. A <see langword="null"/> value means the member is absent. Its DDS member ID is <c>2</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.7.0 C# dynamic member metadata API</seealso>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     /// <example>
     /// <code>
     /// var sample = new Mutable();

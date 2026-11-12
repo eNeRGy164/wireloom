@@ -11,16 +11,19 @@ namespace CorpusEnumUnion;
 /// <summary>
 /// Represents the <c>Payload</c> DDS type declared in <c>07-union-enum.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class Payload : global::System.IEquatable<Payload>
 {
     /// <summary>
     /// Gets or sets the <c>code</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public int code { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>label</c> member. Its maximum length is <c>16</c> UTF-8 bytes.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
     /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(16)]

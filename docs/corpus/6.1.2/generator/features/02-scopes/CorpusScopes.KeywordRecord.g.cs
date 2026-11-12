@@ -12,6 +12,7 @@ namespace CorpusScopes;
 /// <summary>
 /// Represents the <c>KeywordRecord</c> DDS type declared in <c>02-scopes.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 C# ExtensibilityKind API</seealso>
 public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
 {
     /// <summary>
@@ -33,7 +34,7 @@ public partial class KeywordRecord : global::System.IEquatable<KeywordRecord>
     /// Gets the <c>values</c> member. Its maximum number of elements is <c>4</c>. Each element's representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
     /// <remarks>The property exposes a mutable sequence. Add or remove elements through the sequence instance; the generated property does not cap mutations at the DDS bound.</remarks>
-    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 6.1.2 ISequence API</seealso>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 ISequence API</seealso>
     /// <example>
     /// <code>
     /// var sample = new KeywordRecord();

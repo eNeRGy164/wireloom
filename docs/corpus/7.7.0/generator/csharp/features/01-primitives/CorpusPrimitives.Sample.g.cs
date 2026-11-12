@@ -11,86 +11,103 @@ namespace CorpusPrimitives;
 /// <summary>
 /// Represents the <c>Sample</c> DDS type declared in <c>01-primitives.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class Sample : global::System.IEquatable<Sample>
 {
     /// <summary>
     /// Gets or sets the <c>signed16</c> member. Representable values are in the inclusive range <c>short.MinValue</c> through <c>short.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public short signed16 { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>signed32</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public int signed32 { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>signed64</c> member. Representable values are in the inclusive range <c>long.MinValue</c> through <c>long.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public long signed64 { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>unsigned16</c> member. Representable values are in the inclusive range <c>ushort.MinValue</c> through <c>ushort.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public ushort unsigned16 { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>unsigned32</c> member. Representable values are in the inclusive range <c>uint.MinValue</c> through <c>uint.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public uint unsigned32 { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>unsigned64</c> member. Representable values are in the inclusive range <c>ulong.MinValue</c> through <c>ulong.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public ulong unsigned64 { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>fixedInt8</c> member. Representable values are in the inclusive range <c>sbyte.MinValue</c> through <c>sbyte.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public sbyte fixedInt8 { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>fixedInt64</c> member. Representable values are in the inclusive range <c>long.MinValue</c> through <c>long.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public long fixedInt64 { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>fixedUint8</c> member. Representable values are in the inclusive range <c>byte.MinValue</c> through <c>byte.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public byte fixedUint8 { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>fixedUint64</c> member. Representable values are in the inclusive range <c>ulong.MinValue</c> through <c>ulong.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public ulong fixedUint64 { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>octetValue</c> member. Representable values are in the inclusive range <c>byte.MinValue</c> through <c>byte.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public byte octetValue { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>boolValue</c> member.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public bool boolValue { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>charValue</c> member.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public char charValue { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>wideCharValue</c> member.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public char wideCharValue { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>floatValue</c> member. Finite values are in the inclusive range <c>float.MinValue</c> through <c>float.MaxValue</c>. NaN and positive or negative infinity are also representable.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public float floatValue { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>doubleValue</c> member. Finite values are in the inclusive range <c>double.MinValue</c> through <c>double.MaxValue</c>. NaN and positive or negative infinity are also representable.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public double doubleValue { get; set; }
 
     /// <summary>

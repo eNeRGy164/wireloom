@@ -7,6 +7,7 @@
 /// <summary>
 /// Represents the <c>UsesInclude</c> DDS type declared in <c>14-autoid-scope.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class UsesInclude : global::System.IEquatable<UsesInclude>
 {
     /// <summary>

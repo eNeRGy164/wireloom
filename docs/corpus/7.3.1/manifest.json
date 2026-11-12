@@ -365,7 +365,8 @@
     {
       "id": "10-flat-data-binding",
       "outcome": "generated",
-      "sourceDirectory": "rtiddsgen/csharp/features/10-flat-data-binding"
+      "sourceDirectory": "rtiddsgen/csharp/features/10-flat-data-binding",
+      "oracleSourceStatus": "Retained RTI C# output predates the canonical @final addition and still reports ExtensibilityKind.Extensible. RTI SDK 6.1.2/7.3.1 was unavailable locally and container access was denied; recapture/revalidation is pending. The current Wireloom C# output is regenerated and reports Final."
     },
     {
       "id": "11-comments",

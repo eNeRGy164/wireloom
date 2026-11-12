@@ -11,11 +11,13 @@ namespace CorpusOptionalAggregate;
 /// <summary>
 /// Represents the <c>Holder</c> DDS type declared in <c>09-optional-aggregate-member.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.3.1 C# ExtensibilityKind API</seealso>
 public partial class Holder : global::System.IEquatable<Holder>
 {
     /// <summary>
     /// Gets or sets the <c>payload</c> member. This member is optional. A <see langword="null"/> value means the member is absent.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.3.1 C# dynamic member metadata API</seealso>
     /// <example>
     /// <code>
     /// var sample = new Holder();
@@ -28,6 +30,7 @@ public partial class Holder : global::System.IEquatable<Holder>
     /// <summary>
     /// Gets or sets the <c>payloadAlias</c> member. This member is optional. A <see langword="null"/> value means the member is absent.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.3.1 C# dynamic member metadata API</seealso>
     /// <example>
     /// <code>
     /// var sample = new Holder();
@@ -40,6 +43,7 @@ public partial class Holder : global::System.IEquatable<Holder>
     /// <summary>
     /// Gets or sets the <c>choice</c> member. This member is optional. A <see langword="null"/> value means the member is absent.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.3.1 C# dynamic member metadata API</seealso>
     /// <example>
     /// <code>
     /// var sample = new Holder();
@@ -52,6 +56,7 @@ public partial class Holder : global::System.IEquatable<Holder>
     /// <summary>
     /// Gets or sets the <c>choiceAlias</c> member. This member is optional. A <see langword="null"/> value means the member is absent.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.3.1 C# dynamic member metadata API</seealso>
     /// <example>
     /// <code>
     /// var sample = new Holder();

@@ -11,11 +11,13 @@ namespace CorpusInheritedKeys;
 /// <summary>
 /// Represents the <c>Derived</c> DDS type declared in <c>08-key-inherited.idl</c>. Its key members identify a DDS instance across samples; they do not determine whether two complete samples are equal. It derives from <see cref="Base"/>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 C# ExtensibilityKind API</seealso>
 public partial class Derived : Base, global::System.IEquatable<Derived>
 {
     /// <summary>
     /// Gets or sets the <c>localId</c> member. This member forms part of the DDS instance key. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/class_rti_1_1_types_1_1_dynamic_1_1_struct_member.html">RTI Connext 6.1.2 C# dynamic member metadata API</seealso>
     [Key]
     public int localId { get; set; }
 

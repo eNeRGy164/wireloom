@@ -9,11 +9,13 @@ using Omg.Types;
 /// <summary>
 /// Represents the <c>Second</c> DDS type declared in <c>02-multiple.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class Second : global::System.IEquatable<Second>
 {
     /// <summary>
     /// Gets or sets the <c>name</c> member. Its maximum length is <c>255</c> UTF-8 bytes.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
     /// <remarks>This unbounded narrow IDL string has an effective limit of 255 UTF-8 bytes. The generated C# property does not enforce the effective limit when assigned.</remarks>
     [Bound(255)]

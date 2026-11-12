@@ -7,6 +7,7 @@
 /// <summary>
 /// Represents the <c>FullExtensibility</c> DDS type declared in <c>14-extensibility-full.idl</c>. It is marked as <c>mutable</c>. Members may be identified and reordered by DDS member IDs during compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 C# ExtensibilityKind API</seealso>
 public partial class FullExtensibility : global::System.IEquatable<FullExtensibility>
 {
     /// <summary>

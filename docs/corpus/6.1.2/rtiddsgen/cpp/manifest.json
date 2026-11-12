@@ -1786,8 +1786,8 @@
     {
       "id": "09-autoid-hash",
       "idl": "idl/features/09-autoid-hash.idl",
-      "sourceSha256": "22e1b3e311658bd9a3661feb6e3cccd7825e72d01722f376f9fe132645f90fbb",
-      "generatedInputSha256": "22e1b3e311658bd9a3661feb6e3cccd7825e72d01722f376f9fe132645f90fbb",
+      "sourceSha256": "7ab89db67285c6fe74ab83b7a5301d6517700f2ea4dd628ae9add3e7a2c1feeb",
+      "generatedInputSha256": "7ab89db67285c6fe74ab83b7a5301d6517700f2ea4dd628ae9add3e7a2c1feeb",
       "options": [
         "-language",
         "C++11",
@@ -1804,7 +1804,7 @@
       "exitCode": 0,
       "sourceDirectory": "features/09-autoid-hash",
       "output": {
-        "sha256": "dd3be635ddfdd4e3779116bb28e56d4acecc3088f908d84612e40ec640bdbfab",
+        "sha256": "1ea7960e9af8dee114994726a2dd7f4969c4bdccd2187cd618d594997e58341a",
         "files": [
           {
             "path": "cpp/features/09-autoid-hash/09-autoid-hash.cxx",
@@ -1812,7 +1812,7 @@
           },
           {
             "path": "cpp/features/09-autoid-hash/09-autoid-hash.hpp",
-            "sha256": "8d28c96ca2ac7d18048c58c913b446216ede1258bbc2925d294ef0a037d55d51"
+            "sha256": "e6144612d95b765bf3fb99a5319af1848ca8b0bf2284a84d47b91cb9edebe190"
           },
           {
             "path": "cpp/features/09-autoid-hash/09-autoid-hashPlugin.cxx",
@@ -1820,10 +1820,19 @@
           },
           {
             "path": "cpp/features/09-autoid-hash/09-autoid-hashPlugin.hpp",
-            "sha256": "30b27399ccc86674effc21c4db44d2283f1e204ccc30fe219874bb8762a754d7"
+            "sha256": "52439124c0a8af8e616f1f503ff4e3e1f5a73cd5cb58166bc34473eb69cd3b7f"
           }
         ]
-      }
+      },
+      "generatedFiles": [
+        "09-autoid-hash.cxx",
+        "09-autoid-hash.hpp",
+        "09-autoid-hashPlugin.cxx",
+        "09-autoid-hashPlugin.hpp"
+      ],
+      "captureEvidence": "artifacts/rti-capture-6.1.2-20261111T101324Z-064a9600/capture.json",
+      "captureOutput": "cpp/features/09-autoid-hash",
+      "outputSha256": "1ea7960e9af8dee114994726a2dd7f4969c4bdccd2187cd618d594997e58341a"
     },
     {
       "id": "09-must-understand",
@@ -1895,8 +1904,8 @@
     {
       "id": "09-defaults-ranges",
       "idl": "idl/features/09-defaults-ranges.idl",
-      "sourceSha256": "086dde26ebafedcaf280722cbc2fbbb6a60f02ac53edc0675b9801013f86d8ce",
-      "generatedInputSha256": "086dde26ebafedcaf280722cbc2fbbb6a60f02ac53edc0675b9801013f86d8ce",
+      "sourceSha256": "e46da67dfcbbd922d1d24096dec4073d0d0098d136964e873ec8618922ff1b62",
+      "generatedInputSha256": "e46da67dfcbbd922d1d24096dec4073d0d0098d136964e873ec8618922ff1b62",
       "options": [
         "-language",
         "C++11",
@@ -1913,7 +1922,7 @@
       "exitCode": 0,
       "sourceDirectory": "features/09-defaults-ranges",
       "output": {
-        "sha256": "cbac98139429ca317d6da818bf77d55122f82341f7ef1a92113090991607b35d",
+        "sha256": "c01f1cb3af78485d9234e834a37ed3c6ef07496705c5d75d74886ce3518f840f",
         "files": [
           {
             "path": "cpp/features/09-defaults-ranges/09-defaults-ranges.cxx",
@@ -1921,7 +1930,7 @@
           },
           {
             "path": "cpp/features/09-defaults-ranges/09-defaults-ranges.hpp",
-            "sha256": "7ef09460135a33ab2a66cbfaeca9042aa409489ab564baffb68c9086884567e5"
+            "sha256": "bd01125bb52578c1f202d1858558c5552f9c2c827b597fc1903d14523963971c"
           },
           {
             "path": "cpp/features/09-defaults-ranges/09-defaults-rangesPlugin.cxx",
@@ -1929,10 +1938,19 @@
           },
           {
             "path": "cpp/features/09-defaults-ranges/09-defaults-rangesPlugin.hpp",
-            "sha256": "87d18679338813798400148f39a3941ef1a4063d5c82cc070fb99702722c6703"
+            "sha256": "d8366ec7229f763668a6a66d2bc69e06cd6e623b72a142e6ad1d90d6e0d1920a"
           }
         ]
-      }
+      },
+      "generatedFiles": [
+        "09-defaults-ranges.cxx",
+        "09-defaults-ranges.hpp",
+        "09-defaults-rangesPlugin.cxx",
+        "09-defaults-rangesPlugin.hpp"
+      ],
+      "captureEvidence": "artifacts/rti-capture-6.1.2-20261111T101324Z-064a9600/capture.json",
+      "captureOutput": "cpp/features/09-defaults-ranges",
+      "outputSha256": "c01f1cb3af78485d9234e834a37ed3c6ef07496705c5d75d74886ce3518f840f"
     },
     {
       "id": "09-allowed-data-representation",
@@ -2105,8 +2123,8 @@
     {
       "id": "10-flat-data-binding",
       "idl": "idl/features/10-flat-data-binding.idl",
-      "sourceSha256": "6b446281b8c30b70a03adb1356dfc77bdec593624d35263bb4035100495fadb7",
-      "generatedInputSha256": "6b3bf4d5d19efe986b2a792601bdf067c2ec8e67f434b034f47b706f2349583f",
+      "sourceSha256": "8d52a1283fff07011105aaa9ccedd1d962f68d8917deb2e975630d5e9c1aba1d",
+      "generatedInputSha256": "0b152a01e7d59de90f59a8a9dd479181e84ff4d8643b4df6423a8fde35abf469",
       "options": [
         "-language",
         "C++11",
@@ -2125,15 +2143,15 @@
       "exitCode": 0,
       "sourceDirectory": "features/10-flat-data-binding",
       "output": {
-        "sha256": "532093c6b575342261a9f3d6253b2987d9fde532f4267eeff35f68f1168c2464",
+        "sha256": "1f079fc44ab76b4d224b1d889c763fc3f1aa32e63f70ccd7e954c1e56d79787a",
         "files": [
           {
             "path": "cpp/features/10-flat-data-binding/10-flat-data-binding.cxx",
-            "sha256": "ca0d42fa477b14eeb9c8607490f5958ab354ed75504c6570995bea7c68da5790"
+            "sha256": "60acf638fae356c78606b6a7ddc5d136060018a5a9961fce131251e2d8cd23b5"
           },
           {
             "path": "cpp/features/10-flat-data-binding/10-flat-data-binding.hpp",
-            "sha256": "57c6d2a7c0e72bf57f03ee6b891c7f96f4a57d0b69d9432a3c3b11ab8ca9fa4c"
+            "sha256": "c43db55fcca6db0cb42a8aa6d55099be4b7e3c40f190504f59e2846d54812d2e"
           },
           {
             "path": "cpp/features/10-flat-data-binding/10-flat-data-bindingPlugin.cxx",
@@ -2141,10 +2159,19 @@
           },
           {
             "path": "cpp/features/10-flat-data-binding/10-flat-data-bindingPlugin.hpp",
-            "sha256": "b4127a5f44baa3ca61fcfffce5027dae82cc71e5bd4c3694d28c53f6df66166f"
+            "sha256": "16b7e1a1d2993fbd975a78471c35a8db22dcd20e987d23f67299f759cf53ca87"
           }
         ]
-      }
+      },
+      "generatedFiles": [
+        "10-flat-data-binding.cxx",
+        "10-flat-data-binding.hpp",
+        "10-flat-data-bindingPlugin.cxx",
+        "10-flat-data-bindingPlugin.hpp"
+      ],
+      "captureEvidence": "artifacts/rti-capture-6.1.2-20261111T101324Z-064a9600/capture.json",
+      "captureOutput": "cpp/features/10-flat-data-binding",
+      "outputSha256": "1f079fc44ab76b4d224b1d889c763fc3f1aa32e63f70ccd7e954c1e56d79787a"
     },
     {
       "id": "11-preprocessing",

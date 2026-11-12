@@ -81,7 +81,9 @@
         "-I",
         "/work/docs/corpus/idl",
         "-I",
-        "/work/docs/corpus/idl/includes"
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [],
       "status": "generated",
@@ -91,7 +93,32 @@
         "01-full-widths.hpp",
         "01-full-widthsPlugin.cxx",
         "01-full-widthsPlugin.hpp"
-      ]
+      ],
+      "sourceDirectory": "features/01-full-widths",
+      "output": {
+        "sha256": "28f833027282f07432bb1d6cf6662df21970e9d93c292072861f076f95efc61d",
+        "files": [
+          {
+            "path": "cpp/features/01-full-widths/01-full-widths.cxx",
+            "sha256": "926e19c36608a1733f30163ce006eee97abfaa4da27735814d02ca555f7ae9b9"
+          },
+          {
+            "path": "cpp/features/01-full-widths/01-full-widths.hpp",
+            "sha256": "5b19d5a68e9fbd90401b217c5dccdce49f38169b339dd82a9f10b20524c3362b"
+          },
+          {
+            "path": "cpp/features/01-full-widths/01-full-widthsPlugin.cxx",
+            "sha256": "0b5d4695942c6102f65c8a8dd2517206b4718c7f0b7f38e778f1c684ae1685c5"
+          },
+          {
+            "path": "cpp/features/01-full-widths/01-full-widthsPlugin.hpp",
+            "sha256": "cc7450bc7b093253ad0d1a9dd297c94b9504d6d1e57a4bc37f23a2a0307377fc"
+          }
+        ]
+      },
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
+      "captureOutput": "cpp/features/01-full-widths",
+      "outputSha256": "28f833027282f07432bb1d6cf6662df21970e9d93c292072861f076f95efc61d"
     },
     {
       "id": "02-names-constants",
@@ -378,7 +405,9 @@
         "-I",
         "/work/docs/corpus/idl",
         "-I",
-        "/work/docs/corpus/idl/includes"
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [],
       "status": "generated",
@@ -388,7 +417,32 @@
         "04-strings.hpp",
         "04-stringsPlugin.cxx",
         "04-stringsPlugin.hpp"
-      ]
+      ],
+      "sourceDirectory": "features/04-strings",
+      "output": {
+        "sha256": "098082eef2aa024ff040e3ee8a52bb27f70d6b618b8d7c03472c2811371a3ce2",
+        "files": [
+          {
+            "path": "cpp/features/04-strings/04-strings.cxx",
+            "sha256": "97137aeb74924b525eaed93f7c9b9b4b87c762af94b51b61235bbace82872a38"
+          },
+          {
+            "path": "cpp/features/04-strings/04-strings.hpp",
+            "sha256": "02c173cdca6b44a3264201d53827d598861ac7413036deba0c9b6234d60f7b97"
+          },
+          {
+            "path": "cpp/features/04-strings/04-stringsPlugin.cxx",
+            "sha256": "ff3669c430199677354aeb2bf29275753f08d1842328c3e1cab6ae734ca6f3ba"
+          },
+          {
+            "path": "cpp/features/04-strings/04-stringsPlugin.hpp",
+            "sha256": "d052cd1c6477971f5fcd5c911677ca003fa386abe13d3b5727d5ee38b5038406"
+          }
+        ]
+      },
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
+      "captureOutput": "cpp/features/04-strings",
+      "outputSha256": "098082eef2aa024ff040e3ee8a52bb27f70d6b618b8d7c03472c2811371a3ce2"
     },
     {
       "id": "04-boundaries",
@@ -622,7 +676,9 @@
         "-I",
         "/work/docs/corpus/idl",
         "-I",
-        "/work/docs/corpus/idl/includes"
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [],
       "status": "generated",
@@ -632,7 +688,32 @@
         "07-union-enum.hpp",
         "07-union-enumPlugin.cxx",
         "07-union-enumPlugin.hpp"
-      ]
+      ],
+      "sourceDirectory": "features/07-union-enum",
+      "output": {
+        "sha256": "54477fb7cc748fd689d4e316ae0f0a9b3351f488bebbbe8702bd9833a50fa427",
+        "files": [
+          {
+            "path": "cpp/features/07-union-enum/07-union-enum.cxx",
+            "sha256": "ddc6c68e788d7d76e01c27a27dc2e2be455f88334cf9410040a0523e9746532f"
+          },
+          {
+            "path": "cpp/features/07-union-enum/07-union-enum.hpp",
+            "sha256": "d5c556910dd9b413eb7c5e4628e38c92fab0e072944cc7f823b02d4be207e7c2"
+          },
+          {
+            "path": "cpp/features/07-union-enum/07-union-enumPlugin.cxx",
+            "sha256": "f15e725d942d82eb903677c43757f3bcef66c438eb700d591e0fea87c79158e2"
+          },
+          {
+            "path": "cpp/features/07-union-enum/07-union-enumPlugin.hpp",
+            "sha256": "a9831d288364e4134612fe648d2161b835a7274dc4ea9cf82d49ebc38ebeec29"
+          }
+        ]
+      },
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
+      "captureOutput": "cpp/features/07-union-enum",
+      "outputSha256": "54477fb7cc748fd689d4e316ae0f0a9b3351f488bebbbe8702bd9833a50fa427"
     },
     {
       "id": "07-union-scoped",
@@ -730,7 +811,9 @@
         "-I",
         "/work/docs/corpus/idl",
         "-I",
-        "/work/docs/corpus/idl/includes"
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [],
       "status": "generated",
@@ -740,7 +823,32 @@
         "07-union-short-boundaries.hpp",
         "07-union-short-boundariesPlugin.cxx",
         "07-union-short-boundariesPlugin.hpp"
-      ]
+      ],
+      "sourceDirectory": "features/07-union-short-boundaries",
+      "output": {
+        "sha256": "5989b9c6c7dbc111a976cdf26b6e7e5c1199d1e49771478200bd11da1c4e39e0",
+        "files": [
+          {
+            "path": "cpp/features/07-union-short-boundaries/07-union-short-boundaries.cxx",
+            "sha256": "7254a906e4e267b8bf41c6e21c4d1396f33336987e37cfca938b9dd46ef33106"
+          },
+          {
+            "path": "cpp/features/07-union-short-boundaries/07-union-short-boundaries.hpp",
+            "sha256": "da1dea1bfb10a5184931142523fb3443a6f37192c9aadc528bab28ec455b0736"
+          },
+          {
+            "path": "cpp/features/07-union-short-boundaries/07-union-short-boundariesPlugin.cxx",
+            "sha256": "282d44afc673f18f62cae05e0bf0a216176d08c106993e5128811b8fc6114092"
+          },
+          {
+            "path": "cpp/features/07-union-short-boundaries/07-union-short-boundariesPlugin.hpp",
+            "sha256": "5e9e8f6e6607d6191ed85c4c281e9d851392d56b5bae39b38ebb5e37decd4441"
+          }
+        ]
+      },
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
+      "captureOutput": "cpp/features/07-union-short-boundaries",
+      "outputSha256": "5989b9c6c7dbc111a976cdf26b6e7e5c1199d1e49771478200bd11da1c4e39e0"
     },
     {
       "id": "07-union-char",
@@ -887,7 +995,9 @@
         "-I",
         "/work/docs/corpus/idl",
         "-I",
-        "/work/docs/corpus/idl/includes"
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [],
       "status": "generated",
@@ -897,7 +1007,32 @@
         "08-keys.hpp",
         "08-keysPlugin.cxx",
         "08-keysPlugin.hpp"
-      ]
+      ],
+      "sourceDirectory": "features/08-keys",
+      "output": {
+        "sha256": "4b4aa937169b23940e85c09d519556cab5e82d7623180fce274dd0a2f580f0cc",
+        "files": [
+          {
+            "path": "cpp/features/08-keys/08-keys.cxx",
+            "sha256": "0901e07f770002389ae67ede9b0ca757034f9d89f25b3041bd3a9ca0b00b6d27"
+          },
+          {
+            "path": "cpp/features/08-keys/08-keys.hpp",
+            "sha256": "341f01817e76001d247017148c7d8e34b6f5f289747aa95c64bec21708c13468"
+          },
+          {
+            "path": "cpp/features/08-keys/08-keysPlugin.cxx",
+            "sha256": "41eb44480fd87de43cd1cdff21ab6a969fa7cab80502cf393b174841f66733b8"
+          },
+          {
+            "path": "cpp/features/08-keys/08-keysPlugin.hpp",
+            "sha256": "647bbd75a9d85ebc793b465e813ec2fa0db9363413e054e5931eacb5458545d3"
+          }
+        ]
+      },
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
+      "captureOutput": "cpp/features/08-keys",
+      "outputSha256": "4b4aa937169b23940e85c09d519556cab5e82d7623180fce274dd0a2f580f0cc"
     },
     {
       "id": "08-key-nested",
@@ -968,7 +1103,9 @@
         "-I",
         "/work/docs/corpus/idl",
         "-I",
-        "/work/docs/corpus/idl/includes"
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [],
       "status": "generated",
@@ -978,7 +1115,32 @@
         "08-key-boundaries.hpp",
         "08-key-boundariesPlugin.cxx",
         "08-key-boundariesPlugin.hpp"
-      ]
+      ],
+      "sourceDirectory": "features/08-key-boundaries",
+      "output": {
+        "sha256": "fff33bf132db122f01c33e1e766a1a8020f66599a7d97b5bf8286178db3505df",
+        "files": [
+          {
+            "path": "cpp/features/08-key-boundaries/08-key-boundaries.cxx",
+            "sha256": "d3d2aa0f443e05feef75b436642244ce68005c29db97ce7394d4d0e057f3a5b3"
+          },
+          {
+            "path": "cpp/features/08-key-boundaries/08-key-boundaries.hpp",
+            "sha256": "1b91691a0cb455310922a6af2303417e57b3cdb77b0f07a0aa07fd4fa47cf343"
+          },
+          {
+            "path": "cpp/features/08-key-boundaries/08-key-boundariesPlugin.cxx",
+            "sha256": "99e4e4a17386082ef1902b56ce68be1bf3f93434499e1188672a8c4337186968"
+          },
+          {
+            "path": "cpp/features/08-key-boundaries/08-key-boundariesPlugin.hpp",
+            "sha256": "2a47ec06b1beb14793134cafc59e955a70a8685a75484313aa4f7e4ccb851a0e"
+          }
+        ]
+      },
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
+      "captureOutput": "cpp/features/08-key-boundaries",
+      "outputSha256": "fff33bf132db122f01c33e1e766a1a8020f66599a7d97b5bf8286178db3505df"
     },
     {
       "id": "08-key-union",
@@ -1049,7 +1211,9 @@
         "-I",
         "/work/docs/corpus/idl",
         "-I",
-        "/work/docs/corpus/idl/includes"
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [],
       "status": "generated",
@@ -1059,7 +1223,32 @@
         "09-default.hpp",
         "09-defaultPlugin.cxx",
         "09-defaultPlugin.hpp"
-      ]
+      ],
+      "sourceDirectory": "features/09-default",
+      "output": {
+        "sha256": "40ef6de80e5beb59431394594b938ca2108116ae0d305e068d0469c8338dc6e9",
+        "files": [
+          {
+            "path": "cpp/features/09-default/09-default.cxx",
+            "sha256": "d7d181863f343fb65a0ec0af52201b9cd80a2caab891cc0b68faa872e5eaf39c"
+          },
+          {
+            "path": "cpp/features/09-default/09-default.hpp",
+            "sha256": "576cc51873c23ea9e024e7523008fe986241409d6b7b2d456dbf6dd9147f2b34"
+          },
+          {
+            "path": "cpp/features/09-default/09-defaultPlugin.cxx",
+            "sha256": "e4823a501bc7fe0bcf722b704868fca43c5f0372606295c1993e1173ab985258"
+          },
+          {
+            "path": "cpp/features/09-default/09-defaultPlugin.hpp",
+            "sha256": "6ff00987c585c7466450cc0cbaf3bc14cbf32865a1493227a582f0f1ce33277c"
+          }
+        ]
+      },
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
+      "captureOutput": "cpp/features/09-default",
+      "outputSha256": "40ef6de80e5beb59431394594b938ca2108116ae0d305e068d0469c8338dc6e9"
     },
     {
       "id": "09-id-gaps",
@@ -1140,25 +1329,46 @@
         "09-optional-collections.hpp",
         "09-optional-collectionsPlugin.cxx",
         "09-optional-collectionsPlugin.hpp"
-      ]
+      ],
+      "output": {
+        "files": [
+          {
+            "path": "cpp/features/09-optional-collections/09-optional-collections.cxx",
+            "sha256": "f6b4b31cf51e9066fed5e4f624428e144545df34e6169fb2967ce46718cb8f40"
+          },
+          {
+            "path": "cpp/features/09-optional-collections/09-optional-collections.hpp",
+            "sha256": "9ccf9877c77ece17397946e38fdda4298fcd2d451de27cb0d87473daec429e32"
+          },
+          {
+            "path": "cpp/features/09-optional-collections/09-optional-collectionsPlugin.cxx",
+            "sha256": "3ed7dbb259e9be72eb0db219c5cc7f4a44502b72de23f36ffad205e066c97ff0"
+          },
+          {
+            "path": "cpp/features/09-optional-collections/09-optional-collectionsPlugin.hpp",
+            "sha256": "3da4af6c218a2e117167763cda02fd0b65ce9a88a069d325bc03e0288e409318"
+          }
+        ]
+      }
     },
     {
       "id": "09-autoid-hash",
       "category": "features",
       "idl": "idl/features/09-autoid-hash.idl",
       "input": "../../../idl/features/09-autoid-hash.idl",
-      "sourceSha256": "22e1b3e311658bd9a3661feb6e3cccd7825e72d01722f376f9fe132645f90fbb",
-      "generatedInputSha256": "22e1b3e311658bd9a3661feb6e3cccd7825e72d01722f376f9fe132645f90fbb",
+      "sourceSha256": "7ab89db67285c6fe74ab83b7a5301d6517700f2ea4dd628ae9add3e7a2c1feeb",
+      "generatedInputSha256": "7ab89db67285c6fe74ab83b7a5301d6517700f2ea4dd628ae9add3e7a2c1feeb",
       "defines": [],
       "options": [
-        "-ppDisable",
         "-language",
         "C++11",
         "-replace",
         "-I",
         "/work/docs/corpus/idl",
         "-I",
-        "/work/docs/corpus/idl/includes"
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [],
       "status": "generated",
@@ -1169,7 +1379,32 @@
         "09-autoid-hashPlugin.cxx",
         "09-autoid-hashPlugin.hpp"
       ],
-      "capturedAtUtc": "2026-10-18T08:29:49Z"
+      "capturedAtUtc": "2026-10-18T08:29:49Z",
+      "sourceDirectory": "features/09-autoid-hash",
+      "output": {
+        "sha256": "94737420320c397dff44393bfab2d546114684cc9aa93d1f62be3afafd005d9c",
+        "files": [
+          {
+            "path": "cpp/features/09-autoid-hash/09-autoid-hash.cxx",
+            "sha256": "544a3b41e4f097ba455bc3be671c3ddacb6bbb2f3cc1a318b26f75cb1e79964e"
+          },
+          {
+            "path": "cpp/features/09-autoid-hash/09-autoid-hash.hpp",
+            "sha256": "bc47ad588c642ea4dd7bf90f0d642ed3a4aae972efd66a016d976da732730db8"
+          },
+          {
+            "path": "cpp/features/09-autoid-hash/09-autoid-hashPlugin.cxx",
+            "sha256": "ee7ca08cb5811625ea6c67a88514c2976fec9d65fc58ff3db81dedaf9d8aa17f"
+          },
+          {
+            "path": "cpp/features/09-autoid-hash/09-autoid-hashPlugin.hpp",
+            "sha256": "2d089916c1964748b2d82781b7b2774f4e4d8ea4fce1fb63d4ce99894e1a28a7"
+          }
+        ]
+      },
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T100647Z-878071e2/capture.json",
+      "captureOutput": "cpp/features/09-autoid-hash",
+      "outputSha256": "94737420320c397dff44393bfab2d546114684cc9aa93d1f62be3afafd005d9c"
     },
     {
       "id": "09-must-understand",
@@ -1227,8 +1462,8 @@
       "category": "features",
       "idl": "idl/features/09-defaults-ranges.idl",
       "input": "../../../idl/features/09-defaults-ranges.idl",
-      "sourceSha256": "086dde26ebafedcaf280722cbc2fbbb6a60f02ac53edc0675b9801013f86d8ce",
-      "generatedInputSha256": "086dde26ebafedcaf280722cbc2fbbb6a60f02ac53edc0675b9801013f86d8ce",
+      "sourceSha256": "e46da67dfcbbd922d1d24096dec4073d0d0098d136964e873ec8618922ff1b62",
+      "generatedInputSha256": "e46da67dfcbbd922d1d24096dec4073d0d0098d136964e873ec8618922ff1b62",
       "defines": [],
       "options": [
         "-language",
@@ -1237,7 +1472,9 @@
         "-I",
         "/work/docs/corpus/idl",
         "-I",
-        "/work/docs/corpus/idl/includes"
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [],
       "status": "generated",
@@ -1247,7 +1484,32 @@
         "09-defaults-ranges.hpp",
         "09-defaults-rangesPlugin.cxx",
         "09-defaults-rangesPlugin.hpp"
-      ]
+      ],
+      "sourceDirectory": "features/09-defaults-ranges",
+      "output": {
+        "sha256": "5ba4a3086d52a183d694db99839030c277298755b2edaddec54ac085fb070563",
+        "files": [
+          {
+            "path": "cpp/features/09-defaults-ranges/09-defaults-ranges.cxx",
+            "sha256": "046fda13c08089623057fd9022ba6515f69beb10bbce68f8f453ea5c21e66c98"
+          },
+          {
+            "path": "cpp/features/09-defaults-ranges/09-defaults-ranges.hpp",
+            "sha256": "35933423ca40dd889b4e559a9019710b90b4f3ea77c9f7c3e19635321e79d3fd"
+          },
+          {
+            "path": "cpp/features/09-defaults-ranges/09-defaults-rangesPlugin.cxx",
+            "sha256": "742e2ac587e93a02854aecf50fcb4a208281ad26d442f16e6a80627635ed000f"
+          },
+          {
+            "path": "cpp/features/09-defaults-ranges/09-defaults-rangesPlugin.hpp",
+            "sha256": "d1628db9ba35d2ec1cce2878b20e92a78bb23934b9f02d208db924670aab78e5"
+          }
+        ]
+      },
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T100647Z-878071e2/capture.json",
+      "captureOutput": "cpp/features/09-defaults-ranges",
+      "outputSha256": "5ba4a3086d52a183d694db99839030c277298755b2edaddec54ac085fb070563"
     },
     {
       "id": "09-allowed-data-representation",
@@ -1291,7 +1553,9 @@
         "-I",
         "/work/docs/corpus/idl",
         "-I",
-        "/work/docs/corpus/idl/includes"
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [],
       "status": "generated",
@@ -1301,7 +1565,32 @@
         "10-annotations.hpp",
         "10-annotationsPlugin.cxx",
         "10-annotationsPlugin.hpp"
-      ]
+      ],
+      "sourceDirectory": "features/10-annotations",
+      "output": {
+        "sha256": "dbff0b40088ac2aba91ed86b87950b4b0248f2540229b7abd2710829d543a2f6",
+        "files": [
+          {
+            "path": "cpp/features/10-annotations/10-annotations.cxx",
+            "sha256": "724a847a1d582339e4e21f63f2525ee793132b5d6ecf19bd73470e80740843b1"
+          },
+          {
+            "path": "cpp/features/10-annotations/10-annotations.hpp",
+            "sha256": "8520c02be000ea032d96499d471e035e667e0be2c9ca4f01b363b1ea0f07fae1"
+          },
+          {
+            "path": "cpp/features/10-annotations/10-annotationsPlugin.cxx",
+            "sha256": "24f0561ec44d5e0d16743aa7c8f41d8119b8e1a2eaac9ee267597290193fb8e8"
+          },
+          {
+            "path": "cpp/features/10-annotations/10-annotationsPlugin.hpp",
+            "sha256": "28d08cb55659f9858042e05260d043b44fa9cf5a1d7141db46eb3b539dd5047e"
+          }
+        ]
+      },
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
+      "captureOutput": "cpp/features/10-annotations",
+      "outputSha256": "dbff0b40088ac2aba91ed86b87950b4b0248f2540229b7abd2710829d543a2f6"
     },
     {
       "id": "10-annotations-extended",
@@ -1362,8 +1651,8 @@
       "category": "features",
       "idl": "idl/features/10-flat-data-binding.idl",
       "input": "../../../idl/features/10-flat-data-binding.idl",
-      "sourceSha256": "6b446281b8c30b70a03adb1356dfc77bdec593624d35263bb4035100495fadb7",
-      "generatedInputSha256": "307ea2b6217c20784c686706fac17d5686d08ff19ca8e14b14fa65e37e384711",
+      "sourceSha256": "8d52a1283fff07011105aaa9ccedd1d962f68d8917deb2e975630d5e9c1aba1d",
+      "generatedInputSha256": "0b152a01e7d59de90f59a8a9dd479181e84ff4d8643b4df6423a8fde35abf469",
       "defines": [],
       "options": [
         "-language",
@@ -1372,10 +1661,12 @@
         "-I",
         "/work/docs/corpus/idl",
         "-I",
-        "/work/docs/corpus/idl/includes"
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [
-        "Removed @language_binding(FLAT_DATA) for RTI C++ generation."
+        "Remove @language_binding(FLAT_DATA) for a plain C++ oracle; the canonical extensibility is incompatible with FlatData."
       ],
       "status": "generated",
       "exitCode": 0,
@@ -1384,7 +1675,32 @@
         "10-flat-data-binding.hpp",
         "10-flat-data-bindingPlugin.cxx",
         "10-flat-data-bindingPlugin.hpp"
-      ]
+      ],
+      "sourceDirectory": "features/10-flat-data-binding",
+      "output": {
+        "sha256": "5979cc35944fa7ca9f14a75fc80909efc09e82e7ce685f8fe590ecdfb9ebd741",
+        "files": [
+          {
+            "path": "cpp/features/10-flat-data-binding/10-flat-data-binding.cxx",
+            "sha256": "9e28090f60ec690ab2b398c6de7ac3bf0ba5770b74411d363a2ff1efa864ff07"
+          },
+          {
+            "path": "cpp/features/10-flat-data-binding/10-flat-data-binding.hpp",
+            "sha256": "c070aa29edcb53313e0e93e11d69e0a5918c5510cbbaa82875d4ae762facde25"
+          },
+          {
+            "path": "cpp/features/10-flat-data-binding/10-flat-data-bindingPlugin.cxx",
+            "sha256": "9d8656daf6b32b93018521622b534ad2990f7a7244cc1be264279588fb38f445"
+          },
+          {
+            "path": "cpp/features/10-flat-data-binding/10-flat-data-bindingPlugin.hpp",
+            "sha256": "57fbf9fbcbbb10390188ef381e0659ee40198c72b9f110f2233424aabc90019d"
+          }
+        ]
+      },
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
+      "captureOutput": "cpp/features/10-flat-data-binding",
+      "outputSha256": "5979cc35944fa7ca9f14a75fc80909efc09e82e7ce685f8fe590ecdfb9ebd741"
     },
     {
       "id": "11-preprocessing",
@@ -1486,7 +1802,9 @@
         "-I",
         "/work/docs/corpus/idl",
         "-I",
-        "/work/docs/corpus/idl/includes"
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [],
       "status": "generated",
@@ -1496,7 +1814,32 @@
         "11-macro-operators.hpp",
         "11-macro-operatorsPlugin.cxx",
         "11-macro-operatorsPlugin.hpp"
-      ]
+      ],
+      "sourceDirectory": "features/11-macro-operators",
+      "output": {
+        "sha256": "2d3eb70bf51011aba6f2898c8fe8d68231e16ac30cd4775dc989ebe3dc584de6",
+        "files": [
+          {
+            "path": "cpp/features/11-macro-operators/11-macro-operators.cxx",
+            "sha256": "38cc3a4a98afac9c008c9cd4c06701a47e5fb72e8183ee80361f210ae79cf315"
+          },
+          {
+            "path": "cpp/features/11-macro-operators/11-macro-operators.hpp",
+            "sha256": "a0c96657171d807a27e3c0787fa0a623162cf43c7233deab1e09469da31dc48c"
+          },
+          {
+            "path": "cpp/features/11-macro-operators/11-macro-operatorsPlugin.cxx",
+            "sha256": "fb990f05f62b7a9a8105a808355af6e61156ea3a4d7fa94f1e2591301f22d26d"
+          },
+          {
+            "path": "cpp/features/11-macro-operators/11-macro-operatorsPlugin.hpp",
+            "sha256": "61823beec3df13ff027850496bd15dfeaeb24aa52a6a4c532e8fc73b736e3ac4"
+          }
+        ]
+      },
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
+      "captureOutput": "cpp/features/11-macro-operators",
+      "outputSha256": "2d3eb70bf51011aba6f2898c8fe8d68231e16ac30cd4775dc989ebe3dc584de6"
     },
     {
       "id": "11-preprocessor-advanced",
@@ -1891,7 +2234,9 @@
         "-I",
         "/work/docs/corpus/idl",
         "-I",
-        "/work/docs/corpus/idl/includes"
+        "/work/docs/corpus/idl/includes",
+        "-I",
+        "/work/docs/corpus/idl/integration"
       ],
       "adaptations": [],
       "status": "generated",
@@ -1901,7 +2246,32 @@
         "07-union-long.hpp",
         "07-union-longPlugin.cxx",
         "07-union-longPlugin.hpp"
-      ]
+      ],
+      "sourceDirectory": "features/07-union-long",
+      "output": {
+        "sha256": "1aef0167db1e75c145852390eb3ea40156bb316dc420f33d2bc211222f3e5d37",
+        "files": [
+          {
+            "path": "cpp/features/07-union-long/07-union-long.cxx",
+            "sha256": "74fcc7ba253ec55e7fc04c1e8f0297484474df6ed8eaab41d077e06a0c4ec182"
+          },
+          {
+            "path": "cpp/features/07-union-long/07-union-long.hpp",
+            "sha256": "f192b5c25fea6edcf050434bfd114aff3ac44618de41a6c580222edf146cca8f"
+          },
+          {
+            "path": "cpp/features/07-union-long/07-union-longPlugin.cxx",
+            "sha256": "6400babdfc2e54472a0559bca091f6c0b6d0c964b351aeec07faf8340ff39c25"
+          },
+          {
+            "path": "cpp/features/07-union-long/07-union-longPlugin.hpp",
+            "sha256": "f68ba6b5f66cbd5a79ab86166be53c778472b36dc1edbc07c7e517db2ef78311"
+          }
+        ]
+      },
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
+      "captureOutput": "cpp/features/07-union-long",
+      "outputSha256": "1aef0167db1e75c145852390eb3ea40156bb316dc420f33d2bc211222f3e5d37"
     },
     {
       "id": "07-union-char-boundaries",
@@ -4104,9 +4474,31 @@
         "14-annotation-argumentsPlugin.cxx",
         "14-annotation-argumentsPlugin.hpp"
       ],
-      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.3.1/capture.json",
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
       "captureOutput": "cpp/features/14-annotation-arguments",
-      "outputSha256": "dc9a303159c226905ebfb2b9370af2277b0650826a2fe1674eec77fd1c60e1fe"
+      "outputSha256": "e6229df0c411a97d77f0e817a50ff56fea2b2887338e694bba128a855cd7d6e1",
+      "sourceDirectory": "features/14-annotation-arguments",
+      "output": {
+        "sha256": "e6229df0c411a97d77f0e817a50ff56fea2b2887338e694bba128a855cd7d6e1",
+        "files": [
+          {
+            "path": "cpp/features/14-annotation-arguments/14-annotation-arguments.cxx",
+            "sha256": "b7567671b8c4432beabe16688d81e763c8f943cbce030387eeba248dab46fe6f"
+          },
+          {
+            "path": "cpp/features/14-annotation-arguments/14-annotation-arguments.hpp",
+            "sha256": "a9527be6f9056edcf8c260e878eaf6eac03e0beaae3f1989a0bd73a839c1d10f"
+          },
+          {
+            "path": "cpp/features/14-annotation-arguments/14-annotation-argumentsPlugin.cxx",
+            "sha256": "bff3c2f01f3da68f51090a99e60adbad007e0e10306a2f770c94055c5e3b9250"
+          },
+          {
+            "path": "cpp/features/14-annotation-arguments/14-annotation-argumentsPlugin.hpp",
+            "sha256": "c201230db7607374409a047a6f189b1079a0ea788ef3e61d4906fd09ab9e081c"
+          }
+        ]
+      }
     },
     {
       "id": "14-member-declarators",
@@ -4168,9 +4560,31 @@
         "14-union-label-expressionsPlugin.cxx",
         "14-union-label-expressionsPlugin.hpp"
       ],
-      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.3.1/capture.json",
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
       "captureOutput": "cpp/features/14-union-label-expressions",
-      "outputSha256": "0415e6fc909ffae809a3c826004a64cf0abbf144da88f5d5d03fa784137df8d8"
+      "outputSha256": "433d09d79e0fb0459715a63eb80db755c9c0dd46daca9ee242329ffd25514586",
+      "sourceDirectory": "features/14-union-label-expressions",
+      "output": {
+        "sha256": "433d09d79e0fb0459715a63eb80db755c9c0dd46daca9ee242329ffd25514586",
+        "files": [
+          {
+            "path": "cpp/features/14-union-label-expressions/14-union-label-expressions.cxx",
+            "sha256": "bac3729c9a6db171764b098f0d0f8e3e16fd14c4ff6e710dc1b8879f3cb72a6d"
+          },
+          {
+            "path": "cpp/features/14-union-label-expressions/14-union-label-expressions.hpp",
+            "sha256": "1c0a7391bf73b2b4d8cdd5fbd49305778b4c82850f5e22c87fb30d05eb13418c"
+          },
+          {
+            "path": "cpp/features/14-union-label-expressions/14-union-label-expressionsPlugin.cxx",
+            "sha256": "b0d6d2a174aed658820b503beb698c50ab06fd62158230b8e451aa1ee5accc61"
+          },
+          {
+            "path": "cpp/features/14-union-label-expressions/14-union-label-expressionsPlugin.hpp",
+            "sha256": "6de5859374451267f82cf53ddbaec18a3be9419a406e74af105a67b1bc21b463"
+          }
+        ]
+      }
     },
     {
       "id": "14-union-scoped-enum",
@@ -4200,9 +4614,31 @@
         "14-union-scoped-enumPlugin.cxx",
         "14-union-scoped-enumPlugin.hpp"
       ],
-      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.3.1/capture.json",
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
       "captureOutput": "cpp/features/14-union-scoped-enum",
-      "outputSha256": "d2cf3e5f93217dd03b9faf978376481fa2ceb9a2164814b86982351b4a55f88c"
+      "outputSha256": "810c00545fc3ee4bf355eecaac1c7d17a1b746f4fffa959ac8ccf434395be9da",
+      "sourceDirectory": "features/14-union-scoped-enum",
+      "output": {
+        "sha256": "810c00545fc3ee4bf355eecaac1c7d17a1b746f4fffa959ac8ccf434395be9da",
+        "files": [
+          {
+            "path": "cpp/features/14-union-scoped-enum/14-union-scoped-enum.cxx",
+            "sha256": "7d941695877d5d69c657fc33392b2d49d09ab1b432c2f5d8cf3f9ac194ce4222"
+          },
+          {
+            "path": "cpp/features/14-union-scoped-enum/14-union-scoped-enum.hpp",
+            "sha256": "a2f7e3cbb836dfca8a236f9d083f581922bc8e9928ef5d92374e8b9ef4c598ab"
+          },
+          {
+            "path": "cpp/features/14-union-scoped-enum/14-union-scoped-enumPlugin.cxx",
+            "sha256": "1316a4fb294e8b989ad61cdf472629ae025ee4ed1232e4bd7d9ffb1aad146bb1"
+          },
+          {
+            "path": "cpp/features/14-union-scoped-enum/14-union-scoped-enumPlugin.hpp",
+            "sha256": "84036f344bc19f605f92121653042287ca4d86e79e6f5bf65bf18a59ede22ec5"
+          }
+        ]
+      }
     },
     {
       "id": "14-union-array-branch",
@@ -4264,17 +4700,39 @@
         "14-string-expression-boundPlugin.cxx",
         "14-string-expression-boundPlugin.hpp"
       ],
-      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.3.1/capture.json",
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T111538Z-ad108a50/capture.json",
       "captureOutput": "cpp/features/14-string-expression-bound",
-      "outputSha256": "3850ee3ce9c5a2a6bda2884add7cc99216151a534f6bb1e4576e317eb705ff1f"
+      "outputSha256": "e2ed396b86c187b663546ee5f11552f8bfa12b3e7f0f7ddc8f5dfb505205f3fe",
+      "sourceDirectory": "features/14-string-expression-bound",
+      "output": {
+        "sha256": "e2ed396b86c187b663546ee5f11552f8bfa12b3e7f0f7ddc8f5dfb505205f3fe",
+        "files": [
+          {
+            "path": "cpp/features/14-string-expression-bound/14-string-expression-bound.cxx",
+            "sha256": "5762598ddaf4960600d280752fabd173fe86c27b68b40da032ebc2ecb043ab52"
+          },
+          {
+            "path": "cpp/features/14-string-expression-bound/14-string-expression-bound.hpp",
+            "sha256": "f0c95b0d7d7058c6ba4e7925d94b57eb77f96cd4e56a92c60656a07f0331c9a9"
+          },
+          {
+            "path": "cpp/features/14-string-expression-bound/14-string-expression-boundPlugin.cxx",
+            "sha256": "259ffbcdbb7cad89dbd3786f27eb28b0ccfe8e46ce02527299802e874bbee6e9"
+          },
+          {
+            "path": "cpp/features/14-string-expression-bound/14-string-expression-boundPlugin.hpp",
+            "sha256": "26aba6c3075948a63da2f93c6b1e70981b30b85fe67e6b2e21e1d10e57abc6d5"
+          }
+        ]
+      }
     },
     {
       "id": "14-typed-defaults",
       "category": "features",
       "idl": "idl/features/14-typed-defaults.idl",
       "input": "../../../idl/features/14-typed-defaults.idl",
-      "sourceSha256": "3fb7d35665af761c6a04d680aca84c3d356fb539fc8cd1280878b1ba744853b5",
-      "generatedInputSha256": "3fb7d35665af761c6a04d680aca84c3d356fb539fc8cd1280878b1ba744853b5",
+      "sourceSha256": "c07e064376546f8890c4c244b2fef02d6980bc95304daf8d2962181123628663",
+      "generatedInputSha256": "c07e064376546f8890c4c244b2fef02d6980bc95304daf8d2962181123628663",
       "defines": [],
       "options": [
         "-language",
@@ -4296,9 +4754,31 @@
         "14-typed-defaultsPlugin.cxx",
         "14-typed-defaultsPlugin.hpp"
       ],
-      "captureEvidence": "artifacts/compatibility-review-2026-10-21/implementation/corpus-rti-7.3.1/capture.json",
+      "captureEvidence": "artifacts/rti-capture-7.3.1-20261111T100647Z-878071e2/capture.json",
       "captureOutput": "cpp/features/14-typed-defaults",
-      "outputSha256": "c66cebcaf9e6b6d4cb4c7e1eb627f988ca55d9a6a98257a9304fb60cb5ed11e9"
+      "outputSha256": "599f0caa96f2e283decaade322cca92fa093c22fe3b8a2188232296cb6e21d92",
+      "sourceDirectory": "features/14-typed-defaults",
+      "output": {
+        "sha256": "599f0caa96f2e283decaade322cca92fa093c22fe3b8a2188232296cb6e21d92",
+        "files": [
+          {
+            "path": "cpp/features/14-typed-defaults/14-typed-defaults.cxx",
+            "sha256": "3fa7ef8f2a35717528d04e468f3cb5699fba234bb9a91b36c725737f60a6c925"
+          },
+          {
+            "path": "cpp/features/14-typed-defaults/14-typed-defaults.hpp",
+            "sha256": "107c13e5c495c5e5d252d7636b680df7f1a839d36c936dee0b5bbb3aa4db1aaa"
+          },
+          {
+            "path": "cpp/features/14-typed-defaults/14-typed-defaultsPlugin.cxx",
+            "sha256": "00c1a4512f6917402a8caba49c3487b8da1ac59a49a095ab2b1a6702e0a63d1f"
+          },
+          {
+            "path": "cpp/features/14-typed-defaults/14-typed-defaultsPlugin.hpp",
+            "sha256": "1647be829456c847f61755f25ad467b9219e25b6504cdeaada9087de33e9f7f5"
+          }
+        ]
+      }
     },
     {
       "id": "14-enum-constant",
@@ -4413,10 +4893,10 @@
       "status": "generated",
       "exitCode": 0,
       "generatedFiles": [
-        "01-boundaries.cxx",
-        "01-boundaries.hpp",
-        "01-boundariesPlugin.cxx",
-        "01-boundariesPlugin.hpp"
+        "01-int8-boundaries.cxx",
+        "01-int8-boundaries.hpp",
+        "01-int8-boundariesPlugin.cxx",
+        "01-int8-boundariesPlugin.hpp"
       ],
       "sourceDirectory": "features/01-int8-boundaries"
     }

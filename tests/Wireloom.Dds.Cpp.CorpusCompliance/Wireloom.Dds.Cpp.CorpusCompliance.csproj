@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Wireloom.Dds.Cpp.CorpusCompliance</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Wireloom.Dds.Cpp.Compiler/Wireloom.Dds.Cpp.Compiler.csproj" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" PrivateAssets="all" />
+    <None Include="../../docs/corpus/idl/features/*.idl" Link="Corpus/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

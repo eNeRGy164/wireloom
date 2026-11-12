@@ -38,6 +38,13 @@ outputs live under `<version>/rtiddsgen/`. Wireloom C# exports live under
 `generator/` folders. Generated contracts compile against each profile's exact
 NuGet package. The [LTS overview](LTS-PROFILES.md) records oracle, runtime,
 package, and wire coverage by version; retained full wire runs include failures.
+Wireloom retains Modern C++ output under
+[`7.7.0/generator/cpp/`](7.7.0/generator/cpp/). Generated files show the
+compiler output; they do not by themselves qualify consumer compilation, RTI
+runtime behavior, CDR, or live wire exchange. The [generator guide](../../src/Wireloom.Dds.Cpp.Generator/README.md)
+describes supported shapes, and the [wire harness guide](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
+describes the interoperability checks. The [C044 fixture](../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppSpike/README.md)
+covers keyed updates and disposal.
 See the [exact-package records](../releases/README.md) and
 [recorded limitations](FEATURE-COVERAGE.md#recorded-wire-evidence).
 Wire-matrix-specific RTI source lives in each profile's `wire-adjusted/` and
@@ -51,6 +58,8 @@ pairings remain visible as known exceptions with the manifest reason. N/A is
 reserved for pairings outside a case's configured scope.
 C040 (`09-autoid-hash`) checks hash member IDs. C142 (`09-must-understand`)
 applies to 7.7.0; explicit use under 6.1.2 or 7.3.1 reports `DDSG0004`.
+For C142, Modern C++ evidence covers generation of the appendable required
+scalar member; it does not qualify consumer, plugin, CDR, or wire behavior.
 The [applicability table](FEATURE-COVERAGE.md#annotation-case-applicability)
 records these version differences.
 
@@ -62,8 +71,8 @@ not the RTI generator, its templates, or its runtime libraries.
 
 ## Case inventory
 
-The manifest currently contains **91 positive cases**, **77 negative probes**,
-and **4 integration entry points** (172 entries total). These counts follow
+The manifest currently contains **94 positive cases**, **77 negative probes**,
+and **4 integration entry points** (175 entries total). These counts follow
 `manifest.json`, the source of truth for the corpus inventory.
 
 Dedicated C149, `05-array-of-sequences-idl`, uses a separately named IDL file
@@ -76,10 +85,10 @@ no RTI C# oracle because that binding flattens this direct IDL form.
 
 | Group                    | Count | Location                                                   |
 | ------------------------ | ----: | ---------------------------------------------------------- |
-| Positive feature cases   |    91 | [`idl/features`](idl/features)                             |
+| Positive feature cases   |    94 | [`idl/features`](idl/features)                             |
 | Negative probes          |    77 | [`idl/negative`](idl/negative) and feature-specific probes |
 | Integration entry points |     4 | [`idl/integration`](idl/integration)                       |
-| Total                    |   172 | —                                                          |
+| Total                    |   175 | —                                                          |
 
 C163–C172 add grouped annotation, constant, declarator, union, string-bound,
 and typed-default cases. Exact RTI C# and C++ generation outcomes are recorded
@@ -204,7 +213,7 @@ The recursive aggregate and optional recursive array cases request
 `-unboundedSupport`. RTI describes recursive-structure support as experimental;
 successful compilation or an exchange under that profile does not establish
 that recursion is production-qualified for RTI. See the [wire matrix
-procedure](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md) for
+procedure](../../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md) for
 the runner and result semantics.
 
 ## Test responsibilities
@@ -279,11 +288,13 @@ evidence separate from runtime or interoperability claims.
 - Keep runtime, serialization, and wire claims out of source-generation status.
 - Retain generated reference output with its original notices and provenance.
 
-## Exporting managed-generator sources
+## Exporting generator sources
 
 Prefer `Export-CorpusGeneratorSources.ps1` for locked restore and retained
-source/output hashes, SDK details, and test logs. The direct command below is
-an export-only alternative and does not create that provenance bundle.
+source/output hashes, SDK details, and test logs. It exports C# and C++ output
+for each selected profile; C++ cases are written under
+`<version>/generator/cpp/features/`. The direct command below exports C# only
+and does not create that provenance bundle.
 
 Set `CORPUS_RTI_PROFILE` to the profile version and set
 `CORPUS_GENERATOR_EXPORT_ROOT` to its C# export folder, as defined by

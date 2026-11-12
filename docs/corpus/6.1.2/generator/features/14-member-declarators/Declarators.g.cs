@@ -9,6 +9,7 @@ using Omg.Types;
 /// <summary>
 /// Represents the <c>Declarators</c> DDS type declared in <c>14-member-declarators.idl</c>. Its key members identify a DDS instance across samples; they do not determine whether two complete samples are equal. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 C# ExtensibilityKind API</seealso>
 public partial class Declarators : global::System.IEquatable<Declarators>
 {
     /// <summary>
@@ -19,6 +20,7 @@ public partial class Declarators : global::System.IEquatable<Declarators>
     /// <summary>
     /// Gets or sets the <c>second</c> member. This member forms part of the DDS instance key. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. Its DDS member ID is <c>4</c>, which identifies this member for type compatibility; it is separate from the DDS instance key.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/class_rti_1_1_types_1_1_dynamic_1_1_struct_member.html">RTI Connext 6.1.2 C# dynamic member metadata API</seealso>
     [Key]
     public int second { get; set; }
 

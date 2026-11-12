@@ -9,11 +9,13 @@ namespace CorpusDefaultLiteralEnumArray;
 /// <summary>
 /// Represents the <c>Shape</c> DDS type declared in <c>10-default-literal-enum-array.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class Shape : global::System.IEquatable<Shape>
 {
     /// <summary>
     /// Gets or sets the <c>color</c> member.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public Color color { get; set; } = global::CorpusDefaultLiteralEnumArray.Color.RED;
 
     /// <summary>

@@ -10,8 +10,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the Code Generator User's Manual.
 */
 
-#ifndef _10_flat_data_binding_532422586_hpp
-#define _10_flat_data_binding_532422586_hpp
+#ifndef _10_flat_data_binding_532422593_hpp
+#define _10_flat_data_binding_532422593_hpp
 
 #include <iosfwd>
 
@@ -184,7 +184,7 @@ namespace rti {
         template <>
         struct extensibility< CorpusFlatDataBinding::Sample > {
             static const ::dds::core::xtypes::ExtensibilityKind::type kind =
-            ::dds::core::xtypes::ExtensibilityKind::EXTENSIBLE;                
+            ::dds::core::xtypes::ExtensibilityKind::FINAL;                
         };
 
     }
@@ -197,5 +197,5 @@ namespace rti {
 #define NDDSUSERDllExport
 #endif
 
-#endif // _10_flat_data_binding_532422586_hpp
+#endif // _10_flat_data_binding_532422593_hpp
 

@@ -11,17 +11,21 @@ namespace CorpusNestedKeys;
 /// <summary>
 /// Represents the <c>Inner</c> DDS type declared in <c>08-key-nested.idl</c>. Its key members identify a DDS instance across samples; they do not determine whether two complete samples are equal. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class Inner : global::System.IEquatable<Inner>
 {
     /// <summary>
     /// Gets or sets the <c>code</c> member. This member forms part of the DDS instance key. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1StructMember.html">RTI Connext 7.7.0 C# dynamic member metadata API</seealso>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     [Key]
     public int code { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>revision</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public int revision { get; set; }
 
     /// <summary>

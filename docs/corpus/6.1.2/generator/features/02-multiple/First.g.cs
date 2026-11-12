@@ -7,6 +7,7 @@
 /// <summary>
 /// Represents the <c>First</c> DDS type declared in <c>02-multiple.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/namespace_omg_1_1_types.html">RTI Connext 6.1.2 C# ExtensibilityKind API</seealso>
 public partial class First : global::System.IEquatable<First>
 {
     /// <summary>

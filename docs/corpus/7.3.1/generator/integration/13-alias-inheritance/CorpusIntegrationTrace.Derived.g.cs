@@ -11,6 +11,7 @@ namespace CorpusIntegrationTrace;
 /// <summary>
 /// Represents the <c>Derived</c> DDS type declared in <c>13-alias-inheritance.idl</c>. It derives from <see cref="Base"/>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.3.1 C# ExtensibilityKind API</seealso>
 public partial class Derived : Base, global::System.IEquatable<Derived>
 {
     /// <summary>

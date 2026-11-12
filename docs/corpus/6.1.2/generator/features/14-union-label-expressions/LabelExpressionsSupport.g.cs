@@ -11,6 +11,8 @@ using Rti.Types.Dynamic;
 /// <summary>
 /// Provides RTI Connext DDS type support for <see cref="LabelExpressions"/>.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/class_rti_1_1_dds_1_1_topics_1_1_type_support.html">RTI Connext C# TypeSupport API (6.1.2)</seealso>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_csharp/class_rti_1_1_types_1_1_dynamic_1_1_dynamic_data.html">RTI Connext 6.1.2 C# DynamicData API</seealso>
 public class LabelExpressionsSupport : TypeSupport<LabelExpressions>
 {
     /// <summary>

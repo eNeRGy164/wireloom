@@ -9,21 +9,25 @@ using Omg.Types;
 /// <summary>
 /// Represents the <c>TypedDefaults</c> DDS type declared in <c>14-typed-defaults.idl</c>. It is marked as <c>extensible</c>. New members may be appended while preserving the existing member order for compatible type evolution.
 /// </summary>
+/// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/namespaceOmg_1_1Types.html">RTI Connext 7.7.0 C# ExtensibilityKind API</seealso>
 public partial class TypedDefaults : global::System.IEquatable<TypedDefaults>
 {
     /// <summary>
     /// Gets or sets the <c>inherited</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. Its default value is <c>7</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public int inherited { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>overridden</c> member. Representable values are in the inclusive range <c>int.MinValue</c> through <c>int.MaxValue</c>. Its default value is <c>9</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public int overridden { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>text</c> member. Its maximum length is <c>8</c> UTF-8 bytes. Its default value is <c>&quot;alias&quot;</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/manuals/connext_dds_professional/users_manual/users_manual/Strings_and_Wide_Strings.htm">RTI Connext 7.7.0 string and wide-string bounds</seealso>
     /// <remarks>The bound on this narrow IDL string is measured in UTF-8 bytes. The generated C# property does not check the bound when assigned.</remarks>
     [Bound(8)]
@@ -32,11 +36,13 @@ public partial class TypedDefaults : global::System.IEquatable<TypedDefaults>
     /// <summary>
     /// Gets or sets the <c>ratio</c> member. Finite values are in the inclusive range <c>double.MinValue</c> through <c>double.MaxValue</c>. NaN and positive or negative infinity are also representable. Its default value is <c>1.5</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public double ratio { get; set; }
 
     /// <summary>
     /// Gets or sets the <c>single</c> member. Finite values are in the inclusive range <c>float.MinValue</c> through <c>float.MaxValue</c>. NaN and positive or negative infinity are also representable. Its default value is <c>1.25</c>.
     /// </summary>
+    /// <seealso href="https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_csharp/classRti_1_1Types_1_1Dynamic_1_1Annotations.html">RTI Connext 7.7.0 C# DynamicType annotations API</seealso>
     public float single { get; set; }
 
     /// <summary>
