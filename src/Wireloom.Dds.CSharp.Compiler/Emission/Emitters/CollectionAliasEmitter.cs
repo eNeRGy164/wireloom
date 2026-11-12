@@ -1,0 +1,140 @@
+using Wireloom.Dds.CSharp.Compiler.Emission.Model;
+using Wireloom.Dds.CSharp.Compiler.Emission.Planning;
+using Wireloom.Dds.Idl.Compiler.FrontEnd;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.CSharp.Compiler.Naming;
+
+namespace Wireloom.Dds.CSharp.Compiler.Emission.Emitters;
+
+/// <summary>Coordinates emission of collection and value typedef documents.</summary>
+internal static class CollectionAliasEmitter
+{
+    /// <summary>Emits all documents for a collection or value typedef.</summary>
+    public static IReadOnlyList<GeneratedIdlSource> Emit(CompilationContext compilation, IdlTypedef declaration, string sourceIdlFileName, RtiApiProfile profile, RecursiveTypeGraph recursiveTypes)
+    {
+        var plan = CreatePlan(compilation, declaration, profile, recursiveTypes);
+        return Emit(declaration, plan, sourceIdlFileName, profile);
+    }
+
+    /// <summary>Emits a sequence wrapper from a resolved element plan without inventing IDL symbols.</summary>
+    internal static IReadOnlyList<GeneratedIdlSource> Emit(IdlTypedef declaration, CollectionAliasEmissionPlan plan, string sourceIdlFileName, RtiApiProfile profile)
+    {
+        var names = IdlNaming.CreateGeneratedTypeNames(declaration.Namespace, declaration.Name);
+
+        return [
+            .. CollectionAliasManagedEmitter.Emit(declaration, names, plan, sourceIdlFileName, profile),
+            .. CollectionAliasPluginEmitter.Emit(declaration, names, plan, sourceIdlFileName, profile),
+            .. CollectionAliasNativeEmitter.Emit(declaration, names, plan, sourceIdlFileName, profile),
+            .. CollectionAliasTypeSupportEmitter.Emit(declaration, names, plan, sourceIdlFileName)
+        ];
+    }
+
+    private static CollectionAliasEmissionPlan CreatePlan(CompilationContext compilation, IdlTypedef declaration, RtiApiProfile profile, RecursiveTypeGraph recursiveTypes)
+    {
+        string? element;
+        if (declaration.IsString)
+        {
+            element = "string";
+        }
+        else
+        {
+            if (declaration.IsCollection)
+            {
+                element = declaration.ElementType!;
+            }
+            else
+            {
+                element = declaration.Target;
+            }
+        }
+
+
+        IdlType? resolvedElementType = null;
+        EmissionTypePlan elementPlan;
+        if (declaration.IsString)
+        {
+            elementPlan = new StringEmissionType(declaration.IsWideString, declaration.StringBound, declaration.IsStringBounded, declaration.IsUnboundedString);
+        }
+        else
+        {
+            if (!declaration.IsCollection)
+            {
+                resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
+                elementPlan = EmissionTypeProjector.ToTypedefValueType(resolvedElementType, declaration.Namespace, profile);
+
+                if (elementPlan.Shape.IsString)
+                {
+                    elementPlan = EmissionTypeProjector.UnwrapValueEmissionType(elementPlan);
+                }
+                else
+                {
+                    element = compilation.ResolveUnderlyingType(element, declaration.Namespace);
+                    resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
+                    elementPlan = EmissionTypeProjector.ToTypedefValueType(resolvedElementType, declaration.Namespace, profile);
+                }
+            }
+            else
+            {
+                if (IdlBuiltinTypeSyntax.TryParseStringType(element, out var isWideString, out _))
+                {
+                    resolvedElementType = new IdlType.StringType(isWideString, declaration.StringBound, declaration.IsStringBounded, declaration.IsUnboundedStringElement);
+                    elementPlan = new StringEmissionType(isWideString, declaration.StringBound, declaration.IsStringBounded, declaration.IsUnboundedStringElement);
+                }
+                else
+                {
+                    resolvedElementType = compilation.ResolveType(element, declaration.Namespace);
+                    elementPlan = EmissionTypeProjector.ToCollectionElementType(resolvedElementType, declaration.Namespace, profile);
+                }
+            }
+        }
+
+        string? elementNativeType = null;
+        if (resolvedElementType is not null)
+        {
+            var nativeElementType = resolvedElementType;
+            while (nativeElementType is IdlType.Alias nativeAlias
+                && !string.Equals(
+                    IdlNaming.ResolvedTypeReference(nativeAlias.QualifiedName, declaration.Namespace),
+                    elementPlan.CSharpType,
+                    StringComparison.Ordinal))
+            {
+                nativeElementType = nativeAlias.Target;
+            }
+
+            if (nativeElementType is not IdlType.StringType)
+            {
+                elementNativeType = compilation.ResolveNativeType(nativeElementType, declaration.Namespace);
+            }
+        }
+
+        var elementValueType = EmissionTypeProjector.UnwrapValueEmissionType(elementPlan);
+        var isRecursiveUnboundedSequenceElement = declaration is { IsSequence: true, Bound: null }
+            && elementValueType is StructEmissionType { SupportType: { } supportType }
+            && recursiveTypes.ComponentFor(supportType).Count > 0;
+
+        return new CollectionAliasEmissionPlan(
+            elementPlan,
+            declaration.IsSequence,
+            declaration.IsArray,
+            RequiresNativeValueCast(elementPlan),
+            elementNativeType,
+            sequenceBound: declaration.Bound,
+            profile: profile,
+            valueMetadata: declaration.ValueMetadata,
+            isRecursiveUnboundedSequenceElement: isRecursiveUnboundedSequenceElement,
+            effectiveSequenceBound: declaration.EffectiveSequenceBound,
+            isUnboundedSequence: declaration.IsUnboundedSequence);
+    }
+
+    private static bool RequiresNativeValueCast(EmissionTypePlan elementPlan)
+    {
+        var valueType = EmissionTypeProjector.UnwrapValueEmissionType(elementPlan);
+        if (valueType is PrimitiveEmissionType primitive)
+        {
+            return primitive.Mapping.NativeValueRequiresCast;
+        }
+
+        return true;
+    }
+
+}

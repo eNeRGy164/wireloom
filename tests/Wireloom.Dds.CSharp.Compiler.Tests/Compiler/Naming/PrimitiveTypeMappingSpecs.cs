@@ -1,5 +1,5 @@
 
-namespace Wireloom.Compiler.Naming.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.Naming;
 
 /// <summary>Verifies that primitive target mappings remain internally consistent.</summary>
 public sealed class PrimitiveTypeMappingSpecs

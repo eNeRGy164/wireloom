@@ -1,6 +1,6 @@
-using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
 /// <summary>Captures one ordered type annotation list before parsing its declaration.</summary>
 internal sealed class IdlTypeAnnotationPrefix

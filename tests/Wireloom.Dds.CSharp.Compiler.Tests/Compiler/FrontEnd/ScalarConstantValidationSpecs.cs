@@ -1,6 +1,6 @@
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.FrontEnd.Parsing;
 
 public sealed class ScalarConstantValidationSpecs
 {

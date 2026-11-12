@@ -1,8 +1,7 @@
-using Wireloom.Compiler.Emission.Model;
-using Wireloom.Compiler.Emission.Planning;
-using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.CSharp.Compiler.Emission.Model;
+using Wireloom.Dds.CSharp.Compiler.Emission.Planning;
 
-namespace Wireloom.Compiler.Emission.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.Emission;
 
 public sealed class EmissionPlanDecisionSpecs
 {

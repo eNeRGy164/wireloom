@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Tracks active conditional-preprocessor branches and validates their nesting.</summary>
 internal sealed class PreprocessorConditionalState

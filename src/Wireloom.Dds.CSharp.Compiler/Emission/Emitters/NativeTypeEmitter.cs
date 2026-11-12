@@ -1,0 +1,248 @@
+using Wireloom.Dds.CSharp.Compiler.Emission.Planning;
+using Wireloom.Dds.CSharp.Compiler.Emission.Writers;
+
+namespace Wireloom.Dds.CSharp.Compiler.Emission.Emitters;
+
+/// <summary>Emits native storage and lifecycle/conversion methods for a data type.</summary>
+internal static class NativeTypeEmitter
+{
+    public static void Emit(
+        GeneratedSourceWriter writer,
+        string typeName,
+        IReadOnlyList<MemberEmissionPlan> fields,
+        IReadOnlyList<MemberEmissionPlan> inheritedFields,
+        string? implementationNamespace,
+        string? baseUnmanagedType)
+    {
+        EmitFields(writer, fields, implementationNamespace);
+        EmitDestroy(writer, fields, implementationNamespace, baseUnmanagedType);
+        EmitFromNative(writer, typeName, fields, implementationNamespace, baseUnmanagedType, inheritedHasKeys: inheritedFields.Any(field => field.IsKey));
+        EmitInitialize(writer, fields, implementationNamespace, baseUnmanagedType);
+        EmitToNative(writer, typeName, fields, implementationNamespace, baseUnmanagedType, inheritedHasKeys: inheritedFields.Any(field => field.IsKey));
+    }
+
+    private static void EmitFields(GeneratedSourceWriter writer, IReadOnlyList<MemberEmissionPlan> fields, string? implementationNamespace)
+    {
+        foreach (var field in fields)
+        {
+            writer.WriteLine($"private {field.NativeStorageTypeFor(implementationNamespace)} {field.EscapedName};");
+        }
+    }
+
+    private static void EmitDestroy(GeneratedSourceWriter writer, IReadOnlyList<MemberEmissionPlan> fields, string? currentNamespace, string? baseUnmanagedType)
+    {
+        writer.BlankLine();
+
+        writer.WriteXmlSummary("Releases native resources held by this instance.");
+        writer.WriteXmlParam("optionalsOnly", "Indicates whether only optional members should be released.");
+        writer.WriteXmlRemarks("This method releases resources owned by the generated native representation. Pass <see langword=\"true\"/> to release optional members only, or <see langword=\"false\"/> to release all members.");
+        writer.OpenBlock("public void Destroy(bool optionalsOnly)");
+
+        if (baseUnmanagedType is not null)
+        {
+            writer.WriteLine("parent.Destroy(optionalsOnly);");
+        }
+
+        var destroyableFields = fields.Where(f => f.DestroyKind != NativeDestroyKind.None).ToArray();
+        var optionalFields = destroyableFields.Where(f => f.IsOptional).ToArray();
+        var requiredFields = baseUnmanagedType is null
+            ? fields.Where(f => !f.IsOptional && f.DestroyKind != NativeDestroyKind.None).ToArray()
+            : [
+                .. fields.Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.Nested)
+,               .. fields.Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.Collection),
+                .. fields.Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.String),
+                .. fields.Where(f => !f.IsOptional && f.DestroyKind == NativeDestroyKind.OptionalPrimitive),
+            ];
+        var preGuardFields = baseUnmanagedType is null
+            ? []
+            : requiredFields.Where(field => field.DestroyKind is NativeDestroyKind.Nested or NativeDestroyKind.Collection).ToArray();
+        var guardedFields = baseUnmanagedType is null
+            ? requiredFields
+            : [.. requiredFields.Except(preGuardFields)];
+        var requiresOptionalOnlyGuard = optionalFields.Length > 0 ||
+            baseUnmanagedType is not null ||
+            guardedFields.Any(f => f is { IsString: true } or { IsAggregate: true, IsUnion: false } or { HasAggregateElement: true } or { HasSequenceElement: true } or { IsSequenceArray: true });
+
+        foreach (var field in optionalFields)
+        {
+            writer.WriteLine(field.BuildDestroyStatement(currentNamespace, NativeFieldPrefix(field, "optionalsOnly"))!);
+        }
+
+        if (preGuardFields.Length > 0)
+        {
+            foreach (var field in preGuardFields)
+            {
+                writer.WriteLine(field.BuildDestroyStatement(currentNamespace, NativeFieldPrefix(field, "optionalsOnly"))!);
+            }
+        }
+
+        if (guardedFields.Length > 0)
+        {
+            if (optionalFields.Length > 0 || preGuardFields.Length > 0 || baseUnmanagedType is not null)
+            {
+                writer.BlankLine();
+            }
+
+            if (requiresOptionalOnlyGuard)
+            {
+                writer.OpenBlock("if (optionalsOnly)");
+                writer.WriteLine("return;");
+                writer.CloseBlock();
+                writer.BlankLine();
+            }
+
+            foreach (var field in guardedFields)
+            {
+                writer.WriteLine(field.BuildDestroyStatement(currentNamespace, NativeFieldPrefix(field, "optionalsOnly"))!);
+            }
+        }
+
+        writer.CloseBlock();
+    }
+
+    private static void EmitFromNative(
+        GeneratedSourceWriter writer,
+        string typeName,
+        IReadOnlyList<MemberEmissionPlan> fields,
+        string? currentNamespace,
+        string? baseUnmanagedType,
+        bool inheritedHasKeys)
+    {
+        var hasKeys = inheritedHasKeys || fields.Any(field => field.IsKey);
+
+        writer.BlankLine();
+
+        writer.WriteXmlSummary("Copies native values into a managed DDS sample.");
+        writer.WriteXmlParam("sample", "The managed sample to populate.");
+        writer.WriteXmlParam("keysOnly", "When the type has key members, whether to copy only those members.");
+        var remarks = "The operation copies values into <paramref name=\"sample\"/>.";
+        if (hasKeys)
+        {
+            remarks += " When <paramref name=\"keysOnly\"/> is true, only key members are copied.";
+        }
+
+        writer.WriteXmlRemarks(remarks);
+        writer.OpenBlock($"public void FromNative({typeName} sample, bool keysOnly = false)");
+
+        if (baseUnmanagedType is not null)
+        {
+            writer.WriteLine("parent.FromNative(sample, keysOnly);");
+        }
+
+        var copiedFields = (hasKeys ? fields.Where(field => field.IsKey) : fields).ToArray();
+        string? previousStatement = null;
+        foreach (var field in copiedFields)
+        {
+            var statement = field.BuildFromNativeStatement(field.IsKey && hasKeys, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly"));
+            if (previousStatement is not null && (previousStatement.Contains('\n') || statement.Contains('\n')))
+            {
+                writer.BlankLine();
+            }
+
+            writer.WriteLines(statement);
+            previousStatement = statement;
+        }
+
+        if (hasKeys && fields.Any(field => !field.IsKey))
+        {
+            writer.BlankLine();
+            writer.OpenBlock("if (keysOnly)");
+            writer.WriteLine("return;");
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            var nonKeyFields = fields.Where(field => !field.IsKey).ToArray();
+            previousStatement = null;
+            foreach (var field in nonKeyFields)
+            {
+                var statement = field.BuildFromNativeStatement(false, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly"));
+                if (previousStatement is not null && (previousStatement.Contains('\n') || statement.Contains('\n')))
+                {
+                    writer.BlankLine();
+                }
+
+                writer.WriteLines(statement);
+                previousStatement = statement;
+            }
+        }
+
+        writer.CloseBlock();
+    }
+
+    private static void EmitInitialize(GeneratedSourceWriter writer, IReadOnlyList<MemberEmissionPlan> fields, string? currentNamespace, string? baseUnmanagedType)
+    {
+        writer.BlankLine();
+
+        writer.WriteXmlSummary("Initializes this native representation to its IDL default values.");
+        writer.WriteXmlParam("allocatePointers", "Whether pointer members should be allocated.");
+        writer.WriteXmlParam("allocateMemory", "Whether native memory should be allocated.");
+        writer.WriteXmlRemarks("Use this method to prepare native storage before conversion. Call <see cref=\"Destroy\"/> when the native representation is no longer needed.");
+        writer.OpenBlock("public void Initialize(bool allocatePointers = true, bool allocateMemory = true)");
+
+        if (baseUnmanagedType is not null)
+        {
+            writer.WriteLine("parent.Initialize(allocatePointers, allocateMemory);");
+        }
+
+        foreach (var field in fields)
+        {
+            field.EmitNativeInitialization(writer, currentNamespace, NativeFieldPrefix(field, "allocatePointers", "allocateMemory"));
+        }
+
+        writer.CloseBlock();
+    }
+
+    private static void EmitToNative(
+        GeneratedSourceWriter writer,
+        string typeName,
+        IReadOnlyList<MemberEmissionPlan> fields,
+        string? currentNamespace,
+        string? baseUnmanagedType,
+        bool inheritedHasKeys)
+    {
+        var hasKeys = inheritedHasKeys || fields.Any(field => field.IsKey);
+
+        writer.BlankLine();
+
+        writer.WriteXmlSummary("Copies a managed DDS sample into this native representation.");
+        writer.WriteXmlParam("sample", "The managed sample to copy.");
+        writer.WriteXmlParam("keysOnly", "When the type has key members, whether to copy only those members.");
+        var remarks = "The operation copies values from <paramref name=\"sample\"/> into native storage.";
+        if (hasKeys)
+        {
+            remarks += " When <paramref name=\"keysOnly\"/> is true, only key members are copied.";
+        }
+
+        writer.WriteXmlRemarks(remarks);
+        writer.OpenBlock($"public void ToNative({typeName} sample, bool keysOnly = false)");
+
+        if (baseUnmanagedType is not null)
+        {
+            writer.WriteLine("parent.ToNative(sample, keysOnly);");
+        }
+
+        foreach (var field in hasKeys ? fields.Where(field => field.IsKey) : fields)
+        {
+            writer.WriteLine(field.BuildToNativeStatement(field.IsKey && hasKeys, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly")));
+        }
+
+        if (hasKeys && fields.Any(field => !field.IsKey))
+        {
+            writer.BlankLine();
+            writer.OpenBlock("if (keysOnly)");
+            writer.WriteLine("return;");
+            writer.CloseBlock();
+            writer.BlankLine();
+
+            foreach (var field in fields.Where(field => !field.IsKey))
+            {
+                writer.WriteLine(field.BuildToNativeStatement(false, currentNamespace, NativeFieldPrefix(field, "sample", "keysOnly")));
+            }
+        }
+
+        writer.CloseBlock();
+    }
+
+    private static string NativeFieldPrefix(MemberEmissionPlan field, params string[] parameterNames) =>
+        parameterNames.Contains(field.Name, StringComparer.Ordinal) ? "this." : string.Empty;
+}

@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Owns mutable limits and accounting shared by recursive macro expansion.</summary>
 internal sealed class PreprocessorExpansionState

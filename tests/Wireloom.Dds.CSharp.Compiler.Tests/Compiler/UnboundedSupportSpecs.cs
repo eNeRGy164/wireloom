@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.Tests;
 
 /// <summary>Protects the unbounded option and its declaring-file semantics.</summary>
 public sealed class UnboundedSupportSpecs

@@ -1,5 +1,5 @@
 
-namespace Wireloom.Generation.Tests;
+namespace Wireloom.Dds.Generator.Tests;
 
 /// <summary>Protects configured effective limits in the public compiler API.</summary>
 public sealed class UnboundedLimitsSpecs
@@ -22,7 +22,7 @@ public sealed class UnboundedLimitsSpecs
             stringSize: 5);
 
         // Act
-        var generated = Compiler.Tests.CompilerTestSupport.CompileSources([root, shared], TestContext.Current.CancellationToken);
+        var generated = CSharp.Compiler.Tests.CompilerTestSupport.CompileSources([root, shared], TestContext.Current.CancellationToken);
 
         // Assert
         generated["Local.Root.g.cs"].Source.ShouldContain("effective limit of 7 elements");
@@ -43,7 +43,7 @@ public sealed class UnboundedLimitsSpecs
 
         // Act
         var exception = Should.Throw<IdlException>(() =>
-            Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken));
+            CSharp.Compiler.Tests.CompilerTestSupport.CompileSources([input], TestContext.Current.CancellationToken));
 
         // Assert
         exception.Message.ShouldContain(settingName);

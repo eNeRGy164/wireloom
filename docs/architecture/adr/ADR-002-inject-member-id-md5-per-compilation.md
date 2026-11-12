@@ -35,8 +35,10 @@ type or dependency injection container is unnecessary.
 MD5 delegate per compilation while the shared compiler retains all DDS
 member-ID semantics.**
 
-The API is `Compile(inputs, profile, computeMd5, cancellationToken)`.
-The delegate accepts UTF-8 bytes and returns the complete 16-byte MD5 digest.
+The shared host contract is `IdlCompilationRequest(inputs, computeMd5,
+cancellationToken)`. Backend facades accept that request alongside their own
+target-specific profile and return a typed generic result. The delegate accepts
+UTF-8 bytes and returns the complete 16-byte MD5 digest.
 The generator supplies a stateless BCL lambda. A future WASM host can supply
 a browser-compatible implementation. The reference is stored only in the
 compilation's service context and reaches both struct and union hash paths.
@@ -120,6 +122,6 @@ all repository callers, following ADR-001's direct-caller policy.
 - Related building block: [Shared IDL compiler](../arc42/05-building-block-view.md#531-shared-idl-compiler).
 - Related runtime flow: [Consumer build and generation](../arc42/06-runtime-view.md#611-generate-or-regenerate-application-contracts).
 - Related API contract: [Shared compiler API](../arc42/05-building-block-view.md#compiler-contract-and-payload-examples).
-- Related code: [`IdlCompiler`](../../../src/Wireloom.Dds.CSharp.Compiler/Api/IdlCompiler.cs),
+- Related code: [`IdlCompiler`](../../../src/Wireloom.Dds.CSharp.Compiler/Api/Compiler.cs),
   [`IdlParseContext`](https://github.com/eNeRGy164/wireloom/blob/2df4b372c58f23939ef05de993e9650df45a1e83/src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Parsing/IdlParseContext.cs),
   and [`IdlMemberIdHash`](https://github.com/eNeRGy164/wireloom/blob/2df4b372c58f23939ef05de993e9650df45a1e83/src/Wireloom.Dds.Compiler/Compiler/FrontEnd/Semantic/IdlMemberIdHash.cs).

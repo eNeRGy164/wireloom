@@ -1,10 +1,10 @@
-using Wireloom.Compiler.FrontEnd.Preprocessing;
-using Wireloom.Compiler.FrontEnd.Semantic;
-using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols;
 
-using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
+using static Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing.IdlGrammar;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
 /// <summary>Parses top-level IDL declarations and coordinates semantic binding.</summary>
 internal sealed class IdlDeclarationParser
@@ -176,9 +176,10 @@ internal sealed class IdlDeclarationParser
             }
 
             if (TryParseInterface(declarations, input, baseOffset, ref position, currentNamespace: currentNamespace) ||
-                constantParser.TryParse(declarations, input, baseOffset, currentNamespace, ref position) ||
-                enumParser.TryParse(declarations, input, baseOffset, currentNamespace, ref position) ||
-                typedefParser.TryParse(declarations, input, baseOffset, currentNamespace, pendingTypedefDefaultApplication, ref position))
+                constantParser.TryParse(declarations, input, baseOffset, currentNamespace, ref position, pendingApplications) ||
+                enumParser.TryParse(declarations, input, baseOffset, currentNamespace, ref position, pendingApplications) ||
+                typedefParser.TryParse(declarations, input, baseOffset, currentNamespace, pendingTypedefDefaultApplication,
+                    ref position, pendingApplications))
             {
                 RejectPendingAutoId();
                 pendingAutoId = null;
@@ -187,7 +188,8 @@ internal sealed class IdlDeclarationParser
                 continue;
             }
 
-            if (unionParser.TryParse(declarations, input, baseOffset, currentNamespace, effectiveHashIds, ref position, pendingAutoId))
+            if (unionParser.TryParse(declarations, input, baseOffset, currentNamespace, effectiveHashIds,
+                    ref position, pendingAutoId, pendingApplications))
             {
                 pendingAutoId = null;
                 pendingApplications.Clear();

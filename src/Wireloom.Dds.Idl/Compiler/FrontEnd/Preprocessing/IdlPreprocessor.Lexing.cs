@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Provides lexical operations for IDL preprocessing.</summary>
 internal sealed partial class IdlPreprocessor

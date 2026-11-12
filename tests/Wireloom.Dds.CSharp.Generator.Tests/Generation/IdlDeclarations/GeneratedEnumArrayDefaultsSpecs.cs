@@ -1,11 +1,11 @@
-using Wireloom.Compiler.Emission;
-using Wireloom.Compiler.Emission.Model;
-using Wireloom.Compiler.Emission.Planning;
-using Wireloom.Compiler.Emission.Writers;
+using Wireloom.Dds.CSharp.Compiler.Emission;
+using Wireloom.Dds.CSharp.Compiler.Emission.Model;
+using Wireloom.Dds.CSharp.Compiler.Emission.Planning;
+using Wireloom.Dds.CSharp.Compiler.Emission.Writers;
 
-using static Wireloom.Compiler.Tests.CompilerTestSupport;
+using static Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport;
 
-namespace Wireloom.Generation.IdlDeclarations.Tests;
+namespace Wireloom.Dds.Generator.Tests.IdlDeclarations;
 
 public sealed class GeneratedEnumArrayDefaultsSpecs
 {
@@ -28,12 +28,12 @@ public sealed class GeneratedEnumArrayDefaultsSpecs
             """);
 
         // Act
-        var oldProfile = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
+        var oldProfile = Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
             [input],
             null,
             TestContext.Current.CancellationToken,
             RtiApiProfile.Rtiddsgen431);
-        var currentProfile = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
+        var currentProfile = Wireloom.Dds.CSharp.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics(
             [input],
             null,
             TestContext.Current.CancellationToken,

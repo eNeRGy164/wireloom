@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Provides shared lexical rules and comment/literal scanning for preprocessing.</summary>
 internal sealed class PreprocessorLexicalService(Func<int, int> originalOffset, CancellationToken cancellationToken)

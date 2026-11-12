@@ -1,7 +1,5 @@
-using Wireloom.Compiler.FrontEnd.Preprocessing;
-using Wireloom.Compiler.FrontEnd.Semantic;
 
-namespace Wireloom.Compiler.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.Tests;
 
 /// <summary>Checks project-wide leading-underscore IDL name normalization.</summary>
 public sealed class EnableEscapeCharSpecs

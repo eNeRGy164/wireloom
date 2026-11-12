@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Parses the character literal forms shared by IDL defaults and union labels.</summary>
 internal static class IdlCharacterLiteralParser

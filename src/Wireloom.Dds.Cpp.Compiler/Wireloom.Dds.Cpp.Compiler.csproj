@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Wireloom.Dds.Cpp</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <Version>$(WireloomVersion)</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Wireloom.Dds.Idl/Wireloom.Dds.Idl.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Wireloom.Dds.Cpp" />
+    <InternalsVisibleTo Include="Wireloom.Dds.Cpp.Compiler.Tests" />
+    <InternalsVisibleTo Include="Wireloom.Dds.Cpp.Generator.Tests" />
+  </ItemGroup>
+</Project>

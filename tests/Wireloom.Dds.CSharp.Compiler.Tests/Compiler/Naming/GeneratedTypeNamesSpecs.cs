@@ -1,7 +1,6 @@
-using Wireloom.Compiler.FrontEnd;
-using Wireloom.Compiler.Emission.Planning;
+using Wireloom.Dds.CSharp.Compiler.Emission.Planning;
 
-namespace Wireloom.Compiler.Naming.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.Naming;
 
 public sealed class GeneratedTypeNamesSpecs
 {

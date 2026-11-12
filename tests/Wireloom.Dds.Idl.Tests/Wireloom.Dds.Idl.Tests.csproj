@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Wireloom.Dds.Idl.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Wireloom.Dds.Idl/Wireloom.Dds.Idl.csproj" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" PrivateAssets="all" />
+    <Using Include="Wireloom.Dds.Idl" />
+    <Using Include="Wireloom.Dds.Idl.Compiler.FrontEnd" />
+    <Using Include="Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing" />
+    <Using Include="Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing" />
+    <Using Include="Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic" />
+    <Using Include="Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols" />
+  </ItemGroup>
+</Project>

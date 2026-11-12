@@ -4,6 +4,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
+using Wireloom.Dds.CSharp.Compiler;
+using Wireloom.Dds.Idl;
 
 namespace Wireloom.Dds.CSharp.Fuzzing.Tests;
 
@@ -107,7 +109,7 @@ public sealed class FsCheckIdlCompilerFuzzingSpecs
             RuntimeReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var driver = CSharpGeneratorDriver.Create(
-            [new Wireloom.Generator().AsSourceGenerator()],
+            [new Generator.Generator().AsSourceGenerator()],
             [new TestAdditionalText("fscheck.idl", input.Source)],
             parseOptions,
             new TestAnalyzerConfigOptionsProvider(input.Metadata));

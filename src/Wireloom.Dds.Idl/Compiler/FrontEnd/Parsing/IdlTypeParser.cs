@@ -1,11 +1,11 @@
 using System.Text.RegularExpressions;
-using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 using BigInt = System.Numerics.BigInteger;
 
-using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
-using static Wireloom.Compiler.FrontEnd.IdlNames;
+using static Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing.IdlGrammar;
+using static Wireloom.Dds.Idl.Compiler.FrontEnd.IdlNames;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
 /// <summary>Parses IDL member types, annotations, bounds, and dimensions.</summary>
 internal sealed class IdlTypeParser

@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Maps preprocessed offsets to physical and logical source locations for one run.</summary>
 internal sealed class PreprocessorSourceLocationService(

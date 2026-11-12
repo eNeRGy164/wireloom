@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Owns the mutable macro definitions shared by preprocessing stages.</summary>
 internal sealed class PreprocessorMacroTable

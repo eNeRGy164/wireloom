@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Applies RTI's leading-underscore identifier escape after preprocessing.</summary>
 internal static class IdlEscapeCharNormalizer

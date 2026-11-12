@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Wireloom.Dds.Idl;
 
 namespace Wireloom.Dds.CSharp.CorpusCompliance;
 

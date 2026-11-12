@@ -1,4 +1,6 @@
-namespace Wireloom.Compiler.Tests;
+using Wireloom.Dds.CSharp.Compiler.Emission;
+
+namespace Wireloom.Dds.CSharp.Compiler.Tests;
 
 internal static class CompilerTestSupport
 {
@@ -12,24 +14,24 @@ internal static class CompilerTestSupport
 
     public static Dictionary<string, GeneratedIdlSource> CompileSources(params List<IdlInput> inputs) =>
         CompileSourcesWithDiagnostics(inputs, null, TestContext.Current.CancellationToken,
-            Emission.RtiApiProfile.Rtiddsgen470);
+            RtiApiProfile.Rtiddsgen470);
 
     public static Dictionary<string, GeneratedIdlSource> CompileSources(
         IReadOnlyList<IdlInput> inputs,
         CancellationToken cancellationToken) =>
         CompileSourcesWithDiagnostics(inputs, null, cancellationToken,
-            Emission.RtiApiProfile.Rtiddsgen470);
+            RtiApiProfile.Rtiddsgen470);
 
     public static Dictionary<string, GeneratedIdlSource> CompileSourcesWithDiagnostics(
         IReadOnlyList<IdlInput> inputs,
         ICollection<IdlDiagnostic>? diagnostics,
         CancellationToken cancellationToken,
-        Emission.RtiApiProfile? profile = null)
+        RtiApiProfile? profile = null)
     {
         var selectedProfile = profile switch
         {
-            var value when value == Emission.RtiApiProfile.Rtiddsgen312 => IdlCompilerProfile.Rti612,
-            var value when value == Emission.RtiApiProfile.Rtiddsgen431 => IdlCompilerProfile.Rti731,
+            var value when value == RtiApiProfile.Rtiddsgen312 => IdlCompilerProfile.Rti612,
+            var value when value == RtiApiProfile.Rtiddsgen431 => IdlCompilerProfile.Rti731,
             _ => IdlCompilerProfile.Rti770,
         };
         var result = IdlCompiler.Compile(inputs, selectedProfile, ComputeMd5, cancellationToken);

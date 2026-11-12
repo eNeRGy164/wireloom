@@ -1,7 +1,7 @@
 using System.Globalization;
-using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Evaluates arithmetic expressions used by floating-point IDL defaults.</summary>
 internal sealed class FloatingConstantExpressionEvaluator(string text, IdlSymbolTable symbols, string? currentNamespace, HashSet<string> activeConstants)

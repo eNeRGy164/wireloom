@@ -1,14 +1,18 @@
 using System.Globalization;
-using Wireloom.Compiler.FrontEnd.Symbols;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Represents one branch of an IDL union and its discriminator labels.</summary>
-internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? rawLabels, bool isDefault = false)
+public sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? rawLabels, bool isDefault = false)
 {
+    /// <summary>Gets the member declared by this branch.</summary>
     public IdlMember Field { get; } = field;
+    /// <summary>Gets the normalized discriminator labels in source order.</summary>
     public IReadOnlyList<string> Labels { get; private set; } = [];
+    /// <summary>Gets the numeric discriminator values corresponding to <see cref="Labels"/>.</summary>
     public IReadOnlyList<long> LabelValues { get; private set; } = [];
+    /// <summary>Gets whether this branch handles discriminator values without an explicit label.</summary>
     public bool IsDefault { get; } = isDefault;
 
     private static readonly IReadOnlyDictionary<string, (BigInteger Minimum, BigInteger Maximum)> NumericLabelRanges =
@@ -169,7 +173,7 @@ internal sealed class IdlUnionBranch(IdlMember field, IReadOnlyList<string>? raw
 }
 
 /// <summary>Represents the target-independent semantic form of an IDL union.</summary>
-internal sealed class IdlUnion(
+public sealed class IdlUnion(
     string name,
     string? @namespace,
     string discriminatorIdlType,
@@ -199,19 +203,30 @@ internal sealed class IdlUnion(
         "uint32"
     ];
 
+    /// <summary>Gets the union's declared IDL name.</summary>
     public string Name { get; } = name;
+    /// <summary>Gets the enclosing namespace, or null for the global namespace.</summary>
     public string? Namespace { get; } = @namespace;
+    /// <summary>Gets the discriminator's declared IDL type spelling.</summary>
     public string DiscriminatorIdlType { get; } = discriminatorIdlType;
-    internal IdlInput DiscriminatorInput { get; } = discriminatorInput;
-    internal int DiscriminatorOffset { get; } = discriminatorOffset;
+    /// <summary>Gets the input that declares the discriminator.</summary>
+    public IdlInput DiscriminatorInput { get; } = discriminatorInput;
+    /// <summary>Gets the source offset of the discriminator type.</summary>
+    public int DiscriminatorOffset { get; } = discriminatorOffset;
     internal bool DiscriminatorWasEscaped { get; } = discriminatorWasEscaped;
+    /// <summary>Gets whether the discriminator resolves to an enum.</summary>
     public bool DiscriminatorIsEnum { get; private set; } = discriminatorIsEnum;
+    /// <summary>Gets the resolved default discriminator value, if one is defined.</summary>
     public int? DiscriminatorDefaultValue { get; private set; } = discriminatorDefaultValue;
     /// <summary>Gets the first declared enum value independently of an explicit default literal.</summary>
     internal int? DiscriminatorFirstValue { get; private set; }
+    /// <summary>Gets the fully qualified enum type used by the discriminator, if any.</summary>
     public string? DiscriminatorEnumQualifiedName { get; private set; }
+    /// <summary>Gets the primitive IDL type underlying the discriminator.</summary>
     public string? DiscriminatorPrimitiveIdlType { get; private set; }
+    /// <summary>Gets the union branches in declaration order.</summary>
     public IReadOnlyList<IdlUnionBranch> Branches { get; } = branches;
+    /// <summary>Gets the XTypes extensibility policy.</summary>
     public IdlExtensibilityKind Extensibility { get; } = extensibility;
     /// <summary>Applies discriminator information resolved during binding.</summary>
     internal void BindDiscriminator(IdlType resolvedType, IdlEnum? discriminatorEnum)

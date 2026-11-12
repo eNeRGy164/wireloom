@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Wireloom.Dds.Idl</RootNamespace>
     <IsPackable>false</IsPackable>
     <Version>$(WireloomVersion)</Version>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -8,7 +9,10 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Wireloom.Dds.CSharp.Compiler" />
+    <!-- The CLI uses preprocessing callbacks to discover the filesystem-backed include closure. -->
+    <InternalsVisibleTo Include="Wireloom.Dds.Cpp" />
     <InternalsVisibleTo Include="Wireloom.Dds.CSharp.Compiler.Tests" />
+    <InternalsVisibleTo Include="Wireloom.Dds.Idl.Tests" />
     <InternalsVisibleTo Include="Wireloom.Dds.CSharp.Generator.Tests" />
     <InternalsVisibleTo Include="Wireloom.Dds.CSharp.Fuzzing.Tests" />
     <InternalsVisibleTo Include="Wireloom.Dds.CSharp.CorpusCompliance" />

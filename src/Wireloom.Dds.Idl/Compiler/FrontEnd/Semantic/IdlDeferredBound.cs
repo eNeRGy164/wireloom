@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Retains a bound expression until the complete constant graph is available.</summary>
 internal sealed class IdlDeferredBound(IdlInput input, int offset, string text, string? currentNamespace, string diagnosticName)

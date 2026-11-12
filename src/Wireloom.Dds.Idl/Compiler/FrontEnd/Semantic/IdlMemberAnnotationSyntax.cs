@@ -1,6 +1,6 @@
-using Wireloom.Compiler.FrontEnd.Parsing;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Captures member annotation arguments without resolving their values.</summary>
 internal sealed class IdlMemberAnnotationSyntax

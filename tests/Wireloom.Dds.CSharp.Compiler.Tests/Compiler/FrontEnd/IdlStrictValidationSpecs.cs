@@ -1,5 +1,5 @@
 
-namespace Wireloom.Compiler.FrontEnd.Semantic.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.FrontEnd.Semantic;
 
 public sealed class IdlStrictValidationSpecs
 {
@@ -28,7 +28,7 @@ public sealed class IdlStrictValidationSpecs
         var diagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var output = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
+        var output = Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
 
         // Assert
         output.ShouldNotBeEmpty();
@@ -48,7 +48,7 @@ public sealed class IdlStrictValidationSpecs
         var diagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var exception = Should.Throw<IdlException>(() => Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken));
+        var exception = Should.Throw<IdlException>(() => Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken));
 
         // Assert
         exception.Offset.ShouldBe(source.IndexOf(identifier, StringComparison.Ordinal));
@@ -69,8 +69,8 @@ public sealed class IdlStrictValidationSpecs
         var input = new IdlInput("collision.idl", source);
 
         // Act
-        var output = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
-        var exception = Should.Throw<IdlException>(() => Wireloom.Compiler.Tests.CompilerTestSupport.CompileSources(new IdlInput(input.Path, source, strict: true)));
+        var output = Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
+        var exception = Should.Throw<IdlException>(() => Tests.CompilerTestSupport.CompileSources(new IdlInput(input.Path, source, strict: true)));
 
         // Assert
         output.ShouldNotBeEmpty();
@@ -93,7 +93,7 @@ public sealed class IdlStrictValidationSpecs
         var input = new IdlInput("legal.idl", source, strict: true);
 
         // Act
-        var output = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
+        var output = Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
 
         // Assert
         output.ShouldNotBeEmpty();
@@ -109,7 +109,7 @@ public sealed class IdlStrictValidationSpecs
         var input = new IdlInput("exact.idl", "struct struct { long number; };", strict: strict);
 
         // Act
-        var exception = Should.Throw<IdlException>(() => Wireloom.Compiler.Tests.CompilerTestSupport.CompileSources(input));
+        var exception = Should.Throw<IdlException>(() => Tests.CompilerTestSupport.CompileSources(input));
 
         // Assert
         exception.Offset.ShouldBe(7);
@@ -126,8 +126,8 @@ public sealed class IdlStrictValidationSpecs
         var diagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var output = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([permissive, tracked], diagnostics, TestContext.Current.CancellationToken);
-        var exception = Should.Throw<IdlException>(() => Wireloom.Compiler.Tests.CompilerTestSupport.CompileSources(permissive, strict));
+        var output = Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([permissive, tracked], diagnostics, TestContext.Current.CancellationToken);
+        var exception = Should.Throw<IdlException>(() => Tests.CompilerTestSupport.CompileSources(permissive, strict));
 
         // Assert
         output.ShouldNotBeEmpty();
@@ -143,7 +143,7 @@ public sealed class IdlStrictValidationSpecs
         var child = new IdlInput("child.idl", "#define NAME Struct\nstruct NAME { long number; };", generate: false);
 
         // Act
-        var exception = Should.Throw<IdlException>(() => Wireloom.Compiler.Tests.CompilerTestSupport.CompileSources(root, child));
+        var exception = Should.Throw<IdlException>(() => Tests.CompilerTestSupport.CompileSources(root, child));
 
         // Assert
         exception.Input.ShouldBe(child);
@@ -160,7 +160,7 @@ public sealed class IdlStrictValidationSpecs
         var diagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var exception = Should.Throw<IdlException>(() => Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken));
+        var exception = Should.Throw<IdlException>(() => Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken));
 
         // Assert
         exception.Offset.ShouldBe(source.IndexOf("Interface", StringComparison.Ordinal));
@@ -200,8 +200,8 @@ public sealed class IdlStrictValidationSpecs
         var diagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var output = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
-        var expected = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSources([control], TestContext.Current.CancellationToken);
+        var output = Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
+        var expected = Tests.CompilerTestSupport.CompileSources([control], TestContext.Current.CancellationToken);
 
         // Assert
         diagnostics.ShouldHaveSingleItem().Id.ShouldBe("DDSG0103");
@@ -230,7 +230,7 @@ public sealed class IdlStrictValidationSpecs
         var diagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var exception = Should.Throw<IdlException>(() => Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken));
+        var exception = Should.Throw<IdlException>(() => Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken));
 
         // Assert
         exception.Offset.ShouldBe(source.IndexOf("context", StringComparison.Ordinal));
@@ -248,7 +248,7 @@ public sealed class IdlStrictValidationSpecs
         var diagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var output = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([second, shared, first], diagnostics, TestContext.Current.CancellationToken);
+        var output = Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([second, shared, first], diagnostics, TestContext.Current.CancellationToken);
 
         // Assert
         output.ShouldNotBeEmpty();
@@ -263,7 +263,7 @@ public sealed class IdlStrictValidationSpecs
         var diagnostics = new List<IdlDiagnostic>();
 
         // Act
-        var output = Wireloom.Compiler.Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
+        var output = Tests.CompilerTestSupport.CompileSourcesWithDiagnostics([input], diagnostics, TestContext.Current.CancellationToken);
 
         // Assert
         output.ShouldNotBeEmpty();

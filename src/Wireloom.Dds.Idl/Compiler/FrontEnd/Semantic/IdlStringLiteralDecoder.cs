@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace Wireloom.Compiler.FrontEnd.Semantic;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
 /// <summary>Decodes adjacent IDL string tokens before concatenating their values.</summary>
 internal static class IdlStringLiteralDecoder

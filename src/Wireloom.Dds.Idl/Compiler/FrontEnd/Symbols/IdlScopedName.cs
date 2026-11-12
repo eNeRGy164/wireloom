@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.FrontEnd.Symbols;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Symbols;
 
 /// <summary>Checks the syntax of an IDL identifier with optional module qualification.</summary>
 internal static class IdlScopedName

@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Wireloom.Dds.CSharp.Compiler;
+using Wireloom.Dds.Idl;
 
 namespace Wireloom.Dds.CSharp.CorpusCompliance;
 
@@ -83,13 +85,20 @@ public sealed class CorpusGenerationSpecs
                     ? source.HintName
                     : $"{source.HintName}.g.cs";
 
-                File.WriteAllText(Path.Combine(caseRoot, fileName), source.Source);
+                var outputPath = Path.Combine(caseRoot, fileName);
+                if (File.Exists(outputPath)
+                    && string.Equals(File.ReadAllText(outputPath), source.Source, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                File.WriteAllText(outputPath, source.Source);
             }
         }
     }
 
     /// <summary>Requires successful C# 12 compilation against the selected exact runtime.</summary>
-    private static void AssertCompiles(CorpusCase corpusCase, IdlCompilationResult result)
+    private static void AssertCompiles(CorpusCase corpusCase, IdlCompilationResult<GeneratedIdlSource> result)
     {
         var trees = result.Documents.Select(document => CSharpSyntaxTree.ParseText(document.Source,
             new CSharpParseOptions(LanguageVersion.CSharp12), document.HintName));

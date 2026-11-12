@@ -1,9 +1,9 @@
 using System.Text.RegularExpressions;
-using Wireloom.Compiler.FrontEnd.Semantic;
+using Wireloom.Dds.Idl.Compiler.FrontEnd.Semantic;
 
-using static Wireloom.Compiler.FrontEnd.Parsing.IdlGrammar;
+using static Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing.IdlGrammar;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
 /// <summary>Parses IDL enum declarations.</summary>
 internal sealed class IdlEnumDeclarationParser
@@ -13,7 +13,13 @@ internal sealed class IdlEnumDeclarationParser
     internal IdlEnumDeclarationParser(IdlParseContext context) =>
         this.context = context;
 
-    internal bool TryParse(string declarations, IdlInput input, int baseOffset, string? currentNamespace, ref int position)
+    internal bool TryParse(
+        string declarations,
+        IdlInput input,
+        int baseOffset,
+        string? currentNamespace,
+        ref int position,
+        IReadOnlyList<IdlAnnotationApplicationSyntax>? leadingApplications = null)
     {
         var prefix = IdlTypeAnnotationPrefix.Read(declarations, position, input, context, baseOffset, useHashIds: false, hasLocalAutoId: false);
         var enumDeclaration = EnumPattern.Match(declarations[prefix.DeclarationStart..]);
@@ -151,7 +157,9 @@ internal sealed class IdlEnumDeclarationParser
 
         var parsedEnum = new IdlEnum(enumName, currentNamespace, enumMembers, prefix.Extensibility ?? IdlExtensibilityKind.Extensible);
         context.Symbols.AddEnum(qualified, parsedEnum);
-        context.Declarations.Add(new IdlEnumDeclaration(parsedEnum, Path.GetFileName(input.Path)));
+        var enumDeclarationModel = new IdlEnumDeclaration(parsedEnum, Path.GetFileName(input.Path));
+        enumDeclarationModel.SetAnnotationApplications((leadingApplications ?? []).Concat(prefix.Applications).ToArray());
+        context.Declarations.Add(enumDeclarationModel);
 
         position += enumDeclaration.Length;
 

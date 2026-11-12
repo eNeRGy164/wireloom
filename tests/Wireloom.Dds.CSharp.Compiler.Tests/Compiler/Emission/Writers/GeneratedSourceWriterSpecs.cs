@@ -1,4 +1,4 @@
-namespace Wireloom.Compiler.Emission.Writers.Tests;
+namespace Wireloom.Dds.CSharp.Compiler.Emission.Writers.Tests;
 
 public sealed class GeneratedSourceWriterSpecs
 {

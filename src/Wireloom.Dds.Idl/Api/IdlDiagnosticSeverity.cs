@@ -1,4 +1,4 @@
-namespace Wireloom;
+namespace Wireloom.Dds.Idl;
 
 /// <summary>Describes the default severity of an IDL compiler diagnostic.</summary>
 [PublicAPI]

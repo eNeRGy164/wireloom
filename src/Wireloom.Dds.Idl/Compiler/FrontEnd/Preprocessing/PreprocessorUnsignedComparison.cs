@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Wireloom.Compiler.FrontEnd.Preprocessing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Preprocessing;
 
 /// <summary>Handles unsigned literal comparisons not representable by the signed expression subset.</summary>
 internal static class PreprocessorUnsignedComparison

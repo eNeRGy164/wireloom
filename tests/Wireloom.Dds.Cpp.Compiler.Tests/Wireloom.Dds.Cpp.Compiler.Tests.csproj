@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Wireloom.Dds.Cpp.Compiler.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Wireloom.Dds.Cpp.Compiler/Wireloom.Dds.Cpp.Compiler.csproj" Aliases="global,CppCompilerAssembly" />
+    <Using Include="Wireloom.Dds.Idl" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

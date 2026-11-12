@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Wireloom.Compiler.FrontEnd.Parsing;
+namespace Wireloom.Dds.Idl.Compiler.FrontEnd.Parsing;
 
 /// <summary>Regular expressions for the intentionally supported IDL subset.</summary>
 internal static class IdlGrammar
