@@ -35,12 +35,13 @@ jobs:
         github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-26.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     permissions:
       actions: read
       contents: read
     outputs:
       revision: ${{ steps.source.outputs.revision }}
+      version: ${{ steps.gitversion.outputs.semVer }}
     steps:
       - name: Select verified main revision
         id: source
@@ -68,18 +69,53 @@ jobs:
             '
           echo "revision=$REVISION" >> "$GITHUB_OUTPUT"
 
-  package:
-    name: Build and publish preview
+      - name: Check out selected revision
+        if: steps.source.outputs.revision != ''
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ steps.source.outputs.revision }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up .NET
+        if: steps.source.outputs.revision != ''
+        uses: actions/setup-dotnet@v6.1.0
+        with:
+          global-json-file: global.json
+
+      - name: Set up GitVersion
+        if: steps.source.outputs.revision != ''
+        uses: gittools/actions/gitversion/setup@v4.7.0
+        with:
+          versionSpec: 6.8.x
+
+      - name: Calculate package version
+        id: gitversion
+        if: steps.source.outputs.revision != ''
+        uses: gittools/actions/gitversion/execute@v4.7.0
+        with:
+          targetPath: ${{ github.workspace }}
+
+  cpp:
+    name: Build and verify native package
     needs: select
+    if: needs.select.outputs.revision != ''
+    permissions:
+      contents: read
+    uses: ./.github/workflows/cpp-package.yml
+    with:
+      revision: ${{ needs.select.outputs.revision }}
+      package_version: ${{ needs.select.outputs.version }}
+
+  package:
+    name: Build and attest preview
+    needs: [select, cpp]
     if: needs.select.outputs.revision != ''
     runs-on: ubuntu-26.04
     timeout-minutes: 15
-    concurrency:
-      group: preview-package-main
-      cancel-in-progress: false
     permissions:
       contents: read
-      packages: write
+      actions: read
       id-token: write
       attestations: write
     steps:
@@ -99,23 +135,12 @@ jobs:
             global.json
             **/packages*.lock.json
 
-      - name: Set up GitVersion
-        uses: gittools/actions/gitversion/setup@v4.7.0
-        with:
-          versionSpec: 6.8.x
-
-      - name: Calculate package version
-        id: gitversion
-        uses: gittools/actions/gitversion/execute@v4.7.0
-        with:
-          targetPath: ${{ github.workspace }}
-
       - name: Restore generator dependencies
         run: dotnet restore "$PACKAGE_PROJECT" --locked-mode
 
       - name: Pack versioned candidate
         env:
-          PACKAGE_VERSION: ${{ steps.gitversion.outputs.semVer }}
+          PACKAGE_VERSION: ${{ needs.select.outputs.version }}
         run: >-
           dotnet pack "$PACKAGE_PROJECT" --no-restore --configuration Release
           --output "$PACKAGE_TEST_FEED" -p:Version="$PACKAGE_VERSION" -p:PackageVersion="$PACKAGE_VERSION"
@@ -123,7 +148,7 @@ jobs:
       - name: Smoke-test the exact candidate package with C# 12
         env:
           NUGET_PACKAGES: ${{ runner.temp }}/candidate-nuget-packages
-          PACKAGE_VERSION: ${{ steps.gitversion.outputs.semVer }}
+          PACKAGE_VERSION: ${{ needs.select.outputs.version }}
         run: |
           dotnet restore "$PACKAGE_INTEGRATION_TEST_PROJECT" \
             --configfile tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/NuGet.Test.Config \
@@ -135,6 +160,19 @@ jobs:
         run: |
           mkdir -p "$ARTIFACTS_DIR"
           cp "$PACKAGE_TEST_FEED"/*.nupkg "$ARTIFACTS_DIR"/
+
+      - name: Stage the tested native package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_VERSION: ${{ needs.select.outputs.version }}
+        run: |
+          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name cpp-nuget --dir "$ARTIFACTS_DIR"
+          test -f "$ARTIFACTS_DIR/Wireloom.Dds.Cpp.Generator.$PACKAGE_VERSION.nupkg"
+
+      - name: Retain exact package hashes
+        run: |
+          cd "$ARTIFACTS_DIR"
+          sha256sum ./*.nupkg > SHA256SUMS
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0.24.3
@@ -158,10 +196,44 @@ jobs:
       - name: Upload package artifacts
         uses: actions/upload-artifact@v7.0.2
         with:
-          name: wireloom-dds-generator-preview-${{ steps.gitversion.outputs.semVer }}
+          name: wireloom-dds-generator-preview-${{ needs.select.outputs.version }}
           path: ${{ env.ARTIFACTS_DIR }}
           if-no-files-found: error
           retention-days: 14
+
+  publish:
+    name: Publish tested preview packages
+    needs: [select, package]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    concurrency:
+      group: preview-package-main
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    steps:
+      - name: Check out selected revision
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ needs.select.outputs.revision }}
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Download and verify retained publication bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_VERSION: ${{ needs.select.outputs.version }}
+        run: |
+          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --name "wireloom-dds-generator-preview-$PACKAGE_VERSION" --dir "$ARTIFACTS_DIR"
+          cd "$ARTIFACTS_DIR"
+          sha256sum --check SHA256SUMS
 
       - name: Publish preview to GitHub Packages
         env:
@@ -174,6 +246,10 @@ jobs:
             echo "A newer main revision superseded $EXPECTED_SOURCE_SHA." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          dotnet nuget push "$ARTIFACTS_DIR"/*.nupkg \
-            --source "https://nuget.pkg.github.com/$REPOSITORY_OWNER/index.json" \
-            --api-key "$GH_TOKEN" --skip-duplicate
+          packages=("$ARTIFACTS_DIR"/*.nupkg)
+          [[ "${#packages[@]}" -eq 2 ]]
+          for package in "${packages[@]}"; do
+            dotnet nuget push "$package" \
+              --source "https://nuget.pkg.github.com/$REPOSITORY_OWNER/index.json" \
+              --api-key "$GH_TOKEN" --skip-duplicate
+          done

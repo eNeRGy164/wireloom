@@ -1,0 +1,155 @@
+name: C++ native package
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      revision:
+        description: Immutable source revision selected by the publisher
+        required: true
+        type: string
+      package_version:
+        description: Version shared by native executables and the NuGet package
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  CPP_PACKAGE_VERSION: ${{ inputs.package_version }}
+  CPP_SOURCE_REVISION: ${{ inputs.revision || github.sha }}
+
+concurrency:
+  group: cpp-package-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ inputs.package_version || 'candidate' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  native:
+    name: Native AOT (${{ matrix.rid }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2025
+            rid: win-x64
+          - os: ubuntu-24.04
+            rid: linux-x64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ env.CPP_SOURCE_REVISION }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6.1.0
+        if: runner.os == 'Windows'
+        with:
+          global-json-file: global.json
+      - name: Publish Windows tool
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/Publish-WireloomCppNative.ps1 -RuntimeIdentifier win-x64 -PackageVersion $env:CPP_PACKAGE_VERSION
+      - name: Publish Linux tool with pinned native toolchain
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" \
+            -e DOTNET_CLI_HOME=/tmp/dotnet -e NUGET_PACKAGES=/tmp/nuget \
+            -e CPP_PACKAGE_VERSION \
+            -v "$GITHUB_WORKSPACE:/work" -w /work \
+            mcr.microsoft.com/dotnet/sdk:10.0.400-noble-aot@sha256:54ad66409fb7f9bfaf1b11355e846b46cd94803cfc813e46a7af5aa2c394ea33 \
+            pwsh -NoProfile -File scripts/Publish-WireloomCppNative.ps1 -RuntimeIdentifier linux-x64 -PackageVersion "$CPP_PACKAGE_VERSION"
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: cpp-native-${{ matrix.rid }}
+          path: |
+            artifacts/cpp-native-package/tools/
+            artifacts/cpp-native-package/metadata/
+          if-no-files-found: error
+          retention-days: 14
+
+  package:
+    name: Assemble NuGet package
+    needs: native
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ env.CPP_SOURCE_REVISION }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6.1.0
+        with:
+          global-json-file: global.json
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          pattern: cpp-native-*
+          path: artifacts/cpp-native-package
+          merge-multiple: true
+      - name: Pack both host executables
+        shell: pwsh
+        run: |
+          $version = $env:CPP_PACKAGE_VERSION
+          if (-not $version) {
+            [xml] $properties = Get-Content Directory.Build.props -Raw
+            $version = ([string] $properties.Project.PropertyGroup.WireloomVersion).Trim()
+          } else {
+            $version = $version.Trim()
+          }
+          foreach ($rid in @('win-x64', 'linux-x64')) {
+            $manifest = Get-Content "artifacts/cpp-native-package/metadata/$rid/manifest.json" -Raw | ConvertFrom-Json
+            if ($manifest.packageVersion -ne $version) {
+              throw "Native payload version differs for $rid (payload '$($manifest.packageVersion)', package '$version')."
+            }
+          }
+          dotnet restore src/Wireloom.Dds.Cpp.Generator/Wireloom.Dds.Cpp.Generator.csproj --locked-mode
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          dotnet pack src/Wireloom.Dds.Cpp.Generator/Wireloom.Dds.Cpp.Generator.csproj -c Release --no-restore -o artifacts/cpp-feed "-p:Version=$version" "-p:PackageVersion=$version"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: cpp-nuget
+          path: artifacts/cpp-feed/*.nupkg
+          if-no-files-found: error
+          retention-days: 14
+
+  consumer:
+    name: Package consumer (${{ matrix.os }})
+    needs: package
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ env.CPP_SOURCE_REVISION }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          name: cpp-nuget
+          path: artifacts/cpp-feed
+      - name: Verify packaged native generation and build integration
+        shell: pwsh
+        run: |
+          $packages = @(Get-ChildItem artifacts/cpp-feed/*.nupkg)
+          if ($packages.Count -ne 1) { throw 'Expected one candidate package.' }
+          $options = @{ Package = $packages[0].FullName }
+          if ($IsWindows) { $options.PlatformToolset = 'v143' }
+          $generators = if ($IsLinux) { @('Unix Makefiles', 'Ninja') } else { @('') }
+          foreach ($generator in $generators) {
+            ./tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/Verify-Package.ps1 @options -CMakeGenerator $generator
+          }
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: cpp-consumer-${{ matrix.os }}
+          path: artifacts/cpp-package-tests/
+          if-no-files-found: warn
+          retention-days: 14

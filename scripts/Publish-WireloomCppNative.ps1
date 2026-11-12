@@ -36,7 +36,7 @@ $projectPath = Join-Path $PSScriptRoot '..\src\Wireloom.Dds.Cpp.Generator\Wirelo
 $resolvedProject = (Resolve-Path -LiteralPath $projectPath).Path
 if (-not $PackageVersion) {
     [xml] $buildProperties = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../Directory.Build.props') -Raw
-    $PackageVersion = [string] $buildProperties.Project.PropertyGroup.WireloomVersion
+    $PackageVersion = ([string] $buildProperties.Project.PropertyGroup.WireloomVersion).Trim()
 }
 if ($PackageVersion -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') {
     throw "Invalid package version: '$PackageVersion'."
