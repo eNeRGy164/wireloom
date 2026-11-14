@@ -3,6 +3,33 @@ namespace Wireloom.Dds.Cpp.Generator.Tests;
 /// <summary>Checks that generated documentation follows the selected RTI profile.</summary>
 public sealed class VersionedDocumentationSpecs
 {
+    /// <summary>Guards every legacy plugin's internal sample-access ABI against other SDK builds.</summary>
+    [Theory]
+    [InlineData("struct Sample { long value; };")]
+    [InlineData("struct Sample { string<16> value; };")]
+    [InlineData("struct Sample { @key long id; };")]
+    public void GuardsLegacySampleAccessAgainstOtherRuntimeBuilds(string source)
+    {
+        // Arrange
+        using var directory = new TemporaryDirectory();
+        var input = Path.Combine(directory.Path, "sample.idl");
+        var outputPath = Path.Combine(directory.Path, "generated");
+        File.WriteAllText(input, source);
+        using var output = new StringWriter();
+        using var errors = new StringWriter();
+
+        // Act
+        var exitCode = CppCommand.Run(["generate", input, outputPath, "--rti-version", "6.1.2"], output, errors);
+
+        // Assert
+        exitCode.ShouldBe(0, errors.ToString());
+        var plugin = File.ReadAllText(Path.Combine(outputPath, "samplePlugin.cxx"));
+        plugin.ShouldContain("#include <ndds/ndds_version.h>");
+        plugin.ShouldContain("RTI_DDS_VERSION_MAJOR != 6 || RTI_DDS_VERSION_MINOR != 1");
+        plugin.ShouldContain("RTI_DDS_VERSION_RELEASE != 2 || RTI_DDS_VERSION_REVISION != 0");
+        plugin.ShouldContain("RTI 6.1.2 sample-access adapter requires RTI Connext DDS 6.1.2.");
+    }
+
     /// <summary>Emits signed-byte members through the RTI 6.1.2 profile adapter.</summary>
     [Fact]
     public void EmitsSignedByteMemberForRti612()

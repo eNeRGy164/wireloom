@@ -361,6 +361,12 @@ from a `Rti.ConnextDds` assembly. Mapping another SDK version to an implemented
 profile does not qualify that version. The native SDK used to compile the
 application must match the advertised profile and ABI requirements.
 
+The legacy 6.1.2 sample-access adapter requires RTI 6.1.2 headers. Its
+generated compile-time guard rejects other major, minor, release, or revision
+values. Private TypeCode, STL sample-access, and FlatData adapters retain their
+own exact-version guards; selecting a mapped profile does not qualify a newer
+SDK build.
+
 ### Which IDL capabilities are released
 
 The generator covers scalar and enum values, aliases, strings, collections,

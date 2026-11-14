@@ -87,6 +87,9 @@ internal static class Rti612PluginEmitter
         source.WriteInclude("cstddef");
         source.WriteInclude("cstdint");
         source.WriteInclude("memory");
+        source.WriteInclude("ndds/ndds_version.h");
+        PluginEmitter.EmitExactRuntimeVersionGuard(source, plan.Profile,
+            "RTI 6.1.2 sample-access adapter");
 
         if (plan.Structs.Any(declaration => declaration.IsFlatData))
         {

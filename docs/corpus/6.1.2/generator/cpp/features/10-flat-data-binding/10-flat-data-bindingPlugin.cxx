@@ -10,6 +10,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <ndds/ndds_version.h>
+#if RTI_DDS_VERSION_MAJOR != 6 || RTI_DDS_VERSION_MINOR != 1 || \
+    RTI_DDS_VERSION_RELEASE != 2 || RTI_DDS_VERSION_REVISION != 0
+#error "RTI 6.1.2 sample-access adapter requires RTI Connext DDS 6.1.2."
+#endif
 #include <algorithm>
 #include <cstring>
 #include <mutex>

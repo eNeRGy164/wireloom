@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-11-14T17:43:26.6977285Z
+  generated_at: 2026-11-14T21:42:36.1218153Z
   arc42_home: docs/architecture/arc42
   format: yaml-only
   human_memory_enabled: false
