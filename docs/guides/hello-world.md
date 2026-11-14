@@ -74,7 +74,7 @@ Replace `WireloomHelloWorld.csproj` with:
   <ItemGroup>
     <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
     <PackageReference Include="Wireloom.Dds.Generator"
-                      Version="1.0.0"
+                      Version="1.1.0"
                       PrivateAssets="all" />
     <DdsIdl Include="hello_world.idl" />
   </ItemGroup>
@@ -393,12 +393,10 @@ an installed .NET SDK/runtime.
   combination from RTI's [platform notes][rti-cpp-platforms].
 - The applicable RTI license. If your RTI distribution requires a license
   file, set `RTI_LICENSE_FILE` to its full path in each terminal before running.
-- An exact `Wireloom.Dds.Cpp.Generator` package version. The first C++ package
-  is not published yet; use a retained candidate until publication. Replace
-  `<published-version>` below with the actual version you acquired.
+- `Wireloom.Dds.Cpp.Generator` **1.1.0** from NuGet.org. Pin the generator
+  independently of the RTI SDK/profile.
 - For the installation commands below, the NuGet CLI on Windows or `curl` on
-  Linux. Preview artifacts can also be acquired with GitHub CLI as described
-  in the package guide.
+  Linux.
 
 The commands below use shared Release RTI libraries. Run both roles on the
 same machine, in a fresh directory without a `USER_QOS_PROFILES.xml` file.
@@ -410,11 +408,10 @@ and the exact package's release record for qualified platforms and profiles.
 ### Install the C++ generator package
 
 Create a directory named `WireloomHelloWorldCpp` and open a terminal there.
-Once a stable C++ package is published, install it on Windows with the NuGet
-CLI:
+Install version 1.1.0 on Windows with the NuGet CLI:
 
 ```powershell
-$version = '<published-version>'
+$version = '1.1.0'
 nuget install Wireloom.Dds.Cpp.Generator -Version $version `
   -Source https://api.nuget.org/v3/index.json -OutputDirectory packages -NonInteractive
 ```
@@ -422,7 +419,7 @@ nuget install Wireloom.Dds.Cpp.Generator -Version $version `
 On Linux, download and extract that exact package:
 
 ```bash
-version='<published-version>'
+version='1.1.0'
 package="wireloom.dds.cpp.generator.$version.nupkg"
 curl --fail --location --output "$package" \
   "https://api.nuget.org/v3-flatcontainer/wireloom.dds.cpp.generator/$version/$package"
@@ -434,15 +431,13 @@ mkdir -p "packages/Wireloom.Dds.Cpp.Generator.$version"
 )
 ```
 
-Until stable publication, use the
-[preview or retained-candidate instructions](../../CONTRIBUTING.md#preview-and-retained-candidates)
-instead. They produce the same extracted package directory; the rest of this
-walkthrough is unchanged. Use this layout:
+Compare the downloaded package hash with the NuGet.org hash in the
+[1.1.0 release record](../releases/1.1.0.md#packages-and-source). Use this layout:
 
 ```text
 WireloomHelloWorldCpp/
   packages/
-    Wireloom.Dds.Cpp.Generator.<published-version>/
+    Wireloom.Dds.Cpp.Generator.1.1.0/
       build/cmake/WireloomCppConfig.cmake
       tools/win-x64/Wireloom.Dds.Cpp.exe
       tools/linux-x64/Wireloom.Dds.Cpp
@@ -648,7 +643,7 @@ The identifier is the directory name under `$NDDSHOME/lib`, not the generator's
 export NDDSHOME=/path/to/rti_connext_dds-7.7.0
 export RTI_ARCH=x64Linux4gcc8.5.0
 source "$NDDSHOME/resource/scripts/rtisetenv_$RTI_ARCH.bash"
-version='<published-version>'
+version='1.1.0'
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON \
   "-DCONNEXTDDS_ARCH=$RTI_ARCH" -DWIRELOOM_CPP_RTI_VERSION=7.7.0 \
   "-DWireloomCpp_DIR=$PWD/packages/Wireloom.Dds.Cpp.Generator.$version/build/cmake"
@@ -670,7 +665,7 @@ selects the CMake generator:
 $env:NDDSHOME = 'C:\Program Files\rti_connext_dds-7.7.0'
 $env:RTI_ARCH = 'x64Win64VS2017'
 $env:PATH = "$env:NDDSHOME\lib\$env:RTI_ARCH;$env:PATH"
-$version = '<published-version>'
+$version = '1.1.0'
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DBUILD_SHARED_LIBS=ON `
   "-DCONNEXTDDS_ARCH=$env:RTI_ARCH" "-DWIRELOOM_CPP_RTI_VERSION=7.7.0" `
   "-DWireloomCpp_DIR=$PWD/packages/Wireloom.Dds.Cpp.Generator.$version/build/cmake"

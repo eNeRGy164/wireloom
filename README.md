@@ -49,7 +49,7 @@ Replace `WireloomQuickstart.csproj` with:
 
   <ItemGroup>
     <PackageReference Include="Rti.ConnextDds" Version="7.7.0" />
-    <PackageReference Include="Wireloom.Dds.Generator" Version="1.0.0" PrivateAssets="all" />
+    <PackageReference Include="Wireloom.Dds.Generator" Version="1.1.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -110,7 +110,7 @@ sample](samples/HelloWorld/README.md).
 For native applications, start with the
 [Modern C++ package guide](src/Wireloom.Dds.Cpp.Generator/README.md) and
 [C++ Hello World walkthrough](docs/guides/hello-world.md#modern-c-walkthrough).
-Use an exact available preview while the first stable package is pending.
+Install `Wireloom.Dds.Cpp.Generator` **1.1.0** from NuGet.org.
 
 ## Why Wireloom?
 
@@ -167,8 +167,8 @@ the member is absent:
 ### Less tooling to install
 
 Generate C# from IDL using the SDK already building your application and a
-small generator package. The latest release, Wireloom 1.0.0, measures
-**402,171 bytes (about 402 kB)** as the published NuGet package. The RTI runtime remains a
+small generator package. Wireloom.Dds.Generator 1.1.0 measures
+**522,100 bytes (about 522 kB)** as the published NuGet package. The RTI runtime remains a
 NuGet dependency in either workflow; the package measurement covers generation
 tooling.
 
@@ -177,7 +177,7 @@ about **2 GB** to the C# Docker build images in the pipeline that motivated
 Wireloom. That is an observation from the original setup, whose selected tools
 determined its size. See the [project background](docs/architecture/arc42/01-introduction-and-goals.md)
 for the other requirements that shaped Wireloom, and the
-[package-size evidence](docs/releases/1.0.0.md#package-and-source) for the
+[package-size evidence](docs/releases/1.1.0.md#packages-and-source) for the
 published package measurement.
 
 | Generation concern | External `rtiddsgen` workflow                                                                | Wireloom workflow                                          |
@@ -196,8 +196,8 @@ package's compiler integration.
 ## Check project fit
 
 - **C# requirements:** .NET 8 or later, C# 12 or later, and an explicit RTI
-  runtime reference. Current source implements exact profiles for 6.1.2,
-  7.3.1, and 7.7.0; 1.0.0 supports the latter two. Check the
+  runtime reference. Version 1.1.0 supports exact profiles for 6.1.2,
+  7.3.1, and 7.7.0. Check the
   [installed version's record](docs/releases/README.md) and
   [profile restrictions](docs/guides/support-and-compatibility.md#rti-version-qualification).
 - **IDL and options:** Check [feature coverage](docs/corpus/FEATURE-COVERAGE.md)
@@ -234,8 +234,8 @@ qualify a release. Each evidence layer answers a different question:
 | [Directed DDS exchanges](tests/Wireloom.Dds.Generator.WireCompatibility/README.md)      | Actual sample exchange for named fixtures, exact RTI releases, peer directions, and adaptations.                                                                                |
 | [Generated-C# analysis](docs/corpus/csharp-quality.md)                                  | Independent emitted-source inspections with reviewed intentional findings; separate [consumer checks](docs/testing/consumer-analysis.md) verify normal generated-code handling. |
 
-The [1.0.0 release record](docs/releases/1.0.0.md) retains passing and failing
-wire outcomes and links the original archived reports. A successful source build,
+The [1.1.0 release record](docs/releases/1.1.0.md) retains exact-source
+qualification results and links the original archived wire reports. A successful source build,
 runtime test, browser preview, or complete report does not establish every
 interoperability outcome.
 

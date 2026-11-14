@@ -486,6 +486,10 @@ owns the qualification gates. Targets become release claims only through the
 exact-version record; missing evidence must be resolved or the advertised
 scope narrowed before publication.
 
+Version 1.1.0 is published for both generator packages. Its
+[release qualification](../../releases/1.1.0.md#release-qualification) records
+the tagged-source results; later repository checks do not alter that scope.
+
 C++ qualification is independent of the C# adoption claim. Record generation,
 consumer/API, plugin/lifecycle, local CDR, and live-DDS results separately.
 [Native fixture guides](../../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/)
@@ -523,7 +527,7 @@ columns and must pin an RTI version rather than use `/current/`.
 Public value APIs have concise Doxygen documentation; private plugin
 implementation details remain undocumented.
 
-The native package candidate contains Windows/Linux x64 executables and
+The native package contains Windows/Linux x64 executables and
 MSBuild/CMake assets. Checks execute generation without .NET on PATH, verify
 host selection independently of target architecture, skip unchanged generation,
 and regenerate after IDL/tool changes. Windows checks exercise real native
