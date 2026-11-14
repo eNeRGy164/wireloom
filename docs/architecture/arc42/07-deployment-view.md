@@ -184,11 +184,15 @@ the C++ target architecture, add generated sources and include paths, and
 regenerate when the IDL or tool changes. A compatible native RTI SDK supplies
 headers, libraries, and DDS runtime behavior. Live DDS requires its license.
 
-CMake tracks successful generation with a completion stamp before the four
-generated source outputs. An input edit that preserves emitted text advances
-the stamp once; subsequent unchanged builds skip generation. The source
-outputs remain tracked so deleting one reruns generation. A failed generator
-invocation does not advance the completion stamp.
+Both integrations track successful generation separately from generated text.
+An input edit that preserves emitted text advances a completion stamp once;
+subsequent unchanged builds skip generation. Missing source outputs rerun
+generation, and a failed invocation leaves no successful completion for that
+input state. MSBuild reads the root and transitive include paths recorded by
+the CLI after successful generation. Its state also tracks the root list,
+RTI profile, tool, and project imports; `Clean` removes generated files and
+incremental state. CMake tracks include-directory IDL inputs and retains the
+four source outputs alongside its completion stamp.
 
 The reusable [C++ package workflow](../../../.github/workflows/cpp-package.yml)
 publishes native payloads on matching Windows and Linux hosts, assembles both

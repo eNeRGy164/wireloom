@@ -15,7 +15,7 @@ internal static class CppCommand
         "[--unbounded-support|--finite-support] [--enable-escape-char] " +
         "[--file-sequence-size <path> <size>] [--file-string-size <path> <size>] " +
         "[--file-unbounded-support <path> <true|false>] " +
-        "[--rti-version <version>]";
+        "[--rti-version <version>] [--dependency-file <path>]";
 
     /// <summary>Dispatches the command and reports diagnostics to the caller.</summary>
     /// <param name="arguments">Arguments passed to the CLI.</param>
@@ -49,6 +49,7 @@ internal static class CppCommand
             var sequenceSize = 100;
             var stringSize = 255;
             var runtimeVersion = "7.7.0";
+            string? dependencyPath = null;
             var pathComparer = Path.DirectorySeparatorChar == '\\'
                 ? StringComparer.OrdinalIgnoreCase
                 : StringComparer.Ordinal;
@@ -114,7 +115,7 @@ internal static class CppCommand
                     continue;
                 }
 
-                if ((arguments[index] is "--define" or "--undefine" or "--include-directory" or "--sequence-size" or "--string-size" or "--rti-version")
+                if ((arguments[index] is "--define" or "--undefine" or "--include-directory" or "--sequence-size" or "--string-size" or "--rti-version" or "--dependency-file")
                     && index + 1 < arguments.Length)
                 {
                     var value = arguments[++index];
@@ -129,6 +130,10 @@ internal static class CppCommand
                     else if (arguments[index - 1] == "--undefine")
                     {
                         undefines.Add(value);
+                    }
+                    else if (arguments[index - 1] == "--dependency-file")
+                    {
+                        dependencyPath = Path.GetFullPath(value);
                     }
                     else if (arguments[index - 1] == "--sequence-size")
                     {
@@ -191,7 +196,14 @@ internal static class CppCommand
                 fileSequenceSizes,
                 fileStringSizes,
                 fileUnboundedSupport);
-            return Generate(inputs, outputPath, error, profile);
+            var exitCode = Generate(inputs, outputPath, error, profile);
+            if (exitCode == 0 && dependencyPath is not null)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(dependencyPath)!);
+                File.WriteAllLines(dependencyPath, inputs.Select(input => input.Path));
+            }
+
+            return exitCode;
         }
         catch (Exception exception) when (exception is IOException
                                            or UnauthorizedAccessException

@@ -51,7 +51,15 @@ logs and the version transition are retained in the verification result.
 
 On Windows, it restores the package through `packages.config` and invokes the
 imported generation target with `Platform=ARM64` on an x64 host. It verifies
-that a second unchanged invocation skips generation. The local restore
+that unchanged invocations skip generation. Root, included, and transitive
+input timestamp/comment edits must generate once without rewriting output;
+semantic edits must update it. Includes outside the project directory and
+with `.inc` extensions exercise actual dependency tracking. Checks also cover
+include-graph changes, each missing output, a missing dependency manifest,
+profile changes and rollback, tool changes, failed-generation retries, missing
+include recovery, multiple roots, and `Clean`. Invocation counts come from the
+MSBuild command log, so preserving an output timestamp cannot hide a rerun.
+Detailed results are retained in `msbuild-incremental.json`. The local restore
 configuration accepts the unsigned candidate from a single local feed, with
 no external source.
 
