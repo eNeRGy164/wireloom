@@ -4,20 +4,21 @@
 [![Coverage Status](https://coveralls.io/repos/github/eNeRGy164/wireloom/badge.svg?branch=main)](https://coveralls.io/github/eNeRGy164/wireloom?branch=main)
 [![NuGet Version](https://img.shields.io/nuget/v/Wireloom.Dds.Generator)](https://www.nuget.org/packages/Wireloom.Dds.Generator)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/eNeRGy164/wireloom/badge)](https://scorecard.dev/viewer/?uri=github.com/eNeRGy164/wireloom)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14987/badge)](https://www.bestpractices.dev/projects/14987)
 
-**Replace `rtiddsgen` in your C# build. Keep RTI Connext DDS.**
+**Replace `rtiddsgen` in your build. Keep RTI Connext DDS.**
 
-Wireloom brings IDL generation into the .NET compiler for **.NET 8 and higher**.
-It generates your C# data types and RTI type-specific support from IDL during a normal build, with
-rich IntelliSense documentation, modern C#, and a small NuGet package. For
-supported IDL contracts, it replaces the complete C# generation step:
-preprocessing, parsing, validation, and emission.
+Wireloom generates C# and Modern C++ data types and RTI type-specific support
+from IDL during normal builds. C# generation runs in Roslyn for **.NET 8 and
+higher**; Modern C++ uses native executables integrated with CMake and MSBuild.
+Both include preprocessing, parsing, validation, and source emission.
 
 The RTI Connext DDS runtime still provides serialization and DDS communication.
 Your application continues to use RTI's runtime, APIs, and configuration.
 
 Try the [browser Playground](https://energy164.github.io/wireloom/) to preview
-generated C# from a local multi-file IDL workspace. Compilation runs in your browser. See the
+generated C# or Modern C++ from a local multi-file IDL workspace. Compilation
+runs in your browser. See the
 [source and limitations](playground/README.md) for its scope; previews do not
 establish RTI compilation, runtime behavior, or DDS wire compatibility.
 
@@ -106,12 +107,10 @@ getting-started flow, with generation supplied by the Wireloom package. For a
 ready-to-build repository project, see the [checked-in publisher/subscriber
 sample](samples/HelloWorld/README.md).
 
-The [Modern C++ generator](src/Wireloom.Dds.Cpp.Generator/README.md) is a
-Wireloom feature, packaged for native MSBuild and CMake builds.
-Follow the [C++ Hello World walkthrough](docs/guides/hello-world.md#modern-c-walkthrough)
-to install its package, build a native application, and run both DDS roles.
-Its [wire harness fixtures](tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
-record the case-specific consumer and interoperability checks.
+For native applications, start with the
+[Modern C++ package guide](src/Wireloom.Dds.Cpp.Generator/README.md) and
+[C++ Hello World walkthrough](docs/guides/hello-world.md#modern-c-walkthrough).
+Use an exact available preview while the first stable package is pending.
 
 ## Why Wireloom?
 
@@ -126,9 +125,8 @@ record the case-specific consumer and interoperability checks.
   you are writing.
 - **Keep generated C# usable under strict checks.** The generated C# in the
   original build added a static-analysis burden alongside the external tooling
-  cost. The [quality evidence](#quality-evidence) records what has been checked
-  and links to the Qodana method and exclusions; static findings are not an
-  interoperability measure.
+  cost. The [quality evidence](#quality-evidence) links generated-source and
+  consumer analysis separately from runtime checks.
 - **Make generation setup repeatable.** One `PackageReference` and one
   `DdsIdl` item connect IDL to the build. Includes and defines are declarative
   MSBuild settings carried with the project. A clean restore and build use that
@@ -197,37 +195,29 @@ package's compiler integration.
 
 ## Check project fit
 
-- **Build baseline:** Consumer projects need .NET 8 or later, C# 12 or later,
-  and an explicit `Rti.ConnextDds` reference at version 6.1.2 or later. See
-  [consumer requirements](#support-and-compatibility) and the
-  [generator diagnostics](src/Wireloom.Dds.CSharp.Generator/README.md#diagnostics).
-- **Compatibility testing:** Runtime contracts, fresh-package integration, and
-  DDS wire exchanges cover exact RTI 6.1.2, 7.3.1, and 7.7.0. See the
-  [RTI version policy](docs/guides/support-and-compatibility.md#rti-version-qualification).
-- **IDL and options:** Coverage is evidence-backed, not universal. Unbounded IDL
-  values default to finite limits of 100 sequence elements, 255 UTF-8 bytes
-  for narrow strings, and 255 UTF-16 code units for wide strings. Opt in to
-  RTI-style unbounded semantics with `DdsIdlUnboundedSupport` or declaring-file
-  `UnboundedSupport`; explicit IDL bounds stay finite. Support covers the
-  documented payloads, QoS, and resource limits, rather than unrestricted sample
-  sizes. Direct arrays of sequences flatten by default. Check the
-  [feature coverage](docs/corpus/FEATURE-COVERAGE.md),
-  [`rtiddsgen` option map](docs/migration/rtiddsgen-to-wireloom.md#rtiddsgen-option-map),
-  [unbounded configuration and scope](docs/guides/configuration.md#fixed-behavior-and-configurable-limits),
-  [qualification limits](docs/guides/support-and-compatibility.md#rti-version-qualification),
-  and [sequence-array mapping](docs/guides/configuration.md#choose-the-sequence-array-mapping).
+- **C# requirements:** .NET 8 or later, C# 12 or later, and an explicit RTI
+  runtime reference. Current source implements exact profiles for 6.1.2,
+  7.3.1, and 7.7.0; 1.0.0 supports the latter two. Check the
+  [installed version's record](docs/releases/README.md) and
+  [profile restrictions](docs/guides/support-and-compatibility.md#rti-version-qualification).
+- **IDL and options:** Check [feature coverage](docs/corpus/FEATURE-COVERAGE.md)
+  and the [`rtiddsgen` option map](docs/migration/rtiddsgen-to-wireloom.md#rtiddsgen-option-map).
+  Source-unbounded values default to finite limits: 100 sequence elements,
+  255 UTF-8 bytes for narrow strings, and 255 UTF-16 code units for wide strings.
+  Direct arrays of sequences flatten by default. The
+  [configuration guide](docs/guides/configuration.md#fixed-behavior-and-configurable-limits)
+  explains opt-in unbounded support, bounds, and IDL-preserving array mapping.
+- **C++ requirements:** A supported x64 generator host and an RTI native SDK
+  matched to the application toolchain. Review the
+  [native support contract](docs/guides/support-and-compatibility.md#modern-c-support-and-compatibility)
+  and version-specific capability matrix before adoption.
 - **Runtime and license:** Generated sources do not provide the RTI runtime or
   native assets; applications still need those and the applicable RTI license.
-  See the [support boundary](docs/guides/support-and-compatibility.md#support-boundary)
-  and [Hello World prerequisites](docs/guides/hello-world.md#before-you-start).
+  See [Hello World prerequisites](docs/guides/hello-world.md#before-you-start).
 - **Support and stability:** Support is best effort, without response-time or
-  resolution commitments. The 1.x contract preserves supported consumer APIs,
-  behavior, defaults, and requirements. Documented defect corrections may
-  require coordinated upgrades. See the
-  [support commitment](docs/guides/support-and-compatibility.md#support-boundary)
-  and [stability policy](docs/guides/support-and-compatibility.md#compatibility-and-stability).
-- **Migration:** Inventory IDL and options, compare APIs, check runtime and
-  wire behavior, verify deployment, and retain a rollback baseline. Follow the
+  resolution commitments. Review the
+  [stability policy](docs/guides/support-and-compatibility.md#compatibility-and-stability)
+  and follow the
   [migration procedure](docs/migration/rtiddsgen-to-wireloom.md#migration-procedure).
 
 ## Quality evidence
@@ -295,21 +285,10 @@ lists findings by RTI release and case, with evidence and scope limits.
 
 ## Support and compatibility
 
-Support is feature-specific. The [coverage index](docs/corpus/FEATURE-COVERAGE.md)
-and [support policy](docs/guides/support-and-compatibility.md) identify exact RTI
-qualification, known gaps, and stability expectations. The consumer runtime
-reference selects the API profile; mapped versions are not automatically
-qualified.
-
-Consumer applications need .NET 8 or later and C# 12 or later. The analyzer
-targets `netstandard2.0`; repository development uses .NET 10. RTI supplies the
-runtime, native assets, licensing, and DDS configuration.
-
-For an existing application, follow the [migration procedure](docs/migration/rtiddsgen-to-wireloom.md)
-to compare API usage, runtime behavior, peer exchanges, and deployment against
-your baseline. Direct arrays of sequences flatten by default; select `Idl`
-mapping to preserve both layers. RTI-style unbounded sequences and strings are
-opt-in, with the [documented qualification limits](docs/guides/support-and-compatibility.md#rti-version-qualification).
+The [support policy](docs/guides/support-and-compatibility.md) defines the C#
+1.x contract and the first stable C++ release promise. Support is specific to
+the documented IDL shapes, RTI profiles, platforms, and evidence levels.
+Changing an RTI version requires rebuilding and reviewing generated contracts.
 
 ## Testing and quality
 

@@ -20,8 +20,9 @@ provides the focused measurement filter and historical observations.
 
 ## Related test layers
 
-- [Compiler unit tests](../Wireloom.Dds.CSharp.Compiler.Tests/README.md) own parsing,
-  preprocessing, binding, validation, and emission rules.
+- [IDL front-end tests](../Wireloom.Dds.Idl.Tests/README.md) own shared parsing
+  and preprocessing rules; [compiler unit tests](../Wireloom.Dds.CSharp.Compiler.Tests/README.md)
+  own C# binding, validation, and emission.
 - [Fuzzing](../Wireloom.Dds.CSharp.Fuzzing.Tests/README.md) owns bounded
   property checks of the public compiler and adapter.
 - [Corpus compliance](../Wireloom.Dds.CSharp.CorpusCompliance/README.md)

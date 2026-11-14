@@ -1,6 +1,6 @@
 # Wireloom documentation
 
-Wireloom replaces the C# generation step for supported RTI DDS contracts.
+Wireloom generates C# and Modern C++ for supported RTI DDS contracts.
 Choose the task you need to complete. For product goals and boundaries, start
 with the [architecture introduction](architecture/arc42/01-introduction-and-goals.md).
 
@@ -10,7 +10,7 @@ with the [architecture introduction](architecture/arc42/01-introduction-and-goal
 | :------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Try generation without installation                     | [Playground](https://energy164.github.io/wireloom/) · [workspace guide](guides/playground-workspaces.md)                                                                     |
 | Generate contracts in a .NET project                    | [Package quick start](../src/Wireloom.Dds.CSharp.Generator/README.md#quick-start)                                                                                            |
-| Build a publisher and subscriber                        | [C# walkthrough](guides/hello-world.md) · [C++ walkthrough](guides/hello-world.md#modern-c-walkthrough) · [C# repository sample](../samples/HelloWorld/README.md)                         |
+| Build a publisher and subscriber                        | [C# walkthrough](guides/hello-world.md) · [C++ walkthrough](guides/hello-world.md#modern-c-walkthrough) · [C# repository sample](../samples/HelloWorld/README.md)            |
 | Replace an existing RTI generation step                 | [Migration procedure](migration/rtiddsgen-to-wireloom.md)                                                                                                                    |
 | Edit, inspect, extend, and analyze generated code       | [Developer workflow](guides/developer-workflow.md)                                                                                                                           |
 | Configure roots, includes, symbols, mappings, or bounds | [Configuration reference](guides/configuration.md)                                                                                                                           |

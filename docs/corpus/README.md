@@ -1,8 +1,9 @@
-# Managed generator compatibility corpus
+# IDL and generator compatibility corpus
 
 This directory contains the IDL cases and reference outputs used to evaluate
-the managed source generator. It is the shared boundary between authored IDL
-feature cases, RTI-generated C# reference sources, and compatibility tests.
+the shared IDL front end and both language backends. It contains authored IDL,
+RTI-generated C# and C++ reference sources, Wireloom exports, and manifests
+used by the compatibility tests.
 
 The corpus covers IDL parsing, preprocessing, semantic diagnostics, RTI
 annotations, and RTI and Wireloom generated-source shape. It does not cover
@@ -38,8 +39,8 @@ outputs live under `<version>/rtiddsgen/`. Wireloom C# exports live under
 `generator/` folders. Generated contracts compile against each profile's exact
 NuGet package. The [LTS overview](LTS-PROFILES.md) records oracle, runtime,
 package, and wire coverage by version; retained full wire runs include failures.
-Wireloom retains Modern C++ output under
-[`7.7.0/generator/cpp/`](7.7.0/generator/cpp/). Generated files show the
+Wireloom retains Modern C++ output under each profile's `generator/cpp/`
+directory, including [`7.7.0/generator/cpp/`](7.7.0/generator/cpp/). Generated files show the
 compiler output; they do not by themselves qualify consumer compilation, RTI
 runtime behavior, CDR, or live wire exchange. The [generator guide](../../src/Wireloom.Dds.Cpp.Generator/README.md)
 describes supported shapes, and the [wire harness guide](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
@@ -77,7 +78,7 @@ and **4 integration entry points** (175 entries total). These counts follow
 
 Dedicated C149, `05-array-of-sequences-idl`, uses a separately named IDL file
 whose contents match C018 (`05-array-of-sequences`). Its
-`sequenceArrayMapping: "Idl"` setting is an ordinary per-case input. Both
+`sequenceArrayMapping: "Idl"` setting is an ordinary per-case input. All three
 profile exports retain its generated sources under
 `<export-root>/features/05-array-of-sequences-idl/`; ordinary compliance
 tests compare those sources with fresh generation. The case deliberately has
@@ -85,10 +86,10 @@ no RTI C# oracle because that binding flattens this direct IDL form.
 
 | Group                    | Count | Location                                                   |
 | ------------------------ | ----: | ---------------------------------------------------------- |
-| Positive feature cases   |    94 | [`idl/features`](idl/features)                             |
-| Negative probes          |    77 | [`idl/negative`](idl/negative) and feature-specific probes |
-| Integration entry points |     4 | [`idl/integration`](idl/integration)                       |
-| Total                    |   175 | —                                                          |
+| Positive feature cases   | 94    | [`idl/features`](idl/features)                             |
+| Negative probes          | 77    | [`idl/negative`](idl/negative) and feature-specific probes |
+| Integration entry points | 4     | [`idl/integration`](idl/integration)                       |
+| Total                    | 175   | —                                                          |
 
 C163–C172 add grouped annotation, constant, declarator, union, string-bound,
 and typed-default cases. Exact RTI C# and C++ generation outcomes are recorded
@@ -245,6 +246,60 @@ detailed oracle checks for 7.3.1 and 7.7.0, and the runtime/package matrix; see 
 
 Use the feature index to find the exact IDL, oracle files, managed status, and
 test entry points: [FEATURE-COVERAGE.md](FEATURE-COVERAGE.md).
+
+### Review package mapping and annotation claims
+
+Package READMEs describe installation and generated API usage. Review their
+mapping and annotation claims against the retained exact-profile sources
+here, then run the relevant compiler, corpus, runtime, and package checks.
+The following C# comparisons use RTI 7.7.0 and concern generated API shape;
+they do not establish general runtime or wire equivalence.
+
+| IDL declaration                                                     | Wireloom C# API and use                                                                                                           | RTI C# comparison                                                                                     | Evidence                                                          |
+| :------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `long id;`                                                          | `int id { get; set; }`<br>Assign with `sample.id = 42;`.                                                                          | Same member type and accessors.                                                                       | [RTI][rti-01] · [generated][wire-01]                              |
+| `typedef sequence<long, 4> BoundedLongs;`                           | `ISequence<int> Value` with `[Bound(4)]`.<br>Use `var bounded = new BoundedLongs(); bounded.Value.Add(17);`.                      | Same generated public shape.                                                                          | [RTI][rti-05] · [generated][wire-05]                              |
+| `@optional sequence<long, 4> values;`<br>`@optional long items[2];` | `ISequence<int>? values`; `int[]? items`.<br>Set `items = [1, 2]`; set `values = new Sequence<int> { 17 }` or `null` for absence. | Optional metadata matches. Wireloom adds nullable C# annotations absent from the retained RTI source. | [RTI][rti-09] · [generated][wire-09]                              |
+| `typedef long Scalar;`<br>`typedef sequence<Scalar> Scalars;`       | `ISequence<int> Value`; scalar aliases erase in collection elements.                                                              | Same element mapping as the retained RTI C# output.                                                   | [RTI][rti-05a] · [generated][wire-05a] · [C136][cov-c136]         |
+| `union Choice switch(Kind) { case Number: long number; ... };`      | `int number`; assigning selects the branch. Reading an inactive branch throws `InvalidOperationException`.                        | Same generated branch API and guard.                                                                  | [RTI][rti-07] · [generated][wire-07] · [runtime test][union-test] |
+
+[rti-01]: 7.7.0/rtiddsgen/csharp/features/01-primitives/
+[wire-01]: 7.7.0/generator/csharp/features/01-primitives/
+[rti-05]: 7.7.0/rtiddsgen/csharp/features/05-collections/
+[wire-05]: 7.7.0/generator/csharp/features/05-collections/
+[rti-09]: 7.7.0/rtiddsgen/csharp/features/09-optional-collections/
+[wire-09]: 7.7.0/generator/csharp/features/09-optional-collections/
+[rti-05a]: 7.7.0/rtiddsgen/csharp/features/05-unbounded-sequence-aliases/
+[wire-05a]: 7.7.0/generator/csharp/features/05-unbounded-sequence-aliases/
+[cov-c136]: 7.7.0/FEATURE-COVERAGE.md#positive-cases
+[rti-07]: 7.7.0/rtiddsgen/csharp/features/07-union-enum/
+[wire-07]: 7.7.0/generator/csharp/features/07-union-enum/
+[union-test]: ../../tests/Wireloom.Dds.CSharp.RuntimeContracts/Unions/UnionSpecs.cs
+
+Annotation evidence formerly listed in the package README is indexed below.
+Check the selected profile and declaration context before generalizing a
+case. C143–C146 cover unresolved array, sequence, string, and wide-string
+bounds; the compiler must reject those names before emission.
+
+| Annotation or group                                                                                                                          | Retained evidence                                                                                                                                                                                                                                                                                      |
+| :------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@topic`                                                                                                                                     | [`10-annotations.idl`](idl/features/10-annotations.idl)                                                                                                                                                                                                                                                |
+| `@key`                                                                                                                                       | [`08-keys.idl`](idl/features/08-keys.idl), [`10-annotations.idl`](idl/features/10-annotations.idl)                                                                                                                                                                                                     |
+| `@optional`                                                                                                                                  | [`09-optional-collections.idl`](idl/features/09-optional-collections.idl), [`09-optional-aggregate-member.idl`](idl/features/09-optional-aggregate-member.idl)                                                                                                                                         |
+| `@id`, `@hashid`, `@autoid(HASH)`                                                                                                            | [`09-id-gaps.idl`](idl/features/09-id-gaps.idl), [`09-autoid-hash.idl`](idl/features/09-autoid-hash.idl)                                                                                                                                                                                               |
+| `@final`, `@appendable`, `@mutable`                                                                                                          | [`09-extensibility.idl`](idl/features/09-extensibility.idl)                                                                                                                                                                                                                                            |
+| `@default`, `@min`, `@max`, `@range`, `@unit`                                                                                                | [`09-defaults-ranges.idl`](idl/features/09-defaults-ranges.idl), [`10-annotations-rti.idl`](idl/features/10-annotations-rti.idl)                                                                                                                                                                       |
+| `@value`, `@default_literal`                                                                                                                 | [`03-enum-values-prefix.idl`](idl/features/03-enum-values-prefix.idl), [`09-defaults-ranges.idl`](idl/features/09-defaults-ranges.idl)                                                                                                                                                                 |
+| `@must_understand`                                                                                                                           | [`09-autoid-hash.idl`](idl/features/09-autoid-hash.idl)                                                                                                                                                                                                                                                |
+| `@external`                                                                                                                                  | [`10-annotations-rti.idl`](idl/features/10-annotations-rti.idl)                                                                                                                                                                                                                                        |
+| `@language_binding`, `@transfer_mode`, `@data_representation`, `@allowed_data_representation`, `@nested`, `@default_nested`, `@resolve_name` | [`10-annotations-rti.idl`](idl/features/10-annotations-rti.idl), [`09-data-representation.idl`](idl/features/09-data-representation.idl), [`09-allowed-data-representation.idl`](idl/features/09-allowed-data-representation.idl), [`10-flat-data-binding.idl`](idl/features/10-flat-data-binding.idl) |
+| Unknown annotation                                                                                                                           | [`12-unknown-annotation.idl`](idl/negative/12-unknown-annotation.idl)                                                                                                                                                                                                                                  |
+| `@position`, `@bit_bound`; invalid `@service` target                                                                                         | [`10-unsupported-annotations.idl`](idl/negative/10-unsupported-annotations.idl), [`10-service-annotation.idl`](idl/negative/10-service-annotation.idl)                                                                                                                                                 |
+
+Use the [LTS runbook](LTS-PROFILES.md) for profile selection and retained
+provenance, and [test responsibilities](#test-responsibilities) for validation
+ownership. Public behavior belongs in the package guide and semantic
+references; reproduction commands and oracle review belong here.
 
 ## Finite fallback oracle controls
 

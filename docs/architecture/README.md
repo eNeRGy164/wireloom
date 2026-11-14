@@ -3,8 +3,9 @@
 ## Purpose
 
 This directory contains the repository's architecture source documents. The
-arc42 chapters describe the product goals, shared compiler, .NET build
-integration, supporting Playground, evidence, and deployment boundaries.
+arc42 chapters describe the product goals, shared IDL front end, C# and Modern
+C++ backends, .NET and native build integration, Playground, evidence, and
+deployment boundaries.
 
 ## Start here
 

@@ -6,7 +6,7 @@ project for the central IDL corpus under `docs/corpus`.
 The Quality workflow runs generation and exact-runtime compilation for all
 three profiles on every pull request and push to `main`, using explicit
 `CORPUS_RTI_PROFILE` values. Detailed oracle comparisons additionally run for
-7.3.1 and 7.7.0. Runtime and fresh-package jobs separately cover those two
+7.3.1 and 7.7.0. Runtime and fresh-package jobs separately cover all three
 packages on .NET 8 and .NET 10 across Windows and Ubuntu.
 
 See the [LTS reproduction runbook](../../docs/corpus/LTS-PROFILES.md) for fresh

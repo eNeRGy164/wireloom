@@ -3,8 +3,9 @@
 This folder contains the multi-file workspace client, its checks, and the
 maintained worker boundary. The non-packable .NET host is in
 [`../src/Wireloom.Playground.Browser/`](../src/Wireloom.Playground.Browser/).
-The host and client share the `Wireloom.Dds.CSharp.Compiler`; no main-thread compiler
-or fallback provider exists.
+The worker host uses `Wireloom.Dds.CSharp.Compiler` and `Wireloom.Dds.Cpp.Compiler`,
+which share `Wireloom.Dds.Idl` preprocessing and parsing. There is no main-thread
+compiler or fallback provider.
 
 The RTI selector offers the 6.1.2, 7.3.1, and 7.7.0 API profiles. Feature
 availability follows the selected profile; see the
@@ -88,7 +89,7 @@ building. To serve a nested-base build, use a static server that mounts the
   provenance, live HTTPS checks, and hosting configuration.
 
 The client compiles all selected Roots and supplied includes locally through
-the shared compiler. Preview results establish generated text and diagnostics;
+the selected language backend. Preview results establish generated text and diagnostics;
 they do not qualify RTI compilation, native behavior, or DDS exchanges.
 
 ## Reproduce browser verification

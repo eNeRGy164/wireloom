@@ -1,17 +1,15 @@
 # C++ generator tests
 
 This project exercises command parsing, diagnostics, filesystem-backed IDL
-generation, emitted C++ surfaces, and the executable entry point. It retains
-the existing CLI and emission assertions. Lower-level compiler tests, corpus
+generation, emitted C++ surfaces, and the executable entry point. Compiler tests, corpus
 generation, fuzzing, and native package consumption have their own test layers:
 
-| Layer | Entry point |
-| :---- | :---------- |
-| Compiler | [Compiler tests](../Wireloom.Dds.Cpp.Compiler.Tests/README.md) |
-| Corpus | [Corpus compliance](../Wireloom.Dds.Cpp.CorpusCompliance/README.md) |
-| Fuzzing | [FsCheck tests](../Wireloom.Dds.Cpp.Fuzzing.Tests/README.md) |
+| Layer             | Entry point                                                                         |
+| :---------------- | :---------------------------------------------------------------------------------- |
+| Compiler          | [Compiler tests](../Wireloom.Dds.Cpp.Compiler.Tests/README.md)                      |
+| Corpus            | [Corpus compliance](../Wireloom.Dds.Cpp.CorpusCompliance/README.md)                 |
+| Fuzzing           | [FsCheck tests](../Wireloom.Dds.Cpp.Fuzzing.Tests/README.md)                        |
 | Generator package | [Native package checks](../Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md) |
-| Generator | This project |
 
 Run the ordinary generator suite independently:
 

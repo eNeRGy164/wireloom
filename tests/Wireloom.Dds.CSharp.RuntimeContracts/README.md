@@ -31,7 +31,8 @@ files. The tests create no domain participants and require no DDS peers,
 discovery, or RTI generator installation. A native-loading failure fails the
 test.
 
-Both test projects use the same profile selection for fixtures and assertions.
+The runtime and packed-consumer projects use the same profile selection for
+fixtures and assertions.
 The 6.1.2 run exercises the supported portions of the shared fixtures.
 Optional collections and recursive aggregates apply to 7.3.1 and 7.7.0.
 See the [RTI version policy](../../docs/guides/support-and-compatibility.md#rti-version-qualification).

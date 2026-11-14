@@ -103,6 +103,7 @@ must match the selected RTI profile:
 
 | RTI version | RTI package revision  |
 | ----------- | --------------------- |
+| 6.1.2       | `6.1.2.0-5-4bullseye` |
 | 7.3.1       | `7.3.1.0-1-1bullseye` |
 | 7.7.0       | `7.7.0.0-1-1bookworm` |
 

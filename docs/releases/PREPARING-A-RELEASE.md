@@ -18,9 +18,20 @@ or generation-only candidate does not qualify the native application workflow.
   and the root package metadata in `playground/package-lock.json` to
   `<WireloomVersion>`. The browser build and deployment manifest read the
   version from `Directory.Build.props`.
-- Update examples in `src/Wireloom.Dds.CSharp.Generator/README.md`, which ships in the
-  package. Add the predicted version to `docs/releases/README.md` and create
+- Prepare both package READMEs as documentation for the selected released
+  version before packing. Use exact stable-version installation examples and
+  versioned source/reference links. Link the editable exact-version release
+  record for qualification results and later clarifications. Remove planned,
+  unpublished, and pending-publication notices from the package READMEs; they
+  cannot be corrected after publication.
+  Review them from a consumer's perspective: installation and application
+  builds must not require a repository checkout. Move generator source-build,
+  packaging/publishing, CI, oracle, and adapter-review instructions to the
+  [contributor guide](../../CONTRIBUTING.md#review-package-readmes) or their
+  existing maintainer runbooks. Keep actionable compatibility limits visible.
+- Add the predicted version to `docs/releases/README.md` and create
   `docs/releases/<version>.md` with the source SHA and release details pending.
+  Keep preparation status and unresolved qualification gates in that record.
 - Review the C++ package's
   [acquisition and upgrade instructions](../../src/Wireloom.Dds.Cpp.Generator/README.md#obtain-and-pin-the-generator).
   Both package IDs use the selected release version. Before the first C++
@@ -40,9 +51,10 @@ or generation-only candidate does not qualify the native application workflow.
   [Quality workflow](../../.github/workflows/quality.yml) and
   [wire-compatibility workflow](../../.github/workflows/wire-compatibility.yml)
   on that exact merged commit. If it changes, merge and rerun both workflows.
-  Inspect both combined wire reports for unexpected failures. Keep the
+  Inspect all three combined wire reports (RTI 6.1.2, 7.3.1, and 7.7.0) for
+  unexpected failures. Keep the
   combined artifacts available for publication and archival. The publisher
-  checks successful main runs for the tag SHA and both wire artifacts.
+  checks successful main runs for the tag SHA and all three wire artifacts.
 
 Keep consumer references at the latest published version until the new package
 is available. This includes `Directory.Packages.props`,
@@ -133,9 +145,9 @@ announcing the release.
   `docs/architecture/arc42/07-deployment-view.md` and
   `docs/architecture/arc42/10-quality-requirements.md`. Refresh only
   `.agents/architecture-memory.yaml` if its source chapters change.
-- After the first C++ publication, replace the unpublished-package notice in
-  `src/Wireloom.Dds.Cpp.Generator/README.md` with the actual version and release
-  record. Verify its acquisition commands against the published package.
+- Verify the C++ acquisition commands against the published package and record
+  the results in the exact-version release record. Package README content must
+  already describe the released version before publication.
 - Measure the published version's `.nupkg` and update the root README package
   size with that version and byte count. Do not present an older package's size
   as current.

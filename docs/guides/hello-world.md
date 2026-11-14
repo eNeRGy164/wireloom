@@ -435,7 +435,7 @@ mkdir -p "packages/Wireloom.Dds.Cpp.Generator.$version"
 ```
 
 Until stable publication, use the
-[preview or retained-candidate instructions](../../src/Wireloom.Dds.Cpp.Generator/README.md#preview-packages-and-retained-candidates)
+[preview or retained-candidate instructions](../../CONTRIBUTING.md#preview-and-retained-candidates)
 instead. They produce the same extracted package directory; the rest of this
 walkthrough is unchanged. Use this layout:
 
@@ -745,18 +745,18 @@ return `1`.
 
 ### Troubleshoot the C++ walkthrough
 
-| Symptom | Check |
-| :------ | :---- |
-| CMake cannot find `WireloomCpp` | Point `WireloomCpp_DIR` at the extracted package's `build/cmake` directory; verify the exact version and both bundled executables. |
-| CMake cannot find `RTIConnextDDS` | Set `NDDSHOME` to a complete 7.7.0 native SDK with `resource/cmake/FindRTIConnextDDS.cmake`; a runtime-only or C# package is insufficient. |
-| RTI's CMake module warns `Codegen was not found` | The module also looks for `rtiddsgen`. This project generates through Wireloom; if SDK discovery and the build succeed, the RTI code generator is not needed. |
-| RTI libraries are missing or incompatible | Select the installed `CONNEXTDDS_ARCH` and an RTI-supported compiler. Match x64, shared/static linkage, and Release/Debug throughout the build. |
-| `nddscore` / `nddscpp2` shared library or DLL cannot load | Restore RTI's runtime environment in that terminal: source `rtisetenv` on Linux or add the matching RTI library directory to Windows `PATH`. |
-| RTI reports a license error | Set `RTI_LICENSE_FILE` to a readable, applicable license in both terminals; follow your RTI distribution's licensing instructions. |
-| Peers time out | Run the same binary with opposite roles, domain `0`, and Topic `HelloWorld Topic`. Start both within 30 seconds. Check firewall, discovery/network settings, and unrelated QoS files using [RTI's troubleshooting guide][rti-cpp-troubleshooting]. |
-| Code expects `sample.msg()` | Wireloom exposes the field as `sample.msg`; generated value operations are described in the [C++ semantics guide](cpp-generated-value-semantics.md). |
-| Generation repeats after a timestamp-only or comment-only IDL edit | Use a package with the CMake completion-stamp fix. Reconfigure against that package's `build/cmake` directory and rebuild; each edit should generate once, then subsequent unchanged builds skip generation. |
-| Old generated sources remain after an upgrade | Follow the [package upgrade/rollback procedure](../../src/Wireloom.Dds.Cpp.Generator/README.md#update-and-roll-back) and configure a clean build directory. |
+| Symptom                                                            | Check                                                                                                                                                                                                                                              |
+| :----------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CMake cannot find `WireloomCpp`                                    | Point `WireloomCpp_DIR` at the extracted package's `build/cmake` directory; verify the exact version and both bundled executables.                                                                                                                 |
+| CMake cannot find `RTIConnextDDS`                                  | Set `NDDSHOME` to a complete 7.7.0 native SDK with `resource/cmake/FindRTIConnextDDS.cmake`; a runtime-only or C# package is insufficient.                                                                                                         |
+| RTI's CMake module warns `Codegen was not found`                   | The module also looks for `rtiddsgen`. This project generates through Wireloom; if SDK discovery and the build succeed, the RTI code generator is not needed.                                                                                      |
+| RTI libraries are missing or incompatible                          | Select the installed `CONNEXTDDS_ARCH` and an RTI-supported compiler. Match x64, shared/static linkage, and Release/Debug throughout the build.                                                                                                    |
+| `nddscore` / `nddscpp2` shared library or DLL cannot load          | Restore RTI's runtime environment in that terminal: source `rtisetenv` on Linux or add the matching RTI library directory to Windows `PATH`.                                                                                                       |
+| RTI reports a license error                                        | Set `RTI_LICENSE_FILE` to a readable, applicable license in both terminals; follow your RTI distribution's licensing instructions.                                                                                                                 |
+| Peers time out                                                     | Run the same binary with opposite roles, domain `0`, and Topic `HelloWorld Topic`. Start both within 30 seconds. Check firewall, discovery/network settings, and unrelated QoS files using [RTI's troubleshooting guide][rti-cpp-troubleshooting]. |
+| Code expects `sample.msg()`                                        | Wireloom exposes the field as `sample.msg`; generated value operations are described in the [C++ semantics guide](cpp-generated-value-semantics.md).                                                                                               |
+| Generation repeats after a timestamp-only or comment-only IDL edit | Use a package with the CMake completion-stamp fix. Reconfigure against that package's `build/cmake` directory and rebuild; each edit should generate once, then subsequent unchanged builds skip generation.                                       |
+| Old generated sources remain after an upgrade                      | Follow the [package upgrade/rollback procedure](../../src/Wireloom.Dds.Cpp.Generator/README.md#update-and-roll-back) and configure a clean build directory.                                                                                        |
 
 For the next step, change the IDL, rebuild both roles, and inspect the generated
 header in the build directory. Keep package and RTI profile upgrades explicit.
