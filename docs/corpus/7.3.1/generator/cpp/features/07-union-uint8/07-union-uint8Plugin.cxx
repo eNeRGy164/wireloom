@@ -170,7 +170,7 @@ struct wireloom_Choice_union_context
         auto* native_type_code = reinterpret_cast<::RTIXCdrTypeCode*>
             (&type->native());
         native_type_code->_typeCode =
-            reinterpret_cast<::RTIXCdrTypeCode*>(&::DDS_g_tc_uint8);
+            reinterpret_cast<::RTIXCdrTypeCode*>(&::DDS_g_tc_octet);
         native_type_code->_members[0]._representation._typeCode =
             reinterpret_cast<::RTIXCdrTypeCode*>(&::DDS_g_tc_long);
         native_type_code->_members[1]._representation._typeCode =

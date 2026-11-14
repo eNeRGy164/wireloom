@@ -53,8 +53,8 @@ NDDSUSERDllExport std::ostream& operator<<(std::ostream& output, const Color& va
 
 // Enum constants.
 /// @brief IDL constant Selected.
-/// @details C++ type: ::Color; value: ::Color::GREEN.
-constexpr ::Color Selected = ::Color::GREEN;
+/// @details C++ type: Color; value: Color::GREEN.
+constexpr Color Selected = Color::GREEN;
 
 /// @brief IDL struct EnumConstant
 /// @details Extensibility: Extensible.
@@ -66,7 +66,7 @@ struct NDDSUSERDllExport EnumConstant
 {
     // Members in IDL declaration order.
     /// @brief IDL member color.
-    ::Color color = ::Color::RED;
+    Color color = Color::RED;
 
     // Construction and value semantics.
     /// @brief Constructs a default EnumConstant value.
@@ -75,7 +75,7 @@ struct NDDSUSERDllExport EnumConstant
     /// @brief Constructs a EnumConstant from its values.
     /// @param color Initial color value.
     EnumConstant(
-        const ::Color& color
+        const Color& color
     );
 
     /// @brief Copies another value.
@@ -116,7 +116,7 @@ NDDSUSERDllExport std::ostream& operator<<(std::ostream& output, const EnumConst
 
 /// @brief IDL union EnumUnion
 /// @details Only a branch selected by the discriminator may be read.
-/// @details Discriminator type is ::Color; default value is ::Color::RED.
+/// @details Discriminator type is Color; default value is Color::RED.
 /// @see [RTI DynamicType and DynamicData](https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_cpp2/classdds_1_1core_1_1xtypes_1_1UnionType.html)
 class NDDSUSERDllExport EnumUnion
 {
@@ -127,25 +127,25 @@ public:
 
     /// @brief Returns the current discriminator.
     /// @return The discriminator value.
-    ::Color& _d();
+    Color& _d();
     /// @brief Returns the current discriminator without modifying it.
     /// @return The discriminator value.
-    const ::Color& _d() const;
+    const Color& _d() const;
 
     /// @brief Changes the active branch by setting the discriminator.
     /// @param value New discriminator value.
-    void _d(::Color value);
+    void _d(Color value);
 
     /// @brief Returns the discriminator used by default construction.
     /// @return The discriminator value.
-    static ::Color default_discriminator();
+    static Color default_discriminator();
 
     /// @brief Accesses the selected branch when active.
-    /// @details Discriminator labels: ::Color::GREEN.
+    /// @details Discriminator labels: Color::GREEN.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     ::std::int32_t& selected();
     /// @brief Accesses the selected branch without modifying it.
-    /// @details Discriminator labels: ::Color::GREEN.
+    /// @details Discriminator labels: Color::GREEN.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     const ::std::int32_t& selected() const;
 
@@ -154,11 +154,11 @@ public:
     void selected(::std::int32_t value);
 
     /// @brief Accesses the red branch when active.
-    /// @details Discriminator labels: ::Color::RED.
+    /// @details Discriminator labels: Color::RED.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     ::std::int32_t& red();
     /// @brief Accesses the red branch without modifying it.
-    /// @details Discriminator labels: ::Color::RED.
+    /// @details Discriminator labels: Color::RED.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     const ::std::int32_t& red() const;
 
@@ -177,7 +177,7 @@ public:
     friend NDDSUSERDllExport std::ostream& operator<<(std::ostream& stream, const EnumUnion& value);
 
 private:
-    ::Color discriminator_ = ::Color::RED;
+    Color discriminator_ = Color::RED;
     ::std::int32_t selected_ = 0;
     ::std::int32_t red_ = 0;
 };

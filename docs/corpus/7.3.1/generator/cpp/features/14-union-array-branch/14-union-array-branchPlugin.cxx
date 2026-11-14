@@ -159,8 +159,13 @@ struct wireloom_ArrayBranch_union_context
             reinterpret_cast<::RTIXCdrTypeCode*>(&::DDS_g_tc_long);
         native_type_code->_members[1]._representation._typeCode =
             reinterpret_cast<::RTIXCdrTypeCode*>(&::DDS_g_tc_long);
-        type_plugin = &factory.create_type_plugin(*type);
         native_type_code->_members[0]._memberFlags = 0;
+        auto* member_0_array_type_code_0 = native_type_code->_members[0]._representation._typeCode;
+        if (member_0_array_type_code_0 == nullptr
+            || RTIXCdrTypeCode_getKind(member_0_array_type_code_0)
+                != RTI_XCDR_TK_ARRAY) {
+            throw std::runtime_error("RTI 7.7 array TypeCode is missing");
+        }
         native_type_code->_members[1]._memberFlags = 0;
         type->native()._data._sampleAccessInfo = stl_sample_access_info();
         static ::RTIXCdrTypePlugin interpreted_type_plugin = RTIXCdrTypePlugin_INITIALIZER;
@@ -173,6 +178,170 @@ wireloom_ArrayBranch_union_context& wireloom_ArrayBranch_union_context_instance(
     static wireloom_ArrayBranch_union_context value;
     return value;
 }
+void* wireloom_ArrayBranch_stl_union_create_sample()
+{
+    return new (std::nothrow) ::ArrayBranch{};
+}
+
+void wireloom_ArrayBranch_stl_union_delete_sample(void* sample)
+{
+    delete static_cast<::ArrayBranch*>(sample);
+}
+
+RTIBool wireloom_ArrayBranch_stl_union_copy_sample(
+    PRESTypePluginEndpointData, void* destination, const void* source_sample)
+{
+    auto* destination_value =
+        static_cast<::ArrayBranch*>(destination);
+    const auto* source_value =
+        static_cast<const ::ArrayBranch*>(source_sample);
+    if (destination_value == nullptr || source_value == nullptr)
+        return RTI_FALSE;
+    try {
+        *destination_value = *source_value;
+        return RTI_TRUE;
+    } catch (...) {
+        return RTI_FALSE;
+    }
+}
+
+void wireloom_ArrayBranch_stl_union_return_sample(
+    PRESTypePluginEndpointData endpoint, void* sample, void* handle)
+{
+    if (sample != nullptr)
+        *static_cast<::ArrayBranch*>(sample) = {};
+    PRESTypePluginDefaultEndpointData_returnSample(endpoint, sample, handle);
+}
+
+unsigned int wireloom_ArrayBranch_stl_union_serialized_sample_max_size(
+    PRESTypePluginEndpointData endpoint, RTIBool include_encapsulation,
+    RTIEncapsulationId encapsulation, unsigned int alignment)
+{
+    RTIBool overflow = RTI_FALSE;
+    const auto size = PRESTypePlugin_interpretedGetSerializedSampleMaxSize(
+        endpoint, &overflow, include_encapsulation, encapsulation, alignment);
+    return overflow ? RTI_CDR_MAX_SERIALIZED_SIZE : size;
+}
+
+PRESTypePluginParticipantData wireloom_ArrayBranch_stl_union_participant_attached(
+    void*, const PRESTypePluginParticipantInfo* participant_info,
+    RTIBool, void*, RTICdrTypeCode*)
+{
+    if (participant_info == nullptr || !RTIXCdrXTypesComplianceMask_verifyGeneratedXTypesMask(0x0000068C))
+        return nullptr;
+    auto* data = static_cast<PRESTypePluginDefaultParticipantData*>(
+        PRESTypePluginDefaultParticipantData_new(participant_info));
+    if (data == nullptr)
+        return nullptr;
+    RTIXCdrInterpreterProgramsGenProperty property =
+        RTIXCdrInterpreterProgramsGenProperty_INITIALIZER;
+    property.generateV1Encapsulation = RTI_XCDR_TRUE;
+    property.generateV2Encapsulation = RTI_XCDR_TRUE;
+    property.resolveAlias = RTI_XCDR_TRUE;
+    property.inlineStruct = RTI_XCDR_TRUE;
+    property.optimizeEnum = RTI_XCDR_TRUE;
+    property.unboundedSize = RTIXCdrLong_MAX;
+    property.externalReferenceSize =
+        static_cast<RTIXCdrUnsignedShort>(sizeof(dds::core::external<char>));
+    property.getExternalRefPointerFcn = ::rti::topic::interpreter::get_external_value_pointer;
+    auto* native_type_code = const_cast<DDS_TypeCode*>(
+        reinterpret_cast<const DDS_TypeCode*>(&
+            ::rti::topic::dynamic_type<::ArrayBranch>::get()
+                .native()));
+    data->programs = DDS_TypeCodeFactory_assert_programs_in_global_list(
+        DDS_TypeCodeFactory_get_instance(), native_type_code,
+        &property, RTI_XCDR_PROGRAM_MASK_TYPEPLUGIN);
+    if (data->programs == nullptr) {
+        PRESTypePluginDefaultParticipantData_delete(data);
+        return nullptr;
+    }
+    return data;
+}
+
+void wireloom_ArrayBranch_stl_union_participant_detached(PRESTypePluginParticipantData participant)
+{
+    if (participant != nullptr) {
+        auto* data = static_cast<PRESTypePluginDefaultParticipantData*>(participant);
+        if (data->programs != nullptr) {
+            DDS_TypeCodeFactory_remove_programs_from_global_list(
+                DDS_TypeCodeFactory_get_instance(), data->programs);
+            data->programs = nullptr;
+        }
+    }
+    PRESTypePluginDefaultParticipantData_delete(participant);
+}
+
+PRESTypePluginEndpointData wireloom_ArrayBranch_stl_union_endpoint_attached(
+    PRESTypePluginParticipantData participant,
+    const PRESTypePluginEndpointInfo* endpoint_info, RTIBool, void*)
+{
+    if (participant == nullptr || endpoint_info == nullptr)
+        return nullptr;
+    auto endpoint = PRESTypePluginDefaultEndpointData_new(
+        participant, endpoint_info, wireloom_ArrayBranch_stl_union_create_sample,
+        wireloom_ArrayBranch_stl_union_delete_sample,
+        nullptr, nullptr);
+    if (endpoint == nullptr)
+        return nullptr;
+    if (endpoint_info->endpointKind == PRES_TYPEPLUGIN_ENDPOINT_WRITER) {
+        const auto maximum_size = wireloom_ArrayBranch_stl_union_serialized_sample_max_size(
+            endpoint, RTI_FALSE, RTI_CDR_ENCAPSULATION_ID_CDR_BE, 0);
+        PRESTypePluginDefaultEndpointData_setMaxSizeSerializedSample(endpoint, maximum_size);
+        if (!PRESTypePluginDefaultEndpointData_createWriterPool(
+                endpoint, endpoint_info,
+                wireloom_ArrayBranch_stl_union_serialized_sample_max_size, endpoint,
+                PRESTypePlugin_interpretedGetSerializedSampleSize, endpoint)) {
+            PRESTypePluginDefaultEndpointData_delete(endpoint);
+            return nullptr;
+        }
+    }
+    return endpoint;
+}
+
+void wireloom_ArrayBranch_stl_union_endpoint_detached(PRESTypePluginEndpointData endpoint)
+{
+    PRESTypePluginDefaultEndpointData_delete(endpoint);
+}
+
+PRESTypePlugin* wireloom_ArrayBranch_stl_union_create_plugin()
+{
+    auto* plugin = new (std::nothrow) PRESTypePlugin;
+    if (plugin == nullptr)
+        return nullptr;
+    *plugin = PRES_TYPEPLUGIN_DEFAULT;
+    plugin->version = PRES_TYPE_PLUGIN_VERSION_2_0;
+    plugin->onParticipantAttached = wireloom_ArrayBranch_stl_union_participant_attached;
+    plugin->onParticipantDetached = wireloom_ArrayBranch_stl_union_participant_detached;
+    plugin->onEndpointAttached = wireloom_ArrayBranch_stl_union_endpoint_attached;
+    plugin->onEndpointDetached = wireloom_ArrayBranch_stl_union_endpoint_detached;
+    plugin->copySampleFnc = wireloom_ArrayBranch_stl_union_copy_sample;
+    plugin->createSampleFnc = PRESTypePluginDefaultEndpointData_createSample;
+    plugin->destroySampleFnc = PRESTypePluginDefaultEndpointData_deleteSample;
+    plugin->serializeFnc = PRESTypePlugin_interpretedSerialize;
+    plugin->deserializeFnc = PRESTypePlugin_interpretedDeserializeWithAlloc;
+    plugin->getSampleFnc = PRESTypePluginDefaultEndpointData_getSample;
+    plugin->returnSampleFnc = wireloom_ArrayBranch_stl_union_return_sample;
+    plugin->getSerializedSampleMaxSizeFnc = wireloom_ArrayBranch_stl_union_serialized_sample_max_size;
+    plugin->getSerializedSampleMinSizeFnc = PRESTypePlugin_interpretedGetSerializedSampleMinSize;
+    plugin->getSerializedSampleSizeFnc = PRESTypePlugin_interpretedGetSerializedSampleSize;
+    plugin->getKeyKindFnc = []() { return PRES_TYPEPLUGIN_NO_KEY; };
+    auto* native_type_code = const_cast<DDS_TypeCode*>(
+        reinterpret_cast<const DDS_TypeCode*>(&
+            ::rti::topic::dynamic_type<::ArrayBranch>::get()
+                .native()));
+    plugin->typeCode = reinterpret_cast<RTICdrTypeCode*>(native_type_code);
+    plugin->languageKind = PRES_TYPEPLUGIN_CPPSTL_LANG;
+    plugin->getBuffer = PRESTypePluginDefaultEndpointData_getBuffer;
+    plugin->returnBuffer = PRESTypePluginDefaultEndpointData_returnBuffer;
+    plugin->endpointTypeName = "ArrayBranch";
+    return plugin;
+}
+
+void wireloom_ArrayBranch_stl_union_delete_plugin(PRESTypePlugin* plugin)
+{
+    delete plugin;
+}
+
 } // namespace
 
 namespace
@@ -228,9 +397,10 @@ void topic_type_support<::ArrayBranch>::register_type(
     const std::string& name)
 {
         wireloom_initialize_type_plugins();
-    ::wireloom_ArrayBranch_union_context_instance().type_plugin->register_type(
-        participant,
-        name.c_str());
+    ::rti::domain::register_type_plugin(
+        participant, name,
+        &::wireloom_ArrayBranch_stl_union_create_plugin,
+        &::wireloom_ArrayBranch_stl_union_delete_plugin);
 }
 
 std::vector<char>& topic_type_support<::ArrayBranch>::to_cdr_buffer(

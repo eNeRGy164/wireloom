@@ -9,6 +9,7 @@
 #include <iosfwd>
 #include <string>
 #include <vector>
+#include <ndds/xcdr/xcdr_typeCode.h>
 #include <omg/types/sequence.hpp>
 #include <rti/topic/TopicTraits.hpp>
 

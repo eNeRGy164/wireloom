@@ -91,7 +91,7 @@ void topic_type_support<::CorpusOptionalEvolution::Message>::register_type(
 {
     (void) ::rti::topic::dynamic_type<::CorpusOptionalEvolution::Message>::get();
     throw dds::core::InvalidArgumentError(
-        "This string-bearing aggregate shape is outside the RTI 7.7.0.0 interpreter bridge.");
+        "Wireloom C++ does not have a qualified interpreter bridge for this string-bearing aggregate shape.");
 }
 
 // Adapt the standard-layout value to RTI's generic CDR wrapper interface.
@@ -101,7 +101,7 @@ std::vector<char>& topic_type_support<::CorpusOptionalEvolution::Message>::to_cd
     dds::core::policy::DataRepresentationId representation)
 {
     throw dds::core::InvalidArgumentError(
-        "CDR for this string-bearing aggregate shape is outside the RTI 7.7.0.0 interpreter bridge.");
+        "Wireloom C++ does not have a qualified CDR bridge for this string-bearing aggregate shape.");
 }
 
 void topic_type_support<::CorpusOptionalEvolution::Message>::from_cdr_buffer(
@@ -109,7 +109,7 @@ void topic_type_support<::CorpusOptionalEvolution::Message>::from_cdr_buffer(
     const std::vector<char>& buffer)
 {
     throw dds::core::InvalidArgumentError(
-        "CDR for this string-bearing aggregate shape is outside the RTI 7.7.0.0 interpreter bridge.");
+        "Wireloom C++ does not have a qualified CDR bridge for this string-bearing aggregate shape.");
 }
 
 // Reset the inline scalar values to their IDL defaults.

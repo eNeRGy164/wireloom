@@ -102,78 +102,78 @@ std::ostream& operator<<(
 
 Choice::Choice() = default;
 
-::CorpusUnionAliases::Kind& Choice::_d()
+Kind& Choice::_d()
 {
     return discriminator_;
 }
 
-const ::CorpusUnionAliases::Kind& Choice::_d() const
+const Kind& Choice::_d() const
 {
     return discriminator_;
 }
 
-void Choice::_d(::CorpusUnionAliases::Kind value)
+void Choice::_d(Kind value)
 {
     discriminator_ = value;
 }
 
-::CorpusUnionAliases::Kind Choice::default_discriminator()
+Kind Choice::default_discriminator()
 {
-    return ::CorpusUnionAliases::Kind::Zero;
+    return Kind::Zero;
 }
 
 ::std::int32_t& Choice::zero()
 {
-    if (!((discriminator_ == ::CorpusUnionAliases::Kind::Zero)))
+    if (!((discriminator_ == Kind::Zero)))
         throw ::dds::core::PreconditionNotMetError("zero branch is inactive");
     return zero_;
 }
 
 const ::std::int32_t& Choice::zero() const
 {
-    if (!((discriminator_ == ::CorpusUnionAliases::Kind::Zero)))
+    if (!((discriminator_ == Kind::Zero)))
         throw ::dds::core::PreconditionNotMetError("zero branch is inactive");
     return zero_;
 }
 void Choice::zero(::std::int32_t value)
 {
     zero_ = value;
-    discriminator_ = ::CorpusUnionAliases::Kind::Zero;
+    discriminator_ = Kind::Zero;
 }
 
 
 ::std::string& Choice::ten()
 {
-    if (!((discriminator_ == ::CorpusUnionAliases::Kind::Ten)))
+    if (!((discriminator_ == Kind::Ten)))
         throw ::dds::core::PreconditionNotMetError("ten branch is inactive");
     return ten_;
 }
 
 const ::std::string& Choice::ten() const
 {
-    if (!((discriminator_ == ::CorpusUnionAliases::Kind::Ten)))
+    if (!((discriminator_ == Kind::Ten)))
         throw ::dds::core::PreconditionNotMetError("ten branch is inactive");
     return ten_;
 }
 void Choice::ten(const ::std::string& value)
 {
     ten_ = value;
-    discriminator_ = ::CorpusUnionAliases::Kind::Ten;
+    discriminator_ = Kind::Ten;
 }
 
 void Choice::ten(::std::string&& value)
 {
     ten_ = ::std::move(value);
-    discriminator_ = ::CorpusUnionAliases::Kind::Ten;
+    discriminator_ = Kind::Ten;
 }
 
 
 bool Choice::operator==(const Choice& other_) const
 {
     if (discriminator_ != other_.discriminator_) return false;
-    if ((discriminator_ == ::CorpusUnionAliases::Kind::Zero))
+    if ((discriminator_ == Kind::Zero))
         return zero_ == other_.zero_;
-    if ((discriminator_ == ::CorpusUnionAliases::Kind::Ten))
+    if ((discriminator_ == Kind::Ten))
         return ten_ == other_.ten_;
     return true;
 }
@@ -187,21 +187,21 @@ void Choice::swap(Choice& other_) noexcept
 {
     using ::std::swap;
     swap(discriminator_, other_.discriminator_);
-    if ((discriminator_ == ::CorpusUnionAliases::Kind::Zero))
+    if ((discriminator_ == Kind::Zero))
     {
         swap(zero_, other_.zero_);
     }
-    if ((discriminator_ == ::CorpusUnionAliases::Kind::Ten))
+    if ((discriminator_ == Kind::Ten))
     {
         swap(ten_, other_.ten_);
     }
     if (discriminator_ != other_.discriminator_)
     {
-        if ((other_.discriminator_ == ::CorpusUnionAliases::Kind::Zero))
+        if ((other_.discriminator_ == Kind::Zero))
         {
             swap(zero_, other_.zero_);
         }
-        if ((other_.discriminator_ == ::CorpusUnionAliases::Kind::Ten))
+        if ((other_.discriminator_ == Kind::Ten))
         {
             swap(ten_, other_.ten_);
         }
@@ -217,14 +217,14 @@ void swap(Choice& left, Choice& right)
 {
     output << "Choice{";
     bool emitted_branch = false;
-    if ((value.discriminator_ == ::CorpusUnionAliases::Kind::Zero))
+    if ((value.discriminator_ == Kind::Zero))
     {
         if (emitted_branch)
             output << ", ";
         output << "zero: " << value.zero_;
         emitted_branch = true;
     }
-    if ((value.discriminator_ == ::CorpusUnionAliases::Kind::Ten))
+    if ((value.discriminator_ == Kind::Ten))
     {
         if (emitted_branch)
             output << ", ";

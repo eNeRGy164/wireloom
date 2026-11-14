@@ -153,11 +153,11 @@ public:
     static Kind default_discriminator();
 
     /// @brief Accesses the number branch when active.
-    /// @details Discriminator labels: ::CorpusEnumUnion::Kind::Number.
+    /// @details Discriminator labels: Kind::Number.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     ::std::int32_t& number();
     /// @brief Accesses the number branch without modifying it.
-    /// @details Discriminator labels: ::CorpusEnumUnion::Kind::Number.
+    /// @details Discriminator labels: Kind::Number.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     const ::std::int32_t& number() const;
 
@@ -166,11 +166,11 @@ public:
     void number(::std::int32_t value);
 
     /// @brief Accesses the text branch when active.
-    /// @details Discriminator labels: ::CorpusEnumUnion::Kind::Text.
+    /// @details Discriminator labels: Kind::Text.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     ::std::string& text();
     /// @brief Accesses the text branch without modifying it.
-    /// @details Discriminator labels: ::CorpusEnumUnion::Kind::Text.
+    /// @details Discriminator labels: Kind::Text.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     const ::std::string& text() const;
 
@@ -182,11 +182,11 @@ public:
     void text(::std::string&& value);
 
     /// @brief Accesses the payload branch when active.
-    /// @details Discriminator labels: ::CorpusEnumUnion::Kind::PayloadValue.
+    /// @details Discriminator labels: Kind::PayloadValue.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     Payload& payload();
     /// @brief Accesses the payload branch without modifying it.
-    /// @details Discriminator labels: ::CorpusEnumUnion::Kind::PayloadValue.
+    /// @details Discriminator labels: Kind::PayloadValue.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     const Payload& payload() const;
 

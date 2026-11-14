@@ -135,7 +135,11 @@ struct wireloom_BoundedStringKey_type_context
                 ::std::string>::sample_access_info();
         factory.add_member(*type, "payload",
             ::dds::core::xtypes::primitive_type<::std::int32_t>(), 1, false);
-        type->native()._data._sampleAccessInfo = stl_sample_access_info();
+auto* native_type_code = reinterpret_cast<::RTIXCdrTypeCode*>(
+    const_cast<::DDS_TypeCode*>(&type->native()));
+        native_type_code->_sampleAccessInfo = stl_sample_access_info();
+        static ::RTIXCdrTypePlugin type_plugin = RTIXCdrTypePlugin_INITIALIZER;
+        native_type_code->_typePlugin = &type_plugin;
     }
 };
 
@@ -244,8 +248,10 @@ void wireloom_BoundedStringKey_stl_string_delete_sample(void* sample)
 RTIBool wireloom_BoundedStringKey_stl_string_copy_sample(
     PRESTypePluginEndpointData, void* destination, const void* source_sample)
 {
-    auto* destination_value = static_cast<::CorpusKeyBoundaries::BoundedStringKey*>(destination);
-    const auto* source_value = static_cast<const ::CorpusKeyBoundaries::BoundedStringKey*>(source_sample);
+    auto* destination_value =
+        static_cast<::CorpusKeyBoundaries::BoundedStringKey*>(destination);
+    const auto* source_value =
+        static_cast<const ::CorpusKeyBoundaries::BoundedStringKey*>(source_sample);
     if (destination_value == nullptr || source_value == nullptr)
         return RTI_FALSE;
     try {
@@ -259,7 +265,8 @@ RTIBool wireloom_BoundedStringKey_stl_string_copy_sample(
 void wireloom_BoundedStringKey_stl_string_return_sample(
     PRESTypePluginEndpointData endpoint, void* sample, void* handle)
 {
-    if (sample != nullptr) ::rti::topic::reset_sample(*static_cast<::CorpusKeyBoundaries::BoundedStringKey*>(sample));
+    if (sample != nullptr)
+        *static_cast<::CorpusKeyBoundaries::BoundedStringKey*>(sample) = {};
     PRESTypePluginDefaultEndpointData_returnSample(endpoint, sample, handle);
 }
 
@@ -296,7 +303,8 @@ PRESTypePluginParticipantData wireloom_BoundedStringKey_stl_string_participant_a
     property.getExternalRefPointerFcn = ::rti::topic::interpreter::get_external_value_pointer;
     auto* native_type_code = const_cast<DDS_TypeCode*>(
         reinterpret_cast<const DDS_TypeCode*>(&
-            ::rti::topic::dynamic_type<::CorpusKeyBoundaries::BoundedStringKey>::get().native()));
+            ::rti::topic::dynamic_type<::CorpusKeyBoundaries::BoundedStringKey>::get()
+                .native()));
     data->programs = DDS_TypeCodeFactory_assert_programs_in_global_list(
         DDS_TypeCodeFactory_get_instance(), native_type_code,
         &property, RTI_XCDR_PROGRAM_MASK_TYPEPLUGIN);
@@ -350,7 +358,8 @@ PRESTypePluginEndpointData wireloom_BoundedStringKey_stl_string_endpoint_attache
             endpoint, RTI_FALSE, RTI_CDR_ENCAPSULATION_ID_CDR_BE, 0);
         PRESTypePluginDefaultEndpointData_setMaxSizeSerializedSample(endpoint, maximum_size);
         if (!PRESTypePluginDefaultEndpointData_createWriterPool(
-                endpoint, endpoint_info, wireloom_BoundedStringKey_stl_string_serialized_sample_max_size, endpoint,
+                endpoint, endpoint_info,
+                wireloom_BoundedStringKey_stl_string_serialized_sample_max_size, endpoint,
                 PRESTypePlugin_interpretedGetSerializedSampleSize, endpoint)) {
             PRESTypePluginDefaultEndpointData_delete(endpoint);
             return nullptr;
@@ -398,7 +407,8 @@ PRESTypePlugin* wireloom_BoundedStringKey_stl_string_create_plugin()
     plugin->keyToInstanceFnc = wireloom_BoundedStringKey_stl_string_key_to_instance;
     auto* native_type_code = const_cast<DDS_TypeCode*>(
         reinterpret_cast<const DDS_TypeCode*>(&
-            ::rti::topic::dynamic_type<::CorpusKeyBoundaries::BoundedStringKey>::get().native()));
+            ::rti::topic::dynamic_type<::CorpusKeyBoundaries::BoundedStringKey>::get()
+                .native()));
     plugin->typeCode = reinterpret_cast<RTICdrTypeCode*>(native_type_code);
     plugin->languageKind = PRES_TYPEPLUGIN_CPPSTL_LANG;
     plugin->getBuffer = PRESTypePluginDefaultEndpointData_getBuffer;
@@ -476,7 +486,11 @@ struct wireloom_UnboundedStringKey_type_context
                 ::std::string>::sample_access_info();
         factory.add_member(*type, "payload",
             ::dds::core::xtypes::primitive_type<::std::int32_t>(), 1, false);
-        type->native()._data._sampleAccessInfo = stl_sample_access_info();
+auto* native_type_code = reinterpret_cast<::RTIXCdrTypeCode*>(
+    const_cast<::DDS_TypeCode*>(&type->native()));
+        native_type_code->_sampleAccessInfo = stl_sample_access_info();
+        static ::RTIXCdrTypePlugin type_plugin = RTIXCdrTypePlugin_INITIALIZER;
+        native_type_code->_typePlugin = &type_plugin;
     }
 };
 
@@ -585,8 +599,10 @@ void wireloom_UnboundedStringKey_stl_string_delete_sample(void* sample)
 RTIBool wireloom_UnboundedStringKey_stl_string_copy_sample(
     PRESTypePluginEndpointData, void* destination, const void* source_sample)
 {
-    auto* destination_value = static_cast<::CorpusKeyBoundaries::UnboundedStringKey*>(destination);
-    const auto* source_value = static_cast<const ::CorpusKeyBoundaries::UnboundedStringKey*>(source_sample);
+    auto* destination_value =
+        static_cast<::CorpusKeyBoundaries::UnboundedStringKey*>(destination);
+    const auto* source_value =
+        static_cast<const ::CorpusKeyBoundaries::UnboundedStringKey*>(source_sample);
     if (destination_value == nullptr || source_value == nullptr)
         return RTI_FALSE;
     try {
@@ -600,7 +616,8 @@ RTIBool wireloom_UnboundedStringKey_stl_string_copy_sample(
 void wireloom_UnboundedStringKey_stl_string_return_sample(
     PRESTypePluginEndpointData endpoint, void* sample, void* handle)
 {
-    if (sample != nullptr) ::rti::topic::reset_sample(*static_cast<::CorpusKeyBoundaries::UnboundedStringKey*>(sample));
+    if (sample != nullptr)
+        *static_cast<::CorpusKeyBoundaries::UnboundedStringKey*>(sample) = {};
     PRESTypePluginDefaultEndpointData_returnSample(endpoint, sample, handle);
 }
 
@@ -637,7 +654,8 @@ PRESTypePluginParticipantData wireloom_UnboundedStringKey_stl_string_participant
     property.getExternalRefPointerFcn = ::rti::topic::interpreter::get_external_value_pointer;
     auto* native_type_code = const_cast<DDS_TypeCode*>(
         reinterpret_cast<const DDS_TypeCode*>(&
-            ::rti::topic::dynamic_type<::CorpusKeyBoundaries::UnboundedStringKey>::get().native()));
+            ::rti::topic::dynamic_type<::CorpusKeyBoundaries::UnboundedStringKey>::get()
+                .native()));
     data->programs = DDS_TypeCodeFactory_assert_programs_in_global_list(
         DDS_TypeCodeFactory_get_instance(), native_type_code,
         &property, RTI_XCDR_PROGRAM_MASK_TYPEPLUGIN);
@@ -691,7 +709,8 @@ PRESTypePluginEndpointData wireloom_UnboundedStringKey_stl_string_endpoint_attac
             endpoint, RTI_FALSE, RTI_CDR_ENCAPSULATION_ID_CDR_BE, 0);
         PRESTypePluginDefaultEndpointData_setMaxSizeSerializedSample(endpoint, maximum_size);
         if (!PRESTypePluginDefaultEndpointData_createWriterPool(
-                endpoint, endpoint_info, wireloom_UnboundedStringKey_stl_string_serialized_sample_max_size, endpoint,
+                endpoint, endpoint_info,
+                wireloom_UnboundedStringKey_stl_string_serialized_sample_max_size, endpoint,
                 PRESTypePlugin_interpretedGetSerializedSampleSize, endpoint)) {
             PRESTypePluginDefaultEndpointData_delete(endpoint);
             return nullptr;
@@ -739,7 +758,8 @@ PRESTypePlugin* wireloom_UnboundedStringKey_stl_string_create_plugin()
     plugin->keyToInstanceFnc = wireloom_UnboundedStringKey_stl_string_key_to_instance;
     auto* native_type_code = const_cast<DDS_TypeCode*>(
         reinterpret_cast<const DDS_TypeCode*>(&
-            ::rti::topic::dynamic_type<::CorpusKeyBoundaries::UnboundedStringKey>::get().native()));
+            ::rti::topic::dynamic_type<::CorpusKeyBoundaries::UnboundedStringKey>::get()
+                .native()));
     plugin->typeCode = reinterpret_cast<RTICdrTypeCode*>(native_type_code);
     plugin->languageKind = PRES_TYPEPLUGIN_CPPSTL_LANG;
     plugin->getBuffer = PRESTypePluginDefaultEndpointData_getBuffer;

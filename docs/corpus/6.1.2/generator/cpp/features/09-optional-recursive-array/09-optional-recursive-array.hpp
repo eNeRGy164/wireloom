@@ -22,6 +22,8 @@
 #include <dds/core/xtypes/EnumType.hpp>
 #endif // NDDS_STANDALONE_TYPE
 
+struct RTICdrResourceNode;
+
 #if defined(NDDS_USER_DLL_EXPORT) && defined(RTI_WIN32)
 #undef NDDSUSERDllExport
 #define NDDSUSERDllExport __declspec(dllexport)
@@ -51,7 +53,7 @@ struct NDDSUSERDllExport Node
     /// @see [RTI dds::core::optional value operations](https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_cpp2/classdds_1_1core_1_1optional.html)
     /// @code
     /// Node sample{};
-    /// sample.children = ::dds::core::array< ::CorpusOptionalRecursiveArray::Node, 2 >{};
+    /// sample.children = ::dds::core::array< Node, 2 >{};
     /// if (sample.children.has_value()) {
     ///     const auto currentValue = sample.children.value();
     /// }

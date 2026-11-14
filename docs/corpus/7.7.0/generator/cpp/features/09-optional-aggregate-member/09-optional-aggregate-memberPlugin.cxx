@@ -266,6 +266,12 @@ struct wireloom_Holder_type_context
             ::dds::core::xtypes::Member("choice", *::CorpusOptionalAggregate::wireloom_Choice_union_type())
                 .id(2)
                 .optional(true));
+        auto* member_2_union_type_code_0 = type->native()._data._members[2]._representation._typeCode;
+        auto* member_2_union_type_code_0_native = ::CorpusOptionalAggregate::wireloom_Choice_union_native_type_code();
+        member_2_union_type_code_0->_sampleAccessInfo =
+            member_2_union_type_code_0_native->_sampleAccessInfo;
+        member_2_union_type_code_0->_typePlugin =
+            member_2_union_type_code_0_native->_typePlugin;
         type->add_member(
             ::dds::core::xtypes::Member("choiceAlias", ::dds::core::xtypes::AliasType(
                 "CorpusOptionalAggregate::ChoiceAlias",
@@ -460,8 +466,10 @@ void wireloom_Choice_stl_union_delete_sample(void* sample)
 RTIBool wireloom_Choice_stl_union_copy_sample(
     PRESTypePluginEndpointData, void* destination, const void* source_sample)
 {
-    auto* destination_value = static_cast<::CorpusOptionalAggregate::Choice*>(destination);
-    const auto* source_value = static_cast<const ::CorpusOptionalAggregate::Choice*>(source_sample);
+    auto* destination_value =
+        static_cast<::CorpusOptionalAggregate::Choice*>(destination);
+    const auto* source_value =
+        static_cast<const ::CorpusOptionalAggregate::Choice*>(source_sample);
     if (destination_value == nullptr || source_value == nullptr)
         return RTI_FALSE;
     try {
@@ -475,7 +483,8 @@ RTIBool wireloom_Choice_stl_union_copy_sample(
 void wireloom_Choice_stl_union_return_sample(
     PRESTypePluginEndpointData endpoint, void* sample, void* handle)
 {
-    if (sample != nullptr) ::rti::topic::reset_sample(*static_cast<::CorpusOptionalAggregate::Choice*>(sample));
+    if (sample != nullptr)
+        *static_cast<::CorpusOptionalAggregate::Choice*>(sample) = {};
     PRESTypePluginDefaultEndpointData_returnSample(endpoint, sample, handle);
 }
 
@@ -512,7 +521,8 @@ PRESTypePluginParticipantData wireloom_Choice_stl_union_participant_attached(
     property.getExternalRefPointerFcn = ::rti::topic::interpreter::get_external_value_pointer;
     auto* native_type_code = const_cast<DDS_TypeCode*>(
         reinterpret_cast<const DDS_TypeCode*>(&
-            ::rti::topic::dynamic_type<::CorpusOptionalAggregate::Choice>::get().native()));
+            ::rti::topic::dynamic_type<::CorpusOptionalAggregate::Choice>::get()
+                .native()));
     data->programs = DDS_TypeCodeFactory_assert_programs_in_global_list(
         DDS_TypeCodeFactory_get_instance(), native_type_code,
         &property, RTI_XCDR_PROGRAM_MASK_TYPEPLUGIN);
@@ -553,7 +563,8 @@ PRESTypePluginEndpointData wireloom_Choice_stl_union_endpoint_attached(
             endpoint, RTI_FALSE, RTI_CDR_ENCAPSULATION_ID_CDR_BE, 0);
         PRESTypePluginDefaultEndpointData_setMaxSizeSerializedSample(endpoint, maximum_size);
         if (!PRESTypePluginDefaultEndpointData_createWriterPool(
-                endpoint, endpoint_info, wireloom_Choice_stl_union_serialized_sample_max_size, endpoint,
+                endpoint, endpoint_info,
+                wireloom_Choice_stl_union_serialized_sample_max_size, endpoint,
                 PRESTypePlugin_interpretedGetSerializedSampleSize, endpoint)) {
             PRESTypePluginDefaultEndpointData_delete(endpoint);
             return nullptr;
@@ -591,7 +602,8 @@ PRESTypePlugin* wireloom_Choice_stl_union_create_plugin()
     plugin->getKeyKindFnc = []() { return PRES_TYPEPLUGIN_NO_KEY; };
     auto* native_type_code = const_cast<DDS_TypeCode*>(
         reinterpret_cast<const DDS_TypeCode*>(&
-            ::rti::topic::dynamic_type<::CorpusOptionalAggregate::Choice>::get().native()));
+            ::rti::topic::dynamic_type<::CorpusOptionalAggregate::Choice>::get()
+                .native()));
     plugin->typeCode = reinterpret_cast<RTICdrTypeCode*>(native_type_code);
     plugin->languageKind = PRES_TYPEPLUGIN_CPPSTL_LANG;
     plugin->getBuffer = PRESTypePluginDefaultEndpointData_getBuffer;

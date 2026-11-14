@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 #include <dds/core/Optional.hpp>
-#include <ndds/cdr/cdr_typeCode.h>
+#include <ndds/xcdr/xcdr_typeCode.h>
 #include <dds/core/array.hpp>
 #include <rti/topic/TopicTraits.hpp>
 
@@ -21,6 +21,8 @@
 #include <dds/dds.hpp>
 #include <dds/core/xtypes/EnumType.hpp>
 #endif // NDDS_STANDALONE_TYPE
+
+struct RTIXCdrResourceNode;
 
 #if defined(NDDS_USER_DLL_EXPORT) && defined(RTI_WIN32)
 #undef NDDSUSERDllExport
@@ -51,7 +53,7 @@ struct NDDSUSERDllExport Node
     /// @see [RTI dds::core::optional value operations](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_cpp2/classdds_1_1core_1_1optional.html)
     /// @code
     /// Node sample{};
-    /// sample.children = ::dds::core::array< ::CorpusOptionalRecursiveArray::Node, 2 >{};
+    /// sample.children = ::dds::core::array< Node, 2 >{};
     /// if (sample.children.has_value()) {
     ///     const auto currentValue = sample.children.value();
     /// }
@@ -197,7 +199,7 @@ struct dynamic_type<::CorpusOptionalRecursiveArray::Node>
     /// @brief Resolves this type while building a recursive RTI TypeCode graph.
     /// @param parentVisitedNode Parent resources visited during TypeCode construction.
     /// @return The existing type shell when recursion reaches this declaration.
-    NDDSUSERDllExport static const type& get(RTICdrResourceNode* parentVisitedNode);
+    NDDSUSERDllExport static const type& get(RTIXCdrResourceNode* parentVisitedNode);
 };
 
 /// @brief Provides the RTI extensibility kind for CorpusOptionalRecursiveArray::Node.

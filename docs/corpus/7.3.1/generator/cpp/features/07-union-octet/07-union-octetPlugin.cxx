@@ -141,7 +141,7 @@ struct wireloom_Choice_union_context
             static_cast<::RTIXCdrUnsignedLong>(
                 member_fallback - sample_address));
         type = factory.create_union("CorpusUnionOctet::Choice",
-            ::dds::core::xtypes::primitive_type<::rti::core::xtypes::octet_tag_t>(),
+            ::dds::core::xtypes::primitive_type<::std::uint8_t>(),
             ::dds::core::xtypes::ExtensibilityKind::EXTENSIBLE,
             static_cast<::RTIXCdrUnsignedLong>(
                 sizeof(::CorpusUnionOctet::Choice)),
