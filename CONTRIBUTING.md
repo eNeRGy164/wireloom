@@ -57,6 +57,31 @@ dotnet run --project tests/Wireloom.Dds.CSharp.Compiler.Tests/Wireloom.Dds.CShar
   --filter-namespace Wireloom.Dds.CSharp.Compiler.FrontEnd.Preprocessing.Tests
 ```
 
+### Build the Modern C++ generator
+
+From the repository root, build the managed development CLI and verify its
+output against the retained corpus. This uses the repository SDK and does not
+require an RTI SDK or license:
+
+```shell
+dotnet restore src/Wireloom.Dds.Cpp.Generator/Wireloom.Dds.Cpp.Generator.csproj --locked-mode
+dotnet build src/Wireloom.Dds.Cpp.Generator/Wireloom.Dds.Cpp.Generator.csproj --configuration Release --no-restore
+dotnet src/Wireloom.Dds.Cpp.Generator/bin/Release/net10.0/Wireloom.Dds.Cpp.dll generate docs/corpus/idl/features/01-primitives.idl artifacts/cpp-generated
+pwsh -NoProfile -File src/Wireloom.Dds.Cpp.Generator/Verify-Cli.ps1
+```
+
+The verifier checks the shared manifest against retained C++ exports and its
+explicit generation/rejection cases, compares all four emitted documents,
+and checks source-located diagnostics and a changed IDL default. It writes
+`verification.json` under `artifacts/cpp-cli-check/<run>/` and fails on retained
+source differences; review and qualify those differences before refreshing
+corpus evidence. Defines and unbounded settings come from the shared manifest,
+using the same include directories and RTI profile as the corpus export. The
+[C++ generator tests](tests/Wireloom.Dds.Cpp.Generator.Tests/README.md) cover
+CLI and filesystem behavior; the
+[package integration checks](tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md)
+exercise the packed native tools.
+
 ## Tests and fixtures
 
 The current test suites use xUnit v3 with Shouldly assertions on

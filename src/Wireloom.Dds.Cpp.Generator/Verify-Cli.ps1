@@ -8,55 +8,16 @@ $PSNativeCommandUseErrorActionPreference = $false
 
 $repository = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../..')).Path
 $coverageVerifier = Join-Path $repository 'scripts/Verify-CppCoverage.ps1'
-& $coverageVerifier -RepositoryRoot $repository
+$inventory = & $coverageVerifier -RepositoryRoot $repository -PassThru
 $cli = (Resolve-Path -LiteralPath $CliAssembly).Path
-
-# Keep the positive-case manifest, the C++ evidence index, retained output
-# directories, and this verifier's explicit case list in sync. Checking all
-# four inventories prevents new manifest cases from silently missing coverage,
-# retained generation output, or CLI verification.
-$manifestPath = Join-Path $repository 'docs/corpus/manifest.json'
-$coveragePath = Join-Path $repository 'docs/corpus/CPP-COVERAGE.md'
-$typeScopePath = Join-Path $repository 'docs/corpus/7.7.0/cpp-evidence/type-scope.json'
+$manifestIds = @($inventory.ManifestIds)
+$corpusCases = [System.Collections.Generic.Dictionary[string, object]]::new([StringComparer]::Ordinal)
+foreach ($case in $inventory.Cases) {
+    $corpusCases.Add([string] $case.id, $case)
+}
+$rtiRejectedCases = @($inventory.RejectedCases)
+$rtiRejectedIds = @($rtiRejectedCases | ForEach-Object { [string] $_.case })
 $featureDirectory = Join-Path $repository 'docs/corpus/7.7.0/generator/cpp/features'
-$manifest = [IO.File]::ReadAllText($manifestPath) | ConvertFrom-Json
-$manifestIds = @($manifest.positiveCases | ForEach-Object { [string]$_.id })
-$typeScope = [IO.File]::ReadAllText($typeScopePath) | ConvertFrom-Json
-$rtiRejectedCases = @($typeScope.rtiRejectedCases)
-$rtiRejectedIds = @($rtiRejectedCases | ForEach-Object { [string]$_.case })
-$cppGeneratedIds = @($manifestIds | Where-Object { $_ -notin $rtiRejectedIds })
-
-$coverageText = [IO.File]::ReadAllText($coveragePath)
-$coverageTable = [regex]::Match(
-    $coverageText,
-    '(?ms)^## Type-level evidence matrix\s*\r?\n(?<table>(?:^\|.*\r?\n)+)')
-if (-not $coverageTable.Success) {
-    throw "Could not find the positive-case table in $coveragePath."
-}
-
-$coverageIds = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
-foreach ($line in ($coverageTable.Groups['table'].Value -split '\r?\n')) {
-    if ($line -notmatch '^\|') {
-        continue
-    }
-
-    $firstCell = ($line -split '\|', 3)[1].Trim()
-    if ($firstCell -eq 'Case' -or $firstCell -match '^[-: ]+$') {
-        continue
-    }
-
-    if ($firstCell -notmatch '^(?<id>[A-Za-z0-9][A-Za-z0-9-]*)(?:\s+\(C\d+\))?$') {
-        [void]$coverageIds.Add("<unparseable row: $firstCell>")
-        continue
-    }
-
-    [void]$coverageIds.Add($Matches.id)
-}
-
-$featureIds = @(
-    Get-ChildItem -LiteralPath $featureDirectory -Directory |
-        ForEach-Object { $_.Name }
-)
 
 function Get-DuplicateIds([string[]] $ids) {
     @($ids | Group-Object | Where-Object Count -gt 1 | ForEach-Object Name | Sort-Object)
@@ -74,43 +35,11 @@ function Get-UnexpectedIds([string[]] $expected, [string[]] $actual) {
     @($actual | Where-Object { -not $expectedSet.Contains($_) } | Sort-Object -Unique)
 }
 
-$coverageIdArray = @($coverageIds)
-$inventoryProblems = [System.Collections.Generic.List[string]]::new()
-$manifestDuplicates = @(Get-DuplicateIds $manifestIds)
-$coverageDuplicates = @(Get-DuplicateIds $coverageIdArray)
-$featureDuplicates = @(Get-DuplicateIds $featureIds)
-if ($manifestDuplicates.Count -gt 0) {
-    $inventoryProblems.Add("manifest duplicate IDs: $($manifestDuplicates -join ', ')")
-}
-if ($coverageDuplicates.Count -gt 0) {
-    $inventoryProblems.Add("coverage matrix duplicate IDs: $($coverageDuplicates -join ', ')")
-}
-if ($featureDuplicates.Count -gt 0) {
-    $inventoryProblems.Add("generator/cpp duplicate directory IDs: $($featureDuplicates -join ', ')")
-}
-
-foreach ($inventory in @(
-    @{ Name = 'coverage matrix'; Expected = $manifestIds; Ids = $coverageIdArray },
-    @{ Name = 'generator/cpp directories'; Expected = $cppGeneratedIds; Ids = $featureIds }
-)) {
-    $missingIds = @(Get-MissingIds $inventory.Expected $inventory.Ids)
-    $unexpectedIds = @(Get-UnexpectedIds $inventory.Expected $inventory.Ids)
-    if ($missingIds.Count -gt 0) {
-        $inventoryProblems.Add("$($inventory.Name) missing IDs: $($missingIds -join ', ')")
-    }
-    if ($unexpectedIds.Count -gt 0) {
-        $inventoryProblems.Add("$($inventory.Name) unexpected IDs: $($unexpectedIds -join ', ')")
-    }
-}
-
-if ($inventoryProblems.Count -gt 0) {
-    throw "Positive corpus inventory mismatch:`n - $($inventoryProblems -join "`n - ")"
-}
-
 $idl = Join-Path $repository 'docs/corpus/idl/features/10-annotations.idl'
 $retained = Join-Path $repository 'docs/corpus/7.7.0/generator/cpp/features/10-annotations'
 $scratch = Join-Path $repository "artifacts/cpp-cli-check/$([Guid]::NewGuid().ToString('N'))"
 New-Item -ItemType Directory -Path $scratch -Force | Out-Null
+$comparisonFailures = [System.Collections.Generic.List[string]]::new()
 
 $generated = Join-Path $scratch 'generated'
 & dotnet $cli generate $idl $generated
@@ -133,7 +62,7 @@ foreach ($file in $expectedFiles) {
     $expected = Get-FileHash -LiteralPath (Join-Path $retained $file)
     $actual = Get-FileHash -LiteralPath (Join-Path $generated $file)
     if ($expected.Hash -ne $actual.Hash) {
-        throw "Generated C044 file differs from the retained corpus output: $file"
+        $comparisonFailures.Add("10-annotations/$file")
     }
 }
 
@@ -179,22 +108,22 @@ foreach ($rejectedCase in $rtiRejectedCases) {
 }
 
 foreach ($case in $cliCases) {
-    $caseIdl = Join-Path $repository "docs/corpus/idl/features/$case.idl"
+    $manifestCase = $corpusCases[$case]
+    $caseIdl = Join-Path (Join-Path $repository 'docs/corpus') $manifestCase.idl
     $caseRetained = Join-Path $repository "docs/corpus/7.7.0/generator/cpp/features/$case"
     $caseGenerated = Join-Path $scratch "generated-$case"
-    $arguments = @($cli, 'generate', $caseIdl, $caseGenerated)
-    if ($case -in @('05-unbounded-sequence-aliases', '06-aggregates', '14-unbounded-support', '14-unbounded-receive-lifecycle')) {
+    $arguments = @($cli, 'generate', $caseIdl, $caseGenerated, '--rti-version', '7.7.0')
+    foreach ($define in @($manifestCase.defines)) {
+        if (-not [string]::IsNullOrWhiteSpace([string] $define)) {
+            $arguments += @('--define', [string] $define)
+        }
+    }
+    if (@($manifestCase.rtiddsgenOptions) -contains '-unboundedSupport' -or
+        @($manifestCase.wireMatrix.rtiCppCodegenOptions) -contains '-unboundedSupport') {
         $arguments += '--unbounded-support'
     }
-    if ($case -eq '11-preprocessing') {
-        $arguments += @('--define', 'CORPUS_CAPTURE_DEFINE', '--include-directory', (Join-Path $repository 'docs/corpus/idl'))
-    }
-    if ($case -eq '11-include-search') {
-        $arguments += @('--include-directory', (Join-Path $repository 'docs/corpus/idl'), '--include-directory', (Join-Path $repository 'docs/corpus/idl/includes'))
-    }
-    if ($case -eq '14-autoid-scope') {
-        $arguments += @('--include-directory', (Join-Path $repository 'docs/corpus/idl'))
-    }
+    $arguments += @('--include-directory', (Join-Path $repository 'docs/corpus/idl'))
+    $arguments += @('--include-directory', (Join-Path $repository 'docs/corpus/idl/includes'))
 
     & dotnet @arguments
     if ($LASTEXITCODE -ne 0) {
@@ -216,7 +145,7 @@ foreach ($case in $cliCases) {
         $expected = Get-FileHash -LiteralPath (Join-Path $caseRetained $file)
         $actual = Get-FileHash -LiteralPath (Join-Path $caseGenerated $file)
         if ($expected.Hash -ne $actual.Hash) {
-            throw "Generated $case file differs from the retained corpus output: $file"
+            $comparisonFailures.Add("$case/$file")
         }
     }
 }
@@ -290,5 +219,21 @@ if ($LASTEXITCODE -ne 0 -or
     throw 'The generated type did not use the changed IDL default.'
 }
 
-Write-Output "C++ CLI checks passed. Evidence: $scratch"
+$report = [ordered]@{
+    status = if ($comparisonFailures.Count -eq 0) { 'Passed' } else { 'Failed' }
+    profile = '7.7.0'
+    positiveCases = $manifestIds.Count
+    generatedCases = $cliCases.Count + 1
+    rejectedCases = $rtiRejectedCases.Count
+    comparedFiles = ($cliCases.Count + 1) * 4
+    mismatchedFiles = @($comparisonFailures)
+    diagnosticChecks = $rtiRejectedCases.Count + $unsupportedAnnotations.Count + 2
+    changedDefaultVerified = $true
+}
+$reportPath = Join-Path $scratch 'verification.json'
+$report | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $reportPath
+if ($comparisonFailures.Count -gt 0) {
+    throw "C++ CLI output differs from $($comparisonFailures.Count) retained files. Review the differences before refreshing corpus evidence. Report: $reportPath"
+}
 
+Write-Output "C++ CLI checks passed: $($manifestIds.Count) cases, $($report.comparedFiles) files, $($report.diagnosticChecks) diagnostic checks. Evidence: $scratch"
