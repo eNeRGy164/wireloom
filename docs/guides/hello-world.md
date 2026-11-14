@@ -672,7 +672,7 @@ $env:RTI_ARCH = 'x64Win64VS2017'
 $env:PATH = "$env:NDDSHOME\lib\$env:RTI_ARCH;$env:PATH"
 $version = '<published-version>'
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DBUILD_SHARED_LIBS=ON `
-  "-DCONNEXTDDS_ARCH=$env:RTI_ARCH" -DWIRELOOM_CPP_RTI_VERSION=7.7.0 `
+  "-DCONNEXTDDS_ARCH=$env:RTI_ARCH" "-DWIRELOOM_CPP_RTI_VERSION=7.7.0" `
   "-DWireloomCpp_DIR=$PWD/packages/Wireloom.Dds.Cpp.Generator.$version/build/cmake"
 cmake --build build --config Release
 ```

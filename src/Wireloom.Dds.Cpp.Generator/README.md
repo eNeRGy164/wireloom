@@ -68,7 +68,7 @@ Configure and build from your application directory, pointing `WireloomCpp_DIR`
 at the installed package's `build/cmake` directory:
 
 ```shell
-cmake -S . -B build "-DWireloomCpp_DIR=$PWD/packages/Wireloom.Dds.Cpp.Generator.$version/build/cmake" -DWIRELOOM_CPP_RTI_VERSION=7.7.0
+cmake -S . -B build "-DWireloomCpp_DIR=$PWD/packages/Wireloom.Dds.Cpp.Generator.$version/build/cmake" "-DWIRELOOM_CPP_RTI_VERSION=7.7.0"
 cmake --build build
 ```
 
