@@ -1,29 +1,29 @@
-# Wireloom Modern C++ generator
+# Wireloom.Dds.Cpp.Generator 1.1.0
 
-Start with the [C++ support and stability contract](../../docs/guides/support-and-compatibility.md#modern-c-support-and-compatibility)
-for the first-release promise, platform/profile targets, and qualification
-requirements. This reference describes implemented generation and case-specific
-evidence; it does not certify an unpublished package.
+Wireloom.Dds.Cpp.Generator generates Modern C++ contracts from RTI Connext DDS
+IDL during native CMake and Visual Studio/MSBuild builds. Version 1.1.0 bundles
+Windows x64 and Linux x64 executables; generation needs no installed .NET
+SDK/runtime or RTI SDK.
+
+Use the [1.1.0 release record](https://github.com/eNeRGy164/wireloom/blob/main/docs/releases/1.1.0.md)
+for supported configurations, package hashes, and known limits. The
+[C++ support and stability contract](https://github.com/eNeRGy164/wireloom/blob/v1.1.0/docs/guides/support-and-compatibility.md#modern-c-support-and-compatibility)
+defines the public API and compatibility policy. Source and reference links
+target `v1.1.0`; the release record retains later qualification clarifications.
 
 For a complete first application, follow the
-[C++ Hello World walkthrough](../../docs/guides/hello-world.md#modern-c-walkthrough):
+[C++ Hello World walkthrough](https://github.com/eNeRGy164/wireloom/blob/v1.1.0/docs/guides/hello-world.md#modern-c-walkthrough):
 install the package, generate during a native build, and run a publisher and
 subscriber in two terminals.
 
 ## Obtain and pin the generator
 
-The package ID is `Wireloom.Dds.Cpp.Generator`. Stable releases go to
-NuGet.org; previews go to the repository's GitHub Packages feed. The first C++
-package has not been published yet. In the examples below, replace
-`<published-version>` with an exact version from its release record; do not use
-a floating version or assume that the C# package's latest version is available
-for C++.
+Install `Wireloom.Dds.Cpp.Generator` **1.1.0** from NuGet.org. Pin this exact
+version in your build configuration.
 
-The package bundles Windows x64 and Linux x64 executables. Running generation
-needs no .NET SDK/runtime or RTI installation. Building the generated sources
-requires your selected RTI native SDK and C++ toolchain. The
-[support contract](../../docs/guides/support-and-compatibility.md#modern-c-support-and-compatibility)
-describes host requirements and the separately qualified application scope.
+Build your application with a compatible RTI native SDK and C++ toolchain.
+Use CMake 3.20 or later, or Visual Studio's native MSBuild integration.
+Running DDS requires the RTI runtime and applicable license.
 
 ### CMake
 
@@ -31,7 +31,7 @@ Download the exact `.nupkg` and extract it into a version-specific directory.
 For a stable package on Linux, using `curl` and CMake 3.20 or later:
 
 ```bash
-version='<published-version>'
+version='1.1.0'
 package="wireloom.dds.cpp.generator.$version.nupkg"
 curl --fail --location --output "$package" \
   "https://api.nuget.org/v3-flatcontainer/wireloom.dds.cpp.generator/$version/$package"
@@ -47,17 +47,9 @@ mkdir -p "packages/Wireloom.Dds.Cpp.Generator.$version"
 On Windows, the NuGet CLI can perform the download and extraction:
 
 ```powershell
-$version = '<published-version>'
+$version = '1.1.0'
 nuget install Wireloom.Dds.Cpp.Generator -Version $version `
   -Source https://api.nuget.org/v3/index.json -OutputDirectory packages -NonInteractive
-```
-
-Keep the chosen version in your build configuration. Point `WireloomCpp_DIR`
-at that package's `build/cmake` directory when configuring your application:
-
-```bash
-cmake -S . -B build "-DWireloomCpp_DIR=$PWD/packages/Wireloom.Dds.Cpp.Generator.$version/build/cmake" -DWIRELOOM_CPP_RTI_VERSION=7.7.0
-cmake --build build
 ```
 
 Add generation to an existing target that already has its RTI include paths,
@@ -68,17 +60,23 @@ find_package(WireloomCpp CONFIG REQUIRED)
 wireloom_add_idl(my_app IDL "${CMAKE_CURRENT_SOURCE_DIR}/Contract.idl")
 ```
 
-This attaches all four generated files and their include directory to
-`my_app`. CMake selects the generator by build host and restores the Linux
-execute permission after extraction. Keep the package directory writable for
-that permission step. The generator package version and the
-`WIRELOOM_CPP_RTI_VERSION` generation profile are independent pins; match the
-latter to the native SDK used by the application.
+This attaches the four generated files and their include directory to
+`my_app`. Include `Contract.hpp` from your application. The integration accepts
+one IDL root per target; that root may include other files.
 
-CMake records a completion stamp after successful generation. A timestamp-only
-or comment-only IDL edit runs generation once even when emitted text is
-unchanged; the next unchanged build skips it. Missing generated outputs still
-trigger generation, and failures remain eligible for retry.
+Configure and build from your application directory, pointing `WireloomCpp_DIR`
+at the installed package's `build/cmake` directory:
+
+```shell
+cmake -S . -B build "-DWireloomCpp_DIR=$PWD/packages/Wireloom.Dds.Cpp.Generator.$version/build/cmake" -DWIRELOOM_CPP_RTI_VERSION=7.7.0
+cmake --build build
+```
+
+Keep the generator package and RTI profile pinned independently; match
+`WIRELOOM_CPP_RTI_VERSION` to the native SDK used by your application. CMake
+selects the host executable and restores its Linux execute permission, so keep
+the package directory writable. Rebuild after editing a root or included IDL
+file. Unchanged builds skip generation; missing outputs are regenerated.
 
 ### Visual Studio / MSBuild
 
@@ -86,7 +84,7 @@ For an existing native `.vcxproj`, use Visual Studio's NuGet Package Manager
 with `packages.config`. In its Package Manager Console, select that project:
 
 ```powershell
-$version = '<published-version>'
+$version = '1.1.0'
 Install-Package Wireloom.Dds.Cpp.Generator -Version $version -Source https://api.nuget.org/v3/index.json
 ```
 
@@ -114,36 +112,6 @@ Keep feed and trust settings in your team's NuGet configuration. The package
 adds generation and generated sources; the application supplies RTI compiler
 and linker settings.
 
-### Preview packages and retained candidates
-
-For NuGet clients, use the exact prerelease version with the source
-`https://nuget.pkg.github.com/eNeRGy164/index.json`. Configure GitHub Packages
-authentication in your user/CI credential store, with package-read access;
-keep credentials out of the project and source control. Visual Studio's
-`Install-Package` and `Update-Package` accept this source too.
-
-For CMake users, the publishing run also retains the tested `.nupkg` files,
-`SHA256SUMS`, and SBOM. With GitHub CLI access to that run:
-
-```bash
-run_id='<publishing-run-id>'
-version='<published-version>'
-gh run download "$run_id" --repo eNeRGy164/wireloom \
-  --name "wireloom-dds-generator-preview-$version" --dir candidate
-(cd candidate && sha256sum --check SHA256SUMS)
-mkdir -p "packages/Wireloom.Dds.Cpp.Generator.$version"
-(
-  cd "packages/Wireloom.Dds.Cpp.Generator.$version"
-  cmake -E tar xf "../../candidate/Wireloom.Dds.Cpp.Generator.$version.nupkg"
-)
-```
-
-Configure CMake with the extracted package directory as above. Preview artifacts have
-14-day retention, so retain the exact package and its provenance in your
-artifact store when you need a longer-lived pin. A standalone **C++ native
-package** workflow also produces a `cpp-nuget` candidate; that artifact is
-build evidence and does not indicate feed publication or release qualification.
-
 ### Update and roll back
 
 Read the target version's release notes and support matrix. Keep the previous
@@ -153,7 +121,7 @@ For CMake, acquire the new package alongside the old one, update the pinned
 update the native project through Package Manager Console:
 
 ```powershell
-$version = '<published-version>'
+$version = '1.1.0'
 Update-Package Wireloom.Dds.Cpp.Generator -Version $version -Source https://api.nuget.org/v3/index.json
 ```
 
@@ -168,196 +136,105 @@ generated sources or plugin files from different generator versions.
 
 ## Generator reference
 
-`Wireloom.Dds.Cpp.Generator` hosts the CLI and produces the native NuGet package.
-`Wireloom.Dds.Cpp.Compiler` owns in-memory IDL compilation, C++ planning, and
-source emission. The package's `tools/` directory contains self-contained
-NativeAOT executables for Windows x64 and Linux x64. Consumer builds need neither .NET nor an RTI
-license to run the generator. The CMake package invokes the executable for the
-build host; C++ target architecture does not select the generator executable.
-Generated C++ compilation and execution use the native RTI SDK. The generator
-supports primitive scalar members, narrow and wide string members, integral and narrow
-string constants, scoped enums, scalar and enum typedef aliases plus direct
-narrow/wide string aliases and bounded/unbounded string alias chains, bounded
-enum sequences, nested bounded-sequence typedef aliases, aggregate aliases, bounded
-sequences of structs, and multidimensional primitive arrays with typedef aliases. It
-also emits composed sequence shapes containing arrays, structs, bounded strings,
-and collection aliases, including fixed arrays whose elements are sequences,
-while preserving declared alias names in C++ storage. The Modern C++ generator
-emits RTI-shaped C++11 value
-classes and public `UnionType` metadata for primitive or enum discriminators,
-scalar, string,
-aggregate, and bounded-sequence branches, and unions with or without a default
-branch. Collection-bearing union metadata accessors initialize the type shells
-and members without eagerly creating the generic type plugins; registration
-and CDR paths still initialize plugins. C139 also preserves four bounded
-sequence typedef names and their `AliasType` layers, and has an RTI 7.7.0
-consumer/API metadata check. This does not qualify generic union plugins, CDR,
-or wire behavior for C139. Qualification of other union shapes remains specific
-to the consumer and wire fixtures that exercise them. Generated types also
-include topic name/support traits and generic-factory registration, lifecycle,
-and CDR callback source. A
-source-unbounded string uses the resolved profile bound by default (255
-characters). The standalone CLI preserves that finite behavior unless
-`--unbounded-support` is supplied. In that opt-in mode, unbounded string and
-sequence DynamicType bounds use `RTIXCdrLong_MAX`; supported unbounded sequence
-fields use `omg::types::sequence<T>`. Wide string members use `std::wstring` and the RTI `WStringType`
-metadata expression; stream output uses an escaped `L"..."` representation.
-Direct narrow/wide string aliases and bounded/unbounded one- and two-hop alias
-chains retain their public `using` names. Parsed typedef facts provide the
-effective metadata bound: 255 by default for omitted bounds,
-`RTIXCdrLong_MAX` for unbounded-support inputs, and the explicit IDL bound
-otherwise.
-Source-unbounded sequences use the current CLI profile's finite fallback bound
-of 100 by default; `--unbounded-support` enables the scoped C173 sequence and
-string shape, including wide-string and simple struct sequence elements, plus
-C019's self-recursive aggregate sequence. C019 uses the
-unbounded profile to match RTI's `omg::types::sequence<Self>` storage. Its
-metadata path is exercised indirectly by local CDR tests; DynamicType is not
-directly tested. RTI 7.7.0 does not permit registering that recursive type
-because TypeObjectV2 rejects strongly connected components.
-Qualification varies by string, alias, and collection shape. The `05-shapes`
-case has native consumer and live-wire checks; other cases retain their
-case-specific consumer, CDR, or generation checks in the wire compatibility
-fixtures. See the [wire harness guide](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md).
-The C044 keyed topic remains a separate regression fixture.
+For each IDL root, generation emits `<name>.hpp`, `<name>.cxx`,
+`<name>Plugin.hpp`, and `<name>Plugin.cxx`. Public values, operations, and topic
+traits have Doxygen documentation. The executable follows the build host;
+the application's target architecture does not select the generator.
 
-`@data_representation(XCDR2)` and its RTI-documented synonym
-`@allowed_data_representation(XCDR2)` are supported on the C041/C043 appendable
-scalar struct shapes. The generated CDR helper retains `auto_id`, supports XCDR2, and rejects
-explicit XCDR1. RTI 7.7.0 has no public Modern C++ TypeCode setter for the
-representation mask, so this shape uses its internal TypeCode layout before
-generic plugin creation. Consumer evidence covers the mask and scalar CDR
-helper only; use RTI 7.7.0 for this generated shape and recheck the layout
-before an SDK upgrade. Topic registration, endpoint negotiation, and live
-wire behavior remain unqualified.
+### CLI and build settings
 
-C047 `10-flat-data-binding` emits RTI 7.7 FlatData's final `Sample<Offset>`
-shape, offset accessors, a plain helper, DynamicType metadata, and the
-`type_programs` specialization used by `Sample::create_data()`. Its CMake
-consumer exercises sample allocation, offset reads/writes, and direct copying
-of the fixed-size XCDR2 buffer through the generated CDR helpers; explicit
-XCDR1 is rejected. The FlatData kind flag and XCDR2 mask depend on private RTI
-7.7.0.0 TypeCode fields guarded at compile time. PRESTypePlugin callbacks,
-topic registration, DataWriter loans, endpoint negotiation, and live wire
-behavior remain unqualified. See the
-[RTI 7.7 feature coverage](../../docs/corpus/7.7.0/FEATURE-COVERAGE.md).
-The [package verification guide](../../tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md)
-describes NuGet, MSBuild, and CMake checks.
-
-Generated value fields, constructors, topic traits, and documented sample
-operations are the application-facing API. Generated plugin callbacks,
-sample-access metadata, and DynamicType construction are implementation ABI
-selected for an RTI profile; they are not a customer extension surface. The
-current C-layout `CTypePlugin` path is not qualified for STL-backed string
-or array samples. Sequence-bearing value graphs with bounded primitive or enum
-sequences use an RTI 7.7.0.0 guarded STL-aware `PRESTypePlugin`; ordinary value
-graphs continue to use the C-layout plugin. Unsupported aggregate and sequence
-graphs fail closed for registration and CDR. C019 `06-aggregates` validates its
-`Base`, inherited `Derived`, and `Composed` nonrecursive graph against RTI 7.7:
-typed registration/DataWriter creation pass, and default plus representative
-values match RTI byte-for-byte for local XCDR1/XCDR2 round trips. The recursive
-`Recursive.children` graph uses parent-aware `RTIXCdrResourceNode` traversal.
-With `--unbounded-support`, its local XCDR1/XCDR2 empty and depth-three CDR
-matches RTI byte-for-byte. RTI 7.7.0 rejects TypeObjectV2 registration for
-recursive strongly connected components, so Wireloom fails recursive
-registration closed with a targeted diagnostic. DynamicType is not directly
-tested for this shape, and live DDS remains unqualified. C134's optional
-recursive fixed array is distinct; generic plugin, CDR, and live-DDS runtime
-behavior remain separately unqualified for that case.
-C021 `06-alias-composition` passes DynamicType checks for its typedef, enum,
-two structs, and nested bounded-sequence graph; `Sample` and `Named` register
-as typed topic roots, and default/full-bound values match RTI byte-for-byte
-under local XCDR1 and XCDR2 serialization. Live DDS remains unqualified.
-C005, C006,
-`03-enums-aliases`, and `03-alias-collections` pass typed registration and
-writer creation plus local XCDR1/XCDR2 CDR byte equality for their tested
-sequence lengths. C039 `09-optional-collections` also passes typed
-registration/writer creation and local XCDR1/XCDR2 byte equality for absent,
-present-empty, partial, and full optional bounded primitive sequences with
-absent/present optional fixed primitive arrays; it attaches RTI's sequence and
-optional-array access helpers. C114 `09-optional-string-sequences` also passes
-typed registration/writer creation and local XCDR1/XCDR2 CDR byte equality for
-exact optional `sequence<string<16>, 4>` and `sequence<wstring<16>, 4>` members.
-It exercises absent, empty, each member independently present, both partial,
-and both full states with empty and 16-character boundary elements. Other
-string-sequence graphs fail closed. The alias cases walk RTI 7.7 TypeCode aliases to attach
-sequence sample access to `Record.colors` and each nested sequence node in
-`Sample.values`. Unsupported sequence graph shapes fail
-explicitly. These results do not qualify live sample exchange, other string
-sequence shapes, other array shapes, other nested collection shapes, or older
-RTI profiles. See the
-[C039 native fixture](../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppOptionalCollections/README.md)
-and the [wire harness guide](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md). The
-[ADR-006](../../docs/architecture/adr/ADR-006-use-stl-aware-sample-access-for-modern-cpp.md)
-records the adapter boundary and remaining RTI support/licensing review.
-
-All generated C++ files use deterministic LF line endings. Public value types,
-members, value operations, and topic/type-support traits include concise Doxygen
-documentation; private generated plugin implementation details remain
-undocumented.
-
-For optional presence, public-field usage, and union branch operations, see
-[Generated C++ value semantics](../../docs/guides/cpp-generated-value-semantics.md).
-
-## Build the generator from source
-
-Run from the repository root:
+You can also generate sources directly from your application directory. On
+Windows, run the installed executable in PowerShell:
 
 ```powershell
-dotnet restore src/Wireloom.Dds.Cpp.Generator/Wireloom.Dds.Cpp.Generator.csproj --locked-mode
-dotnet build src/Wireloom.Dds.Cpp.Generator/Wireloom.Dds.Cpp.Generator.csproj -c Release --no-restore
-dotnet src/Wireloom.Dds.Cpp.Generator/bin/Release/net10.0/Wireloom.Dds.Cpp.dll generate docs/corpus/idl/features/01-primitives.idl artifacts/cpp-generated
-# Add preprocessor symbols and IDL include directories when required by the input.
-dotnet src/Wireloom.Dds.Cpp.Generator/bin/Release/net10.0/Wireloom.Dds.Cpp.dll generate `
-  docs/corpus/idl/features/11-preprocessing.idl artifacts/cpp-preprocessing `
-  --define CORPUS_CAPTURE_DEFINE --include-directory docs/corpus/idl
-pwsh -NoProfile -File src/Wireloom.Dds.Cpp.Generator/Verify-Cli.ps1
+.\packages\Wireloom.Dds.Cpp.Generator.1.1.0\tools\win-x64\Wireloom.Dds.Cpp.exe generate Contract.idl generated --rti-version 7.7.0
 ```
 
-`--include-directory` adds a search location for reachable IDL includes.
-Quoted includes are also resolved beside the including file. `--define` supplies
-a preprocessor symbol to the root IDL. `--unbounded-support` opts into RTI-style
-unbounded sequence and string metadata; it is also available as the
-`UNBOUNDED_SUPPORT` option to `wireloom_add_idl`. The CLI also accepts
-`--undefine`, `--strict`, `--sequence-size`, `--string-size`,
-`--enable-escape-char`, and `--finite-support`. Per-file size and unbounded
-overrides use `--file-sequence-size`, `--file-string-size`, and
-`--file-unbounded-support` with a path/value pair. CMake exposes corresponding
-`UNDEFINES`, `STRICT`, `SEQUENCE_SIZE`, `STRING_SIZE`, `ENABLE_ESCAPE_CHAR`, and
-`FINITE_SUPPORT` arguments alongside `DEFINES`, `INCLUDE_DIRECTORIES`, and the
-`FILE_SEQUENCE_SIZES`, `FILE_STRING_SIZES`, and `FILE_UNBOUNDED_SUPPORT` path/value lists.
+On Linux, restore the execute permission after extracting the package:
 
-Publish a native executable on its matching host OS and pack after both RID
-outputs have been assembled under the same package root:
-
-```powershell
-$version = '1.0.1-preview.42' # Example local candidate, not a published version.
-pwsh -NoProfile -File scripts/Publish-WireloomCppNative.ps1 -RuntimeIdentifier win-x64 -PackageVersion $version
-# On a Linux x64 host, use -RuntimeIdentifier linux-x64.
-dotnet pack src/Wireloom.Dds.Cpp.Generator/Wireloom.Dds.Cpp.Generator.csproj -c Release -o artifacts/package-test-feed "-p:Version=$version" "-p:PackageVersion=$version"
+```bash
+tool='./packages/Wireloom.Dds.Cpp.Generator.1.1.0/tools/linux-x64/Wireloom.Dds.Cpp'
+chmod +x "$tool"
+"$tool" generate Contract.idl generated --rti-version 7.7.0
 ```
 
-The publish script stages the native build under `artifacts/cpp-native-package/publish/<rid>/`,
-copies only the executable into `tools/<rid>/`, and retains its publish log,
-warning summary, and SHA256 manifest under `metadata/<rid>/`. The pack target
-requires both `tools/win-x64/Wireloom.Dds.Cpp.exe` and
-`tools/linux-x64/Wireloom.Dds.Cpp`; it rejects managed assemblies, PDBs, deps
-files, and runtimeconfig files in the native tool directories and excludes
-managed build output and runtime dependencies from the NuGet package.
+Pass `--help` for the complete syntax. Set `--rti-version` to match the native
+SDK profile; the implemented profiles are 6.1.2, 7.3.1, and 7.7.0. Add the
+generated sources and include directory to your application build when using
+the CLI directly; CMake and MSBuild perform that integration automatically.
 
-Use the same explicit version for both host publishes and packing. Omitting
-`-PackageVersion` uses `WireloomVersion` from `Directory.Build.props`.
-The reusable [package workflow](../../.github/workflows/cpp-package.yml) builds
-both payloads and verifies the combined candidate on both operating systems.
-The preview and release publishers select one source revision and version,
-wait for those checks, and attest and publish the exact tested C++ package
-alongside the C# package. They retain package hashes and an SBOM. General
-release qualification remains a separate gate.
+| Setting                    | CLI                                                                      | CMake                                                                |
+| :------------------------- | :----------------------------------------------------------------------- | :------------------------------------------------------------------- |
+| RTI profile                | `--rti-version`                                                          | `WIRELOOM_CPP_RTI_VERSION`                                           |
+| Includes and preprocessing | `--include-directory`, `--define`, `--undefine`                          | `INCLUDE_DIRECTORIES`, `DEFINES`, `UNDEFINES`                        |
+| Validation and identifiers | `--strict`, `--enable-escape-char`                                       | `STRICT`, `ENABLE_ESCAPE_CHAR`                                       |
+| Finite fallback sizes      | `--sequence-size`, `--string-size`                                       | `SEQUENCE_SIZE`, `STRING_SIZE`                                       |
+| Unbounded or finite mode   | `--unbounded-support`, `--finite-support`                                | `UNBOUNDED_SUPPORT`, `FINITE_SUPPORT`                                |
+| Declaring-file overrides   | `--file-sequence-size`, `--file-string-size`, `--file-unbounded-support` | `FILE_SEQUENCE_SIZES`, `FILE_STRING_SIZES`, `FILE_UNBOUNDED_SUPPORT` |
 
-The CLI verifier compares all four generated files against retained Wireloom
-output for each corpus case it lists, including bounded and source-unbounded
-narrow and wide string members, `05-collections` arrays and sequences,
-`05-shapes` compositions, and arrays of sequences in `05-array-of-sequences`.
-It also checks source-located diagnostics for unsupported
-fields and annotations and confirms that the generated type uses a changed IDL
-default.
+Quoted includes are searched beside the including file; include directories
+supply additional search locations. Per-file overrides use path/value pairs
+and apply to declarations in that file. The bundled native MSBuild target
+exposes `WireloomIdl`, `WireloomCppRtiVersion`, and `WireloomCppGeneratedDir`.
+Use the CLI or CMake when you need the additional generation options above;
+they are not forwarded by that MSBuild target.
+
+MSBuild tracks root IDL and transitive includes automatically. Comment-only
+or timestamp-only edits run generation once, then unchanged builds skip it.
+Deleting a generated file regenerates it; `Clean` removes generated files
+and build state. For custom build integrations, `--dependency-file <path>`
+writes the absolute input paths, one per line, after successful generation.
+
+### Generated APIs and bounds
+
+The generator handles documented scalar and enum values, constants, aliases,
+strings, collections, aggregates, keys, unions, optional members, and
+annotations. Availability and runtime support depend on the exact shape and
+RTI profile. See [C++ value semantics](https://github.com/eNeRGy164/wireloom/blob/v1.1.0/docs/guides/cpp-generated-value-semantics.md)
+for public fields, optional presence, copying, and union branch operations.
+
+Source-unbounded sequences default to 100 elements and source-unbounded
+strings to 255. Explicit IDL bounds remain effective. Opt-in unbounded mode
+uses RTI unbounded metadata and the supported dynamic storage paths; it does
+not qualify arbitrary sample sizes or recursive graphs.
+
+### Capability and qualification limits
+
+Use the [1.1.0 release record](https://github.com/eNeRGy164/wireloom/blob/main/docs/releases/1.1.0.md)
+and [support policy](https://github.com/eNeRGy164/wireloom/blob/v1.1.0/docs/guides/support-and-compatibility.md#modern-c-support-and-compatibility)
+before adopting an IDL shape or native environment. Accepted IDL does not
+guarantee that every generated type can be registered or serialized on every
+RTI profile.
+
+- Match the generation profile, native SDK, and application toolchain. Rebuild
+  generated contracts when upgrading either the generator or RTI SDK.
+- Recursive sequences and recursive optional arrays have separate limits.
+  RTI 7.7.0 TypeObject v2 rejects recursive strongly connected components;
+  follow the documented recursion restrictions.
+- FlatData is limited to the documented final, unkeyed, fixed-size two-`long`,
+  XCDR2-only shape on RTI 7.7.0.0.
+- Optional sequences of wide strings have known Linux failures. Review the
+  version-specific limitations before using that shape.
+- Use public value APIs and topic traits. Generated plugin callbacks and
+  native adapter internals are not application extension points.
+
+## Troubleshooting
+
+| Symptom                                       | Check and next step                                                                                                                                                |
+| :-------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CMake cannot find `WireloomCpp`               | Set `WireloomCpp_DIR` to the extracted 1.1.0 package's `build/cmake` directory, then configure again.                                                              |
+| Linux reports `Permission denied` for the CLI | Run `chmod +x` on the packaged Linux executable, or use the CMake integration to restore its permission.                                                           |
+| MSBuild does not generate sources             | Restore `packages.config`, check the package's `.props` and `.targets` imports, and declare a `WireloomIdl` item in the native project. Use Visual Studio MSBuild. |
+| An IDL include cannot be resolved             | Check quoted includes relative to their declaring file. Use CLI `--include-directory` or CMake `INCLUDE_DIRECTORIES` for additional search directories.            |
+| Generated sources do not compile against RTI  | Match `--rti-version`, `WIRELOOM_CPP_RTI_VERSION`, or `WireloomCppRtiVersion` to the application's native SDK and verify its compiler/linker configuration.        |
+| Registration or serialization is rejected     | Check the release limits for the exact IDL shape and RTI profile. Generation alone does not establish runtime support.                                             |
+| The CLI exits with a nonzero code             | Exit `1` reports generation failure; exit `2` reports invalid usage. Read the diagnostic path/message and use `--help` for accepted options.                       |
+
+For DDS runtime, license, discovery, and peer setup, follow the
+[C++ Hello World troubleshooting guide](https://github.com/eNeRGy164/wireloom/blob/v1.1.0/docs/guides/hello-world.md#troubleshoot-the-c-walkthrough).
+
+## Learn more
+
+- [Documentation by task](https://github.com/eNeRGy164/wireloom/blob/v1.1.0/docs/README.md)
+- [Report a compatibility or integration problem](https://github.com/eNeRGy164/wireloom/blob/v1.1.0/docs/guides/reporting-issues.md)
+- [1.1.0 release qualification](https://github.com/eNeRGy164/wireloom/blob/main/docs/releases/1.1.0.md)

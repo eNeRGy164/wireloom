@@ -125,12 +125,7 @@ summary:
       Wireloom.Dds.Generator, Wireloom.Dds.Cpp, and Wireloom.Dds.Cpp.Generator;
       the browser host is Wireloom.Playground.Browser.
       The Playground selects C# or C++ per workspace and previews the matching
-      MSBuild project or CMake project. Its browser client composes focused
-      UI modules for generated-file state and tabs, search, notices, and pane layout
-      virtual-file dialogs and mutation workflows are coordinated separately from
-      source-tree rendering and navigation.
-      while keeping the existing client/worker boundary. Styles are grouped by
-      UI responsibility and use native nesting.
+      MSBuild or CMake project through the client/worker boundary.
       The native C++ NuGet supplies MSBuild and CMake entry points; its supported
       shapes and qualification are recorded in the generator guide and corpus.
     sources: [docs/architecture/arc42/05-building-block-view.md, src/Wireloom.Dds.Idl/Api/IdlCompilationRequest.cs, src/Wireloom.Dds.Idl/Api/IdlCompilationResult.cs, src/Wireloom.Dds.CSharp.Compiler/Api/Compiler.cs, src/Wireloom.Dds.Cpp.Compiler/Api/Compiler.cs, src/Wireloom.Dds.Cpp.Generator/README.md]

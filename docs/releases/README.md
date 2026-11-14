@@ -5,6 +5,14 @@ Start with the record for the exact package version you use. Each record links
 the package and immutable GitHub release, identifies the source tag, and reports
 the quality and release workflow results available for that source revision.
 
+## Planned release
+
+[Wireloom 1.1.0 — A New Thread in the Loom](1.1.0.md) is in preparation for
+`Wireloom.Dds.Generator` and the first `Wireloom.Dds.Cpp.Generator` package.
+The planned tag is `v1.1.0`; publication and qualification are pending.
+
+## Published releases
+
 | Package                                                              | Source tag                                                                                                         | Published  | Record                          |
 | :------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- | :--------- | :------------------------------ |
 | [1.0.0](https://www.nuget.org/packages/Wireloom.Dds.Generator/1.0.0) | [`v1.0.0`](https://github.com/eNeRGy164/wireloom/releases/tag/v1.0.0) · `7ab7834a66358915993e09cba308e1c66183f70d` | 2026-11-03 | [1.0.0 qualification](1.0.0.md) |

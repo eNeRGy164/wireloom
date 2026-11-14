@@ -1,6 +1,8 @@
 # Contributing to Wireloom
 
-This guide covers repository development and maintenance. For consumer setup, see the [package usage guide](src/Wireloom.Dds.CSharp.Generator/README.md).
+This guide covers repository development and maintenance. For consumer setup,
+see the [C# package guide](src/Wireloom.Dds.CSharp.Generator/README.md) or
+[C++ package guide](src/Wireloom.Dds.Cpp.Generator/README.md).
 
 ## Before changing code
 
@@ -18,9 +20,9 @@ This guide covers repository development and maintenance. For consumer setup, se
 ## Development setup
 
 Use the repository-pinned .NET SDK from [`global.json`](global.json) and the
-checked-in NuGet lock files. The generator targets `netstandard2.0`; consumer
-and verification projects use the target frameworks documented in the
-architecture baseline.
+checked-in NuGet lock files. The C# analyzer targets `netstandard2.0`; the
+managed C++ development CLI targets `net10.0`. Consumer and verification
+projects use the target frameworks documented in the architecture baseline.
 
 Restore and build the generator:
 
@@ -80,7 +82,9 @@ using the same include directories and RTI profile as the corpus export. The
 [C++ generator tests](tests/Wireloom.Dds.Cpp.Generator.Tests/README.md) cover
 CLI and filesystem behavior; the
 [package integration checks](tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md)
-exercise the packed native tools.
+exercise the packed native tools. Use the package guide's
+[CLI settings reference](src/Wireloom.Dds.Cpp.Generator/README.md#cli-and-build-settings)
+when reproducing a case with preprocessing or per-file options.
 
 ## Tests and fixtures
 
@@ -100,7 +104,7 @@ Keep the test layers focused:
   consuming project.
 - [Runtime contract tests](tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md)
   compile focused IDL fixtures during the build and execute generated APIs
-  directly against both exact RTI 7.3.1 and 7.7.0 profiles on Windows and Linux. Their behavior matrix tracks
+  directly against exact RTI 6.1.2, 7.3.1, and 7.7.0 profiles on Windows and Linux. Their behavior matrix tracks
   runtime contracts; Coveralls measures maintained compiler and generator
   source while excluding generated fixtures and test-project code.
   Keep known failures visible and distinguish API behavior from serialization
@@ -152,8 +156,8 @@ that every DDS exchange passed.
 
 ## Continuous LTS verification
 
-The [Quality workflow](.github/workflows/quality.yml) checks both RTI 7.3.1 and
-7.7.0 corpus profiles. Its runtime/package matrix combines both RTI packages,
+The [Quality workflow](.github/workflows/quality.yml) checks the RTI 6.1.2,
+7.3.1, and 7.7.0 corpus profiles. Its runtime/package matrix combines all three RTI packages,
 .NET 8 and .NET 10 consumer targets, and Windows and Ubuntu. Each job tests a
 freshly packed analyzer with C# 12 and retains its output. The pinned repository
 SDK builds every cell; install .NET 8 alongside it for `net8.0` execution.
@@ -199,12 +203,100 @@ sites or historical-revision URLs, or replace Markdown rendering review.
 
 ## Packages and releases
 
+### Review package READMEs
+
+Read each package README as a consumer installing that exact version from
+NuGet.org. Keep prerequisites, installation, application build integration,
+configuration, generated API usage, troubleshooting, upgrade/rollback, and
+consumer-relevant limits there. Keep repository builds, publishing commands,
+test execution, CI host details, oracle comparisons, and adapter-review work
+in maintainer documentation. Use the
+[release checklist](docs/releases/PREPARING-A-RELEASE.md) before packing.
+
+Use these sources when checking package documentation:
+
+- [C# mapping and annotation review](docs/corpus/README.md#review-package-mapping-and-annotation-claims)
+  owns the retained RTI/generated-source comparisons and annotation evidence.
+- [Runtime contracts](tests/Wireloom.Dds.CSharp.RuntimeContracts/README.md) and
+  [C# package integration](tests/Wireloom.Dds.CSharp.Generator.PackageIntegration/README.md)
+  establish API and package behavior. The minimum-host check uses SDK 8.0.100;
+  the regular build uses the repository SDK. Record exact-source results in
+  the release record instead of describing CI setup in the package README.
+- [Native package checks](tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md)
+  and the [wire harness](tests/Wireloom.Dds.Generator.WireCompatibility/README.md)
+  own native installation, incremental builds, consumer execution, and peer
+  reproduction. Keep generation, API, lifecycle, CDR, and live DDS claims
+  separate when reviewing the release scope.
+- [ADR-006](docs/architecture/adr/ADR-006-use-stl-aware-sample-access-for-modern-cpp.md)
+  and the [native qualification risks](docs/architecture/arc42/11-risks-and-technical-debt.md#116-modern-c-qualification-risks)
+  own adapter decisions, private SDK dependencies, and platform findings.
+  Apply the [RTI distribution and maintenance policy](docs/guides/support-and-compatibility.md#rti-distribution-and-internal-interfaces)
+  when updating internal calls for a supported SDK. Summarize actionable limits for consumers in the
+  exact-version release record and package guide.
+
+### C# analyzer package
+
 Pack the analyzer/source-generator package locally with:
 
 ```shell
 dotnet restore src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj --locked-mode
 dotnet pack src/Wireloom.Dds.CSharp.Generator/Wireloom.Dds.CSharp.Generator.csproj --no-restore --configuration Release --output artifacts
 ```
+
+### Native C++ package
+
+Publish each Native AOT executable on its matching host OS using the same
+source revision and explicit package version. Choose a unique local version:
+
+```powershell
+$version = "1.1.0-local.$(Get-Date -Format yyyyMMddHHmmss)"
+pwsh -NoProfile -File scripts/Publish-WireloomCppNative.ps1 -RuntimeIdentifier win-x64 -PackageVersion $version
+```
+
+On Linux x64, run the script with `-RuntimeIdentifier linux-x64` and the same
+version. Assemble both hosts' `tools/` and `metadata/` outputs under
+`artifacts/cpp-native-package/`, then pack:
+
+```powershell
+dotnet pack src/Wireloom.Dds.Cpp.Generator/Wireloom.Dds.Cpp.Generator.csproj --configuration Release --output artifacts/package-test-feed "-p:Version=$version" "-p:PackageVersion=$version"
+```
+
+The publish script retains build logs, warnings, and hashes under
+`metadata/<rid>/`. Packing requires both native executables and rejects
+managed assemblies, PDBs, deps files, and runtimeconfig files in `tools/`.
+Run the [native package checks](tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/README.md)
+on both hosts against the same package. The reusable
+[C++ package workflow](.github/workflows/cpp-package.yml) automates these steps;
+the publication workflows attest and publish the exact tested bytes.
+
+### Preview and retained candidates
+
+Preview NuGet packages use `https://nuget.pkg.github.com/eNeRGy164/index.json`.
+Select an exact prerelease version and configure package-read credentials in
+your user or CI credential store. Keep credentials out of source control.
+
+For a retained preview candidate, download the publishing artifact and verify
+its hashes before extracting the C++ package:
+
+```bash
+run_id='<publishing-run-id>'
+version='<exact-prerelease-version>'
+gh run download "$run_id" --repo eNeRGy164/wireloom \
+  --name "wireloom-dds-generator-preview-$version" --dir candidate
+(cd candidate && sha256sum --check SHA256SUMS)
+mkdir -p "packages/Wireloom.Dds.Cpp.Generator.$version"
+(
+  cd "packages/Wireloom.Dds.Cpp.Generator.$version"
+  cmake -E tar xf "../../candidate/Wireloom.Dds.Cpp.Generator.$version.nupkg"
+)
+```
+
+Preview and native consumer artifacts expire after 14 days. Retain packages,
+hashes, and provenance when needed longer. The standalone C++ package
+workflow's `cpp-nuget` artifact is a build candidate; it does not indicate
+feed publication or release qualification.
+
+### Publication
 
 Preview packages are produced from `main` and published to GitHub Packages.
 Release packages are published to NuGet.org from validated `v*.*.*` tags. The

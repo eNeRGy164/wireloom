@@ -73,6 +73,6 @@ payloads at one explicit version, assembles one candidate, and executes this
 script on both hosts. The preview/release publishers call that same workflow
 and publish its tested package after both consumer jobs pass.
 
-The Windows CI generation check passes `-PlatformToolset v143` for its
-Visual Studio 2022 runner. The licensed demo defaults to Visual Studio 2026
+The Windows CI generation check uses `windows-2025` with the
+Visual Studio 2022 `v143` toolset. The licensed demo defaults to Visual Studio 2026
 and `v145`; generation remains independent of the C++ target toolset.
