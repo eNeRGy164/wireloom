@@ -1,0 +1,416 @@
+{
+  "schemaVersion": 1,
+  "checkedAtUtc": "2026-11-14T21:39:20.395Z",
+  "preparationRevision": "30d93a4e8edac7b85c4d7ff35496475a9df547da",
+  "releaseRevision": null,
+  "disposition": "Local preflight passed. Merge the fixes and qualify their exact merged source; the owner verifies NuGet.org trusted publishing.",
+  "mainChecks": {
+    "quality": "https://github.com/eNeRGy164/wireloom/actions/runs/43634610009",
+    "coveralls": "https://coveralls.io/builds/83044550",
+    "wire": "https://github.com/eNeRGy164/wireloom/actions/runs/43634609930",
+    "native": "https://github.com/eNeRGy164/wireloom/actions/runs/43634609928",
+    "preview": "https://github.com/eNeRGy164/wireloom/actions/runs/43635707711",
+    "playground": "https://github.com/eNeRGy164/wireloom/actions/runs/43635707650",
+    "status": "Passed for the preparation revision; rerun on the final merged fixes"
+  },
+  "wire": [
+    {
+      "profile": "6.1.2",
+      "passed": 2521,
+      "failed": 0,
+      "cppScenarios": 1093,
+      "adaptedScenarios": 304,
+      "knownExceptions": [
+        {
+          "case": "03-enum-values-explicit",
+          "peer": "RTI C#",
+          "reason": "Negative enum defaults in the generated aggregate wrapper fail compilation with CS0075 (CODEGENII-1799)."
+        },
+        {
+          "case": "07-union-wchar-label",
+          "peer": "RTI C#",
+          "reason": "RTI rejects the wchar union discriminator during source generation; no RTI C# peer can be built."
+        },
+        {
+          "case": "07-union-wchar-label",
+          "peer": "Wireloom C++",
+          "reason": "The Wireloom C++ generator does not support wchar union discriminators in any RTI profile."
+        },
+        {
+          "case": "10-flat-data-binding",
+          "peer": "Wireloom C++",
+          "reason": "The generated FlatData Sample<Offset> and type_programs/ProgramsSingleton initialization APIs are qualified only with RTI 7.7.0; the retained 6.1.2 C++ reference uses PLAIN mapping."
+        }
+      ],
+      "directions": {
+        "Wireloom C# -> Wireloom C++": 156,
+        "RTI C# -> Wireloom C++": 151,
+        "RTI C++ -> Wireloom C++": 161,
+        "Wireloom C++ -> Wireloom C#": 156,
+        "Wireloom C++ -> RTI C#": 151,
+        "Wireloom C++ -> RTI C++": 161,
+        "Wireloom C++ -> Wireloom C++": 157
+      },
+      "artifact": {
+        "id": 14129942230,
+        "bytes": 1848714,
+        "digest": "sha256:029beddfaef87be8da5d360aecd34b1974100bfa1c86d852891fc1f06d0afa81",
+        "expires": "2026-11-28T20:04:36Z"
+      }
+    },
+    {
+      "profile": "7.3.1",
+      "passed": 2829,
+      "failed": 0,
+      "cppScenarios": 1223,
+      "adaptedScenarios": 374,
+      "knownExceptions": [
+        {
+          "case": "07-union-wchar-label",
+          "peer": "RTI C#",
+          "reason": "RTI rejects the wchar union discriminator during source generation; no RTI C# peer can be built."
+        },
+        {
+          "case": "07-union-wchar-label",
+          "peer": "Wireloom C++",
+          "reason": "The Wireloom C++ generator does not support wchar union discriminators in any RTI profile."
+        },
+        {
+          "case": "10-flat-data-binding",
+          "peer": "Wireloom C++",
+          "reason": "The generated FlatData Sample<Offset> and type_programs/ProgramsSingleton initialization APIs are qualified only with RTI 7.7.0; the retained 7.3.1 C++ reference uses PLAIN mapping."
+        }
+      ],
+      "directions": {
+        "Wireloom C# -> Wireloom C++": 175,
+        "RTI C# -> Wireloom C++": 171,
+        "RTI C++ -> Wireloom C++": 177,
+        "Wireloom C++ -> Wireloom C#": 175,
+        "Wireloom C++ -> RTI C#": 171,
+        "Wireloom C++ -> RTI C++": 177,
+        "Wireloom C++ -> Wireloom C++": 177
+      },
+      "artifact": {
+        "id": 14130026946,
+        "bytes": 2055708,
+        "digest": "sha256:cea255bbac7ff8073b8ab7c93348379ff3a42ea9b949ad16b0ea913c45f68a2d",
+        "expires": "2026-11-28T20:04:38Z"
+      }
+    },
+    {
+      "profile": "7.7.0",
+      "passed": 2823,
+      "failed": 0,
+      "cppScenarios": 1214,
+      "adaptedScenarios": 362,
+      "knownExceptions": [
+        {
+          "case": "07-union-wchar-label",
+          "peer": "RTI C#",
+          "reason": "RTI rejects the wchar union discriminator during source generation; no RTI C# peer can be built."
+        },
+        {
+          "case": "07-union-wchar-label",
+          "peer": "Wireloom C++",
+          "reason": "The Wireloom C++ generator does not support wchar union discriminators in any RTI profile."
+        },
+        {
+          "case": "07-union-octet",
+          "peer": "RTI C#",
+          "reason": "RTI 7.7.0 generated C# does not compile for the octet discriminator (CS0246); the known-good RTI 7.3.1 C# peer remains enabled."
+        }
+      ],
+      "directions": {
+        "Wireloom C# -> Wireloom C++": 175,
+        "RTI C# -> Wireloom C++": 168,
+        "RTI C++ -> Wireloom C++": 176,
+        "Wireloom C++ -> Wireloom C#": 175,
+        "Wireloom C++ -> RTI C#": 168,
+        "Wireloom C++ -> RTI C++": 176,
+        "Wireloom C++ -> Wireloom C++": 176
+      },
+      "artifact": {
+        "id": 14129892387,
+        "bytes": 2058319,
+        "digest": "sha256:7e7160d74b2558f2a55df84884fd88e8d2501aaffefaff5225241eac1e3e2ff7",
+        "expires": "2026-11-28T20:04:44Z"
+      }
+    }
+  ],
+  "previewProvenance": {
+    "verified": true,
+    "sourceRevision": "30d93a4e8edac7b85c4d7ff35496475a9df547da",
+    "workflow": "https://github.com/eNeRGy164/wireloom/.github/workflows/publish-preview.yml@refs/heads/main",
+    "invocation": "https://github.com/eNeRGy164/wireloom/actions/runs/43635707711/attempts/1"
+  },
+  "playground": {
+    "passed": true,
+    "sourceRevision": "30d93a4e8edac7b85c4d7ff35496475a9df547da",
+    "url": "https://energy164.github.io/wireloom/",
+    "manifestSha256": "efea15b6f37962959d97cff8bd3eb75acdcfadba4d9de81f96a4957076fe8bce",
+    "browserVersion": "156.0.8078.4"
+  },
+  "fixedCandidate": {
+    "version": "1.1.0",
+    "sha256": "ec7f42a8d4a415db30e604822c1ac01a000fea07b89e33eabc4d99f044bf3ef8",
+    "hosts": [
+      "win-x64",
+      "linux-x64"
+    ],
+    "installationUpgradeRollback": "passed; 1.0.1-ci.32 -> 1.1.0 -> 1.0.1-ci.32",
+    "msbuildScenarios": 55,
+    "nativeAbi": [
+      {
+        "profile": "6.1.2",
+        "compiler": "13.3.0",
+        "checks": [
+          {
+            "component": "matching",
+            "accepted": true
+          },
+          {
+            "component": "MAJOR",
+            "rejected": true
+          },
+          {
+            "component": "MINOR",
+            "rejected": true
+          },
+          {
+            "component": "RELEASE",
+            "rejected": true
+          },
+          {
+            "component": "REVISION",
+            "rejected": true
+          }
+        ]
+      },
+      {
+        "profile": "7.3.1",
+        "compiler": "13.3.0",
+        "checks": [
+          {
+            "accepted": true,
+            "component": "matching"
+          },
+          {
+            "rejected": true,
+            "component": "MAJOR"
+          },
+          {
+            "rejected": true,
+            "component": "MINOR"
+          },
+          {
+            "rejected": true,
+            "component": "RELEASE"
+          },
+          {
+            "rejected": true,
+            "component": "REVISION"
+          }
+        ]
+      },
+      {
+        "profile": "7.7.0",
+        "compiler": "13.3.0",
+        "checks": [
+          {
+            "accepted": true,
+            "component": "matching"
+          },
+          {
+            "rejected": true,
+            "component": "MAJOR"
+          },
+          {
+            "rejected": true,
+            "component": "MINOR"
+          },
+          {
+            "rejected": true,
+            "component": "RELEASE"
+          },
+          {
+            "rejected": true,
+            "component": "REVISION"
+          }
+        ]
+      }
+    ],
+    "legacyImplementationSha256": "69b73d5f77ba5bbc54051ed8ff1aa4d62eea1bbbcd6c4da4262e7a34c159d2d8",
+    "managedTests": 407,
+    "corpusTestsPerProfile": 176,
+    "branchCoverage": {
+      "covered": 3564,
+      "total": 3959
+    },
+    "lineCoverage": {
+      "covered": 8017,
+      "total": 8206
+    },
+    "qodanaProblems": 0
+  },
+  "walkthrough": {
+    "idl": "hello_world.idl",
+    "profile": "7.7.0.0",
+    "windows": {
+      "build": "Passed",
+      "compiler": "MSVC 19.44.35229.0 / v143",
+      "generator": "Visual Studio 18 2026",
+      "sdkArchitecture": "x64Win64VS2017",
+      "runtime": "Passed",
+      "system": "Windows 11 Pro x64, build 10.0.26300",
+      "cmake": "4.3.1-msvc1",
+      "checks": [
+        {
+          "name": "invalid arguments",
+          "passed": true,
+          "exitCode": 2
+        },
+        {
+          "name": "ten-sample exchange",
+          "passed": true,
+          "publisherExit": 0,
+          "subscriberExit": 0,
+          "sentPayloads": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "receivedPayloads": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ]
+        },
+        {
+          "name": "publisher-timeout",
+          "passed": true,
+          "exitCode": 1,
+          "elapsedMilliseconds": 30385
+        },
+        {
+          "name": "subscriber-timeout",
+          "passed": true,
+          "exitCode": 1,
+          "elapsedMilliseconds": 30414
+        },
+        {
+          "name": "--pub interrupt",
+          "passed": true,
+          "exitCode": 0
+        },
+        {
+          "name": "--sub interrupt",
+          "passed": true,
+          "exitCode": 0
+        }
+      ]
+    },
+    "linux": {
+      "build": "Passed",
+      "system": "Ubuntu 24.04.4 x64",
+      "compiler": "GCC 13.3.0",
+      "cmake": "3.28.3",
+      "sdkArchitecture": "x64Linux4gcc8.5.0",
+      "runtime": "Passed",
+      "containerImageId": "sha256:93343e372d6745669ac0b9f6e8f2dcc5aeea2d1e52632e3e109aa3407c337bf2",
+      "networkMode": "none",
+      "checks": [
+        {
+          "name": "invalid arguments",
+          "passed": true,
+          "details": {
+            "exitCode": 2
+          }
+        },
+        {
+          "name": "ten-sample exchange",
+          "passed": true,
+          "details": {
+            "publisherExit": 0,
+            "sent": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ],
+            "received": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ],
+            "subscriberExit": 0
+          }
+        },
+        {
+          "name": "publisher-timeout",
+          "passed": true,
+          "details": {
+            "elapsedMilliseconds": 30403,
+            "exitCode": 1
+          }
+        },
+        {
+          "name": "subscriber-timeout",
+          "passed": true,
+          "details": {
+            "elapsedMilliseconds": 30385,
+            "exitCode": 1
+          }
+        },
+        {
+          "name": "--pub interrupt",
+          "passed": true,
+          "details": {
+            "exitCode": 0
+          }
+        },
+        {
+          "name": "--sub interrupt",
+          "passed": true,
+          "details": {
+            "exitCode": 0
+          }
+        }
+      ]
+    },
+    "completedLiveExchange": true,
+    "timeoutAndInterruptChecksCompleted": true,
+    "packageSha256": "ec7f42a8d4a415db30e604822c1ac01a000fea07b89e33eabc4d99f044bf3ef8"
+  },
+  "remainingGates": [
+    "Merge the ABI guard and package README fixes; qualify the exact merged source and rebuilt candidate.",
+    "Owner verifies NuGet.org trusted publishing for Wireloom.Dds.Cpp.Generator.",
+    "Retain the final release-source wire archives and publication artifacts before their expiry."
+  ]
+}
