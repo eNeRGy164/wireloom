@@ -76,3 +76,20 @@ and publish its tested package after both consumer jobs pass.
 The Windows CI generation check uses `windows-2025` with the
 Visual Studio 2022 `v143` toolset. The licensed demo defaults to Visual Studio 2026
 and `v145`; generation remains independent of the C++ target toolset.
+
+## Native SDK guard checks
+
+On Linux, compile a freshly generated plugin against its exact RTI SDK and
+verify that its private adapter rejects mismatched SDK version components:
+
+```shell
+./tests/Wireloom.Dds.Cpp.Generator.PackageIntegration/Verify-NativeAbi.ps1 `
+  -Profile 6.1.2 `
+  -Source docs/corpus/6.1.2/generator/cpp/features/01-primitives/01-primitivesPlugin.cxx `
+  -NddsHome /opt/rti.com/rti_connext_dds-6.1.2
+```
+
+Use `10-annotationsPlugin.cxx` from the selected 7.3.1 or 7.7.0 corpus export
+for those profiles' private TypeCode adapter. This compile-only probe needs
+GCC and the SDK headers, and no RTI runtime license. It retains matching and
+negative compiler logs plus `result.json` under `artifacts/cpp-abi-checks/`.
