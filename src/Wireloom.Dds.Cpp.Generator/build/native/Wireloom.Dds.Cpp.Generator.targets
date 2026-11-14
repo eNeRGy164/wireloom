@@ -50,22 +50,41 @@
     <Exec Command="chmod +x &quot;$(WireloomCppTool)&quot;" />
   </Target>
 
-  <Target Name="WireloomCppWriteProfileStamp" BeforeTargets="WireloomCppGenerate" Condition="'@(WireloomIdl)' != ''">
-    <MakeDir Directories="$(IntermediateOutputPath)" />
-    <WriteLinesToFile File="$(IntermediateOutputPath)wireloom-cpp-rti-version.txt"
-                      Lines="$(WireloomCppRtiVersion)"
+  <Target Name="WireloomCppPrepareGeneration" DependsOnTargets="WireloomCppValidateTool" Condition="'@(WireloomIdl)' != ''">
+    <PropertyGroup>
+      <_WireloomCppStateDir>$(WireloomCppGeneratedDir)/.wireloom</_WireloomCppStateDir>
+      <_WireloomCppCompletionStamp>$(_WireloomCppStateDir)/generation.stamp</_WireloomCppCompletionStamp>
+      <_WireloomCppConfigurationStamp>$(_WireloomCppStateDir)/configuration.txt</_WireloomCppConfigurationStamp>
+    </PropertyGroup>
+    <ItemGroup>
+      <_WireloomCppDependencyFile Include="@(WireloomIdl->'$(_WireloomCppStateDir)/%(Filename).deps')" />
+      <_WireloomCppGeneratedFile Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename).hpp');@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename).cxx');@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.hpp');@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.cxx')" />
+      <_WireloomCppMissingFile Include="@(_WireloomCppDependencyFile);@(_WireloomCppGeneratedFile)" Condition="!Exists('%(Identity)')" />
+    </ItemGroup>
+    <MakeDir Directories="$(_WireloomCppStateDir)" />
+    <WriteLinesToFile File="$(_WireloomCppConfigurationStamp)"
+                      Lines="@(WireloomIdl->'%(FullPath)');$(WireloomCppTool);$(WireloomCppGeneratedDir);$(WireloomCppRtiVersion)"
                       Overwrite="true"
                       WriteOnlyWhenDifferent="true" />
+    <ReadLinesFromFile File="%(_WireloomCppDependencyFile.Identity)" Condition="Exists('%(_WireloomCppDependencyFile.Identity)')">
+      <Output TaskParameter="Lines" ItemName="_WireloomCppDependency" />
+    </ReadLinesFromFile>
+    <!-- Generated text keeps its timestamp. Missing outputs must invalidate the
+         completion stamp independently of timestamp comparisons. -->
+    <Delete Files="$(_WireloomCppCompletionStamp)" Condition="'@(_WireloomCppMissingFile)' != ''" />
   </Target>
 
   <Target Name="WireloomCppGenerate"
           BeforeTargets="ClCompile"
-          DependsOnTargets="WireloomCppValidateTool;WireloomCppWriteProfileStamp"
-          Inputs="@(WireloomIdl);$(WireloomCppTool);$(IntermediateOutputPath)wireloom-cpp-rti-version.txt"
-          Outputs="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename).hpp');@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename).cxx');@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.hpp');@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.cxx')">
-    <Exec Command="&quot;$(WireloomCppTool)&quot; generate &quot;%(WireloomIdl.FullPath)&quot; &quot;$(WireloomCppGeneratedDir)/.&quot; --rti-version &quot;$(WireloomCppRtiVersion)&quot;"
+          DependsOnTargets="WireloomCppPrepareGeneration"
+          Condition="'@(WireloomIdl)' != ''"
+          Inputs="@(WireloomIdl);@(_WireloomCppDependency);$(WireloomCppTool);$(_WireloomCppConfigurationStamp);$(MSBuildAllProjects);$(MSBuildProjectFullPath)"
+          Outputs="$(_WireloomCppCompletionStamp)">
+    <Delete Files="$(_WireloomCppCompletionStamp)" />
+    <Exec Command="&quot;$(WireloomCppTool)&quot; generate &quot;%(WireloomIdl.FullPath)&quot; &quot;$(WireloomCppGeneratedDir)/.&quot; --rti-version &quot;$(WireloomCppRtiVersion)&quot; --dependency-file &quot;$(_WireloomCppStateDir)/%(WireloomIdl.Filename).deps&quot;"
           WorkingDirectory="$(MSBuildProjectDirectory)"
           IgnoreExitCode="false" />
+    <Touch Files="$(_WireloomCppCompletionStamp)" AlwaysCreate="true" />
   </Target>
 
   <Target Name="WireloomCppTrackGeneratedFiles" BeforeTargets="ClCompile;Clean" Condition="'@(WireloomIdl)' != ''">
@@ -74,6 +93,19 @@
       <FileWrites Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename).cxx')" />
       <FileWrites Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.hpp')" />
       <FileWrites Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.cxx')" />
+      <FileWrites Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/.wireloom/%(Filename).deps')" />
+      <FileWrites Include="$(WireloomCppGeneratedDir)/.wireloom/generation.stamp;$(WireloomCppGeneratedDir)/.wireloom/configuration.txt" />
     </ItemGroup>
+  </Target>
+
+  <!-- Utility projects do not run the native compiler's FileWrites cleanup. -->
+  <Target Name="WireloomCppClean" BeforeTargets="Clean" Condition="'@(WireloomIdl)' != '' or Exists('$(WireloomCppGeneratedDir)/.wireloom')">
+    <ItemGroup>
+      <_WireloomCppCleanDependency Include="$(WireloomCppGeneratedDir)/.wireloom/*.deps" />
+      <_WireloomCppCleanFile Include="@(_WireloomCppCleanDependency->'$(WireloomCppGeneratedDir)/%(Filename).hpp');@(_WireloomCppCleanDependency->'$(WireloomCppGeneratedDir)/%(Filename).cxx');@(_WireloomCppCleanDependency->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.hpp');@(_WireloomCppCleanDependency->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.cxx')" />
+      <_WireloomCppCleanFile Include="@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename).hpp');@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename).cxx');@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.hpp');@(WireloomIdl->'$(WireloomCppGeneratedDir)/%(Filename)Plugin.cxx')" />
+      <_WireloomCppCleanFile Include="$(WireloomCppGeneratedDir)/.wireloom/*.deps;$(WireloomCppGeneratedDir)/.wireloom/generation.stamp;$(WireloomCppGeneratedDir)/.wireloom/configuration.txt" />
+    </ItemGroup>
+    <Delete Files="@(_WireloomCppCleanFile)" />
   </Target>
 </Project>

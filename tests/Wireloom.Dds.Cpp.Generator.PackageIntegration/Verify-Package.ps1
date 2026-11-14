@@ -242,6 +242,12 @@ if ($IsWindows) {
     $copiedIdl = Join-Path $demo 'docs/corpus/idl/features/01-primitives.idl'
     New-Item (Split-Path $copiedIdl -Parent) -ItemType Directory -Force | Out-Null
     Copy-Item $idl $copiedIdl
+    $msbuildInclude = Join-Path (Split-Path $copiedIdl -Parent) 'nested/shared.inc'
+    $msbuildTransitiveInclude = Join-Path (Split-Path $copiedIdl -Parent) 'values.inc'
+    New-Item (Split-Path $msbuildInclude -Parent) -ItemType Directory -Force | Out-Null
+    '#include "../values.inc"' | Set-Content $msbuildInclude
+    'const long WireloomBuildBound = 16;' | Set-Content $msbuildTransitiveInclude
+    Add-Content $copiedIdl -Value "`n#include `"nested/shared.inc`"`nstruct IncrementalSample { string<WireloomBuildBound> value; };"
     @'
 <packages>
   <package id="Wireloom.Dds.Cpp.Generator" version="1.0.0" targetFramework="native" />
@@ -286,12 +292,132 @@ if ($IsWindows) {
         $first | Set-Content (Join-Path $run 'generation.log')
         if ($LASTEXITCODE) { throw 'Restored MSBuild integration failed generation.' }
         $header = Join-Path $projectDirectory 'obj/Release/wireloom/01-primitives.hpp'
-        $timestamp = (Get-Item $header).LastWriteTimeUtc
-        $repeat = & $msbuild @generationArguments 2>&1
-        $repeat | Set-Content (Join-Path $run 'repeat.log')
-        if ($LASTEXITCODE -or (Get-Item $header).LastWriteTimeUtc -ne $timestamp) {
-            throw 'Unchanged MSBuild input regenerated or failed.'
+        $msbuildGeneratedDirectory = Split-Path $header -Parent
+        $msbuildStamp = Join-Path $msbuildGeneratedDirectory '.wireloom/generation.stamp'
+        $msbuildDependencies = Join-Path $msbuildGeneratedDirectory '.wireloom/01-primitives.deps'
+        $msbuildChecks = [Collections.Generic.List[object]]::new()
+
+        function Invoke-MSBuildGenerationCheck([string] $Name, [int] $ExpectedInvocations, [bool] $ExpectSuccess = $true, [string[]] $ExtraArguments = @()) {
+            $buildOutput = & $msbuild @generationArguments @ExtraArguments 2>&1
+            $buildExitCode = $LASTEXITCODE
+            $buildOutput | Set-Content (Join-Path $run "msbuild-$Name.log")
+            $invocations = @($buildOutput | Where-Object { "$_" -match '^\s*".+" generate "' }).Count
+            if (($buildExitCode -eq 0) -ne $ExpectSuccess -or $invocations -ne $ExpectedInvocations) {
+                throw "Unexpected MSBuild result for ${Name}: exit $buildExitCode, $invocations invocations; expected $ExpectedInvocations."
+            }
+            if ($ExpectSuccess -and -not (Test-Path -LiteralPath $msbuildStamp)) {
+                throw "MSBuild did not record successful completion for $Name."
+            }
+            if (-not $ExpectSuccess -and (Test-Path -LiteralPath $msbuildStamp)) {
+                throw "Failed MSBuild generation retained its completion stamp for $Name."
+            }
+            $msbuildChecks.Add([ordered]@{ name = $Name; invocations = $invocations; expectedSuccess = $ExpectSuccess })
         }
+
+        function Get-MSBuildGeneratedState {
+            return @(Get-ChildItem $msbuildGeneratedDirectory -File | Sort-Object Name | ForEach-Object {
+                "$($_.Name)|$((Get-FileHash -LiteralPath $_.FullName).Hash)|$($_.LastWriteTimeUtc.Ticks)"
+            }) -join "`n"
+        }
+
+        Invoke-MSBuildGenerationCheck 'unchanged' 0
+        $dependencyPaths = @(Get-Content -LiteralPath $msbuildDependencies)
+        foreach ($dependency in @($copiedIdl, $msbuildInclude, $msbuildTransitiveInclude)) {
+            if ($dependencyPaths -notcontains $dependency) { throw "MSBuild omitted dependency $dependency." }
+        }
+        foreach ($inputFile in @($copiedIdl, $msbuildInclude, $msbuildTransitiveInclude)) {
+            $inputName = if ($inputFile -eq $copiedIdl) { 'root' } elseif ($inputFile -eq $msbuildInclude) { 'include' } else { 'transitive' }
+            foreach ($edit in @('timestamp', 'comment')) {
+                $before = Get-MSBuildGeneratedState
+                Start-Sleep -Milliseconds 1100
+                if ($edit -eq 'timestamp') {
+                    (Get-Item -LiteralPath $inputFile).LastWriteTimeUtc = [DateTime]::UtcNow
+                }
+                else {
+                    Add-Content -LiteralPath $inputFile -Value '// Nonsemantic incremental generation edit.'
+                }
+                Invoke-MSBuildGenerationCheck "$inputName-$edit" 1
+                if ((Get-MSBuildGeneratedState) -ne $before) { throw "Nonsemantic MSBuild $inputName $edit edit rewrote generated text or timestamps." }
+                Invoke-MSBuildGenerationCheck "$inputName-$edit-repeat" 0
+            }
+        }
+        $beforeHash = (Get-FileHash -LiteralPath $header).Hash
+        'const long WireloomBuildBound = 24;' | Set-Content $msbuildTransitiveInclude
+        Invoke-MSBuildGenerationCheck 'transitive-semantic' 1
+        if ((Get-FileHash -LiteralPath $header).Hash -eq $beforeHash) { throw 'Transitive include edit did not change generated output.' }
+        Invoke-MSBuildGenerationCheck 'transitive-semantic-repeat' 0
+        $beforeHash = (Get-FileHash -LiteralPath $header).Hash
+        (Get-Content -LiteralPath $copiedIdl -Raw).Replace('IncrementalSample', 'IncrementalEditedSample') | Set-Content $copiedIdl
+        Invoke-MSBuildGenerationCheck 'root-semantic' 1
+        if ((Get-FileHash -LiteralPath $header).Hash -eq $beforeHash) { throw 'Root edit did not change generated output.' }
+        Invoke-MSBuildGenerationCheck 'root-semantic-repeat' 0
+        $replacementInclude = Join-Path (Split-Path $copiedIdl -Parent) 'replacement.inc'
+        'const long WireloomBuildBound = 32;' | Set-Content $replacementInclude
+        '#include "../replacement.inc"' | Set-Content $msbuildInclude
+        Invoke-MSBuildGenerationCheck 'include-graph-change' 1
+        Invoke-MSBuildGenerationCheck 'include-graph-change-repeat' 0
+        Add-Content $msbuildTransitiveInclude -Value '// No longer included.'
+        Invoke-MSBuildGenerationCheck 'removed-dependency' 0
+        '#include "../values.inc"' | Set-Content $msbuildInclude
+        Invoke-MSBuildGenerationCheck 'include-graph-restored' 1
+        Invoke-MSBuildGenerationCheck 'include-graph-restored-repeat' 0
+        foreach ($generatedFile in @(Get-ChildItem $msbuildGeneratedDirectory -File)) {
+            Remove-Item -LiteralPath $generatedFile.FullName
+            Invoke-MSBuildGenerationCheck "missing-$($generatedFile.Name)" 1
+            if (-not (Test-Path -LiteralPath $generatedFile.FullName)) { throw "MSBuild did not recreate $($generatedFile.Name)." }
+            Invoke-MSBuildGenerationCheck "missing-$($generatedFile.Name)-repeat" 0
+        }
+        Remove-Item -LiteralPath $msbuildDependencies
+        Invoke-MSBuildGenerationCheck 'missing-dependencies' 1
+        Invoke-MSBuildGenerationCheck 'missing-dependencies-repeat' 0
+        Invoke-MSBuildGenerationCheck 'profile-change' 1 $true @('-p:WireloomCppRtiVersion=7.3.1')
+        Invoke-MSBuildGenerationCheck 'profile-change-repeat' 0 $true @('-p:WireloomCppRtiVersion=7.3.1')
+        Invoke-MSBuildGenerationCheck 'profile-rollback' 1
+        Invoke-MSBuildGenerationCheck 'profile-rollback-repeat' 0
+        $restoredTool = Join-Path $demo "packages/Wireloom.Dds.Cpp.Generator.$packageVersion/tools/win-x64/Wireloom.Dds.Cpp.exe"
+        (Get-Item -LiteralPath $restoredTool).LastWriteTimeUtc = [DateTime]::UtcNow
+        Invoke-MSBuildGenerationCheck 'tool-change' 1
+        Invoke-MSBuildGenerationCheck 'tool-change-repeat' 0
+
+        $validInclude = Get-Content -LiteralPath $msbuildTransitiveInclude -Raw
+        'this is invalid IDL' | Set-Content $msbuildTransitiveInclude
+        Invoke-MSBuildGenerationCheck 'failure' 1 $false
+        Invoke-MSBuildGenerationCheck 'failure-retry' 1 $false
+        $validInclude | Set-Content $msbuildTransitiveInclude
+        Invoke-MSBuildGenerationCheck 'failure-repaired' 1
+        Invoke-MSBuildGenerationCheck 'failure-repaired-repeat' 0
+        Remove-Item -LiteralPath $msbuildTransitiveInclude
+        Invoke-MSBuildGenerationCheck 'missing-include' 1 $false
+        Invoke-MSBuildGenerationCheck 'missing-include-retry' 1 $false
+        $validInclude | Set-Content $msbuildTransitiveInclude
+        Invoke-MSBuildGenerationCheck 'missing-include-repaired' 1
+        Invoke-MSBuildGenerationCheck 'missing-include-repaired-repeat' 0
+
+        $secondIdl = Join-Path (Split-Path $copiedIdl -Parent) 'second.idl'
+        'struct Second { long value; };' | Set-Content $secondIdl
+        $singleRootProject = Get-Content -LiteralPath $project -Raw
+        $singleRootProject.Replace('<WireloomIdl Include=', '<WireloomIdl Include="..\docs\corpus\idl\features\second.idl" /><WireloomIdl Include=') | Set-Content $project
+        Invoke-MSBuildGenerationCheck 'add-root' 2
+        Invoke-MSBuildGenerationCheck 'add-root-repeat' 0
+        Add-Content $secondIdl -Value '// Multi-root nonsemantic edit.'
+        Invoke-MSBuildGenerationCheck 'second-root-comment' 2
+        Invoke-MSBuildGenerationCheck 'second-root-comment-repeat' 0
+        $singleRootProject | Set-Content $project
+        Invoke-MSBuildGenerationCheck 'remove-root' 1
+        Invoke-MSBuildGenerationCheck 'remove-root-repeat' 0
+        $singleRootProject -replace '<WireloomIdl Include="[^"]+"\s*/>', '' | Set-Content $project
+        Invoke-MSBuildGenerationCheck 'remove-all-roots' 0
+        $cleanOutput = & $msbuild $project @toolsetArguments -t:Clean -p:Configuration=Release -p:Platform=ARM64 -v:normal 2>&1
+        $cleanOutput | Set-Content (Join-Path $run 'msbuild-clean.log')
+        if ($LASTEXITCODE -or (Test-Path -LiteralPath $msbuildStamp) -or
+            @(Get-ChildItem $msbuildGeneratedDirectory -File).Count -ne 0 -or
+            @(Get-ChildItem (Join-Path $msbuildGeneratedDirectory '.wireloom') -File).Count -ne 0) {
+            throw 'MSBuild Clean did not remove generated outputs and incremental state.'
+        }
+        $singleRootProject | Set-Content $project
+        Invoke-MSBuildGenerationCheck 'after-clean' 1
+        Invoke-MSBuildGenerationCheck 'after-clean-repeat' 0
+        $msbuildChecks | ConvertTo-Json | Set-Content (Join-Path $run 'msbuild-incremental.json')
         if ($PreviousPackage) {
             $projectTemplate = Get-Content -LiteralPath $project -Raw
             $packagesConfigPath = Join-Path $projectDirectory 'packages.config'
@@ -332,6 +458,6 @@ if ($IsWindows) {
     unsupportedInput = 'rejected'
     cmakeGeneration = 'passed; nonsemantic root/include edits settle; semantic edits and missing outputs regenerate; failed generation retries; installed package clean rebuild passed'
     cmakeGenerator = if ($CMakeGenerator) { $CMakeGenerator } else { 'host default' }
-    msbuildRestoreAndGeneration = if ($IsWindows) { 'passed; ARM64 target on x64 host; repeat skipped' } else { 'Windows-only check' }
+    msbuildRestoreAndGeneration = if ($IsWindows) { 'passed; ARM64 target on x64 host; root/transitive include edits settle; missing outputs regenerate; failures retry; profile/root changes and Clean verified' } else { 'Windows-only check' }
 } | ConvertTo-Json | Set-Content (Join-Path $run 'result.json')
 Write-Host "Native package verification passed: $run"

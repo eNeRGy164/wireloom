@@ -23,6 +23,7 @@ public sealed class CommandSpecs
         output.ToString().ShouldContain("--undefine");
         output.ToString().ShouldContain("--sequence-size");
         output.ToString().ShouldContain("--rti-version");
+        output.ToString().ShouldContain("--dependency-file");
         errors.ToString().ShouldBeEmpty();
     }
 
@@ -46,9 +47,19 @@ public sealed class CommandSpecs
     /// <summary>Rejects unknown options and options that require a value.</summary>
     [Theory]
     [InlineData("--unexpected")]
+    [InlineData("--dependency-filf")]
+    [InlineData("--rti-versiox")]
+    [InlineData("--include-directorz")]
     [InlineData("--define")]
+    [InlineData("--undefine")]
     [InlineData("--include-directory")]
+    [InlineData("--sequence-size")]
+    [InlineData("--string-size")]
+    [InlineData("--file-sequence-size")]
+    [InlineData("--file-string-size")]
+    [InlineData("--file-unbounded-support")]
     [InlineData("--rti-version")]
+    [InlineData("--dependency-file")]
     public void RejectsUnsupportedOrIncompleteOptions(string option)
     {
         // Arrange
@@ -314,6 +325,118 @@ public sealed class CommandSpecs
         header.ShouldContain("struct Root");
         header.ShouldContain("struct First");
         header.ShouldContain("struct Second");
+        Directory.Delete(Path.GetFullPath(root), recursive: true);
+    }
+
+    /// <summary>Reports the actual transitive input closure, including non-IDL file extensions.</summary>
+    [Fact]
+    public void WritesSuccessfulGenerationDependencies()
+    {
+        // Arrange
+        var root = Path.Combine(Path.GetTempPath(), $"wireloom dependencies {Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var inputPath = Path.Combine(root, "root.idl");
+        var firstPath = Path.Combine(root, "first.inc");
+        var secondPath = Path.Combine(root, "second.inc");
+        var dependencyPath = Path.Combine(root, "build state", "root.deps");
+        File.WriteAllText(inputPath, """
+            #include "first.inc"
+            #if 0
+            #include "inactive.inc"
+            #endif
+            struct Sample { string<Bound> value; };
+            """);
+        File.WriteAllText(firstPath, """
+            #pragma once
+            #include "second.inc"
+            """);
+        File.WriteAllText(secondPath, "const long Bound = 16;");
+        using var output = new StringWriter();
+        using var errors = new StringWriter();
+
+        // Act
+        var exitCode = CppCommand.Run(
+            ["generate", inputPath, Path.Combine(root, "output"), "--dependency-file", dependencyPath], output, errors);
+
+        // Assert
+        exitCode.ShouldBe(0, errors.ToString());
+        File.ReadAllLines(dependencyPath).ShouldBe([inputPath, firstPath, secondPath]);
+        Directory.Delete(Path.GetFullPath(root), recursive: true);
+    }
+
+    /// <summary>Does not replace successful dependency evidence when generation fails.</summary>
+    [Fact]
+    public void PreservesDependenciesOnGenerationFailure()
+    {
+        // Arrange
+        var root = Path.Combine(Path.GetTempPath(), $"wireloom-dependency-failure-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var inputPath = Path.Combine(root, "root.idl");
+        var dependencyPath = Path.Combine(root, "root.deps");
+        File.WriteAllText(inputPath, "struct Sample { Missing value; };");
+        File.WriteAllText(dependencyPath, "previous successful dependencies");
+        using var output = new StringWriter();
+        using var errors = new StringWriter();
+
+        // Act
+        var exitCode = CppCommand.Run(
+            ["generate", inputPath, Path.Combine(root, "output"), "--dependency-file", dependencyPath], output, errors);
+
+        // Assert
+        exitCode.ShouldBe(1);
+        File.ReadAllText(dependencyPath).ShouldBe("previous successful dependencies");
+        Directory.Delete(Path.GetFullPath(root), recursive: true);
+    }
+
+    /// <summary>Fails the command when dependency evidence cannot be written.</summary>
+    [Fact]
+    public void ReportsDependencyWriteFailure()
+    {
+        // Arrange
+        var root = Path.Combine(Path.GetTempPath(), $"wireloom-dependency-write-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var inputPath = Path.Combine(root, "root.idl");
+        File.WriteAllText(inputPath, "struct Sample { long value; };");
+        using var output = new StringWriter();
+        using var errors = new StringWriter();
+
+        // Act
+        var exitCode = CppCommand.Run(
+            ["generate", inputPath, Path.Combine(root, "output"), "--dependency-file", root], output, errors);
+
+        // Assert
+        exitCode.ShouldBe(1);
+        errors.ToString().ShouldContain("Wireloom C++:");
+        Directory.Delete(Path.GetFullPath(root), recursive: true);
+    }
+
+    /// <summary>Does not record invalid include names as successful build dependencies.</summary>
+    [Theory]
+    [InlineData(" ")]
+    [InlineData("invalid\0.inc")]
+    [InlineData("/absolute.inc")]
+    public void RejectsInvalidDependencyInclude(string includeName)
+    {
+        // Arrange
+        var root = Path.Combine(Path.GetTempPath(), $"wireloom-invalid-dependency-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var inputPath = Path.Combine(root, "root.idl");
+        var dependencyPath = Path.Combine(root, "root.deps");
+        File.WriteAllText(inputPath, $$"""
+            #include "{{includeName}}"
+            struct Sample { long value; };
+            """);
+        using var output = new StringWriter();
+        using var errors = new StringWriter();
+
+        // Act
+        var exitCode = CppCommand.Run(
+            ["generate", inputPath, Path.Combine(root, "output"), "--dependency-file", dependencyPath], output, errors);
+
+        // Assert
+        exitCode.ShouldBe(1);
+        File.Exists(dependencyPath).ShouldBeFalse();
+        errors.ToString().ShouldNotBeEmpty();
         Directory.Delete(Path.GetFullPath(root), recursive: true);
     }
 

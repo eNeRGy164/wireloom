@@ -151,8 +151,9 @@ summary:
       hosts, and publish retained attested bytes. Consumers pin the package
       separately from the RTI profile. Delivery and feature qualification remain
       distinct gates.
-      CMake records successful completion separately from emitted text; edits
+      Native integrations record successful completion separately from emitted text; edits
       with unchanged output settle, while missing outputs and failures retry.
+      MSBuild tracks the resolved transitive include closure and cleans its state.
     sources: [docs/architecture/arc42/07-deployment-view.md, docs/architecture/adr/ADR-005-deliver-native-cpp-generator-through-nuget.md]
   cross_cutting:
     text: >-
