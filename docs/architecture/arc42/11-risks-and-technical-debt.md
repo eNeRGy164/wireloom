@@ -360,8 +360,6 @@ define supported shapes and checks. Qualification requires exact run reports.
 | Qualification overreach            | A local CDR pass, adjusted oracle, or single-platform result can be mistaken for general interoperability.               | Preserve exact scope and platform failures in retained reports; require independent mixed-peer evidence for wire claims.                                           |
 | Native AOT delivery                | Embedded runtime fixes require new packages; two host payloads do not qualify other architectures or Linux environments. | Service pinned payloads and verify packaged tools on each supported host under [ADR-005](../adr/ADR-005-deliver-native-cpp-generator-through-nuget.md).            |
 
-Internal RTI interface support/licensing review remains open under
-[ADR-006](../adr/ADR-006-use-stl-aware-sample-access-for-modern-cpp.md).
 Feed publication, signing, and release qualification remain separate C++ release
 tasks. Changes to shared IDL assembly composition also require C# analyzer and
 Playground package/bundle checks.
@@ -372,11 +370,9 @@ comparisons after those failures are invalid. Windows success does not qualify
 those Linux states. The [fixture](../../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/CppOptionalStringSequences/README.md)
 defines the exercised shape.
 
-C047's recorded FlatData interoperability is limited to RTI 7.7.0.0 and the
+C047's recorded FlatData interoperability is limited to RTI 7.7.0 and the
 final, unkeyed, fixed-size two-`long`, XCDR2-only sample. Same-plugin UDP and
-two-way RTI C# peer exchanges do not qualify other FlatData shapes or profiles;
-the private plugin/interface dependency remains under
-[ADR-006](../adr/ADR-006-use-stl-aware-sample-access-for-modern-cpp.md).
+two-way RTI C# peer exchanges do not qualify other FlatData shapes or profiles.
 
 These risks refine [R01](#r01)'s compatibility boundary. Detailed fixture
 results remain in their run reports rather than being repeated here.
