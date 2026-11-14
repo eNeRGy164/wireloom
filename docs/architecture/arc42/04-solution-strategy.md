@@ -161,7 +161,7 @@ Keep generated typed value APIs separate from profile-specific plugin
 implementation. STL-backed values require compatible sample access; the
 generic C-layout path cannot safely serve every C++ graph.
 [ADR-006](../adr/ADR-006-use-stl-aware-sample-access-for-modern-cpp.md)
-records the guarded RTI bridge and open internal-interface/licensing review.
+records the guarded RTI bridge.
 
 Generation, consumer/API compatibility, local CDR, and live DDS remain separate
 claims. The [generator guide](../../../src/Wireloom.Dds.Cpp.Generator/README.md)

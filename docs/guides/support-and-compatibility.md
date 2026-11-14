@@ -28,6 +28,17 @@ for RTI runtime questions; Wireloom does not provide or extend RTI support.
 Using Connext DDS still requires the applicable RTI license. Wireloom does not
 replace the runtime or its license.
 
+### RTI distribution and internal interfaces
+
+Wireloom does not distribute RTI packages, libraries, runtimes, or licenses.
+Consumers obtain the RTI software and licenses required by their applications.
+
+Generated native adapters implement calls to RTI internal interfaces. RTI does
+not support this integration. Wireloom is responsible for those
+calls and for updating adapter code, ABI guards, and qualification when
+supporting newer RTI SDK versions. Supporting one exact SDK does not establish
+compatibility with a later SDK's internal interfaces.
+
 ## RTI version qualification
 
 The generator selects an API profile from the resolved `Rti.ConnextDds`
