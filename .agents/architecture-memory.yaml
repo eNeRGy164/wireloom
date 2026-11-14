@@ -1,7 +1,7 @@
 version: 1
 metadata:
   status: current
-  generated_at: 2026-11-14T21:42:36.1218153Z
+  generated_at: 2026-11-14T23:11:26.2996053Z
   arc42_home: docs/architecture/arc42
   format: yaml-only
   human_memory_enabled: false
@@ -87,7 +87,7 @@ summary:
       Wireloom provides a drop-in RTI C# generation replacement for supported
       IDL and a Modern C++ generator as a product feature. The first C++ release
       targets a stable public contract within an evidence-backed scope;
-      release qualification is pending. C++ generation, consumer compatibility,
+      qualification is recorded per release. C++ generation, consumer compatibility,
       CDR, and live DDS remain separate claims.
     sources: [docs/architecture/arc42/01-introduction-and-goals.md, docs/guides/support-and-compatibility.md, src/Wireloom.Dds.Cpp.Generator/README.md]
   constraints:
@@ -224,4 +224,4 @@ defaults:
     rti_runtime_eligibility: {value: ">= 6.1.2", source: chapter-2, status: explicit}
     rti_int8_mapping: {value: "6.1.2 -> byte; 7.3.1/7.7.0 -> sbyte", source: docs/guides/idl-semantics.md, status: explicit}
     rti_profiles: {value: "6.1.2 <= version < 7.3.1 -> 6.1.2; 7.3.1 <= version < 7.7.0 -> 7.3.1; version >= 7.7.0 -> 7.7.0", source: docs/guides/support-and-compatibility.md, status: explicit}
-    qualified_rti_releases: {value: [7.3.1, 7.7.0], source: docs/guides/support-and-compatibility.md, status: explicit}
+    qualified_rti_releases: {value: [6.1.2, 7.3.1, 7.7.0], source: docs/guides/support-and-compatibility.md, status: explicit}

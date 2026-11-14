@@ -1,0 +1,18 @@
+[
+  {
+    "package": "wireloom.dds.generator",
+    "version": "1.1.0",
+    "payloadFiles": 12,
+    "allPayloadsIdentical": true,
+    "signaturePresent": true,
+    "downloadSha256": "4a03f264c1c0745d8739cfdb40a955f9b4554c8671b9e9d161410ed989bbb85e"
+  },
+  {
+    "package": "wireloom.dds.cpp.generator",
+    "version": "1.1.0",
+    "payloadFiles": 11,
+    "allPayloadsIdentical": true,
+    "signaturePresent": true,
+    "downloadSha256": "de8d1c902f284dfbcef4d8d5b9d2892238706939108f3e5f9de9ca226adeaa49"
+  }
+]

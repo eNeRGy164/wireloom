@@ -1,0 +1,12 @@
+MSBuild version 18.11.1-1.26513.3+940033be3 for .NET Framework
+
+  Checking File Globs
+  1>Checking Build System
+  Generating Wireloom C++ sources for wireloom_hello_world
+  Building Custom Rule G:/eNeRGy164/wireloom/artifacts/release-qualification/release-1.1.0/walkthrough/CMakeLists.txt
+  main.cpp
+  hello_world.cxx
+  hello_worldPlugin.cxx
+  Generating Code...
+  wireloom_hello_world.vcxproj -> G:\eNeRGy164\wireloom\artifacts\release-qualification\release-1.1.0\walkthrough\build-windows\bin\Release\wireloom_hello_world.exe
+  Building Custom Rule G:/eNeRGy164/wireloom/artifacts/release-qualification/release-1.1.0/walkthrough/CMakeLists.txt

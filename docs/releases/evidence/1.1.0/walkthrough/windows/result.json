@@ -1,0 +1,76 @@
+{
+  "executable": "wireloom_hello_world.exe",
+  "checks": [
+    {
+      "name": "invalid arguments",
+      "passed": true,
+      "details": {
+        "exitCode": 2
+      }
+    },
+    {
+      "name": "ten-sample exchange",
+      "passed": true,
+      "details": {
+        "sent": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "subscriberExit": 0,
+        "publisherExit": 0,
+        "received": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      }
+    },
+    {
+      "name": "publisher-timeout",
+      "passed": true,
+      "details": {
+        "exitCode": 1,
+        "elapsedMilliseconds": 30403
+      }
+    },
+    {
+      "name": "subscriber-timeout",
+      "passed": true,
+      "details": {
+        "exitCode": 1,
+        "elapsedMilliseconds": 30388
+      }
+    },
+    {
+      "name": "--pub interrupt",
+      "passed": true,
+      "details": {
+        "exitCode": 0,
+        "signal": "isolated console CTRL_C_EVENT"
+      }
+    },
+    {
+      "name": "--sub interrupt",
+      "passed": true,
+      "details": {
+        "exitCode": 0,
+        "signal": "isolated console CTRL_C_EVENT"
+      }
+    }
+  ]
+}

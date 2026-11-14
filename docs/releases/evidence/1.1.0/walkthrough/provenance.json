@@ -1,0 +1,260 @@
+{
+  "checkedAtUtc": "2026-11-14T23:11:26.284Z",
+  "sourceRevision": "2727d85321259ddf53fbe8c11f8b4ed54a128cc0",
+  "package": {
+    "id": "Wireloom.Dds.Cpp.Generator",
+    "version": "1.1.0",
+    "nugetSha256": "de8d1c902f284dfbcef4d8d5b9d2892238706939108f3e5f9de9ca226adeaa49",
+    "attestedSha256": "7cba89633cda46961a9db178496fb62abc8faee016a8a83ce2412d3dcdb05f44"
+  },
+  "windows": {
+    "os": "Windows 11 Pro x64 build 10.0.26300",
+    "generator": "Visual Studio 18 2026",
+    "compiler": "MSVC 19.44.35229.0 / v143",
+    "cmake": "4.3.1-msvc1",
+    "rti": "7.7.0.0",
+    "architecture": "x64Win64VS2017",
+    "configuration": "Release/shared"
+  },
+  "linux": {
+    "os": "Ubuntu 24.04.4 x64",
+    "compiler": "GCC 13.3.0",
+    "cmake": "3.28.3",
+    "rti": "7.7.0.0",
+    "architecture": "x64Linux4gcc8.5.0",
+    "configuration": "Release/shared",
+    "network": "none",
+    "imageId": "sha256:93343e372d6745669ac0b9f6e8f2dcc5aeea2d1e52632e3e109aa3407c337bf2"
+  },
+  "checksPerHost": 6,
+  "generatedFilesByteIdentical": true,
+  "files": [
+    {
+      "path": "source/hello_world.idl",
+      "bytes": 42,
+      "sha256": "d1f56329fb9af9968cf56464eae3fcaf4014a845df090ff1f9516d0d0fe783d2",
+      "archive": "sources-and-generated.zip"
+    },
+    {
+      "path": "source/CMakeLists.txt",
+      "bytes": 757,
+      "sha256": "5b97cc986b4a386a350388ada21448b558537e678a5c1163b1451b63c3473061",
+      "archive": "sources-and-generated.zip"
+    },
+    {
+      "path": "source/main.cpp",
+      "bytes": 4039,
+      "sha256": "7686d0f8fde7f86d80fa58b86792e128ebbe5f774e6f2fd1b674d5b1f52fcb9e",
+      "archive": "sources-and-generated.zip"
+    },
+    {
+      "path": "windows/configure.txt",
+      "bytes": 857,
+      "sha256": "ec29cbbc99829925c033ff12e59d333c03ccadb6f1d2656e9aa05fd33aa41ffe"
+    },
+    {
+      "path": "windows/build.txt",
+      "bytes": 658,
+      "sha256": "528f3dbda865a96e5e598f93801bbb534170a2abf76ca7ca35843aae1822b34b"
+    },
+    {
+      "path": "windows/repeat.txt",
+      "bytes": 255,
+      "sha256": "f6bf3e85527141d53c7b3825020d00900c6d79fee3a6b38f342d87422064e998"
+    },
+    {
+      "path": "windows/invalid-arguments.stderr.txt",
+      "bytes": 43,
+      "sha256": "5135e0d5fc2d81f8b6cf2f42829c781ee35fa3754a3c819cb88a7e208f0f187f"
+    },
+    {
+      "path": "windows/invalid-arguments.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows/pub-interrupt.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows/pub-interrupt.stdout.txt",
+      "bytes": 1718,
+      "sha256": "4d450ace1b59670890d6b3b6402050d08da2b5150a8d4b0e2a4ba72ca3dea8d9"
+    },
+    {
+      "path": "windows/publisher-timeout.stderr.txt",
+      "bytes": 42,
+      "sha256": "7d0ba8cfeb23580889ffbd5760a01831260d1b24a93bccc14c0666c895f9e06e"
+    },
+    {
+      "path": "windows/publisher-timeout.stdout.txt",
+      "bytes": 1708,
+      "sha256": "292b375e13b6db4f05195520d469fdd744896adea68259a6e4769c0fd2e29dc1"
+    },
+    {
+      "path": "windows/publisher.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows/publisher.stdout.txt",
+      "bytes": 1955,
+      "sha256": "86ade7f6997b3eea6e2e226b067268ee89bc95c6a2f28380c565417bfb71a7a4"
+    },
+    {
+      "path": "windows/result.json",
+      "bytes": 1312,
+      "sha256": "0e4affc7b59ca8b38f626396655f830576177ab0194d9f9fef389002f0371af3"
+    },
+    {
+      "path": "windows/sub-interrupt.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows/sub-interrupt.stdout.txt",
+      "bytes": 1704,
+      "sha256": "d5dedf185dec45914d3b05cf4b5ea52f12d07538f142145af818b7cc672d598e"
+    },
+    {
+      "path": "windows/subscriber-timeout.stderr.txt",
+      "bytes": 39,
+      "sha256": "208d5e64dfe0b3543ac9f4956d8253e7cca26bba8ee50629f03c98784dcaddf5"
+    },
+    {
+      "path": "windows/subscriber-timeout.stdout.txt",
+      "bytes": 1694,
+      "sha256": "f48379c03a7b0022fbd130f3193bbb462ca7a8720c076628e4cdc2f65b2e052e"
+    },
+    {
+      "path": "windows/subscriber.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "windows/subscriber.stdout.txt",
+      "bytes": 1977,
+      "sha256": "f740951988ff4ac90bd65bfe6fbb16b2ac0b437ab67759d98614848bddb1eea7"
+    },
+    {
+      "path": "linux/configure.txt",
+      "bytes": 970,
+      "sha256": "3c34c65e0fcb963598b9d23eea55b41697ba3b6a1122fcaaf61e6ce8371a08ff"
+    },
+    {
+      "path": "linux/build.txt",
+      "bytes": 651,
+      "sha256": "70bd54db4b5855c6ec7ba2bda06be8e185cda8154a449c716193e9653addc781"
+    },
+    {
+      "path": "linux/repeat.txt",
+      "bytes": 41,
+      "sha256": "e35a874feb0c2f3404c07fe71284954d6dbecefb12ab8f9542e53d6493857a5a"
+    },
+    {
+      "path": "linux/invalid-arguments.stderr.txt",
+      "bytes": 42,
+      "sha256": "936c83691272742c519e0412cbbfbe2000d4b8ab4281fc3cec722b08c50dbced"
+    },
+    {
+      "path": "linux/invalid-arguments.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "linux/pub-interrupt.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "linux/pub-interrupt.stdout.txt",
+      "bytes": 438,
+      "sha256": "ea984df69f1197a82c72ac2c853864a1019aa9f7986993d24455ec408af78ad7"
+    },
+    {
+      "path": "linux/publisher-timeout.stderr.txt",
+      "bytes": 41,
+      "sha256": "e1b3d01bae20ccbe7fe11f87b4ead7050cfe5a6c17d1168ce6e172285ed8c8fe"
+    },
+    {
+      "path": "linux/publisher-timeout.stdout.txt",
+      "bytes": 429,
+      "sha256": "0663fd9c6003cf50c0b56f4b7838301b7182ceaf229a63c47d349dab76c35f90"
+    },
+    {
+      "path": "linux/publisher.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "linux/publisher.stdout.txt",
+      "bytes": 665,
+      "sha256": "e5d5b82139ca796a96871512c2cd40c6f6795e5fef16eee7ed7f6608ececf109"
+    },
+    {
+      "path": "linux/result.json",
+      "bytes": 1206,
+      "sha256": "066ff6d53b92fed9deceebc240eda1912db36c2009a691a84dc80a836f1a2a3e"
+    },
+    {
+      "path": "linux/sub-interrupt.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "linux/sub-interrupt.stdout.txt",
+      "bytes": 424,
+      "sha256": "3fad8a5a89ff74cfdc9ce8daf56d7c5ef067c586e71bb74ffb960375ee2e8da2"
+    },
+    {
+      "path": "linux/subscriber-timeout.stderr.txt",
+      "bytes": 38,
+      "sha256": "36841014cbb25b45875963dffebf23bbb0ce8c8bc07b0fa308634e83c5e0b817"
+    },
+    {
+      "path": "linux/subscriber-timeout.stdout.txt",
+      "bytes": 415,
+      "sha256": "912fcab9edd7646d94100d18c86e4b86b447e1851180eb0a7d6f7da5d45a44b4"
+    },
+    {
+      "path": "linux/subscriber.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "linux/subscriber.stdout.txt",
+      "bytes": 687,
+      "sha256": "52308ff84ad63475cd244e4d9b01e10eda06452618fb707b195b437d49e303ef"
+    },
+    {
+      "path": "generated/hello_world.cxx",
+      "bytes": 1834,
+      "sha256": "9667af47cc6470f462bc195b1fd7af75ce787783d2a21d873c3f682292950661",
+      "archive": "sources-and-generated.zip"
+    },
+    {
+      "path": "generated/hello_world.hpp",
+      "bytes": 7315,
+      "sha256": "89839818c10de04381f4c2ff59aa19359ec7d73d746fc65f68c17936b36ab7e3",
+      "archive": "sources-and-generated.zip"
+    },
+    {
+      "path": "generated/hello_worldPlugin.cxx",
+      "bytes": 16059,
+      "sha256": "3e74b2cc5d208333ef1ce884b173e285c596442d3c8b0971cd0a2fedbb4257f1",
+      "archive": "sources-and-generated.zip"
+    },
+    {
+      "path": "generated/hello_worldPlugin.hpp",
+      "bytes": 253,
+      "sha256": "ab9625e2601dfda65cd4db21277d7eda2ddbfbecd3b1c1dd068d2d6decb7fcdf",
+      "archive": "sources-and-generated.zip"
+    }
+  ],
+  "sourceArchive": {
+    "path": "sources-and-generated.zip",
+    "sha256": "7225a3b47dbb5fd74cf39a98bc575a95586eaa257c1ebc9b6982cfda77c97e17",
+    "bytes": 9515
+  }
+}

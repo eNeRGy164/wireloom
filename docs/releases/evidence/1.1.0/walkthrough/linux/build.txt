@@ -1,0 +1,8 @@
+[ 20%] Generating Wireloom C++ sources for wireloom_hello_world
+gmake[2]: Warning: File 'wireloom/wireloom_hello_world/hello_world.cxx' has modification time 0.0033 s in the future
+gmake[2]: warning:  Clock skew detected.  Your build may be incomplete.
+[ 40%] Building CXX object CMakeFiles/wireloom_hello_world.dir/main.cpp.o
+[ 60%] Building CXX object CMakeFiles/wireloom_hello_world.dir/wireloom/wireloom_hello_world/hello_world.cxx.o
+[ 80%] Building CXX object CMakeFiles/wireloom_hello_world.dir/wireloom/wireloom_hello_world/hello_worldPlugin.cxx.o
+[100%] Linking CXX executable bin/wireloom_hello_world
+[100%] Built target wireloom_hello_world

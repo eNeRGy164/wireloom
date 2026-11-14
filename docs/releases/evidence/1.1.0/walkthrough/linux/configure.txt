@@ -1,0 +1,19 @@
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- RTI Connext installation directory: /opt/rti.com/rti_connext_dds-7.7.0
+-- RTI Connext architecture: x64Linux4gcc8.5.0
+CMake Warning at /opt/rti.com/rti_connext_dds-7.7.0/resource/cmake/FindRTIConnextDDS.cmake:711 (message):
+  Codegen was not found.  Please, check if rtiddsgen is under your
+  NDDSHOME/bin directory or provide it to CMake using -DRTICODEGEN_DIR
+Call Stack (most recent call first):
+  CMakeLists.txt:8 (find_package)
+
+
+-- Found RTIConnextDDS: /opt/rti.com/rti_connext_dds-7.7.0 (found suitable exact version "7.7.0.0")  
+-- Configuring done (1.7s)
+-- Generating done (0.1s)
+-- Build files have been written to: /workspace/artifacts/release-qualification/release-1.1.0/walkthrough/build-linux

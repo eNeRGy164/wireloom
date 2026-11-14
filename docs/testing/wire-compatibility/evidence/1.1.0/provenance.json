@@ -1,0 +1,57 @@
+{
+  "sourceRevision": "2727d85321259ddf53fbe8c11f8b4ed54a128cc0",
+  "retainedAtUtc": "2026-11-14T23:07:29.831Z",
+  "artifacts": [
+    {
+      "profile": "6.1.2",
+      "name": "wire-compatibility-rti-6.1.2",
+      "archive": "wire-rti-6.1.2.zip",
+      "runId": 43648337346,
+      "artifactId": 14134938200,
+      "bytes": 1848460,
+      "sha256": "359c2556bede0e87e9edf543268307fd69953cc95bb2073304ed39dc4b9dbbb7",
+      "url": "https://github.com/eNeRGy164/wireloom/actions/runs/43648337346/artifacts/14134938200",
+      "report": "rti-6.1.2-results.md",
+      "reportSha256": "aea3b6434384d14c89c482a59bd7bf34ad26cd86ac6e18484a2dffeb1610d0e9",
+      "passed": 2521,
+      "expected": 2521,
+      "failed": 0,
+      "adapted": 304,
+      "knownExceptions": 4
+    },
+    {
+      "profile": "7.3.1",
+      "name": "wire-compatibility-rti-7.3.1",
+      "archive": "wire-rti-7.3.1.zip",
+      "runId": 43648337346,
+      "artifactId": 14135791219,
+      "bytes": 2055801,
+      "sha256": "f398307f9bd71aa7e72ba7c6c758d24510da3d203afb25b7e70a174b3e7c637f",
+      "url": "https://github.com/eNeRGy164/wireloom/actions/runs/43648337346/artifacts/14135791219",
+      "report": "rti-7.3.1-results.md",
+      "reportSha256": "015226ae6a9feceaf9d161d319ae629b68ecde6b800a31db8eef95dfe751460c",
+      "passed": 2829,
+      "expected": 2829,
+      "failed": 0,
+      "adapted": 374,
+      "knownExceptions": 3
+    },
+    {
+      "profile": "7.7.0",
+      "name": "wire-compatibility-rti-7.7.0",
+      "archive": "wire-rti-7.7.0.zip",
+      "runId": 43648337346,
+      "artifactId": 14135691397,
+      "bytes": 2053611,
+      "sha256": "1fba8ab1cbc63fa5e2ba49664590243e059f40ee5d3cb740c271c01df224a782",
+      "url": "https://github.com/eNeRGy164/wireloom/actions/runs/43648337346/artifacts/14135691397",
+      "report": "rti-7.7.0-results.md",
+      "reportSha256": "fbff5cc12eb6d3bdd42f4cacc0f77f6cd5cead04163d3f7e68a20b953d4b6924",
+      "passed": 2823,
+      "expected": 2823,
+      "failed": 0,
+      "adapted": 362,
+      "knownExceptions": 3
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+[RTI LICENSE] | RTI Connext Evaluation License issued to None michael@hompus.nl For non-production use only.
+Expires on 15-nov-2026
+Please contact support@rti.com with any questions or comments.
+
+[RTI LICENSE] | RTI Connext Evaluation License issued to None michael@hompus.nl For non-production use only.
+Expires on 15-nov-2026
+Please contact support@rti.com with any questions or comments.
+
+Waiting for samples...
+Received: Hello world! 1
+Received: Hello world! 2
+Received: Hello world! 3
+Received: Hello world! 4
+Received: Hello world! 5
+Received: Hello world! 6
+Received: Hello world! 7
+Received: Hello world! 8
+Received: Hello world! 9
+Received: Hello world! 10
+Received 10 samples.

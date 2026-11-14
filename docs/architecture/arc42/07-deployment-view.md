@@ -74,6 +74,11 @@ Wireloom maintainers build and package the product with the repository's
 [central dependencies](../../../Directory.Packages.props).
 These settings belong to the producer environment.
 
+Both `Wireloom.Dds.Generator` and `Wireloom.Dds.Cpp.Generator` are published
+as version 1.1.0. The [release record](../../releases/1.1.0.md) identifies the
+tagged source, exact package hashes, supported scope, and retained evidence.
+Repository consumers pin this published version.
+
 The [preview workflow](../../../.github/workflows/publish-preview.yml)
 publishes to GitHub Packages after successful Quality verification of the
 current main revision. The

@@ -166,8 +166,8 @@ Licensed, exact-toolchain DDS exchanges run separately on relevant pushes to
 full matrix for an exact revision. See the
 [wire runbook](../../tests/Wireloom.Dds.Generator.WireCompatibility/README.md#github-actions)
 for fork and license behavior, and the
-[release record](../releases/1.0.0.md#wire-evidence-and-limitations) for the
-tagged 1.0.0 results.
+[release record](../releases/1.1.0.md#wire-evidence-and-limitations) for the
+tagged 1.1.0 results.
 
 ## Compatibility and stability
 
@@ -355,9 +355,11 @@ The first release targets the three implemented RTI profiles:
 | 7.3.1             | Profile-specific native integration, including the STL-aware bridge         | [Versioned evidence](../corpus/7.3.1/FEATURE-COVERAGE.md), with exact Wireloom C++ capabilities and peer directions.                                 |
 | 7.7.0             | Profile-specific native integration, including STL-aware and FlatData paths | [Versioned evidence](../corpus/7.7.0/FEATURE-COVERAGE.md) and [native fixture guides](../../tests/Wireloom.Dds.Generator.WireCompatibility/Native/). |
 
-First-release qualification is pending for these targets. The CLI and build
-integration select the C++ RTI version explicitly; they do not discover it
-from a `Rti.ConnextDds` assembly. Mapping another SDK version to an implemented
+The [1.1.0 qualification matrix](../releases/1.1.0.md#modern-c-qualification-matrix)
+records the released scope, including unqualified Windows 6.1.2 and 7.3.1
+application configurations. The CLI and build integration select the C++ RTI
+version explicitly; they do not discover it from a `Rti.ConnextDds` assembly.
+Mapping another SDK version to an implemented
 profile does not qualify that version. The native SDK used to compile the
 application must match the advertised profile and ABI requirements.
 

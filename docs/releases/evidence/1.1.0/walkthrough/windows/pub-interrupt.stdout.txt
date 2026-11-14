@@ -1,0 +1,24 @@
+[RTI LICENSE] | RTI Connext Evaluation License issued to None michael@hompus.nl For non-production use only.
+Expires on 15-nov-2026
+Please contact support@rti.com with any questions or comments.
+
+ERROR LC:Discovery| RTIOsapiUtility_reportFileErrnoI:FAILED TO CREATE | C: with error code 5 (Access is denied.
+) in RTIOsapiFile_createDirectoryI
+ERROR LC:Discovery| RTIOsapiFile_createDirectory:FAILED TO CREATE | Directory 'C:'
+ERROR LC:Discovery| DDS_Telemetry_assertJsonDirectory:FAILED TO CREATE | Telemetry JSON directory
+ERROR LC:Discovery| DDS_Telemetry_getJsonLastSent:FAILED TO ASSERT | Telemetry JSON directory
+ERROR LC:Discovery| DDS_Telemetry_initialize:FAILED TO GET | Telemetry last push time from JSON file
+ERROR LC:Discovery| DDS_Telemetry_new:FAILED TO INITIALIZE | Telemetry
+[RTI LICENSE] | RTI Connext Evaluation License issued to None michael@hompus.nl For non-production use only.
+Expires on 15-nov-2026
+Please contact support@rti.com with any questions or comments.
+
+ERROR [CREATE DP|LC:Discovery] RTIOsapiUtility_reportFileErrnoI:FAILED TO CREATE | C: with error code 5 (Access is denied.
+) in RTIOsapiFile_createDirectoryI
+ERROR [CREATE DP|LC:Discovery] RTIOsapiFile_createDirectory:FAILED TO CREATE | Directory 'C:'
+ERROR [CREATE DP|LC:Discovery] DDS_Telemetry_assertJsonDirectory:FAILED TO CREATE | Telemetry JSON directory
+ERROR [CREATE DP|LC:Discovery] DDS_Telemetry_getJsonLastSent:FAILED TO ASSERT | Telemetry JSON directory
+ERROR [CREATE DP|LC:Discovery] DDS_Telemetry_initialize:FAILED TO GET | Telemetry last push time from JSON file
+ERROR [CREATE DP|LC:Discovery] DDS_Telemetry_new:FAILED TO INITIALIZE | Telemetry
+Waiting for a matching subscriber...
+Stopped.

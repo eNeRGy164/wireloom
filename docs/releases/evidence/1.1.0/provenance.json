@@ -1,0 +1,60 @@
+{
+  "sourceRevision": "2727d85321259ddf53fbe8c11f8b4ed54a128cc0",
+  "retainedAtUtc": "2026-11-14T23:07:29.908Z",
+  "artifacts": [
+    {
+      "name": "wireloom-dds-generator-release-1.1.0",
+      "archive": "release-publication.zip",
+      "runId": 43648866763,
+      "artifactId": 14135482726,
+      "bytes": 5011215,
+      "sha256": "70e911da0d046242fe8f4210f709450bcbc667bbf0c66e0aa9ffaf4cb3b5cc52",
+      "url": "https://github.com/eNeRGy164/wireloom/actions/runs/43648866763/artifacts/14135482726"
+    },
+    {
+      "name": "cpp-consumer-ubuntu-24.04",
+      "archive": "cpp-consumer-ubuntu-24.04.zip",
+      "runId": 43648866763,
+      "artifactId": 14135398790,
+      "bytes": 13797221,
+      "sha256": "65a852f879ca05ef483f5cf2fb67782af69feaea90c3658c121969c6af640e3a",
+      "url": "https://github.com/eNeRGy164/wireloom/actions/runs/43648866763/artifacts/14135398790"
+    },
+    {
+      "name": "cpp-consumer-windows-2025",
+      "archive": "cpp-consumer-windows-2025.zip",
+      "runId": 43648866763,
+      "artifactId": 14135299423,
+      "bytes": 20352544,
+      "sha256": "6606b10c41814653dbfb0bd5412a57fa8a91a5fcb62abc77527ec8e19d048f3e",
+      "url": "https://github.com/eNeRGy164/wireloom/actions/runs/43648866763/artifacts/14135299423"
+    },
+    {
+      "name": "qodana-community-report",
+      "archive": "qodana-community-report.zip",
+      "runId": 43648337273,
+      "artifactId": 14135845625,
+      "bytes": 1867166,
+      "sha256": "4ff500a71cb562141c89180e62b1120e3ce7b01a4668e66b8aced991d43e0872",
+      "url": "https://github.com/eNeRGy164/wireloom/actions/runs/43648337273/artifacts/14135845625"
+    },
+    {
+      "name": "playground-qualification",
+      "archive": "playground-qualification.zip",
+      "runId": 43648337273,
+      "artifactId": 14135720897,
+      "bytes": 281921,
+      "sha256": "49e642eb24517af0fd3908c7898a25dc27f4a0719fb3ed4a6a7ffd3f09dd3320",
+      "url": "https://github.com/eNeRGy164/wireloom/actions/runs/43648337273/artifacts/14135720897"
+    },
+    {
+      "name": "combined-coverage",
+      "archive": "combined-coverage.zip",
+      "runId": 43648337273,
+      "artifactId": 14135401059,
+      "bytes": 367484,
+      "sha256": "dbfd6060646ca267194003e1d36d59ad742e8c6c2fb74b5a706e0c0351bf83e8",
+      "url": "https://github.com/eNeRGy164/wireloom/actions/runs/43648337273/artifacts/14135401059"
+    }
+  ]
+}
