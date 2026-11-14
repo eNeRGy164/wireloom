@@ -41,7 +41,7 @@ internal class SamplePlugin : InterpretedTypePlugin<Sample, SampleUnmanaged>
 
         var result = tsf.CreateTypeWithAccessInfo<SampleUnmanaged>(
             dtf.BuildStruct()
-                .WithExtensibility(ExtensibilityKind.Final)
+                .WithExtensibility(ExtensibilityKind.Extensible)
                 .WithName("CorpusFlatDataBinding::Sample")
                 .AddMembers(members));
 

@@ -111,26 +111,26 @@ void Choice::_d(::std::int32_t value)
     return 0;
 }
 
-::CorpusScopedUnion::Payload& Choice::qualifiedPayload()
+Payload& Choice::qualifiedPayload()
 {
     if (!((discriminator_ == 10)))
         throw ::dds::core::PreconditionNotMetError("qualifiedPayload branch is inactive");
     return qualifiedPayload_;
 }
 
-const ::CorpusScopedUnion::Payload& Choice::qualifiedPayload() const
+const Payload& Choice::qualifiedPayload() const
 {
     if (!((discriminator_ == 10)))
         throw ::dds::core::PreconditionNotMetError("qualifiedPayload branch is inactive");
     return qualifiedPayload_;
 }
-void Choice::qualifiedPayload(const ::CorpusScopedUnion::Payload& value)
+void Choice::qualifiedPayload(const Payload& value)
 {
     qualifiedPayload_ = value;
     discriminator_ = 10;
 }
 
-void Choice::qualifiedPayload(::CorpusScopedUnion::Payload&& value)
+void Choice::qualifiedPayload(Payload&& value)
 {
     qualifiedPayload_ = ::std::move(value);
     discriminator_ = 10;

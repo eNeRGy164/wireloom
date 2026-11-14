@@ -188,7 +188,7 @@ struct NDDSUSERDllExport Sample
     /// @see [RTI dds::core::optional value operations](https://community.rti.com/static/documentation/connext-dds/6.1.2/doc/api/connext_dds/api_cpp2/classdds_1_1core_1_1optional.html)
     /// @code
     /// Sample sample{};
-    /// sample.optionalState = ::CorpusUnboundedReceiveLifecycle::OptionalState{};
+    /// sample.optionalState = OptionalState{};
     /// if (sample.optionalState.has_value()) {
     ///     const auto currentValue = sample.optionalState.value();
     /// }

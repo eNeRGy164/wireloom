@@ -169,6 +169,13 @@ struct wireloom_Choice_union_context
         type_plugin = &factory.create_type_plugin(*type);
         native_type_code->_members[0]._memberFlags = 0;
         native_type_code->_members[1]._memberFlags = 0;
+        auto* member_1_string_type_code_0 = native_type_code->_members[1]._representation._typeCode;
+        if (member_1_string_type_code_0 == nullptr) {
+            throw std::runtime_error("RTI 7.7 string TypeCode is missing");
+        }
+        member_1_string_type_code_0->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::std::string>::sample_access_info();
         type->native()._data._sampleAccessInfo = stl_sample_access_info();
         static ::RTIXCdrTypePlugin interpreted_type_plugin = RTIXCdrTypePlugin_INITIALIZER;
         type->native()._data._typePlugin = &interpreted_type_plugin;

@@ -111,106 +111,106 @@ std::ostream& operator<<(
 
 Choice::Choice() = default;
 
-::CorpusEnumUnion::Kind& Choice::_d()
+Kind& Choice::_d()
 {
     return discriminator_;
 }
 
-const ::CorpusEnumUnion::Kind& Choice::_d() const
+const Kind& Choice::_d() const
 {
     return discriminator_;
 }
 
-void Choice::_d(::CorpusEnumUnion::Kind value)
+void Choice::_d(Kind value)
 {
     discriminator_ = value;
 }
 
-::CorpusEnumUnion::Kind Choice::default_discriminator()
+Kind Choice::default_discriminator()
 {
-    return ::CorpusEnumUnion::Kind::Number;
+    return Kind::Number;
 }
 
 ::std::int32_t& Choice::number()
 {
-    if (!((discriminator_ == ::CorpusEnumUnion::Kind::Number)))
+    if (!((discriminator_ == Kind::Number)))
         throw ::dds::core::PreconditionNotMetError("number branch is inactive");
     return number_;
 }
 
 const ::std::int32_t& Choice::number() const
 {
-    if (!((discriminator_ == ::CorpusEnumUnion::Kind::Number)))
+    if (!((discriminator_ == Kind::Number)))
         throw ::dds::core::PreconditionNotMetError("number branch is inactive");
     return number_;
 }
 void Choice::number(::std::int32_t value)
 {
     number_ = value;
-    discriminator_ = ::CorpusEnumUnion::Kind::Number;
+    discriminator_ = Kind::Number;
 }
 
 
 ::std::string& Choice::text()
 {
-    if (!((discriminator_ == ::CorpusEnumUnion::Kind::Text)))
+    if (!((discriminator_ == Kind::Text)))
         throw ::dds::core::PreconditionNotMetError("text branch is inactive");
     return text_;
 }
 
 const ::std::string& Choice::text() const
 {
-    if (!((discriminator_ == ::CorpusEnumUnion::Kind::Text)))
+    if (!((discriminator_ == Kind::Text)))
         throw ::dds::core::PreconditionNotMetError("text branch is inactive");
     return text_;
 }
 void Choice::text(const ::omg::types::string_view& value)
 {
     text_ = value;
-    discriminator_ = ::CorpusEnumUnion::Kind::Text;
+    discriminator_ = Kind::Text;
 }
 
 void Choice::text(::omg::types::string_view&& value)
 {
     text_ = ::std::move(value);
-    discriminator_ = ::CorpusEnumUnion::Kind::Text;
+    discriminator_ = Kind::Text;
 }
 
 
-::CorpusEnumUnion::Payload& Choice::payload()
+Payload& Choice::payload()
 {
-    if (!((discriminator_ == ::CorpusEnumUnion::Kind::PayloadValue)))
+    if (!((discriminator_ == Kind::PayloadValue)))
         throw ::dds::core::PreconditionNotMetError("payload branch is inactive");
     return payload_;
 }
 
-const ::CorpusEnumUnion::Payload& Choice::payload() const
+const Payload& Choice::payload() const
 {
-    if (!((discriminator_ == ::CorpusEnumUnion::Kind::PayloadValue)))
+    if (!((discriminator_ == Kind::PayloadValue)))
         throw ::dds::core::PreconditionNotMetError("payload branch is inactive");
     return payload_;
 }
-void Choice::payload(const ::CorpusEnumUnion::Payload& value)
+void Choice::payload(const Payload& value)
 {
     payload_ = value;
-    discriminator_ = ::CorpusEnumUnion::Kind::PayloadValue;
+    discriminator_ = Kind::PayloadValue;
 }
 
-void Choice::payload(::CorpusEnumUnion::Payload&& value)
+void Choice::payload(Payload&& value)
 {
     payload_ = ::std::move(value);
-    discriminator_ = ::CorpusEnumUnion::Kind::PayloadValue;
+    discriminator_ = Kind::PayloadValue;
 }
 
 
 bool Choice::operator==(const Choice& other_) const
 {
     if (discriminator_ != other_.discriminator_) return false;
-    if ((discriminator_ == ::CorpusEnumUnion::Kind::Number))
+    if ((discriminator_ == Kind::Number))
         return number_ == other_.number_;
-    if ((discriminator_ == ::CorpusEnumUnion::Kind::Text))
+    if ((discriminator_ == Kind::Text))
         return text_ == other_.text_;
-    if ((discriminator_ == ::CorpusEnumUnion::Kind::PayloadValue))
+    if ((discriminator_ == Kind::PayloadValue))
         return payload_ == other_.payload_;
     return true;
 }
@@ -224,29 +224,29 @@ void Choice::swap(Choice& other_) noexcept
 {
     using ::std::swap;
     swap(discriminator_, other_.discriminator_);
-    if ((discriminator_ == ::CorpusEnumUnion::Kind::Number))
+    if ((discriminator_ == Kind::Number))
     {
         swap(number_, other_.number_);
     }
-    if ((discriminator_ == ::CorpusEnumUnion::Kind::Text))
+    if ((discriminator_ == Kind::Text))
     {
         swap(text_, other_.text_);
     }
-    if ((discriminator_ == ::CorpusEnumUnion::Kind::PayloadValue))
+    if ((discriminator_ == Kind::PayloadValue))
     {
         swap(payload_, other_.payload_);
     }
     if (discriminator_ != other_.discriminator_)
     {
-        if ((other_.discriminator_ == ::CorpusEnumUnion::Kind::Number))
+        if ((other_.discriminator_ == Kind::Number))
         {
             swap(number_, other_.number_);
         }
-        if ((other_.discriminator_ == ::CorpusEnumUnion::Kind::Text))
+        if ((other_.discriminator_ == Kind::Text))
         {
             swap(text_, other_.text_);
         }
-        if ((other_.discriminator_ == ::CorpusEnumUnion::Kind::PayloadValue))
+        if ((other_.discriminator_ == Kind::PayloadValue))
         {
             swap(payload_, other_.payload_);
         }
@@ -262,21 +262,21 @@ void swap(Choice& left, Choice& right)
 {
     output << "Choice{";
     bool emitted_branch = false;
-    if ((value.discriminator_ == ::CorpusEnumUnion::Kind::Number))
+    if ((value.discriminator_ == Kind::Number))
     {
         if (emitted_branch)
             output << ", ";
         output << "number: " << value.number_;
         emitted_branch = true;
     }
-    if ((value.discriminator_ == ::CorpusEnumUnion::Kind::Text))
+    if ((value.discriminator_ == Kind::Text))
     {
         if (emitted_branch)
             output << ", ";
         output << "text: " << value.text_;
         emitted_branch = true;
     }
-    if ((value.discriminator_ == ::CorpusEnumUnion::Kind::PayloadValue))
+    if ((value.discriminator_ == Kind::PayloadValue))
     {
         if (emitted_branch)
             output << ", ";

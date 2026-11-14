@@ -99,11 +99,11 @@ public:
     static Kind default_discriminator();
 
     /// @brief Accesses the zero branch when active.
-    /// @details Discriminator labels: ::CorpusUnionAliases::Kind::Zero.
+    /// @details Discriminator labels: Kind::Zero.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     ::std::int32_t& zero();
     /// @brief Accesses the zero branch without modifying it.
-    /// @details Discriminator labels: ::CorpusUnionAliases::Kind::Zero.
+    /// @details Discriminator labels: Kind::Zero.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     const ::std::int32_t& zero() const;
 
@@ -112,11 +112,11 @@ public:
     void zero(::std::int32_t value);
 
     /// @brief Accesses the ten branch when active.
-    /// @details Discriminator labels: ::CorpusUnionAliases::Kind::Ten.
+    /// @details Discriminator labels: Kind::Ten.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     ::std::string& ten();
     /// @brief Accesses the ten branch without modifying it.
-    /// @details Discriminator labels: ::CorpusUnionAliases::Kind::Ten.
+    /// @details Discriminator labels: Kind::Ten.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     const ::std::string& ten() const;
 

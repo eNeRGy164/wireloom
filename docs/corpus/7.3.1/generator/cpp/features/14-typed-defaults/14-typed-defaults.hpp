@@ -63,9 +63,9 @@ struct NDDSUSERDllExport TypedDefaults
 {
     // Members in IDL declaration order.
     /// @brief IDL member inherited.
-    ::Seven inherited = 7;
+    Seven inherited = 7;
     /// @brief IDL member overridden.
-    ::Seven overridden = 9;
+    Seven overridden = 9;
     /// @brief IDL member text.
     /// @details String metadata bound is 8. RTI's effective string maximum is 8 bytes, excluding the trailing null.
     /// The generated C++ field does not enforce this limit when assigned.
@@ -74,9 +74,9 @@ struct NDDSUSERDllExport TypedDefaults
     /// auto sample = ::TypedDefaults{};
     /// sample.text.assign(8, 'a');
     /// @endcode
-    ::TextAlias text = "alias";
+    TextAlias text = "alias";
     /// @brief IDL member ratio.
-    ::Ratio ratio = 1.5;
+    Ratio ratio = 1.5;
     /// @brief IDL member single.
     float single = 1.25F;
 
@@ -91,10 +91,10 @@ struct NDDSUSERDllExport TypedDefaults
     /// @param ratio Initial ratio value.
     /// @param single Initial single value.
     TypedDefaults(
-        const ::Seven& inherited,
-        const ::Seven& overridden,
-        const ::TextAlias& text,
-        const ::Ratio& ratio,
+        const Seven& inherited,
+        const Seven& overridden,
+        const TextAlias& text,
+        const Ratio& ratio,
         float single
     );
 

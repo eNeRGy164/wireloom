@@ -162,9 +162,40 @@ struct wireloom_DirectStringSequences_union_context
             (&type->native());
         native_type_code->_typeCode =
             reinterpret_cast<::RTIXCdrTypeCode*>(&::DDS_g_tc_long);
-        type_plugin = &factory.create_type_plugin(*type);
         native_type_code->_members[0]._memberFlags = 0;
+        auto* member_0_sequence_type_code_0 = native_type_code->_members[0]._representation._typeCode;
+        if (member_0_sequence_type_code_0 == nullptr
+            || RTIXCdrTypeCode_getKind(member_0_sequence_type_code_0)
+                != RTI_XCDR_TK_SEQUENCE) {
+            throw std::runtime_error("RTI 7.7 sequence TypeCode is missing");
+        }
+        member_0_sequence_type_code_0->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::omg::types::bounded_sequence< ::std::string, 3 >>::sample_access_info();
+        auto* member_0_string_type_code_1 = member_0_sequence_type_code_0->_typeCode;
+        if (member_0_string_type_code_1 == nullptr) {
+            throw std::runtime_error("RTI 7.7 string TypeCode is missing");
+        }
+        member_0_string_type_code_1->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::std::string>::sample_access_info();
         native_type_code->_members[1]._memberFlags = 0;
+        auto* member_1_sequence_type_code_0 = native_type_code->_members[1]._representation._typeCode;
+        if (member_1_sequence_type_code_0 == nullptr
+            || RTIXCdrTypeCode_getKind(member_1_sequence_type_code_0)
+                != RTI_XCDR_TK_SEQUENCE) {
+            throw std::runtime_error("RTI 7.7 sequence TypeCode is missing");
+        }
+        member_1_sequence_type_code_0->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::omg::types::bounded_sequence< ::std::wstring, 3 >>::sample_access_info();
+        auto* member_1_string_type_code_1 = member_1_sequence_type_code_0->_typeCode;
+        if (member_1_string_type_code_1 == nullptr) {
+            throw std::runtime_error("RTI 7.7 string TypeCode is missing");
+        }
+        member_1_string_type_code_1->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::std::wstring>::sample_access_info();
         type->native()._data._sampleAccessInfo = stl_sample_access_info();
         static ::RTIXCdrTypePlugin interpreted_type_plugin = RTIXCdrTypePlugin_INITIALIZER;
         type->native()._data._typePlugin = &interpreted_type_plugin;
@@ -176,6 +207,170 @@ wireloom_DirectStringSequences_union_context& wireloom_DirectStringSequences_uni
     static wireloom_DirectStringSequences_union_context value;
     return value;
 }
+void* wireloom_DirectStringSequences_stl_union_create_sample()
+{
+    return new (std::nothrow) ::RuntimeUnionStringSequences::DirectStringSequences{};
+}
+
+void wireloom_DirectStringSequences_stl_union_delete_sample(void* sample)
+{
+    delete static_cast<::RuntimeUnionStringSequences::DirectStringSequences*>(sample);
+}
+
+RTIBool wireloom_DirectStringSequences_stl_union_copy_sample(
+    PRESTypePluginEndpointData, void* destination, const void* source_sample)
+{
+    auto* destination_value =
+        static_cast<::RuntimeUnionStringSequences::DirectStringSequences*>(destination);
+    const auto* source_value =
+        static_cast<const ::RuntimeUnionStringSequences::DirectStringSequences*>(source_sample);
+    if (destination_value == nullptr || source_value == nullptr)
+        return RTI_FALSE;
+    try {
+        *destination_value = *source_value;
+        return RTI_TRUE;
+    } catch (...) {
+        return RTI_FALSE;
+    }
+}
+
+void wireloom_DirectStringSequences_stl_union_return_sample(
+    PRESTypePluginEndpointData endpoint, void* sample, void* handle)
+{
+    if (sample != nullptr)
+        *static_cast<::RuntimeUnionStringSequences::DirectStringSequences*>(sample) = {};
+    PRESTypePluginDefaultEndpointData_returnSample(endpoint, sample, handle);
+}
+
+unsigned int wireloom_DirectStringSequences_stl_union_serialized_sample_max_size(
+    PRESTypePluginEndpointData endpoint, RTIBool include_encapsulation,
+    RTIEncapsulationId encapsulation, unsigned int alignment)
+{
+    RTIBool overflow = RTI_FALSE;
+    const auto size = PRESTypePlugin_interpretedGetSerializedSampleMaxSize(
+        endpoint, &overflow, include_encapsulation, encapsulation, alignment);
+    return overflow ? RTI_CDR_MAX_SERIALIZED_SIZE : size;
+}
+
+PRESTypePluginParticipantData wireloom_DirectStringSequences_stl_union_participant_attached(
+    void*, const PRESTypePluginParticipantInfo* participant_info,
+    RTIBool, void*, RTICdrTypeCode*)
+{
+    if (participant_info == nullptr || !RTIXCdrXTypesComplianceMask_verifyGeneratedXTypesMask(0x0000068C))
+        return nullptr;
+    auto* data = static_cast<PRESTypePluginDefaultParticipantData*>(
+        PRESTypePluginDefaultParticipantData_new(participant_info));
+    if (data == nullptr)
+        return nullptr;
+    RTIXCdrInterpreterProgramsGenProperty property =
+        RTIXCdrInterpreterProgramsGenProperty_INITIALIZER;
+    property.generateV1Encapsulation = RTI_XCDR_TRUE;
+    property.generateV2Encapsulation = RTI_XCDR_TRUE;
+    property.resolveAlias = RTI_XCDR_TRUE;
+    property.inlineStruct = RTI_XCDR_TRUE;
+    property.optimizeEnum = RTI_XCDR_TRUE;
+    property.unboundedSize = RTIXCdrLong_MAX;
+    property.externalReferenceSize =
+        static_cast<RTIXCdrUnsignedShort>(sizeof(dds::core::external<char>));
+    property.getExternalRefPointerFcn = ::rti::topic::interpreter::get_external_value_pointer;
+    auto* native_type_code = const_cast<DDS_TypeCode*>(
+        reinterpret_cast<const DDS_TypeCode*>(&
+            ::rti::topic::dynamic_type<::RuntimeUnionStringSequences::DirectStringSequences>::get()
+                .native()));
+    data->programs = DDS_TypeCodeFactory_assert_programs_in_global_list(
+        DDS_TypeCodeFactory_get_instance(), native_type_code,
+        &property, RTI_XCDR_PROGRAM_MASK_TYPEPLUGIN);
+    if (data->programs == nullptr) {
+        PRESTypePluginDefaultParticipantData_delete(data);
+        return nullptr;
+    }
+    return data;
+}
+
+void wireloom_DirectStringSequences_stl_union_participant_detached(PRESTypePluginParticipantData participant)
+{
+    if (participant != nullptr) {
+        auto* data = static_cast<PRESTypePluginDefaultParticipantData*>(participant);
+        if (data->programs != nullptr) {
+            DDS_TypeCodeFactory_remove_programs_from_global_list(
+                DDS_TypeCodeFactory_get_instance(), data->programs);
+            data->programs = nullptr;
+        }
+    }
+    PRESTypePluginDefaultParticipantData_delete(participant);
+}
+
+PRESTypePluginEndpointData wireloom_DirectStringSequences_stl_union_endpoint_attached(
+    PRESTypePluginParticipantData participant,
+    const PRESTypePluginEndpointInfo* endpoint_info, RTIBool, void*)
+{
+    if (participant == nullptr || endpoint_info == nullptr)
+        return nullptr;
+    auto endpoint = PRESTypePluginDefaultEndpointData_new(
+        participant, endpoint_info, wireloom_DirectStringSequences_stl_union_create_sample,
+        wireloom_DirectStringSequences_stl_union_delete_sample,
+        nullptr, nullptr);
+    if (endpoint == nullptr)
+        return nullptr;
+    if (endpoint_info->endpointKind == PRES_TYPEPLUGIN_ENDPOINT_WRITER) {
+        const auto maximum_size = wireloom_DirectStringSequences_stl_union_serialized_sample_max_size(
+            endpoint, RTI_FALSE, RTI_CDR_ENCAPSULATION_ID_CDR_BE, 0);
+        PRESTypePluginDefaultEndpointData_setMaxSizeSerializedSample(endpoint, maximum_size);
+        if (!PRESTypePluginDefaultEndpointData_createWriterPool(
+                endpoint, endpoint_info,
+                wireloom_DirectStringSequences_stl_union_serialized_sample_max_size, endpoint,
+                PRESTypePlugin_interpretedGetSerializedSampleSize, endpoint)) {
+            PRESTypePluginDefaultEndpointData_delete(endpoint);
+            return nullptr;
+        }
+    }
+    return endpoint;
+}
+
+void wireloom_DirectStringSequences_stl_union_endpoint_detached(PRESTypePluginEndpointData endpoint)
+{
+    PRESTypePluginDefaultEndpointData_delete(endpoint);
+}
+
+PRESTypePlugin* wireloom_DirectStringSequences_stl_union_create_plugin()
+{
+    auto* plugin = new (std::nothrow) PRESTypePlugin;
+    if (plugin == nullptr)
+        return nullptr;
+    *plugin = PRES_TYPEPLUGIN_DEFAULT;
+    plugin->version = PRES_TYPE_PLUGIN_VERSION_2_0;
+    plugin->onParticipantAttached = wireloom_DirectStringSequences_stl_union_participant_attached;
+    plugin->onParticipantDetached = wireloom_DirectStringSequences_stl_union_participant_detached;
+    plugin->onEndpointAttached = wireloom_DirectStringSequences_stl_union_endpoint_attached;
+    plugin->onEndpointDetached = wireloom_DirectStringSequences_stl_union_endpoint_detached;
+    plugin->copySampleFnc = wireloom_DirectStringSequences_stl_union_copy_sample;
+    plugin->createSampleFnc = PRESTypePluginDefaultEndpointData_createSample;
+    plugin->destroySampleFnc = PRESTypePluginDefaultEndpointData_deleteSample;
+    plugin->serializeFnc = PRESTypePlugin_interpretedSerialize;
+    plugin->deserializeFnc = PRESTypePlugin_interpretedDeserializeWithAlloc;
+    plugin->getSampleFnc = PRESTypePluginDefaultEndpointData_getSample;
+    plugin->returnSampleFnc = wireloom_DirectStringSequences_stl_union_return_sample;
+    plugin->getSerializedSampleMaxSizeFnc = wireloom_DirectStringSequences_stl_union_serialized_sample_max_size;
+    plugin->getSerializedSampleMinSizeFnc = PRESTypePlugin_interpretedGetSerializedSampleMinSize;
+    plugin->getSerializedSampleSizeFnc = PRESTypePlugin_interpretedGetSerializedSampleSize;
+    plugin->getKeyKindFnc = []() { return PRES_TYPEPLUGIN_NO_KEY; };
+    auto* native_type_code = const_cast<DDS_TypeCode*>(
+        reinterpret_cast<const DDS_TypeCode*>(&
+            ::rti::topic::dynamic_type<::RuntimeUnionStringSequences::DirectStringSequences>::get()
+                .native()));
+    plugin->typeCode = reinterpret_cast<RTICdrTypeCode*>(native_type_code);
+    plugin->languageKind = PRES_TYPEPLUGIN_CPPSTL_LANG;
+    plugin->getBuffer = PRESTypePluginDefaultEndpointData_getBuffer;
+    plugin->returnBuffer = PRESTypePluginDefaultEndpointData_returnBuffer;
+    plugin->endpointTypeName = "RuntimeUnionStringSequences::DirectStringSequences";
+    return plugin;
+}
+
+void wireloom_DirectStringSequences_stl_union_delete_plugin(PRESTypePlugin* plugin)
+{
+    delete plugin;
+}
+
 
 // Keep RTI plugin state private to this translation unit.
 struct wireloom_StringSequenceAliases_union_context
@@ -338,11 +533,194 @@ struct wireloom_StringSequenceAliases_union_context
             (&type->native());
         native_type_code->_typeCode =
             reinterpret_cast<::RTIXCdrTypeCode*>(&::DDS_g_tc_long);
-        type_plugin = &factory.create_type_plugin(*type);
         native_type_code->_members[0]._memberFlags = 0;
+        auto* member_0_alias_type_code_0 = native_type_code->_members[0]._representation._typeCode;
+        if (member_0_alias_type_code_0 == nullptr
+            || RTIXCdrTypeCode_getKind(member_0_alias_type_code_0)
+                != RTI_XCDR_TK_ALIAS) {
+            throw std::runtime_error("RTI 7.7 alias TypeCode is missing");
+        }
+        struct Member0AliasAccessInfo1
+        {
+            ::RTIXCdrSampleAccessInfo sample;
+            ::RTIXCdrMemberAccessInfo members[1];
+
+            Member0AliasAccessInfo1()
+                : sample(RTIXCdrSampleAccessInfo_INITIALIZER)
+                , members{}
+            {
+                members[0].bindingMemberValueOffset[0] = 0;
+                sample.languageBinding = RTI_XCDR_TYPE_BINDING_CPP_11_STL;
+                sample.typeSize[0] =
+                    static_cast<::RTIXCdrUnsignedLong>(sizeof(::RuntimeUnionStringSequences::NarrowTexts));
+                sample.useGetMemberValueOnlyWithRef = RTI_XCDR_TRUE;
+                sample.getMemberValuePointerFcn =
+                    ::rti::topic::interpreter::get_aggregation_value_pointer<
+                        ::RuntimeUnionStringSequences::NarrowTexts>;
+                sample.memberAccessInfos = members;
+            }
+        };
+
+        static Member0AliasAccessInfo1 member_0_alias_access_info_1;
+        member_0_alias_type_code_0->_sampleAccessInfo =
+            &member_0_alias_access_info_1.sample;
+        auto* member_0_sequence_type_code_2 = member_0_alias_type_code_0->_typeCode;
+        if (member_0_sequence_type_code_2 == nullptr
+            || RTIXCdrTypeCode_getKind(member_0_sequence_type_code_2)
+                != RTI_XCDR_TK_SEQUENCE) {
+            throw std::runtime_error("RTI 7.7 sequence TypeCode is missing");
+        }
+        member_0_sequence_type_code_2->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::omg::types::bounded_sequence< ::std::string, 3 >>::sample_access_info();
+        auto* member_0_string_type_code_3 = member_0_sequence_type_code_2->_typeCode;
+        if (member_0_string_type_code_3 == nullptr) {
+            throw std::runtime_error("RTI 7.7 string TypeCode is missing");
+        }
+        member_0_string_type_code_3->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::std::string>::sample_access_info();
         native_type_code->_members[1]._memberFlags = 0;
+        auto* member_1_alias_type_code_0 = native_type_code->_members[1]._representation._typeCode;
+        if (member_1_alias_type_code_0 == nullptr
+            || RTIXCdrTypeCode_getKind(member_1_alias_type_code_0)
+                != RTI_XCDR_TK_ALIAS) {
+            throw std::runtime_error("RTI 7.7 alias TypeCode is missing");
+        }
+        struct Member1AliasAccessInfo1
+        {
+            ::RTIXCdrSampleAccessInfo sample;
+            ::RTIXCdrMemberAccessInfo members[1];
+
+            Member1AliasAccessInfo1()
+                : sample(RTIXCdrSampleAccessInfo_INITIALIZER)
+                , members{}
+            {
+                members[0].bindingMemberValueOffset[0] = 0;
+                sample.languageBinding = RTI_XCDR_TYPE_BINDING_CPP_11_STL;
+                sample.typeSize[0] =
+                    static_cast<::RTIXCdrUnsignedLong>(sizeof(::RuntimeUnionStringSequences::WideTexts));
+                sample.useGetMemberValueOnlyWithRef = RTI_XCDR_TRUE;
+                sample.getMemberValuePointerFcn =
+                    ::rti::topic::interpreter::get_aggregation_value_pointer<
+                        ::RuntimeUnionStringSequences::WideTexts>;
+                sample.memberAccessInfos = members;
+            }
+        };
+
+        static Member1AliasAccessInfo1 member_1_alias_access_info_1;
+        member_1_alias_type_code_0->_sampleAccessInfo =
+            &member_1_alias_access_info_1.sample;
+        auto* member_1_sequence_type_code_2 = member_1_alias_type_code_0->_typeCode;
+        if (member_1_sequence_type_code_2 == nullptr
+            || RTIXCdrTypeCode_getKind(member_1_sequence_type_code_2)
+                != RTI_XCDR_TK_SEQUENCE) {
+            throw std::runtime_error("RTI 7.7 sequence TypeCode is missing");
+        }
+        member_1_sequence_type_code_2->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::omg::types::bounded_sequence< ::std::wstring, 3 >>::sample_access_info();
+        auto* member_1_string_type_code_3 = member_1_sequence_type_code_2->_typeCode;
+        if (member_1_string_type_code_3 == nullptr) {
+            throw std::runtime_error("RTI 7.7 string TypeCode is missing");
+        }
+        member_1_string_type_code_3->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::std::wstring>::sample_access_info();
         native_type_code->_members[2]._memberFlags = 0;
+        auto* member_2_alias_type_code_0 = native_type_code->_members[2]._representation._typeCode;
+        if (member_2_alias_type_code_0 == nullptr
+            || RTIXCdrTypeCode_getKind(member_2_alias_type_code_0)
+                != RTI_XCDR_TK_ALIAS) {
+            throw std::runtime_error("RTI 7.7 alias TypeCode is missing");
+        }
+        struct Member2AliasAccessInfo1
+        {
+            ::RTIXCdrSampleAccessInfo sample;
+            ::RTIXCdrMemberAccessInfo members[1];
+
+            Member2AliasAccessInfo1()
+                : sample(RTIXCdrSampleAccessInfo_INITIALIZER)
+                , members{}
+            {
+                members[0].bindingMemberValueOffset[0] = 0;
+                sample.languageBinding = RTI_XCDR_TYPE_BINDING_CPP_11_STL;
+                sample.typeSize[0] =
+                    static_cast<::RTIXCdrUnsignedLong>(sizeof(::RuntimeUnionStringSequences::BoundedNarrowTexts));
+                sample.useGetMemberValueOnlyWithRef = RTI_XCDR_TRUE;
+                sample.getMemberValuePointerFcn =
+                    ::rti::topic::interpreter::get_aggregation_value_pointer<
+                        ::RuntimeUnionStringSequences::BoundedNarrowTexts>;
+                sample.memberAccessInfos = members;
+            }
+        };
+
+        static Member2AliasAccessInfo1 member_2_alias_access_info_1;
+        member_2_alias_type_code_0->_sampleAccessInfo =
+            &member_2_alias_access_info_1.sample;
+        auto* member_2_sequence_type_code_2 = member_2_alias_type_code_0->_typeCode;
+        if (member_2_sequence_type_code_2 == nullptr
+            || RTIXCdrTypeCode_getKind(member_2_sequence_type_code_2)
+                != RTI_XCDR_TK_SEQUENCE) {
+            throw std::runtime_error("RTI 7.7 sequence TypeCode is missing");
+        }
+        member_2_sequence_type_code_2->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::omg::types::bounded_sequence< ::std::string, 3 >>::sample_access_info();
+        auto* member_2_string_type_code_3 = member_2_sequence_type_code_2->_typeCode;
+        if (member_2_string_type_code_3 == nullptr) {
+            throw std::runtime_error("RTI 7.7 string TypeCode is missing");
+        }
+        member_2_string_type_code_3->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::std::string>::sample_access_info();
         native_type_code->_members[3]._memberFlags = 0;
+        auto* member_3_alias_type_code_0 = native_type_code->_members[3]._representation._typeCode;
+        if (member_3_alias_type_code_0 == nullptr
+            || RTIXCdrTypeCode_getKind(member_3_alias_type_code_0)
+                != RTI_XCDR_TK_ALIAS) {
+            throw std::runtime_error("RTI 7.7 alias TypeCode is missing");
+        }
+        struct Member3AliasAccessInfo1
+        {
+            ::RTIXCdrSampleAccessInfo sample;
+            ::RTIXCdrMemberAccessInfo members[1];
+
+            Member3AliasAccessInfo1()
+                : sample(RTIXCdrSampleAccessInfo_INITIALIZER)
+                , members{}
+            {
+                members[0].bindingMemberValueOffset[0] = 0;
+                sample.languageBinding = RTI_XCDR_TYPE_BINDING_CPP_11_STL;
+                sample.typeSize[0] =
+                    static_cast<::RTIXCdrUnsignedLong>(sizeof(::RuntimeUnionStringSequences::BoundedWideTexts));
+                sample.useGetMemberValueOnlyWithRef = RTI_XCDR_TRUE;
+                sample.getMemberValuePointerFcn =
+                    ::rti::topic::interpreter::get_aggregation_value_pointer<
+                        ::RuntimeUnionStringSequences::BoundedWideTexts>;
+                sample.memberAccessInfos = members;
+            }
+        };
+
+        static Member3AliasAccessInfo1 member_3_alias_access_info_1;
+        member_3_alias_type_code_0->_sampleAccessInfo =
+            &member_3_alias_access_info_1.sample;
+        auto* member_3_sequence_type_code_2 = member_3_alias_type_code_0->_typeCode;
+        if (member_3_sequence_type_code_2 == nullptr
+            || RTIXCdrTypeCode_getKind(member_3_sequence_type_code_2)
+                != RTI_XCDR_TK_SEQUENCE) {
+            throw std::runtime_error("RTI 7.7 sequence TypeCode is missing");
+        }
+        member_3_sequence_type_code_2->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::omg::types::bounded_sequence< ::std::wstring, 3 >>::sample_access_info();
+        auto* member_3_string_type_code_3 = member_3_sequence_type_code_2->_typeCode;
+        if (member_3_string_type_code_3 == nullptr) {
+            throw std::runtime_error("RTI 7.7 string TypeCode is missing");
+        }
+        member_3_string_type_code_3->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::std::wstring>::sample_access_info();
         type->native()._data._sampleAccessInfo = stl_sample_access_info();
         static ::RTIXCdrTypePlugin interpreted_type_plugin = RTIXCdrTypePlugin_INITIALIZER;
         type->native()._data._typePlugin = &interpreted_type_plugin;
@@ -354,6 +732,170 @@ wireloom_StringSequenceAliases_union_context& wireloom_StringSequenceAliases_uni
     static wireloom_StringSequenceAliases_union_context value;
     return value;
 }
+void* wireloom_StringSequenceAliases_stl_union_create_sample()
+{
+    return new (std::nothrow) ::RuntimeUnionStringSequences::StringSequenceAliases{};
+}
+
+void wireloom_StringSequenceAliases_stl_union_delete_sample(void* sample)
+{
+    delete static_cast<::RuntimeUnionStringSequences::StringSequenceAliases*>(sample);
+}
+
+RTIBool wireloom_StringSequenceAliases_stl_union_copy_sample(
+    PRESTypePluginEndpointData, void* destination, const void* source_sample)
+{
+    auto* destination_value =
+        static_cast<::RuntimeUnionStringSequences::StringSequenceAliases*>(destination);
+    const auto* source_value =
+        static_cast<const ::RuntimeUnionStringSequences::StringSequenceAliases*>(source_sample);
+    if (destination_value == nullptr || source_value == nullptr)
+        return RTI_FALSE;
+    try {
+        *destination_value = *source_value;
+        return RTI_TRUE;
+    } catch (...) {
+        return RTI_FALSE;
+    }
+}
+
+void wireloom_StringSequenceAliases_stl_union_return_sample(
+    PRESTypePluginEndpointData endpoint, void* sample, void* handle)
+{
+    if (sample != nullptr)
+        *static_cast<::RuntimeUnionStringSequences::StringSequenceAliases*>(sample) = {};
+    PRESTypePluginDefaultEndpointData_returnSample(endpoint, sample, handle);
+}
+
+unsigned int wireloom_StringSequenceAliases_stl_union_serialized_sample_max_size(
+    PRESTypePluginEndpointData endpoint, RTIBool include_encapsulation,
+    RTIEncapsulationId encapsulation, unsigned int alignment)
+{
+    RTIBool overflow = RTI_FALSE;
+    const auto size = PRESTypePlugin_interpretedGetSerializedSampleMaxSize(
+        endpoint, &overflow, include_encapsulation, encapsulation, alignment);
+    return overflow ? RTI_CDR_MAX_SERIALIZED_SIZE : size;
+}
+
+PRESTypePluginParticipantData wireloom_StringSequenceAliases_stl_union_participant_attached(
+    void*, const PRESTypePluginParticipantInfo* participant_info,
+    RTIBool, void*, RTICdrTypeCode*)
+{
+    if (participant_info == nullptr || !RTIXCdrXTypesComplianceMask_verifyGeneratedXTypesMask(0x0000068C))
+        return nullptr;
+    auto* data = static_cast<PRESTypePluginDefaultParticipantData*>(
+        PRESTypePluginDefaultParticipantData_new(participant_info));
+    if (data == nullptr)
+        return nullptr;
+    RTIXCdrInterpreterProgramsGenProperty property =
+        RTIXCdrInterpreterProgramsGenProperty_INITIALIZER;
+    property.generateV1Encapsulation = RTI_XCDR_TRUE;
+    property.generateV2Encapsulation = RTI_XCDR_TRUE;
+    property.resolveAlias = RTI_XCDR_TRUE;
+    property.inlineStruct = RTI_XCDR_TRUE;
+    property.optimizeEnum = RTI_XCDR_TRUE;
+    property.unboundedSize = RTIXCdrLong_MAX;
+    property.externalReferenceSize =
+        static_cast<RTIXCdrUnsignedShort>(sizeof(dds::core::external<char>));
+    property.getExternalRefPointerFcn = ::rti::topic::interpreter::get_external_value_pointer;
+    auto* native_type_code = const_cast<DDS_TypeCode*>(
+        reinterpret_cast<const DDS_TypeCode*>(&
+            ::rti::topic::dynamic_type<::RuntimeUnionStringSequences::StringSequenceAliases>::get()
+                .native()));
+    data->programs = DDS_TypeCodeFactory_assert_programs_in_global_list(
+        DDS_TypeCodeFactory_get_instance(), native_type_code,
+        &property, RTI_XCDR_PROGRAM_MASK_TYPEPLUGIN);
+    if (data->programs == nullptr) {
+        PRESTypePluginDefaultParticipantData_delete(data);
+        return nullptr;
+    }
+    return data;
+}
+
+void wireloom_StringSequenceAliases_stl_union_participant_detached(PRESTypePluginParticipantData participant)
+{
+    if (participant != nullptr) {
+        auto* data = static_cast<PRESTypePluginDefaultParticipantData*>(participant);
+        if (data->programs != nullptr) {
+            DDS_TypeCodeFactory_remove_programs_from_global_list(
+                DDS_TypeCodeFactory_get_instance(), data->programs);
+            data->programs = nullptr;
+        }
+    }
+    PRESTypePluginDefaultParticipantData_delete(participant);
+}
+
+PRESTypePluginEndpointData wireloom_StringSequenceAliases_stl_union_endpoint_attached(
+    PRESTypePluginParticipantData participant,
+    const PRESTypePluginEndpointInfo* endpoint_info, RTIBool, void*)
+{
+    if (participant == nullptr || endpoint_info == nullptr)
+        return nullptr;
+    auto endpoint = PRESTypePluginDefaultEndpointData_new(
+        participant, endpoint_info, wireloom_StringSequenceAliases_stl_union_create_sample,
+        wireloom_StringSequenceAliases_stl_union_delete_sample,
+        nullptr, nullptr);
+    if (endpoint == nullptr)
+        return nullptr;
+    if (endpoint_info->endpointKind == PRES_TYPEPLUGIN_ENDPOINT_WRITER) {
+        const auto maximum_size = wireloom_StringSequenceAliases_stl_union_serialized_sample_max_size(
+            endpoint, RTI_FALSE, RTI_CDR_ENCAPSULATION_ID_CDR_BE, 0);
+        PRESTypePluginDefaultEndpointData_setMaxSizeSerializedSample(endpoint, maximum_size);
+        if (!PRESTypePluginDefaultEndpointData_createWriterPool(
+                endpoint, endpoint_info,
+                wireloom_StringSequenceAliases_stl_union_serialized_sample_max_size, endpoint,
+                PRESTypePlugin_interpretedGetSerializedSampleSize, endpoint)) {
+            PRESTypePluginDefaultEndpointData_delete(endpoint);
+            return nullptr;
+        }
+    }
+    return endpoint;
+}
+
+void wireloom_StringSequenceAliases_stl_union_endpoint_detached(PRESTypePluginEndpointData endpoint)
+{
+    PRESTypePluginDefaultEndpointData_delete(endpoint);
+}
+
+PRESTypePlugin* wireloom_StringSequenceAliases_stl_union_create_plugin()
+{
+    auto* plugin = new (std::nothrow) PRESTypePlugin;
+    if (plugin == nullptr)
+        return nullptr;
+    *plugin = PRES_TYPEPLUGIN_DEFAULT;
+    plugin->version = PRES_TYPE_PLUGIN_VERSION_2_0;
+    plugin->onParticipantAttached = wireloom_StringSequenceAliases_stl_union_participant_attached;
+    plugin->onParticipantDetached = wireloom_StringSequenceAliases_stl_union_participant_detached;
+    plugin->onEndpointAttached = wireloom_StringSequenceAliases_stl_union_endpoint_attached;
+    plugin->onEndpointDetached = wireloom_StringSequenceAliases_stl_union_endpoint_detached;
+    plugin->copySampleFnc = wireloom_StringSequenceAliases_stl_union_copy_sample;
+    plugin->createSampleFnc = PRESTypePluginDefaultEndpointData_createSample;
+    plugin->destroySampleFnc = PRESTypePluginDefaultEndpointData_deleteSample;
+    plugin->serializeFnc = PRESTypePlugin_interpretedSerialize;
+    plugin->deserializeFnc = PRESTypePlugin_interpretedDeserializeWithAlloc;
+    plugin->getSampleFnc = PRESTypePluginDefaultEndpointData_getSample;
+    plugin->returnSampleFnc = wireloom_StringSequenceAliases_stl_union_return_sample;
+    plugin->getSerializedSampleMaxSizeFnc = wireloom_StringSequenceAliases_stl_union_serialized_sample_max_size;
+    plugin->getSerializedSampleMinSizeFnc = PRESTypePlugin_interpretedGetSerializedSampleMinSize;
+    plugin->getSerializedSampleSizeFnc = PRESTypePlugin_interpretedGetSerializedSampleSize;
+    plugin->getKeyKindFnc = []() { return PRES_TYPEPLUGIN_NO_KEY; };
+    auto* native_type_code = const_cast<DDS_TypeCode*>(
+        reinterpret_cast<const DDS_TypeCode*>(&
+            ::rti::topic::dynamic_type<::RuntimeUnionStringSequences::StringSequenceAliases>::get()
+                .native()));
+    plugin->typeCode = reinterpret_cast<RTICdrTypeCode*>(native_type_code);
+    plugin->languageKind = PRES_TYPEPLUGIN_CPPSTL_LANG;
+    plugin->getBuffer = PRESTypePluginDefaultEndpointData_getBuffer;
+    plugin->returnBuffer = PRESTypePluginDefaultEndpointData_returnBuffer;
+    plugin->endpointTypeName = "RuntimeUnionStringSequences::StringSequenceAliases";
+    return plugin;
+}
+
+void wireloom_StringSequenceAliases_stl_union_delete_plugin(PRESTypePlugin* plugin)
+{
+    delete plugin;
+}
+
 } // namespace
 } // namespace RuntimeUnionStringSequences
 
@@ -472,9 +1014,10 @@ void topic_type_support<::RuntimeUnionStringSequences::DirectStringSequences>::r
     const std::string& name)
 {
         wireloom_initialize_type_plugins();
-    ::RuntimeUnionStringSequences::wireloom_DirectStringSequences_union_context_instance().type_plugin->register_type(
-        participant,
-        name.c_str());
+    ::rti::domain::register_type_plugin(
+        participant, name,
+        &::RuntimeUnionStringSequences::wireloom_DirectStringSequences_stl_union_create_plugin,
+        &::RuntimeUnionStringSequences::wireloom_DirectStringSequences_stl_union_delete_plugin);
 }
 
 std::vector<char>& topic_type_support<::RuntimeUnionStringSequences::DirectStringSequences>::to_cdr_buffer(
@@ -606,9 +1149,10 @@ void topic_type_support<::RuntimeUnionStringSequences::StringSequenceAliases>::r
     const std::string& name)
 {
         wireloom_initialize_type_plugins();
-    ::RuntimeUnionStringSequences::wireloom_StringSequenceAliases_union_context_instance().type_plugin->register_type(
-        participant,
-        name.c_str());
+    ::rti::domain::register_type_plugin(
+        participant, name,
+        &::RuntimeUnionStringSequences::wireloom_StringSequenceAliases_stl_union_create_plugin,
+        &::RuntimeUnionStringSequences::wireloom_StringSequenceAliases_stl_union_delete_plugin);
 }
 
 std::vector<char>& topic_type_support<::RuntimeUnionStringSequences::StringSequenceAliases>::to_cdr_buffer(

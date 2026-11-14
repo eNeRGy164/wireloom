@@ -93,11 +93,11 @@ std::ostream& operator<<(
 // Value construction
 Derived::Derived() = default;
 Derived::Derived(
-    const ::CorpusInheritedKeys::Base& base,
+    const Base& base,
     ::std::int32_t localId,
     ::std::int32_t payload
 )
-    : ::CorpusInheritedKeys::Base(base)
+    : Base(base)
     , localId(localId)
     , payload(payload)
 {
@@ -108,13 +108,9 @@ bool operator==(
     const Derived& left,
     const Derived& right)
 {
-    return
-        static_cast<const ::CorpusInheritedKeys::Base&>(left)
-            == static_cast<const ::CorpusInheritedKeys::Base&>(right)
-        && left.localId
-            == right.localId
-        && left.payload
-            == right.payload;
+    return static_cast<const Base&>(left) == static_cast<const Base&>(right)
+        && left.localId == right.localId
+        && left.payload == right.payload;
 }
 
 bool operator!=(
@@ -130,7 +126,7 @@ void swap(
     Derived& right) noexcept
 {
     using std::swap;
-    swap(static_cast<::CorpusInheritedKeys::Base&>(left), static_cast<::CorpusInheritedKeys::Base&>(right));
+    swap(static_cast<Base&>(left), static_cast<Base&>(right));
     swap(left.localId, right.localId);
     swap(left.payload, right.payload);
 }
@@ -142,7 +138,7 @@ std::ostream& operator<<(
 {
     ::rti::util::StreamFlagSaver stream_flags(output);
     output << "[";
-    output << "base: " << static_cast<const ::CorpusInheritedKeys::Base&>(value);
+    output << "base: " << static_cast<const Base&>(value);
     output << ", ";
     output << "localId: " << value.localId;
     output << ", ";

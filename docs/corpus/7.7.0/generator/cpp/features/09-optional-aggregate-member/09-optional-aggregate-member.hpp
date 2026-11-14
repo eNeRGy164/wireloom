@@ -199,7 +199,7 @@ struct NDDSUSERDllExport Holder
     /// @see [RTI dds::core::optional value operations](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_cpp2/classdds_1_1core_1_1optional.html)
     /// @code
     /// Holder sample{};
-    /// sample.payload = ::CorpusOptionalAggregate::Payload{};
+    /// sample.payload = Payload{};
     /// if (sample.payload.has_value()) {
     ///     const auto currentValue = sample.payload.value();
     /// }
@@ -212,7 +212,7 @@ struct NDDSUSERDllExport Holder
     /// @see [RTI dds::core::optional value operations](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_cpp2/classdds_1_1core_1_1optional.html)
     /// @code
     /// Holder sample{};
-    /// sample.payloadAlias = ::CorpusOptionalAggregate::PayloadAlias{};
+    /// sample.payloadAlias = PayloadAlias{};
     /// if (sample.payloadAlias.has_value()) {
     ///     const auto currentValue = sample.payloadAlias.value();
     /// }
@@ -225,7 +225,7 @@ struct NDDSUSERDllExport Holder
     /// @see [RTI dds::core::optional value operations](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_cpp2/classdds_1_1core_1_1optional.html)
     /// @code
     /// Holder sample{};
-    /// sample.choice = ::CorpusOptionalAggregate::Choice{};
+    /// sample.choice = Choice{};
     /// if (sample.choice.has_value()) {
     ///     const auto currentValue = sample.choice.value();
     /// }
@@ -238,7 +238,7 @@ struct NDDSUSERDllExport Holder
     /// @see [RTI dds::core::optional value operations](https://community.rti.com/static/documentation/connext-dds/7.7.0/doc/api/connext_dds/api_cpp2/classdds_1_1core_1_1optional.html)
     /// @code
     /// Holder sample{};
-    /// sample.choiceAlias = ::CorpusOptionalAggregate::ChoiceAlias{};
+    /// sample.choiceAlias = ChoiceAlias{};
     /// if (sample.choiceAlias.has_value()) {
     ///     const auto currentValue = sample.choiceAlias.value();
     /// }

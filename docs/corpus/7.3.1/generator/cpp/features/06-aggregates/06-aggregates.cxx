@@ -87,10 +87,10 @@ std::ostream& operator<<(
 // Value construction
 Derived::Derived() = default;
 Derived::Derived(
-    const ::CorpusAggregates::Base& base,
+    const Base& base,
     const ::std::string& derived
 )
-    : ::CorpusAggregates::Base(base)
+    : Base(base)
     , derived(derived)
 {
 }
@@ -100,11 +100,8 @@ bool operator==(
     const Derived& left,
     const Derived& right)
 {
-    return
-        static_cast<const ::CorpusAggregates::Base&>(left)
-            == static_cast<const ::CorpusAggregates::Base&>(right)
-        && left.derived
-            == right.derived;
+    return static_cast<const Base&>(left) == static_cast<const Base&>(right)
+        && left.derived == right.derived;
 }
 
 bool operator!=(
@@ -120,7 +117,7 @@ void swap(
     Derived& right) noexcept
 {
     using std::swap;
-    swap(static_cast<::CorpusAggregates::Base&>(left), static_cast<::CorpusAggregates::Base&>(right));
+    swap(static_cast<Base&>(left), static_cast<Base&>(right));
     swap(left.derived, right.derived);
 }
 
@@ -131,7 +128,7 @@ std::ostream& operator<<(
 {
     ::rti::util::StreamFlagSaver stream_flags(output);
     output << "[";
-    output << "base: " << static_cast<const ::CorpusAggregates::Base&>(value);
+    output << "base: " << static_cast<const Base&>(value);
     output << ", ";
     output << "derived: " << value.derived;
     output << "]";

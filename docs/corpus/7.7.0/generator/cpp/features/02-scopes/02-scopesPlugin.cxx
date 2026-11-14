@@ -140,9 +140,25 @@ struct wireloom_KeywordRecord_type_context
         factory.add_member(*type, "relative",
             ::rti::topic::dynamic_type<::CorpusScopes::Nested::Point>::get(),
             1, false);
+        auto* member_1_type_code =
+            type->native()._data._members[1]._representation._typeCode;
+        member_1_type_code->_sampleAccessInfo =
+            ::CorpusScopes::Nested::wireloom_Point_type_context_instance().type
+                ->native()._data._sampleAccessInfo;
+        member_1_type_code->_typePlugin =
+            ::CorpusScopes::Nested::wireloom_Point_type_context_instance().type
+                ->native()._data._typePlugin;
         factory.add_member(*type, "absolute",
             ::rti::topic::dynamic_type<::CorpusScopes::Nested::Point>::get(),
             2, false);
+        auto* member_2_type_code =
+            type->native()._data._members[2]._representation._typeCode;
+        member_2_type_code->_sampleAccessInfo =
+            ::CorpusScopes::Nested::wireloom_Point_type_context_instance().type
+                ->native()._data._sampleAccessInfo;
+        member_2_type_code->_typePlugin =
+            ::CorpusScopes::Nested::wireloom_Point_type_context_instance().type
+                ->native()._data._typePlugin;
         factory.add_member(*type, "values",
             *factory.create_sequence(
                 ::dds::core::xtypes::primitive_type<::std::int32_t>(),
@@ -157,7 +173,11 @@ struct wireloom_KeywordRecord_type_context
         member_3_sequence_type_code_0->_sampleAccessInfo =
             ::rti::topic::interpreter::detail::sequence_helper<
                 ::omg::types::bounded_sequence< ::std::int32_t, 4 >>::sample_access_info();
-        type->native()._data._sampleAccessInfo = stl_sample_access_info();
+auto* native_type_code = reinterpret_cast<::RTIXCdrTypeCode*>(
+    const_cast<::DDS_TypeCode*>(&type->native()));
+        native_type_code->_sampleAccessInfo = stl_sample_access_info();
+        static ::RTIXCdrTypePlugin type_plugin = RTIXCdrTypePlugin_INITIALIZER;
+        native_type_code->_typePlugin = &type_plugin;
     }
 };
 
@@ -179,8 +199,10 @@ void wireloom_KeywordRecord_stl_sequence_delete_sample(void* sample)
 RTIBool wireloom_KeywordRecord_stl_sequence_copy_sample(
     PRESTypePluginEndpointData, void* destination, const void* source_sample)
 {
-    auto* destination_value = static_cast<::CorpusScopes::KeywordRecord*>(destination);
-    const auto* source_value = static_cast<const ::CorpusScopes::KeywordRecord*>(source_sample);
+    auto* destination_value =
+        static_cast<::CorpusScopes::KeywordRecord*>(destination);
+    const auto* source_value =
+        static_cast<const ::CorpusScopes::KeywordRecord*>(source_sample);
     if (destination_value == nullptr || source_value == nullptr)
         return RTI_FALSE;
     try {
@@ -194,7 +216,8 @@ RTIBool wireloom_KeywordRecord_stl_sequence_copy_sample(
 void wireloom_KeywordRecord_stl_sequence_return_sample(
     PRESTypePluginEndpointData endpoint, void* sample, void* handle)
 {
-    if (sample != nullptr) ::rti::topic::reset_sample(*static_cast<::CorpusScopes::KeywordRecord*>(sample));
+    if (sample != nullptr)
+        *static_cast<::CorpusScopes::KeywordRecord*>(sample) = {};
     PRESTypePluginDefaultEndpointData_returnSample(endpoint, sample, handle);
 }
 
@@ -231,7 +254,8 @@ PRESTypePluginParticipantData wireloom_KeywordRecord_stl_sequence_participant_at
     property.getExternalRefPointerFcn = ::rti::topic::interpreter::get_external_value_pointer;
     auto* native_type_code = const_cast<DDS_TypeCode*>(
         reinterpret_cast<const DDS_TypeCode*>(&
-            ::rti::topic::dynamic_type<::CorpusScopes::KeywordRecord>::get().native()));
+            ::rti::topic::dynamic_type<::CorpusScopes::KeywordRecord>::get()
+                .native()));
     data->programs = DDS_TypeCodeFactory_assert_programs_in_global_list(
         DDS_TypeCodeFactory_get_instance(), native_type_code,
         &property, RTI_XCDR_PROGRAM_MASK_TYPEPLUGIN);
@@ -272,7 +296,8 @@ PRESTypePluginEndpointData wireloom_KeywordRecord_stl_sequence_endpoint_attached
             endpoint, RTI_FALSE, RTI_CDR_ENCAPSULATION_ID_CDR_BE, 0);
         PRESTypePluginDefaultEndpointData_setMaxSizeSerializedSample(endpoint, maximum_size);
         if (!PRESTypePluginDefaultEndpointData_createWriterPool(
-                endpoint, endpoint_info, wireloom_KeywordRecord_stl_sequence_serialized_sample_max_size, endpoint,
+                endpoint, endpoint_info,
+                wireloom_KeywordRecord_stl_sequence_serialized_sample_max_size, endpoint,
                 PRESTypePlugin_interpretedGetSerializedSampleSize, endpoint)) {
             PRESTypePluginDefaultEndpointData_delete(endpoint);
             return nullptr;
@@ -310,7 +335,8 @@ PRESTypePlugin* wireloom_KeywordRecord_stl_sequence_create_plugin()
     plugin->getKeyKindFnc = []() { return PRES_TYPEPLUGIN_NO_KEY; };
     auto* native_type_code = const_cast<DDS_TypeCode*>(
         reinterpret_cast<const DDS_TypeCode*>(&
-            ::rti::topic::dynamic_type<::CorpusScopes::KeywordRecord>::get().native()));
+            ::rti::topic::dynamic_type<::CorpusScopes::KeywordRecord>::get()
+                .native()));
     plugin->typeCode = reinterpret_cast<RTICdrTypeCode*>(native_type_code);
     plugin->languageKind = PRES_TYPEPLUGIN_CPPSTL_LANG;
     plugin->getBuffer = PRESTypePluginDefaultEndpointData_getBuffer;
@@ -377,7 +403,49 @@ struct wireloom_Reopened_type_context
         factory.add_member(*type, "value",
             ::rti::topic::dynamic_type<::CorpusScopes::KeywordRecord>::get(),
             0, false);
-        type->native()._data._sampleAccessInfo = stl_sample_access_info();
+        auto* member_0_type_code =
+            type->native()._data._members[0]._representation._typeCode;
+        member_0_type_code->_sampleAccessInfo =
+            ::CorpusScopes::wireloom_KeywordRecord_type_context_instance().type
+                ->native()._data._sampleAccessInfo;
+        member_0_type_code->_typePlugin =
+            ::CorpusScopes::wireloom_KeywordRecord_type_context_instance().type
+                ->native()._data._typePlugin;
+        auto* KeywordRecord_member_0_type_code_member_1_type_code =
+            reinterpret_cast<::DDS_TypeCode*>(member_0_type_code)->_data._members[
+                1]._representation._typeCode;
+        KeywordRecord_member_0_type_code_member_1_type_code->_sampleAccessInfo =
+            ::CorpusScopes::Nested::wireloom_Point_type_context_instance().type
+                ->native()._data._sampleAccessInfo;
+        KeywordRecord_member_0_type_code_member_1_type_code->_typePlugin =
+            ::CorpusScopes::Nested::wireloom_Point_type_context_instance().type
+                ->native()._data._typePlugin;
+        auto* KeywordRecord_member_0_type_code_member_2_type_code =
+            reinterpret_cast<::DDS_TypeCode*>(member_0_type_code)->_data._members[
+                2]._representation._typeCode;
+        KeywordRecord_member_0_type_code_member_2_type_code->_sampleAccessInfo =
+            ::CorpusScopes::Nested::wireloom_Point_type_context_instance().type
+                ->native()._data._sampleAccessInfo;
+        KeywordRecord_member_0_type_code_member_2_type_code->_typePlugin =
+            ::CorpusScopes::Nested::wireloom_Point_type_context_instance().type
+                ->native()._data._typePlugin;
+        auto* KeywordRecord_member_0_type_code_member_3_type_code =
+            reinterpret_cast<::DDS_TypeCode*>(member_0_type_code)->_data._members[
+                3]._representation._typeCode;
+        auto* member_3_sequence_type_code_0 = KeywordRecord_member_0_type_code_member_3_type_code;
+        if (member_3_sequence_type_code_0 == nullptr
+            || RTIXCdrTypeCode_getKind(member_3_sequence_type_code_0)
+                != RTI_XCDR_TK_SEQUENCE) {
+            throw std::runtime_error("RTI 7.7 sequence TypeCode is missing");
+        }
+        member_3_sequence_type_code_0->_sampleAccessInfo =
+            ::rti::topic::interpreter::detail::sequence_helper<
+                ::omg::types::bounded_sequence< ::std::int32_t, 4 >>::sample_access_info();
+auto* native_type_code = reinterpret_cast<::RTIXCdrTypeCode*>(
+    const_cast<::DDS_TypeCode*>(&type->native()));
+        native_type_code->_sampleAccessInfo = stl_sample_access_info();
+        static ::RTIXCdrTypePlugin type_plugin = RTIXCdrTypePlugin_INITIALIZER;
+        native_type_code->_typePlugin = &type_plugin;
     }
 };
 
@@ -399,8 +467,10 @@ void wireloom_Reopened_stl_sequence_delete_sample(void* sample)
 RTIBool wireloom_Reopened_stl_sequence_copy_sample(
     PRESTypePluginEndpointData, void* destination, const void* source_sample)
 {
-    auto* destination_value = static_cast<::CorpusScopes::Reopened*>(destination);
-    const auto* source_value = static_cast<const ::CorpusScopes::Reopened*>(source_sample);
+    auto* destination_value =
+        static_cast<::CorpusScopes::Reopened*>(destination);
+    const auto* source_value =
+        static_cast<const ::CorpusScopes::Reopened*>(source_sample);
     if (destination_value == nullptr || source_value == nullptr)
         return RTI_FALSE;
     try {
@@ -414,7 +484,8 @@ RTIBool wireloom_Reopened_stl_sequence_copy_sample(
 void wireloom_Reopened_stl_sequence_return_sample(
     PRESTypePluginEndpointData endpoint, void* sample, void* handle)
 {
-    if (sample != nullptr) ::rti::topic::reset_sample(*static_cast<::CorpusScopes::Reopened*>(sample));
+    if (sample != nullptr)
+        *static_cast<::CorpusScopes::Reopened*>(sample) = {};
     PRESTypePluginDefaultEndpointData_returnSample(endpoint, sample, handle);
 }
 
@@ -451,7 +522,8 @@ PRESTypePluginParticipantData wireloom_Reopened_stl_sequence_participant_attache
     property.getExternalRefPointerFcn = ::rti::topic::interpreter::get_external_value_pointer;
     auto* native_type_code = const_cast<DDS_TypeCode*>(
         reinterpret_cast<const DDS_TypeCode*>(&
-            ::rti::topic::dynamic_type<::CorpusScopes::Reopened>::get().native()));
+            ::rti::topic::dynamic_type<::CorpusScopes::Reopened>::get()
+                .native()));
     data->programs = DDS_TypeCodeFactory_assert_programs_in_global_list(
         DDS_TypeCodeFactory_get_instance(), native_type_code,
         &property, RTI_XCDR_PROGRAM_MASK_TYPEPLUGIN);
@@ -492,7 +564,8 @@ PRESTypePluginEndpointData wireloom_Reopened_stl_sequence_endpoint_attached(
             endpoint, RTI_FALSE, RTI_CDR_ENCAPSULATION_ID_CDR_BE, 0);
         PRESTypePluginDefaultEndpointData_setMaxSizeSerializedSample(endpoint, maximum_size);
         if (!PRESTypePluginDefaultEndpointData_createWriterPool(
-                endpoint, endpoint_info, wireloom_Reopened_stl_sequence_serialized_sample_max_size, endpoint,
+                endpoint, endpoint_info,
+                wireloom_Reopened_stl_sequence_serialized_sample_max_size, endpoint,
                 PRESTypePlugin_interpretedGetSerializedSampleSize, endpoint)) {
             PRESTypePluginDefaultEndpointData_delete(endpoint);
             return nullptr;
@@ -530,7 +603,8 @@ PRESTypePlugin* wireloom_Reopened_stl_sequence_create_plugin()
     plugin->getKeyKindFnc = []() { return PRES_TYPEPLUGIN_NO_KEY; };
     auto* native_type_code = const_cast<DDS_TypeCode*>(
         reinterpret_cast<const DDS_TypeCode*>(&
-            ::rti::topic::dynamic_type<::CorpusScopes::Reopened>::get().native()));
+            ::rti::topic::dynamic_type<::CorpusScopes::Reopened>::get()
+                .native()));
     plugin->typeCode = reinterpret_cast<RTICdrTypeCode*>(native_type_code);
     plugin->languageKind = PRES_TYPEPLUGIN_CPPSTL_LANG;
     plugin->getBuffer = PRESTypePluginDefaultEndpointData_getBuffer;

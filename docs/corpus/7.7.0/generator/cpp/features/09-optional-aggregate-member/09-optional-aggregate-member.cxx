@@ -189,26 +189,26 @@ void Choice::_d(::std::int32_t value)
     return 0;
 }
 
-::CorpusOptionalAggregate::Payload& Choice::payload()
+Payload& Choice::payload()
 {
     if (!((discriminator_ == 0)))
         throw ::dds::core::PreconditionNotMetError("payload branch is inactive");
     return payload_;
 }
 
-const ::CorpusOptionalAggregate::Payload& Choice::payload() const
+const Payload& Choice::payload() const
 {
     if (!((discriminator_ == 0)))
         throw ::dds::core::PreconditionNotMetError("payload branch is inactive");
     return payload_;
 }
-void Choice::payload(const ::CorpusOptionalAggregate::Payload& value)
+void Choice::payload(const Payload& value)
 {
     payload_ = value;
     discriminator_ = 0;
 }
 
-void Choice::payload(::CorpusOptionalAggregate::Payload&& value)
+void Choice::payload(Payload&& value)
 {
     payload_ = ::std::move(value);
     discriminator_ = 0;

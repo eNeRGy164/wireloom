@@ -195,104 +195,104 @@ void StringSequenceAliases::_d(::std::int32_t value)
     return 0;
 }
 
-::RuntimeUnionStringSequences::NarrowTexts& StringSequenceAliases::narrow()
+NarrowTexts& StringSequenceAliases::narrow()
 {
     if (!((discriminator_ == 0)))
         throw ::dds::core::PreconditionNotMetError("narrow branch is inactive");
     return narrow_;
 }
 
-const ::RuntimeUnionStringSequences::NarrowTexts& StringSequenceAliases::narrow() const
+const NarrowTexts& StringSequenceAliases::narrow() const
 {
     if (!((discriminator_ == 0)))
         throw ::dds::core::PreconditionNotMetError("narrow branch is inactive");
     return narrow_;
 }
-void StringSequenceAliases::narrow(const ::RuntimeUnionStringSequences::NarrowTexts& value)
+void StringSequenceAliases::narrow(const NarrowTexts& value)
 {
     narrow_ = value;
     discriminator_ = 0;
 }
 
-void StringSequenceAliases::narrow(::RuntimeUnionStringSequences::NarrowTexts&& value)
+void StringSequenceAliases::narrow(NarrowTexts&& value)
 {
     narrow_ = ::std::move(value);
     discriminator_ = 0;
 }
 
 
-::RuntimeUnionStringSequences::WideTexts& StringSequenceAliases::wide()
+WideTexts& StringSequenceAliases::wide()
 {
     if (!((discriminator_ == 1)))
         throw ::dds::core::PreconditionNotMetError("wide branch is inactive");
     return wide_;
 }
 
-const ::RuntimeUnionStringSequences::WideTexts& StringSequenceAliases::wide() const
+const WideTexts& StringSequenceAliases::wide() const
 {
     if (!((discriminator_ == 1)))
         throw ::dds::core::PreconditionNotMetError("wide branch is inactive");
     return wide_;
 }
-void StringSequenceAliases::wide(const ::RuntimeUnionStringSequences::WideTexts& value)
+void StringSequenceAliases::wide(const WideTexts& value)
 {
     wide_ = value;
     discriminator_ = 1;
 }
 
-void StringSequenceAliases::wide(::RuntimeUnionStringSequences::WideTexts&& value)
+void StringSequenceAliases::wide(WideTexts&& value)
 {
     wide_ = ::std::move(value);
     discriminator_ = 1;
 }
 
 
-::RuntimeUnionStringSequences::BoundedNarrowTexts& StringSequenceAliases::boundedNarrow()
+BoundedNarrowTexts& StringSequenceAliases::boundedNarrow()
 {
     if (!((discriminator_ == 2)))
         throw ::dds::core::PreconditionNotMetError("boundedNarrow branch is inactive");
     return boundedNarrow_;
 }
 
-const ::RuntimeUnionStringSequences::BoundedNarrowTexts& StringSequenceAliases::boundedNarrow() const
+const BoundedNarrowTexts& StringSequenceAliases::boundedNarrow() const
 {
     if (!((discriminator_ == 2)))
         throw ::dds::core::PreconditionNotMetError("boundedNarrow branch is inactive");
     return boundedNarrow_;
 }
-void StringSequenceAliases::boundedNarrow(const ::RuntimeUnionStringSequences::BoundedNarrowTexts& value)
+void StringSequenceAliases::boundedNarrow(const BoundedNarrowTexts& value)
 {
     boundedNarrow_ = value;
     discriminator_ = 2;
 }
 
-void StringSequenceAliases::boundedNarrow(::RuntimeUnionStringSequences::BoundedNarrowTexts&& value)
+void StringSequenceAliases::boundedNarrow(BoundedNarrowTexts&& value)
 {
     boundedNarrow_ = ::std::move(value);
     discriminator_ = 2;
 }
 
 
-::RuntimeUnionStringSequences::BoundedWideTexts& StringSequenceAliases::boundedWide()
+BoundedWideTexts& StringSequenceAliases::boundedWide()
 {
     if (!((discriminator_ == 3)))
         throw ::dds::core::PreconditionNotMetError("boundedWide branch is inactive");
     return boundedWide_;
 }
 
-const ::RuntimeUnionStringSequences::BoundedWideTexts& StringSequenceAliases::boundedWide() const
+const BoundedWideTexts& StringSequenceAliases::boundedWide() const
 {
     if (!((discriminator_ == 3)))
         throw ::dds::core::PreconditionNotMetError("boundedWide branch is inactive");
     return boundedWide_;
 }
-void StringSequenceAliases::boundedWide(const ::RuntimeUnionStringSequences::BoundedWideTexts& value)
+void StringSequenceAliases::boundedWide(const BoundedWideTexts& value)
 {
     boundedWide_ = value;
     discriminator_ = 3;
 }
 
-void StringSequenceAliases::boundedWide(::RuntimeUnionStringSequences::BoundedWideTexts&& value)
+void StringSequenceAliases::boundedWide(BoundedWideTexts&& value)
 {
     boundedWide_ = ::std::move(value);
     discriminator_ = 3;

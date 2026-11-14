@@ -53,12 +53,12 @@ NDDSUSERDllExport std::ostream& operator<<(std::ostream& output, const Choice& v
 
 // Enum constants.
 /// @brief IDL constant Selected.
-/// @details C++ type: ::Choice; value: ::Choice::SECOND.
-constexpr ::Choice Selected = ::Choice::SECOND;
+/// @details C++ type: Choice; value: Choice::SECOND.
+constexpr Choice Selected = Choice::SECOND;
 
 /// @brief IDL union ScopedEnum
 /// @details Only a branch selected by the discriminator may be read.
-/// @details Discriminator type is ::Choice; default value is ::Choice::FIRST.
+/// @details Discriminator type is Choice; default value is Choice::FIRST.
 /// @see [RTI DynamicType and DynamicData](https://community.rti.com/static/documentation/connext-dds/7.3.1/doc/api/connext_dds/api_cpp2/classdds_1_1core_1_1xtypes_1_1UnionType.html)
 class NDDSUSERDllExport ScopedEnum
 {
@@ -69,25 +69,25 @@ public:
 
     /// @brief Returns the current discriminator.
     /// @return The discriminator value.
-    ::Choice& _d();
+    Choice& _d();
     /// @brief Returns the current discriminator without modifying it.
     /// @return The discriminator value.
-    const ::Choice& _d() const;
+    const Choice& _d() const;
 
     /// @brief Changes the active branch by setting the discriminator.
     /// @param value New discriminator value.
-    void _d(::Choice value);
+    void _d(Choice value);
 
     /// @brief Returns the discriminator used by default construction.
     /// @return The discriminator value.
-    static ::Choice default_discriminator();
+    static Choice default_discriminator();
 
     /// @brief Accesses the selected branch when active.
-    /// @details Discriminator labels: ::Choice::SECOND.
+    /// @details Discriminator labels: Choice::SECOND.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     ::std::int32_t& selected();
     /// @brief Accesses the selected branch without modifying it.
-    /// @details Discriminator labels: ::Choice::SECOND.
+    /// @details Discriminator labels: Choice::SECOND.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     const ::std::int32_t& selected() const;
 
@@ -96,11 +96,11 @@ public:
     void selected(::std::int32_t value);
 
     /// @brief Accesses the first branch when active.
-    /// @details Discriminator labels: ::Choice::FIRST.
+    /// @details Discriminator labels: Choice::FIRST.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     ::std::int32_t& first();
     /// @brief Accesses the first branch without modifying it.
-    /// @details Discriminator labels: ::Choice::FIRST.
+    /// @details Discriminator labels: Choice::FIRST.
     /// @throws dds::core::PreconditionNotMetError when the branch is inactive.
     const ::std::int32_t& first() const;
 
@@ -119,7 +119,7 @@ public:
     friend NDDSUSERDllExport std::ostream& operator<<(std::ostream& stream, const ScopedEnum& value);
 
 private:
-    ::Choice discriminator_ = ::Choice::FIRST;
+    Choice discriminator_ = Choice::FIRST;
     ::std::int32_t selected_ = 0;
     ::std::int32_t first_ = 0;
 };

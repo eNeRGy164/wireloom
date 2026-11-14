@@ -9,6 +9,7 @@
 #include <iosfwd>
 #include <string>
 #include <vector>
+#include <ndds/cdr/cdr_typeCode.h>
 #include <rti/core/BoundedSequence.hpp>
 
 // RTI 6.1.2 collection compatibility aliases
@@ -28,7 +29,7 @@ using bounded_sequence = ::rti::core::bounded_sequence<T, N>;
 #include <dds/core/xtypes/EnumType.hpp>
 #endif // NDDS_STANDALONE_TYPE
 
-struct RTIXCdrResourceNode;
+struct RTICdrResourceNode;
 
 #if defined(NDDS_USER_DLL_EXPORT) && defined(RTI_WIN32)
 #undef NDDSUSERDllExport
@@ -602,7 +603,7 @@ struct dynamic_type<::CorpusAggregates::Recursive>
     /// @brief Resolves this type while building a recursive RTI TypeCode graph.
     /// @param parentVisitedNode Parent resources visited during TypeCode construction.
     /// @return The existing type shell when recursion reaches this declaration.
-    NDDSUSERDllExport static const type& get(RTIXCdrResourceNode* parentVisitedNode);
+    NDDSUSERDllExport static const type& get(RTICdrResourceNode* parentVisitedNode);
 };
 
 /// @brief Provides the RTI extensibility kind for CorpusAggregates::Recursive.

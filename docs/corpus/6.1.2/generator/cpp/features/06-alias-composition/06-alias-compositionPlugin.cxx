@@ -299,6 +299,29 @@ struct WireloomRti612TypePlugin
         PRESTypePluginDefaultEndpointData_delete(endpoint_data);
     }
 
+    static RTIBool deserialize_sample(
+        PRESTypePluginEndpointData endpoint_data,
+        void** sample,
+        RTIBool* drop_sample,
+        RTICdrStream* stream,
+        RTIBool deserialize_encapsulation,
+        RTIBool deserialize_sample,
+        void* endpoint_plugin_qos)
+    {
+        if (sample != nullptr && *sample != nullptr && deserialize_sample) {
+            ::dds::topic::topic_type_support<T>::reset_sample(*static_cast<T*>(*sample));
+        }
+
+        return PRESTypePlugin_interpretedDeserializeWithAlloc(
+            endpoint_data,
+            sample,
+            drop_sample,
+            stream,
+            deserialize_encapsulation,
+            deserialize_sample,
+            endpoint_plugin_qos);
+    }
+
     static RTIBool copy_sample(PRESTypePluginEndpointData, void* destination, const void* source)
     {
         try {
@@ -345,7 +368,7 @@ struct WireloomRti612TypePlugin
         plugin->createSampleFnc = create_plugin_sample;
         plugin->destroySampleFnc = destroy_plugin_sample;
         plugin->serializeFnc = PRESTypePlugin_interpretedSerialize;
-        plugin->deserializeFnc = PRESTypePlugin_interpretedDeserializeWithAlloc;
+        plugin->deserializeFnc = deserialize_sample;
         plugin->getSerializedSampleMaxSizeFnc = get_serialized_sample_max_size;
         plugin->getSerializedSampleMinSizeFnc = PRESTypePlugin_interpretedGetSerializedSampleMinSize;
         plugin->getSerializedSampleSizeFnc = PRESTypePlugin_interpretedGetSerializedSampleSize;

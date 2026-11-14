@@ -99,7 +99,9 @@ struct wireloom_Item_type_context
                 ::std::string>::sample_access_info();
 
         type_plugin = &factory.create_type_plugin(*type);
-        type->native()._data._sampleAccessInfo = stl_sample_access_info();
+auto* native_type_code = reinterpret_cast<::RTIXCdrTypeCode*>(
+    const_cast<::DDS_TypeCode*>(&type->native()));
+        native_type_code->_sampleAccessInfo = stl_sample_access_info();
     }
 };
 
@@ -575,7 +577,11 @@ struct wireloom_Sample_type_context
         member_6_string_type_code_3->_sampleAccessInfo =
             ::rti::topic::interpreter::detail::sequence_helper<
                 ::std::string>::sample_access_info();
-        type->native()._data._sampleAccessInfo = stl_sample_access_info();
+auto* native_type_code = reinterpret_cast<::RTIXCdrTypeCode*>(
+    const_cast<::DDS_TypeCode*>(&type->native()));
+        native_type_code->_sampleAccessInfo = stl_sample_access_info();
+        static ::RTIXCdrTypePlugin type_plugin = RTIXCdrTypePlugin_INITIALIZER;
+        native_type_code->_typePlugin = &type_plugin;
     }
 };
 
@@ -597,8 +603,10 @@ void wireloom_Sample_stl_sequence_delete_sample(void* sample)
 RTIBool wireloom_Sample_stl_sequence_copy_sample(
     PRESTypePluginEndpointData, void* destination, const void* source_sample)
 {
-    auto* destination_value = static_cast<::CorpusCollectionShapes::Sample*>(destination);
-    const auto* source_value = static_cast<const ::CorpusCollectionShapes::Sample*>(source_sample);
+    auto* destination_value =
+        static_cast<::CorpusCollectionShapes::Sample*>(destination);
+    const auto* source_value =
+        static_cast<const ::CorpusCollectionShapes::Sample*>(source_sample);
     if (destination_value == nullptr || source_value == nullptr)
         return RTI_FALSE;
     try {
@@ -612,7 +620,8 @@ RTIBool wireloom_Sample_stl_sequence_copy_sample(
 void wireloom_Sample_stl_sequence_return_sample(
     PRESTypePluginEndpointData endpoint, void* sample, void* handle)
 {
-    if (sample != nullptr) ::rti::topic::reset_sample(*static_cast<::CorpusCollectionShapes::Sample*>(sample));
+    if (sample != nullptr)
+        *static_cast<::CorpusCollectionShapes::Sample*>(sample) = {};
     PRESTypePluginDefaultEndpointData_returnSample(endpoint, sample, handle);
 }
 
@@ -649,7 +658,8 @@ PRESTypePluginParticipantData wireloom_Sample_stl_sequence_participant_attached(
     property.getExternalRefPointerFcn = ::rti::topic::interpreter::get_external_value_pointer;
     auto* native_type_code = const_cast<DDS_TypeCode*>(
         reinterpret_cast<const DDS_TypeCode*>(&
-            ::rti::topic::dynamic_type<::CorpusCollectionShapes::Sample>::get().native()));
+            ::rti::topic::dynamic_type<::CorpusCollectionShapes::Sample>::get()
+                .native()));
     data->programs = DDS_TypeCodeFactory_assert_programs_in_global_list(
         DDS_TypeCodeFactory_get_instance(), native_type_code,
         &property, RTI_XCDR_PROGRAM_MASK_TYPEPLUGIN);
@@ -690,7 +700,8 @@ PRESTypePluginEndpointData wireloom_Sample_stl_sequence_endpoint_attached(
             endpoint, RTI_FALSE, RTI_CDR_ENCAPSULATION_ID_CDR_BE, 0);
         PRESTypePluginDefaultEndpointData_setMaxSizeSerializedSample(endpoint, maximum_size);
         if (!PRESTypePluginDefaultEndpointData_createWriterPool(
-                endpoint, endpoint_info, wireloom_Sample_stl_sequence_serialized_sample_max_size, endpoint,
+                endpoint, endpoint_info,
+                wireloom_Sample_stl_sequence_serialized_sample_max_size, endpoint,
                 PRESTypePlugin_interpretedGetSerializedSampleSize, endpoint)) {
             PRESTypePluginDefaultEndpointData_delete(endpoint);
             return nullptr;
@@ -728,7 +739,8 @@ PRESTypePlugin* wireloom_Sample_stl_sequence_create_plugin()
     plugin->getKeyKindFnc = []() { return PRES_TYPEPLUGIN_NO_KEY; };
     auto* native_type_code = const_cast<DDS_TypeCode*>(
         reinterpret_cast<const DDS_TypeCode*>(&
-            ::rti::topic::dynamic_type<::CorpusCollectionShapes::Sample>::get().native()));
+            ::rti::topic::dynamic_type<::CorpusCollectionShapes::Sample>::get()
+                .native()));
     plugin->typeCode = reinterpret_cast<RTICdrTypeCode*>(native_type_code);
     plugin->languageKind = PRES_TYPEPLUGIN_CPPSTL_LANG;
     plugin->getBuffer = PRESTypePluginDefaultEndpointData_getBuffer;
@@ -846,7 +858,7 @@ void topic_type_support<::CorpusCollectionShapes::Item>::register_type(
 {
     (void) ::rti::topic::dynamic_type<::CorpusCollectionShapes::Item>::get();
     throw dds::core::InvalidArgumentError(
-        "This string-bearing aggregate shape is outside the RTI 7.7.0.0 interpreter bridge.");
+        "Wireloom C++ does not have a qualified interpreter bridge for this string-bearing aggregate shape.");
 }
 
 // Adapt the standard-layout value to RTI's generic CDR wrapper interface.
@@ -856,7 +868,7 @@ std::vector<char>& topic_type_support<::CorpusCollectionShapes::Item>::to_cdr_bu
     dds::core::policy::DataRepresentationId representation)
 {
     throw dds::core::InvalidArgumentError(
-        "CDR for this string-bearing aggregate shape is outside the RTI 7.7.0.0 interpreter bridge.");
+        "Wireloom C++ does not have a qualified CDR bridge for this string-bearing aggregate shape.");
 }
 
 void topic_type_support<::CorpusCollectionShapes::Item>::from_cdr_buffer(
@@ -864,7 +876,7 @@ void topic_type_support<::CorpusCollectionShapes::Item>::from_cdr_buffer(
     const std::vector<char>& buffer)
 {
     throw dds::core::InvalidArgumentError(
-        "CDR for this string-bearing aggregate shape is outside the RTI 7.7.0.0 interpreter bridge.");
+        "Wireloom C++ does not have a qualified CDR bridge for this string-bearing aggregate shape.");
 }
 
 // Reset the inline scalar values to their IDL defaults.

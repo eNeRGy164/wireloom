@@ -59,7 +59,7 @@ struct wireloom_Sample_type_context
             2, false);
         factory.add_member(*type, "externalText",
             ::dds::core::xtypes::StringType(16),
-            3, false, false, true, false);
+            3, false, false, true);
         // Generated TypeCode annotation: @range(-32L.. 31L).
         type->native()._data._members[1]._annotations._minValue._d = RTI_XCDR_TK_LONG;
         type->native()._data._members[1]._annotations._minValue._u.long_value = -32L;
@@ -104,7 +104,7 @@ void topic_type_support<::CorpusRtiAnnotations::Sample>::register_type(
 {
     (void) ::rti::topic::dynamic_type<::CorpusRtiAnnotations::Sample>::get();
     throw dds::core::InvalidArgumentError(
-        "This string-bearing aggregate shape is outside the RTI 7.7.0.0 interpreter bridge.");
+        "Wireloom C++ does not have a qualified interpreter bridge for this string-bearing aggregate shape.");
 }
 
 // Adapt the standard-layout value to RTI's generic CDR wrapper interface.

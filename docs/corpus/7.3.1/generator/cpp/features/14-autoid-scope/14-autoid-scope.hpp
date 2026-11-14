@@ -290,7 +290,7 @@ struct NDDSUSERDllExport UsesInclude
 {
     // Members in IDL declaration order.
     /// @brief IDL member included.
-    ::Included included = {};
+    Included included = {};
 
     // Construction and value semantics.
     /// @brief Constructs a default UsesInclude value.
@@ -299,7 +299,7 @@ struct NDDSUSERDllExport UsesInclude
     /// @brief Constructs a UsesInclude from its values.
     /// @param included Initial included value.
     UsesInclude(
-        const ::Included& included
+        const Included& included
     );
 
     /// @brief Copies another value.

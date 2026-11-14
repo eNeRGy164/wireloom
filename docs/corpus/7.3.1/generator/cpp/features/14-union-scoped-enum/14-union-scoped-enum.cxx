@@ -50,72 +50,72 @@ std::ostream& operator<<(std::ostream& output, const Choice& value)
 
 ScopedEnum::ScopedEnum() = default;
 
-::Choice& ScopedEnum::_d()
+Choice& ScopedEnum::_d()
 {
     return discriminator_;
 }
 
-const ::Choice& ScopedEnum::_d() const
+const Choice& ScopedEnum::_d() const
 {
     return discriminator_;
 }
 
-void ScopedEnum::_d(::Choice value)
+void ScopedEnum::_d(Choice value)
 {
     discriminator_ = value;
 }
 
-::Choice ScopedEnum::default_discriminator()
+Choice ScopedEnum::default_discriminator()
 {
-    return ::Choice::FIRST;
+    return Choice::FIRST;
 }
 
 ::std::int32_t& ScopedEnum::selected()
 {
-    if (!((discriminator_ == ::Choice::SECOND)))
+    if (!((discriminator_ == Choice::SECOND)))
         throw ::dds::core::PreconditionNotMetError("selected branch is inactive");
     return selected_;
 }
 
 const ::std::int32_t& ScopedEnum::selected() const
 {
-    if (!((discriminator_ == ::Choice::SECOND)))
+    if (!((discriminator_ == Choice::SECOND)))
         throw ::dds::core::PreconditionNotMetError("selected branch is inactive");
     return selected_;
 }
 void ScopedEnum::selected(::std::int32_t value)
 {
     selected_ = value;
-    discriminator_ = ::Choice::SECOND;
+    discriminator_ = Choice::SECOND;
 }
 
 
 ::std::int32_t& ScopedEnum::first()
 {
-    if (!((discriminator_ == ::Choice::FIRST)))
+    if (!((discriminator_ == Choice::FIRST)))
         throw ::dds::core::PreconditionNotMetError("first branch is inactive");
     return first_;
 }
 
 const ::std::int32_t& ScopedEnum::first() const
 {
-    if (!((discriminator_ == ::Choice::FIRST)))
+    if (!((discriminator_ == Choice::FIRST)))
         throw ::dds::core::PreconditionNotMetError("first branch is inactive");
     return first_;
 }
 void ScopedEnum::first(::std::int32_t value)
 {
     first_ = value;
-    discriminator_ = ::Choice::FIRST;
+    discriminator_ = Choice::FIRST;
 }
 
 
 bool ScopedEnum::operator==(const ScopedEnum& other_) const
 {
     if (discriminator_ != other_.discriminator_) return false;
-    if ((discriminator_ == ::Choice::SECOND))
+    if ((discriminator_ == Choice::SECOND))
         return selected_ == other_.selected_;
-    if ((discriminator_ == ::Choice::FIRST))
+    if ((discriminator_ == Choice::FIRST))
         return first_ == other_.first_;
     return true;
 }
@@ -129,21 +129,21 @@ void ScopedEnum::swap(ScopedEnum& other_) noexcept
 {
     using ::std::swap;
     swap(discriminator_, other_.discriminator_);
-    if ((discriminator_ == ::Choice::SECOND))
+    if ((discriminator_ == Choice::SECOND))
     {
         swap(selected_, other_.selected_);
     }
-    if ((discriminator_ == ::Choice::FIRST))
+    if ((discriminator_ == Choice::FIRST))
     {
         swap(first_, other_.first_);
     }
     if (discriminator_ != other_.discriminator_)
     {
-        if ((other_.discriminator_ == ::Choice::SECOND))
+        if ((other_.discriminator_ == Choice::SECOND))
         {
             swap(selected_, other_.selected_);
         }
-        if ((other_.discriminator_ == ::Choice::FIRST))
+        if ((other_.discriminator_ == Choice::FIRST))
         {
             swap(first_, other_.first_);
         }
@@ -159,14 +159,14 @@ void swap(ScopedEnum& left, ScopedEnum& right)
 {
     output << "ScopedEnum{";
     bool emitted_branch = false;
-    if ((value.discriminator_ == ::Choice::SECOND))
+    if ((value.discriminator_ == Choice::SECOND))
     {
         if (emitted_branch)
             output << ", ";
         output << "selected: " << value.selected_;
         emitted_branch = true;
     }
-    if ((value.discriminator_ == ::Choice::FIRST))
+    if ((value.discriminator_ == Choice::FIRST))
     {
         if (emitted_branch)
             output << ", ";

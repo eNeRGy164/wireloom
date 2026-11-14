@@ -100,72 +100,72 @@ std::ostream& operator<<(
 
 EnumUnion::EnumUnion() = default;
 
-::Color& EnumUnion::_d()
+Color& EnumUnion::_d()
 {
     return discriminator_;
 }
 
-const ::Color& EnumUnion::_d() const
+const Color& EnumUnion::_d() const
 {
     return discriminator_;
 }
 
-void EnumUnion::_d(::Color value)
+void EnumUnion::_d(Color value)
 {
     discriminator_ = value;
 }
 
-::Color EnumUnion::default_discriminator()
+Color EnumUnion::default_discriminator()
 {
-    return ::Color::RED;
+    return Color::RED;
 }
 
 ::std::int32_t& EnumUnion::selected()
 {
-    if (!((discriminator_ == ::Color::GREEN)))
+    if (!((discriminator_ == Color::GREEN)))
         throw ::dds::core::PreconditionNotMetError("selected branch is inactive");
     return selected_;
 }
 
 const ::std::int32_t& EnumUnion::selected() const
 {
-    if (!((discriminator_ == ::Color::GREEN)))
+    if (!((discriminator_ == Color::GREEN)))
         throw ::dds::core::PreconditionNotMetError("selected branch is inactive");
     return selected_;
 }
 void EnumUnion::selected(::std::int32_t value)
 {
     selected_ = value;
-    discriminator_ = ::Color::GREEN;
+    discriminator_ = Color::GREEN;
 }
 
 
 ::std::int32_t& EnumUnion::red()
 {
-    if (!((discriminator_ == ::Color::RED)))
+    if (!((discriminator_ == Color::RED)))
         throw ::dds::core::PreconditionNotMetError("red branch is inactive");
     return red_;
 }
 
 const ::std::int32_t& EnumUnion::red() const
 {
-    if (!((discriminator_ == ::Color::RED)))
+    if (!((discriminator_ == Color::RED)))
         throw ::dds::core::PreconditionNotMetError("red branch is inactive");
     return red_;
 }
 void EnumUnion::red(::std::int32_t value)
 {
     red_ = value;
-    discriminator_ = ::Color::RED;
+    discriminator_ = Color::RED;
 }
 
 
 bool EnumUnion::operator==(const EnumUnion& other_) const
 {
     if (discriminator_ != other_.discriminator_) return false;
-    if ((discriminator_ == ::Color::GREEN))
+    if ((discriminator_ == Color::GREEN))
         return selected_ == other_.selected_;
-    if ((discriminator_ == ::Color::RED))
+    if ((discriminator_ == Color::RED))
         return red_ == other_.red_;
     return true;
 }
@@ -179,21 +179,21 @@ void EnumUnion::swap(EnumUnion& other_) noexcept
 {
     using ::std::swap;
     swap(discriminator_, other_.discriminator_);
-    if ((discriminator_ == ::Color::GREEN))
+    if ((discriminator_ == Color::GREEN))
     {
         swap(selected_, other_.selected_);
     }
-    if ((discriminator_ == ::Color::RED))
+    if ((discriminator_ == Color::RED))
     {
         swap(red_, other_.red_);
     }
     if (discriminator_ != other_.discriminator_)
     {
-        if ((other_.discriminator_ == ::Color::GREEN))
+        if ((other_.discriminator_ == Color::GREEN))
         {
             swap(selected_, other_.selected_);
         }
-        if ((other_.discriminator_ == ::Color::RED))
+        if ((other_.discriminator_ == Color::RED))
         {
             swap(red_, other_.red_);
         }
@@ -209,14 +209,14 @@ void swap(EnumUnion& left, EnumUnion& right)
 {
     output << "EnumUnion{";
     bool emitted_branch = false;
-    if ((value.discriminator_ == ::Color::GREEN))
+    if ((value.discriminator_ == Color::GREEN))
     {
         if (emitted_branch)
             output << ", ";
         output << "selected: " << value.selected_;
         emitted_branch = true;
     }
-    if ((value.discriminator_ == ::Color::RED))
+    if ((value.discriminator_ == Color::RED))
     {
         if (emitted_branch)
             output << ", ";
