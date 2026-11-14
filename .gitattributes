@@ -12,3 +12,7 @@
 *.gz binary
 *.7z binary
 *.ico binary
+
+# Captured release evidence must retain its original bytes and recorded hashes.
+docs/releases/evidence/** -text -whitespace
+docs/testing/wire-compatibility/evidence/** -text -whitespace

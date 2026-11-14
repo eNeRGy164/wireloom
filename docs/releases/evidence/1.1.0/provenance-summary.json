@@ -1,0 +1,14 @@
+[
+  {
+    "package": "csharp",
+    "source": "2727d85321259ddf53fbe8c11f8b4ed54a128cc0",
+    "signer": "https://github.com/eNeRGy164/wireloom/.github/workflows/publish-release.yml@refs/tags/v1.1.0",
+    "verified": true
+  },
+  {
+    "package": "cpp",
+    "source": "2727d85321259ddf53fbe8c11f8b4ed54a128cc0",
+    "signer": "https://github.com/eNeRGy164/wireloom/.github/workflows/publish-release.yml@refs/tags/v1.1.0",
+    "verified": true
+  }
+]

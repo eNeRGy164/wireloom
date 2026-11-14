@@ -1,0 +1,4 @@
+MSBuild version 18.11.1-1.26513.3+940033be3 for .NET Framework
+
+  Checking File Globs
+  wireloom_hello_world.vcxproj -> G:\eNeRGy164\wireloom\artifacts\release-qualification\release-1.1.0\walkthrough\build-windows\bin\Release\wireloom_hello_world.exe

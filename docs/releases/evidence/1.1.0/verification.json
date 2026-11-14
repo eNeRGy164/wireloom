@@ -1,0 +1,31 @@
+{
+  "checkedAtUtc": "2026-11-14T23:01:21.5937249Z",
+  "release": "https://github.com/eNeRGy164/wireloom/releases/tag/v1.1.0",
+  "run": "https://github.com/eNeRGy164/wireloom/actions/runs/43648866763/attempts/2",
+  "sourceRevision": "2727d85321259ddf53fbe8c11f8b4ed54a128cc0",
+  "conclusion": "success",
+  "reasonForInitialFailure": "Release started before exact-source Quality and wire workflows completed.",
+  "packages": [
+    {
+      "package": "wireloom.dds.generator",
+      "version": "1.1.0",
+      "payloadFiles": 12,
+      "allPayloadsIdentical": true,
+      "signaturePresent": true,
+      "downloadSha256": "4a03f264c1c0745d8739cfdb40a955f9b4554c8671b9e9d161410ed989bbb85e"
+    },
+    {
+      "package": "wireloom.dds.cpp.generator",
+      "version": "1.1.0",
+      "payloadFiles": 11,
+      "allPayloadsIdentical": true,
+      "signaturePresent": true,
+      "downloadSha256": "de8d1c902f284dfbcef4d8d5b9d2892238706939108f3e5f9de9ca226adeaa49"
+    }
+  ],
+  "nugetSignatureVerification": "passed for both packages",
+  "releaseProvenanceVerification": "passed for both packages against tagged source and publish-release.yml",
+  "nativeConsumers": "Windows and Linux passed with the same retained C++ package SHA-256",
+  "wireScenariosPassed": 8173,
+  "knownFollowUp": "The emitted CycloneDX SBOM contains metadata but no package components."
+}

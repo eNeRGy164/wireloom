@@ -1,11 +1,14 @@
 # Wireloom 1.1.0 release preflight
 
+**Historical preflight.** The [published release record](../../releases/1.1.0.md)
+supersedes the outstanding gates below and retains final-source results.
+
 The November 14, 2026 audit examined merged preparation source
 `30d93a4e8edac7b85c4d7ff35496475a9df547da` and the artifacts produced for it.
 The [machine-readable record](release-1.1.0-preflight.json) retains counts,
 artifact IDs/digests, candidate hashes, and outstanding gates.
 
-**Release clearance remains blocked.** The audit found and corrected two
+**At this preflight, release clearance was blocked.** The audit found and corrected two
 source issues. Merge the corrections and repeat qualification on the exact
 source selected for the release. Native walkthrough checks passed with the
 supplied RTI license. The owner is verifying NuGet.org trusted publishing.
