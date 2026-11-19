@@ -22,7 +22,6 @@ workflows:
     '.github/workflows/publish-preview.yml':
         - 'actions/attest@v4.2.2'
         - 'actions/checkout@v7.0.1'
-        - 'actions/setup-dotnet@v6.0.0'
         - 'actions/setup-dotnet@v6.1.0'
         - 'actions/upload-artifact@v7.0.2'
         - 'anchore/sbom-action@v0.24.3'
@@ -30,7 +29,6 @@ workflows:
     '.github/workflows/publish-release.yml':
         - 'actions/attest@v4.2.2'
         - 'actions/checkout@v7.0.1'
-        - 'actions/setup-dotnet@v6.0.0'
         - 'actions/setup-dotnet@v6.1.0'
         - 'actions/upload-artifact@v7.0.2'
         - 'anchore/sbom-action@v0.24.3'
@@ -89,11 +87,6 @@ dependencies:
         commit: 'sha1-9000827ccba6bdab643e8b6fd33ac0654aef8333'
         owner_id: 44036562
         repo_id: 192626254
-    'actions/setup-dotnet@v6.0.0':
-        ref: 'v6.0.0'
-        commit: 'sha1-a98b56852c35b8e3190ac28c8c2271da59106c68'
-        owner_id: 44036562
-        repo_id: 192625306
     'actions/setup-dotnet@v6.1.0':
         ref: 'v6.1.0'
         commit: 'sha1-0f4a354dd5547a28c70b7853dbd95d5b67886e73'
