@@ -85,14 +85,14 @@ jobs:
 
       - name: Set up GitVersion
         if: steps.source.outputs.revision != ''
-        uses: gittools/actions/gitversion/setup@v4.7.0
+        uses: gittools/actions/gitversion/setup@v5.0.0
         with:
           versionSpec: 6.8.x
 
       - name: Calculate package version
         id: gitversion
         if: steps.source.outputs.revision != ''
-        uses: gittools/actions/gitversion/execute@v4.7.0
+        uses: gittools/actions/gitversion/execute@v5.0.0
         with:
           targetPath: ${{ github.workspace }}
 
