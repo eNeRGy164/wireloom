@@ -44,7 +44,7 @@ workflows:
         - 'actions/setup-node@v7.1.0'
         - 'actions/upload-artifact@v7.0.2'
         - 'coverallsapp/github-action@v2.3.8'
-        - 'jetbrains/qodana-action@v2026.2.2'
+        - 'jetbrains/qodana-action@v2026.3.1'
     '.github/workflows/scorecard.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/upload-artifact@v7.0.2'
@@ -151,9 +151,9 @@ dependencies:
         commit: 'sha1-7417b1089e2c7de93510f1901d656ddf60bb024f'
         owner_id: 11839771
         repo_id: 220321564
-    'jetbrains/qodana-action@v2026.2.2':
-        ref: 'v2026.2.2'
-        commit: 'sha1-3e8d76ff0e0241618abd808682f426afe84bab3f'
+    'jetbrains/qodana-action@v2026.3.1':
+        ref: 'v2026.3.1'
+        commit: 'sha1-aa698739cd4b8204ad53291bea7e16cd75da3c9f'
         owner_id: 878437
         repo_id: 318547564
     'nuget/login@v1.2.0':

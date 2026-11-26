@@ -882,7 +882,7 @@ jobs:
           global-json-file: global.json
 
       - name: Run Qodana community scan
-        uses: JetBrains/qodana-action@v2026.2.2
+        uses: JetBrains/qodana-action@v2026.3.1
         with:
           args: >-
             --image=jetbrains/qodana-cdnet:2026.2-privileged
